@@ -182,6 +182,16 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
+        if ((isset($input['email']) === false) or
+            (isset($input['name']) === false) or
+            (filter_var($input['email'], FILTER_VALIDATE_EMAIL) === false) or
+            (is_string($input['name']) === false))
+        {
+            $error[] = 'Please specify both name and email and in correct format';
+
+            return AppResponse::jsonResponse($error);
+        }
+
         Mail::send('emails.contact',compact('input'), function($m) use($input)
         {
             $m->from($input['email'], $input['name'])
