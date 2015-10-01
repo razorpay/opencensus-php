@@ -156,6 +156,17 @@ class Gateway extends Base\Gateway
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
+            if ($content['RESPCODE'] === '610')
+            {
+                // This means payment is already refunded fully or partially.
+                $refundAmt = (int) ($content['REFUNDAMT'] * 100);
+
+                if ($refundAmt === $input['refund']['amount'])
+                {
+                    return;
+                }
+            }
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_REFUND_FAILED,

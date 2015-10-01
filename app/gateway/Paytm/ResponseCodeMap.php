@@ -182,6 +182,7 @@ class ResponseCodeMap
         501     => 'System Error.',
         502     => 'Json Encoding error.',
         503     => 'Fee not configured for this card category type.',
+        610     => 'Transaction fully refunded already'
         701     => 'Invalid Ref ID',
         8000    => 'Invalid Response Code',
         8001    => 'Beneficiary is non-reloadable card',
