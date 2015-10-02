@@ -33,9 +33,13 @@ class Settler
 
     public function __construct()
     {
-        $this->initRepos();
+        $app = \App::getFacadeRoot();
 
-        $this->trace = \Trace::getFacadeRoot();
+        $this->mode = $app['rzp.mode'];
+        $this->env = $app['env'];
+        $this->trace = $app['trace'];
+
+        $this->initRepos();
     }
 
     public function settle($input = array(), $channel = null)
@@ -49,6 +53,11 @@ class Settler
         $channels = $this->getArrayedChannels($channel);
 
         $data = [];
+
+        if (Holidays::isTodayHoliday($this->mode))
+        {
+            return ['message' => 'Today is a holiday! Happy holidays :)'];
+        }
 
         foreach ($channels as $channel)
         {
@@ -430,19 +439,26 @@ class Settler
         return $channels;
     }
 
+    /**
+     * Settlement should happen before 6 pm otherwise not
+     */
     protected function checkTime()
     {
-        $app = \App::getFacadeRoot();
-        $mode = $app['rzp.mode'];
-        $env = $app['env'];
+        $mode = $this->mode;
+        $env = $this->env;
 
         $sixPm = Carbon::today('Asia/Kolkata')->hour(18)->timestamp;
+
+        $boundary = $sixPm - (5*60); // Subtract 5 mintues
+
         $now = time();
 
         $crossed = false;
 
-        if ($now > ($sixPm - (5*60)))
+        if ($now > $boundary)
+        {
             $crossed = true;
+        }
 
         if (($env === 'production') and
             ($mode === 'live') and
