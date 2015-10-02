@@ -7,6 +7,7 @@ use Models\Bank\IFSC;
 use Models\Base;
 use Models\Gateway;
 use Models\Payment;
+use Models\Payment\Processor\Netbanking;
 use Models\Payment\Refund;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -37,10 +38,18 @@ class Service extends Base\Service
             }
         }
 
+        // Add more banks here as we direct connects with them.
+        $banks = array(Netbanking::HDFC);
+
+        if (isset($input['bank']) === false)
+        {
+            $input['bank'] = NetBanking::HDFC;
+        }
+
         $bankCode = $input['bank'];
 
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-            $bankCode, $from, $to);
+                                                $bankCode, $from, $to);
 
         $count = $refunds->count();
 
