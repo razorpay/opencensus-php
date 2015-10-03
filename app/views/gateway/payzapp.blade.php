@@ -20,13 +20,12 @@ _wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($data['request']['content'
 
 </script>
 
-<script src="https://www.wibmo.com/v1/wIAP.js"></script>
+<script src="<?= $data['request']['url']?>/v1/wIAP.js"></script>
 
 </head>
 
 <body>
 <script type="text/javascript">
-debugger
 wIAP.doIAPWPay(_wIapInitRequestJSON, _wIapDefaults.wIapReturnUrl);
 </script>
 
