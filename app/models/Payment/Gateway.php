@@ -56,7 +56,7 @@ class Gateway
         Method::WALLET => array(
             self::MOBIKWIK,
             self::PAYTM,
-            self::PAYZAPP,
+            self::WALLET_PAYZAPP,
         ),
     );
 

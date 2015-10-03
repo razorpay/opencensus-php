@@ -81,6 +81,11 @@ class PaymentCreateController extends BaseController
 
                     return $response;
                 }
+                else if ($data['request']['method'] === 'direct')
+                {
+                    return View::make('gateway.payzapp')->with('data', $data);
+                    return ApiResponse::json($data);
+                }
             }
             else if ($data['type'] === 'return')
             {
