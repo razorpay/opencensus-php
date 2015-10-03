@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use Constants\Mode;
 use EE\Exception;
+use EE\Error;
 use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant\Methods;

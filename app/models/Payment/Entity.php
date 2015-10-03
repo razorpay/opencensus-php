@@ -502,6 +502,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
     public function getDaysSinceAuthorized()
     {
         $now = time();
