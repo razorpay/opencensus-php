@@ -18,48 +18,6 @@ class Gateway extends AxisMigs\Gateway
 {
     protected $gateway = 'amex';
 
-    public function authorize(array $input)
-    {
-        $request = parent::authorize($input);
-
-        $data = [];
-
-        foreach ($request['content'] as $key => $value)
-        {
-            $newKey = substr($key, 4);
-
-            $data[$newKey] = $value;
-        }
-
-        $request['content'] = $data;
-
-        return $request;
-    }
-
-    public function callback(array $input)
-    {
-        $content = [];
-
-        foreach ($input['gateway'] as $key => $value)
-        {
-            $content['vpc_'.$key] = $value;
-        }
-
-        $input['gateway'] = $content;
-
-        return parent::callback($input);
-    }
-
-    protected function getPaymentAuthorizeRequestContent($input)
-    {
-        $content = parent::getPaymentAuthorizeRequestContent($input);
-
-        $content['vpc_MerchantId'] = $content['vpc_Merchant'];
-        unset($content['vpc_Merchant']);
-
-        return $content;
-    }
-
     protected function addTestCardDetailsInTestMode(array & $content)
     {
         assert ($this->mode === Mode::TEST);
