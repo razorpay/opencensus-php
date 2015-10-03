@@ -27,8 +27,10 @@ class Gateway extends AxisMigs\Gateway
             return;
         }
 
+        // 341111111111111, 345678000000007 works
+
         $content['vpc_Card'] = 'Amex';
-        $content['vpc_CardNum'] = '345678000000007';
+        $content['vpc_CardNum'] = '341111111111111';
         $content['vpc_CardExp'] = '1705';
         $content['vpc_CardSecurityCode'] = '0773';
     }
