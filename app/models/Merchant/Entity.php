@@ -226,6 +226,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::EMAIL];
     }
 
+    public function getTransactionReportEmail()
+    {
+        return $this->attributes[self::TRANSACTION_REPORT_EMAIL];
+    }
+
     public function holdFunds()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];

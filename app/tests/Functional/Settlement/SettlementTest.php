@@ -90,7 +90,7 @@ class SettlementTest extends TestCase
 
     public function testHoldFundsDuringSettlement()
     {
-        $this->fixtures->links['merchant']->holdFunds('10000000000000');
+        $this->fixtures->merchant->holdFunds('10000000000000');
 
         // Create payments and refunds with timestamps two days back
         $payments = $this->createPaymentEntities();

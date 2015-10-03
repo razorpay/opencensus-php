@@ -59,7 +59,6 @@ trait Verify
         $message = 'Payment verification failed. ' .
                     'data - ' . json_encode($data, JSON_PRETTY_PRINT);
 
-        $app = \App::getFacadeRoot();
-        $app['slack']->send($message, $channel, $username);
+        $this->app['slack']->send($message, $channel, $username);
     }
 }

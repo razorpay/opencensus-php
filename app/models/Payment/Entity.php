@@ -259,6 +259,7 @@ class Entity extends Base\PublicEntity
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
@@ -489,6 +490,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
     }
 
     public function getInternalErrorCode()

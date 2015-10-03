@@ -3,9 +3,11 @@
 namespace Models\Payment\Processor;
 
 use BasicAuth;
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Http\Route;
+use Mail;
 use Models\Card;
 use Models\Merchant;
 use Models\Payment;
@@ -64,6 +66,8 @@ trait Refund
         // Analytics
         //
         $this->notifyDashboard('refund', $this->refund);
+
+//        $this->sendRefundNotification();
 
         return $refund;
     }
@@ -131,6 +135,87 @@ trait Refund
 
             throw $e;
         }
+    }
+
+    protected function refundTemplate()
+    {
+        return [
+            'customer'  =>  [
+                'email' =>  $this->payment->getEmail(),
+                'phone' =>  $this->payment->getContact()
+            ],
+            'merchant'  =>  [
+                'billing_label' =>  $this->payment->merchant->getBillingLabel(),
+                'website'       =>  $this->payment->merchant->getWebsite(),
+                'email'         =>  $this->payment->merchant->getTransactionReportEmail()
+            ],
+            'payment'   =>  [
+                'id'        =>  $this->payment->getId(),
+                'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
+                'timestamp' =>  $this->payment->getUpdatedAt(),
+                'method'    =>  $this->payment->getMethodWithDetail()
+            ],
+            'refund'    => [
+                'id'        =>  $this->refund->getId(),
+                'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
+            ]
+        ];
+    }
+
+    /**
+     * Returns an array containing subjects for both
+     * refund mails (merchant and customer)
+     * @return array
+     */
+    protected function getRefundSubject($template)
+    {
+        $amount = $suffix = $template['payment']['amount'];
+
+        if (isset($template['merchant']['billing_label']))
+        {
+            $suffix = $template['merchant']['billing_label'];
+        }
+
+        return [
+            'merchant' => "Razorpay | Payment refunded for $amount",
+            'customer' => "Refund Successful for $suffix"
+        ];
+    }
+
+    protected function sendRefundNotification()
+    {
+        // Dont send mails in test mode
+        // @todo: remove this somehow
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('production') === true))
+        {
+            return;
+        }
+
+        $templateData = $this->refundTemplate();
+        $subjects = $this->getRefundSubject($templateData);
+
+        // First email the merchant
+        Mail::queue('emails/refund/common',
+            $templateData,
+            function ($message) use ($templateData, $subjects)
+            {
+                $message->to($templateData['merchant']['email']);
+                $message->subject($subjects['merchant']);
+                // @todo: Keep this enabled for a while
+                //$message->cc('notifications@razorpay.com');
+            }
+        );
+
+        // And then the customer
+        Mail::queue('emails/refund/common',
+            $templateData,
+            function ($message) use ($templateData, $subjects)
+            {
+                $message->to($templateData['customer']['email']);
+                $message->subject($subjects['customer']);
+            }
+        );
     }
 
     protected function recordRefund()

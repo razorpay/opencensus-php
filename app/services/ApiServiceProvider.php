@@ -34,6 +34,11 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new AwsInstance($app);
         });
+
+        $this->app->bindShared('exception.handler', function($app)
+        {
+            return new \EE\Exception\Handler($app);
+        });
     }
 
     /**
@@ -43,6 +48,6 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('slack', 'mailgun', 'instance');
+        return array('slack', 'mailgun', 'instance', 'exception.handler');
     }
 }

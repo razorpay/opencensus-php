@@ -99,7 +99,7 @@ class BilldeskGatewayTest extends TestCase
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',

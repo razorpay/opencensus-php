@@ -7,6 +7,7 @@ use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base\Action;
+use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
 use Gateway\Netbanking\Base;
@@ -16,6 +17,8 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'netbanking_hdfc';
 
     protected $bank = 'hdfc';
@@ -119,16 +122,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
     }
 
     public function generateRefundsExcel($input)
@@ -286,45 +279,6 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
-    }
-
-    public function authorizeFailed(array $input)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verify($input);
-        }
-        catch (Exception\PaymentVerificationException $e)
-        {
-            ;
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not. ' .
-                'Are you sure you want to convert this payment to authorized?');
-        }
-
-        $verify = $e->getVerifyObject();
-
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
-        {
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here');
-        }
-
-        return true;
     }
 
     protected function processContentFromPaymentVerifyResponse($response, $request)
