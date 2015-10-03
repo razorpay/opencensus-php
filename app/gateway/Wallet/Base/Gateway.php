@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Netbanking\Base;
+namespace Gateway\Wallet\Base;
 
-use Gateway\Netbanking;
+use Gateway\Wallet;
 
 class Gateway extends \Gateway\Base\Gateway
 {
@@ -27,7 +27,7 @@ class Gateway extends \Gateway\Base\Gateway
 
     protected function getNewGatewayPaymentEntity()
     {
-        return new Netbanking\Base\Entity;
+        return new Wallet\Base\Entity;
     }
 
     protected function getMappedAttributes($attributes)

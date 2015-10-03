@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Base;
+namespace Gateway\Wallet\Base;
 
 use Gateway\Base;
 
