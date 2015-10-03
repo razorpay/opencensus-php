@@ -13,6 +13,12 @@ class ResponseCode
         7       => 'Failure after 70 min status query in case of Hybrid txn.',
         8       => 'Failure to Success',
         9       => 'OTP sent to your registered phone.',
+        10      => 'Refund Successful.',
+        11      => 'Refund because another transaction with same order id retrieved by the user.',
+        18      => 'Bank Failure',
+        19      => 'Bank Failure',
+
+// Payment Failure due to limits/ series started from 100
         100     => 'Paytm has classified the transaction as suspicious.',
         101     => 'The maximum limit on the number of users allowed to use this card as been reached. Please use another card for your transaction.',
         102     => 'The user attempted the transaction with more cards than specified limit in the last 1 year. The transaction has been classified as suspicious and is blocked.',
@@ -31,6 +37,7 @@ class ResponseCode
         115     => 'PerWeek Txn count is crossed on Customer Card Number.',
         116     => 'PerMonth Txn count is crossed on Customer Card Number.',
         117     => 'The user has breached the limit of maximum number of different cards allowed. The transaction can be completed with a previously used card.',
+        118     => 'The transaction amount specified by the user exceeds the per transaction limit for this merchant.',
         119     => 'Perday Txn amount is crossed.',
         120     => 'Perday Txn count is crossed for Cust Id.',
         121     => 'PerWeek Txn count is crossed for Cust Id.',
@@ -42,11 +49,12 @@ class ResponseCode
         127     => 'Perday Txn count is crossed for NetBanking Transactions.',
         128     => 'PerWeek Txn count is crossed for NetBanking Transactions.',
         129     => 'PerMonth Txn count is crossed for NetBanking Transactions.',
-        130     => 'USER is blocked at Paytm end.',
+        130     => 'User is blocked at Paytm end.',
         131     => 'Credit Card is blocked at Paytm end.',
         132     => 'IP Address is blocked at Paytm end.',
         133     => 'MOBILE_NO. is blocked at Paytm end.',
         134     => 'Subscriber is blocked with the given DL Number',
+        135     => 'Subscriber is suspected with the given DL Number,PAN Card,Email Id and MSISDN',
         140     => 'Invalid Input Parameter from Merchant.',
         141     => 'Cancel Request by Customer( After page load)',
         142     => 'Cancel Request by Customer at login screen',
@@ -55,6 +63,8 @@ class ResponseCode
         151     => 'Transaction with the same order Id already exists.',
         152     => 'Merchant is not associated with channel.',
         153     => 'Channel is not configured with the Payment Mode',
+
+// Wallet velocity limits
         155     => 'Per Txn amount is crossed for wallet.',
         156     => 'Per Day Txn amount is crossed for wallet.',
         157     => 'Per Week Txn amount is crossed for wallet.',
@@ -71,10 +81,14 @@ class ResponseCode
         190     => 'Perday Txn count is crossed for Cust Id',
         191     => 'PerWeek Txn count is crossed for Cust Id',
         192     => 'PerMonth Txn count is crossed for Cust Id',
+
+# Velocity Limit failure from SCW
         196     => 'Max Txn amount is crossed for Cust Id',
         197     => 'Perday Txn amount is crossed for Cust Id',
         198     => 'PerWeek Txn amount is crossed for Cust Id',
         199     => 'PerMonth Txn amount is crossed for Cust Id',
+
+# Payment Failure received from bank series started from 200
         200     => 'OTP request failed.',
         201     => 'Bank has blocked the card used to transact.',
         202     => 'User does not have enough credit limit. Bank has declined the transaction.',
@@ -108,9 +122,13 @@ class ResponseCode
         230     => '3D Secure Verification successful.',
         231     => 'Only Indian AMEX cards are allowed.',
         232     => 'Invalid account details.',
+
+# Waller failure rsponse code
         233     => 'Authorization Failed.',
         234     => 'Invalid Username/Password.',
         235     => 'Insufficent balance.',
+
+# Withdraw Money Errors
         236     => 'Wallet does not exist.',
         237     => 'Could not complete request. Please retry again.',
         238     => 'Invalid currency code.',
@@ -125,6 +143,8 @@ class ResponseCode
         247     => 'Wallet under maintenance.',
         252     => 'Failure received from ICICI CC bank.',
         253     => 'Failure received from SBI CC bank.',
+
+# Payment Failure due to validations series started from 300
         301     => 'Invalid Json Request.',
         302     => 'Invalid Request type.',
         303     => 'Merchant Id can not be blank.',
@@ -172,15 +192,49 @@ class ResponseCode
         346     => 'Invalid request ID',
         347     => 'Invalid rewards member',
         348     => 'Invalid request',
+        355     => 'Duplicate Order Id',
+        356     => 'Unable to insert order Id',
+        357     => 'Invalid order Id',
+
+# Reconcile Failure series started from 400
         400     => 'Transaction status not confirmed yet.',
         401     => 'Abandoned transaction.',
         402     => 'Abondoned Transaction.',
         403     => 'Incorrect response from bank.',
         410     => 'Closed before page load',
+
+# System Failure series started from 500
         501     => 'System Error.',
         502     => 'Json Encoding error.',
         503     => 'Fee not configured for this card category type.',
+
+# Refund
+        600     => 'Invalid refund request.',
+        601     => 'Refund request was raised for this transaction. But it is pending state.',
+        602     => 'Bank has declined refund request.',
+        603     => 'Refund/Cancel for the same transaction has already been initiated for the day.',
+        604     => 'We are experiencing delays from the Bank.',
+        605     => 'Refund initiated for a transaction, which is not settled.',
+        606     => 'Checksum generated by Paytm Payment Gateway does not match checksum expected by Bank.',
+        607     => 'Refund can not be initiated for a cancelled transaction.',
+        608     => 'Paytm Payment Gateway has provided a wrong Auth number for the refund request.',
+        609     => 'Refund initiated for a rejaction.',
+        610     => 'Transaction fully refunded already',
+        611     => 'Refund request is in process.',
+        612     => 'This is a valid authorized transaction, but could not be cancelled due to operational reasons.',
+        613     => 'Auto refund request is in process.',
+        614     => 'Refund request is in process.',
+        615     => 'SCW Refund to Wallet request failed.',
+        616     => 'SCW Returns error response.',
+        617     => 'Refund request is already in process for the same id.',
+        618     => 'Wallet of user not created.',
+        619     => 'Invalid refund amount.',
+        699     => 'Wallet Refund Failed. It will be retried for next 48 hr.',
+        700     => 'Auto Refund Failed. It will be retried for next 48 hr.',
         701     => 'Invalid Ref ID',
+        800     => 'Refund in retry status.',
+        810     => 'Closed',
+        841     => 'Cancel',
         8000    => 'Invalid Response Code',
         8001    => 'Beneficiary is non-reloadable card',
         8002    => 'Invalid MMID / IFSC',
@@ -248,9 +302,9 @@ class ResponseCode
         8065    => 'No Such Transaction Request',
         8066    => 'Invalid Response Code',
         8067    => 'Invalid Status Query Flag',
-        810     => 'Closed after page load',
-        841     => 'Cancel Request by Customer(Before page load)',
-        901     => 'Subscription ID not found.',
+
+ # Subscription
+       901     => 'Subscription ID not found.',
         902     => 'Saved Card ID not found.',
         903     => 'Checksum not found.',
         904     => 'SSO ID not found.',
@@ -273,6 +327,7 @@ class ResponseCode
         921     => 'SSO Token not found.',
         922     => 'User authentication failed.',
         923     => 'Invalid parameters',
+        1101    => 'Timeout from Wallet',
     );
 
     public static function getResponseMessage($code)
