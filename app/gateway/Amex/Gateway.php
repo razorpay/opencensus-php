@@ -18,6 +18,8 @@ class Gateway extends AxisMigs\Gateway
 {
     protected $gateway = 'amex';
 
+    protected $authorize = true;
+
     protected function addTestCardDetailsInTestMode(array & $content)
     {
         assert ($this->mode === Mode::TEST);

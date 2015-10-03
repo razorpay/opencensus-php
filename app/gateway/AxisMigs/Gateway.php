@@ -17,6 +17,8 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'axis_migs';
 
+    protected $authorize = false;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -50,8 +52,53 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        return;
+        if ($this->authorize === true)
+        {
+            return $this->captureAuthorizedPayment($input);
+        }
+    }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentRefundRequestContent($input, $payment);
+
+        $toSaveContent = $content;
+        $toSaveContent['refund_id'] = $input['refund']['id'];
+
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
+
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $content['received'] = 1;
+        $refund->fill($content);
+        $refund->saveOrFail();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
+
+        $this->verifyAmaTransactionResponse($content, $input);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function captureAuthorizedPayment(array $input)
+    {
         $payment = $this->getRepo()->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
@@ -81,38 +128,6 @@ class Gateway extends Base\Gateway
         $payment->fill($content)->saveOrFail();
 
         $this->verifyAmaTransactionResponse($content, $input);
-    }
-
-    public function refund(array $input)
-    {
-        parent::refund($input);
-
-        $payment = $this->getRepo()->findByPaymentIdAndCommand(
-                                $input['payment']['id'], Command::PAY);
-
-        $content = $this->getPaymentRefundRequestContent($input, $payment);
-
-        $toSaveContent = $content;
-        $toSaveContent['refund_id'] = $input['refund']['id'];
-
-        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
-
-        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
-
-        $content['received'] = 1;
-        $refund->fill($content);
-        $refund->saveOrFail();
-
-        $this->verifyAmaTransactionResponse($content, $input);
-    }
-
-    public function verify(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Base\Verify($this->gateway, $input);
-
-        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function getPaymentToVerify($input, $verify)
@@ -522,13 +537,6 @@ class Gateway extends Base\Gateway
     protected function verifyAmaTransactionResponse($content, $input)
     {
         $txnResponseCode = null;
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REFUND,
-            ['content' => $content,
-            'action' => $this->action,
-            'payment' => $input['payment'],
-            'refund' => $input['refund']]);
 
         if (isset($content['vpc_TxnResponseCode']))
         {
