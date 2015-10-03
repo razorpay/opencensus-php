@@ -16,7 +16,7 @@ class Entity extends AxisMigs\Entity
         $this->setAmexTrue();
     }
 
-    public function setGeniusTrue()
+    public function setAmexTrue()
     {
         $this->setAttribute('amex', 1);
     }
