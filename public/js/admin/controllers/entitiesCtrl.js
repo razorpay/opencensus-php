@@ -197,7 +197,7 @@ app.controller('EntitiesCtrl', [
         ]
       },
       refund: { merchant_id: ['Merchant Id'] },
-      terminal: { gateway: gatewayList },
+      terminal: { gateway: gatewayList, shared: ['all', 0, 1] },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
         merchant_id: ['Merchant Id'],
