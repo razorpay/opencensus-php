@@ -16,7 +16,7 @@ class Repository extends Base\Repository
     protected $entity = 'Payment';
 
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed,refunded',
+        Entity::STATUS          => 'sometimes',
         Entity::VERIFIED        => 'sometimes|boolean',
         Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
         Entity::BANK            => 'sometimes',
@@ -142,7 +142,18 @@ class Repository extends Base\Repository
         $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
     }
 
-    protected function addQueryIin($query, $params)
+    protected function addQueryParamStatus($query, $params)
+    {
+        $status = $params[Entity::STATUS];
+
+        $status = explode(',', $status);
+
+        Payment\Validator::validateStatusArray($status);
+
+        $query->whereIn(Entity::STATUS, $status);
+    }
+
+    protected function addQueryParamIin($query, $params)
     {
         $query->join(
             Payments\Entity::getTableName(),
@@ -158,7 +169,7 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable().'.*');
     }
 
-    protected function addQueryLast4($query, $params)
+    protected function addQueryParamLast4($query, $params)
     {
         $query->join(
             Payments\Entity::getTableName(),

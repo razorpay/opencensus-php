@@ -244,6 +244,23 @@ class Validator extends Base\Validator
         }
     }
 
+    public static function validateStatus($status)
+    {
+        if (Status::isStatusValid($status) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
+        }
+    }
+
+    public static function validateStatusArray(array $status)
+    {
+        foreach ($status as $value)
+        {
+            self::validateStatus($value);
+        }
+    }
+
     public static function bankAcsCallbackValidate($payment, $input)
     {
         if ($payment->isCreated() === false)
