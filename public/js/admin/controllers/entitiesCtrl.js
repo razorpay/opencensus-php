@@ -74,16 +74,19 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id']
       },
       card: {
-        iin: ['IIN'],
         merchant_id: ['Merchant Id'],
+        iin: ['IIN'],
+        last4: ['last4'],
         network: [
           'all',
-          'visa',
-          'mastercard',
-          'maestro',
-          'dinersclub',
-          'amex',
-          'rupay'
+          'Visa',
+          'MasterCard',
+          'Maestro',
+          'Diners Club',
+          'American Express',
+          'RuPay',
+          'Unknown',
+          'Discover',
         ]
       },
       hdfc: {
