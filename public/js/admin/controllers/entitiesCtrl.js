@@ -23,6 +23,7 @@ app.controller('EntitiesCtrl', [
       countEnd: 0,
       skip: 0
     };
+
     var gatewayList = [
       'all',
       'atom',
@@ -36,6 +37,17 @@ app.controller('EntitiesCtrl', [
       'netbanking_hdfc',
       'sharp'
     ];
+
+    var booleanList = ['all', 0, 1];
+
+    var statusList = [
+          'all',
+          'authorized',
+          'failed',
+          'captured',
+          'refunded'
+    ];
+
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
     // This list is alphabetically sorted, take care to maintain that
@@ -43,19 +55,11 @@ app.controller('EntitiesCtrl', [
       adjustment: { merchant_id: ['Merchant Id'] },
       axis_genius: {
         payment_id: ['Payment Id'],
-        received: [
-          'all',
-          0,
-          1
-        ]
+        received: booleanList
       },
       axis_migs: {
         payment_id: ['Payment Id'],
-        received: [
-          'all',
-          0,
-          1
-        ]
+        received: booleanList
       },
       billdesk: {
         AuthStatus: [
@@ -66,11 +70,7 @@ app.controller('EntitiesCtrl', [
           '0399',
           'NA'
         ],
-        received: [
-          'all',
-          0,
-          1
-        ],
+        received: booleanList,
         payment_id: ['Payment Id']
       },
       card: {
@@ -87,43 +87,20 @@ app.controller('EntitiesCtrl', [
           'RuPay',
           'Unknown',
           'Discover',
-        ]
+        ],
+        status: statusList
       },
       hdfc: {
         payment_id: ['Payment Id'],
-        received: [
-          'all',
-          0,
-          1
-        ]
+        received: booleanList
       },
       merchant: {
-        activated: [
-          'all',
-          0,
-          1
-        ],
-        hold_funds: [
-          'all',
-          0,
-          1
-        ],
-        live: [
-          'all',
-          0,
-          1
-        ],
-        international: [
-          'all',
-          0,
-          1
-        ],
+        activated: booleanList,
+        hold_funds: booleanList,
+        live: booleanList,
+        international: booleanList,
         category: ['MCC Code'],
-        receipt_email_enabled: [
-          'all',
-          0,
-          1
-        ],
+        receipt_email_enabled: booleanList,
         paytm: [
           'all',
           true,
@@ -142,11 +119,7 @@ app.controller('EntitiesCtrl', [
       },
       netbanking: {
         payment_id: ['Payment Id'],
-        received: [
-          'all',
-          0,
-          1
-        ],
+        received: booleanList,
         caps_payment_id: ['Caps Payment Id']
       },
       payment: {
@@ -166,13 +139,7 @@ app.controller('EntitiesCtrl', [
           'partial',
           'full'
         ],
-        status: [
-          'all',
-          'authorized',
-          'failed',
-          'captured',
-          'refunded'
-        ],
+        status: statusList,
         verified: [
           'all',
           0,
@@ -183,33 +150,23 @@ app.controller('EntitiesCtrl', [
           'paytm',
           'mobikwik'
         ]
+        iin: ['Card IIN'],
+        last4: ['Card Last 4'],
       },
       paytm: {
         payment_id: ['Payment Id'],
-        received: [
-          'all',
-          0,
-          1
-        ]
+        received: booleanList
       },
       mobikwik: {
         payment_id: ['Payment Id'],
-        received: [
-          'all',
-          0,
-          1
-        ]
+        received: booleanList
       },
       refund: { merchant_id: ['Merchant Id'] },
       terminal: { gateway: gatewayList, shared: ['all', 0, 1] },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
         merchant_id: ['Merchant Id'],
-        settled: [
-          'all',
-          0,
-          1
-        ],
+        settled: booleanList,
         settlement_id: ['Settlement Id'],
         type: [
           'all',
@@ -220,6 +177,7 @@ app.controller('EntitiesCtrl', [
         ]
       }
     };
+
     // This loop initializes the filters object
     for (var entity in $scope.availableFilters) {
       $scope.filters[entity] = {};
