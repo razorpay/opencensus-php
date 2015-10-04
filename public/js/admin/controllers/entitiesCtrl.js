@@ -154,6 +154,7 @@ app.controller('EntitiesCtrl', [
         email: ['Contact Email'],
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
+        card_id: ['Card Id'],
         method: [
           'all',
           'card',
