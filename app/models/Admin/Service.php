@@ -42,6 +42,7 @@ class Service extends Base\Service
             'dailysettlement'   => Models\Settlement\Daily::class,
             'atom'              => Gateway\Atom::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
+            'amex'              => Gateway\Amex::class,
             'kotak'             => Gateway\Kotak::class,
             'axis_migs'         => Gateway\AxisMigs::class,
             'axis_genius'       => Gateway\AxisGenius::class,

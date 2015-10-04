@@ -136,6 +136,17 @@ class MockGatewayController extends BaseController
         return $server->authorize($input);
     }
 
+    public function postAmexPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Amex\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
     public function getSharpPayment()
     {
         $input = Input::all();

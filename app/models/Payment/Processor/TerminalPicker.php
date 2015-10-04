@@ -275,7 +275,8 @@ class TerminalPicker
         $sharedCardTerminals = array(
             Shared::KOTAK_RAZORPAY_TERMINAL,
             Shared::HDFC_RAZORPAY_TERMINAL,
-            Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
+            Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
+            Shared::AMEX_RAZORPAY_TERMINAL);
 
         foreach ($sharedCardTerminals as $terminal)
         {

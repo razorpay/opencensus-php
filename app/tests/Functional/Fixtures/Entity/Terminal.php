@@ -244,4 +244,23 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedAmexTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::AMEX_RAZORPAY_TERMINAL;
+
+        $defaultValues = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'amex',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay amex',
+            'gateway_terminal_id'       => 'nodal account amex',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }
