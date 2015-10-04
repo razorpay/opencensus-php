@@ -35,21 +35,16 @@ class Repository extends Base\Repository
 
     protected function addQueryParamStatus($query, $params)
     {
-        $status = $params[Entity::STATUS];
+        $status = $params[Payment\Entity::STATUS];
         $status = explode(',', $status);
 
         Payment\Validator::validateStatusArray($status);
 
-        $query->join(
-            Card\Entity::getTableName(),
-            function ($join) use ($params)
-            {
-                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+        $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
 
-                $join->on($paymentCardId, '=', $cardId)
-                     ->whereIn(Payment\Entity::STATUS, $status);
-            });
+        $query->join(Payment\Entity::getTableName(), $paymentCardId, '=', $cardId)
+              ->whereIn(Payment\Entity::STATUS, $status);
 
         $query->select($query->getModel()->getTable().'.*');
     }
