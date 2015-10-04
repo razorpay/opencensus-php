@@ -11,6 +11,13 @@ class Repository extends Base\Repository
 
     protected $entity = 'Card';
 
+    protected $appFetchParamRules = array(
+        Entity::IIN             => 'sometimes|integer|digits:6',
+        Entity::LAST4           => 'sometimes|integer|digits:4',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::NETWORK         => 'sometimes|alpha_space',
+    );
+
     public function retrieveIinDetails($iin)
     {
         if (strlen($iin) > 6)
