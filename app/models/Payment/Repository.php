@@ -5,6 +5,7 @@ namespace Models\Payment;
 use EE\Exception;
 use Models\Base;
 use Models\Payment;
+use Models\Card;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorDescription;
 
@@ -24,6 +25,8 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
+        Card\Entity::IIN        => 'sometimes|integer|digits:6',
+        Card\Entity::LAST4      => 'sometimes|integer|digits:4',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -137,5 +140,37 @@ class Repository extends Base\Repository
         }
 
         $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
+    }
+
+    protected function addQueryIin($query, $params)
+    {
+        $query->join(
+            Payments\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+
+                $join->on($paymentCardId, '=', $cardId)
+                     ->where(Card\Entity::IIN, '=', $params[Card\Entity::IIN]);
+            });
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryLast4($query, $params)
+    {
+        $query->join(
+            Payments\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+
+                $join->on($paymentCardId, '=', $cardId)
+                     ->where(Card\Entity::LAST4, '=', $params[Card\Entity::IIN]);
+            });
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 }
