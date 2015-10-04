@@ -16,7 +16,7 @@ class Repository extends Base\Repository
     protected $entity = 'Payment';
 
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes',
+        Entity::STATUS          => 'sometimes|string',
         Entity::VERIFIED        => 'sometimes|boolean',
         Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
         Entity::BANK            => 'sometimes',
@@ -156,7 +156,7 @@ class Repository extends Base\Repository
     protected function addQueryParamIin($query, $params)
     {
         $query->join(
-            Payments\Entity::getTableName(),
+            Payment\Entity::getTableName(),
             function ($join) use ($params)
             {
                 $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
@@ -172,7 +172,7 @@ class Repository extends Base\Repository
     protected function addQueryParamLast4($query, $params)
     {
         $query->join(
-            Payments\Entity::getTableName(),
+            Payment\Entity::getTableName(),
             function ($join) use ($params)
             {
                 $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
