@@ -149,7 +149,7 @@ app.controller('EntitiesCtrl', [
           'all',
           'paytm',
           'mobikwik'
-        ]
+        ],
         iin: ['Card IIN'],
         last4: ['Card Last 4'],
       },
