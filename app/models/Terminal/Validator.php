@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::SHARED                      => 'sometimes|boolean',
