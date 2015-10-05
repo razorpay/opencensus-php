@@ -8,25 +8,25 @@
 <script>
 // WebSDK Configurations
 _wIapDefaults = {
-    wIapManualTrigger           : true,                     // optional, default value is false. By opting for manual trigger, you will require to trigger our api
-    wIapButtonId                : 'wIapBtn',                // mandatory if wIapManualTrigger is false, default value is 'wIapBtn'
-    wIapWibmoDomain             : 'www.wibmo.com',          // Provide wibmo environment domain. default value is for production that is 'www.wibmo.com'
-    wIapInlineResponse          : false,                    // Default false. Pass true, If you want IAP response to be passed to your web page through javascript call
-    wIapInlineResponseHandler   : 'handleWibmoIapResponse',   // Mandatory if wIapInlineResponse is true.
-    wIapReturnUrl               : "<?= $data['request']['callback_url'] ?>", // mandatory if wIapInlineResponse is false
+    wIapManualTrigger           : true,                                         // optional, default value is false. By opting for manual trigger, you will require to trigger our api
+    wIapButtonId                : 'wIapBtn',                                    // mandatory if wIapManualTrigger is false, default value is 'wIapBtn'
+    wIapWibmoDomain             : "<?= $data['request']['url'] ?>",             // Provide wibmo environment domain. default value is for production that is 'www.wibmo.com'
+    wIapInlineResponse          : false,                                        // Default false. Pass true, If you want IAP response to be passed to your web page through javascript call
+    wIapInlineResponseHandler   : 'handleWibmoIapResponse',                     // Mandatory if wIapInlineResponse is true.
+    wIapReturnUrl               : "<?= $data['request']['callback_url'] ?>",    // mandatory if wIapInlineResponse is false
 };
 
 _wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($data['request']['content'])."'" ?>);
 
 </script>
 
-<script src="<?= $data['request']['url']?>/v1/wIAP.js"></script>
+<script src="https://<?= $data['request']['url']?>/v1/wIAP.js"></script>
 
 </head>
 
 <body>
 <script type="text/javascript">
-wIAP.doIAPWPay(_wIapInitRequestJSON, _wIapDefaults.wIapReturnUrl);
+//wIAP.doIAPWPay(_wIapInitRequestJSON, _wIapDefaults.wIapReturnUrl);
 </script>
 
 </body>

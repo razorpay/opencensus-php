@@ -81,7 +81,8 @@ class Gateway extends Base\Gateway
     }
 
     public function callback(array $input)
-    {
+    {sd($input['gateway']);
+
         parent::callback($input);
 
         if ((isset($input['gateway']['resCode'])) and
@@ -247,7 +248,7 @@ class Gateway extends Base\Gateway
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        return $this->getHashOfArray($content);
+        return $this->getHashOfArray($orderedData);
     }
 
     protected function getHashForAuthorizeRequest($content)
@@ -267,7 +268,7 @@ class Gateway extends Base\Gateway
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        return $this->getHashOfArray($content);
+        return $this->getHashOfArray($orderedData);
     }
 
     protected function getHashForAuthorizeResponse($content)
@@ -290,7 +291,7 @@ class Gateway extends Base\Gateway
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        return $this->getHashOfArray($content);
+        return $this->getHashOfArray($orderedData);
     }
 
     protected function addMerchantDetailsInTest(array & $content)
@@ -317,6 +318,8 @@ class Gateway extends Base\Gateway
 
         $str = $str . '|'.$secret.'|';
 
-        return base64_encode(sha1($str));
+        $t =  base64_encode(hash('sha256', $str, true));
+
+        return $t;
     }
 }

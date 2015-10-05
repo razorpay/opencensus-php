@@ -10,9 +10,9 @@ return array(
      * logs will be written.
      */
     'debug_options' => array(
-        'screen' => true,
-        'browser' => true,
-        'chrome' => true),
+        'screen' => false,
+        'browser' => false,
+        'chrome' => false),
 
     /**
      * Displays line/file/class/method from which the log call originated
