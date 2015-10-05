@@ -26,7 +26,7 @@ _wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($data['request']['content'
 
 <body>
 <script type="text/javascript">
-//wIAP.doIAPWPay(_wIapInitRequestJSON, _wIapDefaults.wIapReturnUrl);
+wIAP.doIAPWPay(_wIapInitRequestJSON, _wIapDefaults.wIapReturnUrl);
 </script>
 
 </body>

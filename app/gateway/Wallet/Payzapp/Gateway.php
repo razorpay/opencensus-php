@@ -17,6 +17,20 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'wallet_payzapp';
 
+    protected $map = array(
+        'custEmail'         => 'email',
+        'custMobie'         => 'contact',
+        'merId'             => 'gateway_merchant_id',
+        'wibmoTxnId'        => 'gateway_payment_id',
+        'pgTxnId'           => 'gateway_payment_id_2',
+        'pgVoidTxnId'       => 'gateway_refund_id',
+        'resCode'           => 'response_code',
+        'resDesc'           => 'response_description',
+        'pgStatusCode'      => 'status_code',
+        'dataPickUpCode'    => 'reference1',
+        'actionCode'        => 'reference2',
+    );
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -81,8 +95,7 @@ class Gateway extends Base\Gateway
     }
 
     public function callback(array $input)
-    {sd($input['gateway']);
-
+    {
         parent::callback($input);
 
         if ((isset($input['gateway']['resCode'])) and
@@ -93,13 +106,21 @@ class Gateway extends Base\Gateway
                 [$input['gateway']]);
         }
 
-        $this->verifySecureHash($input['gateway']);
+        $this->($input['gateway']);
+
+        assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['gateway']['merTxnId'], Action::AUTHORIZE);
 
-        $input['gateway']['received'] = 1;
-        $payment->fill($input['gateway']);
+        $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
+
+        $this->verifySecureHash($input['gateway'], $mappedPayment);
+
+        $attrs = $this->getMappedAttributes($input['gateway']);
+        $attrs['received'] = true;
+
+        $payment->fill($attrs);
         $payment->saveOrFail();
 
         $this->trace->info(
@@ -127,9 +148,11 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function verifyPaymentCallbackResponse($input)
+    protected function verifyPaymentCallbackResponse($input, $payment)
     {
-        if ($input['resCode'] === '00')
+        $resCode = (int) $input['resCode'];
+
+        if ($resCode === 0)
         {
             return;
         }
@@ -215,15 +238,13 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function verifySecureHash($input)
+    protected function verifySecureHash($input, $payment)
     {
-        $hash = $input['data']['msgHash'];
+        $hash = $input['msgHash'];
 
-        $content = $input['data'];
-        $content['resCode'] = $input['resCode'];
-        $content['resDesc'] = $input['resDesc'];
+        $content = array_merge($payment, $input);
 
-        $generatedHash = $this->generateHash($content);
+        $generatedHash = $this->getHashForAuthorizeResponse($content);
 
         if ($generatedHash !== $hash)
         {

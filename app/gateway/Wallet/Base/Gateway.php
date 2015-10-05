@@ -48,6 +48,24 @@ class Gateway extends \Gateway\Base\Gateway
         return $attr;
     }
 
+    protected function getReverseMappedAttributes($attributes)
+    {
+        $attr = [];
+
+        $map = array_flip($this->map);
+
+        foreach ($attributes as $key => $value)
+        {
+            if (isset($map[$key]))
+            {
+                $newKey = $map[$key];
+                $attr[$newKey] = $value;
+            }
+        }
+
+        return $attr;
+    }
+
     protected function getRepo()
     {
         return new Repository();
