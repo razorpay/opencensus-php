@@ -9,4 +9,5 @@ class Url
 
     const PAY                   = '/vpcpay';
     const AMA                   = '/vpcdps';
+    const VERIFY                = '/v1/wPay/pickup';
 }

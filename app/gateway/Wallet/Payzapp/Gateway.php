@@ -7,6 +7,8 @@ use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base\Action;
+use Gateway\Base\AuthorizeFailed;
+use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
 use Gateway\Wallet\Base;
 use Trace\Trace;
@@ -15,11 +17,13 @@ use Gateway\Mobikwik\Type;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'wallet_payzapp';
 
     protected $map = array(
         'custEmail'         => 'email',
-        'custMobie'         => 'contact',
+        'custMobile'        => 'contact',
         'merId'             => 'gateway_merchant_id',
         'wibmoTxnId'        => 'gateway_payment_id',
         'pgTxnId'           => 'gateway_payment_id_2',
@@ -29,6 +33,7 @@ class Gateway extends Base\Gateway
         'pgStatusCode'      => 'status_code',
         'dataPickUpCode'    => 'reference1',
         'actionCode'        => 'reference2',
+        'txnAmount'         => 'amount',
     );
 
     public function authorize(array $input)
@@ -72,7 +77,7 @@ class Gateway extends Base\Gateway
 
         $contentToSave['supportedPaymentType'] = '*';
 
-//        $payment = $this->createGatewayPaymentEntity($contentToSave);
+        $payment = $this->createGatewayPaymentEntity($contentToSave);
 
         $content['msgHash'] = $this->getHashForAuthorizeRequest($contentToSave);
 
@@ -86,9 +91,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
-                'gateway' => 'wallet_payzapp',
-                'payment_id' => $input['payment']['id'],
+                'request'       => $request,
+                'gateway'       => 'wallet_payzapp',
+                'payment_id'    => $input['payment']['id'],
             ]);
 
         return $request;
@@ -106,16 +111,14 @@ class Gateway extends Base\Gateway
                 [$input['gateway']]);
         }
 
-        $this->($input['gateway']);
-
         assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['gateway']['merTxnId'], Action::AUTHORIZE);
 
         $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
 
-        $this->verifySecureHash($input['gateway'], $mappedPayment);
+        $this->verifySecureHash($input, $mappedPayment);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
@@ -143,12 +146,17 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $verify = new Base\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function verifyPaymentCallbackResponse($input, $payment)
+    public function capture(array $input)
+    {
+        parent::capture($input);
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
     {
         $resCode = (int) $input['resCode'];
 
@@ -190,22 +198,17 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
-    }
-
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
         $payment = $verify->payment;
 
         // add content here
+
+        $content = array(
+            'wibmoTxnId'        => $payment['wibmoTxnId'],
+            'dataPickupCode'    => $payment['dataPickUpCode'],
+            'merTxnId'          => $input['payment']['id']);
 
         $this->addMerchantDetailsInTest($content);
 
@@ -225,14 +228,28 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    protected function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                    $input['payment']['id'], Action::AUTHORIZE);
+
+        $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
+
+        $verify->payment = $mappedPayment;
+
+        return $payment;
+    }
+
     protected function postRequest($content)
     {
         $request = array(
-            'url' => $this->getUrl(),
+            'url' => 'https://' . $this->getUrl(),
             'method' => 'post',
-            'content' => json_encode($request['content']));
+            'content' => json_encode($content),
+            'headers' => ['Content-Type' => 'application/json']);
 
         $response = $this->runRequestResponseFlow($request);
+
         $content = json_decode($response->body, true);
 
         return $content;
@@ -240,9 +257,13 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input, $payment)
     {
-        $hash = $input['msgHash'];
+        $hash = $input['gateway']['msgHash'];
 
-        $content = array_merge($payment, $input);
+        $content = array_merge($payment, $input['gateway']);
+
+        $content['merAppId'] = $this->getMerchantAppId($input);
+        $content['merAppData'] = '';
+        $content['txnCurrency'] = '356';
 
         $generatedHash = $this->getHashForAuthorizeResponse($content);
 
@@ -260,16 +281,18 @@ class Gateway extends Base\Gateway
             'merId',
             'merAppId',
             'merTxnId',
-            'merAppData',
             'wibmoTxnId',
-            'dataPickUpCode',
+            'dataPickupCode',
         );
 
         $content['wpay'] = 'wpay';
 
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+        $content = array_merge($content, $content['merchantInfo']);
 
-        return $this->getHashOfArray($orderedData);
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+        $hash = $this->getHashOfArray($orderedData);
+
+        return $hash;
     }
 
     protected function getHashForAuthorizeRequest($content)
@@ -339,8 +362,47 @@ class Gateway extends Base\Gateway
 
         $str = $str . '|'.$secret.'|';
 
-        $t =  base64_encode(hash('sha256', $str, true));
+        $hash =  base64_encode(hash('sha256', $str, true));
 
-        return $t;
+        return $hash;
+    }
+
+    protected function getMerchantAppId($input)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_app_id'];
+        }
+
+        return $input['terminal']['gateway_terminal_id'];
+    }
+
+    protected function runRequestResponseFlow(array $request)
+    {
+        $request['options']['timeout'] = 30;
+
+        try
+        {
+            // send the request and get response
+            return $this->sendGatewayRequest($request);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $this->exception = $e;
+
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
     }
 }

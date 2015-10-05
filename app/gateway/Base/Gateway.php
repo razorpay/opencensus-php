@@ -102,9 +102,9 @@ class Gateway
             $request['options']  = array();
         }
 
-        if (isset($request['header']) === false)
+        if (isset($request['headers']) === false)
         {
-            $request['header'] = array();
+            $request['headers'] = array();
         }
 
         $method = 'post';
@@ -121,7 +121,7 @@ class Gateway
 
         $response = Requests::$method(
                     $request['url'],
-                    $request['header'],
+                    $request['headers'],
                     $request['content'],
                     $request['options']);
 

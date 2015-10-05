@@ -16,7 +16,7 @@ class Gateway extends \Gateway\Base\Gateway
 
         $payment->setAction($this->action);
 
-        $payment->setBank($this->input['payment']['wallet']);
+        $payment->setWallet($this->input['payment']['wallet']);
 
         $payment->fill($attr);
 
