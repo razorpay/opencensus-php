@@ -29,7 +29,7 @@ class CreateAxisGateway extends Migration
             $table->boolean('amex')->default(0);
 
             $table->integer('vpc_Amount');
-            $table->string('vpc_AcqResponseCode', 3)->nullable();
+            $table->string('vpc_AcqResponseCode', 4)->nullable();
             $table->integer('vpc_AuthorisedAmount')->nullable();
             $table->integer('vpc_CapturedAmount')->nullable();
             $table->char('vpc_Command', 7);

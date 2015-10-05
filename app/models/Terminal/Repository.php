@@ -4,6 +4,7 @@ namespace Models\Terminal;
 
 use Models\Base;
 use Models\Terminal;
+use Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -73,7 +74,9 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        if ($entity->getUsedCount() === 0)
+        $count = $this->getTotalUsedCount($entity);
+
+        if ($count === 0)
         {
             $entity->forceDelete();
 
@@ -99,5 +102,12 @@ class Repository extends Base\Repository
             'restore',
             'terminal',
             $terminal->getAttributes());
+    }
+
+    public function getTotalUsedCount($terminal)
+    {
+        return (new Payment\Entity)->newQuery()
+                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminal->getId())
+                    ->count();
     }
 }
