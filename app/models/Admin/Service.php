@@ -24,6 +24,11 @@ class Service extends Base\Service
         if (empty($error))
         {
             $verify = \Auth::admin()->attempt($input);
+
+            if ($verify)
+            {
+                Session::put('timeout', time());
+            }
         }
 
         $error = ($verify) ? [] : ['Username or password is invalid.'];
@@ -40,10 +45,10 @@ class Service extends Base\Service
     {
         $time = time();
 
-        $last_timer = Session::get('timeout', false);
+        $last_timer = Session::get('timeout');
 
         // If we had a timer in session and it has passed
-        if ($last_timer and $time - $last_timer >  self::TIMEOUT)
+        if ($time - $last_timer >  self::TIMEOUT)
         {
             return false;
         }
