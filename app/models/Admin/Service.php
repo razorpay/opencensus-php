@@ -8,6 +8,7 @@ use Models\Base;
 use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
+use Session;
 
 class Service extends Base\Service
 {
@@ -25,6 +26,17 @@ class Service extends Base\Service
         $error = ($verify) ? [] : ['Username or password is invalid.'];
 
         return [$error, null];
+    }
+
+    /**
+     * Updates the keepAlive timer stored in Session
+     * @return integer Current timestamp
+     */
+    public function updateKeepAlive()
+    {
+        $time = time();
+        Session::put('timeout', $time);
+        return ['timer' => $time];
     }
 
     /**

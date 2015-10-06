@@ -46,7 +46,8 @@ class AdminController extends BaseController
 
     public function getKeepAlive()
     {
-        return AppResponse::jsonResponse([]);
+        $response = (new Admin\Service)->updateKeepAlive();
+        return AppResponse::jsonResponse([], $response);
     }
 
     public function postPassword()
