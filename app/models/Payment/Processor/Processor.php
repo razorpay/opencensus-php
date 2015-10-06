@@ -247,12 +247,14 @@ class Processor
     {
         $terminal = $this->payment->terminal;
 
-        $gateway = $this->payment->getGateway();
-
         if ($terminal === null)
         {
-            return;
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                ['payment_id' => $payment->getId()]);
         }
+
+        $gateway = $this->payment->getGateway();
 
         $input['terminal'] = $terminal;
         $input['merchant'] = $terminal->merchant;
