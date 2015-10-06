@@ -51,7 +51,7 @@ class Service extends Base\Service
         else
         {
             Session::put('timeout', $time);
-            return ['timer' => $time];
+            return ['alive' => true];
         }
     }
 

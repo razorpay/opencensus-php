@@ -161,8 +161,13 @@ var app = angular.module('app', [
   '$keepaliveProvider',
   '$idleProvider',
   function ($keepaliveProvider, $idleProvider) {
-    $idleProvider.idleDuration(30 * 60);
+    // This is not used in frontend
+    $idleProvider.idleDuration(15 * 60);
+    // Show warning after 5 minutes, but this doesn't log you out
     $idleProvider.warningDuration(5 * 60);
+    // Poke server every 15 seconds
+    // Backend logs you out if you poke after 15 minutes of inactivity
+    // In which case it will show you the login popup
     $keepaliveProvider.interval(15);
   }
 ]);

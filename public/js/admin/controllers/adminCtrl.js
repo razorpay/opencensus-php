@@ -28,11 +28,7 @@ app.controller('AdminCtrl', [
       });
     });
     $scope.alerts = alertsFactory.getHandler();
-    $scope.logout = function () {
-      logoutRequest().finally(function () {
-        $state.go('access.signin');
-      });
-    };
+
     $scope.changePassword = function () {
       var modalInstance = $modal.open({
         templateUrl: 'passwordModalContent.html',
@@ -52,13 +48,6 @@ app.controller('AdminCtrl', [
     });
     $scope.$on('$idleEnd', function () {
       closeModals();
-    });
-    $scope.$on('$idleTimeout', function () {
-      logoutRequest().finally(function () {
-        $state.go('access.lockme', { 'username': $scope.admin.username }).finally(function () {
-          closeModals();
-        });
-      });
     });
     $scope.$on('$keepalive', function () {
       $http({
@@ -90,16 +79,7 @@ app.controller('AdminCtrl', [
         });
       });
     });
-    function logoutRequest() {
-      var request = $http({
-        method: 'get',
-        url: '/admin/user/logout'
-      });
-      request.finally(function () {
-        admin.identity(true);
-      });
-      return request;
-    }
+
     function passwordChangeRequest(data) {
       var request = $http({
         method: 'post',
