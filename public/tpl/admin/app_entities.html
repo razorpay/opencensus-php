@@ -18,7 +18,7 @@
       <div class="text-center m-t">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
-      <div class="col-sm-3 m-b-xs">
+      <div class="col-sm-2 m-b-xs">
         Entity Type:
         <select class="form-control input-sm w-sm inline m-r" name="entity_type" ng-model="entity_type">
           <option value="adjustment">Adjustment</option>
@@ -41,7 +41,7 @@
           <option value="refund">Refunds</option>
           <option value="settlement">Settlements</option>
           <option value="terminal">Terminal</option>
-          <option value="transaction">Tran  sactions</option>
+          <option value="transaction">Transactions</option>
         </select>
       </div>
       <div class="col-sm-2">
@@ -55,8 +55,19 @@
         Count:
         <input type="number" min="10" step="10" class="form-control input-sm w-sm inline m-r" ng-model="count" value="20" placeholder="20" name="count">
       </div>
-      <div class="col-sm-2"></div>
-      <div class="col-sm-3">
+      <div class="col-sm-2">
+        From:
+        <!-- The min is 1st Jan 2015 -->
+        <input type="number" min="{{minTimestamp}}" step="3600" class="form-control input-sm w-sm inline m-r" ng-model="from" value="{{from}}" placeholder="From Timestamp" name="frpm" max="{{maxTimestamp}}"><br>
+        <span>{{timestamps('from')}}</span>
+      </div>
+      <div class="col-sm-2">
+        To:
+        <!-- The min is 1st Jan 2015 -->
+        <input type="number" min="{{minTimestamp}}" step="3600" class="form-control input-sm w-sm inline m-r" ng-model="to" value="{{to}}" placeholder="To Timestamp" name="to" max="{{maxTimestamp}}"><br>
+        <span>{{timestamps('to')}}</span>
+      </div>
+      <div class="col-sm-2">
         <div class="input-group">
           <input type="text" class="input-sm form-control" placeholder="Search Entity Id" ng-model="entity.id">
           <span class="input-group-btn">

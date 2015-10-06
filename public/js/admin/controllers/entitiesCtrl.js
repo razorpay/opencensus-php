@@ -12,6 +12,8 @@ app.controller('EntitiesCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.count = 10;
+    $scope.from = moment().subtract(1, 'weeks').unix();
+    $scope.to   = moment().unix();
     $scope.filters = {};
     $scope.headings = [];
     $scope.refreshTable = true;
@@ -23,6 +25,31 @@ app.controller('EntitiesCtrl', [
       countEnd: 0,
       skip: 0
     };
+
+    $scope.minTimestamp = moment('2015-01-01').unix();
+    $scope.maxTimestamp = moment().unix();
+
+    $scope.timestamps = function (type) {
+
+      var ts = 0;
+      switch (type)
+      {
+        case 'from':
+          ts = $scope.from;
+          break;
+        case 'to':
+          ts = $scope.to;
+          break;
+        default:
+          return 'Timestamp Error';
+      }
+
+      if (typeof ts === 'undefined')
+      {
+        return '';
+      }
+      return moment.unix(ts).format('L LTS');
+    }
 
     var gatewayList = [
       'all',
@@ -197,7 +224,7 @@ app.controller('EntitiesCtrl', [
         }
       }
     }
-    $scope.$watch('mode + entity_type + count', function (x) {
+    $scope.$watch('mode + entity_type + count + from + to', function (x) {
       $state.go('app.entities', {
         mode: $scope.mode,
         type: $scope.entity_type
@@ -303,8 +330,20 @@ app.controller('EntitiesCtrl', [
         }
       }
     };
-    function generateQueryParams(count, skip, entity, filters) {
-      var query = 'count=' + count + '&skip=' + skip;
+    function generateQueryParams(count, skip, entity, filters, from, to) {
+      var query = {
+        count: count,
+        skip: skip
+      };
+
+      if (from !== 0) {
+        query.from = from;
+      }
+
+      if (to !== 0) {
+        query.to = to;
+      }
+
       // We send the methods param in a JSON encoded format
       if (entity === 'merchant') {
         var methods = {}, validMethods = [
@@ -324,7 +363,7 @@ app.controller('EntitiesCtrl', [
       for (var filterName in filters[entity]) {
         var value = filters[entity][filterName];
         if (value !== 'all' && value !== '' && value !== 'true' && value !== 'false') {
-          query += '&' + filterName + '=' + encodeURIComponent(value);
+          query[filterName] = value;
         }
       }
       return query;
@@ -334,8 +373,11 @@ app.controller('EntitiesCtrl', [
         console.log('Error: No Entity Type Specified');
         return;
       }
-      var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters);
-      var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type + '?' + query);
+      var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters, $scope.from, $scope.to);
+      var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type, {
+        params: query
+      });
+
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
