@@ -49,6 +49,26 @@ app.controller('AdminCtrl', [
     $scope.$on('$idleEnd', function () {
       closeModals();
     });
+
+    var logoutRequest = function() {
+      var request = $http({
+        method: 'get',
+        url: '/admin/user/logout'
+      });;
+
+      request.finally(function () {
+        admin.identity(true);
+      });
+
+      return request;
+    }
+
+    $scope.logout = function () {
+      logoutRequest().finally(function() {
+        $state.go('access.signin');
+      });
+    };
+
     $scope.$on('$keepalive', function () {
       $http({
         method: 'get',
