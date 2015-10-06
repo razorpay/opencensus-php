@@ -12,6 +12,9 @@ use Session;
 
 class Service extends Base\Service
 {
+    // 15 minutes
+    const TIMEOUT = 900;
+
     public function login(array $input)
     {
         $error = (new Admin\Validator)->validateInput('login', $input)->messages();
@@ -30,13 +33,26 @@ class Service extends Base\Service
 
     /**
      * Updates the keepAlive timer stored in Session
-     * @return integer Current timestamp
+     * @return integer|boolean Current timestamp or false if user needs to be
+     * logged out
      */
     public function updateKeepAlive()
     {
         $time = time();
-        Session::put('timeout', $time);
-        return ['timer' => $time];
+
+        $last_timer = Session::get('timeout', false);
+
+        // If we had a timer in session and it has passed
+        if ($last_timer and $time - $last_timer >  self::TIMEOUT)
+        {
+            return false;
+        }
+
+        else
+        {
+            Session::put('timeout', $time);
+            return ['timer' => $time];
+        }
     }
 
     /**

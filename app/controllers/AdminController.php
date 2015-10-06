@@ -46,8 +46,16 @@ class AdminController extends BaseController
 
     public function getKeepAlive()
     {
+        $error = [];
         $response = (new Admin\Service)->updateKeepAlive();
-        return AppResponse::jsonResponse([], $response);
+
+        if ($response === false)
+        {
+            Auth::admin()->logout();
+            $error = ['You have been logged out'];
+        }
+
+        return AppResponse::jsonResponse($error, $response);
     }
 
     public function postPassword()
