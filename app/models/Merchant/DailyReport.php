@@ -8,6 +8,7 @@ use EE\Exception;
 use Mail;
 use Models\Payment;
 use Models\Settlement;
+use Trace\TraceCode;
 
 class DailyReport
 {
@@ -29,6 +30,8 @@ class DailyReport
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->data = $this->fetchDailyDetails();
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
@@ -58,6 +61,10 @@ class DailyReport
         $view = ['html'=>'emails.merchant.daily_report'];
 
         $data = $this->data;
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
+            $data);
 
         Mail::send($view, $data, function($message) use ($config, $data)
         {

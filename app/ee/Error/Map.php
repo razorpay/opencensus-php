@@ -38,7 +38,7 @@ class Map
                 'Server error getting repeated for payment callback',
                 ErrorCode::SERVER_ERROR);
         }
-        else if ($publicCode === GATEWAY_ERROR)
+        else if ($publicCode === PublicErrorCode::GATEWAY_ERROR)
         {
             throw new Exception\GatewayErrorException($internalCode);
         }

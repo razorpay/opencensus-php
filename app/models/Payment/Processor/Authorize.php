@@ -72,6 +72,10 @@ trait Authorize
             'payment' => $payment->toArray(),
         );
 
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            ['payment_id' => $payment->getId()]);
+
         $this->repo->transaction(function() use ($data)
         {
             $this->repo->lockForUpdate($this->payment->getKey());

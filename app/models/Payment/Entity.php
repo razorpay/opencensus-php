@@ -625,7 +625,7 @@ class Entity extends Base\PublicEntity
 
     public function terminal()
     {
-        return $this->belongsTo('Models\Terminal\Entity');
+        return $this->belongsTo('Models\Terminal\Entity')->withTrashed();
     }
 
     public function refunds()
