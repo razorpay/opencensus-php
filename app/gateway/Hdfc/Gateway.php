@@ -303,6 +303,12 @@ class Gateway extends Base\Gateway
         \Log::info($input['gateway']);
         parent::callback($input);
 
+        if ($input['card']['network'] === 'Rupay')
+        {
+            echo "Gateway returned followin fields in response: " . var_dump($input['gateway']);
+            die();
+        }
+
         validate($this->bankAcsResponseRules, $input['gateway'], false);
 
         $this->id = $input['payment']['id'];
