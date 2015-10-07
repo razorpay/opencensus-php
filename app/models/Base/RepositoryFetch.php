@@ -153,19 +153,26 @@ trait RepositoryFetch
     {
         $repo = $this->repo;
 
-        $query = $repo::where(Common::MERCHANT_ID, $merchantId);
+        $mechantIdWithTable = $repo::getAttributeWithTableName(Common::MERCHANT_ID);
+        $query = $repo::where($mechantIdWithTable, '=', $merchantId);
 
         return $query->findOrFailPublic($id);
     }
 
     protected function addQueryParamFrom($query, $params)
     {
-        $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
+        $repo = $this->repo;
+
+        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $query = $query->where($createdAt, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
+        $repo = $this->repo;
+
+        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $query = $query->where($createdAt, '<=', $params['to']);
     }
 
     protected function addQueryParamCount($query, $params)
