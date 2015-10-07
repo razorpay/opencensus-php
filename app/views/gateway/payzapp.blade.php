@@ -10,17 +10,17 @@
 _wIapDefaults = {
     wIapManualTrigger           : true,                                         // optional, default value is false. By opting for manual trigger, you will require to trigger our api
     wIapButtonId                : 'wIapBtn',                                    // mandatory if wIapManualTrigger is false, default value is 'wIapBtn'
-    wIapWibmoDomain             : "<?= $data['request']['url'] ?>",             // Provide wibmo environment domain. default value is for production that is 'www.wibmo.com'
+    wIapWibmoDomain             : "<?= $request['url'] ?>",             // Provide wibmo environment domain. default value is for production that is 'www.wibmo.com'
     wIapInlineResponse          : false,                                        // Default false. Pass true, If you want IAP response to be passed to your web page through javascript call
     wIapInlineResponseHandler   : 'handleWibmoIapResponse',                     // Mandatory if wIapInlineResponse is true.
-    wIapReturnUrl               : "<?= $data['request']['callback_url'] ?>",    // mandatory if wIapInlineResponse is false
+    wIapReturnUrl               : "<?= $request['callback_url'] ?>",    // mandatory if wIapInlineResponse is false
 };
 
-_wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($data['request']['content'])."'" ?>);
+_wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($request['content'])."'" ?>);
 
 </script>
 
-<script src="https://<?= $data['request']['url']?>/v1/wIAP.js"></script>
+<script src="https://<?= $request['url']?>/v1/wIAP.js"></script>
 
 </head>
 

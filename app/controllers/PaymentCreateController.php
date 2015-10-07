@@ -83,8 +83,7 @@ class PaymentCreateController extends BaseController
                 }
                 else if ($data['request']['method'] === 'direct')
                 {
-                    return View::make('gateway.payzapp')->with('data', $data);
-                    return ApiResponse::json($data);
+                    return $data['request']['content'];
                 }
             }
             else if ($data['type'] === 'return')
@@ -105,7 +104,7 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a new payment on a JSONP Request
      */
-    public function getJSONP()
+    public function getCreatePaymentJsonp()
     {
         $input = Input::all();
 

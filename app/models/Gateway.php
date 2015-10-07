@@ -18,7 +18,7 @@ class Gateway
     }
 
     protected static function getGatewayInstance($gateway)
-    {$gateway='wallet_payzapp';
+    {
         $app = \App::getFacadeRoot();
         $gatewayManager = new GatewayManager($app);
         return $gatewayManager->gateway($gateway);

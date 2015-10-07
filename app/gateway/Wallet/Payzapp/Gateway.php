@@ -13,7 +13,7 @@ use Gateway\Base\VerifyResult;
 use Gateway\Wallet\Base;
 use Trace\Trace;
 use Trace\TraceCode;
-use Gateway\Mobikwik\Type;
+use View;
 
 class Gateway extends Base\Gateway
 {
@@ -95,6 +95,10 @@ class Gateway extends Base\Gateway
                 'gateway'       => 'wallet_payzapp',
                 'payment_id'    => $input['payment']['id'],
             ]);
+
+        $request['content'] = View::make('gateway.payzapp')
+                                  ->with('request', $request)
+                                  ->render();
 
         return $request;
     }
