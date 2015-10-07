@@ -380,6 +380,35 @@ class TerminalPicker
                 return $this->terminal;
             }
         }
+
+        if ($wallet === Wallet::PAYZAPP)
+        {
+            $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
+
+            $category = $payment->merchant->getCategory();
+
+            foreach ($terminals as $terminal)
+            {
+                $commonTerminal = null;
+
+                if ($terminal->getCategory() === $category)
+                {
+                    $this->terminal = $terminal;
+
+                    return $terminal;
+                }
+
+                if ($terminal->getCategory() === 1000)
+                {
+                    $commonTerminal = $terminal;
+                }
+            }
+
+            if ($commonTerminal !== null)
+            {
+                return $commonTerminal;
+            }
+        }
     }
 
     protected function getGatewayTerminals($terminals)

@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
+    const PAYZAPP           = 'payzapp';
 
     protected $primaryKey = self::MERCHANT_ID;
 
