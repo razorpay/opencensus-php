@@ -111,11 +111,11 @@
             <td ng-repeat="key in notSorted(row) | limitTo: 9" ng-init="value = row[key]"
             >
               <!-- This is the entity.id -->
-              <a ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
+              <a target="_blank" ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
                 <code>{{value}}</code>
               </a>
               <!-- References to other entities -->
-              <a ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
+              <a target="_blank" ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
                 <code>{{value}}</code>
               </a>
               <!-- Just entity fields -->
