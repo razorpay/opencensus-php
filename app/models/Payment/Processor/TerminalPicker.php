@@ -333,6 +333,15 @@ class TerminalPicker
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
         }
+
+        // Disable rupay in live
+        if (($this->mode === Mode::LIVE) and
+            ($network === Card\Network::RUPAY))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+        }
+
     }
 
     protected function getSharedTerminalForWallet($payment)
