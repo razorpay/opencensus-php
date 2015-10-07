@@ -30,6 +30,10 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Terminal::CATEGORY)
+                  ->unsigned()
+                  ->nullable();
+
             $table->string(Terminal::GATEWAY);
 
             $table->string(Terminal::GATEWAY_MERCHANT_ID)->nullable();
@@ -63,6 +67,10 @@ class CreateTerminals extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(Terminal::CATEGORY);
+            $table->index(Terminal::GATEWAY);
+            $table->index(Terminal::DELETED_AT);
         });
     }
 
