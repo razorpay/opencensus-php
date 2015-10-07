@@ -111,6 +111,20 @@ class Service extends Base\Service
         return $error;
     }
 
+    public function changeTransactionEmail($id, $email)
+    {
+        $merchantDetails = Entity::findorfail($id);
+
+        $error = $merchantDetails->changeTransactionEmail($email);
+
+        if (empty($error))
+        {
+            $merchantDetails->saveOrFail();
+        }
+
+        return $error;
+    }
+
     public function saveUploadedFile($input)
     {
         $merchantDetails = $this->merchantDetails;

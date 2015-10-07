@@ -330,4 +330,13 @@ class Entity extends Base\Entity
     {
         return self::$URL_KEYS;
     }
+
+    public function changeTransactionEmail($email)
+    {
+        $input = [
+            'transaction_report_email'  => $email
+        ];
+
+        $error = $this->edit($input, 'editEmail');
+    }
 }

@@ -14,6 +14,10 @@ class Validator extends Base\Validator
         'contact_landline'          => 'numeric|digits_between:8,11'
     );
 
+    protected static $editEmailRules = [
+        'transaction_report_email'  => 'required|email|max:255'
+    ];
+
     protected static $step2Rules = array(
         'business_type'                 => 'required|numeric|digits_between:1,10',
         'business_name'                 => 'required|max:255',
