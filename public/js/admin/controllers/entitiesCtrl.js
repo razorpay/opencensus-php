@@ -12,8 +12,8 @@ app.controller('EntitiesCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.count = 10;
-    $scope.from = moment().subtract(1, 'weeks').unix();
-    $scope.to   = moment().unix();
+    $scope.from = 0;
+    $scope.to   = 0;
     $scope.filters = {};
     $scope.headings = [];
     $scope.refreshTable = true;
