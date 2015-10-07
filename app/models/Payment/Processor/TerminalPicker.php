@@ -264,7 +264,7 @@ class TerminalPicker
 
     protected function getSharedTerminalForCard($payment)
     {
-        $terminal = $this->getSharedCategoryTerminalForCard();
+        $terminal = $this->getSharedCategoryTerminalForCard($payment);
 
         if ($terminal !== null)
         {
@@ -279,7 +279,7 @@ class TerminalPicker
         $international = $payment->merchant->isInternational();
 
         $network = $payment->card->getNetworkCode();
-        $category = $Payment->merchant->getCategory();
+        $category = $payment->merchant->getCategory();
 
         $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
                                     Gateway::HDFC, $category);

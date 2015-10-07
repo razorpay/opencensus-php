@@ -61,6 +61,13 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean|in:1',
     );
 
+    protected static $walletPayzappTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_payzapp',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAYTERMINAL_ID          => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
