@@ -2,6 +2,8 @@
 
 namespace Gateway\Base;
 
+use Trace\TraceCode;
+
 trait AuthorizeFailed
 {
     public function authorizeFailed(array $input)
