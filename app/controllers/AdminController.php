@@ -51,8 +51,8 @@ class AdminController extends BaseController
 
         if ($response === false)
         {
-            Auth::admin()->logout();
-            $error = ['You have been logged out'];
+            // Auth::admin()->logout();
+            // $error = ['You have been logged out'];
         }
 
         return AppResponse::jsonResponse($error, $response);
