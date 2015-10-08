@@ -303,9 +303,10 @@ class Gateway extends Base\Gateway
         \Log::info($input['gateway']);
         parent::callback($input);
 
-        if ($input['card']['network'] === 'Rupay')
+        if ($input['card']['network'] === 'RuPay')
         {
-            echo "Gateway returned followin fields in response: " . var_dump($input['gateway']);
+            echo "Gateway returned following fields in response: <br />" . PHP_EOL;
+            var_dump($input['gateway']);
             die();
         }
 

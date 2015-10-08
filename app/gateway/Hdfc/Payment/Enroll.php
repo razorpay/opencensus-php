@@ -148,9 +148,13 @@ trait Enroll
         }
 
         $url = $input['callbackUrl'];
-        $parts = parse_url($url);
-        $parts['host'] = 'rzp.ngrok.com';
-        $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+
+        if ($this->env === 'dev')
+        {
+            $parts = parse_url($url);
+            $parts['host'] = 'rzp.ngrok.com';
+            $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+        }
 
         // Only required in case of Rupay. Weird! But ... !
         if ($network === Card\Network::RUPAY)

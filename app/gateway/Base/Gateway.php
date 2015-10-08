@@ -52,6 +52,8 @@ class Gateway
     {
         $this->trace = \Trace::getFacadeRoot();
 
+        $this->env = \App::getFacadeRoot()['env'];
+
         $this->loadGatewayConfig();
     }
 
