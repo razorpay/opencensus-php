@@ -187,7 +187,7 @@ class Service extends Base\Service
 
             $date->subDay(1);
 
-            $message = '@harshil @shk Payment authorizations till ' . $date->format('d-m-y');
+            $message = 'Payment authorizations till ' . $date->format('d-m-y');
 
             foreach ($payments as $payment)
             {
