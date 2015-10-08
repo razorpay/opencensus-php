@@ -322,6 +322,16 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SIGNED];
     }
 
+    public function getVerifiedAttribute()
+    {
+        $verified = $this->attributes[self::VERIFIED];
+
+        if ($verified !== null)
+            $verified = (int) $verified;
+
+        return $verified;
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
