@@ -267,6 +267,9 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedPayzappTerminal()
     {
         $termId = '4r8Djlksdf0dGd';

@@ -64,7 +64,7 @@ class Validator extends Base\Validator
     protected static $walletPayzappTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAYTERMINAL_ID          => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     );
 

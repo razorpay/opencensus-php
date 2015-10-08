@@ -146,6 +146,11 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        if ($payment->card !== null)
+        {
+            $input['card'] = $payment->card->toArray();
+        }
+
         $this->checkForRecentFailedPayment($payment);
 
         Payment\Validator::bankAcsCallbackValidate($payment, $input);

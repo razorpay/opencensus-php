@@ -6,14 +6,14 @@ use Gateway\AxisMigs;
 
 class Validator extends AxisMigs\Mock\Validator
 {
-    protected static $authRulesModified = array(
-        'vpc_Card'      => 'required|in:Amex',
-    );
+    // protected static $authRulesModified = array(
+    //     'vpc_Card'      => 'required|in:Amex',
+    // );
 
-    public function __construct()
-    {
-        parent::__construct();
+    // public function __construct()
+    // {
+    //     parent::__construct();
 
-        static::$authRules = array_merge(static::$authRules, self::$authRulesModified);
-    }
+    //     static::$authRules = array_merge(static::$authRules, self::$authRulesModified);
+    // }
 }
