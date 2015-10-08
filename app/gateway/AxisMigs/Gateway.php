@@ -374,8 +374,8 @@ class Gateway extends Base\Gateway
         $request = $this->getAmaRequestArray($content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REFUND,
-            ['action' => 'Refund request array',
+            TraceCode::GATEWAY_SUPPORT_REQUEST,
+            ['action' => 'Support action request array',
             'content' => $content]);
 
         // send the request and get response

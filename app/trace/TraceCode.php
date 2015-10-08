@@ -84,6 +84,7 @@ class TraceCode
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
 
+    const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
 
@@ -119,6 +120,7 @@ class TraceCode
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
+        self::RECOVERABLE_EXCEPTION                 => 'Recoverable exception occurred',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code');
 
     /**
