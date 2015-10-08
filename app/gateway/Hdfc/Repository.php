@@ -66,13 +66,19 @@ class Repository extends Base\Repository
 
     public function persistAfterEnroll($request, $response)
     {
-        if ($response['enroll_result'] === Payment\Result::ENROLLED)
+        $result = $response['enroll_result'];
+
+        if ($result === Payment\Result::ENROLLED)
         {
             $status = Payment\Status::ENROLLED;
         }
-        else if ($response['enroll_result'] === Payment\Result::NOT_ENROLLED)
+        else if ($result === Payment\Result::NOT_ENROLLED)
         {
             $status = Payment\Status::NOT_ENROLLED;
+        }
+        else if ($result === Payment\Result::INITIALIZED)
+        {
+            $status = Payment\Status::INITIALIZED;
         }
 
         $attributes = array(

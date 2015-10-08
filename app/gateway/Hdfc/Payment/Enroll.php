@@ -138,13 +138,25 @@ trait Enroll
         //
         $data['currencycode'] = self::INR_CODE;
 
-        if ($input['card']['network_code'] === Card\Network::MAES)
+        $network = $input['card']['network_code'];
+
+        $data['action'] = Action::AUTHORIZE;
+
+        if (in_array($network, $this->purchase))
         {
             $data['action'] = Action::PURCHASE;
         }
-        else
+
+        $url = $input['callbackUrl'];
+        $parts = parse_url($url);
+        $parts['host'] = 'rzp.ngrok.com';
+        $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+
+        // Only required in case of Rupay. Weird! But ... !
+        if ($network === Card\Network::RUPAY)
         {
-            $data['action'] = Action::AUTHORIZE;
+            $data['merchantResponseUrl'] = $url;
+            $data['merchantErrorUrl'] = $url;
         }
     }
 

@@ -506,7 +506,8 @@ trait Authorize
             $network = $payment->card->getNetwork();
             $network = Card\Network::getCode($network);
 
-            if ($network === Card\Network::MAES)
+            if (($network === Card\Network::MAES) or
+                ($network === Card\Network::RUPAY))
             {
                 return false;
             }

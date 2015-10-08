@@ -30,6 +30,7 @@ use EE\Exception;
 use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Models\Card;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -238,6 +239,12 @@ class Gateway extends Base\Gateway
      */
     protected $authorize = true;
 
+    protected $purchase = array(
+        Card\Network::MAES,
+        Card\Network::RUPAY,
+        Card\Network::DICL,
+    );
+
     public function __construct()
     {
         parent::__construct();
@@ -293,7 +300,14 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
+        \Log::info($input['gateway']);
         parent::callback($input);
+
+        if ($input['card']['network'] === 'Rupay')
+        {
+            echo "Gateway returned followin fields in response: " . var_dump($input['gateway']);
+            die();
+        }
 
         validate($this->bankAcsResponseRules, $input['gateway'], false);
 
