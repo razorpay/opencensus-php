@@ -21,6 +21,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'sharp',
+        'wallet_payzapp',
     ),
 
     'mock_amex'             => $_ENV['AMEX_MOCK'],
@@ -33,6 +34,7 @@ return array(
     'mock_paytm'            => $_ENV['PAYTM_MOCK'],
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
+    'mock_payzapp'          => $_ENV['PAYZAPP_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -84,6 +86,12 @@ return array(
     'paytm' => array(
         'test_merchant_id'  => $_ENV['PAYTM_GATEWAY_TEST_MERCHANT_ID'],
         'test_hash_secret'  => $_ENV['PAYTM_GATEWAY_TEST_HASH_SECRET'],
+    ),
+
+    'wallet_payzapp' => array(
+        'test_merchant_id'      => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_ID'],
+        'test_merchant_app_id'  => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'],
+        'test_hash_secret'      => $_ENV['PAYZAPP_WALLET_TEST_HASH_SECRET'],
     ),
 
     'netbanking_hdfc' => array(

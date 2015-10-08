@@ -65,6 +65,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <select name="wallet">
                 <option value="paytm">Paytm</option>
                 <option value="mobikwik">Mobikwik</option>
+                <option value="payzapp">Payzapp</option>
             </select>
         </td>
     </tr>

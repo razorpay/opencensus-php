@@ -264,6 +264,31 @@ class TerminalPicker
 
     protected function getSharedTerminalForCard($payment)
     {
+        $terminal = $this->getSharedCategoryTerminalForCard($payment);
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        return $this->getSharedGenericTerminalForCard($payment);
+    }
+
+    protected function getSharedCategoryTerminalForCard($payment)
+    {
+        $international = $payment->merchant->isInternational();
+
+        $network = $payment->card->getNetworkCode();
+        $category = $payment->merchant->getCategory();
+
+        $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
+                                    Gateway::HDFC, $category);
+
+        return $terminal;
+    }
+
+    protected function getSharedGenericTerminalForCard($payment)
+    {
         $terminal = null;
 
         $international = $payment->merchant->isInternational();
@@ -363,6 +388,35 @@ class TerminalPicker
             if ($this->terminalExists(Shared::MOBIKWIK_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
+            }
+        }
+
+        if ($wallet === Wallet::PAYZAPP)
+        {
+            $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
+
+            $category = $payment->merchant->getCategory();
+
+            foreach ($terminals as $terminal)
+            {
+                $commonTerminal = null;
+
+                if ($terminal->getCategory() === $category)
+                {
+                    $this->terminal = $terminal;
+
+                    return $terminal;
+                }
+
+                if ($terminal->getCategory() === 1000)
+                {
+                    $commonTerminal = $terminal;
+                }
+            }
+
+            if ($commonTerminal !== null)
+            {
+                return $commonTerminal;
             }
         }
     }

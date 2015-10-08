@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const USED_COUNT                    = 'used_count';
+    const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
@@ -217,9 +218,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USED_COUNT);
     }
 
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
+    }
+
     public function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
+    }
+
+    public function getCategoryAttribute()
+    {
+        $category = $this->attributes[self::CATEGORY];
+
+        if ($category !== null)
+        {
+            $category = (int) $category;
+        }
+
+        return $category;
     }
 
     public function merchant()

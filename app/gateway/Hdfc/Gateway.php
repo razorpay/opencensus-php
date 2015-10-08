@@ -86,7 +86,7 @@ class Gateway extends Base\Gateway
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
                           'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
-        'header' => array('Content-Type'=>'text/xml'),
+        'headers' => array('Content-Type'=>'text/xml'),
         'data' => array());
 
     /**
@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
         'fields' => array('paymentid', 'PaRes'),
-        'header' => array('Content-Type:text/xml'),
+        'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 
@@ -137,7 +137,7 @@ class Gateway extends Base\Gateway
         'type' => 'auth_not_enrolled',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
                           'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'header' => array('Content-Type:text/xml'),
+        'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 
@@ -163,7 +163,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => '',
         'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
-        'header' => array('Content-Type:text/xml'),
+        'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 

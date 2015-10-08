@@ -18,6 +18,8 @@ class Repository extends Base\Repository
         Entity::GATEWAY         => 'sometimes',
         Entity::CARD            => 'sometimes|boolean',
         Entity::NETBANKING      => 'sometimes|boolean',
+        Entity::SHARED          => 'sometimes|boolean',
+        Entity::CATEGORY        => 'sometimes|integer|digits:4',
         'deleted'               => 'sometimes|boolean',
     );
 
@@ -67,6 +69,25 @@ class Repository extends Base\Repository
 
         return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $id)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->first();
+    }
+
+    public function getSharedTerminalForGateway($gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->get();
+    }
+
+    public function getSharedTerminalForGatewayWithCategory($gateway, $category)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->where(Terminal\Entity::CATEGORY, '=', $category)
                     ->first();
     }
 

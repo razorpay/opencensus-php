@@ -544,4 +544,38 @@ class DatabaseSeeder extends Seeder
                 )
             );
     }
+
+    protected function createPayzappTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '2eBImcdG79tJdg',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_PAYZAPP,
+                'card'                      => '0',
+                'gateway_merchant_id'       => 'test_merchant_payzapp',
+                'gateway_terminal_id'       => 'test_terminal_payzapp',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_payzapp_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            );
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '3fhDHSHD3425hV',
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_PAYZAPP,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'demo_merchant_payzapp',
+                'gateway_terminal_id'       => 'demo_terminal_payzapp',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_payzapp_terminal_pass'),
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
+                )
+            );
+    }
 }

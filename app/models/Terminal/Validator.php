@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::SHARED                      => 'sometimes|boolean',
@@ -58,6 +59,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    );
+
+    protected static $walletPayzappTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_payzapp',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAYTERMINAL_ID          => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     );
 
     protected function validateGateway($input)

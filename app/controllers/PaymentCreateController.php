@@ -81,6 +81,10 @@ class PaymentCreateController extends BaseController
 
                     return $response;
                 }
+                else if ($data['request']['method'] === 'direct')
+                {
+                    return $data['request']['content'];
+                }
             }
             else if ($data['type'] === 'return')
             {
@@ -100,7 +104,7 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a new payment on a JSONP Request
      */
-    public function getJSONP()
+    public function getCreatePaymentJsonp()
     {
         $input = Input::all();
 

@@ -211,6 +211,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::HOLD_FUNDS];
     }
 
+    public function getCategoryAttribute()
+    {
+        return (int) $this->attributes[self::CATEGORY];
+    }
+
     public function getWebsite()
     {
         return $this->attributes[self::WEBSITE];
@@ -224,6 +229,11 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->attributes[self::EMAIL];
+    }
+
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
     }
 
     public function getTransactionReportEmail()
