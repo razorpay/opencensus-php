@@ -2,6 +2,7 @@
 
 namespace Gateway\Base;
 
+use EE\Exception;
 use Trace\TraceCode;
 
 trait AuthorizeFailed
