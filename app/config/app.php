@@ -125,6 +125,7 @@ return array(
 		'Trace\TraceServiceProvider',
         'Bogardo\Mailgun\MailgunServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
+        'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
 	),
 
 	/*

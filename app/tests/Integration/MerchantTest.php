@@ -44,8 +44,8 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signup\"]').length > 0", 20000)
             ->type(l::IdOrName('name'), $this->merchant->name)      // Fill name
             ->type(l::IdOrName('email'), $this->merchant->email)   // Fill email
-            ->type(l::IdOrName('password'), '123456')
-            ->type(l::IdOrName('password_confirmation'), '123456')
+            ->type(l::IdOrName('password'), '123456xx')
+            ->type(l::IdOrName('password_confirmation'), '123456xx')
             ->click(l::IdOrName('agree'))
             ->click(l::IdOrName('submit'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);

@@ -9,8 +9,8 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'name'                  => 'required|alpha_space|max:200',
         'email'                 => 'required|email|unique:merchants',
-        'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
         'captcha'               => 'required'
     );
 
@@ -31,8 +31,8 @@ class Validator extends Base\Validator
 
     protected static $changePasswordRules = array(
         'old_password'              => 'required',
-        'password'                  => 'required|between:6,50|confirmed',
-        'password_confirmation'     => 'required|between:6,50'
+        'password'                  => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation'     => 'required|between:7,50'
     );
 
     protected static $changeEmailRules = array(

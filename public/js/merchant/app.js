@@ -186,7 +186,8 @@ var app = angular.module('app', [
   '$keepaliveProvider',
   '$idleProvider',
   function ($keepaliveProvider, $idleProvider) {
-    $idleProvider.idleDuration(30 * 60);
+    // Lock out Duration = 15 minutes
+    $idleProvider.idleDuration(15 * 60);
     $idleProvider.warningDuration(15);
     $keepaliveProvider.interval(60);
   }

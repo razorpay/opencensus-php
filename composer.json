@@ -14,7 +14,8 @@
         "maknz/slack": "1.*",
         "bogardo/mailgun": "3.1.*",
         "maatwebsite/excel": "1.*",
-        "vipsoft/unzip": "^1.1"
+        "vipsoft/unzip": "^1.1",
+        "schuppo/password-strength": "~0.7"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
