@@ -61,6 +61,12 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
 
+    'PAYZAPP_WALLET_TEST_MERCHANT_ID'               => '293rij9wrj9wefj9we8',
+    'PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'           => '1111',
+    'PAYZAPP_WALLET_TEST_HASH_SECRET'               => '234rerefsdfsdfsdfsdf',
+    'PAYZAPP_WALLET_TEST_PG_INSTANCE_ID'            => 'random1',
+    'PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'            => 'random2',
+
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'      => '000000',
 
     'MOCK_GATEWAY_SECRET'                           => 'wercker_random_password',
