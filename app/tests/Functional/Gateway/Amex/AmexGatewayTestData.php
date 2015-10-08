@@ -56,7 +56,7 @@ return [
         'genius' => false,
         'action' => 'capture',
         'received' => true,
-        'amex' => '1',
+        'amex' => true,
         'vpc_amount' => 50000,
 //        'vpc_AcqResponseCode' => '14',
         'vpc_Command' => 'capture',

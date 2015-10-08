@@ -20,4 +20,9 @@ class Entity extends AxisMigs\Entity
     {
         $this->setAttribute('amex', 1);
     }
+
+    public function getAmexAttribute()
+    {
+        return (bool) $this->attributes['amex'];
+    }
 }
