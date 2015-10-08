@@ -74,6 +74,7 @@ return array(
     'KOTAK_MOCK'                                    => true,
     'MOBIKWIK_MOCK'                                 => true,
     'PAYTM_MOCK'                                    => true,
+    'PAYZAPP_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
 
     'EMAIL_MOCK'                                    => true,
