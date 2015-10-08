@@ -21,7 +21,6 @@ class CardTest extends TestCase
     public function testUnsupportedCardNetworks()
     {
         $numbers = array(
-            '378282246310005',
             '3566002020360505',
             '6011111111111117',
             '30569309025904',

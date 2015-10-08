@@ -129,6 +129,7 @@ class TerminalPicker
         $this->network = $network;
 
         $gatewayOrder = array(
+            Gateway::AMEX,
             Gateway::HDFC,
             Gateway::AXIS_MIGS,
             Gateway::KOTAK);
@@ -274,7 +275,8 @@ class TerminalPicker
         $sharedCardTerminals = array(
             Shared::KOTAK_RAZORPAY_TERMINAL,
             Shared::HDFC_RAZORPAY_TERMINAL,
-            Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
+            Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
+            Shared::AMEX_RAZORPAY_TERMINAL);
 
         foreach ($sharedCardTerminals as $terminal)
         {

@@ -5,6 +5,7 @@ use Constants\Table;
 use Models\Merchant\Account;
 use Models\Pricing;
 use Models\Payment\Processor\Netbanking;
+use Models\Payment\Gateway;
 use Models\Terminal;
 
 class DatabaseSeeder extends Seeder
@@ -174,7 +175,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1n25f6uN5S1Z5a',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'hdfc',
+                'gateway'               => Gateway::HDFC,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_hdfc',
                 'gateway_terminal_id'   => 'test_terminal_hdfc',
@@ -188,7 +189,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1BjhC5CJAqNF7R',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'atom',
+                'gateway'               => Gateway::ATOM,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_atom',
                 'gateway_terminal_id'   => 'test_terminal_atom',
@@ -202,7 +203,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1pnP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'axis_migs',
+                'gateway'               => Gateway::AXIS_MIGS,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_axis_migs',
                 'gateway_terminal_id'   => 'test_terminal_axis_migs',
@@ -216,7 +217,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1xnP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'axis_genius',
+                'gateway'               => Gateway::AXIS_GENIUS,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_axis_genius',
                 'gateway_terminal_id'   => 'test_terminal_axis_genius',
@@ -230,7 +231,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1ynP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'kotak',
+                'gateway'               => Gateway::KOTAK,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_kotak',
                 'gateway_terminal_id'   => 'test_terminal_kotak',
@@ -244,7 +245,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1znP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'paytm',
+                'gateway'               => Gateway::PAYTM,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_paytm',
                 'gateway_terminal_id'   => 'test_terminal_paytm',
@@ -258,7 +259,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1VwJebUIU7hIhU',
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'hdfc',
+                'gateway'               => Gateway::HDFC,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_hdfc',
                 'gateway_terminal_id'   => 'demo_terminal_hdfc',
@@ -272,7 +273,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '1XwJrbxrfB0i8G',
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'atom',
+                'gateway'               => Gateway::ATOM,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'demo_terminal_atom',
@@ -286,7 +287,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::ATOM_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'atom',
+                'gateway'               => Gateway::ATOM,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'shared_terminal_atom',
@@ -300,7 +301,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'axis_migs',
+                'gateway'               => Gateway::AXIS_MIGS,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_axis_migs',
                 'gateway_terminal_id'   => 'shared_terminal_axis_migs',
@@ -314,7 +315,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'axis_genius',
+                'gateway'               => Gateway::AXIS_GENIUS,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_axis_genius',
                 'gateway_terminal_id'   => 'shared_terminal_axis_genius',
@@ -328,7 +329,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::KOTAK_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'kotak',
+                'gateway'               => Gateway::KOTAK,
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_kotak',
                 'gateway_terminal_id'   => 'shared_terminal_kotak',
@@ -342,7 +343,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::PAYTM_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'paytm',
+                'gateway'               => Gateway::PAYTM,
                 'card'                  => '0',
                 'gateway_merchant_id'   => 'demo_merchant_paytm',
                 'gateway_terminal_id'   => 'shared_terminal_paytm',
@@ -372,6 +373,7 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
+        $this->createAmexTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
@@ -384,7 +386,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '22nP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'netbanking_hdfc',
+                'gateway'               => Gateway::NETBANKING_HDFC,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_hdfc',
@@ -399,7 +401,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::NETBANKING_HDFC_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'netbanking_hdfc',
+                'gateway'               => Gateway::NETBANKING_HDFC,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_hdfc',
@@ -417,7 +419,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '2byKhdVKZ9iJgA',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'billdesk',
+                'gateway'               => Gateway::BILLDESK,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_billdesk',
@@ -432,7 +434,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'billdesk',
+                'gateway'               => Gateway::BILLDESK,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'demo_merchant_billdesk',
@@ -450,7 +452,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '2czHdeTG32rFhB',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'sharp',
+                'gateway'               => Gateway::SHARP,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_sharp',
@@ -465,7 +467,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => Terminal\Shared::SHARP_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'sharp',
+                'gateway'               => Gateway::SHARP,
                 'card'                  => '1',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'demo_merchant_sharp',
@@ -483,7 +485,7 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                    => '2dAHgaZd63sHbl',
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'mobikwik',
+                'gateway'               => Gateway::MOBIKWIK,
                 'card'                  => '0',
                 'netbanking'            => '0',
                 'gateway_merchant_id'   => 'test_merchant_mobikwik',
@@ -498,12 +500,45 @@ class DatabaseSeeder extends Seeder
             array(
                 'id'                        => Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
-                'gateway'                   => 'mobikwik',
+                'gateway'                   => Gateway::MOBIKWIK,
                 'card'                      => '0',
                 'netbanking'                => '0',
                 'gateway_merchant_id'       => 'demo_merchant_mobikwik',
                 'gateway_terminal_id'       => 'demo_terminal_mobikwik',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_mobikwik_terminal_pass'),
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
+                )
+            );
+    }
+
+    protected function createAmexTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '2eBIhcdN74TBMd',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::AMEX,
+                'card'                  => '1',
+                'netbanking'            => '0',
+                'gateway_merchant_id'   => 'test_merchant_amex',
+                'gateway_terminal_id'   => 'test_terminal_amex',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_amex_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::AMEX_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::AMEX,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'demo_merchant_amex',
+                'gateway_terminal_id'       => 'demo_terminal_amex',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_amex_terminal_pass'),
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )

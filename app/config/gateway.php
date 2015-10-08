@@ -10,6 +10,7 @@ return array(
     */
 
     'available' => array(
+        'amex',
         'atom',
         'axis_genius',
         'axis_migs',
@@ -22,6 +23,7 @@ return array(
         'sharp',
     ),
 
+    'mock_amex'             => $_ENV['AMEX_MOCK'],
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
     'mock_atom'             => $_ENV['ATOM_MOCK'],
     'mock_axis_migs'        => $_ENV['AXIS_MIGS_MOCK'],
@@ -36,6 +38,14 @@ return array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
         'test_terminal_pwd' => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'],
         'mock_server'       => false,
+    ),
+
+    'amex' => array(
+        'test_hash_secret'  => $_ENV['AMEX_GATEWAY_TEST_HASH_SECRET'],
+        'test_merchant_id'  => $_ENV['AMEX_GATEWAY_TEST_MERCHANT_ID'],
+        'test_access_code'  => $_ENV['AMEX_GATEWAY_TEST_ACCESS_CODE'],
+        'test_ama_user'     => $_ENV['AMEX_GATEWAY_TEST_AMA_USER'],
+        'test_ama_password' => $_ENV['AMEX_GATEWAY_TEST_AMA_PASSWORD'],
     ),
 
     'axis_migs' => array(
