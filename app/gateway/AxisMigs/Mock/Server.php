@@ -62,6 +62,7 @@ class Server extends Base\Mock\Server
 
         $this->addMessageAndResponseCode($content, $input);
 
+        $this->content($content);
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
@@ -174,6 +175,7 @@ class Server extends Base\Mock\Server
 
     protected function prepareResponse($content)
     {
+        $content = $this->content($content);
         $body = http_build_query($content);
         $response = \Response::make($body);
 
