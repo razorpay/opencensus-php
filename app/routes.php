@@ -16,6 +16,8 @@ Route::get('/', 'MerchantController@getIndex');
 
 Route::get('/admin', 'AdminController@getIndex');
 
+Route::options('/contact', 'MerchantController@optionsContact');
+
 Route::post('/contact', 'MerchantController@postContact');
 
 Route::group(array('before' => 'auth.merchant'), function()

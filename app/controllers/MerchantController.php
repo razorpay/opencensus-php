@@ -178,6 +178,14 @@ class MerchantController extends BaseController
         $job->delete();
     }
 
+    public function optionsContact()
+    {
+        $response = AppResponse::jsonResponse([]);
+        $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
+
+        return $response;
+    }
+
     public function postContact()
     {
         $input = Input::all();
@@ -201,6 +209,9 @@ class MerchantController extends BaseController
 
         (new Merchant\Service)->slackPost('New Sales Lead!', $input, '#sales', '@channel', 'warning');
 
-        return Redirect::to("https://razorpay.com/postcontact/");
+        $response = AppResponse::jsonResponse([]);
+        $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
+
+        return $response;
     }
 }
