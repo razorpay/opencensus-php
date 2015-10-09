@@ -5,7 +5,7 @@ namespace Gateway;
 use Config;
 use Constants\Mode;
 use EE\Exception;
-use Gateway\Hdfc;
+use Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
@@ -93,16 +93,35 @@ class GatewayManager extends \Illuminate\Support\Manager
         return parent::driver($gateway);
     }
 
-    public function server($gateway)
+    public function netbankingGateway($bank)
+    {
+        $driver = 'netbanking_'.$bank;
+
+        return $this->netbankingGateway($bank);
+    }
+
+    public function server($driver)
     {
         $servers = & $this->servers;
 
-        if (isset($servers[$gateway]))
+        if (isset($servers[$driver]))
         {
-            return $servers[$gateway];
+            return $servers[$driver];
         }
 
-        $servers[$gateway] = 'd';
+        $server = $this->getGatewayNamespace($driver) . '\\Mock\\Server';
+
+        if ($driver === 'sharp')
+            $server = 'Gateway\Sharp\Server';
+
+        $servers[$driver] = new $server;
+
+        return $servers[$driver];
+    }
+
+    public function setServer($driver, Mock\Server $server)
+    {
+        $this->server[$driver] = $server;
     }
 
     protected function getMockDrivers()
