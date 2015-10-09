@@ -45,20 +45,17 @@ class GatewayManager extends \Illuminate\Support\Manager
             throw new Exception\LogicException($driver . ' is not an available gateway');
         }
 
-        $mock = $this->getMock($driver);
+        $mock = $this->isMock($driver);
 
         return $this->createGatewayDriver($driver, $mock);
     }
 
     protected function createGatewayDriver($driver, $mock)
     {
-        $namespace = $this->getGatewayNamespace($driver);
-
-        if ($mock !== '')
-            $mock = $mock . '\\';
+        $namespace = $this->getGatewayNamespace($driver, $mock);
 
         // Constructs gateway class name in the format
-        $class = $namespace . '\\' .$mock . 'Gateway';
+        $class = $namespace . '\\' . 'Gateway';
 
         if (class_exists($class) === false)
         {
@@ -68,7 +65,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         return new $class;
     }
 
-    protected function getMock($driver)
+    protected function isMock($driver)
     {
         $mock = '';
 
@@ -77,10 +74,10 @@ class GatewayManager extends \Illuminate\Support\Manager
         if (($mode === Mode::TEST) and
             (in_array($driver, $this->getMockDrivers())))
         {
-            $mock = 'Mock';
+            return true;
         }
 
-        return $mock;
+        return false;
     }
 
     public function getDefaultDriver()
@@ -109,19 +106,32 @@ class GatewayManager extends \Illuminate\Support\Manager
             return $servers[$driver];
         }
 
-        $server = $this->getGatewayNamespace($driver) . '\\Mock\\Server';
+        $server = $this->getServerClass($driver);
 
-        if ($driver === 'sharp')
-            $server = 'Gateway\Sharp\Server';
+        $server = new $server;
 
-        $servers[$driver] = new $server;
+        $servers[$driver] = $server;
 
         return $servers[$driver];
     }
 
+    public function getServerClass($driver)
+    {
+        $server = $this->getGatewayNamespace($driver, true) . '\\Server';
+
+        if ($driver === 'sharp')
+            $server = 'Gateway\Sharp\Server';
+
+        return $server;
+    }
+
     public function setServer($driver, Mock\Server $server)
     {
-        $this->server[$driver] = $server;
+        $this->servers[$driver] = $server;
+
+        $server->setNamespace($this->getGatewayNamespace($driver, true));
+
+        return $server;
     }
 
     protected function getMockDrivers()
@@ -139,7 +149,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $this->gateways;
     }
 
-    protected function getGatewayNamespace($driver)
+    protected function getGatewayNamespace($driver, $mock = false)
     {
         $driver1 = ucfirst(studly_case($driver));
 
@@ -156,6 +166,9 @@ class GatewayManager extends \Illuminate\Support\Manager
             $namespace = $driver2;
 
         $namespace = 'Gateway\\'.$namespace;
+
+        if ($mock === true)
+            $namespace = $namespace .= '\\' . 'Mock';
 
         return $namespace;
     }
