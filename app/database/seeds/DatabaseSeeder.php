@@ -377,6 +377,7 @@ class DatabaseSeeder extends Seeder
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
+        $this->createPayzappTerminals();
         $this->createSharpGatewayTerminals();
     }
 
