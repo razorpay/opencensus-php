@@ -111,7 +111,14 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function changeTransactionEmail($id, $email)
+    /**
+     * This is a static call because we don't need Merchant Auth for this
+     * which is checked in the constructor
+     * @param  string $id    Merchant Id
+     * @param  string $email New Transaction report email
+     * @return array Errors
+     */
+    public static function changeTransactionEmail($id, $email)
     {
         $merchantDetails = Entity::findorfail($id);
 

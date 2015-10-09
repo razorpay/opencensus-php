@@ -312,7 +312,7 @@ class Service extends Base\Service
                 {
                     // Only when it is changed on API side we update on the dashboard side as well
                     $email = $input['transaction_report_email'];
-                    $error = (new MerchantDetails\Service)->changeTransactionEmail($id, $email);
+                    $error = MerchantDetails\Service::changeTransactionEmail($id, $email);
                 }
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
