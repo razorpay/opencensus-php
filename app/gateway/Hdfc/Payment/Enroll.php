@@ -47,6 +47,13 @@ trait Enroll
             TraceCode::GATEWAY_ENROLL_REQUEST,
             $this->enrollRequest);
 
+        $network = $input['card']['network_code'];
+        // Only required in case of Rupay
+        if ($network === Card\Network::RUPAY)
+        {
+            $this->enrollRequest['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
         //
         // Send enroll request and receive response.
         // This function also checks for and sets
