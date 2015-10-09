@@ -13,6 +13,8 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected $mocks = array();
 
+    protected $servers = array();
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -50,24 +52,13 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function createGatewayDriver($driver, $mock)
     {
-        $driver1 = ucfirst(studly_case($driver));
-
-        $driver2 = ucwords(str_replace('_', ' ', $driver));
-        $driver2 = str_replace(' ', '\\', $driver2);
-
-        $class1 = 'Gateway\\'.$driver1.'\Gateway';
-        $class2 = 'Gateway\\'.$driver2.'\Gateway';
-
-        if (class_exists($class1))
-            $driver = $driver1;
-        else if (class_exists($class2))
-            $driver = $driver2;
+        $namespace = $this->getGatewayNamespace($driver);
 
         if ($mock !== '')
-            $driver = $driver . '\\' . $mock;
+            $mock = $mock . '\\';
 
         // Constructs gateway class name in the format
-        $class = 'Gateway\\'.$driver.'\\'.'Gateway';
+        $class = $namespace . '\\' .$mock . 'Gateway';
 
         if (class_exists($class) === false)
         {
@@ -102,6 +93,18 @@ class GatewayManager extends \Illuminate\Support\Manager
         return parent::driver($gateway);
     }
 
+    public function server($gateway)
+    {
+        $servers = & $this->servers;
+
+        if (isset($servers[$gateway]))
+        {
+            return $servers[$gateway];
+        }
+
+        $servers[$gateway] = 'd';
+    }
+
     protected function getMockDrivers()
     {
         return $this->mocks;
@@ -115,5 +118,26 @@ class GatewayManager extends \Illuminate\Support\Manager
     protected function getGateways()
     {
         return $this->gateways;
+    }
+
+    protected function getGatewayNamespace($driver)
+    {
+        $driver1 = ucfirst(studly_case($driver));
+
+        $driver2 = ucwords(str_replace('_', ' ', $driver));
+        $driver2 = str_replace(' ', '\\', $driver2);
+
+        $class1 = 'Gateway\\'.$driver1.'\Gateway';
+        $class2 = 'Gateway\\'.$driver2.'\Gateway';
+
+        $namespace = null;
+        if (class_exists($class1))
+            $namespace = $driver1;
+        else if (class_exists($class2))
+            $namespace = $driver2;
+
+        $namespace = 'Gateway\\'.$namespace;
+
+        return $namespace;
     }
 }
