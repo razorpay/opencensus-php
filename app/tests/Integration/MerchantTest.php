@@ -76,7 +76,7 @@ class MerchantTest extends TestCase
         $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000)
             ->type(l::IdOrName('email'), $this->merchant->email)   // Fill name
-            ->type(l::IdOrName('password'), '123456')   // Fill slug
+            ->type(l::IdOrName('password'), '123456xx')   // Fill slug
             ->click(l::IdOrName('submit'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);                     // Wait for page to load
 
@@ -329,9 +329,9 @@ class MerchantTest extends TestCase
         $this->browser
             ->click(l::css('.btn-change-pwd'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length > 0", 20000)
-            ->type(l::IdOrName('old_password'), '123456')
-            ->type(l::IdOrName('password'), '1234567')
-            ->type(l::IdOrName('password_confirmation'), '1234567')
+            ->type(l::IdOrName('old_password'), '123456xx')
+            ->type(l::IdOrName('password'), '1234567xx')
+            ->type(l::IdOrName('password_confirmation'), '1234567xx')
             ->click(l::css('.modal-ok'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length == 0", 20000)
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
