@@ -560,7 +560,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at'                => time(),
                 'category'                  => 1000,
                 'shared'                    => '1',
-            );
+            )
         );
 
         DB::table(Table::TERMINAL)->insert(

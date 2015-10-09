@@ -64,7 +64,12 @@ class CreateWallet extends Migration {
      */
     public function down()
     {
-        //
+        Schema::table('wallet', function($table)
+        {
+            $table->dropForeign('wallet_payment_id_foreign');
+        });
+
+        Schema::drop('wallet');
     }
 
 }

@@ -405,6 +405,8 @@ class TerminalPicker
 
             $category = $payment->merchant->getCategory();
 
+            $commonTerminal = null;
+
             foreach ($terminals as $terminal)
             {
                 $commonTerminal = null;
