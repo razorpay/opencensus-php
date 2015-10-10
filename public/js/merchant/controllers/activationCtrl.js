@@ -20,6 +20,7 @@ app.controller('ActivationCtrl', [
       5: {},
       6: {}
     };
+
     $scope.formAlerts = alertsFactory.getHandler();
     $scope.alerts = {
       1: alertsFactory.getHandler(),

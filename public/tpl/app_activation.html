@@ -118,9 +118,14 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for (Also mention B2B or B2C):</label>
+          <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for:</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_paymentdetails" ng-model="data.2.business_paymentdetails" placeholder="Selling watches online directly to customers (B2C)" required>
+            <select name="business_paymentdetails" ng-model="data.2.business_paymentdetails" class="form-control" required>
+              <option value="B2B">Business to Business (B2B)</option>
+              <option value="B2C">Business to Consumer (B2C)</option>
+              <option value="B2B+B2C">Both B2B and B2C</option>
+              <!-- <option value="Marketplace">Marketplace</option> -->
+            </select>
           </div>
         </div>
         <div class="form-group">
@@ -320,13 +325,13 @@
             <input type="text" class="form-control" name="website_pricing" ng-model="data.3.website_pricing" placeholder="http://www.website.com/pricing.html" >
           </div>
         </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
           <label for="website_login" class="col-sm-3 control-label">Login Window URL</label>
           <div class="col-sm-8">
             <span class="help-block">If no login required, give us a page where you ask for customer details. Example: http://www.website.com/login.html</span>
             <input type="text" class="form-control" name="website_login" ng-model="data.3.website_login" placeholder="http://www.website.com/login.html" >
           </div>
-        </div>
+        </div> -->
       </fieldset>
       </form>
     </tab>
@@ -474,11 +479,11 @@
           <alert ng-repeat="alert in alerts[5].getAlerts()" type="{{alert.type}}" close="alerts[5].closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="form-group">
-          <label for="business_proof" class="col-sm-3 control-label">Business Registration Proof </label>
+          <label for="business_proof" class="col-sm-3 control-label">Business Registration Proof <a href ng-click="isBusinessRegistrationHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
           <div class="col-sm-8">
-            <span class="help-block">
+            <span class="help-block" ng-show="isBusinessRegistrationHelpOpen">
                 Upload scan of following (not necessary for proprietership):
-              <li>Partnership Agreement (Mandatory, if partnership firm)</li>
+              <li>Sales Tax/Service Tax or Shop Act Registration (Mandatory, if Partnership/Proprietership firm)</li>
               <li>Certificate of Incorporation (Mandatory if private limited)</li>
               <li>Trust/Society/NGO etc. registration proof</li>
             </span>
@@ -488,6 +493,8 @@
               </div>
           </div>
         </div>
+        <!--
+        This is the business_operation_proof section
         <div class="form-group">
           <label for="business_operation_proof" class="col-sm-3 control-label">Business Operation Proof </label>
           <div class="col-sm-8">
@@ -501,11 +508,11 @@
                 <alert ng-repeat="alert in fileAlerts.business_operation_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_operation_proof.closeAlert($index)">{{alert.msg}}</alert>
               </div>
           </div>
-        </div>
+        </div> -->
         <div class="form-group">
-          <label for="business_pan_proof" class="col-sm-3 control-label">Business PAN</label>
+          <label for="business_pan_proof" class="col-sm-3 control-label">Business PAN <a href ng-click="isPANHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
           <div class="col-sm-8">
-            <span class="help-block">Company/Partnership/LLP Pan Card (Sole Proprietor can use personal PAN)</span>
+            <span class="help-block" ng-show="isPANHelpOpen">Company/Partnership/LLP PAN Card (Sole Proprietor can use personal PAN)</span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_pan_proof" ng-file-select="onFileSelect($files, 'business_pan_proof')">
             <div class="text-center m-t m-b alerts">
               <alert ng-repeat="alert in fileAlerts.business_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
@@ -513,11 +520,11 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="address_proof" class="col-sm-3 control-label">Address Proof of Company's Operational Address</label>
+          <label for="address_proof" class="col-sm-3 control-label">Address Proof of Company's Operational Address <a href ng-click="isAddressProofHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
           <div class="col-sm-8">
-            <span class="help-block">
+            <span class="help-block" ng-show="isAddressProofHelpOpen">
             Upload following:
-            <li>Bank Account Statement (of last three months with company's name & address)</li>
+            <li>Bank Account Statement (of last three months with company's name &amp; address)</li>
             </span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="address_proof" ng-file-select="onFileSelect($files, 'address_proof')">
             <div class="text-center m-t m-b alerts">
@@ -525,6 +532,8 @@
             </div>
           </div>
         </div>
+        <!--
+        promoter_proof
         <div class="form-group">
           <label for="promoter_proof" class="col-sm-3 control-label">Authorised Signatory Proof </label>
           <div class="col-sm-8">
@@ -537,7 +546,9 @@
                 <alert ng-repeat="alert in fileAlerts.promoter_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_proof.closeAlert($index)">{{alert.msg}}</alert>
               </div>
           </div>
-        </div>
+        </div> -->
+        <!--
+        promoter_pan_proof
         <div class="form-group">
           <label for="promoter_pan_proof" class="col-sm-3 control-label">Authorised Signatory PAN</label>
           <div class="col-sm-8">
@@ -550,12 +561,12 @@
               <alert ng-repeat="alert in fileAlerts.promoter_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
             </div>
           </div>
-        </div>
+        </div> -->
         <div class="form-group">
-          <label for="promoter_address_proof" class="col-sm-3 control-label">Authorised Signatory Address Proof</label>
+          <label for="promoter_address_proof" class="col-sm-3 control-label">Authorised Signatory Address Proof <a href ng-click="isPromoterAddressHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
           <div class="col-sm-8">
-            <span class="help-block">
-            Upload address proof of at least one authorised signatory, whose details have been filled earlier.
+            <span class="help-block" ng-show="isPromoterAddressHelpOpen">
+            Upload address proof (preferably scanned copy of passport) of at least one authorised signatory.
             In case of sole proprietership, upload your personal address proof.
             </span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_address_proof" ng-file-select="onFileSelect($files, 'promoter_address_proof')">

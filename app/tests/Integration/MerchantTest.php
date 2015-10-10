@@ -244,7 +244,6 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('website_terms'), 'http://testing.com')
             ->type(l::IdOrName('website_refund'), 'http://testing.com')
             ->type(l::IdOrName('website_pricing'), 'http://testing.com')
-            ->type(l::IdOrName('website_login'), 'http://testing.com')
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 
@@ -278,18 +277,12 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"]').is(':visible')", 20000)
             ->attachFile(l::IdOrName('business_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 1", 20000)
-            ->attachFile(l::IdOrName('business_operation_proof'), URL::to('/img/logo.png'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 2", 20000)
             ->attachFile(l::IdOrName('business_pan_proof'), URL::to('/img/logo.png'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 3", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 2", 20000)
             ->attachFile(l::IdOrName('address_proof'), URL::to('/img/logo.png'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 3", 20000)
+            ->attachFile(l::IdOrName('promoter_address_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 4", 20000)
-            ->attachFile(l::IdOrName('promoter_proof'), URL::to('/img/logo.png'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 5", 20000)
-            ->attachFile(l::IdOrName('promoter_pan_proof'), URL::to('/img/logo.png'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 6", 20000)
-             ->attachFile(l::IdOrName('promoter_address_proof'), URL::to('/img/logo.png'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 7", 20000)
             ->click(l::css('form[name="step5"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 
