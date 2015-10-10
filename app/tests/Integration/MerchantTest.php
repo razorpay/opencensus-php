@@ -244,7 +244,6 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('website_terms'), 'http://testing.com')
             ->type(l::IdOrName('website_refund'), 'http://testing.com')
             ->type(l::IdOrName('website_pricing'), 'http://testing.com')
-            ->type(l::IdOrName('website_login'), 'http://testing.com')
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 

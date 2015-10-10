@@ -13,8 +13,7 @@ class Entity extends Base\Entity
         'website_privacy',
         'website_terms',
         'website_refund',
-        'website_pricing',
-        'website_login'
+        'website_pricing'
     ];
 
     protected $table = 'merchant_details';

@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         'website_terms'                => 'required|max:255|url',
         'website_refund'               => 'required|max:255|url',
         'website_pricing'              => 'required|max:255|url',
-        'website_login'                => 'required|max:255|url'
+        'website_login'                => 'sometimes|max:255|url'
     );
 
     protected static $step4Rules = array(
