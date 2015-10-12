@@ -9,6 +9,7 @@ use EE\Exception;
 use Gateway\Base\Action;
 use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
+use Gateway\Base\AuthorizeFailed;
 use Gateway\Netbanking\Base;
 use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
@@ -17,6 +18,7 @@ use Trace\TraceCode;
 class Gateway extends Base\Gateway
 {
     use ResponseFieldsTrait;
+    use AuthorizeFailed;
 
     protected $gateway = 'netbanking_kotak';
 
@@ -59,6 +61,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
+        if ($this->mode == Mode::TEST)
+        {
+            $request['content']['msg'] = $request['content']['msg'] . '|' . $input['callbackUrl'];
+        }
+
         return $request;
     }
 //
@@ -73,7 +80,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']['msg']);
 
-        $this->validateCallbackChecksum($input);
+        $this->validateCallbackChecksum($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -193,7 +200,8 @@ class Gateway extends Base\Gateway
             $request);
 
         $response = $this->sendGatewayRequest($request);
-        $content = $this->processContentFromPaymentVerifyResponse($response, $request);
+        $content = $response->body;
+        $content = $this->getDataFromResponse($content);
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;

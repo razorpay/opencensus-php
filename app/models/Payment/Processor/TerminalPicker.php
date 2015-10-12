@@ -129,6 +129,7 @@ class TerminalPicker
         $this->network = $network;
 
         $gatewayOrder = array(
+            Gateway::AMEX,
             Gateway::HDFC,
             Gateway::AXIS_MIGS,
             Gateway::KOTAK);
@@ -288,7 +289,7 @@ class TerminalPicker
         $international = $payment->merchant->isInternational();
 
         $network = $payment->card->getNetworkCode();
-        $category = $Payment->merchant->getCategory();
+        $category = $payment->merchant->getCategory();
 
         $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
                                     Gateway::HDFC, $category);
@@ -311,12 +312,10 @@ class TerminalPicker
             Shared::HDFC_RAZORPAY_TERMINAL,
             Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
 
-        foreach ($sharedCardTerminals as $terminal)
+        foreach ($sharedCardTerminals as $sharedTerminalId)
         {
-            $gateway = Shared::getGatewayForTerminal($terminal);
-
-            if (($this->terminalExists($terminal)) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
+            if ($this->terminalExistsAndSupportsCardNetwork(
+                            $sharedTerminalId, $network))
             {
                 return $this->terminal;
             }
@@ -324,6 +323,11 @@ class TerminalPicker
 
         if ($this->mode === Mode::TEST)
         {
+            if ($this->terminalExistsAndSupportsCardNetwork(Shared::AMEX_RAZORPAY_TERMINAL, $network))
+            {
+                return $this->terminal;
+            }
+
             if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
@@ -406,6 +410,43 @@ class TerminalPicker
                 return $this->terminal;
             }
         }
+
+        if ($wallet === Wallet::PAYZAPP)
+        {
+            if ($this->mode === MODE::LIVE)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Wallet not supported');
+            }
+
+            $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
+
+            $category = $payment->merchant->getCategory();
+
+            $commonTerminal = null;
+
+            foreach ($terminals as $terminal)
+            {
+                $commonTerminal = null;
+
+                if ($terminal->getCategory() === $category)
+                {
+                    $this->terminal = $terminal;
+
+                    return $terminal;
+                }
+
+                if ($terminal->getCategory() === 1000)
+                {
+                    $commonTerminal = $terminal;
+                }
+            }
+
+            if ($commonTerminal !== null)
+            {
+                return $commonTerminal;
+            }
+        }
     }
 
     protected function getGatewayTerminals($terminals)
@@ -446,6 +487,19 @@ class TerminalPicker
         {
             return ($item[$method] === '1');
         });
+    }
+
+    protected function terminalExistsAndSupportsCardNetwork($sharedTerminalId, $network)
+    {
+        $gateway = Shared::getGatewayForTerminal($sharedTerminalId);
+
+        $terminal = $this->terminalExists($sharedTerminalId);
+
+        if (($terminal !== null) and
+            (Gateway::isCardNetworkSupported($network, $gateway)))
+        {
+            return $this->terminal;
+        }
     }
 
     protected function terminalExists($terminal)

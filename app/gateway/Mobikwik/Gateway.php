@@ -24,6 +24,7 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
         $content = array(
             'email'       => $input['payment']['email'],
             'amount'      => $input['payment']['amount'] / 100,
@@ -350,8 +351,13 @@ class Gateway extends Base\Gateway
 
     protected function getHashForAuthorizeRequest($content)
     {
-
-        $str = "'" . $content['cell'] . "''" . $content['email'] . "''" . $content['amount'] . "''" . $content['orderid'] . "''" . $content['redirecturl'] . "''" . $content['mid'] . "'";
+        $str = "'" .
+            $content['cell']        . "''" .
+            $content['email']       . "''" .
+            $content['amount']      . "''" .
+            $content['orderid']     . "''" .
+            $content['redirecturl'] . "''" .
+            $content['mid'] . "'";
 
         return $this->getHashOfString($str);
     }

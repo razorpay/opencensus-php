@@ -46,6 +46,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
+        $this->markTestIncomplete();
+
         $terminal = $this->fixtures->create('terminal:netbanking_kotak_terminal');
 
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();

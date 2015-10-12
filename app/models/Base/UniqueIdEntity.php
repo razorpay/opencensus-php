@@ -190,4 +190,31 @@ class UniqueIdEntity extends Entity
 
         return $res;
     }
+
+    protected static function uidToInteger($uid)
+    {
+        $nanotime = substr($uid, 0, 10);
+
+        $nanotimeInt = self::base10($nanotime);
+
+        $randInt = self::base10(substr($uid, 10));
+
+        $str = $nanotimeInt . $randInt;
+        return $str;
+    }
+
+    protected static function base10($str)
+    {
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+        $res = 0;
+
+        $len = strlen($str);
+        for ($i = 0; $i < $len; $i++)
+        {
+            $res = 62 * $res + strpos($index, $str[$i]);
+        }
+
+        return $res;
+    }
 }

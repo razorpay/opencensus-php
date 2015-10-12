@@ -7,7 +7,6 @@ use Models\Base\UniqueIdEntity;
 
 class CreateNetbanking extends Migration
 {
-
     /**
      * Run the migrations.
      *
