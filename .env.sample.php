@@ -51,6 +51,9 @@ return array(
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'      => '000000',
 
+    'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'     => '',
+    'NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'     => '',
+
     'ATOM_MOCK'                                     => true,
     'AXIS_GENIUS_MOCK'                              => true,
     'AXIS_MIGS_MOCK'                                => true,
@@ -59,6 +62,7 @@ return array(
     'KOTAK_MOCK'                                    => true,
     'PAYTM_MOCK'                                    => true,
     'NETBANKING_HDFC_MOCK'                          => true,
+    'NETBANKING_KOTAK_MOCK'                         => true,
 
     'MOCK_GATEWAY_SECRET'                           => 'random_password',
 

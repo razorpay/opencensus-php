@@ -261,37 +261,10 @@ final class Route
     public static $direct = array(
         'transparent_redirect_get',
         'transparent_redirect_post',
-    );
-    public static $direct       = array(
         'gateway_payment_callback_kotak',
     );
+
     public static $internalApps = array(
-<<<<<<< HEAD
-        'dashboard'     => array('*'),
-
-        'mock_gateways' => array(
-            'mockhdfc_enroll',
-            'mockhdfc_auth_enrolled',
-            'mockhdfc_payment',),
-
-        'cron'          => array(
-            'hdfc_mpr_generate',
-            'setl_initiate',
-            'setl_reconcile_generate',
-            'setl_return_generate',
-            'payment_auth_notify',
-            'payment_timeout',
-            'merchant_daily_report',
-            'payment_auto_capture',
-            'payment_verify_all'),
-
-        'mailgun'       => array(
-            'hdfc_mpr_reconcile'),
-
-        'hosted'        => array(
-            'merchant_secret'),
-    );
-=======
             'dashboard' => array('*'),
 
             'mock_gateways' => array(
@@ -317,7 +290,6 @@ final class Route
             'hosted' => array(
                 'merchant_secret'),
         );
->>>>>>> development
 
     protected static $jsonpRoutes = array(
         'checkout',
