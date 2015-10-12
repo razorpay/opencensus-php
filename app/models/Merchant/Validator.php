@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         'gateway_access_code'                       => '',
         'gateway_secure_secret'                     => '',
         'card'                                      => 'required',
-        'category'                                  => 'sometimes'
+        'category'                                  => ''
     );
 
     protected static $banksRules = array(
