@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
+    const PAYZAPP           = 'payzapp';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -62,6 +63,11 @@ class Entity extends Base\PublicEntity
     public function isPaytmEnabled()
     {
         return $this->getPaytmAttribute();
+    }
+
+    public function isPayzappEnabled()
+    {
+        return true;
     }
 
     public function isMobikwikEnabled()

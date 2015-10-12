@@ -4,7 +4,7 @@ namespace Gateway\Hdfc;
 
 class Urls
 {
-    const TEST_DOMAIN           = 'https://securepg.fssnet.co.in';
+    const TEST_DOMAIN           = 'https://securepgtest.fssnet.co.in';
     const LIVE_DOMAIN           = 'https://securepg.fssnet.co.in';
 
     const ENROLL_URL            = '/pgway/servlet/MPIVerifyEnrollmentXMLServlet';

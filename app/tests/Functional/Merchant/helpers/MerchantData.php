@@ -192,7 +192,7 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'international' => true,
-                'category' => '1111',
+                'category' => 1111,
                 'website' => 'http://abc.com',
             ]
         ]

@@ -19,6 +19,8 @@ $factory('Models\Terminal\Entity', [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity,',
     'card' => 1,
+    'netbanking' => 0,
+    'shared' => 1,
     'gateway' => 'hdfc',
     'gateway_merchant_id' => $faker->word,
     'gateway_terminal_id' => $faker->word,

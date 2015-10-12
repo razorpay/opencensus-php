@@ -10,6 +10,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
+    use PaymentAmexTrait;
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
     use PaymentAxisMigsTrait;

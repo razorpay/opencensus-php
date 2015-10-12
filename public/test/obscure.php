@@ -65,6 +65,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <select name="wallet">
                 <option value="paytm">Paytm</option>
                 <option value="mobikwik">Mobikwik</option>
+                <option value="payzapp">Payzapp</option>
             </select>
         </td>
     </tr>
@@ -92,7 +93,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
-        <td><input type="text" name="email" size="25" value="nemo+test@razorpay.com"></td>
+        <td><input type="text" name="email" size="25" value="test@razorpay.com"></td>
         <td><input type="text" name="contact" size="25" value="1234567890"></td>
     </tr>
     </tr>
