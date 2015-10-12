@@ -32,6 +32,8 @@ class TerminalPicker
 
     protected $merchant;
 
+    protected $network;
+
     public function __construct()
     {
         $this->repo = new Terminal\Repository;
@@ -47,7 +49,9 @@ class TerminalPicker
 
         $this->validateCount($terminals, $payment->merchant);
 
-        $terminal = $this->pickOneTerminal($payment, $terminals);
+        $gatewayTerms = $this->getGatewayTerminals($terminals);
+
+        $terminal = $this->pickOneTerminal($gatewayTerms, $payment);
 //$terminal = null;
         if ($terminal === null)
         {
@@ -56,6 +60,9 @@ class TerminalPicker
 
         if ($terminal === null)
         {
+            $this->checkForPartiallySupportedCardNetworks(
+                    $gatewayTerms, $this->network);
+
             throw new Exception\RuntimeException(
                 'Terminal should not be null',
                 ['payment' => $payment->toArrayAdmin()]);
@@ -93,15 +100,13 @@ class TerminalPicker
         return $card;
     }
 
-    protected function pickOneTerminal($payment, $terminals)
+    protected function pickOneTerminal($gatewayTerms, $payment)
     {
         $terminal = null;
 
         $merchant = $payment->merchant;
 
         $method = $payment->getMethod();
-
-        $gatewayTerms = $this->getGatewayTerminals($terminals);
 
         $func = 'pickTerminalFor'.ucfirst($method).'Method';
 
@@ -112,38 +117,38 @@ class TerminalPicker
     {
         $terminal = null;
 
-        if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
-        {
-            if (isset($gatewayTerms[Gateway::KOTAK]))
-            {
-                $terminal = $gatewayTerms[Gateway::KOTAK];
-            }
-
-            return $terminal;
-        }
-
         $international = $payment->merchant->isInternational();
-        if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true))
+
+        $network = $payment->card->getNetworkCode();
+
+        $this->network = $network;
+
+        $gatewayOrder = array(
+            Gateway::HDFC,
+            Gateway::AXIS_MIGS,
+            Gateway::KOTAK);
+
+        foreach ($gatewayOrder as $gateway)
         {
-            return $gatewayTerms[Payment\Gateway::SBIEPAY];
-        }
-        if (isset($gatewayTerms[Gateway::HDFC]))
-        {
-            return $gatewayTerms[Gateway::HDFC];
+            if ((isset($gatewayTerms[$gateway])) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $gatewayTerms[$gateway];
+            }
         }
 
-        if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
-        {
-            return $gatewayTerms[Gateway::AXIS_MIGS];
-        }
-
-        if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-        {
-            return $gatewayTerms[Gateway::AXIS_GENIUS];
-        }
+        // if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+        // {
+        //     return $gatewayTerms[Gateway::AXIS_GENIUS];
+        // }
 
         if ($this->mode === Mode::TEST)
         {
+            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true))
+            {
+                return $gatewayTerms[Payment\Gateway::SBIEPAY];
+            }
+
             // In test mode paytm supports only cards
             // but in live only netbanking.
             if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
@@ -171,20 +176,20 @@ class TerminalPicker
             return;
         }
 
-//        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
-//            (Netbanking::isBilldeskSupportedBank($bank)))
-//        {
-//            return $gatewayTerms[Payment\Gateway::BILLDESK];
-//        }
-
-        if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
-            (Netbanking::isSbiepaySupportedBank($bank)))
+        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
+            (Netbanking::isBilldeskSupportedBank($bank)))
         {
-            return $gatewayTerms[Payment\Gateway::SBIEPAY];
+            return $gatewayTerms[Payment\Gateway::BILLDESK];
         }
 
         if ($this->mode === Mode::TEST)
         {
+            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
+                (Netbanking::isSbiepaySupportedBank($bank)))
+            {
+                return $gatewayTerms[Payment\Gateway::SBIEPAY];
+            }
+
             if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
                 (Netbanking::isPaytmSupportedBank($bank)))
             {
@@ -207,13 +212,13 @@ class TerminalPicker
         $wallet = $this->payment->getWallet();
 
         if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-            ($wallet === 'paytm'))
+            ($wallet === Wallet::PAYTM))
         {
             return $gatewayTerms[Payment\Gateway::PAYTM];
         }
 
         if ((isset($gatewayTerms[Payment\Gateway::MOBIKWIK]) === true) and
-            ($wallet === 'mobikwik'))
+            ($wallet === Wallet::MOBIKWIK))
         {
             return $gatewayTerms[Payment\Gateway::MOBIKWIK];
         }
@@ -264,31 +269,62 @@ class TerminalPicker
 
     protected function getSharedTerminalForCard($payment)
     {
-        if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
+        $terminal = $this->getSharedCategoryTerminalForCard($payment);
+
+        if ($terminal !== null)
         {
-            if ($this->terminalExists(Shared::KOTAK_RAZORPAY_TERMINAL))
+            return $terminal;
+        }
+
+        return $this->getSharedGenericTerminalForCard($payment);
+    }
+
+    protected function getSharedCategoryTerminalForCard($payment)
+    {
+        $international = $payment->merchant->isInternational();
+
+        $network = $payment->card->getNetworkCode();
+        $category = $Payment->merchant->getCategory();
+
+        $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
+                                    Gateway::HDFC, $category);
+
+        return $terminal;
+    }
+
+    protected function getSharedGenericTerminalForCard($payment)
+    {
+        $terminal = null;
+
+        $international = $payment->merchant->isInternational();
+
+        $network = $payment->card->getNetworkCode();
+
+        $this->network = $network;
+
+        $sharedCardTerminals = array(
+            Shared::KOTAK_RAZORPAY_TERMINAL,
+            Shared::HDFC_RAZORPAY_TERMINAL,
+            Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
+
+        foreach ($sharedCardTerminals as $terminal)
+        {
+            $gateway = Shared::getGatewayForTerminal($terminal);
+
+            if (($this->terminalExists($terminal)) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
             {
                 return $this->terminal;
             }
         }
 
-        if ($this->terminalExists(Shared::HDFC_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::AXIS_MIGS_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
         if ($this->mode === Mode::TEST)
         {
+            if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+
             // In test mode paytm supports only cards
             // but in live only netbanking.
             if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
@@ -310,10 +346,10 @@ class TerminalPicker
             }
         }
 
-//        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
-//        {
-//            return $this->terminal;
-//        }
+       if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+       {
+           return $this->terminal;
+       }
 
         if ($this->terminalExists(Shared::SBIEPAY_RAZORPAY_TERMINAL))
         {
@@ -326,11 +362,29 @@ class TerminalPicker
         }
     }
 
+    protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
+    {
+        if ($network === Card\Network::MAES)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+        }
+
+        // Disable rupay in live
+        if (($this->mode === Mode::LIVE) and
+            ($network === Card\Network::RUPAY))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+        }
+
+    }
+
     protected function getSharedTerminalForWallet($payment)
     {
         $wallet = $payment->getWallet();
 
-        if ($wallet === 'paytm')
+        if ($wallet === Wallet::PAYTM)
         {
             if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
             {
@@ -338,7 +392,7 @@ class TerminalPicker
             }
         }
 
-        if ($wallet === 'mobikwik')
+        if ($wallet === Wallet::MOBIKWIK)
         {
             if ($this->terminalExists(Shared::MOBIKWIK_RAZORPAY_TERMINAL))
             {
@@ -376,7 +430,7 @@ class TerminalPicker
 
     protected function getTerminals($merchant)
     {
-        return $this->repo->getByMerchantId($merchant->getId());
+        return $this->repo->fetch([], $merchant->getId());
     }
 
     protected function filterTerminalsByMethod($terminals, $method)

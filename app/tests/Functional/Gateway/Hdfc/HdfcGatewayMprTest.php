@@ -153,14 +153,7 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function fetchAndMatchDailySettlement()
     {
-        $this->ba->appAuth();
-
-        $request = array(
-            'url' => '/dailysettlements',
-            'method' => 'GET',
-        );
-
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->getEntities('dailysettlement', [], true);
 
         $data = array(
             'entity' => 'collection',

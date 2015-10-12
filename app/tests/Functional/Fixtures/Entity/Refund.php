@@ -23,10 +23,10 @@ class Refund extends Base
         $hdfcRefund = $this->fixtures->create('hdfc:from_refund', ['refund' => $refund]);
 
         $txn = (new \Models\Transaction\Core)->createFromRefund($refund);
-        $txn->save();
+        $txn->saveOrFail();
 
         $refund->transaction()->associate($txn);
-        $refund->save();
+        $refund->saveOrFail();
 
         return $refund;
     }

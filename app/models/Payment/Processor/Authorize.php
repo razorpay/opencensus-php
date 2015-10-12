@@ -2,14 +2,15 @@
 
 namespace Models\Payment\Processor;
 
-use App;
 use Constants\Mode;
 use EE\Exception;
+use EE\Error;
 use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant\Methods;
 use Models\Card;
 use Models\Payment;
+use Models\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
@@ -70,6 +71,10 @@ trait Authorize
         $data = array(
             'payment' => $payment->toArray(),
         );
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            ['payment_id' => $payment->getId()]);
 
         $this->repo->transaction(function() use ($data)
         {
@@ -141,10 +146,12 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        $this->checkForRecentFailedPayment($payment);
+
+        Payment\Validator::bankAcsCallbackValidate($payment, $input);
+
         try
         {
-            Payment\Validator::bankAcsCallbackValidate($payment, $input);
-
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
         catch (Exception\BaseException $e)
@@ -163,7 +170,7 @@ trait Authorize
     {
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabled($payment);
+            $this->verifyCardEnabledInLive($payment);
         }
 
         if ($payment->isMethod(Payment\Method::NETBANKING))
@@ -243,14 +250,54 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
+    protected function checkForRecentFailedPayment($payment)
+    {
+        // Difference should be less than 30 minutes
+        $diff = time() - $payment->getUpdatedAt();
+
+        if (($payment->isFailed()) and
+            ($diff < 30 * 60))
+        {
+            $this->rethrowFailedPaymentErrorException($payment);
+        }
+    }
+
+    protected function rethrowFailedPaymentErrorException($payment)
+    {
+        $internalErrorCode = $payment->getInternalErrorCode();
+        $publicErrorCode = $payment->getErrorCode();
+        $errorDesc = $payment->getErrorDescription();
+
+        Error\Map::throwExceptionFromErrorDetails(
+            $publicErrorCode, $internalErrorCode, $errorDesc);
+
+        //
+        // If it has reached here, then an edge case occurred, for which
+        // a suitable exception was not found and which must be handled.
+        // So, we trace an error message, ringing alerts to our devs.
+        //
+
+        $this->trace->error(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            ['payment_id' => $payment->getPublicId(),
+             'public_error_code' => $publicErrorCode,
+             'internal_error_code' => $internalErrorCode,
+             'error_description' => $errorDesc,
+             'message' => 'Failed to convert error code to the appropriate exception']);
+
+        // If no appropriate exception mapping was found then show
+        // the usual message that payment already processed.
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+    }
+
     protected function notifyCustomer($payment)
     {
-        $app = App::getFacadeRoot();
-
         // Dont send mails in test mode
         // @todo: remove this somehow
         if (($this->mode === Mode::TEST) and
-            ($app->environment('dev') === false))
+            ($this->app->environment('dev') === false))
         {
             return;
         }
@@ -272,7 +319,7 @@ trait Authorize
             ]
         ];
 
-        $config = $app->config->get('applications.mailgun');
+        $config = $this->app->config->get('applications.mailgun');
 
         $subject = "Payment Successful for {$templateData['payment']['amount']}";
 
@@ -281,10 +328,10 @@ trait Authorize
             $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
         }
 
-        $app['mailer']->queue(
+        $this->app['mailer']->queue(
             [
                 'html' => 'emails/payment/customer',
-                'text'=> 'emails/payment/customer_text'
+                'text' => 'emails/payment/customer_text'
             ],
             $templateData,
             function ($message) use ($templateData, $config, $subject)
@@ -358,10 +405,7 @@ trait Authorize
 
         $banks = (new Methods\Core)->getMerchantBanks($merchant);
 
-        if ($banks === null)
-            $banks = [];
-        else
-            $banks = $banks->getBanks();
+        $banks = ($banks === null) ? [] : $banks->getBanks();
 
         $bank = $payment->getBank();
 
@@ -377,18 +421,23 @@ trait Authorize
         $methods = $this->methods;
 
         $wallet = $payment->getWallet();
-        $func = 'get'.ucfirst($wallet);
-// sd($func, $methods->$func());
+
         if (($methods === null) or
-            ($methods->$func() === false))
+            ($methods->isWalletEnabled($wallet) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
         }
     }
 
-    protected function verifyCardEnabled($payment)
+    protected function verifyCardEnabledInLive($payment)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        // Only check enabled or not on live mode
         $methods = $this->methods;
 
         if (($methods === null) or
@@ -403,8 +452,7 @@ trait Authorize
     {
         if ($payment->getCallbackUrl() !== null)
         {
-            $app = \App::getFacadeRoot();
-            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 
@@ -427,10 +475,44 @@ trait Authorize
 
         $payment->terminal->incrementUsedCount();
 
-        $payment->save();
-        $payment->terminal->save();
+        $payment->saveOrFail();
+        $payment->terminal->saveOrFail();
+
+        $gateway = $payment->getGateway();
+
+        if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+        {
+            $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+            $txn->saveOrFail();
+        }
+
+        $payment->saveOrFail();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+    }
+
+    protected function isGatewayActuallyAuthorizingPayment($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        {
+            return false;
+        }
+
+        if ($gateway === Payment\Gateway::HDFC)
+        {
+            $network = $payment->card->getNetwork();
+            $network = Card\Network::getCode($network);
+
+            if ($network === Card\Network::MAES)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function verifyHash($hash, $paymentPublicId)

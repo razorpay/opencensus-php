@@ -42,6 +42,7 @@ class RefundTest extends TestCase
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->mockDashboardRequest();
+//        $this->mockRefundEmail();
 
         $refund = $this->startTest($payment['id'], (string)$payment['amount']);
 
@@ -88,12 +89,12 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
 
         $this->startTest($payment['id'], 100);
     }
 
-    public function testRefundOnAuthorizedPayment()
+    public function testRefundByMerchantOnAuthorizedPayment()
     {
         $payment = $this->defaultAuthPayment();
 
@@ -190,5 +191,34 @@ class RefundTest extends TestCase
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
               ->with('refund', Mockery::type('Models\\Base\\PublicEntity'));
+    }
+
+    protected function mockRefundEmail($times = 1)
+    {
+
+        \Mail::shouldReceive('queue')
+            ->twice()
+            ->with(
+                Mockery::any(),
+                Mockery::on(function ($data)
+                    {
+                        $testData = array(
+                            'payment'   =>  [
+                                'amount'=>  'INR 500.00'
+                            ],
+                            'merchant'  =>  [],
+                            'customer'   =>  [
+                                'email' =>  'a@b.com',
+                                'phone' => '9918899029'
+                            ],
+                            'refund'  =>  [
+                                'amount' => 'INR 500.00'
+                            ]
+                        );
+                        $this->assertArraySelectiveEquals($testData, $data);
+
+                        return true;
+                    }),
+                Mockery::any());
     }
 }

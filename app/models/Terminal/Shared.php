@@ -2,6 +2,7 @@
 
 namespace Models\Terminal;
 
+use Models\Payment\Gateway;
 use Models\Terminal;
 
 class Shared
@@ -32,6 +33,20 @@ class Shared
         self::SBIEPAY_RAZORPAY_TERMINAL,
     );
 
+    protected static $map = array(
+        self::ATOM_RAZORPAY_TERMINAL         =>  Gateway::ATOM,
+        self::AXIS_GENIUS_RAZORPAY_TERMINAL  =>  Gateway::AXIS_GENIUS,
+        self::AXIS_MIGS_RAZORPAY_TERMINAL    =>  Gateway::AXIS_MIGS,
+        self::BILLDESK_RAZORPAY_TERMINAL     =>  Gateway::BILLDESK,
+        self::HDFC_RAZORPAY_TERMINAL         =>  Gateway::HDFC,
+        self::KOTAK_RAZORPAY_TERMINAL        =>  Gateway::KOTAK,
+        self::MOBIKWIK_RAZORPAY_TERMINAL     =>  Gateway::MOBIKWIK,
+        self::PAYTM_RAZORPAY_TERMINAL        =>  Gateway::PAYTM,
+        self::NETBANKING_HDFC_TERMINAL       =>  Gateway::NETBANKING_HDFC,
+        self::SHARP_RAZORPAY_TERMINAL        =>  Gateway::SHARP,
+        self::SBIEPAY_RAZORPAY_TERMINAL      =>  Gateway::SBIEPAY,
+    );
+
     public static function isSharedTerminal($terminal)
     {
         $id = $terminal->getId();
@@ -44,5 +59,15 @@ class Shared
         $terminal = $payment->terminal;
 
         return self::isSharedTerminal($terminal);
+    }
+
+    public static function getSharedTerminalMapping()
+    {
+        return self::$map;
+    }
+
+    public static function getGatewayForTerminal($terminal)
+    {
+        return self::$map[$terminal];
     }
 }

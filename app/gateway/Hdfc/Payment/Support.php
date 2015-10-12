@@ -5,6 +5,7 @@ namespace Gateway\Hdfc\Payment;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -22,7 +23,29 @@ trait Support
      */
     protected function supportPayment($input, $type)
     {
+        if ($this->isRefundingAuthorizedPayment($input, $type))
+        {
+            return;
+        }
+
         $this->retrievePreviousGatewayTransaction($input, $type);
+
+        $result = $this->model['result'];
+
+        if (($result === Result::CAPTURED) and
+            ($type === 'capture'))
+        {
+            if ($input['card']['network_code'] === Card\Network::MAES)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Illogical place reached',
+                    ['input' => $input, 'model' => $this->model, 'type' => $type]);
+            }
+        }
 
         //
         // Mark the type of support payment.
@@ -64,6 +87,9 @@ trait Support
         if ($type === 'capture')
         {
             $status = Status::AUTHORIZED;
+
+            if ($input['card']['network_code'] === Card\Network::MAES)
+                $status = Status::CAPTURED;
         }
         else if ($type === 'refund')
         {
@@ -159,7 +185,7 @@ trait Support
 
         $type = $this->supportPaymentRequest['type'];
 
-        $action = constant(__NAMESPACE__.'\Action::'.strtoupper($type));
+        $action = constant(Action::class.'::'.strtoupper($type));
 
         $data['action'] = $action;
 
@@ -246,5 +272,11 @@ trait Support
                 TraceCode::GATEWAY_SUPPORT_RESPONSE,
                 $this->supportPaymentResponse);
         }
+    }
+
+    protected function isRefundingAuthorizedPayment($input, $type)
+    {
+        return (($type === 'refund') and
+                ($input['payment']['status'] === 'authorized'));
     }
 }

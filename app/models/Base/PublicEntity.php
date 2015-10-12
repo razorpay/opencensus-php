@@ -114,6 +114,15 @@ class PublicEntity extends UniqueIdEntity
         return $id;
     }
 
+    public static function verifyIdAndSilentlyStripSign(& $id)
+    {
+        static::stripSign($id);
+
+        UniqueIdEntity::verifyUniqueId($id, true);
+
+        return $id;
+    }
+
     protected static function stripSignOrFail(& $id)
     {
         if (static::stripSign($id) === false)

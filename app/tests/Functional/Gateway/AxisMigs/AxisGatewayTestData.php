@@ -3,7 +3,6 @@
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
-use Gateway\Hdfc;
 
 return [
     'testPayment' => [
@@ -29,6 +28,27 @@ return [
         'signed' => false,
         'verified' => null,
         'entity' => 'payment',
+    ],
+
+    'testTransactionAfterCapture' => [
+        'type' => 'payment',
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'fee' => 1140,
+        'debit' => 0,
+        'credit' => 48860,
+        'currency' => 'INR',
+        'balance' => 1048860,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'escrow_balance' => 1048860,
+        'channel' => 'kotak',
+        'settled' => false,
+//        'settled_at' => 1437589800,
+        'settlement_id' => null,
+        'reconciled_at' => null,
+        'entity' => 'transaction',
+        'admin' => true,
     ],
 
     'testPaymentAxisMigsEntity' => [
@@ -95,5 +115,20 @@ return [
         'vpc_amount' => 50000,
         'entity' => 'axis_migs',
         'admin' => true,
+    ],
+
+    'testMaestroOnMigs' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+        ],
     ],
 ];

@@ -17,6 +17,7 @@ use Trace\TraceCode;
 class Gateway extends Base\Gateway
 {
     use ResponseFieldsTrait;
+    use Base\AuthorizeFailed;
 
     protected $gateway = 'billdesk';
 
@@ -60,7 +61,17 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        return $this->getRequestArray($content);
+        $request = $this->getRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'billdesk',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
     }
 
     public function callback(array $input)
@@ -133,44 +144,6 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    public function authorizeFailed(array $input)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verify($input);
-        }
-        catch (Exception\PaymentVerificationException $e)
-        {
-            ;
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not');
-        }
-
-        $verify = $e->getVerifyObject();
-
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
-        {
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here');
-        }
-
-        return true;
     }
 
     protected function verifyPayment($verify)
@@ -264,16 +237,6 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
-    }
-
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
     }
 
     protected function sendPaymentVerifyRequest($verify)

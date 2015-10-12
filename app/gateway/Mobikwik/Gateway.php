@@ -8,12 +8,15 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
+use Gateway\Base\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
 use Gateway\Mobikwik\Type;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = 'mobikwik';
 
     protected $sortRequestContent = false;
@@ -44,6 +47,13 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $content,
         );
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         return $request;
     }
@@ -51,27 +61,33 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['gateway']['orderid'], Action::AUTHORIZE);
-        $input['received'] = 1;
+        $input['gateway']['received'] = 1;
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
-
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
         $this->verifyPaymentCallbackResponse($input);
     }
 
-    public function verify(array $input)
+    public function sendPaymentVerifyRequest($verify)
     {
-        parent::verify($input);
+        $input = $verify->input;
 
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
         $content['orderid'] = $input['payment']['id'];
 
         $content['checksum'] = $this->getHashForVerifyRequest(
             $content['mid'], $content['orderid']);
+
 
         $content = http_build_query($content);
 
@@ -81,17 +97,95 @@ class Gateway extends Base\Gateway
             'content' => $content);
 
         $response = $this->sendGatewayRequest($request);
-
+        $this->response = $response;
         $content = (array)simplexml_load_string($response->body);
 
-        if ($content['statuscode'] !== '0')
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                'Payment verification failed with statuscode: ' . $content['statuscode']);
-        }
         $this->verifySecureHashForQueryRequest($content);
 
+        unset($content['checksum']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $content);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'request' => $verify->verifyResponseBody,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $content;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($content['statuscode'] !== Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = false;
+            // Could be the case where the transaction didn't even hit mobikwik
+            if (($payment['received'] === false) and
+                (($payment['statuscode'] === null) or
+                    ($payment['statuscode'] !== Status::SUCCESS)))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if ($payment['statuscode'] === Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+            }
+        }
+        else if ($content['statuscode'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+            //Gateway success , api success
+            if ($payment['statuscode'] === Status::SUCCESS)
+            {
+                $verify->apiSuccess = true;
+            }
+            else if ($payment['statuscode'] !== Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+            }
+
+        }
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if (($verify->match === true) and
+            ($payment['received'] === false))
+        {
+            $payment->fill($content);
+            $payment->saveOrFail();
+        }
+
+        return $status;
     }
 
     public function refund(array $input)
@@ -325,43 +419,6 @@ class Gateway extends Base\Gateway
                 $input['gateway']['statuscode'],
                 $input['gateway']['statusmessage']);
         }
-    }
-
-    public function authorizeFailed(array $input)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verify($input);
-        } catch (Exception\PaymentVerificationException $e)
-        {
-            ;
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not');
-        }
-
-        $verify = $e->getVerifyObject();
-
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true)
-        )
-        {
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
-        } else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here');
-        }
-
-        return true;
     }
 
 }

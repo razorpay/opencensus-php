@@ -28,12 +28,7 @@ class PaymentCreateTest extends TestCase
     {
         $this->payment['card']['number'] = '555555555555558';
 
-        $request = array(
-            'content' => $this->payment,
-            'url' => '/payments/create/checkout',
-            'method' => 'post');
-
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->doAuthPaymentViaCheckoutRoute($this->payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
@@ -42,16 +37,18 @@ class PaymentCreateTest extends TestCase
     {
         $this->payment['card']['number'] = '555555555555559';
 
-        $request = array(
-            'content' => $this->payment,
-            'url' => '/payments/create/checkout',
-            'method' => 'post');
-
         $this->changeEnvToNonTest();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->doAuthPaymentViaCheckoutRoute($this->payment);
 
         $this->assertEquals($content['http_status_code'], 400);
         $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_VALIDATION_FAILURE');
+    }
+
+    public function testCallbackOnAuthorizedPayment()
+    {
+        $this->markTestIncomplete();
+        $payment = $this->doAuthPayment();
+        $id = $payment['razorpay_payment_id'];
     }
 }

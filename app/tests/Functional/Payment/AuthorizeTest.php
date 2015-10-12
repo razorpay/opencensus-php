@@ -178,10 +178,7 @@ class AuthorizeTest extends TestCase
     {
         $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);
 
-        $this->ba->appAuth();
-
-        $request = array('url' => '/payments/timeout');
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->timeoutOldPayment();
 
         $this->assertEquals($content['count'], 1);
 
@@ -197,10 +194,7 @@ class AuthorizeTest extends TestCase
             'payment',
             ['created_at' => time() - 60*100, 'status' => 'authorized', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
-        $this->ba->appAuth();
-
-        $request = array('url' => '/payments/timeout');
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->timeoutOldPayment();
 
         $this->assertEquals($content['count'], 0);
 

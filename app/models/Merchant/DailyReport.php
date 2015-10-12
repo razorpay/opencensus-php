@@ -8,6 +8,7 @@ use EE\Exception;
 use Mail;
 use Models\Payment;
 use Models\Settlement;
+use Trace\TraceCode;
 
 class DailyReport
 {
@@ -29,6 +30,8 @@ class DailyReport
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->data = $this->fetchDailyDetails();
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
@@ -59,6 +62,10 @@ class DailyReport
 
         $data = $this->data;
 
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
+            $data);
+
         Mail::send($view, $data, function($message) use ($config, $data)
         {
             $message->to($data['merchant']['transaction_report_email']);
@@ -67,7 +74,7 @@ class DailyReport
 
             $message->cc('notifications@razorpay.com');
 
-            $message->subject('Daily Transaction Report for ' . $data['date']);
+            $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
         });
     }
 

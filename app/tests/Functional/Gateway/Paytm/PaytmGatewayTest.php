@@ -19,6 +19,8 @@ class PaytmGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->fixtures->merchant->enablePaytm('10000000000000');
+
         $this->gateway = 'paytm';
     }
 
@@ -27,7 +29,18 @@ class PaytmGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -41,8 +54,6 @@ class PaytmGatewayTest extends TestCase
 
     public function testPaytmWallet()
     {
-        $this->fixtures->links['merchant']->enablePaytm('10000000000000');
-
         $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
@@ -75,17 +86,18 @@ class PaytmGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
-        $this->markTestIncomplete();
-
         $this->setMockGatewayTrue();
 
-        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = 'paytm';
+        $payment = $this->doAuthAndCapturePayment($payment);
 
         $id = $payment['id'];
 
-        $payment = $this->verifyPayment($id);
+        $data = $this->verifyPayment($id);
 
-        $this->assertEquals($payment['verified'], true);
+        $this->assertEquals($data['payment']['verified'], true);
     }
 
     public function testRefundPayment()
@@ -102,6 +114,8 @@ class PaytmGatewayTest extends TestCase
 
     public function testPaytmWhenNotEnabled()
     {
+        $this->fixtures->merchant->disablePaytm('10000000000000');
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -111,5 +125,17 @@ class PaytmGatewayTest extends TestCase
         $testData['request']['content'] = $payment;
 
         $content = $this->startTest($testData);
+    }
+
+    public function testRefundByAdminOnAuthorizedPayment()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->ba->proxyAuth();
+
+        $input['force'] = '1';
+        $content = $this->refundAuthorizedPayment($payment['id'], $input);
+
+        $this->assertEquals('refund', $content['entity']);
     }
 }

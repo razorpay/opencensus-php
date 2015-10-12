@@ -19,8 +19,6 @@ class TestCase extends ParentTestCase
 
     protected $ba;
 
-    protected static $initialSetupDone = false;
-
     /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
@@ -49,36 +47,9 @@ class TestCase extends ParentTestCase
 
     public function initialSetup()
     {
-        if ((self::$initialSetupDone === true) and
-            ($this->isTestRunningOnWercker()))
-        {
-            // Setup database
-            $this->db->setUp();
+        $this->db->setUp();
 
-            return;
-        }
-
-        // Run migrations
-        $this->db->migrate();
-
-        // // Truncate tables
-        // $this->db->truncate();
-
-        if ($this->isTestRunningOnWercker() === false)
-        {
-            $this->db->setUp();
-        }
-
-        // Seed database
-        $this->fixtures->setUp();
-
-        if ($this->isTestRunningOnWercker() === true)
-        {
-            // Setup database
-            $this->db->setUp();
-        }
-
-        self::$initialSetupDone = true;
+        $this->db->runFixtures($this->fixtures);
     }
 
     public function tearDown()

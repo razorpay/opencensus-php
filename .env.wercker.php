@@ -28,9 +28,6 @@ return array(
 
     'CLOUD'                                 => false,
 
-    'HDFC_ID'                               => getenv('HDFC_ID'),
-    'HDFC_PASSWORD'                         => getenv('HDFC_PASSWORD'),
-
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => getenv('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => getenv('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
     'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => getenv('AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'),
@@ -97,4 +94,6 @@ return array(
     'AWS_S3_SETTLEMENT_BUCKET'              => '',
 
     'CRON_PASSWORD'                         => 'a923r8u98uwaf98uw9w8fu',
+
+    'RUN_FIXTURES_ONCE'                     => true,
 );

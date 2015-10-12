@@ -2,6 +2,7 @@
 
 namespace Tests\Functional;
 
+use Closure;
 use EE\Exception\BaseException;
 use Requests;
 use Tests\Functional\Helpers\EntityFetchTrait;
@@ -13,14 +14,21 @@ trait RequestResponseFlowTrait
     /**
      * Auths a payment & tests it is corrrectly done
      */
-    public function runRequestResponseFlow($data)
+    public function runRequestResponseFlow($data, Closure $closure = null)
     {
         $response = null;
 
         try
         {
-            $response = $this->makeRequest($data['request']);
-            //sd($response->getContent());
+            if ($closure !== null)
+            {
+                $response = $closure();
+            }
+            else
+            {
+                $response = $this->makeRequest($data['request']);
+                //sd($response->getContent());
+            }
         }
         catch (BaseException $e)
         {
@@ -231,6 +239,18 @@ trait RequestResponseFlowTrait
         $response = $this->makeRequest($request, $callback);
 
         return $this->getJsonContentFromResponse($response, $callback);
+    }
+
+    protected function makeRequestAndCatchException(Closure $closure)
+    {
+        try
+        {
+            return $closure();
+        }
+        catch (\Exception $e)
+        {
+            ;
+        }
     }
 
     public function getJsonContent($response)

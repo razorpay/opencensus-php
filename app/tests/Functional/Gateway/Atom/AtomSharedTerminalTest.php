@@ -5,7 +5,7 @@ namespace Tests\Functional\AtomGateway;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
-class SharedTerminalTest extends TestCase
+class AtomSharedTerminalTest extends TestCase
 {
     use PaymentTrait;
 
@@ -28,7 +28,7 @@ class SharedTerminalTest extends TestCase
     public function testNBPaymentOnSharedTerminal()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $this->assertPaymentFields($payment);
+        $this->assertPaymentAfterAuthAndCapture($payment);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn);
@@ -39,7 +39,7 @@ class SharedTerminalTest extends TestCase
      */
     public function testCardPaymentOnSharedTerminal()
     {
-        $this->assertPaymentFields();
+        $this->assertPaymentAfterAuthAndCapture();
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn);
@@ -51,7 +51,7 @@ class SharedTerminalTest extends TestCase
         $payment['card']['number'] = '4000401111111110';
         $payment['amount'] = '200000';
 
-        $this->assertPaymentFields($payment);
+        $this->assertPaymentAfterAuthAndCapture($payment);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn);
@@ -63,13 +63,13 @@ class SharedTerminalTest extends TestCase
         $payment['card']['number'] = '4000401111111110';
         $payment['amount'] = '200001';
 
-        $this->assertPaymentFields($payment);
+        $this->assertPaymentAfterAuthAndCapture($payment);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn);
     }
 
-    protected function assertPaymentFields($paymentInput = null)
+    protected function assertPaymentAfterAuthAndCapture($paymentInput = null)
     {
         $payment = $this->doAuthAndCapturePayment($paymentInput);
 

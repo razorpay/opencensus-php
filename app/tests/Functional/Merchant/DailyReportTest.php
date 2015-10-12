@@ -105,7 +105,7 @@ class DailyReportTest extends TestCase
             ['created_at' => $createdAt,
              'updated_at' => $createdAt + 10]);
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
         $this->fixtures->create('merchant:bank_account', ['merchant_id' => '10000000000000']);
     }
 }

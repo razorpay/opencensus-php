@@ -138,7 +138,14 @@ trait Enroll
         //
         $data['currencycode'] = self::INR_CODE;
 
-        $data['action'] = Action::AUTHORIZE;
+        if ($input['card']['network_code'] === Card\Network::MAES)
+        {
+            $data['action'] = Action::PURCHASE;
+        }
+        else
+        {
+            $data['action'] = Action::AUTHORIZE;
+        }
     }
 
     /**
