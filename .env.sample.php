@@ -52,12 +52,16 @@ return array(
     'KOTAK_GATEWAY_TEST_ACCESS_CODE'                    => 'password',
     'KOTAK_GATEWAY_TEST_TERMINAL_ID'                    => 'randomid',
 
+    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'                 => 'random_hash_secret',
+
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                    => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                    => 'randomsecret',
 
     'PAYZAPP_WALLET_TEST_MERCHANT_ID'                   => 'random',
     'PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'               => 'random',
     'PAYZAPP_WALLET_TEST_HASH_SECRET'                   => 'random',
+    'PAYZAPP_WALLET_TEST_PG_INSTANCE_ID'                => 'random',
+    'PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'                => 'random',
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'          => '000000',
 
@@ -68,6 +72,7 @@ return array(
     'BILLDESK_MOCK'                                     => true,
     'HDFC_MOCK'                                         => true,
     'KOTAK_MOCK'                                        => true,
+    'MOBIKWIK_MOCK'                                     => false,
     'PAYTM_MOCK'                                        => true,
     'PAYZAPP_MOCK'                                      => false,
     'NETBANKING_HDFC_MOCK'                              => true,
