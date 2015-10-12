@@ -50,7 +50,8 @@ class Validator extends Base\Validator
         'gateway_terminal_password_confirmation'    => '',
         'gateway_access_code'                       => '',
         'gateway_secure_secret'                     => '',
-        'card'                                      => 'required'
+        'card'                                      => 'required',
+        'category'                                  => 'sometimes'
     );
 
     protected static $banksRules = array(
