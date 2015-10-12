@@ -83,6 +83,7 @@ return array(
     'PAYTM_MOCK'                                    => true,
     'PAYZAPP_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
+    'NETBANKING_KOTAK_MOCK'                         => true,
 
     'MOCK_GATEWAY_SECRET'                           => 'wercker_random_password',
 
@@ -97,6 +98,7 @@ return array(
     'SLACK_TOKEN'                                   => '',
     'SLACK_MOCK'                                    => true,
 
+    'MAILGUN_API_KEY'                               => '',
     'MAILGUN_SECRET'                                => getenv('MAILGUN_API_KEY'),
     'MAILGUN_MOCK'                                  => true,
 
@@ -112,5 +114,7 @@ return array(
 
     'CRON_PASSWORD'                                 => 'a923r8u98uwaf98uw9w8fu',
 
+    'RUN_FIXTURES'                                  => true,
     'RUN_FIXTURES_ONCE'                             => true,
+    'TRUNCATE_DATABASE'                             => false,
 );
