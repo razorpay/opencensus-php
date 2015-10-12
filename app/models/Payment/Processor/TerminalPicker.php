@@ -278,7 +278,7 @@ class TerminalPicker
         $international = $payment->merchant->isInternational();
 
         $network = $payment->card->getNetworkCode();
-        $category = $Payment->merchant->getCategory();
+        $category = $payment->merchant->getCategory();
 
         $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
                                     Gateway::HDFC, $category);
