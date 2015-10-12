@@ -15,6 +15,8 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = 'axis_migs';
 
     public function authorize(array $input)
@@ -143,16 +145,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
-    }
-
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
@@ -185,7 +177,21 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        $amountRefunded = (int) $content['vpc_RefundedAmount'];
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            ['payment_id' => $input['payment']['id'],
+             'content' => $content]);
+
+        if ((isset($content['vpc_DRExists']) === false) and
+            ($content['vpc_TxnResponseCode'] === '7'))
+        {
+            // Most probably means AMA credentials are not correct.
+            // However, not sure. Read the error message provided.
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                $content['vpc_TxnResponseCode'],
+                $content['vpc_Message']);
+        }
 
         if ($content['vpc_DRExists'] !== 'Y')
         {
@@ -215,12 +221,6 @@ class Gateway extends Base\Gateway
                 if ($content['vpc_TxnResponseCode'] === '0')
                 {
                     $verify->gatewaySuccess = true;
-
-                    // Check that refund amount matches.
-                    if ($amountRefunded !== $input['payment']['amount_refunded'])
-                    {
-                        $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
-                    }
                 }
                 else
                 {
@@ -373,6 +373,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAmaRequestArray($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_REQUEST,
+            ['action' => 'Support action request array',
+            'content' => $content]);
+
         // send the request and get response
         $response = $this->postRequest($request);
 
@@ -503,6 +508,13 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = null;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
+
         if (isset($content['vpc_TxnResponseCode']))
         {
             $txnResponseCode = $content['vpc_TxnResponseCode'];
@@ -528,6 +540,10 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Base\Action::REFUND)
         {
+            // Refund request failed. Just check if refund amount due to
+            // previous requests matches the expected amount.
+            // In that case, we will mark it as success.
+
             $ret = $this->returnIfRefundAmountMatches($content, $input);
 
             if ($ret === true)
@@ -547,6 +563,11 @@ class Gateway extends Base\Gateway
 
     protected function returnIfRefundAmountMatches($content, $input)
     {
+        if (isset($content['vpc_RefundedAmount']) === false)
+        {
+            return false;
+        }
+
         $amount = $input['payment']['amount_refunded'] + $input['refund']['amount'];
 
         $vpcAmount = (int) $content['vpc_RefundedAmount'];

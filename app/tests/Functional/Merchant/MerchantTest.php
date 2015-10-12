@@ -61,6 +61,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantFetchCardEnabled()
+    {
+        $merchants = $this->getEntities(
+                'merchant', ['methods' => '{"card":true}'], true);
+
+        $this->assertEquals($merchants['entity'], 'collection');
+    }
+
     /**
      * Updates a key
      */
@@ -114,6 +122,13 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchant()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantEmail()
     {
         $this->createMerchant();
 
@@ -209,7 +224,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $this->ba->publicLiveAuth();
 
@@ -229,7 +244,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',
@@ -249,7 +264,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $request = array(
             'url' => '/checkout',
@@ -267,7 +282,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicLiveAuth('random');
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $request = array(
             'url' => '/checkout',

@@ -13,11 +13,9 @@ class Handler
 {
     protected $app;
 
-    public function __construct()
+    public function __construct($app)
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->registerExceptionHandlers();
+        $this->app = $app;
     }
 
     public function registerExceptionHandlers()
@@ -68,10 +66,14 @@ class Handler
         if ($exception instanceof ServerErrorException)
             return;
 
+        $this->app['trace']->info(
+            Trace\TraceCode::RECOVERABLE_EXCEPTION,
+            $this->getExceptionDetails($exception));
+
         return ApiResponse::recoverableError($this->isDebug(), $exception);
     }
 
-    protected function traceException(\Exception $exception)
+    public function traceException(\Exception $exception)
     {
         $traceData = $this->getExceptionDetails($exception);
 
@@ -80,17 +82,29 @@ class Handler
            $traceData);
     }
 
-    protected function getExceptionDetails(\Exception $exception)
+    protected function getExceptionDetails(\Exception $exception, $level = 0)
     {
         $previousException = $exception->getPrevious();
 
-        $previous = ($previousException !== null) ? $this->getExceptionDetails($previousException) : null;
+        $previous = null;
+
+        if ($previousException !== null)
+        {
+            $previous = $this->getExceptionDetails($previousException, $level + 1);
+        }
 
         $data = null;
 
         if (method_exists($exception, 'getData'))
         {
             $data = $exception->getData();
+        }
+
+        $stack = explode("\n", $exception->getTraceAsString());
+
+        if ($level > 0)
+        {
+            $stack = array_slice($stack, 0, 5);
         }
 
         //
@@ -106,7 +120,7 @@ class Handler
             'code'      => $exception->getCode(),
             'message'   => $exception->getMessage(),
             'data'      => $data,
-            'stack'     => $exception->getTraceAsString(),
+            'stack'     => $stack,
             'previous'  => $previous);
 
         return $traceData;

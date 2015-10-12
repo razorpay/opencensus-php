@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::SHARED                      => 'sometimes|boolean',
@@ -53,6 +54,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
     );
 
+    protected static $axisMigsEditTerminalRules = array(
+        Entity::GATEWAY                     => 'sometimes|in:axis_migs',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::CARD                        => 'sometimes|boolean|in:1',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -86,7 +94,7 @@ class Validator extends Base\Validator
         if ($count > Entity::MAX_TERMINALS_COUNT)
         {
             throw new Exception\LogicException(
-                'Terminal count should not exceed 4');
+                'Terminal count should not exceed max count');
         }
         else if ($count === Entity::MAX_TERMINALS_COUNT)
         {
@@ -105,10 +113,24 @@ class Validator extends Base\Validator
     protected function matchGatewayForNewTerminal($new, $existing)
     {
         // If 1 exists, then another should not be added for the same gateway
-        if ($new->getGateway() === $existing->getGateway())
+        if (($new->getGateway() === $existing->getGateway()) and
+            ($new->getId() !== $existing->getId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
+        }
+    }
+
+    public function usedTerminalValidator($terminal, $input)
+    {
+        if ($terminal->getGateway() === Payment\Gateway::AXIS_MIGS)
+        {
+            $this->validateInput('axis_migs_edit_terminal', $input);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
         }
     }
 }

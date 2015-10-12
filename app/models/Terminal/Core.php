@@ -7,6 +7,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Terminal;
+use Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -21,6 +22,32 @@ class Core extends Base\Core
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
+    public function edit($terminal, $input)
+    {
+        $this->validateExistingTerminal($terminal);
+
+        if ((isset($input['restore'])) and
+            ($input['restore'] === '1'))
+        {
+            $terminal->restoreOrFail();
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::TERMINAL_EDIT,
+                [
+                    'terminal_id' => $terminal->getId(),
+                    'fields' => array_keys($input),
+                ]);
+
+            $terminal->edit($input);
+
+            (new Terminal\Repository)->saveOrFail($terminal);
+        }
 
         return $terminal;
     }
@@ -50,6 +77,16 @@ class Core extends Base\Core
             Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
 
         $existingTerminals = $this->repo->getByParams($params);
+
+        if ($existingTerminals->count() === 1)
+        {
+            $existingTerminal = $existingTerminals[0];
+
+            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
+            {
+                return;
+            }
+        }
 
         if ($existingTerminals->count() !== 0)
         {

@@ -15,6 +15,8 @@ use Gateway\Mobikwik\Type;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = 'mobikwik';
 
     protected $sortRequestContent = false;
@@ -45,6 +47,13 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $content,
         );
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         return $request;
     }
@@ -52,15 +61,20 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['gateway']['orderid'], Action::AUTHORIZE);
-        $input['received'] = 1;
+        $input['gateway']['received'] = 1;
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
-
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
         $this->verifyPaymentCallbackResponse($input);
     }
 
@@ -100,19 +114,16 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $content;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'request' => $verify->verifyResponseBody,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
         return $content;
-
-
-//        if ($content['statuscode'] !== '0')
-//        {
-//            throw new Exception\GatewayErrorException(
-//                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-//                'Payment verification failed with statuscode: ' . $content['statuscode']);
-//        }
-
     }
-
-
 
     public function verify(array $input)
     {
@@ -121,16 +132,6 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
     }
 
     protected function verifyPayment($verify)
@@ -186,8 +187,6 @@ class Gateway extends Base\Gateway
 
         return $status;
     }
-
-
 
     public function refund(array $input)
     {
@@ -420,43 +419,6 @@ class Gateway extends Base\Gateway
                 $input['gateway']['statuscode'],
                 $input['gateway']['statusmessage']);
         }
-    }
-
-    public function authorizeFailed(array $input)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verify($input);
-        } catch (Exception\PaymentVerificationException $e)
-        {
-            ;
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not');
-        }
-
-        $verify = $e->getVerifyObject();
-
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true)
-        )
-        {
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
-        } else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here');
-        }
-
-        return true;
     }
 
 }

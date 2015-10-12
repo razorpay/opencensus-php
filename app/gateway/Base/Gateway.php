@@ -10,11 +10,28 @@ use Trace\TraceCode;
 
 class Gateway
 {
+    /**
+     * Trace instance for tracing
+     * @var Trace\Trace
+     */
     protected $trace;
 
+    /**
+     * @var array
+     */
     protected $input;
 
+    /**
+     * Action being taken currently
+     * @var string
+     */
     protected $action;
+
+    /**
+     * Whether the gateway supports authorizing payments.
+     * @var boolean
+     */
+    protected $authorize = false;
 
     /**
      * The state in which the api is operating
@@ -142,6 +159,47 @@ class Gateway
         }
 
         return $verify->getDataToTrace();
+    }
+
+    public function authorizeFailed(array $input)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verify($input);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+                ['message' => 'Payment verification failed. Now converting to authorized']);
+        }
+
+        $verify = $e->getVerifyObject();
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not',
+                $verify->getDataToTrace());
+        }
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $payment = $verify->payment;
+            $payment->fill($verify->verifyResponseContent);
+            $payment->saveOrFail();
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here');
+        }
+
+        return true;
     }
 
     protected function getNamespace()

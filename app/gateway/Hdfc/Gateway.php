@@ -232,6 +232,12 @@ class Gateway extends Base\Gateway
      */
     protected $response;
 
+    /**
+     * Whether the gateway supports authorizing payments.
+     * @var boolean
+     */
+    protected $authorize = true;
+
     public function __construct()
     {
         parent::__construct();
@@ -289,7 +295,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        validate($this->bankAcsResponseRules, $input['gateway']);
+        validate($this->bankAcsResponseRules, $input['gateway'], false);
 
         $this->id = $input['payment']['id'];
 

@@ -3,6 +3,7 @@
 namespace Tests\Functional\Helpers\Payment;
 
 use EE\Exception\BaseException;
+use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Tests\Functional\RequestResponseFlowTrait;
@@ -244,6 +245,23 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doAuthPaymentViaCheckoutRoute($payment)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'content' => $payment,
+            'url' => '/payments/create/checkout',
+            'method' => 'post');
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function capturePayment($id, $amount)
     {
         $request = array(
@@ -316,6 +334,24 @@ trait PaymentTrait
         return $refund;
     }
 
+    protected function refundAuthorizedPayment($id, array $input = array())
+    {
+        $this->ba->proxyAuth();
+
+        $content = array();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/authorize_refund',
+            'content' => $input);
+
+        $refund = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('refund', $refund['entity']);
+
+        return $refund;
+    }
+
     protected function authorizeFailedPayment($id)
     {
         $request = array(
@@ -329,11 +365,32 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function timeoutOldPayment()
+    {
+        $this->ba->appAuth();
+
+        $request = array('url' => '/payments/timeout');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function deleteTerminal($mid, $tid)
     {
         $request = array(
             'url' => '/merchants/'.$mid.'/terminals/'.$tid,
             'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editTerminal($tid, $input)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid,
+            'method' => 'put',
+            'content' => $input);
 
         $this->ba->appAuth();
 
@@ -411,6 +468,21 @@ trait PaymentTrait
         ];
 
         return $payment;
+    }
+
+    protected function generateRefundsExcelForHdfcNB()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/netbanking/excel',
+            'method' => 'post',
+            'content' => [
+                'bank'  => 'HDFC'
+            ],
+        );
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getDefaultNetbankingPaymentArray()
@@ -846,5 +918,17 @@ trait PaymentTrait
     protected function assertResponse($type, $response)
     {
         $this->assertTrue($this->isResponseInstanceType($type, $response));
+    }
+
+    protected function mockServer()
+    {
+        $class = $this->app['gateway']->getServerClass($this->gateway);
+
+        return Mockery::mock($class)->makePartial();
+    }
+
+    protected function setMockServer($server)
+    {
+        return $this->app['gateway']->setServer($this->gateway, $server);
     }
 }

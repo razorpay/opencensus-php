@@ -6,6 +6,8 @@ use Gateway\Base;
 
 class Entity extends Base\Entity
 {
+    const CAPS_PAYMENT_ID = 'caps_payment_id';
+
     protected $table = 'netbanking';
 
     protected $entity = 'netbanking';
@@ -49,5 +51,12 @@ class Entity extends Base\Entity
     public function getAmountAttribute()
     {
         return (int) $this->attributes['amount'];
+    }
+
+    public function setPaymentId($paymentId)
+    {
+        parent::setPaymentId($paymentId);
+
+        $this->attributes['caps_payment_id'] = strtoupper($paymentId);
     }
 }

@@ -5,17 +5,15 @@ namespace Gateway\Hdfc;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
-use Models\Base;
+use Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Hdfc';
 
     public function __construct()
     {
-        $this->repo = __NAMESPACE__.'\Entity';
+        $this->repo = Entity::class;
 
         parent::__construct();
     }
@@ -24,7 +22,7 @@ class Repository extends Base\Repository
     {
         $oldRepo = $this->repo;
 
-        $this->repo = __NAMESPACE__.'\ResponseXml';
+        $this->repo = ResponseXml::class;
 
         $repo = $this->repo;
 
@@ -130,9 +128,14 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthEnrolled($model, $data)
     {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+            $status = Payment\Status::CAPTURED;
+
         $attributes = array(
             'payment_id'    => $data['trackid'],
-            'status'        => Payment\Status::AUTHORIZED,
+            'status'        => $status,
             'result'        => $data['result'],
             'ref'           => $data['ref'],
             'auth'          => $data['auth'],

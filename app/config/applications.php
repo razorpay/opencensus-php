@@ -23,7 +23,7 @@ return array(
         'mock'      =>  $_ENV['MAILGUN_MOCK'],
         'secret'    =>  '',
         'from_name' =>  'Team Razorpay',
-        'from_email' => 'noreply@razorpay.com'
+        'from_email' => 'support@razorpay.com'
     ),
 
     'slack' => array(

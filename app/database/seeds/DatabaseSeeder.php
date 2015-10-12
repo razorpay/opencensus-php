@@ -146,6 +146,9 @@ class DatabaseSeeder extends Seeder
                 array(
                     'merchant_id'   =>  Account::DEMO_ACCOUNT,
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
+                    'paytm'         => '1',
+                    'mobikwik'      => '1',
+                    'card'          => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -155,6 +158,9 @@ class DatabaseSeeder extends Seeder
                 array(
                     'merchant_id'   =>  Account::TEST_ACCOUNT,
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
+                    'paytm'         => '1',
+                    'mobikwik'      => '1',
+                    'card'          => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )

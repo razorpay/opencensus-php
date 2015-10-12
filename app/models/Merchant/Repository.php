@@ -15,9 +15,13 @@ class Repository extends Base\Repository
     protected $entity = 'Merchant';
 
     protected $appFetchParamRules = array(
-        Entity::ACTIVATED       => 'sometimes|boolean',
-        Entity::HOLD_FUNDS      => 'sometimes|boolean',
-        Entity::LIVE            => 'sometimes|boolean',
+        Entity::ACTIVATED               => 'sometimes|boolean',
+        Entity::HOLD_FUNDS              => 'sometimes|boolean',
+        Entity::LIVE                    => 'sometimes|boolean',
+        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::INTERNATIONAL           => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
+        Entity::METHODS                 => 'sometimes|string',
     );
 
     public function getBalanceLockForUpdate($id)
@@ -95,5 +99,34 @@ class Repository extends Base\Repository
         $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
 
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
+    }
+
+    public function addQueryParamMethods($query, $params)
+    {
+        $query->join(
+            Methods\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+
+                $methods = json_decode($params[Entity::METHODS], true);
+
+                $join->on($methodsMerchantId, '=', $merchantId);
+
+                foreach ($methods as $method => $value)
+                {
+                    $queryValue = null;
+
+                    if ($value === 'true')
+                        $queryValue = '1';
+                    else if ($value === 'false')
+                        $queryValue = '0';
+
+                    $join->where($method, '=', $queryValue);
+                }
+            });
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 }

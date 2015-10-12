@@ -5,13 +5,15 @@ namespace Gateway;
 use Config;
 use Constants\Mode;
 use EE\Exception;
-use Gateway\Hdfc;
+use Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
     protected $gateways = array();
 
     protected $mocks = array();
+
+    protected $servers = array();
 
     public function __construct($app)
     {
@@ -43,31 +45,17 @@ class GatewayManager extends \Illuminate\Support\Manager
             throw new Exception\LogicException($driver . ' is not an available gateway');
         }
 
-        $mock = $this->getMock($driver);
+        $mock = $this->isMock($driver);
 
         return $this->createGatewayDriver($driver, $mock);
     }
 
     protected function createGatewayDriver($driver, $mock)
     {
-        $driver1 = ucfirst(studly_case($driver));
-
-        $driver2 = ucwords(str_replace('_', ' ', $driver));
-        $driver2 = str_replace(' ', '\\', $driver2);
-
-        $class1 = 'Gateway\\'.$driver1.'\Gateway';
-        $class2 = 'Gateway\\'.$driver2.'\Gateway';
-
-        if (class_exists($class1))
-            $driver = $driver1;
-        else if (class_exists($class2))
-            $driver = $driver2;
-
-        if ($mock !== '')
-            $driver = $driver . '\\' . $mock;
+        $namespace = $this->getGatewayNamespace($driver, $mock);
 
         // Constructs gateway class name in the format
-        $class = 'Gateway\\'.$driver.'\\'.'Gateway';
+        $class = $namespace . '\\' . 'Gateway';
 
         if (class_exists($class) === false)
         {
@@ -77,7 +65,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         return new $class;
     }
 
-    protected function getMock($driver)
+    protected function isMock($driver)
     {
         $mock = '';
 
@@ -86,10 +74,10 @@ class GatewayManager extends \Illuminate\Support\Manager
         if (($mode === Mode::TEST) and
             (in_array($driver, $this->getMockDrivers())))
         {
-            $mock = 'Mock';
+            return true;
         }
 
-        return $mock;
+        return false;
     }
 
     public function getDefaultDriver()
@@ -100,6 +88,50 @@ class GatewayManager extends \Illuminate\Support\Manager
     public function gateway($gateway)
     {
         return parent::driver($gateway);
+    }
+
+    public function netbankingGateway($bank)
+    {
+        $driver = 'netbanking_'.$bank;
+
+        return $this->netbankingGateway($bank);
+    }
+
+    public function server($driver)
+    {
+        $servers = & $this->servers;
+
+        if (isset($servers[$driver]))
+        {
+            return $servers[$driver];
+        }
+
+        $server = $this->getServerClass($driver);
+
+        $server = new $server;
+
+        $servers[$driver] = $server;
+
+        return $servers[$driver];
+    }
+
+    public function getServerClass($driver)
+    {
+        $server = $this->getGatewayNamespace($driver, true) . '\\Server';
+
+        if ($driver === 'sharp')
+            $server = 'Gateway\Sharp\Server';
+
+        return $server;
+    }
+
+    public function setServer($driver, Mock\Server $server)
+    {
+        $this->servers[$driver] = $server;
+
+        $server->setNamespace($this->getGatewayNamespace($driver, true));
+
+        return $server;
     }
 
     protected function getMockDrivers()
@@ -115,5 +147,29 @@ class GatewayManager extends \Illuminate\Support\Manager
     protected function getGateways()
     {
         return $this->gateways;
+    }
+
+    protected function getGatewayNamespace($driver, $mock = false)
+    {
+        $driver1 = ucfirst(studly_case($driver));
+
+        $driver2 = ucwords(str_replace('_', ' ', $driver));
+        $driver2 = str_replace(' ', '\\', $driver2);
+
+        $class1 = 'Gateway\\'.$driver1.'\Gateway';
+        $class2 = 'Gateway\\'.$driver2.'\Gateway';
+
+        $namespace = null;
+        if (class_exists($class1))
+            $namespace = $driver1;
+        else if (class_exists($class2))
+            $namespace = $driver2;
+
+        $namespace = 'Gateway\\'.$namespace;
+
+        if ($mock === true)
+            $namespace = $namespace .= '\\' . 'Mock';
+
+        return $namespace;
     }
 }

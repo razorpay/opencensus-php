@@ -39,4 +39,25 @@ class AdminController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getTransparentRedirect()
+    {
+        $input = Input::all();
+
+        if (isset($input['url']))
+        {
+            $url = $input['url'];
+            unset($input['url']);
+
+            $query = http_build_query($input);
+            $url .= '?'.$query;
+
+            return Redirect::to($url);
+        }
+    }
+
+    public function postTransparentRedirect()
+    {
+        $input = Input::all();
+    }
 }

@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const USED_COUNT                    = 'used_count';
+    const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
@@ -67,11 +68,10 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected static $generators = array(
-        'method',
-        'thedefaults');
+    protected static $generators = array('method');
 
     protected $defaults = array(
+        self::CATEGORY                  => null,
         self::GATEWAY_MERCHANT_ID       => null,
         self::GATEWAY_TERMINAL_ID       => null,
         self::GATEWAY_TERMINAL_PASSWORD => null,
@@ -101,37 +101,32 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function generateThedefaults($input)
+    public function edit(array $input = array(), $operation = 'edit')
     {
-        if (empty($input[self::GATEWAY_MERCHANT_ID]))
+        if ($this->getUsedCount() === 0)
         {
-            $this->setAttribute(self::GATEWAY_MERCHANT_ID, null);
-        }
+            // Essentially we ask for all the input anew and fill it in.
+            // Put the values which are not changing like gateway and merchant_id
+            // by ourselves.
 
-        if (empty($input[self::GATEWAY_ACCESS_CODE]))
-        {
-            $this->setAttribute(self::GATEWAY_ACCESS_CODE, null);
-        }
+            $input[Entity::GATEWAY] = $this->getGateway();
+            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
 
-        if (empty($input[self::GATEWAY_TERMINAL_ID]))
+            return parent::edit($input, 'create');
+        }
+        else
         {
-            $this->setAttribute(self::GATEWAY_TERMINAL_ID, null);
+            $this->editUsedTerminal($input);
         }
     }
 
-    public function edit(array $input = array(), $operation = 'edit')
+    protected function editUsedTerminal($input)
     {
-        // Ensure this terminal hasn't produced successful transaction yet.
-        assert ($this->getUsedCount() === 0);
+        assert ($this->getUsedCount() !== 0);
 
-        // Essentially we ask for all the input anew and fill it in.
-        // Put the values which are not changing like gateway and merchant_id
-        // by ourselves.
+        $this->getValidator()->usedTerminalValidator($this, $input);
 
-        $input[Entity::GATEWAY] = $this->getGateway();
-        $input[Entity::MERCHANT_ID] = $this->getMerchantId();
-
-        return parent::edit($input, 'create');
+        $this->fill($input);
     }
 
     public function incrementUsedCount()

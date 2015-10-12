@@ -152,7 +152,7 @@ class Netbanking
     {
         if (defined(__CLASS__ . '::' . $code))
         {
-            return self::$names[$ifsc];
+            return self::$names[$code];
         }
 
         return Name::getName($code);

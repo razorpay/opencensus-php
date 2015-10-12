@@ -49,14 +49,24 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function isCardEnabled()
+    {
+        return $this->getCardAttribute();
+    }
+
+    public function isWalletEnabled($wallet)
+    {
+        return $this->{'is'.ucfirst($wallet).'Enabled'}();
+    }
+
     public function isPaytmEnabled()
     {
         return $this->getPaytmAttribute();
     }
 
-    public function isCardEnabled()
+    public function isMobikwikEnabled()
     {
-        return $this->getCardAttribute();
+        return $this->getMobikwikAttribute();
     }
 
     public function getBanks()

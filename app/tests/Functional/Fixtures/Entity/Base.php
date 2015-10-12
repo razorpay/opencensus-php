@@ -4,6 +4,8 @@ namespace Tests\Functional\Fixtures\Entity;
 
 use Config;
 use Eloquent;
+use Models;
+use Gateway;
 use Tests\TestDummy\Factory;
 use Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
@@ -20,23 +22,23 @@ class Base
     }
 
     protected static $map = array(
-        'atom'          => 'Gateway\Atom\Entity',
-        'adjustment'    => 'Models\Adjustment\Entity',
-        'balance'       => 'Models\Merchant\Balance',
-        'bank_account'  => 'Models\Merchant\BankAccount\Entity',
-        'methods'       => 'Models\Merchant\Methods\Entity',
-        'card'          => 'Models\Card\Entity',
-        'hdfc'          => 'Gateway\Hdfc\Entity',
-        'card_detail'   => 'Models\Card\Detail',
-        'key'           => 'Models\Key\Entity',
-        'merchant'      => 'Models\Merchant\Entity',
-        'methods'       => 'Models\Merchant\Methods\Entity',
-        'payment'       => 'Models\Payment\Entity',
-        'pricing'       => 'Models\Pricing\Entity',
-        'refund'        => 'Models\Payment\Refund\Entity',
-        'settlement'    => 'Models\Settlement\Entity',
-        'terminal'      => 'Models\Terminal\Entity',
-        'transaction'   => 'Models\Transaction\Entity'
+        'atom'          => Gateway\Atom\Entity::class,
+        'adjustment'    => Models\Adjustment\Entity::class,
+        'balance'       => Models\Merchant\Balance::class,
+        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
+        'methods'       => Models\Merchant\Methods\Entity::class,
+        'card'          => Models\Card\Entity::class,
+        'hdfc'          => Gateway\Hdfc\Entity::class,
+        'card_detail'   => Models\Card\Detail::class,
+        'key'           => Models\Key\Entity::class,
+        'merchant'      => Models\Merchant\Entity::class,
+        'methods'       => Models\Merchant\Methods\Entity::class,
+        'payment'       => Models\Payment\Entity::class,
+        'pricing'       => Models\Pricing\Entity::class,
+        'refund'        => Models\Payment\Refund\Entity::class,
+        'settlement'    => Models\Settlement\Entity::class,
+        'terminal'      => Models\Terminal\Entity::class,
+        'transaction'   => Models\Transaction\Entit::class,
     );
 
     public function create(array $attributes = array())
@@ -74,14 +76,15 @@ class Base
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
+        $entity = self::$map[$entity];
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
         {
-            $entity[$attribute] = $value;
+            $entity[$key] = $value;
         }
 
-        $entity->saveOrFail($merchant);
+        $entity->saveOrFail();
 
         return $entity;
     }
@@ -97,8 +100,8 @@ class Base
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
 
         $entity->exists = true;
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
@@ -125,8 +128,8 @@ class Base
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
 
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 
