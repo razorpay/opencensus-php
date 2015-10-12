@@ -263,7 +263,7 @@ class TerminalPicker
 
     protected function getSharedTerminalForCard($payment)
     {
-        $terminal = $this->getSharedCategoryTerminalForCard();
+        $terminal = $this->getSharedCategoryTerminalForCard($payment);
 
         if ($terminal !== null)
         {
