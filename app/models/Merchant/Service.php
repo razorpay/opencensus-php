@@ -157,16 +157,31 @@ class Service extends Base\Service
         {
             // Checks credentials but doesn't login the merchant, throws error if invalid
             $error = ['Email or password is invalid.'];
+
+            // If the email exists, but credentials were wrong
+            // And the last invalid login attempt was made in last 30 minutes
+            if ($merchant and $merchant->getTimeSinceInvalidLoginAttempt() < 30*60)
+            {
+                // This stores the attempt number and current timestamp in database
+                $merchant->markInvalidAttempt();
+            }
         }
-        else if (time() - $merchant->getLastActivity() > self::$INACTIVE_PERIOD)
+        else if (time() - $merchant->getLastActivityTime() > self::$INACTIVE_PERIOD)
         {
             $error = ['Account has been inactive for 90 days. Please contact support@razorpay.com'];
+        }
+        else if ($merchant->getInvalidAttempts() >= 5)
+        {
+            $error = ['Too many invalid login attempts. Please try after 30 minutes'];
         }
         else if ($merchantAuth->attempt($credentials + array('confirm_token' => null)) === false)
         {
             // Tries to login merchant if confirmed, throws error if merchant is not confirmed
             $error = ['not activated'];
         }
+
+        // If there were no errors, we can clear attempts
+        $merchant->clearInvalidLoginAttempts();
 
         return [$error, null];
     }

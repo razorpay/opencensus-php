@@ -186,7 +186,7 @@ var app = angular.module('app', [
   '$keepaliveProvider',
   '$idleProvider',
   function ($keepaliveProvider, $idleProvider) {
-    // Lock out Duration = 15 minutes
+    // Idle Session timeout = 15 minutes
     $idleProvider.idleDuration(15 * 60);
     $idleProvider.warningDuration(15);
     $keepaliveProvider.interval(60);
