@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
         'thedefaults');
 
     protected $defaults = array(
+        self::CATEGORY                  => null,
         self::GATEWAY_MERCHANT_ID       => null,
         self::GATEWAY_TERMINAL_ID       => null,
         self::GATEWAY_TERMINAL_PASSWORD => null,
