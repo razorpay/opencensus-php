@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const USED_COUNT                    = 'used_count';
+    const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
