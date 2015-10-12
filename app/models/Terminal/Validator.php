@@ -81,7 +81,8 @@ class Validator extends Base\Validator
             $input['card'],
             $input['shared'],
             $input['netbanking'],
-            $input['merchant_id']);
+            $input['merchant_id'],
+            $input['category']);
 
         $op = $input['gateway'] . '_terminal';
 

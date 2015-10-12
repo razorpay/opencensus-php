@@ -12,7 +12,8 @@ return [
                 'gateway' => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'gateway_terminal_password' => '12345678'
+                'gateway_terminal_password' => '12345678',
+                'category'  => '4567'
             ],
             'method' => 'POST'
         ],
@@ -20,6 +21,7 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
+                'category'            => '4567'
             ]
         ]
     ],

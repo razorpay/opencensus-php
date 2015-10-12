@@ -6,10 +6,12 @@ class MockGatewayController extends BaseController
     {
         parent::__construct();
 
-        $this->mockHdfcGatewayServer = new Gateway\Hdfc\Mock\Server;
-
         $input = file_get_contents('php://input');
 
+        $app = \App::getFacadeRoot();
+        $this->gateway = $app['gateway'];
+
+        $this->mockHdfcGatewayServer = $this->gateway->server('hdfc');
         $this->mockHdfcGatewayServer->setInput($input);
     }
 
@@ -39,7 +41,7 @@ class MockGatewayController extends BaseController
 
     public function getAtomChooseOrg()
     {
-        $server = new Gateway\Atom\Mock\Server;
+        $server = $this->gateway->server('atom');
 
         $input = Input::all();
 
@@ -51,7 +53,7 @@ class MockGatewayController extends BaseController
 
     public function postAtomInitPayment()
     {
-        $server = new Gateway\Atom\Mock\Server;
+        $server = $this->gateway->server('atom');
 
         $input = Input::all();
 
@@ -60,7 +62,7 @@ class MockGatewayController extends BaseController
 
     public function postAtomRzpPayment()
     {
-        $server = new Gateway\Atom\Mock\Server;
+        $server = $this->gateway->server('atom');
 
         $input = Input::all();
 
@@ -72,9 +74,9 @@ class MockGatewayController extends BaseController
 
     public function postAtomRzpPaymentSubmit()
     {
-        $input = Input::all();
+        $server = $this->gateway->server('atom');
 
-        $server = new Gateway\Atom\Mock\Server;
+        $input = Input::all();
 
         list($url, $data) = $server->atomRzpPaymentPageSubmit($input);
 
@@ -87,7 +89,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\AxisMigs\Mock\Server;
+        $server = $this->gateway->server('axis_migs');
 
         $url = $server->authorize($input);
 
@@ -98,7 +100,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\AxisGenius\Mock\Server;
+        $server = $this->gateway->server('axis_genius');
 
         $url = $server->authorize($input);
 
@@ -109,7 +111,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Kotak\Mock\Server;
+        $server = $this->gateway->server('kotak');
 
         $url = $server->authorize($input);
 
@@ -120,7 +122,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Paytm\Mock\Server;
+        $server = $this->gateway->server('paytm');
 
         $url = $server->authorize($input);
 
@@ -131,7 +133,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Billdesk\Mock\Server;
+        $server = $this->gateway->server('billdesk');
 
         return $server->authorize($input);
     }
@@ -151,7 +153,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Sharp\Server;
+        $server = $this->gateway->server('sharp');
 
         list($data, $error) = $server->action($input);
 
@@ -171,7 +173,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Sharp\Server;
+        $server = $this->gateway->server('sharp');
 
         $url = $server->authSubmit($input);
 
@@ -182,8 +184,8 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $class = 'Gateway\Netbanking\\'.ucfirst($bank).'\Mock\Server';
-        $server = new $class;
+        $driver = 'netbanking_'.$bank;
+        $server = $this->gateway->server($driver);
 
         $url = $server->authorize($input);
 
@@ -194,7 +196,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Mobikwik\Mock\Server;
+        $server = $this->gateway->server('mobikwik');
 
         $url = $server->authorize($input);
 

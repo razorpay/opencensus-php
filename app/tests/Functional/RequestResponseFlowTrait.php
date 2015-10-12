@@ -241,6 +241,18 @@ trait RequestResponseFlowTrait
         return $this->getJsonContentFromResponse($response, $callback);
     }
 
+    protected function makeRequestAndCatchException(Closure $closure)
+    {
+        try
+        {
+            return $closure();
+        }
+        catch (\Exception $e)
+        {
+            ;
+        }
+    }
+
     public function getJsonContent($response)
     {
         $content = $response->getContent();

@@ -3,6 +3,7 @@
 namespace Tests\Functional\Helpers\Payment;
 
 use EE\Exception\BaseException;
+use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Tests\Functional\RequestResponseFlowTrait;
@@ -918,5 +919,17 @@ trait PaymentTrait
     protected function assertResponse($type, $response)
     {
         $this->assertTrue($this->isResponseInstanceType($type, $response));
+    }
+
+    protected function mockServer()
+    {
+        $class = $this->app['gateway']->getServerClass($this->gateway);
+
+        return Mockery::mock($class)->makePartial();
+    }
+
+    protected function setMockServer($server)
+    {
+        return $this->app['gateway']->setServer($this->gateway, $server);
     }
 }

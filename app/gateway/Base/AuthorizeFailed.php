@@ -2,6 +2,7 @@
 
 namespace Gateway\Base;
 
+use EE\Exception;
 use Trace\TraceCode;
 
 trait AuthorizeFailed
@@ -16,7 +17,9 @@ trait AuthorizeFailed
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            ;
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+                ['message' => 'Payment verification failed. Now converting to authorized']);
         }
 
         $verify = $e->getVerifyObject();

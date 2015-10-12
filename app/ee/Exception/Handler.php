@@ -66,6 +66,10 @@ class Handler
         if ($exception instanceof ServerErrorException)
             return;
 
+        $this->app['trace']->info(
+            Trace\TraceCode::RECOVERABLE_EXCEPTION,
+            $this->getExceptionDetails($exception));
+
         return ApiResponse::recoverableError($this->isDebug(), $exception);
     }
 

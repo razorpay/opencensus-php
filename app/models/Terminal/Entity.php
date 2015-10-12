@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
+        self::CATEGORY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACCESS_CODE,
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
+        self::CATEGORY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
         self::USED_COUNT,
@@ -68,9 +70,7 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected static $generators = array(
-        'method',
-        'thedefaults');
+    protected static $generators = array('method');
 
     protected $defaults = array(
         self::CATEGORY                  => null,
@@ -100,24 +100,6 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->setAttribute(self::NETBANKING, 0);
-        }
-    }
-
-    protected function generateThedefaults($input)
-    {
-        if (empty($input[self::GATEWAY_MERCHANT_ID]))
-        {
-            $this->setAttribute(self::GATEWAY_MERCHANT_ID, null);
-        }
-
-        if (empty($input[self::GATEWAY_ACCESS_CODE]))
-        {
-            $this->setAttribute(self::GATEWAY_ACCESS_CODE, null);
-        }
-
-        if (empty($input[self::GATEWAY_TERMINAL_ID]))
-        {
-            $this->setAttribute(self::GATEWAY_TERMINAL_ID, null);
         }
     }
 
