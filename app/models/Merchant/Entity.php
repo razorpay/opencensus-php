@@ -108,6 +108,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $this->edit($input, 'changePassword');
     }
 
+    public static function findByEmail($email)
+    {
+        return self::where('email', $email)->first();
+    }
+
     public static function getAggregations($data, $mode)
     {
         $data = \DB::table('aggregations')
@@ -359,5 +364,13 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         } while ($num);
 
         return $res;
+    }
+
+    /**
+     * TODO: Fix this with team support
+     */
+    public function getLastActivity()
+    {
+        return time();
     }
 }

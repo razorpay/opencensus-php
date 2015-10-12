@@ -11,6 +11,9 @@ use Requests;
 
 class Service extends Base\Service
 {
+    // 60 * 60 * 24 * 90 = 90 days
+    protected static $INACTIVE_PERIOD = 7776000;
+
     public function register(array $input)
     {
         $merchant = new Merchant\Entity;
@@ -147,14 +150,19 @@ class Service extends Base\Service
             'password'  => $input['password']
         );
 
-        $merchant = \Auth::merchant();
+        $merchantAuth = \Auth::merchant();
+        $merchant = Entity::findByEmail($input['email']);
 
-        if ($merchant->validate($credentials) === false)
+        if ($merchantAuth->validate($credentials) === false or $merchant === null)
         {
             // Checks credentials but doesn't login the merchant, throws error if invalid
             $error = ['Email or password is invalid.'];
         }
-        else if ($merchant->attempt($credentials + array('confirm_token' => null)) === false)
+        else if (time() - $merchant->getLastActivity() > self::$INACTIVE_PERIOD)
+        {
+            $error = ['Account has been inactive for 90 days. Please contact support@razorpay.com'];
+        }
+        else if ($merchantAuth->attempt($credentials + array('confirm_token' => null)) === false)
         {
             // Tries to login merchant if confirmed, throws error if merchant is not confirmed
             $error = ['not activated'];
