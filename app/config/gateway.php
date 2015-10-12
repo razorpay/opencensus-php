@@ -21,7 +21,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'sharp',
-        'sbiepay'
+        'sbiepay',
         'wallet_payzapp',
     ),
 

@@ -263,7 +263,6 @@ class Terminal extends Base
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
->>>>>>> development
     }
 
     public function createSharedAmexTerminal(array $attributes = array())
