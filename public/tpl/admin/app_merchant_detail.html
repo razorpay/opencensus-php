@@ -293,6 +293,7 @@
                     <th>Terminal Id</th>
                     <th>Mode</th>
                     <th>Gateway</th>
+                    <th>Category</th>
                     <th>Merchant Id</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
@@ -303,6 +304,7 @@
                     <td>{{terminal.id}}</td>
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
+                    <td>{{terminal.category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
@@ -350,10 +352,10 @@
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
-    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1}">
+    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1, category:1234}">
       <div class="form-group">
-        <label class="col-lg-2 control-label">Mode:</label>
-        <div class="col-lg-10" >
+        <label class="col-lg-3 control-label">Mode:</label>
+        <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.mode">
              <option value="test">Test</option>
              <option value="live" selected>Live</option>
@@ -361,8 +363,8 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway:</label>
-        <div class="col-lg-10" >
+        <label class="col-lg-3 control-label">Gateway:</label>
+        <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.gateway">
              <option value="hdfc" selected>HDFC</option>
              <option value="atom">Atom</option>
@@ -377,44 +379,50 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_merchant_id" class="col-lg-2 control-label">Gateway Merchant Id:</label>
-        <div class="col-lg-10" >
+        <label for="category" class="col-lg-3 control-label">Terminal Category:</label>
+        <div class="col-lg-9" >
+          <input type="number" max="9999" min="0742" class="form-control m-b" name="category" ng-model="terminal.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_merchant_id" class="col-lg-3 control-label">Gateway Merchant Id:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_merchant_id" ng-model="terminal.gateway_merchant_id" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_terminal_id" class="col-lg-2 control-label">Gateway Terminal Id:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_terminal_id" class="col-lg-3 control-label">Gateway Terminal Id:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_terminal_id" ng-model="terminal.gateway_terminal_id" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_terminal_password" class="col-lg-2 control-label">Gateway Terminal Password:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_terminal_password" class="col-lg-3 control-label">Gateway Terminal Password:</label>
+        <div class="col-lg-9" >
           <input type="password" class="form-control m-b" name="gateway_terminal_password" ng-model="terminal.gateway_terminal_password" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_terminal_password_confirmation" class="col-lg-2 control-label">Confirm Gateway Terminal Password:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_terminal_password_confirmation" class="col-lg-3 control-label">Confirm Gateway Terminal Password:</label>
+        <div class="col-lg-9" >
           <input type="password" class="form-control m-b" name="gateway_terminal_password_confirmation" ng-model="terminal.gateway_terminal_password_confirmation" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_access_code" class="col-lg-2 control-label">Gateway Access Code:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_access_code" class="col-lg-3 control-label">Gateway Access Code:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_access_code" ng-model="terminal.gateway_access_code" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_secure_secret" class="col-lg-2 control-label">Gateway Secure Secret:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_secure_secret" class="col-lg-3 control-label">Gateway Secure Secret:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_secure_secret" ng-model="terminal.gateway_secure_secret" />
         </div>
       </div>
       <div class="form-group">
-        <label for="card" class="col-lg-2 control-label">Card Allowed (Always Yes for HDFC):</label>
-        <div class="col-lg-10" >
+        <label for="card" class="col-lg-3 control-label">Card Allowed (Always Yes for HDFC):</label>
+        <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.card">
              <option value="1" selected>Yes</option>
              <option value="0">No</option>
