@@ -369,47 +369,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * TODO: Fix this with team support
      */
-    public function getLastActivityTime()
+    public function getLastActivity()
     {
         return time();
-    }
-
-    /**
-     * TODO: Make this work
-     * @return integer Time in seconds since last invalid login attempt
-     */
-    public function getTimeSinceInvalidLoginAttempt()
-    {
-        return 3600;
-    }
-
-    /**
-     * This does nothing for now
-     * TODO: implement this
-     * @return null
-     */
-    public function markInvalidAttempt()
-    {
-        return;
-    }
-
-    /**
-     * Clear the attemps timestamp and duration from database
-     * TODO: Implement this
-     * @return null
-     */
-    public function clearInvalidLoginAttempts()
-    {
-        return;
-    }
-
-    /**
-     * Returns the number of invalid attempts we have reached
-     * TODO: Implement this
-     * @return integer
-     */
-    public function getInvalidAttempts()
-    {
-        return 0;
     }
 }
