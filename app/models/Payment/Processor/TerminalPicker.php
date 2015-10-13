@@ -352,7 +352,7 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        if ($bank === 'HDFC')
+        if ($bank === IFSC::HDFC)
         {
             if ($this->terminalExists(Shared::NETBANKING_HDFC_TERMINAL))
             {
@@ -360,7 +360,6 @@ class TerminalPicker
             }
         }
 
-<<<<<<< HEAD
         if ($bank === IFSC::KKBK)
         {
             if ($this->terminalExists(Shared::NETBANKING_KOTAK_TERMINAL))
@@ -370,14 +369,11 @@ class TerminalPicker
         }
 
         if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
-=======
-       if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
-       {
-           return $this->terminal;
-       }
+        {
+            return $this->terminal;
+        }
 
         if ($this->terminalExists(Shared::SBIEPAY_RAZORPAY_TERMINAL))
->>>>>>> sbiepay
         {
             return $this->terminal;
         }
