@@ -28,11 +28,6 @@ class TerminalPicker
      * @var Terminal\Repository
      */
     protected $repo;
-
-    /**
-     * Payment for which terminal has to be picked
-     * @var Models\Payment\Entity
-     */
     protected $payment;
 
     protected $merchant;
@@ -150,6 +145,11 @@ class TerminalPicker
 
         if ($this->mode === Mode::TEST)
         {
+            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true))
+            {
+                return $gatewayTerms[Payment\Gateway::SBIEPAY];
+            }
+
             // In test mode paytm supports only cards
             // but in live only netbanking.
             if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
@@ -187,14 +187,20 @@ class TerminalPicker
             return;
         }
 
-        // if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
-        //     (Netbanking::isBilldeskSupportedBank($bank)))
-        // {
-        //     return $gatewayTerms[Payment\Gateway::BILLDESK];
-        // }
+        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
+            (Netbanking::isBilldeskSupportedBank($bank)))
+        {
+            return $gatewayTerms[Payment\Gateway::BILLDESK];
+        }
 
         if ($this->mode === Mode::TEST)
         {
+            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
+                (Netbanking::isSbiepaySupportedBank($bank)))
+            {
+                return $gatewayTerms[Payment\Gateway::SBIEPAY];
+            }
+
             if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
                 (Netbanking::isPaytmSupportedBank($bank)))
             {
@@ -354,6 +360,7 @@ class TerminalPicker
             }
         }
 
+<<<<<<< HEAD
         if ($bank === IFSC::KKBK)
         {
             if ($this->terminalExists(Shared::NETBANKING_KOTAK_TERMINAL))
@@ -363,6 +370,14 @@ class TerminalPicker
         }
 
         if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+=======
+       if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+       {
+           return $this->terminal;
+       }
+
+        if ($this->terminalExists(Shared::SBIEPAY_RAZORPAY_TERMINAL))
+>>>>>>> sbiepay
         {
             return $this->terminal;
         }

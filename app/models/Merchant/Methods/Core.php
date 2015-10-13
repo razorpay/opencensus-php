@@ -47,6 +47,8 @@ class Core extends Base\Core
         // }
 
         $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),[IFSC::KKBK]);
+//        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+//        $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),Netbanking::getSbiepaySupportedBanks());
 
         $banks->setBanks($supportedBanks);
 

@@ -18,6 +18,7 @@ class Shared
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
+    const SBIEPAY_RAZORPAY_TERMINAL         = '10000SbiEpayTl';
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
 
     protected static $shared = array(
@@ -32,6 +33,7 @@ class Shared
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
         self::SHARP_RAZORPAY_TERMINAL,
+        self::SBIEPAY_RAZORPAY_TERMINAL,
     );
 
     protected static $map = array(
@@ -46,6 +48,7 @@ class Shared
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
         self::NETBANKING_HDFC_TERMINAL      => Gateway::NETBANKING_HDFC,
         self::NETBANKING_KOTAK_TERMINAL     => Gateway::NETBANKING_KOTAK,
+        self::SBIEPAY_RAZORPAY_TERMINAL     => Gateway::SBIEPAY,
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
     );
 

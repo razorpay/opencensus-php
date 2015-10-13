@@ -52,6 +52,7 @@ class Service extends Base\Service
             'billdesk'          => Gateway\Billdesk::class,
             'hdfc'              => Gateway\Hdfc::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
+            'sbiepay'           => Gateway\Sbiepay::class,
         );
 
         if (array_key_exists($entity, $map))
@@ -59,7 +60,7 @@ class Service extends Base\Service
             return $map[$entity];
         }
 
-        return 'Models\\'.ucfirst($entity);
+        return 'Models\\' . ucfirst($entity);
     }
 
     protected function getEntityClass($entity)
@@ -71,19 +72,19 @@ class Service extends Base\Service
     {
         $namespace = $this->getEntityNamespace($entity);
 
-        return $namespace.'\Repository';
+        return $namespace . '\Repository';
     }
 
     public function sendTestNewsletter($input)
     {
         $errors = (new Validator)->validateInput('send_test_newsletter', $input);
 
-        if(empty($errors))
+        if (empty($errors))
         {
             // Now we send the newsletter
             $mailer = new Newsletter($input['email'],
-                [$input['subj_1'], $input['subj_2']], $input['msg'],
-                true // Test Email to self
+                                     [$input['subj_1'], $input['subj_2']], $input['msg'],
+                                     true // Test Email to self
             );
 
             return $mailer->send();
@@ -98,10 +99,10 @@ class Service extends Base\Service
     {
         $errors = (new Validator)->validateInput('send_newsletter', $input);
 
-        if(empty($errors))
+        if (empty($errors))
         {
             $mailer = new Newsletter($input['lists'],
-                [$input['subj_1'], $input['subj_2']], $input['msg']
+                                     [$input['subj_1'], $input['subj_2']], $input['msg']
             );
 
             return $mailer->send();

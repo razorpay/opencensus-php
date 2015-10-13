@@ -61,6 +61,9 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
 
+    'SBIEPAY_GATEWAY_TEST_MERCHANT_ID'              => 'random',
+    'SBIEPAY_GATEWAY_TEST_HASH_SECRET'              => 'random',
+
     'PAYZAPP_WALLET_TEST_MERCHANT_ID'               => '293rij9wrj9wefj9we8',
     'PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'           => '1111',
     'PAYZAPP_WALLET_TEST_HASH_SECRET'               => '234rerefsdfsdfsdfsdf',
@@ -82,6 +85,7 @@ return array(
     'MOBIKWIK_MOCK'                                 => true,
     'PAYTM_MOCK'                                    => true,
     'PAYZAPP_MOCK'                                  => true,
+    'SBIEPAY_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
     'NETBANKING_KOTAK_MOCK'                         => true,
 

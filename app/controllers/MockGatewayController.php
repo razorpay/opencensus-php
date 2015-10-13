@@ -202,4 +202,13 @@ class MockGatewayController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function postSbiepayPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Sbiepay\Mock\Server;
+
+        return $server->authorize($input);
+    }
 }

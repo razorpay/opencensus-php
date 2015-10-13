@@ -17,6 +17,7 @@ class Gateway
     const KOTAK             = 'kotak';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
+    const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
@@ -32,6 +33,7 @@ class Gateway
         self::KOTAK             => Settlement\Channel::KOTAK,
         self::MOBIKWIK          => Settlement\Channel::KOTAK,
         self::PAYTM             => Settlement\Channel::KOTAK,
+        self::SBIEPAY           => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
@@ -54,6 +56,7 @@ class Gateway
             self::BILLDESK,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
+            self::SBIEPAY
         ),
 
         Method::WALLET => array(

@@ -22,6 +22,7 @@ return array(
         'netbanking_hdfc',
         'netbanking_kotak',
         'sharp',
+        'sbiepay',
         'wallet_payzapp',
     ),
 
@@ -36,6 +37,7 @@ return array(
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
     'mock_netbanking_kotak' => $_ENV['NETBANKING_KOTAK_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
+    'mock_sbiepay'          => $_ENV['SBIEPAY_MOCK'],
     'mock_payzapp'          => $_ENV['PAYZAPP_MOCK'],
 
     'hdfc' => array(
@@ -107,6 +109,12 @@ return array(
 
     'sharp' => array(
     ),
+
+    'sbiepay' => array(
+        'test_merchant_id'  => $_ENV['SBIEPAY_GATEWAY_TEST_MERCHANT_ID'],
+        'test_hash_secret'  => $_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET'],
+    ),
+
 
     'proxy_address' => 'https://splunk.razorpay.com:8888',
 );

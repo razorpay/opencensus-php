@@ -375,6 +375,7 @@ class DatabaseSeeder extends Seeder
 
         $this->createAmexTerminals();
         $this->createBilldeskGatewayTerminals();
+        $this->createSbiepayGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
@@ -514,6 +515,7 @@ class DatabaseSeeder extends Seeder
             );
     }
 
+<<<<<<< HEAD
     protected function createNetbankingKotakTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -526,6 +528,20 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'test_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_kotak_terminal_pass'),
+=======
+    protected function createSbiepayGatewayTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '2byKhdVKZ9iJgB',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'sbiepay',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_sbiepay',
+                'gateway_terminal_id'   => 'test_terminal_sbiepay',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_sbiepay_terminal_pass'),
+>>>>>>> sbiepay
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
             )
@@ -533,6 +549,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+<<<<<<< HEAD
                 'id'                    => Terminal\Shared::NETBANKING_KOTAK_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => 'netbanking_kotak',
@@ -541,11 +558,24 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
+=======
+                'id'                    => Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'sbiepay',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_sbiepay',
+                'gateway_terminal_id'   => 'demo_terminal_sbiepay',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_sbiepay_terminal_pass'),
+>>>>>>> sbiepay
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
             )
         );
+<<<<<<< HEAD
     }
+=======
+>>>>>>> sbiepay
 
     protected function createAmexTerminals()
     {

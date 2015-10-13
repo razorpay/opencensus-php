@@ -21,6 +21,7 @@ trait PaymentTrait
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
+    use PaymentSbiepayTrait;
 
     use RequestResponseFlowTrait
     {
