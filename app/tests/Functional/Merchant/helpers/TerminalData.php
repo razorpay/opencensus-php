@@ -21,7 +21,7 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => '4567'
+                'category'            => 4567
             ]
         ]
     ],
