@@ -180,8 +180,10 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
 
-        // This uses proxy auth so needs merchantId
+        // These 2 use proxy auth so needs merchantId
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
+
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
 
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
 

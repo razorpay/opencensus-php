@@ -1,5 +1,7 @@
-//Single Payment Details controller
-//Child of TransactionDetailCtrl
+/**
+ * Single Payment Details controller
+ * Child of TransactionDetailCtrl
+ */
 app.controller('PaymentDetailCtrl', [
   '$scope',
   '$http',
@@ -53,7 +55,7 @@ app.controller('PaymentDetailCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
     $scope.authorizeFailedPayment = function () {
       var request = $http({
         method: 'post',
@@ -155,7 +157,7 @@ app.controller('PaymentDetailCtrl', [
       var data = { amount: refundAmount };
       var request = $http({
         method: 'post',
-        url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/refund',
+        url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/refund',
         transformRequest: transformRequestAsFormPost,
         data: data
       });
