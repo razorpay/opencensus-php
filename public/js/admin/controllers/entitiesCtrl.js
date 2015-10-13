@@ -189,7 +189,11 @@ app.controller('EntitiesCtrl', [
         received: booleanList
       },
       refund: { merchant_id: ['Merchant Id'] },
-      terminal: { gateway: gatewayList, shared: ['all', 0, 1] },
+      terminal: {
+        gateway: gatewayList,
+        merchant_id: ['Merchant Id'],
+        shared: ['all', 0, 1]
+      },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
         merchant_id: ['Merchant Id'],
