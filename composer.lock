@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "hash": "ed059aa0e4f6dafd489c3d36caf89e60",
+    "content-hash": "bcab11746ea427f319f36a26a5423f97",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -269,25 +270,23 @@
         },
         {
             "name": "d11wtq/boris",
-            "version": "v1.0.8",
+            "version": "v1.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/borisrepl/boris.git",
-                "reference": "125dd4e5752639af7678a22ea597115646d89c6e"
+                "reference": "31055b15e2d3fe47f31f6aa8e277f8f3fc7eb483"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/borisrepl/boris/zipball/125dd4e5752639af7678a22ea597115646d89c6e",
-                "reference": "125dd4e5752639af7678a22ea597115646d89c6e",
+                "url": "https://api.github.com/repos/borisrepl/boris/zipball/31055b15e2d3fe47f31f6aa8e277f8f3fc7eb483",
+                "reference": "31055b15e2d3fe47f31f6aa8e277f8f3fc7eb483",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
-            },
-            "suggest": {
                 "ext-pcntl": "*",
                 "ext-posix": "*",
-                "ext-readline": "*"
+                "ext-readline": "*",
+                "php": ">=5.3.0"
             },
             "bin": [
                 "bin/boris"
@@ -299,7 +298,11 @@
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
-            "time": "2014-01-17 12:21:18"
+            "license": [
+                "MIT"
+            ],
+            "description": "A tiny, but robust REPL (Read-Evaluate-Print-Loop) for PHP.",
+            "time": "2015-03-01 08:05:19"
         },
         {
             "name": "doctrine/cache",
@@ -3114,12 +3117,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/padraic/mockery.git",
-                "reference": "bb19cd92e91aee51c344d8bd1a453dc85de47c21"
+                "reference": "ee88cd05073533b10678772fe954d042748393c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/bb19cd92e91aee51c344d8bd1a453dc85de47c21",
-                "reference": "bb19cd92e91aee51c344d8bd1a453dc85de47c21",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/ee88cd05073533b10678772fe954d042748393c3",
+                "reference": "ee88cd05073533b10678772fe954d042748393c3",
                 "shasum": ""
             },
             "require": {
@@ -3171,7 +3174,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2015-10-02 20:03:43"
+            "time": "2015-10-12 06:21:09"
         },
         {
             "name": "raveren/kint",
