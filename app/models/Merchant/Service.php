@@ -54,9 +54,13 @@ class Service extends Base\Service
     {
         if($_ENV['SLACK_ENABLE'] === true)
         {
+            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+
             $postData = [
-                'email' => $slackData['email'],
-                'name'  => $slackData['name']
+                'email'         => $slackData['email'],
+                'name'          => $slackData['name'],
+                // This is in slack formatting
+                'message'       => "<$merchantLink|New Signup>"
             ];
 
             Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
