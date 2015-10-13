@@ -25,6 +25,7 @@ class Entity extends Base\Entity
         'date',
         'refund_id',
         'reference1',
+        'int_payment_id',
     );
 
     protected $fillable = array(
@@ -36,8 +37,10 @@ class Entity extends Base\Entity
         'bank_payment_id',
         'error_message',
         'date',
+        'status',
         'refund_id',
         'reference1',
+        'int_payment_id',
     );
 
     public function setBank($bank)

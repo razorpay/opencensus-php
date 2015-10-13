@@ -51,12 +51,12 @@ return array(
     'HDFC_GATEWAY_TEST_TERMINAL_ID'                 => getenv('HDFC_GATEWAY_TEST_TERMINAL_ID'),
     'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'           => getenv('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
 
-    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'             => 'randomkuchbhi',
-
     'KOTAK_GATEWAY_TEST_HASH_SECRET'                => getenv('KOTAK_GATEWAY_TEST_HASH_SECRET'),
     'KOTAK_GATEWAY_TEST_MERCHANT_ID'                => getenv('KOTAK_GATEWAY_TEST_MERCHANT_ID'),
     'KOTAK_GATEWAY_TEST_ACCESS_CODE'                => getenv('KOTAK_GATEWAY_TEST_ACCESS_CODE'),
     'KOTAK_GATEWAY_TEST_TERMINAL_ID'                => getenv('KOTAK_GATEWAY_TEST_TERMINAL_ID'),
+
+    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'             => 'randomkuchbhi',
 
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
@@ -69,7 +69,8 @@ return array(
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'      => '000000',
 
-    'MOCK_GATEWAY_SECRET'                           => 'wercker_random_password',
+    'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'     => '',
+    'NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'     => '',
 
     'AMEX_MOCK'                                     => true,
     'ATOM_MOCK'                                     => true,
@@ -82,6 +83,9 @@ return array(
     'PAYTM_MOCK'                                    => true,
     'PAYZAPP_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
+    'NETBANKING_KOTAK_MOCK'                         => true,
+
+    'MOCK_GATEWAY_SECRET'                           => 'wercker_random_password',
 
     'EMAIL_MOCK'                                    => true,
 
@@ -94,6 +98,7 @@ return array(
     'SLACK_TOKEN'                                   => '',
     'SLACK_MOCK'                                    => true,
 
+    'MAILGUN_API_KEY'                               => '',
     'MAILGUN_SECRET'                                => getenv('MAILGUN_API_KEY'),
     'MAILGUN_MOCK'                                  => true,
 
@@ -109,5 +114,7 @@ return array(
 
     'CRON_PASSWORD'                                 => 'a923r8u98uwaf98uw9w8fu',
 
+    'RUN_FIXTURES'                                  => true,
     'RUN_FIXTURES_ONCE'                             => true,
+    'TRUNCATE_DATABASE'                             => false,
 );

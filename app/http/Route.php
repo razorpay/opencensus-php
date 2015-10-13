@@ -127,6 +127,7 @@ final class Route
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
+        'gateway_payment_callback_kotak'    => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                               ],
         'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                     ],
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
@@ -241,9 +242,9 @@ final class Route
         'iin_add',
         'send_test_newsletter',
         'send_newsletter'
-        );
+    );
 
-    public static $proxy = array(
+    public static $proxy        = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'transaction_fetch_by_id',
@@ -262,6 +263,7 @@ final class Route
     public static $direct = array(
         'transparent_redirect_get',
         'transparent_redirect_post',
+        'gateway_payment_callback_kotak',
     );
 
     public static $internalApps = array(
@@ -347,7 +349,7 @@ final class Route
     {
         $request = \Request::getFacadeRoot();
 
-        $schema = $request->getScheme().'://';
+        $schema = $request->getScheme() . '://';
         $host = $request->getHost();
 
         $auth = '';
@@ -381,7 +383,7 @@ final class Route
     {
         $jsonpRoutes = self::$jsonpRoutes;
 
-        return in_array($route, $jsonpRoute);
+        return in_array($route, $jsonpRoutes);
     }
 
     protected static function addRoutes($type)
@@ -416,7 +418,7 @@ final class Route
 
         self::add3dSecureRoute();
 
-        $router->group(array('prefix' => 'v1'), function() use ($router)
+        $router->group(array('prefix' => 'v1'), function () use ($router)
         {
             //
             // First define internal routes and then private and finally public
@@ -432,13 +434,14 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.direct', 'direct');
         });
 
-        $router->get('/', function()
+        $router->get('/', function ()
         {
             $response['message'] = "Welcome to Razorpay API.";
+
             return ApiResponse::json($response);
         });
 
-        $router->any('{all}', function($uri)
+        $router->any('{all}', function ($uri)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
@@ -446,7 +449,7 @@ final class Route
 
     protected static function addFilterOnRouteGroups($router, $filter, $routeGroup)
     {
-        $router->group(array('before' => $filter), function() use ($routeGroup)
+        $router->group(array('before' => $filter), function () use ($routeGroup)
         {
             self::addRoutes($routeGroup);
         });

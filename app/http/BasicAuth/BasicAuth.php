@@ -685,7 +685,7 @@ class BasicAuth
         if (($key === null) or
             ($key === ''))
         {
-           return ApiResponse::provideApiKey();
+            return ApiResponse::provideApiKey();
         }
 
         $this->viaQueryParams = true;
@@ -740,7 +740,7 @@ class BasicAuth
 
     protected function invalidApiKey()
     {
-       return ApiResponse::unauthorized(
+        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 

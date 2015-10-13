@@ -19,6 +19,7 @@ class Gateway
     const PAYTM             = 'paytm';
     const SHARP             = 'sharp';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
+    const NETBANKING_KOTAK   = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
 
     public static $channels = array(
@@ -33,6 +34,7 @@ class Gateway
         self::PAYTM             => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
+        self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
     );
 
@@ -51,6 +53,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::NETBANKING_HDFC,
+            self::NETBANKING_KOTAK,
         ),
 
         Method::WALLET => array(

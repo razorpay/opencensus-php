@@ -21,9 +21,6 @@ return array(
 
     'CLOUD'                                             => false,
 
-    'HDFC_ID'                                           => 'hdfc_id',
-    'HDFC_PASSWORD'                                     => 'hdfc_password',
-
     'AMEX_GATEWAY_TEST_HASH_SECRET'                     => 'AE9A3935F5EFF811C1E8F539C3EF9C4A',
     'AMEX_GATEWAY_TEST_MERCHANT_ID'                     => 'test9820447027',
     'AMEX_GATEWAY_TEST_ACCESS_CODE'                     => '8D86AFF5',
@@ -65,6 +62,9 @@ return array(
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'          => '000000',
 
+    'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'         => '',
+    'NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'         => '',
+
     'AMEX_MOCK'                                         => true,
     'ATOM_MOCK'                                         => true,
     'AXIS_GENIUS_MOCK'                                  => true,
@@ -72,10 +72,11 @@ return array(
     'BILLDESK_MOCK'                                     => true,
     'HDFC_MOCK'                                         => true,
     'KOTAK_MOCK'                                        => true,
-    'MOBIKWIK_MOCK'                                     => false,
+    'MOBIKWIK_MOCK'                                     => true,
     'PAYTM_MOCK'                                        => true,
-    'PAYZAPP_MOCK'                                      => false,
+    'PAYZAPP_MOCK'                                      => true,
     'NETBANKING_HDFC_MOCK'                              => true,
+    'NETBANKING_KOTAK_MOCK'                             => true,
 
     'MOCK_GATEWAY_SECRET'                               => 'random_password',
 

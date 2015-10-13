@@ -379,6 +379,7 @@ class DatabaseSeeder extends Seeder
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
         $this->createSharpGatewayTerminals();
+        $this->createNetbankingKotakTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -511,6 +512,39 @@ class DatabaseSeeder extends Seeder
                 'updated_at'                =>  time(),
                 )
             );
+    }
+
+    protected function createNetbankingKotakTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22nP3sEf2tQ123',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'netbanking_kotak',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_kotak',
+                'gateway_terminal_id'   => 'test_terminal_netbanking_kotak',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_kotak_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_KOTAK_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'netbanking_kotak',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
+                'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
+        );
     }
 
     protected function createAmexTerminals()

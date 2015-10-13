@@ -32,8 +32,8 @@ class Authorization
     public function basicAuth($user = null, $pwd = null)
     {
         $this->auth = array(
-               'PHP_AUTH_USER' => $user,
-               'PHP_AUTH_PW' => $pwd);
+            'PHP_AUTH_USER' => $user,
+            'PHP_AUTH_PW' => $pwd);
     }
 
     public function appAuth($user = 'rzp_test', $pwd = '')

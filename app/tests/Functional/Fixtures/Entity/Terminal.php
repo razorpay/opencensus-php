@@ -17,17 +17,18 @@ class Terminal extends Base
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
+        $this->createSharedNetbankingKotakTerminal();
     }
 
     public function createAtomTerminal(array $attributes = array())
     {
         $attributes = array(
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'atom',
-            'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'atom',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
-            'card'                  => 1);
+            'card'                      => 1);
 
         return parent::create($attributes);
     }
@@ -179,12 +180,14 @@ class Terminal extends Base
     public function createNetbankingHdfcTerminal(array $attributes = array())
     {
         $attributes = array(
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'netbanking_hdfc',
-            'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde',
+            'merchant_id'               => '10000000000000',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
-            'card'                  => 1);
+            'card'                      => 1);
 
         return parent::create($attributes);
     }
@@ -192,11 +195,14 @@ class Terminal extends Base
     public function createSharedNetbankingHdfcTerminal(array $attributes = array())
     {
         $attributes = array(
-            'id'                    => Shared::NETBANKING_HDFC_TERMINAL,
-            'merchant_id'           => '1MercShareTerm',
-            'gateway'               => 'netbanking_hdfc',
-            'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde');
+            'id'                        => Shared::NETBANKING_HDFC_TERMINAL,
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef');
 
         return parent::create($attributes);
     }
@@ -206,13 +212,13 @@ class Terminal extends Base
         $termId = \Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
 
         $attributes = array(
-            'id'                    => $termId,
-            'merchant_id'           => '1MercShareTerm',
-            'gateway'               => 'sharp',
-            'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde',
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'sharp',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
-            'card'                  => 1);
+            'card'                      => 1);
 
         return parent::create($attributes);
     }
@@ -249,6 +255,31 @@ class Terminal extends Base
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createNetbankingKotakTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_kotak',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                      => 1);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingKotakTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'id'                        => Shared::NETBANKING_KOTAK_TERMINAL,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'netbanking_kotak',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde');
+
+        return parent::create($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = array())

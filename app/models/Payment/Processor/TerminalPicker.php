@@ -177,6 +177,16 @@ class TerminalPicker
             return;
         }
 
+        if ($bank === IFSC::KKBK)
+        {
+            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_KOTAK]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::NETBANKING_KOTAK];
+            }
+
+            return;
+        }
+
         // if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
         //     (Netbanking::isBilldeskSupportedBank($bank)))
         // {
@@ -339,6 +349,14 @@ class TerminalPicker
         if ($bank === 'HDFC')
         {
             if ($this->terminalExists(Shared::NETBANKING_HDFC_TERMINAL))
+            {
+                return $this->terminal;
+            }
+        }
+
+        if ($bank === IFSC::KKBK)
+        {
+            if ($this->terminalExists(Shared::NETBANKING_KOTAK_TERMINAL))
             {
                 return $this->terminal;
             }

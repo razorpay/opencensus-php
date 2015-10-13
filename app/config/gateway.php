@@ -20,6 +20,7 @@ return array(
         'mobikwik',
         'paytm',
         'netbanking_hdfc',
+        'netbanking_kotak',
         'sharp',
         'wallet_payzapp',
     ),
@@ -33,6 +34,7 @@ return array(
     'mock_mobikwik'         => $_ENV['MOBIKWIK_MOCK'],
     'mock_paytm'            => $_ENV['PAYTM_MOCK'],
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
+    'mock_netbanking_kotak' => $_ENV['NETBANKING_KOTAK_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
     'mock_payzapp'          => $_ENV['PAYZAPP_MOCK'],
 
@@ -96,6 +98,11 @@ return array(
 
     'netbanking_hdfc' => array(
         'live_hash_secret'  => $_ENV['NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'],
+    ),
+
+    'netbanking_kotak' => array(
+        'live_hash_secret'  => $_ENV['NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'],
+        'test_hash_secret'  => $_ENV['NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'],
     ),
 
     'sharp' => array(
