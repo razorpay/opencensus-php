@@ -72,8 +72,8 @@ return array(
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'      => '000000',
 
-    'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'     => '',
-    'NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'     => '',
+    'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'     => 'randomtesthash',
+    'NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'     => 'randomlivehash',
 
     'AMEX_MOCK'                                     => true,
     'ATOM_MOCK'                                     => true,
