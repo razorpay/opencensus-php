@@ -187,14 +187,24 @@ trait RepositoryFetch
 
     protected function addDefaultParams(array & $params)
     {
+        $max = $count = null;
+
         if ($this->auth->isPrivilegeAuth() === false)
         {
-            $this->fetchParamRules['count'] .= '|max:100';
+            $max = 100;
+            $count = 10;
+        }
+        else
+        {
+            $max = 1000;
+            $count = 1000;
+        }
 
-            if (isset($params['count']) === false)
-            {
-                $params['count'] = 10;
-            }
+        $this->fetchParamRules['count'] .= '|max:'.$max;
+
+        if (isset($params['count']) === false)
+        {
+            $params['count'] = $count;
         }
     }
 }
