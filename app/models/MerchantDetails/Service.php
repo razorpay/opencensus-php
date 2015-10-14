@@ -3,7 +3,7 @@
 namespace Models\MerchantDetails;
 
 use AWS;
-use Mailgun;
+use Mail;
 use Models\Base;
 use Queue;
 
@@ -203,7 +203,7 @@ class Service extends Base\Service
 
         $salesEmail = 'salesteam@razorpay.com';
 
-        Mailgun::send('emails.submission', $customer, function($mail) use ($customer)
+        Mail::send('emails.submission', $customer, function($mail) use ($customer)
         {
             // This is the business name
             $subject = 'Razorpay | Account pending approval for '
@@ -213,7 +213,7 @@ class Service extends Base\Service
                 ->subject($subject);
         });
 
-        Mailgun::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
+        Mail::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
         {
             $subject = "New activation form submitted for {$customer['business_name']}";
             $mail->to($salesEmail, 'Razorpay Sales Team')

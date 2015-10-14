@@ -6,7 +6,6 @@ use Models\Base;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Mail;
-use Mailgun;
 use Requests;
 
 class Service extends Base\Service
@@ -44,7 +43,7 @@ class Service extends Base\Service
     {
         $merchant = $merchant->generateEmailData();
 
-        Mailgun::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
         {
             $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
         });
