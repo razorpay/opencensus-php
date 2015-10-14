@@ -10,6 +10,8 @@ use Gateway\Base;
 use Gateway\Base\Action;
 use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\VerifyResult;
+use Models\Card;
+use Models\Payment;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
@@ -25,7 +27,9 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
         $method = $input['payment']['method'];
+
         $requestParameter = array(
             'MerchantId'         => $input['terminal']['gateway_merchant_id'],
             'OperatingMode'      => 'DOM',
@@ -42,71 +46,21 @@ class Gateway extends Base\Gateway
             'Accesmedium'        => 'ONLINE',
             'TransactionSource'  => 'ONLINE'
         );
+
         if ($this->mode === Mode::TEST)
         {
             $requestParameter['MerchantId'] = $this->getTestMerchantId();
             $requestParameter['PostingAmount'] = '5.00';
         }
-        if ($method === 'netbanking')
-        {
-            $aggGtwmapID = BankCodes::$bankCodeMap[$input['payment']['bank']];
-            $paymentDetails = [$aggGtwmapID, "", "", "", "", "", "", ""];
-            $requestParameter['Paymode'] = 'NB';
-        }
 
-        if ($method === 'card')
-        {
-            if ($input['card']['type'] == 'credit')
-            {
-                $requestParameter['Paymode'] = 'CC';
-                if ($input['card']['network'] == 'Visa')
-                {
-                    $aggGtwmapID = 2;
-                }
-                else if ($input['card']['network'] == 'Master')
-                {
-                    $aggGtwmapID = 1;
-                }
+        list($paymentDetails, $paymode) = $this->getPaymentMethodRelatedAttributes($input);
 
+        $requestParameter['Paymode'] = $paymode;
 
-            }
-            else
-            {
-                if ($input['card']['type'] == 'debit')
-                {
-                    $requestParameter['Paymode'] = 'DB';
-                    if ($input['card']['network'] == 'Visa')
-                    {
-                        $aggGtwmapID = 5;
-                    }
-                    else if ($input['card']['network'] == 'Master')
-                    {
-                        $aggGtwmapID = 4;
-                    }
-                    else if ($input['card']['network'] == 'Maestro')
-                    {
-                        $aggGtwmapID = 3;
-                    }
-                    else if ($input['card']['network'] == 'Rupay')
-                    {
-                        $aggGtwmapID = 55;
-                    }
-
-
-                }
-            }
-            $paymentDetails = [$aggGtwmapID, $input['card']['number'], $input['card']['cvv'], $input['card']['expiry_year'] . str_pad($input['card']['expiry_month'], 2, "0", STR_PAD_LEFT), "NA", "SBIN", strtoupper($input['card']['network']), $input['payment']['contact'], $input['card']['name']];
-        }
-//sd($paymentDetails);
-
-        $content = EncryptDecrypt::encryptData(array(
-                                                   'EncryptTrans'          => $requestParameter,
-                                                   'EncryptpaymentDetails' => $paymentDetails,
-                                                   'EncryptbillingDetails' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"),
-                                                   'EncryptshippingDetais' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N")
-                                               ));
+        $content = $this->getEncryptedDataForAuthorizeRequest($requestParameter, $paymentDetails);
 
         $content['merchIdVal'] = $requestParameter['MerchantId'];
+
         $payment = $this->createGatewayPaymentEntity(array_merge($requestParameter, ['method' => $method]));
 
         $request = array(
@@ -123,10 +77,9 @@ class Gateway extends Base\Gateway
 
         $encData = $input['gateway']['encData'];
 
-        $decryptedContent = EncryptDecrypt::decryptData($encData);
+        $decryptedContent = EncryptDecrypt::decryptData($encData, $this->getSecret());
 
         $content = $this->getContent($decryptedContent);
-
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $content['MerchantOrderNo'], Action::AUTHORIZE);
@@ -143,14 +96,13 @@ class Gateway extends Base\Gateway
                 $content['Status'],
                 '');
         }
-
     }
 
 
     public function refund(array $input)
     {
         parent::refund($input);
-//sd($input);
+
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -162,13 +114,16 @@ class Gateway extends Base\Gateway
         $requestParameter['MerchantCurrency'] = $input['refund']['currency'];
         $requestParameter['MerchantOrderNo'] = $payment['MerchantOrderNo'];
         $requestParameter['RefundResponseURL'] = 'http://www.example.com';
+
         if ($this->mode === Mode::TEST)
         {
             $requestParameter['MerchantId'] = $this->getTestMerchantId();
         }
+
         $content = EncryptDecrypt::encryptData(array(
                                                    'EncryptRefundDetails' => $requestParameter,
                                                ));
+
         $content['merchIdVal'] = $requestParameter['MerchantId'];
 
         $request = array(
@@ -210,7 +165,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-//
     public function authorizeFailed(array $input)
     {
         $e = null;
@@ -242,19 +196,16 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            throw new Exception\LogicException(
-                'Should not have reached here');
+            throw new Exception\LogicException('Should not have reached here');
         }
 
         return true;
     }
 
-//
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
-
 
         $status = VerifyResult::STATUS_MATCH;
 
@@ -300,9 +251,9 @@ class Gateway extends Base\Gateway
         }
         $verify->status = $status;
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
         if (($verify->match === true) and
-            ($payment['received'] === false)
-        )
+            ($payment['received'] === false))
         {
             $payment->fill($content);
             $payment->saveOrFail();
@@ -333,11 +284,14 @@ class Gateway extends Base\Gateway
 
         $content['merchIdVal'] = $requestParameter['MerchantId'];
         $content['aggIdVal'] = 'SBIEPAY';
+
         $request = array(
             'url'     => $this->getUrl($this->action),
             'method'  => 'post',
             'content' => $content);
+
         $this->response = $this->sendGatewayRequest($request);
+
         $data = $this->response->body;
         $crawler = new Crawler($data, 'http://www.example.com');
         $form = $crawler->filter('form')->form();
@@ -355,6 +309,104 @@ class Gateway extends Base\Gateway
         return $verify;
     }
 
+    protected function getPaymentMethodRelatedAttributes($input)
+    {
+        $paymode = $paymentDetails = null;
+
+        $method = $input['payment']['method'];
+
+        if ($method === Payment\Method::NETBANKING)
+        {
+            $gatewayMapId = BankCodes::getBankCode($input['payment']['bank']);
+            $paymentDetails = [$gatewayMapId, '', '', '', '', '', '', ''];
+            $paymode = Paymode::NB;
+        }
+
+        if ($method === Payment\Method::CARD)
+        {
+            $gatewayMapId = $this->getGatewayMapIdValueForCard($input['card']);
+
+            if ($input['card']['type'] === Card\Type::CREDIT)
+            {
+                $paymode = Paymode::CC;
+            }
+            else if ($input['card']['type'] === Card\Type::DEBIT)
+            {
+                $paymode = Paymode::DC;
+            }
+
+            $paymentDetails = array(
+                $gatewayMapId,
+                $input['card']['number'],
+                $input['card']['cvv'],
+                $input['card']['expiry_year'] . str_pad($input['card']['expiry_month'], 2, "0", STR_PAD_LEFT),
+                'NA',
+                'SBIN',
+                strtoupper($input['card']['network']),
+                $input['payment']['contact'],
+                $input['card']['name']);
+        }
+
+        return [$paymentDetails, $paymode];
+    }
+
+    protected function getGatewayMapIdValueForCard($card)
+    {
+        $gatewayMapId = null;
+
+        $network = $card['network'];
+
+        if ($card['type'] === Card\Type::CREDIT)
+        {
+            $requestParameter['Paymode'] = Paymode::CC;
+
+            if ($network === Card\Network::VISA)
+            {
+                $gatewayMapId = 2;
+            }
+            else if ($network === Card\Network::MC)
+            {
+                $gatewayMapId = 1;
+            }
+        }
+        else
+        {
+            if ($card['type'] === Card\Type::DEBIT)
+            {
+                $requestParameter['Paymode'] = Paymode::DC;
+
+                if ($network === Card\Network::VISA)
+                {
+                    $gatewayMapId = 5;
+                }
+                else if ($network === Card\Network::MC)
+                {
+                    $gatewayMapId = 4;
+                }
+                else if ($network === Card\Network::MAES)
+                {
+                    $gatewayMapId = 3;
+                }
+                else if ($network === Card\Network::RUPAY)
+                {
+                    $gatewayMapId = 55;
+                }
+            }
+        }
+
+        return $gatewayMapId;
+    }
+
+    protected function getEncryptedDataForAuthorizeRequest($requestParameter, $paymentDetails)
+    {
+        $encryptData = array(
+           'EncryptTrans'          => $requestParameter,
+           'EncryptpaymentDetails' => $paymentDetails,
+           'EncryptbillingDetails' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"),
+           'EncryptshippingDetais' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"));
+
+        return EncryptDecrypt::encryptData($encryptData, $this->getSecret());
+    }
 
     protected function postRequest($content)
     {
@@ -371,12 +423,15 @@ class Gateway extends Base\Gateway
         $fields = $this->getFieldsForAction($this->action);
 
         $content = explode('|', $msg);
-        if (count($content) == 23 && ($content[count($content) - 1] == '' || $content[count($content) - 1] == null))
+
+        // @todo: explain this
+        if ((count($content) === 23) and
+            (($content[count($content) - 1] === '') or
+             ($content[count($content) - 1] === null)))
         {
             unset($content[count($content) - 1]);
         }
-//        var_dump($content);
-//        s($fields);
+
         $content = array_combine($fields, $content);
 
         return $content;

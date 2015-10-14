@@ -38,27 +38,27 @@ class EncryptDecrypt
     }
 
 
-    public static function encryptData($dataArray)
+    public static function encryptData($content, $key)
     {
         $aes = new CryptAES();
-        $aes->set_key(base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']));
+        $aes->set_key($key);
         $aes->require_pkcs5();
 
-        foreach ($dataArray as &$data)
+        foreach ($content as &$value)
         {
-            $data = $aes->encrypt(self::getArray2Str($data));
+            $value = $aes->encrypt(self::getArray2Str($value));
         }
 
-        return $dataArray;
+        return $content;
     }
 
 
-    public static function decryptData($dataStr)
+    public static function decryptData($str, $key)
     {
         $aes = new CryptAES();
-        $aes->set_key(base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']));
+        $aes->set_key(base64_decode($key));
         $aes->require_pkcs5();
-        $data = $aes->decrypt($dataStr);
+        $data = $aes->decrypt($str);
 
         return $data;
     }

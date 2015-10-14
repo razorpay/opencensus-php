@@ -52,4 +52,9 @@ class BankCodes
         IFSC::CITI => "58",
         IFSC::LAVB => "72",
     );
+
+    public static function getBankCode($code)
+    {
+        return self::$bankCodeMap[$code];
+    }
 }
