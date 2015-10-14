@@ -15,11 +15,37 @@ class Notify
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
 
+    // TODO: Shift to constants once we update PHP
+    protected static $mailViews = [
+        self::AUTHORIZED    =>  [
+            'customer'  => [
+                'html'=> 'emails.payment.customer',
+                'text'=> 'emails.payment.customer_text'
+            ]
+        ],
+        self::CAPTURED      =>  [
+            'merchant'  => [
+                'html'=> 'emails.payment.merchant',
+                'text'=> 'emails.payment.merchant_text'
+            ]
+        ],
+        // self::REFUNDED      =>  [
+        //     'customer'  => [
+        //     ],
+        //     'merchant'  => [
+        //     ]
+        // ]
+    ];
+
     protected $payment;
     protected $refund;
     protected $config;
     protected $mode;
 
+    /**
+     * Creates a new Notify instance
+     * @param Payment\Entity $payment The payment associated with the Notify
+     */
     function __construct(Payment\Entity $payment)
     {
         $this->app = App::getFacadeRoot();
@@ -31,10 +57,13 @@ class Notify
         $this->mode = $this->app['rzp.mode'];
     }
 
+    /**
+     * Regenerates the entire template
+     * @return null
+     */
     protected function refreshTemplate()
     {
         $this->template = $this->templateData();
-        $this->flatTemplate = $this->flatten($this->template);
     }
 
     /**
@@ -47,93 +76,130 @@ class Notify
         $this->refreshTemplate();
     }
 
+    /**
+     * Sends out a mail given the view, subject and email address
+     * Uses Mail::queue to queue emails
+     * @param  string $view    array or string of mail views to use
+     * @param  string $subject Subject of email
+     * @param  string $to      Email address to send to
+     * @return null
+     */
+    protected function sendMail($view, $subject, $to)
+    {
+        // $this doesn't work with closures
+        // https://wiki.php.net/rfc/closures/removal-of-this
+        $data = $this->template;
+
+        Mail::queue($view, $this->template,
+            function($message) use ($data, $subject, $to){
+                $message->to($to);
+                $message->subject($subject);
+            }
+        );
+    }
+
+    /**
+     * Sends out mails for a particular event trigger
+     * @param  string $event
+     * @return null
+     */
+    protected function notifyViaMail($event)
+    {
+        if (array_key_exists('merchant', self::$mailViews[$event]))
+        {
+            $view = self::$mailViews[$event]['merchant'];
+            $subject = $this->subjectPaymentSuccessful(true);
+            $to = $data['merchant']['email'];
+            $this->sendMail($view, $subject, $to);
+        }
+
+        if (array_key_exists('customer', self::$mailViews[$event]))
+        {
+            $view = self::$mailViews[$event]['customer'];
+            $subject = $this->subjectPaymentSuccessful(false);
+            $to = $data['customer']['email'];
+            $this->sendMail($view, $subject, $to);
+        }
+    }
+
+    /**
+     * This is the primary public method for this class
+     * @param  string $event Trigger notifications for this event
+     * @return null
+     */
     public function trigger($event)
     {
         if(!$this->isEnabled())
         {
             return;
         }
-        switch ($event) {
-            // case self::AUTHORIZED:
-            //     $this->notifyCustomerAuthorized();
-            //     $this->postSlackAuthorized();
-            //     break;
 
-            // case self::CAPTURED:
-            //     $this->postSlackCaptured();
-            //     // We send an email to the merchant
-            //     $this->notifyMerchantCaptured();
-            //     break;
+        $slackData = $this->getSlackData($event);
 
-            case self::REFUNDED:
-                $this->postSlackRefunded();
-                //$this->notifyMerchantRefunded();
-                //$this->notifyCustomerRefunded();
-            default:
-                break;
+        $slackMessages = [
+            self::AUTHORIZED    =>  'Payment Authorized',
+            self::CAPTURED      =>  'Payment Captured',
+            self::REFUNDED      =>  'Payment Refunded'
+        ];
+
+        $this->slackPost($slackMessages[$event], $slackData);
+
+        // Mails use the entire template
+        $this->notifyViaMail($event);
+    }
+
+    protected function getSubject($event, $merchant = true)
+    {
+        $word = 'Successful';
+
+        if ($event === self::REFUNDED)
+        {
+            $word = 'Refunded';
         }
-    }
 
-    protected function postSlackRefunded()
-    {
-        $this->slackPost('Payment Refunded', $this->template['refund']);
-    }
-
-    protected function postSlackAuthorized()
-    {
-        $this->slackPost('Payment Authorized', $this->flatTemplate);
-    }
-
-    protected function postSlackCaptured()
-    {
-        $this->slackPost('Payment Captured', $this->template['payment']);
-    }
-
-    protected function subjectPaymentSuccessful()
-    {
         if(isset($this->template['merchant']['billing_label']))
         {
-            return "Razorpay | Payment Successful for {$this->template['merchant']['billing_label']}";
+            $subject = "Payment $word for {$this->template['merchant']['billing_label']}";
         }
         else
         {
-            return "Razorpay | Payment Successful for {$this->template['payment']['amount']}";
+            $subject = "Payment $word for {$this->template['payment']['amount']}";
         }
-    }
 
-    protected function notifyCustomerAuthorized()
-    {
-        $data = $this->template;
-        $subject = $this->subjectPaymentSuccessful();
-        $config = $this->config;
-
-        Mail::queue(['html'=> 'emails.payment.customer', 'text'=> 'emails.payment.customer_text'], $this->template,
-            function($message) use ($data, $config, $subject){
-                $message->to($data['customer']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->subject($subject);
-            }
-        );
-    }
-
-    protected function notifyMerchantCaptured()
-    {
-        $subject = $this->subjectPaymentSuccessful();
-        if($this->template['payment']['orderId'])
+        // All mails to merchants must have the prefix
+        if ($merchant === true)
         {
-            $subject = "Payment Successful for #{$this->template['payment']['orderId']}";
+            $subject = "Razorpay | $subject";
         }
 
-        $data = $this->template;
-        $config = $this->config;
+        return $subject;
+    }
 
-        Mail::queue(['html'=> 'emails.payment.merchant', 'text'=> 'emails.payment.merchant_text'], $this->template,
-            function($message) use ($data, $subject, $config){
-                $message->to($data['merchant']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->subject($subject);
-            }
-        );
+    protected function getSlackData($event)
+    {
+        switch ($event) {
+            case self::AUTHORIZED:
+                $data = $this->template;
+                break;
+
+            case self::CAPTURED:
+                $data = $this->template['payment'];
+                break;
+
+            case self::REFUNDED:
+                $data = $this->template['refund'];
+                break;
+        }
+
+        $data = $this->flatten($data);
+
+        if ($data['payment.method.0'] === 'Card')
+        {
+            // We don't want to post the card number on Slack
+            unset($data['payment.method.1']);
+        }
+
+        return $data;
     }
 
     protected function templateData()
@@ -173,17 +239,47 @@ class Notify
         return $data;
     }
 
-    protected function flatten(array $data)
+    /**
+     * Removes all null and false values from the array
+     * Expects a flattened array (no nested arrays)
+     * @param  array  $data data
+     * @return array data with all null values removed
+     */
+    protected function cleanData(array $data)
     {
-        $result = [];
-        foreach ($data as $category => $arr)
-        {
-            foreach ($arr as $key => $value)
+        foreach ($data as $key => $value) {
+            if ($value === null or $value === false)
             {
-                $result["$category.$key"] = $value;
+                unset($data[$key]);
             }
         }
-        return $result;
+
+        return $data;
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten($array, $prefix = '') {
+
+        $result = array();
+
+        foreach ($array as $key=>$value)
+        {
+            if (is_array($value)) {
+                $result = $result + $this->flatten($value, $prefix . $key . '.');
+            }
+            else
+            {
+                $result[$prefix . $key] = $value;
+            }
+        }
+
+        return $this->cleanData($result);
     }
 
     /**
