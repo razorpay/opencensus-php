@@ -66,6 +66,9 @@ class DailyReport
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             $data);
 
+        // This is a debug view only for raising proper errors
+        \View::make('emails.merchant.daily_report_debug', $data)->render();
+
         Mail::send($view, $data, function($message) use ($config, $data)
         {
             $message->to($data['merchant']['transaction_report_email']);
