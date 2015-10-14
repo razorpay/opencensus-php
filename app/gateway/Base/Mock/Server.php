@@ -171,6 +171,16 @@ class Server
         return $content;
     }
 
+    protected function makeResponse($msg)
+    {
+        $response = \Response::make($msg);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+    }
+
     protected function makePostResponse($request)
     {
         $content = '

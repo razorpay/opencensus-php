@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
+use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\VerifyResult;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -17,6 +18,7 @@ use Trace\TraceCode;
 class Gateway extends Base\Gateway
 {
     use ResponseFieldsTrait;
+    use AuthorizeFailed;
 
     protected $gateway = 'sbiepay';
 
@@ -309,22 +311,10 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-//
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
-    }
-
-//
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->payment;
-//        sd($verify->payment);
+
         $requestParameter = array(
             'Atrn'            => $input['SBIePayReferenceID'],
             'MerchantId'      => $input['MerchantId'],

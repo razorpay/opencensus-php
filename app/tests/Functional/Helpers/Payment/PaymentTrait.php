@@ -699,7 +699,7 @@ trait PaymentTrait
 
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
-        return $this->$func($response, $callback);
+        return $this->$func($response, $callback, $gateway);
     }
 
     protected function processMerchantReturnCallbackForm($response)
@@ -882,12 +882,20 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $statusCode = $response->getStatusCode();
-        $this->assertEquals($statusCode, '302');
+        $statusCode = (int) $response->getStatusCode();
 
-        $url = $response->getTargetUrl();
 
-        return $url;
+        if ($statusCode === 302)
+        {
+            return $response->getTargetUrl();
+        }
+        else if ($statusCode === 200)
+        {
+            // Probably a form here.
+            // Return url, method, content from that.
+
+            return $this->getFormRequestFromResponse($response->getContent(), $url);
+        }
     }
 
     public function getLocalMerchantCallbackUrl()

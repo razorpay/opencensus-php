@@ -187,9 +187,14 @@ class MockGatewayController extends BaseController
         $driver = 'netbanking_'.$bank;
         $server = $this->gateway->server($driver);
 
-        $url = $server->authorize($input);
+        $data = $server->authorize($input);
 
-        return Redirect::to($url);
+        if (filter_var($data, FILTER_VALIDATE_URL))
+        {
+            return Redirect::to($data);
+        }
+
+        return $data;
     }
 
     public function postMobikwikPayment()

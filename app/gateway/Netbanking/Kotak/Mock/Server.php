@@ -15,11 +15,12 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         //fot test only
-        $resp_url = explode('|',$input['msg']);
-        $resp_url1 =$resp_url[7];
-        unset($resp_url[7]);
-        $input['msg'] = implode('|',$resp_url);
-        //-
+        $content = explode('|',$input['msg']);
+
+        $callbackUrl = $content[7];
+        unset($content[7]);
+
+        $input['msg'] = implode('|',$content);
         $input = $this->getContentFromInput($input);
 
         parent::authorize($input);
@@ -35,12 +36,16 @@ class Server extends Base\Mock\Server
             'AuthorizationStatus' => 'Y',
             'BankReference'       => random_integer(6),
         );
-        $content = ['msg' => $this->getDataWithChecksum($content)];
-        $url = route('gateway_payment_callback_kotak');
-        $url = $resp_url1;
-        $url .= '?' . http_build_query($content);
 
-        return $url;
+        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+
+        $request = array(
+            'url' => $callbackUrl,
+            'content' => ['msg' => $msg],
+            'method' => 'post',
+        );
+
+        return $this->makePostResponse($request);
     }
 
     public function verify($input)
@@ -70,8 +75,6 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-
-
     protected function getContentFromInput($input)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -83,38 +86,5 @@ class Server extends Base\Mock\Server
         $input = array_combine($fields, $content);
 
         return $input;
-    }
-
-    protected function getDataWithChecksum($data)
-    {
-        $dataStr = implode("|", $data);
-        $dataStrWithSecret = $dataStr . "|" . $this->getHashSecret();
-
-        return (string)$dataStr . '|' . str_pad((crc32($dataStrWithSecret)), 8, '0', STR_PAD_LEFT);
-    }
-
-    protected function getHashSecret()
-    {
-        return 'KMBANK';
-//        if ($this->mode === Mode::LIVE)
-//        {
-//            return $this->config['live_hash_secret'];
-//        }
-//        else
-//        {
-//            return $this->config['test_hash_secret'];
-//        }
-
-
-    }
-
-    protected function makeResponse($msg)
-    {
-        $response = \Response::make($msg);
-
-        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
     }
 }

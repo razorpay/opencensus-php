@@ -43,7 +43,6 @@ class NetbankingKotakGatewayTest extends TestCase
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
-
     public function testPaymentVerify()
     {
         $this->markTestIncomplete();

@@ -172,4 +172,11 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         return $namespace;
     }
+
+    protected function loadGatewayConfig($driver)
+    {
+        $configGatewayStr = 'gateway.'.$driver;
+
+        return $this->gatewayConfig[$configGatewayStr];
+    }
 }
