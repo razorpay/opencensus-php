@@ -159,6 +159,8 @@ trait Enroll
         if ($this->env === 'dev')
         {
             $parts = parse_url($url);
+            // $parts['host'] = 'https://dev.razorpay.com';
+            // $url = $parts['host'] . $parts['path'];
             $parts['host'] = 'rzp.ngrok.com';
             $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
         }
