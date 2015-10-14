@@ -9,7 +9,7 @@ return array(
 	 *
 	 */
 	'from' => array(
-		'address' => 'no-reply@razorpay.com',
+		'address' => 'support@razorpay.com',
 		'name' => 'Razorpay Team'
 	),
 
