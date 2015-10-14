@@ -48,6 +48,6 @@ class MethodsTest extends TestCase
         $content = $this->getPaymentMethods();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(57, $count);
+        $this->assertEquals(61, $count);
     }
 }
