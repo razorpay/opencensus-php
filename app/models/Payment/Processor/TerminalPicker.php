@@ -124,8 +124,8 @@ class TerminalPicker
         $this->network = $network;
 
         $gatewayOrder = array(
-            Gateway::AMEX,
-            Gateway::HDFC,
+            // Gateway::AMEX,
+            // Gateway::HDFC,
             Gateway::AXIS_MIGS,
             Gateway::KOTAK);
 
@@ -489,7 +489,7 @@ class TerminalPicker
 
     protected function getTerminals($merchant)
     {
-        return $this->repo->fetch([], $merchant->getId());
+        return $this->repo->fetch(['count' => 100], $merchant->getId());
     }
 
     protected function filterTerminalsByMethod($terminals, $method)
