@@ -37,4 +37,5 @@ t.innerHTML += s ? 'Successful' : 'Failed';
 t.className = 'show ' + (s ? 's' : 'f');
 document.getElementById('icon').innerHTML = s ? '&#10004' : '!';
 
+onmessage=function(e){if(e&&e.data=='pingback')close()}
 </script></body></html>
