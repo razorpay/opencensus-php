@@ -23,6 +23,16 @@ class Netbanking
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
     );
 
+    protected static $self = array(
+        IFSC::HDFC);
+
+    /**
+     * Additional net-banking banks that we are in the process of integrating
+     * @var array
+     */
+    protected static $selfInTest = array(
+        IFSC::KKBK);
+
     protected static $paytm = array(
         IFSC::CITI,
         IFSC::CIUB,
@@ -214,6 +224,21 @@ class Netbanking
     public static function getBilldeskSupportedBanks()
     {
         return self::$billdesk;
+    }
+
+    public static function getSupportedBanksInTestMode()
+    {
+        $banks = self::getSupportedBanksInLiveMode();
+
+        $banks = array_merge($banks, self::$selfInTest);
+        $banks = array_merge($banks, self::$sbiepay);
+
+        return array_unique($banks);
+    }
+
+    public static function getSupportedBanksInLiveMode()
+    {
+        return array_unique(array_merge(self::$billdesk, self::$self));
     }
 
     public static function getSbiepaySupportedBanks()

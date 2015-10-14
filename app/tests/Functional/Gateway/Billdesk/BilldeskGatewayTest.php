@@ -94,27 +94,4 @@ class BilldeskGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
     }
-
-    public function testGetPaymentMethodsRoute()
-    {
-        $this->ba->publicLiveAuth();
-
-        $this->fixtures->merchant->activate('10000000000000');
-
-        $attributes = array(
-            'merchant_id'               => '10000000000000',
-            'gateway'                   => 'billdesk',
-            'card'                      => 0,
-            'gateway_merchant_id'       => 'razorpay billdesk',
-            'gateway_terminal_id'       => 'nodal account billdesk',
-            'gateway_terminal_password' => 'razorpay_password',
-        );
-
-        $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
-
-        $content = $this->startTest();
-
-        $count = count($content['netbanking']);
-        $this->assertEquals(57, $count);
-    }
 }

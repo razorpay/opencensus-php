@@ -446,6 +446,16 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getPaymentMethods()
+    {
+        $request = [
+            'url' => '/methods',
+            'method' => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultPaymentArray()
     {
         //

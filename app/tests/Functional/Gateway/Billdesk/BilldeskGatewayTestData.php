@@ -150,25 +150,4 @@ return [
         'entity' => 'transaction',
         'admin' => true,
     ],
-
-    'testGetPaymentMethodsRoute' => [
-        'request' => [
-            'url' => '/methods',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'methods',
-                'card' => true,
-                'netbanking' => [
-                    'UTIB' => 'Axis Bank',
-//                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank',
-                ],
-                'wallet' => [
-                    'paytm' => false,
-                ],
-            ],
-        ],
-    ],
 ];
