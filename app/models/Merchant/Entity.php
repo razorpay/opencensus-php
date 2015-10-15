@@ -269,9 +269,4 @@ class Entity extends Base\PublicEntity
             return 'XXXX-XXXX-XXXX';
         }
     }
-
-    public function getTransactionReportEmail()
-    {
-        return $this->attributes[self::TRANSACTION_REPORT_EMAIL];
-    }
 }
