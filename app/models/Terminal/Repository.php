@@ -4,6 +4,7 @@ namespace Models\Terminal;
 
 use Models\Base;
 use Models\Terminal;
+use Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -17,6 +18,8 @@ class Repository extends Base\Repository
         Entity::GATEWAY         => 'sometimes',
         Entity::CARD            => 'sometimes|boolean',
         Entity::NETBANKING      => 'sometimes|boolean',
+        Entity::SHARED          => 'sometimes|boolean',
+        Entity::CATEGORY        => 'sometimes|integer|digits:4',
         'deleted'               => 'sometimes|boolean',
     );
 
@@ -69,11 +72,32 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getSharedTerminalForGateway($gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->get();
+    }
+
+    public function getSharedTerminalForGatewayWithCategory($gateway, $category)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->where(Terminal\Entity::CATEGORY, '=', $category)
+                    ->first();
+    }
+
     public function deleteOrFail($entity)
     {
         $repo = $this->repo;
 
-        if ($entity->getUsedCount() === 0)
+        $count = $this->getTotalUsedCount($entity);
+
+        if ($count === 0)
         {
             $entity->forceDelete();
 
@@ -99,5 +123,12 @@ class Repository extends Base\Repository
             'restore',
             'terminal',
             $terminal->getAttributes());
+    }
+
+    public function getTotalUsedCount($terminal)
+    {
+        return (new Payment\Entity)->newQuery()
+                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminal->getId())
+                    ->count();
     }
 }

@@ -13,6 +13,12 @@ class Server
 
     protected $validator;
 
+    /**
+     * Namespace of the current gateway server
+     * @var string
+     */
+    protected $ns;
+
     public function __construct()
     {
         $this->request = Request::getFacadeRoot();
@@ -87,8 +93,7 @@ class Server
 
     protected function getGatewayInstance()
     {
-        $class = get_class($this);
-        $class = substr($class, 0, strpos($class, '\Mock')) . '\Gateway';
+        $class = $this->getGatewayNamespace() . '\Gateway';
 
         $gateway = new $class;
         $gateway->setMode(Mode::TEST);
@@ -98,14 +103,26 @@ class Server
 
     protected function getGatewayNamespace()
     {
-        $class = get_called_class();
+        $namespace = $this->getNamespace();
 
-        return substr($class, 0, strpos($class, 'Mock\Server') - 1 );
+        return substr($namespace, 0, strpos($namespace, 'Mock') - 1 );
     }
 
     protected function getNamespace()
     {
-        return substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+        $ns = & $this->ns;
+
+        if ($ns !== null)
+            return $ns;
+
+        $ns = substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+
+        return $ns;
+    }
+
+    protected function setNamespace($ns)
+    {
+        $this->ns = $ns;
     }
 
     protected function getValidator()
@@ -147,6 +164,11 @@ class Server
     public function setInput($input)
     {
         $this->input = $input;
+    }
+
+    public function content(& $content)
+    {
+        return $content;
     }
 
     protected function makePostResponse($request)

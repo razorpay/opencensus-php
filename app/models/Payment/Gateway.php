@@ -80,6 +80,7 @@ class Gateway
         self::AXIS_MIGS,
         self::BILLDESK,
         self::MOBIKWIK,
+        self::PAYTM,
         self::NETBANKING_HDFC);
 
     public static function getChannel($gateway)

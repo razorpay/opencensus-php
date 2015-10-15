@@ -7,12 +7,15 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
+use Gateway\Base\VerifyResult;
 use Gateway\Paytm;
 use Trace\Trace;
 use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = 'paytm';
 
     public function authorize(array $input)
@@ -144,7 +147,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->postRequestToPaytm($content);
 
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['paytm' => $content]);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REFUND, ['paytm' => $content]);
 
         $attr = $this->lowerArrayKeys($content);
         $attr['received'] = 1;
@@ -153,6 +156,17 @@ class Gateway extends Base\Gateway
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
+            if ($content['RESPCODE'] === '610')
+            {
+                // This means payment is already refunded fully or partially.
+                $refundAmt = (int) ($content['REFUNDAMOUNT'] * 100);
+
+                if ($refundAmt === $input['refund']['amount'])
+                {
+                    return;
+                }
+            }
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_REFUND_FAILED,
@@ -165,18 +179,114 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $data = array(
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $content = array(
             'MID'       => $input['terminal']['gateway_merchant_id'],
             'ORDERID'  => $input['payment']['id']);
 
         $this->addTestMerchantIdIfTestMode($content);
 
-        $content = $this->postRequestToPaytm($data);
+        $content = $this->postRequestToPaytm($content);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $verify->verifyResponse = $this->response;
 
-       $this->matchPaymentData($payment, $content, $input);
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $content);
+
+        return $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($content['STATUS'] !== Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = false;
+
+            if ($payment['status'] !== Status::SUCCESS)
+            {
+                $verify->apiSuccess = false;
+            }
+            else if ($payment['status'] === Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+            }
+        }
+        else if ($content['STATUS'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+
+            // Gateway success, api success
+            if ($payment['status'] === Status::SUCCESS)
+            {
+                $verify->apiSuccess = true;
+
+                $amountRefunded = (int) ($content['REFUNDAMT'] * 100);
+
+                // Check that refund amount matches.
+                if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
+                {
+                    $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
+                }
+            }
+            else if ($payment['statuscode'] !== Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+            }
+        }
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $this->verifyContentSaveIfNeeded($verify->match, $payment, $content);
+
+        return $status;
+    }
+
+    protected function verifyContentSaveIfNeeded($match, $payment, $content)
+    {
+        $invalidOrderIdRespCode = array(
+            '334',
+            '309');
+
+        if (($match === true) and
+            ($payment['received'] === false) and
+            (in_array($content['RESPCODE'], $invalidOrderIdRespCode) === false))
+        {
+            $contentToStore = [];
+
+            foreach ($content as $key => & $value)
+            {
+                if ($value !== '')
+                {
+                    $contentToStore[$key] = $value;
+                }
+            }
+
+            $attr = $this->lowerArrayKeys($contentToStore);
+            $payment->fill($attr);
+            $payment->saveOrFail();
+        }
     }
 
     protected function postRequestToPaytm($content)
@@ -191,24 +301,9 @@ class Gateway extends Base\Gateway
         $response = $this->runRequestResponseFlow($request);
         $content = json_decode($response->body, true);
 
+        $this->response = $response;
+
         return $content;
-    }
-
-    protected function matchPaymentData($payment, $content, $input)
-    {
-        if ($payment['status'] !== $content['STATUS'])
-        {
-            $res['match'] = false;
-            $res['payment'] = [$payment->toArray()];
-            $res['gateway_data'] = $content;
-            $res['payment_id'] = $input['payment']['id'];
-            $res['gateway'] = $input['payment']['gateway'];
-
-            if ($res['match'] === false)
-            {
-                throw new Exception\PaymentVerificationException($res);
-            }
-        }
     }
 
     protected function runRequestResponseFlow(array $request)
@@ -327,7 +422,7 @@ class Gateway extends Base\Gateway
 
         if (isset($input['gateway']['CHECKSUMHASH']) === false)
         {
-            $this->trace->error(TraceCode::MISC_TRACE_CODE, $input['gateway']);
+            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $input['gateway']);
 
             if ($input['gateway']['STATUS'] === Status::FAILURE)
             {

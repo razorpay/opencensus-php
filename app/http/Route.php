@@ -128,6 +128,8 @@ final class Route
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                     ],
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
+        'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
+        'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
     );
 
     public static $public = array(
@@ -256,6 +258,8 @@ final class Route
     );
 
     public static $direct = array(
+        'transparent_redirect_get',
+        'transparent_redirect_post',
     );
 
     public static $internalApps = array(
@@ -276,7 +280,7 @@ final class Route
                 'merchant_daily_report',
                 'payment_auto_capture',
                 'payment_verify_all',
-                'refund_hdfcnb'),
+                'refund_netbanking_generate_excel'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),

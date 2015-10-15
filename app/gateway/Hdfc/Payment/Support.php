@@ -185,7 +185,7 @@ trait Support
 
         $type = $this->supportPaymentRequest['type'];
 
-        $action = constant(__NAMESPACE__.'\Action::'.strtoupper($type));
+        $action = constant(Action::class.'::'.strtoupper($type));
 
         $data['action'] = $action;
 

@@ -5,6 +5,7 @@ namespace Models\Payment;
 use EE\Exception;
 use Models\Base;
 use Models\Payment;
+use Models\Card;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorDescription;
 
@@ -15,7 +16,7 @@ class Repository extends Base\Repository
     protected $entity = 'Payment';
 
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed,refunded',
+        Entity::STATUS          => 'sometimes|string',
         Entity::VERIFIED        => 'sometimes|boolean',
         Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
         Entity::BANK            => 'sometimes',
@@ -23,6 +24,9 @@ class Repository extends Base\Repository
         Entity::GATEWAY         => 'sometimes',
         Entity::EMAIL           => 'sometimes',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
+        Card\Entity::IIN        => 'sometimes|integer|digits:6',
+        Card\Entity::LAST4      => 'sometimes|integer|digits:4',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -136,5 +140,48 @@ class Repository extends Base\Repository
         }
 
         $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
+    }
+
+    protected function addQueryParamStatus($query, $params)
+    {
+        $status = $params[Entity::STATUS];
+
+        $status = explode(',', $status);
+
+        Payment\Validator::validateStatusArray($status);
+
+        $query->whereIn(Entity::STATUS, $status);
+    }
+
+    protected function addQueryParamIin($query, $params)
+    {
+        $query->join(
+            Payment\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+
+                $join->on($paymentCardId, '=', $cardId)
+                     ->where(Card\Entity::IIN, '=', $params[Card\Entity::IIN]);
+            });
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamLast4($query, $params)
+    {
+        $query->join(
+            Payment\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+
+                $join->on($paymentCardId, '=', $cardId)
+                     ->where(Card\Entity::LAST4, '=', $params[Card\Entity::IIN]);
+            });
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 }

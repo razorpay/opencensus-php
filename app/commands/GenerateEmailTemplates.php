@@ -42,7 +42,8 @@ class GenerateEmailTemplates extends Command {
             'emails/partials/header', 'emails/partials/footer',
             'emails/partials/header_image', 'emails/partials/separator',
             'emails/merchant/daily_report', 'emails/merchant/newsletter',
-            'emails/payment/merchant'
+            'emails/payment/merchant', 'emails/refund/common',
+            'emails/merchant/daily_report_debug'
         ];
 
         $view_directory = app_path()."/views/";

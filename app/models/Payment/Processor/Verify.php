@@ -61,7 +61,10 @@ trait Verify
             'amount'        =>  $payment->getAmount()
         ];
 
-        $message = 'Payment verification failed. ';
+        if (!isset($data['message']))
+        {
+            $message = 'Payment verification failed.';
+        }
 
         $this->slackPost($message, $data, '', ['color'=>'bad', 'icon' => ':-1:']);
     }

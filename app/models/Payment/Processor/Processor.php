@@ -51,6 +51,7 @@ class Processor
         $this->core = $core;
         $this->trace = $trace;
         $this->mode = $mode;
+        $this->app  = App::getFacadeRoot();
 
         $this->checkMerchantPermissions();
 
@@ -169,11 +170,6 @@ class Processor
             throw new Exception\LogicException(
                 'A non-activated merchant is making live request. Blasphemy!');
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive()]);
     }
 
     protected function verifyMerchantIsLiveForLiveRequest()
@@ -253,12 +249,14 @@ class Processor
     {
         $terminal = $this->payment->terminal;
 
-        $gateway = $this->payment->getGateway();
-
         if ($terminal === null)
         {
-            return;
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                ['payment_id' => $payment->getId()]);
         }
+
+        $gateway = $this->payment->getGateway();
 
         $input['terminal'] = $terminal;
         $input['merchant'] = $terminal->merchant;

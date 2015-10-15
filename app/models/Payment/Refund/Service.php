@@ -37,10 +37,18 @@ class Service extends Base\Service
             }
         }
 
+        // Add more banks here as we direct connects with them.
+        $banks = array(IFSC::HDFC);
+
+        if (isset($input['bank']) === false)
+        {
+            $input['bank'] = IFSC::HDFC;
+        }
+
         $bankCode = $input['bank'];
 
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-            $bankCode, $from, $to);
+                                                $bankCode, $from, $to);
 
         $count = $refunds->count();
 

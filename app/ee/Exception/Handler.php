@@ -13,11 +13,9 @@ class Handler
 {
     protected $app;
 
-    public function __construct()
+    public function __construct($app)
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->registerExceptionHandlers();
+        $this->app = $app;
     }
 
     public function registerExceptionHandlers()
@@ -68,10 +66,14 @@ class Handler
         if ($exception instanceof ServerErrorException)
             return;
 
+        $this->app['trace']->info(
+            Trace\TraceCode::RECOVERABLE_EXCEPTION,
+            $this->getExceptionDetails($exception));
+
         return ApiResponse::recoverableError($this->isDebug(), $exception);
     }
 
-    protected function traceException(\Exception $exception)
+    public function traceException(\Exception $exception)
     {
         $traceData = $this->getExceptionDetails($exception);
 

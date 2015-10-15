@@ -259,6 +259,7 @@ class Entity extends Base\PublicEntity
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
@@ -319,6 +320,16 @@ class Entity extends Base\PublicEntity
     public function getSignedAttribute()
     {
         return (bool) $this->attributes[self::SIGNED];
+    }
+
+    public function getVerifiedAttribute()
+    {
+        $verified = $this->attributes[self::VERIFIED];
+
+        if ($verified !== null)
+            $verified = (int) $verified;
+
+        return $verified;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -491,9 +502,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
     public function getInternalErrorCode()
     {
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
     }
 
     public function getDaysSinceAuthorized()
@@ -614,7 +635,7 @@ class Entity extends Base\PublicEntity
 
     public function terminal()
     {
-        return $this->belongsTo('Models\Terminal\Entity');
+        return $this->belongsTo('Models\Terminal\Entity')->withTrashed();
     }
 
     public function refunds()

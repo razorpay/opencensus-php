@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use Constants\Mode;
 use EE\Exception;
+use EE\Error;
 use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant\Methods;
@@ -70,6 +71,10 @@ trait Authorize
         $data = array(
             'payment' => $payment->toArray(),
         );
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            ['payment_id' => $payment->getId()]);
 
         $this->repo->transaction(function() use ($data)
         {
