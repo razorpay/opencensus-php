@@ -17,7 +17,7 @@ class Notify
     const REFUNDED   = 'refunded';
 
     // TODO: Shift to constants once we update PHP
-    protected static $mailViews = [
+    protected $mailViews = [
         self::AUTHORIZED    =>  [
             'customer'  => [
                 'html'=> 'emails.payment.customer',
@@ -104,20 +104,20 @@ class Notify
      */
     protected function notifyViaMail($event)
     {
-        if (array_key_exists('merchant', self::$mailViews[$event]))
+        // This sends out mail for all views defined above
+        // type = merchant|customer
+        foreach ($this->mailViews[$event] as $type => $view)
         {
-            $view = self::$mailViews[$event]['merchant'];
-            $subject = $this->getSubject($event, true);
-            $to = $this->template['merchant']['email'];
-            $this->sendMail($view, $subject, $to);
-        }
+            $isMerchant = ($type === 'merchant');
 
-        if (array_key_exists('customer', self::$mailViews[$event]))
-        {
-            $view = self::$mailViews[$event]['customer'];
-            $subject = $this->getSubject($event, false);
-            $to = $this->template['customer']['email'];
-            $this->sendMail($view, $subject, $to);
+            $subject = $this->getSubject($event, $isMerchant);
+            $to = $this->template[$type]['email'];
+
+            // This finally sends the mail
+            if ($this->isEnabled())
+            {
+                $this->sendMail($view, $subject, $to);
+            }
         }
     }
 
@@ -128,11 +128,6 @@ class Notify
      */
     public function trigger($event)
     {
-        if(!$this->isEnabled())
-        {
-            return;
-        }
-
         $slackData = $this->getSlackData($event);
 
         $slackMessages = [
@@ -141,6 +136,8 @@ class Notify
             self::REFUNDED      =>  'Payment Refunded'
         ];
 
+        // Send out Slack notifications for the event
+        // You can control slack posts via SLACK_ENABLE
         $this->slackPost($slackMessages[$event], $slackData);
 
         // Mails use the entire template
