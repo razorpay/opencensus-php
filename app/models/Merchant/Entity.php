@@ -231,9 +231,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
+    /**
+     * Returns all transaction emails associated with the merchant
+     * @return array array of email addresses
+     */
     public function getTransactionReportEmail()
     {
-        return $this->attributes[self::TRANSACTION_REPORT_EMAIL];
+        return explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
     }
 
     public function holdFunds()
