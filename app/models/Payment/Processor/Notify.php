@@ -30,12 +30,10 @@ class Notify
                 'text'=> 'emails.payment.merchant_text'
             ]
         ],
-        // self::REFUNDED      =>  [
-        //     'customer'  => [
-        //     ],
-        //     'merchant'  => [
-        //     ]
-        // ]
+        self::REFUNDED      =>  [
+            'customer'  => 'emails.refund.common',
+            'merchant'  => 'emails.refund.common'
+        ]
     ];
 
     protected $payment;
@@ -151,20 +149,20 @@ class Notify
 
     protected function getSubject($event, $merchant = true)
     {
-        $word = 'Successful';
+        $entity = 'Payment';
 
         if ($event === self::REFUNDED)
         {
-            $word = 'Refunded';
+            $entity = 'Refund';
         }
 
         if(isset($this->template['merchant']['billing_label']))
         {
-            $subject = "Payment $word for {$this->template['merchant']['billing_label']}";
+            $subject = "$entity successful for {$this->template['merchant']['billing_label']}";
         }
         else
         {
-            $subject = "Payment $word for {$this->template['payment']['amount']}";
+            $subject = "$entity successful for {$this->template['payment']['amount']}";
         }
 
         // All mails to merchants must have the prefix
