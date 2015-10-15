@@ -287,59 +287,6 @@ trait Authorize
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
-    protected function notifyCustomer($payment)
-    {
-        $app = App::getFacadeRoot();
-
-        // Dont send mails in test mode
-        // @todo: remove this somehow
-        if (($this->mode === Mode::TEST) and
-            ($app->environment('dev') === false))
-        {
-            return;
-        }
-
-        $templateData = [
-            'customer'  =>  [
-                'email' =>  $payment->getEmail(),
-                'phone' =>  $payment->getContact()
-            ],
-            'merchant'  =>  [
-                'billing_label' =>  $payment->merchant->getBillingLabel(),
-                'website'       =>  $payment->merchant->getWebsite()
-            ],
-            'payment'   =>  [
-                'id'        =>  $payment->getId(),
-                'amount'    =>  "INR ".number_format($payment['amount']/100, 2),
-                'timestamp' =>  $payment->getUpdatedAt(),
-                'method'    =>  $payment->getMethodWithDetail()
-            ]
-        ];
-
-        $config = $app->config->get('applications.mailgun');
-
-        $subject = "Payment Successful for {$templateData['payment']['amount']}";
-
-        if (isset($templateData['merchant']['billing_label']))
-        {
-            $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
-        }
-
-        $app['mailer']->queue(
-            [
-                'html' => 'emails/payment/customer',
-                'text' => 'emails/payment/customer_text'
-            ],
-            $templateData,
-            function ($message) use ($templateData, $config, $subject)
-            {
-                $message->to($templateData['customer']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->subject($subject);
-            }
-        );
-    }
-
     protected function callGatewayAuthorize(array $data)
     {
         try

@@ -61,9 +61,8 @@ trait Verify
             'amount'        =>  $payment->getAmount()
         ];
 
-        $message = 'Payment verification failed. ' .
-                    'data - ' . json_encode($data, JSON_PRETTY_PRINT);
+        $message = 'Payment verification failed. ';
 
-        $this->slackPost($message, $data, '@harshil @shk', ['color'=>'bad']);
+        $this->slackPost($message, $data, '', ['color'=>'bad', 'icon' => ':-1:']);
     }
 }
