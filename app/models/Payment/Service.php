@@ -186,13 +186,11 @@ class Service extends Base\Service
 
             $message = 'Payment authorizations till ' . $date->format('d-m-y');
 
-            $data = ['payments' => ''];
+            $data = [];
             foreach ($payments as $payment)
             {
-                $data['payments'] .= $payment->getPublicId() . ' ';
+                $data[$payment->getPublicId()] =  $payment->getAmount();
             }
-
-            $pretext .= '@harshil @shk';
 
             $this->slackPost($message, $data, $pretext);
         }
