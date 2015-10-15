@@ -49,9 +49,17 @@
             Contact
           </a>
           <a href class="list-group-item" ng-show="entity.error_code">
-            <span class="pull-right" tooltip="Click to see details" ng-confirm-click="{{entity.error_description}}">{{entity.error_code}}</span>
+            <span class="pull-right">
+              {{entity.error_code}}
+            </span>
             Error
           </a>
+          <div href class="list-group-item panel-body" ng-show="entity.error_description">
+            <span class="pull-right col-lg-8 text-right">
+              {{entity.error_description}}
+            </span>
+            Error Description
+          </div>
           <a href class="list-group-item">
             <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At

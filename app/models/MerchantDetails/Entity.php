@@ -6,6 +6,16 @@ use Models\Base;
 
 class Entity extends Base\Entity
 {
+    protected static $URL_KEYS = [
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing'
+    ];
+
     protected $table = 'merchant_details';
 
     protected $primaryKey = 'merchant_id';
@@ -146,10 +156,8 @@ class Entity extends Base\Entity
     );
 
     protected static $uploadDocuments = array(
-        'business_operation_proof_url' => "Please upload business operation proof document.",
         'business_pan_url'   => "Please upload business pan card scan.",
         'address_proof_url'   => "Please upload address proof.",
-        'promoter_pan_url'    => "Please upload authorised signatory pan card",
         'promoter_address_url'  => "Please upload authorised signatory address  proof."
     );
 
@@ -222,6 +230,15 @@ class Entity extends Base\Entity
             'key'   => key($input),
             'file'  => current($input),
             'field' => $field);
+    }
+
+    public function getUrls()
+    {
+        // Filter = Remove null values
+        // Intersect + Flip = filter to the required keys
+        return array_filter(array_intersect_key(
+            $this->attributes, array_flip(self::$URL_KEYS)
+        ));
     }
 
     public function checkUploadedFiles()
@@ -304,5 +321,19 @@ class Entity extends Base\Entity
         }
 
         return $error;
+    }
+
+    public static function getUrlKeys()
+    {
+        return self::$URL_KEYS;
+    }
+
+    public function changeTransactionEmail($email)
+    {
+        $input = [
+            'transaction_report_email'  => $email
+        ];
+
+        $error = $this->edit($input, 'editEmail');
     }
 }

@@ -6,7 +6,6 @@ use Models\Base;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Mail;
-use Mailgun;
 use Requests;
 
 class Service extends Base\Service
@@ -44,7 +43,7 @@ class Service extends Base\Service
     {
         $merchant = $merchant->generateEmailData();
 
-        Mailgun::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
         {
             $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
         });
@@ -54,13 +53,41 @@ class Service extends Base\Service
     {
         if($_ENV['SLACK_ENABLE'] === true)
         {
+            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+
             $postData = [
-                'email' => $slackData['email'],
-                'name'  => $slackData['name']
+                'email'         => $slackData['email'],
+                'name'          => $slackData['name'],
+                // This is in slack formatting
+                'message'       => "<$merchantLink|New Signup>"
             ];
 
             Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
         }
+    }
+
+    /**
+     * take care when calling this function
+     * This is only called from the admin service
+     * @param  string $id    Merchant Id
+     * @param  array $input  Array with new Merchant Email Address
+     */
+    public function changeEmail($id, $input)
+    {
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if ($merchant->isTestAccount()) {
+            return [["Email change forbidden on this account"], null];
+        }
+
+        $error = $merchant->changeEmail($input);
+
+        if (empty($error))
+        {
+            $merchant->save();
+        }
+
+        return [$error, null];
     }
 
     public function changePassword(array $input)

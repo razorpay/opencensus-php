@@ -3,6 +3,7 @@
 namespace Models\Admin;
 
 use Excel;
+use Models\MerchantDetails;
 use PHPExcel_IOFactory;
 
 class HdfcTidExcel
@@ -21,21 +22,31 @@ class HdfcTidExcel
         $objReader = PHPExcel_IOFactory::createReader($inputFileType);
         $excel = $objReader->load($filePath);
 
+        $businessType = MerchantDetails\BusinessType::getType($merchantDetails['business_type']);
+        $txnVolume = MerchantDetails\TransactionVolume::getVolume($merchantDetails['transaction_volume']);
+
+        $natureOfBusiness = \Lang::get('mcc.' . $merchant['category']);
+
         $excel->setActiveSheetIndex(0)
-            ->setCellValue('C10', $merchantDetails['business_operation_address'])
+            ->setCellValue('C9',  'Razorpay - ' . $merchant['billing_label'])
+            ->setCellValue('C11', $merchantDetails['business_operation_address'])
             ->setCellValue('C14', $merchantDetails['business_operation_pin'])
             ->setCellValue('C15', $merchantDetails['business_operation_city'])
             ->setCellValue('C16', $merchantDetails['business_operation_state'])
             ->setCellValue('C18', $merchantDetails['contact_name'])
             ->setCellValue('C19', $merchantDetails['contact_mobile'])
-            ->setCellValue('C25', $merchant['category'])
+            ->setCellValue('C22', $natureOfBusiness)
+            ->setCellValue('C25', $merchantDetails['business_paymentdetails'])
+            ->setCellValue('C26', $merchant['category'])
             ->setCellValue('C27', $merchantDetails['business_website'])
-            ->setCellValue('C28', $merchantDetails['business_doe'])
+            ->setCellValue('C29', $merchantDetails['business_doe'])
             ->setCellValue('C33', $merchantDetails['business_website'])
-            ->setCellValue('C35', $merchantDetails['business_type'])
-            ->setCellValue('C51', $merchantDetails['transaction_volume'])
-            ->setCellValue('C52', $merchantDetails['transaction_volume'] / 12)
-            ->setCellValue('C53', $merchantDetails['transaction_volume'] / $txnValue)
+            ->setCellValue('C35', $businessType)
+            ->setCellValue('C51', $txnVolume)
+            // Expected Monthly card Turnover
+            ->setCellValue('C52', number_format($txnVolume / 12, 2))
+            // Expected No. of transaction on the website
+            ->setCellValue('C53', number_format($txnVolume / $txnValue), 0)
             ->setCellValue('C62', $merchantDetails['website_privacy'])
             ->setCellValue('C63', $merchantDetails['website_refund'])
             ->setCellValue('C64', $merchantDetails['website_terms'])
@@ -43,7 +54,15 @@ class HdfcTidExcel
             ->setCellValue('C66', $merchantDetails['website_pricing'])
             ->setCellValue('C67', $merchantDetails['business_website'])
             ->setCellValue('C69', $merchantDetails['website_contact'])
-            ->setCellValue('C70', $merchantDetails['website_login']);
+            ->setCellValue('C70', $merchantDetails['website_login'])
+            // Mode of delivery
+            ->setCellValue('C73', 'Physical')
+            // Lead time of delivery
+            ->setCellValue('C74', '7-15 Days')
+            // Minimum Ticket Size
+            ->setCellValue('C78', '1')
+            // Maximum Ticket Size
+            ->setCellValue('C79', '50000');
 
         $excelWriter = PHPExcel_IOFactory::createWriter($excel, $inputFileType);
 

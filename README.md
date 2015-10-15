@@ -20,3 +20,7 @@
 * Create a `$HOME/.selenium` directory
 * Download the latest selenium server jar file from `http://www.seleniumhq.org/download/` and download it in the `~/.selenium` directory.
 * Make sure you have firefox installed.
+
+# Selenium
+
+If you can't get selenium to work, make sure `API_MOCK` is true in `.env.testing.php`

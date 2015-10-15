@@ -2000,7 +2000,7 @@ fieldset[disabled] .i-checks input + i:before {
 }
 .form-validation .form-control.ng-dirty.ng-invalid {
   color: #FF0000;
-  
+
 }
 .form-validation .form-control.ng-dirty.ng-valid,
 .form-validation .form-control.ng-dirty.ng-valid:focus {
@@ -3885,4 +3885,35 @@ a.text-black:hover {
 {
   border-radius: 8px;
   background-color: #666;
+}
+
+.sk-input-wrap{
+    margin: 8px 10px 0!important;
+}
+.sk-intro input {
+  color: #555;
+  width: 100%;
+  margin: 0 0 0 -10px;
+  border: 1px solid #ddd;
+  padding: 0 10px;
+  line-height: 26px;
+  border-radius: 2px;
+  outline: none;
+}
+.sk-intro input:invalid {
+  border-color: #e74c3c;
+}
+.list-group-item pre {
+	font-family: Menlo, Monaco, "Ubuntu Mono", Consolas, "Courier New", monospace;
+	letter-spacing: 0.0625em;
+	word-spacing: 5px;
+}
+
+.panel code {
+	color: inherit;
+	background-color: inherit;
+}
+a code {
+	color: #58666e;
+	font-size: inherit;
 }

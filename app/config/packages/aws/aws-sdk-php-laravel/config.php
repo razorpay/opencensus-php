@@ -63,4 +63,7 @@ return array(
     */
     'config_file' => null,
 
+    'buckets'   =>  [
+        'beneficiary'   =>  'rzp-api-beneficiary'
+    ]
 );

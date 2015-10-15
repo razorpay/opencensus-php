@@ -5,7 +5,8 @@ namespace Models\Transaction;
 use Models\Base;
 use Models\Transaction;
 use Models\Merchant;
-use Mail;
+use Models\MerchantDetails;
+
 
 class Service extends Base\Service
 {
@@ -32,13 +33,6 @@ class Service extends Base\Service
 
         $this->aggregate($input, $mode);
 
-        $merchant = Merchant\Entity::find($input['merchant_id']);
-
-        if($input['resource'] === "refund" and $mode === 'live')
-        {
-            $this->slackPost('New Refund', $input + array('name' => $merchant->name), '#transactions', '@channel');
-        }
-
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
@@ -50,7 +44,7 @@ class Service extends Base\Service
                 $obj = Transaction\Entity::retrieveLastByType($input['merchant_id'], $type, $mode);
 
                 if (($obj === null) or
-                    ((int) $obj->create_at + $interval <= $input['updated_at']))
+                    ((int) $obj->created_at + $interval <= $input['updated_at']))
                 {
                     $this->create($input, $type, $mode);
                 }
@@ -95,7 +89,7 @@ class Service extends Base\Service
         {
             $merchantDetails = Merchant\Entity::createAggregations($data, $mode);
         }
-        
+
         Merchant\Entity::updateAggregations($data, $merchantDetails, $mode);
 
     }
@@ -130,7 +124,7 @@ class Service extends Base\Service
         {
             $data = array('merchant_id' => $merchantId, 'resource' => $resource);
 
-            $response[$resource] = Merchant\Entity::getAggregations($data, $mode);      
+            $response[$resource] = Merchant\Entity::getAggregations($data, $mode);
         }
 
         return $response;
@@ -140,8 +134,8 @@ class Service extends Base\Service
     {
         $data = array('merchant_id' => $merchantId);
 
-        $response = Merchant\Entity::getPaymentAggregations($data, $mode);      
- 
+        $response = Merchant\Entity::getPaymentAggregations($data, $mode);
+
         return $response;
     }
 
@@ -191,7 +185,7 @@ class Service extends Base\Service
             }
 
             foreach ($array as $obj)
-            {   
+            {
                 if ((int)($obj->created_at) == $i)
                 {
                     $data[] = $obj->toArray();

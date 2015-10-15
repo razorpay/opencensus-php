@@ -1,0 +1,117 @@
+<div class="bg-light lter b-b wrapper-md" ng-controller="EntityDetailCtrl">
+  <h1 class="m-n font-thin h3">
+    {{entity.type | titlecase}} Entity Detail ({{mode + " Mode"| titlecase }})
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(entity.type)">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Entity Id: <strong>{{entity.id}}</strong>
+    </div>
+  <div class="text-center m-t">
+    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a class="list-group-item" ng-repeat="key in getKeys()"
+          ng-init="value = entity[key];type = getType(key, value)" ui-sref="{{getState(type)}}"
+        >
+          <span class="pull-right" ng-class="displayClass(value)">
+            {{displayValue(value, type)}}
+          </span>
+          {{key|titlecase}}
+        </a>
+        <div class="list-group-item" style="overflow:auto;">
+          <pre class="col-lg-8 pull-right">{{toJson(entity)}}</pre>
+          Raw
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer row">
+      <div class="btn-group text-left" role="group"
+        aria-label="Terminal Actions" ng-show="entity.entity == 'terminal'"
+      >
+        <button class="btn btn-danger" ng-click="terminal.delete(entity.id)"
+          ng-confirm-click="Are you sure you want to delete this terminal?"
+        >
+          Delete Terminal
+        </button>
+        <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
+          Edit Terminal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="editTerminal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Terminal</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <span class="text-danger"><strong>
+    Warning: Terminals can only be edit before any transactions happen through them
+    </strong></span>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Gateway:</label>
+        <div class="col-lg-8" >
+          <select disabled class="form-control m-b" ng-model="terminal.gateway">
+             <option value="hdfc" selected>HDFC</option>
+             <option value="atom">Atom</option>
+             <option value="axis_migs">Axis MIGS</option>
+             <option value="axis_genius">Axis Genius</option>
+             <option value="paytm">Paytm</option>
+             <option value="mobikwik">Mobikwik</option><
+             <option value="billdesk">Billdesk</option>
+             <option value="kotak">Kotak</option>
+             <option value="netbanking_hdfc">Netbanking HDFC</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_merchant_id" class="col-lg-4 control-label">Gateway Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_merchant_id" ng-model="terminal.gateway_merchant_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_terminal_id" class="col-lg-4 control-label">Gateway Terminal Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_terminal_id" ng-model="terminal.gateway_terminal_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_terminal_password" class="col-lg-4 control-label">Gateway Terminal Password:</label>
+        <div class="col-lg-8" >
+          <input type="password" class="form-control m-b" name="gateway_terminal_password" ng-model="terminal.gateway_terminal_password" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_access_code" class="col-lg-4 control-label">Gateway Access Code:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_access_code" ng-model="terminal.gateway_access_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_secure_secret" class="col-lg-4 control-label">Gateway Secure Secret:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_secure_secret" ng-model="terminal.gateway_secure_secret" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="card" class="col-lg-4 control-label">Card Allowed (Always Yes for HDFC):</label>
+        <div class="col-lg-8" >
+          <select class="form-control m-b" ng-model="terminal.card">
+             <option value="1" selected>Yes</option>
+             <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal editing is dangerous. Please ensure you have filled the correct details." ng-click="ok(terminal)">OK</button>
+  </div>
+</script>

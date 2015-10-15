@@ -20,7 +20,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'email',
         'password',
         'confirm_token',
-        'activated'
+        'activated',
+        'archived_at'
     );
 
     const ID_LENGTH = 14;
@@ -91,6 +92,15 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function merchantDetails()
     {
         return $this->hasOne('Models\MerchantDetails\Entity');
+    }
+
+    /**
+     * Take care while calling this method
+     * @param array $input array with new email address
+     */
+    public function changeEmail($input)
+    {
+        return $this->edit($input, 'changeEmail');
     }
 
     public function changePassword($input)

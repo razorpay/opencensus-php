@@ -31,14 +31,14 @@
           Activate Merchant
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds===0"
+        ng-show="merchant.details.hold_funds==0"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"
         >
           Hold Merchant Funds
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds===1"
+        ng-show="merchant.details.hold_funds==1"
         ng-confirm-click="Are you sure you want to release this merchant's funds?"
         ng-click="releaseMerchantFunds()"
         >
@@ -48,24 +48,34 @@
           Enable Live Transactions
         </a>
         <a href class="list-group-item" ng-show="merchant.details.live==1 "ng-click="disableLive()"
-        ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?"
-        >
+        ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.paytm == false" ng-click="enableMethod('paytm')">
           Enable Paytm
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disableMethod('paytm')"
-        >
+        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disableMethod('paytm')">
           Disable Paytm
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == false" ng-click="enableMethod('mobikwik')">
+          Enable Mobikwik
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == true"ng-click="disableMethod('mobikwik')">
+          Disable Mobikwik
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
           Enable Card
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')"
-        >
+        <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')">
           Disable Card
         </a>
+        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0" ng-click="setReceiptEmail(1)">
+          Enable Receipt Email
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1" ng-click="setReceiptEmail(0)">
+          Disable Receipt Email
+        </a>
+
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
         </a>
@@ -81,11 +91,28 @@
         <a href class="list-group-item" ng-click="openEditMerchant()">
           Edit Merchant MCC, Website, DBA &amp; International
         </a>
+        <a href class="list-group-item" ng-click="openEditMerchantEmail()">
+          Edit Merchant Email
+        </a>
         <a href class="list-group-item" ng-click="openAutofillForms()">
           Autofill Activation Form
         </a>
         <a href class="list-group-item" ng-click="openEditComment()">
           Edit Comment
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.archived_at != null" ng-click="unarchiveMerchant()"
+        >
+          Unarchive Merchant
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.archived_at === null" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        >
+          Archive Merchant
+        </a>
+        <a href class="list-group-item" ng-click="openUploadScreenshot()">
+          Upload screenshots
+        </a>
+        <a href class="list-group-item" ng-click="captureScreenshot()">
+          Capture Screenshots
         </a>
       </div>
     </div>
@@ -100,8 +127,12 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.balance/100 | currency:'INR ' }}</span>
-          Balance
+          <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
+          Balance (Test)
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.balance.live/100 | currency:'INR ' }}</span>
+          Balance (Live)
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
@@ -180,8 +211,24 @@
           Paytm
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
+          Mobikwik
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
+          Archived
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
+          Customer Receipt Emails
+        </a>
+        <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
+          <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
+          Print screenshots
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
@@ -246,6 +293,7 @@
                     <th>Terminal Id</th>
                     <th>Mode</th>
                     <th>Gateway</th>
+                    <th>Category</th>
                     <th>Merchant Id</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
@@ -256,6 +304,7 @@
                     <td>{{terminal.id}}</td>
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
+                    <td>{{terminal.category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
@@ -303,10 +352,10 @@
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
-    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1}">
+    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1, category:1234}">
       <div class="form-group">
-        <label class="col-lg-2 control-label">Mode:</label>
-        <div class="col-lg-10" >
+        <label class="col-lg-3 control-label">Mode:</label>
+        <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.mode">
              <option value="test">Test</option>
              <option value="live" selected>Live</option>
@@ -314,14 +363,15 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway:</label>
-        <div class="col-lg-10" >
+        <label class="col-lg-3 control-label">Gateway:</label>
+        <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.gateway">
              <option value="hdfc" selected>HDFC</option>
              <option value="atom">Atom</option>
              <option value="axis_migs">Axis MIGS</option>
              <option value="axis_genius">Axis Genius</option>
              <option value="paytm">Paytm</option>
+             <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>
@@ -329,44 +379,50 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_merchant_id" class="col-lg-2 control-label">Gateway Merchant Id:</label>
-        <div class="col-lg-10" >
+        <label for="category" class="col-lg-3 control-label">Terminal Category:</label>
+        <div class="col-lg-9" >
+          <input type="number" max="9999" min="0742" class="form-control m-b" name="category" ng-model="terminal.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_merchant_id" class="col-lg-3 control-label">Gateway Merchant Id:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_merchant_id" ng-model="terminal.gateway_merchant_id" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_terminal_id" class="col-lg-2 control-label">Gateway Terminal Id:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_terminal_id" class="col-lg-3 control-label">Gateway Terminal Id:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_terminal_id" ng-model="terminal.gateway_terminal_id" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_terminal_password" class="col-lg-2 control-label">Gateway Terminal Password:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_terminal_password" class="col-lg-3 control-label">Gateway Terminal Password:</label>
+        <div class="col-lg-9" >
           <input type="password" class="form-control m-b" name="gateway_terminal_password" ng-model="terminal.gateway_terminal_password" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_terminal_password_confirmation" class="col-lg-2 control-label">Confirm Gateway Terminal Password:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_terminal_password_confirmation" class="col-lg-3 control-label">Confirm Gateway Terminal Password:</label>
+        <div class="col-lg-9" >
           <input type="password" class="form-control m-b" name="gateway_terminal_password_confirmation" ng-model="terminal.gateway_terminal_password_confirmation" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_access_code" class="col-lg-2 control-label">Gateway Access Code:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_access_code" class="col-lg-3 control-label">Gateway Access Code:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_access_code" ng-model="terminal.gateway_access_code" />
         </div>
       </div>
       <div class="form-group">
-        <label for="gateway_secure_secret" class="col-lg-2 control-label">Gateway Secure Secret:</label>
-        <div class="col-lg-10" >
+        <label for="gateway_secure_secret" class="col-lg-3 control-label">Gateway Secure Secret:</label>
+        <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_secure_secret" ng-model="terminal.gateway_secure_secret" />
         </div>
       </div>
       <div class="form-group">
-        <label for="card" class="col-lg-2 control-label">Card Allowed (Always Yes for HDFC):</label>
-        <div class="col-lg-10" >
+        <label for="card" class="col-lg-3 control-label">Card Allowed (Always Yes for HDFC):</label>
+        <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.card">
              <option value="1" selected>Yes</option>
              <option value="0">No</option>
@@ -415,7 +471,7 @@
     <span class="text-danger"><strong>
     Warning: The adjustment once assigned can not be changed.
     </strong></span>
-    <form class="form-horizontal" ng-init="adjustment={currency:'INR'}">
+    <form class="form-horizontal" ng-init="adjustment={currency:'INR', mode: 'live'}">
       <div class="form-group">
         <label for="amount" class="col-lg-2 control-label">Amount (in Paise) :</label>
         <div class="col-lg-10" >
@@ -434,6 +490,15 @@
           <input type="text" class="form-control m-b" name="description" ng-model="adjustment.description" />
         </div>
       </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Mode:</label>
+        <div class="col-lg-10" >
+          <select name="mode" class="form-control m-b" ng-model="adjustment.mode">
+             <option value="live" selected>Live</option>
+             <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
@@ -450,7 +515,7 @@
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
         <div class="col-lg-10" >
-          <select class="form-control m-b" ng-model="merchant.international">
+          <select name="international" class="form-control m-b" ng-model="merchant.international">
              <option value="1">Yes</option>
              <option value="0" selected>No</option>
           </select>
@@ -485,6 +550,96 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(merchant)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="editMerchantEmailModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Merchant Email</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <div class="text-danger">
+      <strong>
+        Warning: You need to be a superadmin in order to edit merchant email address.
+      </strong>
+    </div>
+    <form class="form-horizontal" ng-init="email=current.email">
+      <div class="form-group">
+        <label for="email" class="col-lg-2 control-label">Email:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="email" ng-model="email" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(email)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="uploadScreenshotModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Upload Screenshots</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <div class="text-center m-t m-b alerts">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Website home page</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_website" ng-file-select="onFileSelect($files, 'business_website')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">About Page</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_about" ng-file-select="onFileSelect($files, 'website_about')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Contact</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_contact" ng-file-select="onFileSelect($files, 'website_contact')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Privacy Policy</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_privacy" ng-file-select="onFileSelect($files, 'website_privacy')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Terms &amp; Conditions</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_terms" ng-file-select="onFileSelect($files, 'website_terms')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Refund Policy</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_refund" ng-file-select="onFileSelect($files, 'website_refund')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Pricing Policy</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_pricing" ng-file-select="onFileSelect($files, 'website_pricing')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Customer Login</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_login" ng-file-select="onFileSelect($files, 'website_login')">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(files)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="editCommentModalContent.html">

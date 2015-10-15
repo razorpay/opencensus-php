@@ -1,268 +1,253 @@
 'use strict';
-
 /* Directives */
 // All the directives rely on jQuery.
-
-angular.module('app.directives', ['ui.load'])
-  .directive('uiModule', ['MODULE_CONFIG','uiLoad', '$compile', function(MODULE_CONFIG, uiLoad, $compile) {
+angular.module('app.directives', ['ui.load']).directive('uiModule', [
+  'MODULE_CONFIG',
+  'uiLoad',
+  '$compile',
+  function (MODULE_CONFIG, uiLoad, $compile) {
     return {
       restrict: 'A',
       compile: function (el, attrs) {
         var contents = el.contents().clone();
-        return function(scope, el, attrs){
+        return function (scope, el, attrs) {
           el.contents().remove();
-          uiLoad.load(MODULE_CONFIG[attrs.uiModule])
-          .then(function(){
-            $compile(contents)(scope, function(clonedElement, scope) {
+          uiLoad.load(MODULE_CONFIG[attrs.uiModule]).then(function () {
+            $compile(contents)(scope, function (clonedElement, scope) {
               el.append(clonedElement);
             });
           });
-        }
+        };
       }
     };
-  }])
-  .directive('uiShift', ['$timeout', function($timeout) {
+  }
+]).directive('uiShift', [
+  '$timeout',
+  function ($timeout) {
     return {
       restrict: 'A',
-      link: function(scope, el, attr) {
+      link: function (scope, el, attr) {
         // get the $prev or $parent of this el
-        var _el = $(el),
-            _window = $(window),
-            prev = _el.prev(),
-            parent,
-            width = _window.width()
-            ;
-
+        var _el = $(el), _window = $(window), prev = _el.prev(), parent, width = _window.width();
         !prev.length && (parent = _el.parent());
-        
-        function sm(){
+        function sm() {
           $timeout(function () {
             var method = attr.uiShift;
             var target = attr.target;
             _el.hasClass('in') || _el[method](target).addClass('in');
           });
         }
-        
-        function md(){
-          parent && parent['prepend'](el);
-          !parent && _el['insertAfter'](prev);
+        function md() {
+          parent && parent.prepend(el);
+          !parent && _el.insertAfter(prev);
           _el.removeClass('in');
         }
-
-        (width < 768 && sm()) || md();
-
-        _window.resize(function() {
-          if(width !== _window.width()){
-            $timeout(function(){
-              (_window.width() < 768 && sm()) || md();
+        width < 768 && sm() || md();
+        _window.resize(function () {
+          if (width !== _window.width()) {
+            $timeout(function () {
+              _window.width() < 768 && sm() || md();
               width = _window.width();
             });
           }
         });
       }
     };
-  }])
-  .directive('uiToggleClass', ['$timeout', '$document', function($timeout, $document) {
+  }
+]).directive('uiToggleClass', [
+  '$timeout',
+  '$document',
+  function ($timeout, $document) {
     return {
       restrict: 'AC',
-      link: function(scope, el, attr) {
-        el.on('click', function(e) {
+      link: function (scope, el, attr) {
+        el.on('click', function (e) {
           e.preventDefault();
-          var classes = attr.uiToggleClass.split(','),
-              targets = (attr.target && attr.target.split(',')) || Array(el),
-              key = 0;
-          angular.forEach(classes, function( _class ) {
-            var target = targets[(targets.length && key)];            
-            ( _class.indexOf( '*' ) !== -1 ) && magic(_class, target);
-            $( target ).toggleClass(_class);
-            key ++;
+          var classes = attr.uiToggleClass.split(','), targets = attr.target && attr.target.split(',') || Array(el), key = 0;
+          angular.forEach(classes, function (_class) {
+            var target = targets[targets.length && key];
+            _class.indexOf('*') !== -1 && magic(_class, target);
+            $(target).toggleClass(_class);
+            key++;
           });
           $(el).toggleClass('active');
-
-          function magic(_class, target){
-            var patt = new RegExp( '\\s' + 
-                _class.
-                  replace( /\*/g, '[A-Za-z0-9-_]+' ).
-                  split( ' ' ).
-                  join( '\\s|\\s' ) + 
-                '\\s', 'g' );
+          function magic(_class, target) {
+            var patt = new RegExp('\\s' + _class.replace(/\*/g, '[A-Za-z0-9-_]+').split(' ').join('\\s|\\s') + '\\s', 'g');
             var cn = ' ' + $(target)[0].className + ' ';
-            while ( patt.test( cn ) ) {
-              cn = cn.replace( patt, ' ' );
+            while (patt.test(cn)) {
+              cn = cn.replace(patt, ' ');
             }
-            $(target)[0].className = $.trim( cn );
+            $(target)[0].className = $.trim(cn);
           }
         });
       }
     };
-  }])
-  .directive('uiNav', ['$timeout', function($timeout) {
+  }
+]).directive('uiNav', [
+  '$timeout',
+  function ($timeout) {
     return {
       restrict: 'AC',
-      link: function(scope, el, attr) {
+      link: function (scope, el, attr) {
         var _window = $(window);
         var _mb = 768;
         // unfolded
-        $(el).on('click', 'a', function(e) {
+        $(el).on('click', 'a', function (e) {
           var _this = $(this);
-          _this.parent().siblings( ".active" ).toggleClass('active');
+          _this.parent().siblings('.active').toggleClass('active');
           _this.parent().toggleClass('active');
           _this.next().is('ul') && e.preventDefault();
-          _this.next().is('ul') || ( ( _window.width() < _mb ) && $('.app-aside').toggleClass('show') );
+          _this.next().is('ul') || _window.width() < _mb && $('.app-aside').toggleClass('show');
         });
-
         // folded
         var wrap = $('.app-aside'), next;
-        $(el).on('mouseenter', 'a', function(e){
-          if ( !$('.app-aside-fixed.app-aside-folded').length || ( _window.width() < _mb )) return;
+        $(el).on('mouseenter', 'a', function (e) {
+          if (!$('.app-aside-fixed.app-aside-folded').length || _window.width() < _mb)
+            return;
           var _this = $(this);
-
           next && next.trigger('mouseleave.nav');
-
-          if( _this.next().is('ul') ){
-             next = _this.next();
-          }else{
+          if (_this.next().is('ul')) {
+            next = _this.next();
+          } else {
             return;
           }
-          
           next.appendTo(wrap).css('top', _this.offset().top - _this.height());
-          next.on('mouseleave.nav', function(e){
+          next.on('mouseleave.nav', function (e) {
             next.appendTo(_this.parent());
             next.off('mouseleave.nav');
             _this.parent().removeClass('active');
           });
           _this.parent().addClass('active');
-          
         });
-
-        wrap.on('mouseleave', function(e){
+        wrap.on('mouseleave', function (e) {
           next && next.trigger('mouseleave.nav');
         });
       }
     };
-  }])
-  .directive('uiScroll', ['$location', '$anchorScroll', function($location, $anchorScroll) {
+  }
+]).directive('uiScroll', [
+  '$location',
+  '$anchorScroll',
+  function ($location, $anchorScroll) {
     return {
       restrict: 'AC',
-      link: function(scope, el, attr) {
-        el.on('click', function(e) {
+      link: function (scope, el, attr) {
+        el.on('click', function (e) {
           $location.hash(attr.uiScroll);
           $anchorScroll();
         });
       }
     };
-  }])
-  .directive('uiFullscreen', ['uiLoad', function(uiLoad) {
+  }
+]).directive('uiFullscreen', [
+  'uiLoad',
+  function (uiLoad) {
     return {
       restrict: 'AC',
-      template:'<i class="fa fa-expand fa-fw text"></i><i class="fa fa-compress fa-fw text-active"></i>',
-      link: function(scope, el, attr) {
+      template: '<i class="fa fa-expand fa-fw text"></i><i class="fa fa-compress fa-fw text-active"></i>',
+      link: function (scope, el, attr) {
         el.addClass('hide');
-        uiLoad.load('js/libs/screenfull.min.js').then(function(){
+        uiLoad.load('js/libs/screenfull.min.js').then(function () {
           if (screenfull.enabled) {
             el.removeClass('hide');
           }
-          el.on('click', function(){
+          el.on('click', function () {
             var target;
-            attr.target && ( target = $(attr.target)[0] );            
+            attr.target && (target = $(attr.target)[0]);
             el.toggleClass('active');
             screenfull.toggle(target);
           });
         });
       }
     };
-  }])
-  .directive('uiButterbar', ['$rootScope', '$location', '$anchorScroll', function($rootScope, $location, $anchorScroll) {
-     return {
+  }
+]).directive('uiButterbar', [
+  '$rootScope',
+  '$location',
+  '$anchorScroll',
+  function ($rootScope, $location, $anchorScroll) {
+    return {
       restrict: 'AC',
-      template:'<span class="bar"></span>',
-      link: function(scope, el, attrs) {        
-        el.addClass('butterbar hide');        
-        scope.$on('$stateChangeStart', function(event) {
+      template: '<span class="bar"></span>',
+      link: function (scope, el, attrs) {
+        el.addClass('butterbar hide');
+        scope.$on('$stateChangeStart', function (event) {
           $location.hash('app');
           $anchorScroll();
           el.removeClass('hide').addClass('active');
         });
-        scope.$on('$stateChangeSuccess', function( event, toState, toParams, fromState ) {
-          event.targetScope.$watch('$viewContentLoaded', function(){
+        scope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState) {
+          event.targetScope.$watch('$viewContentLoaded', function () {
             el.addClass('hide').removeClass('active');
-          })          
+          });
         });
       }
-     };
-  }])
-  .directive('loadingBar', ['$compile',
-    function($compile) {
-     return {
+    };
+  }
+]).directive('loadingBar', [
+  '$compile',
+  function ($compile) {
+    return {
       restrict: 'AC',
-      template:'<span class="bar"></span>',
+      template: '<span class="bar"></span>',
       priority: -1,
-      link: function(scope, el, attrs) {        
+      link: function (scope, el, attrs) {
         el.addClass('butterbar hide');
-        el.attr('busy', "");
-        el.attr('busy-add-classes', "active");
-        el.attr('busy-remove-classes', "hide");
-        el.attr('not-busy-add-classes', "hide");
-        el.attr('not-busy-remove-classes', "active");
-        el.removeAttr("loading-bar");
+        el.attr('busy', '');
+        el.attr('busy-add-classes', 'active');
+        el.attr('busy-remove-classes', 'hide');
+        el.attr('not-busy-add-classes', 'hide');
+        el.attr('not-busy-remove-classes', 'active');
+        el.removeAttr('loading-bar');
         $compile(el)(scope);
       }
-     };
-  }])
-  .directive('spinner',
-    function() {
-     return {
-      restrict: 'E',
-      template:'<div busy not-busy-add-classes="hide" busy-remove-classes="hide" class="hide">' + 
-                  '<img src="img/loading-bubbles.svg" alt="Loading icon" />' + 
-              '</div>',
-      priority: -1
-     };
-  })
-  .directive('ngConfirmClick', ['$modal',
-  function($modal){
+    };
+  }
+]).directive('ngEnter', function () {
+  return function (scope, element, attrs) {
+    element.bind('keydown keypress', function (event) {
+      if (event.which === 13) {
+        scope.$apply(function () {
+          scope.$eval(attrs.ngEnter);
+        });
+        event.preventDefault();
+      }
+    });
+  };
+}).directive('spinner', function () {
+  return {
+    restrict: 'E',
+    template: '<div busy not-busy-add-classes="hide" busy-remove-classes="hide" class="hide">' + '<img src="img/loading-bubbles.svg" alt="Loading icon" />' + '</div>',
+    priority: -1
+  };
+}).directive('ngConfirmClick', [
+  '$modal',
+  function ($modal) {
     return {
       priority: -1,
       restrict: 'A',
-      link: function(scope, element, attrs){
-        element.bind('click', function(e){
+      link: function (scope, element, attrs) {
+        element.bind('click', function (e) {
           var message = attrs.ngConfirmClick;
-
           var click = attrs.ngClick;
-
           var modalInstance = $modal.open({
-              controller: 'confirmModalCtrl',
-              size: 'sm',
-              resolve: {
-                message: function () {
-                  return message;
-                }
-              },
-              template: '<div class="modal-header">' +
-                  '<h3 class="modal-title">Alert</h3>' +
-                '</div>' +
-                '<div class="confirm-modal modal-body">' +
-                    '<h4>{{message}}</h4>' +
-                '</div>' +
-                '<div class="modal-footer">' +                  
-                    '<button class="btn btn-default" ng-click="cancel()">Cancel</button>' +
-                    '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' +
-                '</div>'
+            controller: 'confirmModalCtrl',
+            size: 'sm',
+            resolve: {
+              message: function () {
+                return message;
+              }
+            },
+            template: '<div class="modal-header">' + '<h3 class="modal-title">Alert</h3>' + '</div>' + '<div class="confirm-modal modal-body">' + '<h4>{{message}}</h4>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-default" ng-click="cancel()">Cancel</button>' + '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' + '</div>'
           });
-
-          modalInstance.result.then(
-              function () {
-                scope.$eval(click); 
-              },
-              function () {
-              });
-        
+          modalInstance.result.then(function () {
+            scope.$eval(click);
+          }, function () {
+          });
           e.stopImmediatePropagation();
           e.preventDefault();
         });
-
       }
-    }
+    };
   }
 ]);
-;

@@ -17,7 +17,7 @@
         </div>
         <span ng-show='reset.password_confirmation.$error.validator'>Passwords do not match!</span>
       </div>
-      <button type="submit" class="btn btn-lg btn-primary btn-block" busy="Please Wait...">Reset Password</button>
+      <button type="submit" class="btn btn-lg btn-primary btn-block">Reset Password</button>
       <div class="text-center m-t m-b">
         <spinner></spinner>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>

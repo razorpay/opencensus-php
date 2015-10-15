@@ -23,10 +23,94 @@
         <a href class="list-group-item" ng-click="openVerifyPayment()">
           Verify Payment
         </a>
+        <a href class="list-group-item" ng-click="verifyAllPayments()">
+          Verify All Payments
+        </a>
+        <a href class="list-group-item" ng-click="openGenerateRefund()">
+          Generate Refunds Excel (Netbanking)
+        </a>
+        <a href class="list-group-item" ng-click="generateBeneficiaryFile()">
+          Generate Beneficiary File
+        </a>
+        <a href class="list-group-item" ng-click="downloadBeneficiaryFile()">
+          Download Beneficiary File
+        </a>
+        <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()">
+          Authorize Failed Payment
+        <a href class="list-group-item" ng-click="openEditNewsletter()">
+          Send Merchant Newsletter
+        </a>
+        <a href class="list-group-item" ng-click="triggerError()"
+          ng-confirm-click="Are you sure you want to trigger an error?"
+        >
+          Trigger Dummy Error
+        </a>
       </div>
     </div>
   </div>
 </div>
+<script type="text/ng-template" id="sendNewsletter.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Send Newsletter</h3>
+  </div>
+  <div class="modal-body newsletter-modal">
+    <form class="form-horizontal row">
+      <div class="col-lg-5">
+        <div class="form-group">
+          <label class="col-lg-3 control-label" for="lists">Email list</label>
+          <div class="col-lg-9">
+            <div class="checkbox" ng-repeat="(list, label) in mailingLists">
+              <label class="i-checks">
+                <input ng-model="lists[list]" type="checkbox">
+                <i></i>
+                {{label}}
+              </label>
+            </div>
+            <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
+              exactly once at most to any merchant.
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-3 control-label" for="subject_line_1">Subject Line 1</label>
+          <div class="col-lg-9">
+            <input type="text" class="form-control m-b" maxlength="100" name="subject_line_1" ng-model="subject_line_1" placeholder="Razorpay">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-3 control-label" for="subject_line_2">Subject Line 2</label>
+          <div class="col-lg-9">
+            <input type="text" class="form-control m-b" maxlength="100" name="subject_line_2" ng-model="subject_line_2" placeholder="Newsletter">
+            <span class="help-block m-b-none">Try to break your subject in two lines
+            equally. They will be joined together to form the subject.</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="form-group">
+          <label for="message" class="col-lg-3">Message</label>
+          <div class="col-lg-12 col-sm-12">
+            <textarea rows="17" ng-model="message" class="form-control" name="message" id="message" required="required"></textarea>
+            <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings. <br>
+              You can use <code>%recipient_email%</code> and <code>%recipient_name%</code>
+              to match the merchant email and name.
+            </span>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div class="col-lg-12 col-sm-12" ng-model="adminEmail">
+      The test email will be sent to {{adminEmail}}
+    </div>
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-info" ng-click="test(subject_line_1, subject_line_2, message)">Send Test</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject_line_1, subject_line_2, message)"
+      ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
+    >OK</button>
+  </div>
+</script>
 <script type="text/ng-template" id="initiateSetlModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Initiate Settlement</h3>
@@ -34,7 +118,7 @@
   <div class="modal-body settlement-modal">
     <form class="form-horizontal" ng-init="channel='kotak'">
       <div class="form-group">
-        <label class="col-lg-2 control-label">Channel</label>
+        <label for="channel" class="col-lg-2 control-label">Channel</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="channel" ng-model="channel">
             <option value="kotak">Kotak</option>
@@ -162,5 +246,103 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="authorizeFailedPaymentModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Authorize Failed Payment</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal" ng-init="id=''">
+      <div class="form-group">
+        <label for="payment-id" class="col-lg-2 control-label">Payment Id: </label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="payment" ng-model="id" placeholder="Payment Id"/>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="downloadBeneficiaryFile.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Download Beneficiary File</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date)">Download</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="refundGenerateModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Generate Refund Excel</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="from" class="col-lg-2 control-label">From</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="from">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="to" class="col-lg-2 control-label">To</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="to">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="bank" class="col-lg-2 control-label">Bank</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="bank" ng-model="bank">
+            <!-- Take care to keep these capitalized -->
+            <option value="HDFC">HDFC</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from,do,bank, mode)">Generate</button>
   </div>
 </script>

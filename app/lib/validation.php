@@ -1,6 +1,7 @@
 <?php
 
-Validator::extend('alpha_space', function($attribute, $value, $parameters)
+Validator::resolver(function($translator, $data, $rules, $messages)
 {
-    return preg_match('/(^[A-Za-z0-9 ]+$)+/', $value);
+    return new Razorpay\Spine\Validation\LaravelValidatorEx(
+                    $translator, $data, $rules, $messages);
 });

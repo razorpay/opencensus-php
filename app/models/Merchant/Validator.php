@@ -9,8 +9,8 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'name'                  => 'required|alpha_space|max:200',
         'email'                 => 'required|email|unique:merchants',
-        'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
         'captcha'               => 'required'
     );
 
@@ -31,8 +31,12 @@ class Validator extends Base\Validator
 
     protected static $changePasswordRules = array(
         'old_password'              => 'required',
-        'password'                  => 'required|between:6,50|confirmed',
-        'password_confirmation'     => 'required|between:6,50'
+        'password'                  => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation'     => 'required|between:7,50'
+    );
+
+    protected static $changeEmailRules = array(
+        'email'         => 'required|email'
     );
 
     protected static $changePasswordValidators = array('changePassword');
@@ -46,7 +50,8 @@ class Validator extends Base\Validator
         'gateway_terminal_password_confirmation'    => '',
         'gateway_access_code'                       => '',
         'gateway_secure_secret'                     => '',
-        'card'                                      => 'required'
+        'card'                                      => 'required',
+        'category'                                  => ''
     );
 
     protected static $banksRules = array(
@@ -59,7 +64,8 @@ class Validator extends Base\Validator
         'international'             => 'sometimes|boolean',
         'billing_label'             => 'sometimes|max:255',
         'transaction_report_email'  => 'sometimes|email|max:255',
-        'hold_funds'                => 'sometimes|in:0,1'
+        'hold_funds'                => 'sometimes|in:0,1',
+        'receipt_email_enabled'     => 'sometimes|in:0,1',
     );
 
     protected static $api_dashboard_mappings = array(

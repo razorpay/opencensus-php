@@ -1,16 +1,32 @@
 //User profile Controller
-app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'alertsFactory', '$idle', '$keepalive', 'modeFactory',
-  function($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
+app.controller('UserCtrl', [
+  '$scope',
+  '$http',
+  '$state',
+  'user',
+  '$modal',
+  'alertsFactory',
+  '$idle',
+  '$keepalive',
+  'modeFactory',
+  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
     $scope.mode = modeFactory.getMode();
-    $scope.refreshUser = function(force){
-      user.identity(force).then(function(data){
+    $scope.refreshUser = function (force) {
+      user.identity(force).then(function (data) {
         $scope.user = data;
-
-        Rollbar.configure({payload: {person: {id:data.id, name:data.name, email: data.email, role: "merchant"}}});
-
+        Rollbar.configure({
+          payload: {
+            person: {
+              id: data.id,
+              name: data.name,
+              email: data.email,
+              role: 'merchant'
+            }
+          }
+        });
         SupportKit.user = {
           givenName: data.name,
-          surname:"Merchant",
+          surname: 'Merchant',
           email: data.email,
           properties: {
             id: data.id,
@@ -22,162 +38,127 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'aler
           }
         };
         SupportKit._updateUser();
-
         analytics.identify(data.id, {
           name: data.name,
           email: data.email,
           activated: data.activated,
           submitted: data.submitted
         });
-
       });
     };
-
     $scope.refreshUser();
-
     $scope.alerts = alertsFactory.getHandler();
-
-    $scope.logout = function() {
-      logoutRequest()
-        .finally(function() {
-                $state.go('access.signin');  
-            });
+    $scope.logout = function () {
+      logoutRequest().finally(function () {
+        $state.go('access.signin');
+      });
     };
-
     $scope.changePassword = function () {
       var modalInstance = $modal.open({
         templateUrl: 'passwordModalContent.html',
         controller: 'passwordModalCtrl'
       });
-
-      modalInstance.result.then(
-        function (data) {
-          passwordChangeRequest(data);
-        },
-        function () {
-          ;
-        });
+      modalInstance.result.then(function (data) {
+        passwordChangeRequest(data);
+      }, function () {
+      });
     };
-
-    
-    $scope.$on('$idleStart', function() {
+    $scope.$on('$idleStart', function () {
       closeModals();
-
       $scope.warning = $modal.open({
         templateUrl: 'warning-dialog.html',
         windowClass: 'modal-danger'
       });
     });
-
-    $scope.$on('$idleEnd', function() {
+    $scope.$on('$idleEnd', function () {
       closeModals();
     });
-
-    $scope.$on('$idleTimeout', function() {
-      logoutRequest().finally(function(){
-        $state.go('access.lockme', { "email": $scope.user.email}).finally(function(){
+    $scope.$on('$idleTimeout', function () {
+      logoutRequest().finally(function () {
+        $state.go('access.lockme', { 'email': $scope.user.email }).finally(function () {
           closeModals();
         });
       });
     });
-    
-    $scope.$on('$keepalive', function() {
-        $http({
-          method: "get",
-          url: "/user/keepalive",
-          notBusy: true
-        })
-        .success(function(data){
-          if(data.success == false) {
-            location.reload();
-          }
-        })
-        .error(function(){
-          if($scope.connectModal) return;
-
-          var connectModalInstance = $modal.open({
-              controller: ['$scope', '$modalInstance',
-                function ($scope, $modalInstance) {
-                  $scope.ok = function () {
-                    $modalInstance.close();
-                  }
-              }],
-              template: '<div class="modal-header">' +
-                  '<h3 class="modal-title">Alert</h3>' +
-                '</div>' +
-                '<div class="confirm-modal modal-body">' +
-                    '<h4>Can not communicate with the server!<br/>Please check your connection and refresh the page.</h4>' +
-                '</div>' +
-                '<div class="modal-footer">' +
-                    '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' +
-                '</div>'
-          });
-
-          $scope.connectModal = true;
-          
-          connectModalInstance.result.finally(function () {
-              $scope.connectModal = false;
-          });         
+    $scope.$on('$keepalive', function () {
+      $http({
+        method: 'get',
+        url: '/user/keepalive',
+        notBusy: true
+      }).success(function (data) {
+        if (data.success == false) {
+          location.reload();
+        }
+      }).error(function () {
+        if ($scope.connectModal)
+          return;
+        var connectModalInstance = $modal.open({
+          controller: [
+            '$scope',
+            '$modalInstance',
+            function ($scope, $modalInstance) {
+              $scope.ok = function () {
+                $modalInstance.close();
+              };
+            }
+          ],
+          template: '<div class="modal-header">' + '<h3 class="modal-title">Alert</h3>' + '</div>' + '<div class="confirm-modal modal-body">' + '<h4>Can not communicate with the server!<br/>Please check your connection and refresh the page.</h4>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' + '</div>'
         });
-    });
-
-    function logoutRequest(){
-      var request = $http({
-          method: "get",
-          url: "/user/logout"
+        $scope.connectModal = true;
+        connectModalInstance.result.finally(function () {
+          $scope.connectModal = false;
+        });
       });
-
-      request
-        .finally(function() {
-              user.identity(true);
-        });
-
+    });
+    function logoutRequest() {
+      var request = $http({
+        method: 'get',
+        url: '/user/logout'
+      });
+      request.finally(function () {
+        user.identity(true);
+      });
       return request;
-    };
-
+    }
     function passwordChangeRequest(data) {
       var request = $http({
-        method: "post",
-        url: "/password",
+        method: 'post',
+        url: '/password',
         data: data
       });
-
-      request
-      .success(function(data){
-        if(data.success){
+      request.success(function (data) {
+        if (data.success) {
           $scope.alerts.addAlert('success', 'Password changed successfully.', true);
-        }
-        else {
+        } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function(value, key){
+          angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-      })
-      .error(function(){
+      }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    };
-
+    }
     function closeModals() {
       if ($scope.warning) {
         $scope.warning.close();
         $scope.warning = null;
       }
-
       if ($scope.timedout) {
         $scope.timedout.close();
         $scope.timedout = null;
       }
     }
-
-}])
-.controller('passwordModalCtrl', ['$scope', '$modalInstance',
-  function($scope, $modalInstance){
+  }
+]).controller('passwordModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  function ($scope, $modalInstance) {
     $scope.ok = function (data) {
-        $modalInstance.close(data);
-      };
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
-}]);
+      $modalInstance.close(data);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]);

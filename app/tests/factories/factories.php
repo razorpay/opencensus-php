@@ -46,7 +46,7 @@ $factory('Models\MerchantDetails\Entity', [
     'promoter_pan_name' => $faker->word,
     'bank_name' => $faker->word,
     'bank_account_number'   => '100000000',
-    'bank_account_name' => $faker->word,
+    'bank_account_name' => "Bank Account Name",
     'bank_account_type' => $faker->word,
     'bank_branch'   => $faker->word,
     'bank_branch_ifsc'  => 'ABCD0123456',

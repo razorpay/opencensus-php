@@ -154,12 +154,12 @@
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Payments</h4>
               <div class="m-b m-l row" ng-repeat="row in entity.items | limitTo: 5" ng-controller="PaymentListCtrl">
                 <a ui-sref="app.payments.detail({id:row.id})">
-                  <div class="col-xs-3 col-md-2 label text-base" tooltip="{{row.status | titlecase}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
+                  <div class="col-xs-4 col-md-3 label text-base" tooltip="{{row.status | titlecase}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
                     {{row.amount/100 | currency:row.currency + " "}}
                   </div>
-                  <div class="col-xs-9 col-md-10">
-                    <span class="hidden-xs">{{row.id}}</span>
-                    <span class="visible-xs-inline">{{row.id | limitTo:10}}... </span>
+                  <div class="col-xs-8 col-md-9">
+                    <code class="hidden-xs">{{row.id}}</code>
+                    <code class="visible-xs-inline">{{row.id | limitTo:10}}... </code>
                     <span class="pull-right">{{row.created_at*1000 | fromNow}}</span>
                   </div>
                 </a>
@@ -177,8 +177,8 @@
                   {{row.amount/100 | currency:row.currency + " "}}
                   </div>
                   <div class="col-xs-9 col-md-10">
-                    <span class="hidden-xs">{{row.id}}</span>
-                    <span class="visible-xs-inline">{{row.id | limitTo:10}}... </span>
+                    <tt class="hidden-xs">{{row.id}}</tt>
+                    <tt class="visible-xs-inline">{{row.id | limitTo:10}}... </tt>
                     <span class="pull-right">{{row.created_at*1000 | fromNow}}</span>
                   </div>
                 </a>
@@ -191,12 +191,12 @@
             <a ui-sref="app.settlements.list" tooltip="See All Settlements" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Settlements</h4>
             <div class="m-b m-b m-l row" style="text-overflow: hidden" ng-repeat="row in entity.items | limitTo: 5">
-              <div class="col-xs-3 col-md-2 label text-base bg-success" tooltip="{{row.status | titlecase}}" tooltip-placement="right">
+              <div class="col-xs-4 col-md-3 label text-base bg-success" tooltip="{{row.status | titlecase}}" tooltip-placement="right">
                 <a ui-sref="app.settlements.detail({id:row.id})">{{row.amount/100 | currency:"INR "}}</a>
               </div>
-              <div class="col-xs-9 col-md-10">
-                <span class="hidden-xs">{{row.id}}</span>
-                <span class="visible-xs-inline">{{row.id | limitTo:10}}... </span>
+              <div class="col-xs-8 col-md-9">
+                <code class="hidden-xs">{{row.id}}</code>
+                <code class="visible-xs-inline">{{row.id | limitTo:10}}... </code>
                 <span class="pull-right">{{row.created_at*1000 | fromNow}}</span>
               </div>
             </div>

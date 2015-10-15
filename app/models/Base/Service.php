@@ -10,8 +10,6 @@ class Service
 {
     public function setApiCredentials($merchant_id = null, $mode = 'live')
     {
-        $merchantId = \Auth::merchant()->id();
-
         $id = 'rzp_'.$mode;
 
         if ($merchant_id)
@@ -35,7 +33,7 @@ class Service
             $data['pretext'] = $pretext;
             $data['link_names'] = 1;
             foreach($postdata as $key => $value)
-            {   
+            {
                 $data['fallback'] .= $key . ': ' . $value . '\n';
                 $data['fields'][] = array(
                     'title' => $key,

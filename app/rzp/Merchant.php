@@ -72,6 +72,13 @@ class Merchant extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
+    public function editEmail($params)
+    {
+        $relativeUrl = $this->getEntityUrl().$this->id . '/email';
+
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
     public function fetchPricing()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/pricing';
@@ -131,6 +138,13 @@ class Merchant extends Entity
     public function fetchBalance()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/balance';
+
+        return $this->request('GET', $relativeUrl);
+    }
+
+    public function generateBeneficiaryFile()
+    {
+        $relativeUrl = $this->getEntityUrl().'beneficiary/file';
 
         return $this->request('GET', $relativeUrl);
     }

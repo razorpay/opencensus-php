@@ -29,9 +29,7 @@ class AddWalletToPaymentAggregations extends Migration {
 	{
 		Schema::table('payment_aggregations', function($table)
         {
-            $table->integer('WALLET')
-                  ->unsigned()
-                  ->default(0);
+            $table->dropColumn('WALLET');
         });
 	}
 

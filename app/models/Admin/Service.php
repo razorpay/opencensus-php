@@ -2,13 +2,19 @@
 
 namespace Models\Admin;
 
+use AWS;
+use Config;
 use Models\Base;
 use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
+use Session;
 
 class Service extends Base\Service
 {
+    // 15 minutes
+    const TIMEOUT = 900;
+
     public function login(array $input)
     {
         $error = (new Admin\Validator)->validateInput('login', $input)->messages();
@@ -18,11 +24,40 @@ class Service extends Base\Service
         if (empty($error))
         {
             $verify = \Auth::admin()->attempt($input);
+
+            if ($verify)
+            {
+                Session::put('timeout', time());
+            }
         }
 
         $error = ($verify) ? [] : ['Username or password is invalid.'];
 
         return [$error, null];
+    }
+
+    /**
+     * Updates the keepAlive timer stored in Session
+     * @return integer|boolean Current timestamp or false if user needs to be
+     * logged out
+     */
+    public function updateKeepAlive()
+    {
+        $time = time();
+
+        $last_timer = Session::get('timeout');
+
+        // If we had a timer in session and it has passed
+        if ($time - $last_timer >  self::TIMEOUT)
+        {
+            return false;
+        }
+
+        else
+        {
+            Session::put('timeout', $time);
+            return ['alive' => true];
+        }
     }
 
     /**
@@ -46,24 +81,40 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
-        $data = Merchant\Entity::with('merchantDetails')->get();
+        $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
+                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');
+
+        if(isset($input['archived']))
+        {
+            $data = $data->whereNotNull('archived_at')->get();
+        }
+        else
+        {
+            $data = $data->whereNull('archived_at')->get();
+        }
+
+        // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
         if(reset($input) !== false)
         {
             list($key, $value) = each($input);
-            switch($key){
+
+            switch($key)
+            {
                 case "activated":
                     $response = $data->filter(function($merchant) use($value)
                     {
                         return ($merchant->activated == $value);
                     });
                     break;
+
                 case "pending":
                     $response = $data->filter(function($merchant)
                     {
                         return ($merchant->activated == 0 and $merchant->merchant_details->submitted == 1);
                     });
                     break;
+
                 case "confirmed":
                     $response = $data->filter(function($merchant) use($value)
                     {
@@ -73,6 +124,7 @@ class Service extends Base\Service
                             return !($merchant->confirm_token == null);
                     });
                     break;
+
                 case "dead":
                     $response = $data->filter(function($merchant) use($value)
                     {
@@ -82,6 +134,7 @@ class Service extends Base\Service
                             return !($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
                     });
                     break;
+
                 default:
                    $response = $data;
             }
@@ -210,6 +263,7 @@ class Service extends Base\Service
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = array(
+            'archived_at'       => $merchant['archived_at'],
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted']
@@ -220,11 +274,15 @@ class Service extends Base\Service
 
     public function fetchMerchantBalance($id)
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, 'test');
 
-        $response = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+        $test = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
 
-        return $response;
+        $this->setApiCredentials(null, 'live');
+
+        $live = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+
+        return compact('test', 'live');
     }
 
     public function fetchMerchantBanks($id)
@@ -249,11 +307,40 @@ class Service extends Base\Service
             try
             {
                 $data = $this->api->merchant->fetch($id)->edit($input)->toArray();
+
+                if (isset($input['transaction_report_email']))
+                {
+                    // Only when it is changed on API side we update on the dashboard side as well
+                    $email = $input['transaction_report_email'];
+                    $error = MerchantDetails\Service::changeTransactionEmail($id, $email);
+                }
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {
                 $error[] = $e->getMessage();
             }
+        }
+
+        return array($error, $data);
+    }
+
+    public function postEditMerchantEmail($id, $input)
+    {
+        $data = $error = [];
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
+
+            // Only when it is changed we update on the dashboard side as well
+            list($e,) = (new Merchant\Service)->changeEmail($id, $input);
+            $error = $e;
+        }
+
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
         }
 
         return array($error, $data);
@@ -299,7 +386,10 @@ class Service extends Base\Service
         $data = [];
         $error = [];
 
-        $this->setApiCredentials($id);
+        $mode = $input['mode'];
+        unset($input['mode']);
+
+        $this->setApiCredentials($id, $mode);
 
         try
         {
@@ -360,7 +450,72 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->payment->fetch($id)->verify()->toArray();
+            $data = $this->api->admin->fetchEntityById('payment', $id)
+                                    ->verify()
+                                    ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
+    public function authorizeFailedPayment($mode, $id)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $data = $this->api->admin->fetchEntityById('payment', $id)
+                ->authorizeFailed()
+                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
+    public function refundAuthorizedPayment($mode, $merchantId, $id)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        try
+        {
+            $data = $this->api->payment->fetch($id)
+                ->refundAuthorized()
+                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
+    public function refundPayment($mode, $merchantId, $id, $input)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        try
+        {
+            $data = $this->api->payment->fetch($id)
+                ->refund($input)
+                ->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -560,10 +715,10 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findorfail($id);
 
-        if ((int)$merchant->activated === 0)
+        if ((int)$merchant->activated === 0 or $merchant->archived_at !== null)
         {
             return array(
-                'Merchant must be active before enabling/disabling live transactions.');
+                'Merchant must be active & unarchived before enabling/disabling live transactions.');
         }
 
         $this->setApiCredentials();
@@ -576,6 +731,55 @@ class Service extends Base\Service
         {
             return array($e->getMessage());
         }
+
+        return array();
+    }
+
+    public function archiveMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if($merchant->archived_at !== null)
+        {
+            return array("Merchant already archived.");
+        }
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->merchant->fetch($id);
+            if ($data->live === true)
+            {
+                return array("Live merchants can not be archived.");
+            }
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getMessage());
+        }
+
+        $merchant->archived_at = time();
+        $merchant->save();
+
+        return array();
+    }
+
+    public function unarchiveMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if($merchant->archived_at === null)
+        {
+            return array("Merchant not archived.");
+        }
+
+        $merchant->archived_at = null;
+        $merchant->save();
 
         return array();
     }
@@ -735,8 +939,6 @@ class Service extends Base\Service
 
         $this->setApiCredentials(null, $mode);
 
-        $input['count'] = 20;
-
         try
         {
             $response = $this->api->admin->fetchMultipleEntities($entity, $input)->toArray();
@@ -776,5 +978,268 @@ class Service extends Base\Service
         }
 
         return array($error, $response);
+    }
+
+    /**
+     * Sends a redirect the the file
+     */
+    public function getBeneficiaryFile($input)
+    {
+        $error = (new Validator)->validateInput('get_beneficiary', $input)->messages();
+
+        if (empty($error))
+        {
+            $date = \Input::get('date', date('Y-m-d'));
+            return [null, $this->getBeneficiaryFileUrl($date)];
+        }
+
+        return [$error, null];
+    }
+
+    /**
+     * Returns a pre-authed S3 URL to download beneficiary file
+     * @param  Date $date date in Y-m-d format (with leading zeroes)
+     * @return String URL
+     */
+    protected function getBeneficiaryFileUrl($date)
+    {
+        $s3 = AWS::get('s3');
+
+        $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
+        $filename = $date.'.xls';
+
+        return $s3->getObjectUrl($beneficiaryBucket, $filename, '+2 minutes', [
+            'https'     => true
+        ]);
+    }
+
+    public function generateBeneficiaryFile()
+    {
+        $this->setApiCredentials();
+        try
+        {
+            $response = $this->api->merchant->generateBeneficiaryFile();
+        }
+
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array();
+    }
+
+    /**
+     * Fires off a queue worker to start capturing screenshots
+     * @param  string $id merchant id
+     */
+    public function captureScreenshot($id)
+    {
+        $merchant =  MerchantDetails\Entity::findorfail($id);
+        $urls = $merchant->getUrls();
+        $name = $merchant->business_name;
+
+        if (count($urls) >= 7)
+        {
+            \Queue::push('Models\Admin\Creevey', [$id, $urls, $name]);
+            return [];
+        }
+        else
+        {
+            return ["The merchant needs to give all atleast 7 links"];
+        }
+    }
+
+    /**
+     * Saves provided screenshots to S3
+     * @param  string $id    Merchant Id
+     * @return array error
+     */
+    public function saveScreenshot($id, $input)
+    {
+        $keys = MerchantDetails\Entity::getUrlKeys();
+        $found = false;
+        $creevey = new Creevey($id);
+
+        foreach ($keys as $key)
+        {
+            if (\Input::hasFile($key) and $input[$key]->isValid())
+            {
+                $found = true;
+                $localFilePath = $input[$key]->getRealPath();
+
+                try
+                {
+                    $creevey->compressAndSave($key, $localFilePath,
+                        $input[$key]->getClientOriginalName());
+                }
+                catch(\Exception $e)
+                {
+                    return [$e->getMessage()];
+                }
+            }
+        }
+
+        if ($found === false)
+        {
+            return ["No matching files found while uploading"];
+        }
+
+        return [];
+    }
+
+    /**
+     * Uploads a screenshot to S3
+     * @param  string $objectPath Object path on S2
+     * @param  String $filePath   Local file path
+     */
+    protected function uploadToS3($objectPath, $filePath)
+    {
+        $s3 =  AWS::get('s3');
+        $s3Obj = [
+            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Key'           => $objectPath,
+            'ContentType'   => "image/jpeg",
+            'SourceFile'    => $filePath,
+        ];
+
+        $s3->putObject($s3Obj);
+    }
+
+    /**
+     * Returns an associative array of links to S3
+     * @param  string $id merchant id
+     * @return array screenshot S3 links
+     */
+    public function getScreenshot($id)
+    {
+        $s3 =  \AWS::get('s3');
+        $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
+        $keys = MerchantDetails\Entity::getUrlKeys();
+
+        $links = [];
+
+        foreach ($keys as $key)
+        {
+            $filename = "$id/screenshots/$key.jpg";
+            $links[$key] = $s3->getObjectUrl($bucket, $filename,
+                '+10 minutes', [
+                    'https'     => true
+            ]);
+        }
+
+        return $links;
+    }
+
+    public function sendTestNewsletter($input)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            $input['email'] = \Auth::admin()->get()->email;
+
+            return [null, $this->api->admin->sendTestNewsletter($input)
+                ->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function sendNewsletter($input)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            return [null, $this->api->admin->sendNewsletter($input)
+                ->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function triggerError()
+    {
+        $this->setApiCredentials();
+        try
+        {
+            $errorMsg = $this->api->admin->triggerError();
+            if($errorMsg)
+            {
+                return [null, $errorMsg];
+            }
+            else
+            {
+                return ['Error not triggered', null];
+            }
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function deleteTerminal($mode, $terminalId)
+    {
+        $this->setApiCredentials(null, $mode);
+        try
+        {
+            $response = $this->api->terminal->delete($terminalId);
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function editTerminal($mode, $terminalId, $input)
+    {
+        $this->setApiCredentials(null, $mode);
+        try
+        {
+            $response = $this->api->terminal->edit($terminalId, $input);
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function verifyAllPayments()
+    {
+        $this->setApiCredentials(null, 'live');
+        try
+        {
+            $response = $this->api->payment->verifyAll();
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+    }
+
+    public function generateNetBankingRefunds($input)
+    {
+        $this->setApiCredentials(null, $input['mode']);
+        unset($input['mode']);
+
+        try
+        {
+            $response = $this->api->refund->generateNetBankingExcel($input);
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+
     }
 }

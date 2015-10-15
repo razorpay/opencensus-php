@@ -16,15 +16,15 @@ use Http\AppResponse;
 App::before(function($request)
 {
     // Set Cookie for use by angular (Setting in after filter fails selenium tests, hence queuing in before filter)
-	Cookie::queue('XSRF-TOKEN', csrf_token(), 0, '/', null, false, false);
+    Cookie::queue('XSRF-TOKEN', csrf_token(), 0, '/', null, false, false);
 });
 
 
 App::after(function($request, $response)
 {
-	// This is necessary for protection against json/jsonp array vulnerability
-	// Refer https:// docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
-	if (($response instanceof \Illuminate\Http\JsonResponse) and
+    // This is necessary for protection against json/jsonp array vulnerability
+    // Refer https:// docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
+    if (($response instanceof \Illuminate\Http\JsonResponse) and
         (App::environment('dev') === false))
     {
         $json = ")]}',\n" . $response->getContent();
@@ -46,17 +46,17 @@ App::after(function($request, $response)
 
 Route::filter('auth.merchant', function()
 {
-	if (Auth::merchant()->guest())
+    if (Auth::merchant()->guest())
     {
-		return Response::json(array('success' => false, 'data' => array()));
+        return Response::json(array('success' => false, 'data' => array()));
     }
 });
 
 Route::filter('auth.admin', function()
 {
-	if (Auth::admin()->guest())
+    if (Auth::admin()->guest())
     {
-		return Response::json(array('success' => false, 'data' => array()));
+        return Response::json(array('success' => false, 'data' => array()));
     }
 });
 
@@ -70,10 +70,19 @@ Route::filter('auth.superadmin', function()
 
 Route::filter('auth.internal', function() use ($app)
 {
-	if (($_SERVER['PHP_AUTH_USER'] !== \Config::get('api.auth_user')) or
+    if (($_SERVER['PHP_AUTH_USER'] !== \Config::get('api.auth_user')) or
         ($_SERVER['PHP_AUTH_PW'] !== \Config::get('api.auth_pass')))
     {
-		return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
+        return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
+    }
+});
+
+Route::filter('auth.cron', function() use ($app)
+{
+    if (($_SERVER['PHP_AUTH_USER'] !== \Config::get('cron.auth_user')) or
+        ($_SERVER['PHP_AUTH_PW'] !== \Config::get('cron.auth_pass')))
+    {
+        return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
     }
 });
 
@@ -90,18 +99,18 @@ Route::filter('auth.internal', function() use ($app)
 
 Route::filter('guest.merchant', function()
 {
-	if (Auth::merchant()->check())
+    if (Auth::merchant()->check())
     {
-		return AppResponse::jsonResponse(
+        return AppResponse::jsonResponse(
             array("You are already logged in, please refresh and try again"));
     }
 });
 
 Route::filter('guest.admin', function()
 {
-	if (Auth::admin()->check())
+    if (Auth::admin()->check())
     {
-		return AppResponse::jsonResponse(
+        return AppResponse::jsonResponse(
             array("You are already logged in, please refresh and try again"));
     }
 });
@@ -123,10 +132,10 @@ Route::filter('csrf', function()
     // Angular sends X-XSRF-TOKEN header with all request because
     // XSRF-TOKEN cookie is set in after filter
     //
-	if ((Request::header('X-XSRF-TOKEN') === NULL) or
+    if ((Request::header('X-XSRF-TOKEN') === NULL) or
         (Session::token() !== Crypt::decrypt(Request::header('X-XSRF-TOKEN'))))
     {
-		return AppResponse::jsonResponse(
+        return AppResponse::jsonResponse(
             array('Invalid session. Please refresh the page and try again.'));
     }
 });

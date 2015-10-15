@@ -46,7 +46,16 @@ class AdminController extends BaseController
 
     public function getKeepAlive()
     {
-        return AppResponse::jsonResponse([]);
+        $error = [];
+        $response = (new Admin\Service)->updateKeepAlive();
+
+        if ($response === false)
+        {
+            // Auth::admin()->logout();
+            // $error = ['You have been logged out'];
+        }
+
+        return AppResponse::jsonResponse($error, $response);
     }
 
     public function postPassword()
@@ -139,6 +148,50 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    public function getMerchantArchive($id)
+    {
+
+        $error = (new Admin\Service)->archiveMerchant($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
+     * Calls the Creevey service over a queue to capture screenshots
+     * @param  string $id Merchant Id
+     */
+    public function captureMerchantScreenshot($id)
+    {
+        $error = (new Admin\Service)->captureScreenshot($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
+     * Returns an HTML View for now
+     * @param  string $id merchant id
+     */
+    public function getMerchantScreenshot($id)
+    {
+        $links = (new Admin\Service)->getScreenshot($id);
+        return View::make('admin.screenshots', ['links' => $links]);
+    }
+
+    public function saveMerchantScreenshot($id)
+    {
+        $input = \Input::all();
+        $error = (new Admin\Service)->saveScreenshot($id, $input);
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function getMerchantUnarchive($id)
+    {
+
+        $error = (new Admin\Service)->unarchiveMerchant($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function getMerchantMethodEnable($id, $method)
     {
 
@@ -198,6 +251,15 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function putEditMerchantEmail($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postEditMerchantComment($id)
     {
         $comment = Input::get('comment');
@@ -244,6 +306,29 @@ class AdminController extends BaseController
     public function getVerifyPayment($id)
     {
         list($error, $data) = (new Admin\Service)->getVerifyPayment($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postAuthorizeFailedPayment($mode, $id)
+    {
+        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postRefundAuthorizedPayment($mode, $merchantId, $id)
+    {
+        list($error, $data) = (new Admin\Service)->refundAuthorizedPayment($mode, $merchantId, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postRefund($mode, $merchantId, $id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->refundPayment($mode, $merchantId, $id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -326,8 +411,74 @@ class AdminController extends BaseController
         if (empty($error) === false)
             return AppResponse::jsonResponse($error);
 
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="hdfc_excel.xlsx"');
         $file->download('xlsx');
+    }
+
+    public function getBeneficiaryFile()
+    {
+        $input = Input::all();
+
+        list($error, $url) = (new Admin\Service)->getBeneficiaryFile($input);
+
+        if(empty($error) === false)
+        {
+            return AppResponse::jsonResponse($error);
+        }
+
+        return Redirect::to($url);
+    }
+
+    public function generateBeneficiaryFile()
+    {
+        $error = (new Admin\Service)->generateBeneficiaryFile();
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function postSendTestNewsletter()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendTestNewsletter($input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postSendNewsletter()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendNewsletter($input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function triggerError()
+    {
+        list($error, $data) = (new Admin\Service)->triggerError();
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function deleteTerminal($mode, $terminalId)
+    {
+        list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function editTerminal($mode, $terminalId)
+    {
+        $input = Input::all();
+        list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function verifyAllPayments()
+    {
+        list($error, $data) = (new Admin\Service)->verifyAllPayments();
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function generateNetBankingRefunds()
+    {
+        $input = Input::all();
+        list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
+        return AppResponse::jsonResponse($error, $data);
     }
 }

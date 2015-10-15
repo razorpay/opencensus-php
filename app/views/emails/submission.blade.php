@@ -4,12 +4,16 @@
         <meta charset="utf-8">
     </head>
     <body>
+
+
         <h2>Your Razorpay Account is pending approval</h2>
 
         <div>
+            <p>Hi {{{$name}}},</p>
+
             <p>Your Razorpay activation form is complete and we have notified the admins to verify the details. We will communicate to you if anything else is required.</p>
 
-            <p>Meanwhile, you can integrate with Razorpay in test mode and feel free to communicate with us at support@razorpay.com in case of any issues or queries</p>
+            <p>Meanwhile, you can integrate with Razorpay in test mode and feel free to communicate with us at support@razorpay.com in case of any issues or queries.</p>
         </div>
 
         <div>

@@ -16,6 +16,8 @@ Route::get('/', 'MerchantController@getIndex');
 
 Route::get('/admin', 'AdminController@getIndex');
 
+Route::options('/contact', 'MerchantController@optionsContact');
+
 Route::post('/contact', 'MerchantController@postContact');
 
 Route::group(array('before' => 'auth.merchant'), function()
@@ -124,6 +126,14 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
 
+    Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
+
+    Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
+
+    Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
+
+    Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
@@ -154,6 +164,10 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
 
+        Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
+
+        Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
+
         Route::get('/admin/merchant/{id}/methods/{method}/enable', 'AdminController@getMerchantMethodEnable');
 
         Route::get('/admin/merchant/{id}/methods/{method}/disable', 'AdminController@getMerchantMethodDisable');
@@ -163,6 +177,30 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
 
         Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
+
+        Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
+
+        // These 2 use proxy auth so needs merchantId
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
+
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
+
+        Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
+
+        Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
+
+        Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
+
+        Route::post('/admin/trigger/error', 'AdminController@triggerError');
+
+        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
+
+        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
+
+        Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
+
+        Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
+
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
@@ -177,6 +215,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
+        Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
     });
 });
 
@@ -188,4 +227,10 @@ Route::group(array('before' => 'guest.admin'), function()
 Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');
+});
+
+Route::group(array('before' => 'auth.cron'), function()
+{
+    Route::post('/{mode}/analytics/aggregations', 'TransactionController@updateAggregations');
+    Route::post('/{mode}/analytics/payment/aggregations', 'TransactionController@updatePaymentAggregations');
 });

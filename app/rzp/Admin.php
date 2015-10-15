@@ -18,6 +18,36 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl, $options);
     }
 
+    public function sendTestNewsletter($params)
+    {
+        $relativeUrl = $this->getEntityUrl(). 'newsletter/test';
+
+        return $this->request('POST', $relativeUrl, $params);
+    }
+
+    public function sendNewsletter($params)
+    {
+        $relativeUrl = $this->getEntityUrl(). 'newsletter/mail';
+
+        return $this->request('POST', $relativeUrl, $params);
+    }
+
+    public function triggerError()
+    {
+        $relativeUrl = $this->getEntityUrl(). 'trigger/error';
+        $response = null;
+        try
+        {
+            $this->request('GET', $relativeUrl);
+        }
+        catch(\Razorpay\Api\Errors\ServerError $e)
+        {
+            return ['msg' => "Error triggered with msg {$e->getMessage()}"];
+        }
+
+        return false;
+    }
+
     protected function getEntityUrl()
     {
         $fullClassName = get_class($this);

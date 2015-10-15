@@ -8,6 +8,7 @@ use Config;
 class Api extends Razorpay\Api\Api
 {
     public static $mock = false;
+
     /**
      * @param string $api_key
      */
@@ -18,7 +19,6 @@ class Api extends Razorpay\Api\Api
         parent::__construct($key, $secret);
     }
 
-
     /**
      * @param string $name
      */
@@ -27,12 +27,12 @@ class Api extends Razorpay\Api\Api
         if (self::$mock === true)
         {
             // Delay the response by 0.5 secs (avoids issue with non loading of js before calls)
-            usleep(500000);
-            $className = __NAMESPACE__.'\\Mock\\'.ucwords($name);
+            usleep(1000000);
+            $className = __NAMESPACE__ . '\\Mock\\' . ucwords($name);
         }
         else
         {
-            $className = __NAMESPACE__.'\\'.ucwords($name);
+            $className = __NAMESPACE__ . '\\' . ucwords($name);
         }
 
         if (class_exists($className) === true)

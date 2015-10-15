@@ -3,8 +3,9 @@
 namespace Models\MerchantDetails;
 
 use AWS;
-use Mailgun;
+use Mail;
 use Models\Base;
+use Queue;
 
 class Service extends Base\Service
 {
@@ -51,7 +52,7 @@ class Service extends Base\Service
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
-                $this->sendActivationFormSubmissionMails($merchantDetails);
+                $this->fireActivationTrigger($merchantDetails);
             }
             else
             {
@@ -104,6 +105,27 @@ class Service extends Base\Service
         {
             $merchantDetails->addStepToStepsFinished(5);
 
+            $merchantDetails->saveOrFail();
+        }
+
+        return $error;
+    }
+
+    /**
+     * This is a static call because we don't need Merchant Auth for this
+     * which is checked in the constructor
+     * @param  string $id    Merchant Id
+     * @param  string $email New Transaction report email
+     * @return array Errors
+     */
+    public static function changeTransactionEmail($id, $email)
+    {
+        $merchantDetails = Entity::findorfail($id);
+
+        $error = $merchantDetails->changeTransactionEmail($email);
+
+        if (empty($error))
+        {
             $merchantDetails->saveOrFail();
         }
 
@@ -168,7 +190,7 @@ class Service extends Base\Service
      * On submission of activation form by user, send email
      * to the customer and sales team notifying them about the activity
      */
-    protected function sendActivationFormSubmissionMails($merchantDetails)
+    protected function fireActivationTrigger($merchantDetails)
     {
         $customer = array(
             'id' => $merchantDetails->getAttribute('merchant_id'),
@@ -179,20 +201,36 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $salesEmail = 'sales@razorpay.com';
+        $salesEmail = 'salesteam@razorpay.com';
 
-        Mailgun::send('emails.submission', $customer, function($mail) use ($customer)
+        Mail::send('emails.submission', $customer, function($mail) use ($customer)
         {
+            // This is the business name
+            $subject = 'Razorpay | Account pending approval for '
+                . $customer['business_name'];
 
             $mail->to($customer['email'], $customer['name'])
-                 ->subject('Your Razorpay acount is pending approval');
+                ->subject($subject);
         });
 
-        Mailgun::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
+        Mail::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
         {
+            $subject = "New activation form submitted for {$customer['business_name']}";
             $mail->to($salesEmail, 'Razorpay Sales Team')
-                 ->subject('New activation form submitted - '.$customer['business_name']);
+                 ->subject($subject);
         });
+
+        // Take screenshots as well
+        $urls = $merchantDetails->getUrls();
+        Queue::push('Models\Admin\Creevey', [
+            $customer['id'],
+            $urls,
+            $customer['business_name']
+        ]);
+
+        // We also send over details to slack
+        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
+        $this->slackPost('New activation form submitted', $customer, '#sales', $link);
     }
 
     protected function isLockedError()
