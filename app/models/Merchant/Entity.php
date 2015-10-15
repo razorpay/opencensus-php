@@ -237,7 +237,10 @@ class Entity extends Base\PublicEntity
      */
     public function getTransactionReportEmail()
     {
-        return explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
+        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
+
+        // Just so there is no whitespace before or after the email
+        return array_map('trim', $emails);
     }
 
     public function holdFunds()
