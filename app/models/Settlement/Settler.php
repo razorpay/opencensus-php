@@ -159,14 +159,14 @@ class Settler
     {
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
+        (new SlackNotification)->success('setl_initiate', $data);
 
         Dashboard::send('settlement', $settlements);
     }
 
     protected function failureNotification($exception)
     {
-        (new SlackNotification)->queueOperationFailure('setl_initiate', $exception);
+        (new SlackNotification)->failure('setl_initiate', $exception);
     }
 
     protected function process($txns, $channel)

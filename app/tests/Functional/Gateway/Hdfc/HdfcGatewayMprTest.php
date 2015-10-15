@@ -26,7 +26,7 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
-        $this->mockSlack(5);
+        //$this->mockSlack(5);
 
         $this->mockDashboardRequest(2);
 

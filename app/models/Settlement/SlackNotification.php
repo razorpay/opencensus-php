@@ -8,9 +8,6 @@ use Queue;
 class SlackNotification
 {
     use SlackPoster;
-    protected $queue;
-
-    protected $slack;
 
     protected $operations = array(
         'mpr_generation',
@@ -25,24 +22,17 @@ class SlackNotification
         'setl_reconciliation'   => 'Settlements reconciled. ',
         'setl_return'           => 'Settlements returns occurred. ');
 
-    public function __construct()
-    {
-        $this->queue = Queue::getFacadeRoot();
-    }
-
-    public function queueOperationSuccess($operation, $data)
+    public function success($operation, $data)
     {
         $data = [
             'message' => $this->messages[$operation],
             'status'  => 'good'
         ] + $data;
 
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $data);
+        $this->send($data);
     }
 
-    public function queueOperationFailure($operation, $e)
+    public function failure($operation, $e)
     {
         $data = [
             'message'           => 'Failed operation: ' . $operation,
@@ -51,20 +41,17 @@ class SlackNotification
             'status'            => 'bad'
         ];
 
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $data);
+        $this->send($data);
     }
 
-    public function sendSlackNotification($job, $data)
+    public function send($data)
     {
-        $job->delete();
-
         $message = $data['message'];
         $color   = $data['status'];
+
         unset($data['message'], $data['status']);
 
-        $this->slackPost($message, $data, '@harshil @shk', [
+        $this->slackPost($message, $data, '', [
             'channel'   => '#settlements',
             'username'  => 'settlements',
             'color'     => $color

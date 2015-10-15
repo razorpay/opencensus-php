@@ -324,9 +324,9 @@ class Service extends Base\Service
             'timed out'     => $timedOut,
             'total time'    => $time . ' secs');
 
-        $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
+        $message = 'Payment verify result';
 
-        $this->app['slack']->send($message, '#transactions', 'transactions');
+        $this->slackPost($message, $results);
 
         return $results;
     }
