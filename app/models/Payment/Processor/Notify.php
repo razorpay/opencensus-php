@@ -3,6 +3,7 @@
 namespace Models\Payment\Processor;
 
 use App;
+use Carbon\Carbon;
 use Constants\Mode;
 use Mail;
 use Models\Payment;
@@ -108,16 +109,16 @@ class Notify
         if (array_key_exists('merchant', self::$mailViews[$event]))
         {
             $view = self::$mailViews[$event]['merchant'];
-            $subject = $this->subjectPaymentSuccessful(true);
-            $to = $data['merchant']['email'];
+            $subject = $this->getSubject($event, true);
+            $to = $this->template['merchant']['email'];
             $this->sendMail($view, $subject, $to);
         }
 
         if (array_key_exists('customer', self::$mailViews[$event]))
         {
             $view = self::$mailViews[$event]['customer'];
-            $subject = $this->subjectPaymentSuccessful(false);
-            $to = $data['customer']['email'];
+            $subject = $this->getSubject($event, false);
+            $to = $this->template['customer']['email'];
             $this->sendMail($view, $subject, $to);
         }
     }
@@ -197,6 +198,8 @@ class Notify
         {
             // We don't want to post the card number on Slack
             unset($data['payment.method.1']);
+            unset($data['payment.method.0']);
+            $data['payment.method'] = 'Card';
         }
 
         return $data;
@@ -239,9 +242,21 @@ class Notify
         return $data;
     }
 
+    protected function isTimestamp($key, $value)
+    {
+        if (substr($key, -9) !== 'timestamp')
+        {
+            return false;
+        }
+
+        return ( is_numeric($value) and ($value <= PHP_INT_MAX) and ($value >= -PHP_INT_MAX));
+    }
+
+
     /**
      * Removes all null and false values from the array
      * Expects a flattened array (no nested arrays)
+     * Also converts timestamps to proper datetime
      * @param  array  $data data
      * @return array data with all null values removed
      */
@@ -251,6 +266,11 @@ class Notify
             if ($value === null or $value === false)
             {
                 unset($data[$key]);
+            }
+
+            if ($this->isTimestamp($key, $value))
+            {
+                $data[$key] = Carbon::createFromTimeStamp($value, "Asia/Kolkata")->format('j M Y h:i a');
             }
         }
 
