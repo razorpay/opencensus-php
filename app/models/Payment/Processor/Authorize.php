@@ -104,10 +104,10 @@ trait Authorize
             'error' => $payment->getErrorDetails(),
         );
 
-        $data['message'] = 'Payment failed earlier converted to authorized';
-        $data['payment'] = $payment->toArrayAdmin();
+        $message = 'Payment failed earlier converted to authorized';
+        $data = $payment->toArrayAdmin();
 
-        $this->notifyInSlack($data);
+        $this->slackPost($message, $data, '', ['color' => 'bad']);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,

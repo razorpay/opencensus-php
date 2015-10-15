@@ -189,7 +189,7 @@ class Notify
 
         $data = $this->flatten($data);
 
-        if ($data['payment.method.0'] === 'Card')
+        if (array_key_exists('payment.method.0', $data) and $data['payment.method.0'] === 'Card')
         {
             // We don't want to post the card number on Slack
             unset($data['payment.method.1']);
@@ -237,6 +237,13 @@ class Notify
         return $data;
     }
 
+    /**
+     * Returns whether a key value pair is a timestamp
+     * Called after flattening the array
+     * @param  string  $key   key name
+     * @param  mixed  $value    value
+     * @return boolean
+     */
     protected function isTimestamp($key, $value)
     {
         if (substr($key, -9) !== 'timestamp')

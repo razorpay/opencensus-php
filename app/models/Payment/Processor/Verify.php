@@ -56,11 +56,6 @@ trait Verify
 
     protected function notifyInSlack($data)
     {
-        $data = [
-            'payment_id'    =>  $payment->getPublicId(),
-            'amount'        =>  $payment->getAmount()
-        ];
-
         if (!isset($data['message']))
         {
             $message = 'Payment verification failed.';
