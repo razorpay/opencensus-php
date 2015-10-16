@@ -84,7 +84,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+        return $repo::orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getMerchantPricingPlans()
