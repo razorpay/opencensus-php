@@ -120,9 +120,8 @@ class Gateway extends Base\Gateway
             $requestParameter['MerchantId'] = $this->getTestMerchantId();
         }
 
-        $content = EncryptDecrypt::encryptData(array(
-                                                   'EncryptRefundDetails' => $requestParameter,
-                                               ));
+        $content = EncryptDecrypt::encryptData(
+                        ['EncryptRefundDetails' => $requestParameter], $this->getSecret());
 
         $content['merchIdVal'] = $requestParameter['MerchantId'];
 
@@ -136,7 +135,7 @@ class Gateway extends Base\Gateway
         $crawler = new Crawler($response->body, 'http://www.example.com');
         $form = $crawler->filter('form')->form();
         $values = $form->getValues();
-        $values = EncryptDecrypt::decryptData($values['encRefundData']);
+        $values = EncryptDecrypt::decryptData($values['encRefundData'], $this->getSecret());
         $values = $this->getContent($values);
         $requestParameter['refund_id'] = $input['refund']['id'];
         $requestParameter['received'] = 1;
@@ -278,9 +277,7 @@ class Gateway extends Base\Gateway
             $requestParameter['MerchantId'] = $this->getTestMerchantId();
         }
 
-        $content = EncryptDecrypt::encryptData([
-                                                   'encryptQuery' => $requestParameter
-                                               ]);
+        $content = EncryptDecrypt::encryptData(['encryptQuery' => $requestParameter], $this->getSecret());
 
         $content['merchIdVal'] = $requestParameter['MerchantId'];
         $content['aggIdVal'] = 'SBIEPAY';
@@ -304,7 +301,7 @@ class Gateway extends Base\Gateway
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
-        $verify->verifyResponseContent = EncryptDecrypt::decryptData($values['encStatusData']);
+        $verify->verifyResponseContent = EncryptDecrypt::decryptData($values['encStatusData'], $this->getSecret());
 
         return $verify;
     }

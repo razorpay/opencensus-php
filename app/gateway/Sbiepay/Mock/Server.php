@@ -20,6 +20,7 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
+
         $content = array(
             'MerchantOrderNo'     => $input['MerchantOrderNo'],
             'SBIePayReferenceID'  => random_integer(6),
@@ -91,11 +92,11 @@ class Server extends Base\Mock\Server
             'AdditionalInfo8'     => null,
             'AdditionalInfo9'     => null,
         );
+
         $encData = Sbiepay\EncryptDecrypt::encryptData(['encStatusData' => $content]);
+
         ob_start();
-
         require('VerifyResponseHtml.php');
-
         $html = ob_get_clean();
 
         return $this->prepareResponse($html);
@@ -121,26 +122,12 @@ class Server extends Base\Mock\Server
             'SBIePayReferenceID' => random_integer(6)
         );
         $encData = Sbiepay\EncryptDecrypt::encryptData(['encRefundData' => $content]);
+
         ob_start();
-
         require('RefundResponseHtml.php');
-
         $html = ob_get_clean();
 
         return $this->prepareResponse($html);
-    }
-
-
-
-
-    protected function makeResponse($msg)
-    {
-        $response = \Response::make($msg);
-
-        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
     }
 
     protected function getContentFromInputAuthorize($input)
