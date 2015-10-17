@@ -85,21 +85,18 @@ class Plan extends PublicCollection
                 if ($first === true)
                 {
                     $first = false;
-                    $this->setPlanAttributes($plan, $item);
-                    $plan[self::COUNT] = 1;
-                    $rules = & $plan[self::RULES];
-                    array_push($rules, $item->toArray());
-                    continue;
                 }
-
-                array_push($data, $plan);
-                $plans[self::COUNT]++;
+                else
+                {
+                    array_push($data, $plan);
+                    $plans[self::COUNT]++;
+                }
 
                 $plan = array();
                 $this->setPlanAttributes($plan, $item);
                 $plan[self::COUNT] = 1;
-                $rules = & $plan[self::RULES];
 
+                $rules = & $plan[self::RULES];
                 array_push($rules, $item->toArray());
             }
         }
