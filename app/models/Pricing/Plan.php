@@ -73,6 +73,14 @@ class Plan extends PublicCollection
         $plan = array(self::ID => null);
         $rules = null;
 
+        //
+        // $this->items contain the pricing rules.
+        // We assume that rules are sorted by plan id.
+        // Now, we create a plan collection by pushing the plan rules inside
+        // plan array.
+        // The collection of plans array is multiple plans.
+        //
+
         foreach ($this->items as $item)
         {
             if ($plan[self::ID] === $item->getPlanId())
