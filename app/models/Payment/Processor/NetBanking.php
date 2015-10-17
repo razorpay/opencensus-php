@@ -70,6 +70,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::JSBP,
         IFSC::KARB,
+        IFSC::KKBK,
         IFSC::KVBL,
         IFSC::MAHB,
         IFSC::NKGS,
@@ -152,7 +153,7 @@ class Netbanking
     {
         if (defined(__CLASS__ . '::' . $code))
         {
-            return self::$names[$ifsc];
+            return self::$names[$code];
         }
 
         return Name::getName($code);

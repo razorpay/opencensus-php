@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Gateway\AxisMigs;
 
+use Mockery;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
@@ -49,15 +50,13 @@ class AxisGatewayTest extends TestCase
             $this->testData['testPaymentAxisMigsEntity'], $payment);
     }
 
-    public function testFailPayment()
+    public function testFailedPayment()
     {
-        $this->markTestIncomplete();
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4111111111111111';
+        $this->failAuthorizePayment();
 
-        $content = $this->doAuthPayment($payment);
+        $payment = $this->getLastEntity('payment', true);
 
-        sd($content);
+        $this->assertEquals($payment['status'], 'failed');
     }
 
     public function testPaymentRefund()
@@ -101,5 +100,17 @@ class AxisGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment();
 
         $this->verifyPayment($payment['id']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->failAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'authorized');
     }
 }

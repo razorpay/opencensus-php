@@ -40,14 +40,4 @@ class Entity extends Base\Entity
     {
         return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
     }
-
-    public function getPaymentId()
-    {
-        return $this->getAttribute('payment_id');
-    }
-
-    public function getRefundId()
-    {
-        return $this->getAttribute('refund_id');
-    }
 }

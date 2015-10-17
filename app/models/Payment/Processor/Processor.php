@@ -2,6 +2,7 @@
 
 namespace Models\Payment\Processor;
 
+use App;
 use Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
@@ -50,6 +51,7 @@ class Processor
         $this->core = $core;
         $this->trace = $trace;
         $this->mode = $mode;
+        $this->app  = App::getFacadeRoot();
 
         $this->checkMerchantPermissions();
 
@@ -166,11 +168,6 @@ class Processor
             throw new Exception\LogicException(
                 'A non-activated merchant is making live request. Blasphemy!');
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive()]);
     }
 
     protected function verifyMerchantIsLiveForLiveRequest()
@@ -224,11 +221,13 @@ class Processor
 
         $desc = $error->getDescription();
 
+        $internalCode = $error->getInternalErrorCode();
+
         $payment = $this->payment;
 
         $payment->setStatus(Payment\Status::FAILED);
 
-        $payment->setError($code, $desc);
+        $payment->setError($code, $desc, $internalCode);
 
         $payment->saveOrFail();
 
@@ -248,12 +247,14 @@ class Processor
     {
         $terminal = $this->payment->terminal;
 
-        $gateway = $this->payment->getGateway();
-
         if ($terminal === null)
         {
-            return;
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                ['payment_id' => $payment->getId()]);
         }
+
+        $gateway = $this->payment->getGateway();
 
         $input['terminal'] = $terminal;
         $input['merchant'] = $terminal->merchant;

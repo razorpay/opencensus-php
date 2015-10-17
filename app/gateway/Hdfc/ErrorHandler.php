@@ -25,7 +25,7 @@ class ErrorHandler
 
     public static function isValidErrorCode($code)
     {
-        return (defined(__NAMESPACE__.'\ErrorCode::'.$code));
+        return (defined(ErrorCode::class.'::'.$code));
     }
 
     public static function getMappedError($code)
@@ -47,7 +47,7 @@ class ErrorHandler
 
     public static function checkErrorCode($code)
     {
-        if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
+        if (defined(ErrorCode::class.'::'.$code) === false)
         {
             throw new Exception\LogicException(
                 'Invalid Hdfc Error Code provided. Code: ' . $code);

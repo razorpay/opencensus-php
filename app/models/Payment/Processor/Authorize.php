@@ -2,9 +2,9 @@
 
 namespace Models\Payment\Processor;
 
-use App;
 use Constants\Mode;
 use EE\Exception;
+use EE\Error;
 use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant\Methods;
@@ -71,6 +71,10 @@ trait Authorize
         $data = array(
             'payment' => $payment->toArray(),
         );
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            ['payment_id' => $payment->getId()]);
 
         $this->repo->transaction(function() use ($data)
         {
@@ -141,6 +145,8 @@ trait Authorize
 
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
+
+        $this->checkForRecentFailedPayment($payment);
 
         Payment\Validator::bankAcsCallbackValidate($payment, $input);
 
@@ -244,14 +250,54 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
+    protected function checkForRecentFailedPayment($payment)
+    {
+        // Difference should be less than 30 minutes
+        $diff = time() - $payment->getUpdatedAt();
+
+        if (($payment->isFailed()) and
+            ($diff < 30 * 60))
+        {
+            $this->rethrowFailedPaymentErrorException($payment);
+        }
+    }
+
+    protected function rethrowFailedPaymentErrorException($payment)
+    {
+        $internalErrorCode = $payment->getInternalErrorCode();
+        $publicErrorCode = $payment->getErrorCode();
+        $errorDesc = $payment->getErrorDescription();
+
+        Error\Map::throwExceptionFromErrorDetails(
+            $publicErrorCode, $internalErrorCode, $errorDesc);
+
+        //
+        // If it has reached here, then an edge case occurred, for which
+        // a suitable exception was not found and which must be handled.
+        // So, we trace an error message, ringing alerts to our devs.
+        //
+
+        $this->trace->error(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            ['payment_id' => $payment->getPublicId(),
+             'public_error_code' => $publicErrorCode,
+             'internal_error_code' => $internalErrorCode,
+             'error_description' => $errorDesc,
+             'message' => 'Failed to convert error code to the appropriate exception']);
+
+        // If no appropriate exception mapping was found then show
+        // the usual message that payment already processed.
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+    }
+
     protected function notifyCustomer($payment)
     {
-        $app = App::getFacadeRoot();
-
         // Dont send mails in test mode
         // @todo: remove this somehow
         if (($this->mode === Mode::TEST) and
-            ($app->environment('dev') === false))
+            ($this->app->environment('dev') === false))
         {
             return;
         }
@@ -273,7 +319,7 @@ trait Authorize
             ]
         ];
 
-        $config = $app->config->get('applications.mailgun');
+        $config = $this->app->config->get('applications.mailgun');
 
         $subject = "Payment Successful for {$templateData['payment']['amount']}";
 
@@ -282,7 +328,7 @@ trait Authorize
             $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
         }
 
-        $app['mailer']->queue(
+        $this->app['mailer']->queue(
             [
                 'html' => 'emails/payment/customer',
                 'text' => 'emails/payment/customer_text'
@@ -406,8 +452,7 @@ trait Authorize
     {
         if ($payment->getCallbackUrl() !== null)
         {
-            $app = \App::getFacadeRoot();
-            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 

@@ -3,6 +3,7 @@
 namespace Models\Payment\Refund;
 
 use Carbon\Carbon;
+use Models\Bank\IFSC;
 use Models\Base;
 use Models\Gateway;
 use Models\Payment;
@@ -12,22 +13,42 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function getHdfcNetbankingRefundsFile(array $input = array())
+    public function getNetbankingRefundsFile(array $input = array())
     {
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
 
-        if (isset($input['from']))
+        if (isset($input['on']))
         {
-            $from = $input['from'];
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+            $to = $from->addDay()->timestamp - 1;
+            $from = $from->timestamp;
         }
-        else if (isset($input['to']))
+        else
         {
-            $to = $input['to'];
+            if (isset($input['from']))
+            {
+                $from = $input['from'];
+            }
+
+            if (isset($input['to']))
+            {
+                $to = $input['to'];
+            }
         }
 
+        // Add more banks here as we direct connects with them.
+        $banks = array(IFSC::HDFC);
+
+        if (isset($input['bank']) === false)
+        {
+            $input['bank'] = IFSC::HDFC;
+        }
+
+        $bankCode = $input['bank'];
+
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-            'HDFC', $from, $to);
+                                                $bankCode, $from, $to);
 
         $count = $refunds->count();
 
@@ -51,8 +72,6 @@ class Service extends Base\Service
         }
 
         $gateway = $terminal->getGateway();
-
-        assert ($gateway === Payment\Gateway::NETBANKING_HDFC);
 
         $action = 'generateRefundsExcel';
 

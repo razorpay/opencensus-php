@@ -83,7 +83,9 @@ class SupportTest extends TestCase
             [
                 'verified'      => 0,
                 'failed'        => 0,
+                'authorized'    => 0,
                 'timed out'     => 0,
+                'error'         => 0,
                 'total time'    => '0 secs',
             ]);
     }

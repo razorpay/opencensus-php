@@ -6,6 +6,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
 use Models\Pricing;
+use Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -13,12 +14,18 @@ class Service extends Base\Service
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->repo = new Pricing\Repository();
     }
 
     public function createPricingPlan($input)
     {
         $pricing = (new Pricing\Entity)->build($input);
+
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
+            $input);
 
         $plan = $this->repo->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
@@ -28,16 +35,28 @@ class Service extends Base\Service
 
         $plan = new Plan(array($pricing));
 
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_CREATE_SUCCESS,
+            $plan->toArrayPublic());
+
         return $plan->toArrayPublic();
     }
 
     public function addPricingPlanRule($id, $input)
     {
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
+            ['id' => $id, $input]);
+
         $plan = $this->repo->getPricingPlanByIdOrFailPublic($id);
 
         $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
 
         (new Pricing\Repository)->saveOrFail($rule);
+
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
+            [$rule->toArray()]);
 
         return $rule->toArray();
     }

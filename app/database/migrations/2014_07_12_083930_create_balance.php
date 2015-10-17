@@ -24,10 +24,10 @@ class CreateBalance extends Migration
             $table->char(Balance::ID, Balance::ID_LENGTH)
                   ->primary();
 
-            $table->integer(Balance::BALANCE)
+            $table->bigInteger(Balance::BALANCE)
                   ->default(0);
 
-            $table->integer(Balance::ON_HOLD)
+            $table->bigInteger(Balance::ON_HOLD)
                   ->default(0);
 
             $table->integer(Balance::CREATED_AT);

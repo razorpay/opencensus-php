@@ -23,10 +23,9 @@ class MobikwikGatewayTest extends TestCase
 
         $this->gateway = 'mobikwik';
 
-        $this->fixtures->links['merchant']->enableMobikwik('10000000000000');
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
 
         $this->setMockGatewayTrue();
-
 
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['wallet'] = 'mobikwik';

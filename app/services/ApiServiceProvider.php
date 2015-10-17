@@ -3,6 +3,7 @@
 namespace Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Gateway\GatewayManager;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -34,6 +35,16 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new AwsInstance($app);
         });
+
+        $this->app->bindShared('exception.handler', function($app)
+        {
+            return new \EE\Exception\Handler($app);
+        });
+
+        $this->app->bindShared('gateway', function($app)
+        {
+            return new GatewayManager($app);
+        });
     }
 
     /**
@@ -43,6 +54,6 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('slack', 'mailgun', 'instance');
+        return array('slack', 'mailgun', 'instance', 'exception.handler', 'gateway');
     }
 }

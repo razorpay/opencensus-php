@@ -63,14 +63,28 @@ class Service extends Base\Service
 
     protected function getEntityClass($entity)
     {
-        return $this->getEntityNamespace($entity) . '\Entity';
+        $class = $this->getEntityNamespace($entity) . '\Entity';
+
+        if (class_exists($class) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity: ' . $entity);
+        }
+
+        return $class;
     }
 
     protected function getEntityRepository($entity)
     {
-        $namespace = $this->getEntityNamespace($entity);
+        $class = $this->getEntityNamespace($entity) . '\Repository';
 
-        return $namespace.'\Repository';
+        if (class_exists($class) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid repository: ' . $entity);
+        }
+
+        return $class;
     }
 
     public function sendTestNewsletter($input)
