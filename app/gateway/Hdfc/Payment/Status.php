@@ -12,6 +12,8 @@ class Status
      * So, store either ENROLLED or NOT_ENROLLED or ENROLL_FAILED
      */
 
+    const INITIALIZED = 'initialized';
+
     const ENROLLED = 'enrolled';
 
     const NOT_ENROLLED = 'not_enrolled';
