@@ -32,14 +32,14 @@
           <tr>
             <th>Settlement Id</th>
             <th>Amount</th>
-            <th>Status</th>
+            <th>Created At</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
             <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.amount/100 | currency:"INR "}}</td>
-            <td>{{row.status | titlecase}}</td>
+            <td>{{row.created_at*1000 | fromNow}}</td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">
