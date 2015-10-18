@@ -128,7 +128,7 @@ class Merchant
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
-        $setl->setFee($this->apiFee);
+        $setl->setFees($this->apiFee);
         $setl->setChannel($this->channel);
 
         $setl->transaction()->associate($this->setlTransaction);

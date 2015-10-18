@@ -29,7 +29,7 @@ class CreateSettlements extends Migration {
             $table->integer(Settlement::AMOUNT)
                   ->unsigned();
 
-            $table->integer(Settlement::FEE)
+            $table->integer(Settlement::FEES)
                   ->unsigned();
 
             $table->string(Settlement::STATUS);
