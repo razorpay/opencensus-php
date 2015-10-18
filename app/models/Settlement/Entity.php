@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
 //        self::AMOUNT,
+        self::FEE,
         self::STATUS,
         self::MERCHANT_ID,
         self::TRANSACTION_ID);
@@ -129,6 +130,18 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getFeeAttribute()
+    {
+        $fee = $this->attributes[self::FEE];
+
+        if ($fee !== null)
+        {
+            $fee = (int) $fee;
+        }
+
+        return $fee;
     }
 
     public function save(array $options = array())

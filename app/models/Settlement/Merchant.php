@@ -58,6 +58,7 @@ class Merchant
     public function collectApiFees($apiFee)
     {
         $this->amount = $apiFee;
+        $this->apiFee = 0;
         $this->txns = new Base\PublicCollection;
 
         $adjInput = array(
@@ -122,6 +123,8 @@ class Merchant
     protected function newSettlementEntity()
     {
         $setl = (new Settlement\Entity)->generateId();
+
+        $fee =
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
