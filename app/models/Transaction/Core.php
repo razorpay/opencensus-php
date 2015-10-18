@@ -79,7 +79,9 @@ class Core extends Base\Core
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
+
+        $setlSchedule = $payment->merchant->getSettlementSchedule();
+        $settledAt = $this->getSettledAtTimestamp($capturedAt, $setlSchedule);
 
         $amount = $payment->getAmount();
         $credit = $amount - $fee;
@@ -301,7 +303,9 @@ class Core extends Base\Core
 
         // if payment is on Sunday, add 1 extra
         if ($day === 0)
+        {
             $addDays += 1;
+        }
 
         $day = $day + $addDays;
 
