@@ -9,6 +9,11 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
+    );
+
     public function fetchBetweenTimestamp($from, $to, $merchantId)
     {
         $repo = $this->repo;
