@@ -206,6 +206,10 @@ app.controller('EntitiesCtrl', [
           'settlement',
           'adjustment'
         ]
+      },
+      settlement: {
+        transaction_id: ['Transaction Id'],
+        merchant_id: ['Merchant Id'],
       }
     };
 
