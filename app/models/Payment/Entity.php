@@ -585,6 +585,12 @@ class Entity extends Base\PublicEntity
     {
         $notes = $this->getNotes();
 
+        // Shortcut for direct order_id being set
+        if (isset($notes['order_id']))
+        {
+            return $notes['order_id'];
+        }
+
         foreach ($notes as $key => $value)
         {
             $orderIdSuffix = '_order_id';
