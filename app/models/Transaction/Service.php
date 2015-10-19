@@ -6,7 +6,7 @@ use Models\Base;
 use Models\Transaction;
 use Models\Merchant;
 use Models\MerchantDetails;
-use Mail;
+
 
 class Service extends Base\Service
 {
@@ -33,26 +33,9 @@ class Service extends Base\Service
 
         $this->aggregate($input, $mode);
 
-        if($input['resource'] === "refund" and $mode === 'live')
-        {
-            $this->slackPost('New Refund',
-                $this->slackData($input),
-                '#transactions', '@channel'
-            );
-        }
-
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
-            if($mode === 'live')
-            {
-                $this->slackPost('New Payment',
-                    $this->slackData($input),
-                    '#transactions', null
-                );
-
-                $this->sendMail($input);
-            }
 
             $this->aggregatePayment($input, $mode);
 
@@ -73,21 +56,6 @@ class Service extends Base\Service
         }
 
         return array();
-    }
-
-    protected function slackData($input)
-    {
-        $merchant = MerchantDetails\Entity::findorfail($input['merchant_id']);
-
-        $keysToDrop = ['created_at', 'updated_at', 'merchant_id'];
-        foreach ($keysToDrop as $key)
-        {
-            unset($input[$key]);
-        }
-
-        $input['merchant'] = $merchant->business_dba;
-        $input['website'] = $merchant->business_website;
-        return $input;
     }
 
     protected function create($data, $type, $mode)
@@ -230,24 +198,5 @@ class Service extends Base\Service
                 $data[] = ['amount' => '0', 'count' => '0', 'created_at' => "$i"];
         }
         return $data;
-    }
-
-    protected function sendMail($input)
-    {
-        if($_ENV['CONTEXT'] === 'production')
-        {
-            $merchant = Merchant\Entity::findorfail($input['merchant_id']);
-
-            $input['email'] = $merchant->email;
-            $input['name'] = $merchant->name;
-
-            $input['amount'] = "INR ".number_format($input['amount']/100, 2);
-
-            Mail::send('emails.payment', compact('input'), function($m) use($input)
-            {
-                $m->to($input['email'], $input['name'])
-                  ->subject('Razorpay - New Payment');
-            });
-        }
     }
 }
