@@ -53,7 +53,9 @@
                             <td class="center">
                               <center>
                                 <h3 class="center">
-                                <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
+                                <a href="{{$merchant['website']}}"
+                                class="whitetext" style="text-decoration:none;"
+                                title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
                                 </h3>
                               </center>
                             </td>
@@ -168,6 +170,33 @@
               </td>
             </tr>
           </table>
+@if($payment['orderId'])
+          <!-- Order Details -->
+          <table class="row">
+            <tr>
+              <td class="wrapper white">
+                <table class="four columns">
+                  <tr>
+                    <td class="darktext left-text-pad">
+                      Order ID
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper white offset-by-five last">
+                <table class="three columns">
+                  <tr>
+                    <td class="right-text-pad darktext" style="text-align: right;">
+                    {{$payment['orderId']}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+@endif
           <!-- Contact Us -->
           <table class="row">
             <tr>

@@ -283,7 +283,7 @@ class Notify
         {
             $data['refund'] = [
                 'id'        =>  $this->refund->getId(),
-                'amount'    =>  $this->refund->getAmount(),
+                'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
                 'timestamp' =>  $this->refund->getCreatedAt(),
                 'payment_id'=>  $this->refund->payment->getId()
             ];
