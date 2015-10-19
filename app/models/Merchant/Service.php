@@ -59,7 +59,7 @@ class Service extends Base\Service
                 'email'         => $slackData['email'],
                 'name'          => $slackData['name'],
                 // This is in slack formatting
-                'message'       => "<$merchantLink|New Signup>"
+                'message'       => "[New Signup]($merchantLink)"
             ];
 
             Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
