@@ -393,8 +393,20 @@ class Notify
             return false;
         }
 
-        // We only send mails if Mode is not TEST
+        return $this->isEnabled($event);
+
+    }
+
+    /**
+     * Whether to send notifications or not
+     * @param  string  $event Event trigger
+     * @return boolean
+     */
+    protected function isEnabled($event)
+    {
+        // We only send notifications if Mode is not TEST
         // or if the env=dev
+        // so env=dev overrides TEST mode
         if ($this->app->environment('dev'))
         {
             return true;
@@ -406,5 +418,15 @@ class Notify
         }
 
         return true;
+    }
+
+    /**
+     * Whether to send slack notifications
+     * @param  string $event Event trigger
+     * @return boolean
+     */
+    protected function isSlackEnabled($event)
+    {
+        return $this->isEnabled();
     }
 }
