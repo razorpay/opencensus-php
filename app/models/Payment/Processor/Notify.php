@@ -85,8 +85,11 @@ class Notify
      */
     protected function sendMail($view, $subject, $to)
     {
-        Mail::queue($view, $this->template,
-            function ($message) use ($subject, $to){
+        Mail::queue(
+            $view,
+            $this->template,
+            function ($message) use ($subject, $to)
+            {
 
                 // to might be an array
                 if (is_array($to))
@@ -175,7 +178,7 @@ class Notify
             $action = 'Refund';
         }
 
-        if(isset($this->template['merchant']['billing_label']))
+        if (isset($this->template['merchant']['billing_label']))
         {
             $subject = "$action successful for {$this->template['merchant']['billing_label']}";
         }
@@ -251,7 +254,7 @@ class Notify
         // So will be broken into merchant.email.{X}
         // If there is only 1 email, we would clean it up
         if ((array_key_exists('merchant.email.1', $data) === false) and
-            array_key_exists('merchant.email.0', $data))
+            (array_key_exists('merchant.email.0', $data)))
         {
             $data['merchant.email'] = $data['merchant.email.0'];
             unset($data['merchant.email.0']);
@@ -388,7 +391,7 @@ class Notify
     {
         // If the merchant has disabled customer emails
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
-            $event === self::AUTHORIZED)
+            ($event === self::AUTHORIZED))
         {
             return false;
         }
