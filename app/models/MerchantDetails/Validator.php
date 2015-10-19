@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     );
 
     protected static $editEmailRules = [
-        'transaction_report_email'  => 'required|email|max:255'
+        'transaction_report_email'  => 'sometimes'
     ];
 
     protected static $step2Rules = array(
