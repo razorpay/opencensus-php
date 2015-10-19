@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     const BILLING_LABEL             = 'billing_label';
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
-    const SETTLEMENT_SCHEDULE       = 'SETTLEMENT_SCHEDULE';
+    const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
 
