@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const BILLING_LABEL             = 'billing_label';
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
+    const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
 
@@ -39,11 +40,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
-        self::CATEGORY,
         self::WEBSITE,
+        self::CATEGORY,
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
@@ -77,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT          => null,
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
+        self::SETTLEMENT_SCHEDULE   => 3,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -211,6 +214,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::HOLD_FUNDS];
     }
 
+    public function getSettlementScheduleAttribute()
+    {
+        return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
+    }
+
     public function getWebsite()
     {
         return $this->attributes[self::WEBSITE];
@@ -234,6 +242,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionReportEmail()
     {
         return $this->attributes[self::TRANSACTION_REPORT_EMAIL];
+    }
+
+    public function getSettlementSchedule()
+    {
+        return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
     }
 
     public function holdFunds()
