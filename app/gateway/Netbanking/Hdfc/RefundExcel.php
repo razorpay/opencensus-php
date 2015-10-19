@@ -59,8 +59,7 @@ class RefundExcel
         $fullpath = $this->getExcelFullFilePath();
 
         $data['file'] = $fullpath;
-        $data['body'] = '
-            Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
+        $data['body'] = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
 
         // @note: May also cc -
         //  Kavita.Puthran@hdfcbank.com,
