@@ -240,12 +240,9 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
-        if ($payment->merchant->isReceiptEmailsEnabled())
-        {
-            // Trigger notification events for authorization
-            $notifier = new Notify($payment);
-            $notifier->trigger(Notify::AUTHORIZED);
-        }
+        // Trigger notification events for authorization
+        $notifier = new Notify($payment);
+        $notifier->trigger(Notify::AUTHORIZED);
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }

@@ -125,7 +125,7 @@ class Notify
             $to = $this->template[$type]['email'];
 
             // This finally sends the mail
-            if ($this->isMailEnabled())
+            if ($this->isMailEnabled($event))
             {
                 $this->sendMail($view, $subject, $to);
             }
@@ -225,6 +225,7 @@ class Notify
 
             case self::REFUNDED:
                 $data = $this->template['refund'];
+                $data['merchant'] = $this->template['merchant'];
                 break;
         }
 
@@ -244,6 +245,16 @@ class Notify
             // We just show the method as Card
             // Without any further details
             $data['payment.method'] = 'Card';
+        }
+
+        // Similarly merchant.email is an array
+        // So will be broken into merchant.email.{X}
+        // If there is only 1 email, we would clean it up
+        if ((array_key_exists('merchant.email.1', $data) === false) and
+            array_key_exists('merchant.email.0', $data))
+        {
+            $data['merchant.email'] = $data['merchant.email.0'];
+            unset($data['merchant.email.0']);
         }
 
         return $data;
@@ -369,17 +380,30 @@ class Notify
 
     /**
      * Whether or not we need to trigger the notifications
+     * The order of conditions in this is imporant
+     * @param string $event Event triggered
      * @return boolean
      */
-    protected function isMailEnabled()
+    protected function isMailEnabled($event)
     {
+        // If the merchant has disabled customer emails
+        if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
+            $event === self::AUTHORIZED)
+        {
+            return false;
+        }
+
         // We only send mails if Mode is not TEST
         // or if the env=dev
-        if($this->app->environment('dev'))
+        if ($this->app->environment('dev'))
+        {
             return true;
+        }
 
-        if($this->mode === Mode::TEST)
+        if ($this->mode === Mode::TEST)
+        {
             return false;
+        }
 
         return true;
     }
