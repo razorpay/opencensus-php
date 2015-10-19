@@ -90,8 +90,23 @@ class Notify
         $data = $this->template;
 
         Mail::queue($view, $this->template,
-            function($message) use ($data, $subject, $to){
-                $message->to($to);
+            function ($message) use ($data, $subject, $to){
+
+                // to might be an array
+                if (is_array($to))
+                {
+                    // For merchant emails
+                    foreach ($to as $email)
+                    {
+                        $message->to($email);
+                    }
+                }
+                else
+                {
+                    // This is for customer emails
+                    $message->to($to);
+                }
+
                 $message->subject($subject);
             }
         );

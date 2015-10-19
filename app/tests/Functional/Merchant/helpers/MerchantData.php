@@ -183,6 +183,9 @@ return [
                 'international' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ]
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -194,8 +197,58 @@ return [
                 'international' => true,
                 'category' => '1111',
                 'website' => 'http://abc.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ]
             ]
         ]
+    ],
+
+    'testEditTransactionEmailWithCsv' => [
+        'request' => [
+            'content' => [
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2@razorpay.com'
+                ]
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2@razorpay.com'
+                ]
+            ]
+        ]
+    ],
+
+    'testEditTransactionEmailWithError' => [
+        'request' => [
+            'content' => [
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2razorpay.com'
+                ]
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided transaction report email is invalid: test2razorpay.com',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testEditMerchantEmail' => [
