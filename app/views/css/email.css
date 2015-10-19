@@ -12,6 +12,7 @@ body, .body, .greybg{
 .lighttext{
 	color:#B2B2B2;
 	font-size:12px;
+	text-decoration: none;
 }
 .subtext{
 	color:#7C8082;

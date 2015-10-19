@@ -180,21 +180,19 @@ class Service extends Base\Service
 
         if ($count !== 0)
         {
-            $paymentIds = $payments->getIds();
-
-            $channel = '#transactions';
-            $username = 'transactions';
+            $payments->getIds();
 
             $date->subDay(1);
 
             $message = 'Payment authorizations till ' . $date->format('d-m-y');
 
+            $data = [];
             foreach ($payments as $payment)
             {
-                $message .= ' \n ' . $payment->getPublicId();
+                $data[$payment->getPublicId()] =  $payment->getAmount();
             }
 
-            $this->app['slack']->send($message, $channel, $username);
+            $this->slackPost($message, $data, $pretext);
         }
 
         return ['count' => $count];
@@ -341,9 +339,9 @@ class Service extends Base\Service
             'error'         => $error,
             'total time'    => $time . ' secs');
 
-        $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
+        $message = 'Payment verify result';
 
-        $this->app['slack']->send($message, '#transactions', 'transactions');
+        $this->slackPost($message, $results);
 
         return $results;
     }

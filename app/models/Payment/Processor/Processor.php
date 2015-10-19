@@ -56,6 +56,8 @@ class Processor
         $this->checkMerchantPermissions();
 
         $this->repo = new Payment\Repository;
+
+        $this->app = App::getFacadeRoot();
     }
 
     public static function create($bindings)

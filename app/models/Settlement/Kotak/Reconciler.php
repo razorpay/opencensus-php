@@ -94,7 +94,7 @@ class Reconciler
         {
             $this->setlRepo->rollback();
 
-            (new SlackNotification)->queueOperationFailure('setl_reconciliation', $e);
+            (new SlackNotification)->failure('setl_reconciliation', $e);
 
             throw $e;
         }
@@ -102,7 +102,7 @@ class Reconciler
         $slackData = [
             'setl_count' => $setl->count()];
 
-        (new SlackNotification)->queueOperationSuccess('setl_reconciliation', $slackData);
+        (new SlackNotification)->success('setl_reconciliation', $slackData);
 
         return $collection;
     }

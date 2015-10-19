@@ -118,6 +118,9 @@ trait Capture
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
+
+        $notifier = new Notify($this->payment);
+        $notifier->trigger(Notify::CAPTURED);
     }
 
     protected function updatePaymentCaptured()

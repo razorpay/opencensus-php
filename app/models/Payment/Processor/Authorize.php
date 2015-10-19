@@ -104,10 +104,10 @@ trait Authorize
             'error' => $payment->getErrorDetails(),
         );
 
-        $data['message'] = 'Payment failed earlier converted to authorized';
-        $data['payment'] = $payment->toArrayAdmin();
+        $message = 'Payment failed earlier converted to authorized';
+        $data = $payment->toArrayAdmin();
 
-        $this->notifyInSlack($data);
+        $this->slackPost($message, $data, '', ['color' => 'bad']);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
@@ -242,9 +242,9 @@ trait Authorize
 
         if ($payment->merchant->isReceiptEmailsEnabled())
         {
-            // Send email to the customer
-            // Can be extended later for SMS as well
-            $this->notifyCustomer($payment);
+            // Trigger notification events for authorization
+            $notifier = new Notify($payment);
+            $notifier->trigger(Notify::AUTHORIZED);
         }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
@@ -290,57 +290,6 @@ trait Authorize
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-    }
-
-    protected function notifyCustomer($payment)
-    {
-        // Dont send mails in test mode
-        // @todo: remove this somehow
-        if (($this->mode === Mode::TEST) and
-            ($this->app->environment('dev') === false))
-        {
-            return;
-        }
-
-        $templateData = [
-            'customer'  =>  [
-                'email' =>  $payment->getEmail(),
-                'phone' =>  $payment->getContact()
-            ],
-            'merchant'  =>  [
-                'billing_label' =>  $payment->merchant->getBillingLabel(),
-                'website'       =>  $payment->merchant->getWebsite()
-            ],
-            'payment'   =>  [
-                'id'        =>  $payment->getId(),
-                'amount'    =>  "INR ".number_format($payment['amount']/100, 2),
-                'timestamp' =>  $payment->getUpdatedAt(),
-                'method'    =>  $payment->getMethodWithDetail()
-            ]
-        ];
-
-        $config = $this->app->config->get('applications.mailgun');
-
-        $subject = "Payment Successful for {$templateData['payment']['amount']}";
-
-        if (isset($templateData['merchant']['billing_label']))
-        {
-            $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
-        }
-
-        $this->app['mailer']->queue(
-            [
-                'html' => 'emails/payment/customer',
-                'text' => 'emails/payment/customer_text'
-            ],
-            $templateData,
-            function ($message) use ($templateData, $config, $subject)
-            {
-                $message->to($templateData['customer']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->subject($subject);
-            }
-        );
     }
 
     protected function callGatewayAuthorize(array $data)
@@ -553,7 +502,7 @@ trait Authorize
      */
     protected function getHashOfPaymentPublicId()
     {
-        $secret = \App::make('config')->get('app.key');
+        $secret = $this->app->config->get('app.key');
 
         $publicId = $this->payment->getPublicId();
 
