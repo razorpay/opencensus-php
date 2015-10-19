@@ -124,8 +124,6 @@ class Merchant
     {
         $setl = (new Settlement\Entity)->generateId();
 
-        $fee =
-
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
         $setl->setFees($this->apiFee);
