@@ -33,6 +33,7 @@
             <th>Settlement Id</th>
             <th>Amount</th>
             <th>Created At</th>
+            <!-- <th>Fees</th> -->
           </tr>
         </thead>
         <tbody>
@@ -40,6 +41,7 @@
             <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.amount/100 | currency:"INR "}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>
+            <!-- <td>{{row.fees/100 | currency:"INR" }}</td> -->
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">
