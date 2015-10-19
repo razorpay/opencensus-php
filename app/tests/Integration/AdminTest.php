@@ -205,7 +205,8 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('category'), '1234')
             ->type(l::IdOrName('website'), 'http://razorpay.com')
             ->type(l::IdOrName('billing_label'), 'razorpay')
-            ->type(l::IdOrName('transaction_report_email'), 'test@razorpay.com')
+            // Make sure CSV emails are supported
+            ->type(l::IdOrName('transaction_report_email'), 'test@razorpay.com, nemo@razorpay.com')
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length == 0", 20000)
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
