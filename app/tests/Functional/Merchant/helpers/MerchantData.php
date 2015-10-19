@@ -183,7 +183,9 @@ return [
                 'international' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
-                'transaction_report_email'  => 'test@razorpay.com'
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ]
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -195,7 +197,9 @@ return [
                 'international' => true,
                 'category' => '1111',
                 'website' => 'http://abc.com',
-                'transaction_report_email'  => 'test@razorpay.com'
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ]
             ]
         ]
     ],
@@ -203,14 +207,20 @@ return [
     'testEditTransactionEmailWithCsv' => [
         'request' => [
             'content' => [
-                'transaction_report_email'  => 'test@razorpay.com, test2@razorpay.com'
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2@razorpay.com'
+                ]
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
         ],
         'response' => [
             'content' => [
-                'transaction_report_email'  => 'test@razorpay.com, test2@razorpay.com'
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2@razorpay.com'
+                ]
             ]
         ]
     ],
@@ -218,7 +228,10 @@ return [
     'testEditTransactionEmailWithError' => [
         'request' => [
             'content' => [
-                'transaction_report_email'  => 'test@razorpay.com, test2razorpay.com'
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2razorpay.com'
+                ]
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',

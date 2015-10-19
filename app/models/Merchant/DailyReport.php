@@ -74,7 +74,8 @@ class DailyReport
             // to might be an array
             if (is_array($to))
             {
-                foreach ($to as $email) {
+                foreach ($to as $email)
+                {
                     $message->to($email);
                 }
             }

@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
             return;
 
-        $emails = explode(',', $input[Entity::TRANSACTION_REPORT_EMAIL]);
+        $emails = $input[Entity::TRANSACTION_REPORT_EMAIL];
 
         foreach ($emails as $email)
         {
