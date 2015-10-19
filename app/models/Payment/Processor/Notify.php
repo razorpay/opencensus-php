@@ -85,12 +85,8 @@ class Notify
      */
     protected function sendMail($view, $subject, $to)
     {
-        // $this doesn't work with closures
-        // https://wiki.php.net/rfc/closures/removal-of-this
-        $data = $this->template;
-
         Mail::queue($view, $this->template,
-            function ($message) use ($data, $subject, $to){
+            function ($message) use ($subject, $to){
 
                 // to might be an array
                 if (is_array($to))
@@ -129,10 +125,29 @@ class Notify
             $to = $this->template[$type]['email'];
 
             // This finally sends the mail
-            if ($this->isEnabled())
+            if ($this->isMailEnabled())
             {
                 $this->sendMail($view, $subject, $to);
             }
+        }
+    }
+
+    protected function notifyViaSlack($event)
+    {
+        $slackData = $this->getSlackData($event);
+
+        // We don't send out a notification on capture
+        $slackMessages = [
+            self::AUTHORIZED    =>  'Payment Authorized',
+            self::REFUNDED      =>  'Payment Refunded'
+        ];
+
+        // Send out Slack notifications for the event
+        // You can control slack posts via SLACK_ENABLE
+
+        if (array_key_exists($event, $slackMessages))
+        {
+            $this->slackPost($slackMessages[$event], $slackData);
         }
     }
 
@@ -143,41 +158,38 @@ class Notify
      */
     public function trigger($event)
     {
-        $slackData = $this->getSlackData($event);
-
-        $slackMessages = [
-            self::AUTHORIZED    =>  'Payment Authorized',
-            self::CAPTURED      =>  'Payment Captured',
-            self::REFUNDED      =>  'Payment Refunded'
-        ];
-
-        // Send out Slack notifications for the event
-        // You can control slack posts via SLACK_ENABLE
-        $this->slackPost($slackMessages[$event], $slackData);
+        // Send out notification for Slack
+        $this->notifyViaSlack($event);
 
         // Mails use the entire template
+        // So there is no need to get separate data for each
         $this->notifyViaMail($event);
     }
 
     protected function getSubject($event, $merchant = true)
     {
-        $entity = 'Payment';
+        $action = 'Payment';
 
         if ($event === self::REFUNDED)
         {
-            $entity = 'Refund';
+            $action = 'Refund';
         }
 
         if(isset($this->template['merchant']['billing_label']))
         {
-            $subject = "$entity successful for {$this->template['merchant']['billing_label']}";
+            $subject = "$action successful for {$this->template['merchant']['billing_label']}";
         }
         else
         {
-            $subject = "$entity successful for {$this->template['payment']['amount']}";
+            $subject = "$action successful for {$this->template['payment']['amount']}";
         }
 
-        // All mails to merchants must have the prefix
+        // All mails that we send out to the merchant follow the same pattern:
+        // Razorpay | X action taken for Y
+        // Y is usually the merchant name/billing label
+        // But if that is unavailable, we might use amount
+        //
+        // Direct emails to customers are without the prefix
         if ($merchant === true)
         {
             $subject = "Razorpay | $subject";
@@ -186,9 +198,23 @@ class Notify
         return $subject;
     }
 
+    /**
+     * Returns a flat array that is to be sent to Slack for a trigger event
+     * We don't need to send out the original payment details for a refund
+     * The array keys are flattened (concatenated using dots)
+     * Because slack doesn't support nested arrays
+     *
+     * So payment.amount = INR 500
+     *  & payment.currency = INR
+     *
+     * Would be some common examples
+     * @param  string $event Trigger event
+     * @return array Flat array of data to be sent to Slack
+     */
     protected function getSlackData($event)
     {
-        switch ($event) {
+        switch ($event)
+        {
             case self::AUTHORIZED:
                 $data = $this->template;
                 break;
@@ -204,17 +230,31 @@ class Notify
 
         $data = $this->flatten($data);
 
-        if (array_key_exists('payment.method.0', $data) and $data['payment.method.0'] === 'Card')
+        /**
+         * See the getMethodWithDetail method in Models\Payment\Entity
+         * for why its numeric array
+         */
+        if ((array_key_exists('payment.method.0', $data)) and
+            ($data['payment.method.0'] === 'Card'))
         {
             // We don't want to post the card number on Slack
             unset($data['payment.method.1']);
             unset($data['payment.method.0']);
+
+            // We just show the method as Card
+            // Without any further details
             $data['payment.method'] = 'Card';
         }
 
         return $data;
     }
 
+    /**
+     * Returns template data to be used for mail and slack templates
+     *
+     * Also includes refund information if provided via addRefund
+     * @return array Template data
+     */
     protected function templateData()
     {
         $data  = [
@@ -266,7 +306,9 @@ class Notify
             return false;
         }
 
-        return ( is_numeric($value) and ($value <= PHP_INT_MAX) and ($value >= -PHP_INT_MAX));
+        return ((is_numeric($value)) and
+            ($value <= PHP_INT_MAX) and
+            ($value >= -PHP_INT_MAX));
     }
 
 
@@ -279,12 +321,17 @@ class Notify
      */
     protected function cleanData(array $data)
     {
-        foreach ($data as $key => $value) {
-            if ($value === null or $value === false)
+        foreach ($data as $key => $value)
+        {
+            // We remove empty values from the array
+            // So slack isn't filled with null/false
+            if (($value === null) or
+                ($value === false))
             {
                 unset($data[$key]);
             }
 
+            // Convert timestamps to readable versions
             if ($this->isTimestamp($key, $value))
             {
                 $data[$key] = Carbon::createFromTimeStamp($value, "Asia/Kolkata")->format('j M Y h:i a');
@@ -301,13 +348,14 @@ class Notify
      * @param  string $prefix prefix used to concat keys
      * @return array flat version of input array
      */
-    protected function flatten($array, $prefix = '') {
-
+    protected function flatten(array $array, $prefix = '')
+    {
         $result = array();
 
-        foreach ($array as $key=>$value)
+        foreach ($array as $key => $value)
         {
-            if (is_array($value)) {
+            if (is_array($value))
+            {
                 $result = $result + $this->flatten($value, $prefix . $key . '.');
             }
             else
@@ -323,7 +371,7 @@ class Notify
      * Whether or not we need to trigger the notifications
      * @return boolean
      */
-    protected function isEnabled()
+    protected function isMailEnabled()
     {
         // We only send mails if Mode is not TEST
         // or if the env=dev

@@ -3,6 +3,7 @@
 namespace Services;
 
 use App;
+use Config;
 use Slack;
 
 trait SlackPoster
@@ -10,21 +11,22 @@ trait SlackPoster
     /**
      * Posts information to slack
      * method Copied from dashboard
-     * @param  string $headline headline for slack post
-     * @param  array $postdata  array of data to post
-     * @param  string $channel  Name of channel to post in
-     * @param  string $pretext  Pretext
-     * @param  string $color    good|bad
+     * @param string $headline headline for slack post
+     * @param array  $postdata  array of data to post
+     * @param string $pretext  Optional text to appear above the attachment and below the actual message
+     * @param array  $settings array of common settings such as channel, color etc
      * @return null
      */
-    public function slackPost($headline, $postdata, $pretext = '', array $settings = [])
+    public function slackPost($headline, array $postdata, $pretext = '', array $settings = [])
     {
         // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
-        if($_ENV['SLACK_MOCK'] === false)
+        if(Config::get('slack.mock') === false)
         {
             $data = $this->getSlackContext();
+
+            //  Fallback text for plaintext clients, like IRC
             $data['fallback']   = $headline.'\n';
-            $data['fields']     = array();
+            $data['fields']     = [];
             $data['pretext']    = $pretext;
 
             /**
@@ -39,6 +41,7 @@ trait SlackPoster
              */
             foreach($postdata as $key => $value)
             {
+                //  Fallback text for plaintext clients, like IRC
                 $data['fallback'] .= $key . ': ' . $value . '\n';
                 $data['fields'][] = array(
                     'title' => $key,

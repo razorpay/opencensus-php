@@ -62,17 +62,33 @@ trait Refund
 
         $this->recordRefund();
 
-        //
-        // Analytics
-        //
+        $this->sendRefundNotification($payment, $refund);
 
+        return $refund;
+    }
+
+    /**
+     * Sends out refund related notifications
+     * To 3 places in total:
+     *
+     * - Dashboard (for analytics)
+     * - Slack (for us to see)
+     * - EMails (to both customer and merchant)
+     * @param  Payment\Entity        $payment Payment Entity
+     * @param  Payment\Refund\Entity $refund  Refund Entity
+     * @return null
+     */
+    protected function sendRefundNotification(Payment\Entity $payment,
+        Payment\Refund\Entity $refund)
+    {
+        //
+        // Analytics is on dashboard side for now
+        //
         $notifier = new Notify($payment);
         $notifier->addRefund($refund);
         $notifier->trigger(Notify::REFUNDED);
 
         $this->notifyDashboard('refund', $this->refund);
-
-        return $refund;
     }
 
     public function refundAuthorizedPayment($id, $input)
