@@ -50,7 +50,7 @@
                           <td class="center">
                             <center>
                             <h2 class="center" style="text-align: center;">
-                              {{{$merchant['billing_label']}}}
+                              <a href="" style="color:white; text-decoration:none;">{{{$merchant['billing_label']}}}</a>
                             </h2>
                             </center>
                           </td>

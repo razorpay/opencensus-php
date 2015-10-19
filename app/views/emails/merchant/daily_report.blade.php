@@ -26,7 +26,7 @@
                       <table class="eight columns" style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 380px;"><tr style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                             <center style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; min-width: 380px; width: 100%;">
                             <h2 class="center" style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 20px; color: white;">
-                              {{{$merchant['billing_label']}}}
+                              <a href="" style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; color: white; text-decoration: none;">{{{$merchant['billing_label']}}}</a>
                             </h2>
                             </center>
                           </td>
