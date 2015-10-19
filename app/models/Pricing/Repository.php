@@ -84,7 +84,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+        return $repo::orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getMerchantPricingPlans()
@@ -93,7 +93,7 @@ class Repository extends Base\Repository
 
         // For merchant pricing plans, gateway will not be specified
         return $repo::whereNull(Pricing\Entity::GATEWAY)
-                    ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+                    ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getGatewayPricingPlans()
@@ -101,7 +101,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::whereNotNull(Pricing\Entity::GATEWAY)
-                    ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+                    ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getPricingPlanByName($name)

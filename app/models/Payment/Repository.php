@@ -4,6 +4,7 @@ namespace Models\Payment;
 
 use EE\Exception;
 use Models\Base;
+use Models\Merchant\Methods;
 use Models\Payment;
 use Models\Card;
 use EE\Error\ErrorCode;
