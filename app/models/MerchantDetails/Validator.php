@@ -155,14 +155,28 @@ class Validator extends Base\Validator
             throw new \InvalidArgumentException('Invalid parameters.');
         }
 
-        $file = current($input);
+        // reset() rewinds array's internal pointer to the first element
+        // and returns the value of the first array element.
+        // Returns false otherwise
 
-        $extension = $file->getClientOriginalExtension();
-        if ((in_array(strtolower($extension), static::$allowed_extensions) === false) or
-            (in_array($file->getMimeType(), static::$allowed_mimes) === false))
+        $file = reset($input);
+
+        if ($file === false)
         {
-            $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
+            $error[] = 'No files uploaded';
         }
+
+        else
+        {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $mime = $file->getMimeType();
+            if ((in_array($extension, static::$allowed_extensions) === false) or
+                (in_array($mime, static::$allowed_mimes) === false))
+            {
+                $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
+            }
+        }
+
 
         return $error;
     }
