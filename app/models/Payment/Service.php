@@ -346,6 +346,37 @@ class Service extends Base\Service
         return $results;
     }
 
+    public function sendReminderMerchantMailForAuthorizedPayments()
+    {
+        $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false);
+        $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true);
+    }
+
+    public function sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay($day, $final = false)
+    {
+        $today = Carbon::today('Asia/Kolkata');
+        $from = $today->subDays($day)->timestamp;
+        $to = $today->subDays($day + 1)->timestamp;
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
+                                                $from, $to);
+
+        $grouped = $payments->groupBy(Payment\Entity::MERCHANT_ID);
+
+        $subject = 'Reminder: The authorized payment(s) will be refunded after 2 days if not captured';
+
+        if ($final)
+        {
+            $subject = 'Final reminder: The authorized payment(s) will be refuneded after 1 day if not captured';
+        }
+
+        foreach ($grouped as $merchantId => $payments)
+        {
+            // @todo: nemo
+            // Send mail to the merchants
+        }
+    }
+
     protected function processor()
     {
         return Payment\Processor\Processor::create($this->getBindings());
