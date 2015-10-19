@@ -298,26 +298,51 @@ class Core extends Base\Core
 
     public function getSettledAtTimestamp($timestamp, $addDays)
     {
+        assert ($addDays >= 1);
+
         $timestamp = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
-        $day = (int) $timestamp->format('w');
 
-        // if payment is on Sunday, add 1 extra
-        if ($day === 0)
-        {
-            $addDays += 1;
-        }
-
-        $day = $day + $addDays;
-
-        if ($day >= 6)
-        {
-            $addDays += 2;
-        }
+        $addDays = $this->getActualNumberOfDaysToAdd($timestamp, $addDays);
 
         $settledAt = $timestamp->startOfDay()
                                 ->addDays($addDays)
                                 ->timestamp;
 
         return $settledAt;
+    }
+
+    protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
+    {
+        $currentDay = (int) $timestamp->format('w');
+
+        $day = $currentDay + $addDays;
+
+        if ($day % 7 === 6)
+        {
+            $addDays += 2;
+        }
+        else if ($day % 7 === 0)
+        {
+            if ($addDays === 1)
+            {
+                $addDays += 1;
+            }
+            else
+            {
+                $addDays += 2;
+            }
+        }
+        else if ($day > 7)
+        {
+            $addDays += 2;
+        }
+
+        if (($currentDay === 6) and
+            ($addDays !== 2))
+        {
+            $addDays -= 1;
+        }
+
+        return $addDays;
     }
 }
