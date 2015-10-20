@@ -511,7 +511,7 @@
     <h3 class="modal-title">Edit Merchant</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email}">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join()}">
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
         <div class="col-lg-10" >
