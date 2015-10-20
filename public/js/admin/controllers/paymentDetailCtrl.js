@@ -129,7 +129,7 @@ app.controller('PaymentDetailCtrl', [
       var data = { amount: captureAmount };
       var request = $http({
         method: 'post',
-        url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/capture',
+        url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/capture',
         transformRequest: transformRequestAsFormPost,
         data: data
       });

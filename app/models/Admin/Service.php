@@ -538,6 +538,27 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function capturePayment($mode, $merchantId, $id, $input)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        try
+        {
+            $data = $this->api->payment->fetch($id)
+                ->capture($input)
+                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     public function lockMerchant($id)
     {
         $error = array();

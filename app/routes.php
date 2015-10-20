@@ -185,6 +185,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
 
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
+
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
 
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
