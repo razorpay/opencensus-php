@@ -16,7 +16,7 @@ angular.module('app.controllers', [
     // config
     $scope.app = {
       name: 'RZP Admin',
-      version: '0.9.1',
+      version: '1.0.0',
       today: new Date(),
       // for chart colors
       color: {
