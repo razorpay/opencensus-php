@@ -73,6 +73,14 @@ class Plan extends PublicCollection
         $plan = array(self::ID => null);
         $rules = null;
 
+        //
+        // $this->items contain the pricing rules.
+        // We assume that rules are sorted by plan id.
+        // Now, we create a plan collection by pushing the plan rules inside
+        // plan array.
+        // The collection of plans array is multiple plans.
+        //
+
         foreach ($this->items as $item)
         {
             if ($plan[self::ID] === $item->getPlanId())
@@ -85,21 +93,18 @@ class Plan extends PublicCollection
                 if ($first === true)
                 {
                     $first = false;
-                    $this->setPlanAttributes($plan, $item);
-                    $plan[self::COUNT] = 1;
-                    $rules = & $plan[self::RULES];
-                    array_push($rules, $item->toArray());
-                    continue;
                 }
-
-                array_push($data, $plan);
-                $plans[self::COUNT]++;
+                else
+                {
+                    array_push($data, $plan);
+                    $plans[self::COUNT]++;
+                }
 
                 $plan = array();
                 $this->setPlanAttributes($plan, $item);
                 $plan[self::COUNT] = 1;
-                $rules = & $plan[self::RULES];
 
+                $rules = & $plan[self::RULES];
                 array_push($rules, $item->toArray());
             }
         }

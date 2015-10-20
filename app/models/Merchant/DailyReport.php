@@ -56,8 +56,6 @@ class DailyReport
      */
     protected function sendDailyReport()
     {
-        $config = Config::get('applications.mailgun');
-
         $view = ['html'=>'emails.merchant.daily_report'];
 
         $data = $this->data;
@@ -69,11 +67,24 @@ class DailyReport
         // This is a debug view only for raising proper errors
         \View::make('emails.merchant.daily_report_debug', $data)->render();
 
-        Mail::send($view, $data, function($message) use ($config, $data)
+        Mail::send($view, $data, function($message) use ($data)
         {
-            $message->to($data['merchant']['transaction_report_email']);
+            $to = $data['merchant']['email'];
 
-            $message->from($config['from_email'], $config['from_name']);
+            // to might be an array
+            if (is_array($to))
+            {
+                foreach ($to as $email)
+                {
+                    $message->to($email);
+                }
+            }
+            else
+            {
+                // This should not be getting called
+                // But just for fallback
+                $message->to($to);
+            }
 
             $message->cc('notifications@razorpay.com');
 
@@ -205,6 +216,9 @@ class DailyReport
             'account_number' => $merchant->getRedactedAccountNumber(),
             'date'           => $this->date,
         ];
+
+        // toArray is not reliable
+        $data['merchant']['email'] = $merchant->getTransactionReportEmail();
 
         return $data;
     }

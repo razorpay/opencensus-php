@@ -7,9 +7,12 @@ use EE\Error\ErrorCode;
 use Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
+use Services\SlackPoster;
 
 trait Verify
 {
+    use SlackPoster;
+
     public function verify($payment)
     {
         $this->setPayment($payment);
@@ -53,12 +56,11 @@ trait Verify
 
     protected function notifyInSlack($data)
     {
-        $channel = '#transactions';
-        $username = 'transactions';
+        if (!isset($data['message']))
+        {
+            $message = 'Payment verification failed.';
+        }
 
-        $message = 'Payment verification failed. ' .
-                    'data - ' . json_encode($data, JSON_PRETTY_PRINT);
-
-        $this->app['slack']->send($message, $channel, $username);
+        $this->slackPost($message, $data, '', ['color'=>'bad', 'icon' => ':-1:']);
     }
 }

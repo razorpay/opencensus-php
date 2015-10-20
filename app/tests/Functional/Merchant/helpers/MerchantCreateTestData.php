@@ -27,7 +27,9 @@ return [
                 'hold_funds' => false,
                 'activated_at' => null,
                 'receipt_email_enabled' => true,
-                'transaction_report_email' => 'test@localhost.com',
+                'transaction_report_email' => [
+                    'test@localhost.com'
+                ]
             ],
         ],
     ],

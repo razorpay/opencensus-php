@@ -80,6 +80,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::JSBP,
         IFSC::KARB,
+        IFSC::KKBK,
         IFSC::KVBL,
         IFSC::MAHB,
         IFSC::NKGS,
