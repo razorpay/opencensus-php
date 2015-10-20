@@ -92,7 +92,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
-                    ->orderBy(Payment\Entity::MERCHANT_IDT)
+                    ->orderBy(Payment\Entity::MERCHANT_ID)
                     ->get();
     }
 
