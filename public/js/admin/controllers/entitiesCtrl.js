@@ -319,6 +319,19 @@ app.controller('EntitiesCtrl', [
       clear('skip');
       generateTable();
     };
+
+    $scope.getStatusClass = function (status) {
+      var mapper = {
+        created: 'bg-light',
+        authorized: 'bg-info',
+        captured: 'bg-success',
+        refunded: 'bg-primary',
+        failed: 'bg-danger'
+      };
+      return mapper[status] || 'bg-light';
+    };
+
+
     $scope.getState = function (type, force) {
       switch (type) {
       case 'merchant_id':

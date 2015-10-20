@@ -118,8 +118,13 @@
               <a target="_blank" ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
                 <code>{{value}}</code>
               </a>
+
+              <span ng-show="key=='status'" title="{{value}}" class="label {{getStatusClass(value)}}"
+              style="font-size: 100%">
+                {{value}}
+              </span>
               <!-- Just entity fields -->
-              <span ng-show="key!=='id' && getState(key)==='-'">
+              <span ng-show="key!=='id' && key!=='status' && getState(key)==='-'">
                 {{value}}
               </span>
             </td>
