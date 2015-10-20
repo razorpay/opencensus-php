@@ -103,12 +103,12 @@
       <table id="merchants-table" class="table table-striped b-t b-light">
         <thead>
           <tr>
-            <th ng-repeat="(key, value) in headings | limitTo: 9" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
+            <th ng-repeat="(key, value) in headings | limitTo: 11" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td ng-repeat="key in notSorted(row) | limitTo: 9" ng-init="value = row[key]"
+            <td ng-repeat="key in notSorted(row) | limitTo: 11" ng-init="value = row[key]"
             >
               <!-- This is the entity.id -->
               <a target="_blank" ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
