@@ -382,7 +382,7 @@ class Service extends Base\Service
             $plan['rules'],
             function($rule)
             {
-                return $rule['payment_method']  == 'card';
+                return $rule['payment_method']  === 'card';
             }
         ))[0];
 
