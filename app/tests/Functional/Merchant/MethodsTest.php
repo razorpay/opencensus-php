@@ -38,7 +38,7 @@ class MethodsTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(56, $count);
+        $this->assertEquals(57, $count);
     }
 
     public function testNumOfBanksInTestMode()

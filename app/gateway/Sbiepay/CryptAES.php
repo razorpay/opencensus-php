@@ -90,12 +90,13 @@ class CryptAES
         return $rt;
     }
 
-    public function decrypt($str){
+    public function decrypt($str)
+    {
         $td = mcrypt_module_open($this->cipher, '', $this->mode, '');
 
         if (empty($this->iv))
         {
-            $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+            $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
         }
         else
         {

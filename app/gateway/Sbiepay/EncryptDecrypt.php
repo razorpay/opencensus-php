@@ -41,7 +41,7 @@ class EncryptDecrypt
     public static function encryptData($content, $key)
     {
         $aes = new CryptAES();
-        $aes->set_key($key);
+        $aes->set_key(base64_decode($key));
         $aes->require_pkcs5();
 
         foreach ($content as &$value)
@@ -51,7 +51,6 @@ class EncryptDecrypt
 
         return $content;
     }
-
 
     public static function decryptData($str, $key)
     {

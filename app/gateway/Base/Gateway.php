@@ -245,7 +245,7 @@ class Gateway
         return $this->getHashOfString($hashString);
     }
 
-    protected function getSecret()
+    public function getSecret()
     {
         if ($this->mode === Mode::TEST)
         {

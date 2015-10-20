@@ -57,6 +57,11 @@ class Server
         return $this->getGatewayInstance()->generateHash($content);
     }
 
+    protected function getSecret()
+    {
+        return $this->getGatewayInstance()->getSecret();
+    }
+
     protected function checkReferer()
     {
         $request = $this->request;
