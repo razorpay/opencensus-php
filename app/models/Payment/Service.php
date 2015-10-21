@@ -159,15 +159,6 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
-    public function expireAuthorizations()
-    {
-        $timestamp = time() - 24 * 60 * 60;
-
-        $count = (new Payment\Repository)->expireAuthorizedPayments($timestamp);
-
-        return array('count' => $count);
-    }
-
     public function notifyAuthorizedPayments()
     {
         $date = Carbon::yesterday('Asia/Kolkata');

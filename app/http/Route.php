@@ -31,7 +31,6 @@ final class Route
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                        ],
         'payment_fetch_refund_by_id'        => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'               ],
         'payment_auth_notify'               => ['get',      'payments/auth/notify',                     'PaymentController@getAuthNotify',                              ],
-        'payment_auth_expire'               => ['post',     'payments/auth/expire',                     'PaymentController@postAuthExpire'                              ],
         'payment_timeout'                   => ['post',     'payments/timeout',                         'PaymentController@postTimeout'                                 ],
         'payment_auto_capture'              => ['post',     'payments/autocapture',                     'PaymentController@postAutoCapture'                             ],
         'payment_auto_capture_email'        => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                         ],
