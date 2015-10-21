@@ -40,7 +40,10 @@ trait Verify
 
             $data['gateway'] = $e->getData();
 
-            $this->notifyInSlack($data);
+            // Slack does not accept nested data
+            $slackData = flatten_array($data);
+
+            $this->notifyInSlack($slackData);
 
             throw $e;
         }
