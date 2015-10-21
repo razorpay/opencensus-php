@@ -96,6 +96,7 @@ final class Route
         'setl_reconcile'                    => ['post',     'settlements/reconcile',                    'SettlementController@postSettlementReconcile'                  ],
         'setl_return_generate'              => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'             ],
         'setl_return'                       => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                     ],
+        'setl_calc_previous_fees'           => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',             ],
         'daily_setl_fetch_by_id'            => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'                       ],
         'daily_setl_fetch_multiple'         => ['get',      'dailysettlements',                         'SettlementController@getDailySettlements'                      ],
         'adj_fetch_by_id'                   => ['get',      'adjustments/{id}',                         'AdjustmentController@getAdjustment'                            ],
