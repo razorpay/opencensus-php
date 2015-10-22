@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|email|max:255',
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
     );
@@ -47,7 +47,8 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "The provided transaction report email is invalid: $email",
-                    Entity::TRANSACTION_REPORT_EMAIL);
+                    Entity::TRANSACTION_REPORT_EMAIL
+                );
             }
         }
     }
