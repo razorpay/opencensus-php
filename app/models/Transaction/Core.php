@@ -3,6 +3,7 @@
 namespace Models\Transaction;
 
 use Carbon\Carbon;
+use EE\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Merchant;
@@ -180,7 +181,7 @@ class Core extends Base\Core
         }
         else
         {
-            ; // throw exception
+            throw new Exception\LogicException('Should not have reached here');
         }
 
         return $txn;
@@ -309,6 +310,19 @@ class Core extends Base\Core
                                 ->timestamp;
 
         return $settledAt;
+    }
+
+    protected function getSettlementSchedule($payment)
+    {
+        $setlSchedule = $payment->merchant->getSettlementSchedule();
+
+        if (($setlSchedule < 3) and
+            ($method !== Method::CARD))
+        {
+            $setlSchedule = 3;
+        }
+
+        return $setlSchedule;
     }
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
