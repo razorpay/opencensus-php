@@ -105,6 +105,7 @@ trait Authorize
         );
 
         $message = 'Payment failed earlier converted to authorized';
+
         $data = $payment->toArrayAdmin();
 
         $this->slackPost($message, $data, '', ['color' => 'bad']);
@@ -240,28 +241,9 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
-        /**
-         * This is wrapped in a try-catch block as this is not
-         * critical path for the transaction to be authorized
-         * We should be running even if the Notify class raises an
-         * error
-         */
-        try
-        {
-            // Trigger notification events for authorization
-            $notifier = new Notify($payment);
-            $notifier->trigger(Notify::AUTHORIZED);
-        }
-        catch(Exception\BaseException $e)
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_NOTIFY_FAILED, [
-                    'payment_id' => $payment->getPublicId(),
-                    'message'    => 'Payment Notify raised an exception',
-                    'exception'  => $e->getData()
-                ]
-            );
-        }
+        // Trigger notification events for authorization
+        $notifier = new Notify($payment);
+        $notifier->trigger(Notify::AUTHORIZED);
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
