@@ -45,6 +45,7 @@ class CryptAES
         else
         {
             $func_name = __CLASS__ . '::' . $this->pad_method . '_' . $ext . 'pad';
+
             if (is_callable($func_name))
             {
                 $size = mcrypt_get_block_size($this->cipher, $this->mode);
@@ -113,7 +114,8 @@ class CryptAES
         return $this->unpad($rt);
     }
 
-    public static function hex2bin($hexdata) {
+    public static function hex2bin($hexdata)
+    {
         $bindata = '';
         $length = strlen($hexdata);
         for ($i=0; $i < $length; $i += 2)

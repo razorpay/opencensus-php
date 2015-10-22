@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Gateway\Sbiepay;
+use Gateway\Sbiepay\Security;
 use Gateway\Base;
 use Gateway\Base\Action;
 use Illuminate\Support\Facades\Response;
@@ -46,7 +47,7 @@ class Server extends Base\Mock\Server
             'AdditionalInfo9'     => null,
         );
 
-        $encData = Sbiepay\EncryptDecrypt::encryptData(['encData' => $content], $this->getSecret());
+        $encData = Security::encrypt(['encData' => $content], $this->getSecret());
 
         $request = array(
             'url'     => $input['SuccessURL'],
@@ -93,7 +94,7 @@ class Server extends Base\Mock\Server
             'AdditionalInfo9'     => null,
         );
 
-        $encData = Sbiepay\EncryptDecrypt::encryptData(['encStatusData' => $content], $this->getSecret());
+        $encData = Security::encrypt(['encStatusData' => $content], $this->getSecret());
 
         ob_start();
         require('VerifyResponseHtml.php');
@@ -121,7 +122,7 @@ class Server extends Base\Mock\Server
             'Message'           => 'Refund Booked',
             'SBIePayReferenceID' => random_integer(6)
         );
-        $encData = Sbiepay\EncryptDecrypt::encryptData(['encRefundData' => $content], $this->getSecret());
+        $encData = Security::encrypt(['encRefundData' => $content], $this->getSecret());
 
         ob_start();
         require('RefundResponseHtml.php');
@@ -136,7 +137,7 @@ class Server extends Base\Mock\Server
         $name = $trace[1]['function'];
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
-        $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['EncryptTrans'], $this->getSecret()));
+        $content = explode('|', Security::decrypt($input['EncryptTrans'], $this->getSecret()));
 
         $input = array_combine($fields, $content);
 
@@ -149,7 +150,7 @@ class Server extends Base\Mock\Server
         $name = $trace[1]['function'];
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
-        $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['encryptQuery'], $this->getSecret()));
+        $content = explode('|', Security::decrypt($input['encryptQuery'], $this->getSecret()));
         $input = array_combine($fields, $content);
 
         return $input;
@@ -161,7 +162,7 @@ class Server extends Base\Mock\Server
         $name = $trace[1]['function'];
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
-        $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['EncryptRefundDetails'], $this->getSecret()));
+        $content = explode('|', Security::decrypt($input['EncryptRefundDetails'], $this->getSecret()));
         $input = array_combine($fields, $content);
 
         return $input;

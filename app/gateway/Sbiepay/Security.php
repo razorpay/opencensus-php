@@ -2,7 +2,7 @@
 
 namespace Gateway\Sbiepay;
 
-class EncryptDecrypt
+class Security
 {
     public static function checkString_e($value)
     {
@@ -38,7 +38,7 @@ class EncryptDecrypt
     }
 
 
-    public static function encryptData($content, $key)
+    public static function encrypt($content, $key)
     {
         $aes = new CryptAES();
         $aes->set_key(base64_decode($key));
@@ -52,7 +52,7 @@ class EncryptDecrypt
         return $content;
     }
 
-    public static function decryptData($str, $key)
+    public static function decrypt($str, $key)
     {
         $aes = new CryptAES();
         $aes->set_key(base64_decode($key));

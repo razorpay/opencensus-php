@@ -12,9 +12,6 @@ use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\VerifyResult;
 use Models\Card;
 use Models\Payment;
-use Requests;
-use Symfony\Component\DomCrawler\Crawler;
-use Trace\Trace;
 use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -30,7 +27,7 @@ class Gateway extends Base\Gateway
 
         $method = $input['payment']['method'];
 
-        $requestParameter = array(
+        $params = array(
             'MerchantId'         => $input['terminal']['gateway_merchant_id'],
             'OperatingMode'      => 'DOM',
             'MerchantCountry'    => 'IN',
@@ -49,24 +46,21 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $requestParameter['MerchantId'] = $this->getTestMerchantId();
-            $requestParameter['PostingAmount'] = '5.00';
+            $params['MerchantId'] = $this->getTestMerchantId();
+            $params['PostingAmount'] = '5.00';
         }
 
         list($paymentDetails, $paymode) = $this->getPaymentMethodRelatedAttributes($input);
 
-        $requestParameter['Paymode'] = $paymode;
+        $params['Paymode'] = $paymode;
 
-        $content = $this->getEncryptedDataForAuthorizeRequest($requestParameter, $paymentDetails);
+        $content = $this->getEncryptedDataForAuthorizeRequest($params, $paymentDetails);
 
-        $content['merchIdVal'] = $requestParameter['MerchantId'];
+        $content['merchIdVal'] = $params['MerchantId'];
 
-        $payment = $this->createGatewayPaymentEntity(array_merge($requestParameter, ['method' => $method]));
+        $payment = $this->createGatewayPaymentEntity(array_merge($params, ['method' => $method]));
 
-        $request = array(
-            'url'     => $this->getUrl('pay'),
-            'content' => $content,
-            'method'  => 'post');
+        $request = $this->getStandardRequestArray($content);
 
         return $request;
     }
@@ -77,7 +71,7 @@ class Gateway extends Base\Gateway
 
         $encData = $input['gateway']['encData'];
 
-        $decryptedContent = EncryptDecrypt::decryptData($encData, $this->getSecret());
+        $decryptedContent = $this->decrypt($encData);
 
         $content = $this->getContent($decryptedContent);
 
@@ -106,43 +100,41 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $requestParameter['AggregatorId'] = $payment['AggregatorId'];
-        $requestParameter['MerchantId'] = $payment['MerchantId'];
-        $requestParameter['RefundRequestId'] = $input['refund']['id'];
-        $requestParameter['ATRN'] = $payment['SBIePayReferenceID'];
-        $requestParameter['PostingAmount'] = number_format($input['refund']['amount']/100,2);
-        $requestParameter['MerchantCurrency'] = $input['refund']['currency'];
-        $requestParameter['MerchantOrderNo'] = $payment['MerchantOrderNo'];
-        $requestParameter['RefundResponseURL'] = 'http://www.example.com';
+        $params = array(
+            'AggregatorId'      => $payment['AggregatorId'],
+            'MerchantId'        => $payment['MerchantId'],
+            'RefundRequestId'   => $input['refund']['id'],
+            'ATRN'              => $payment['SBIePayReferenceID'],
+            'PostingAmount'     => number_format($input['refund']['amount']/100,2),
+            'MerchantCurrency'  => $input['refund']['currency'],
+            'MerchantOrderNo'   => $payment['MerchantOrderNo'],
+            'RefundResponseURL' => 'http://www.example.com',
+        );
 
         if ($this->mode === Mode::TEST)
         {
-            $requestParameter['MerchantId'] = $this->getTestMerchantId();
+            $params['MerchantId'] = $this->getTestMerchantId();
         }
 
-        $content = EncryptDecrypt::encryptData(
-                        ['EncryptRefundDetails' => $requestParameter], $this->getSecret());
+        $content = $this->encrypt(['EncryptRefundDetails' => $params]);
 
-        $content['merchIdVal'] = $requestParameter['MerchantId'];
+        $content['merchIdVal'] = $params['MerchantId'];
 
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
+        $request = $this->getStandardRequestArray($content);
 
         $response = $this->sendGatewayRequest($request);
 
-        $crawler = new Crawler($response->body, 'http://www.example.com');
-        $form = $crawler->filter('form')->form();
-        $values = $form->getValues();
-        $values = EncryptDecrypt::decryptData($values['encRefundData'], $this->getSecret());
+        $values = $this->getFormValues($response->body, $request['url']);
+        $values = $this->decrypt($values['encRefundData']);
         $values = $this->getContent($values);
-        $requestParameter['refund_id'] = $input['refund']['id'];
-        $requestParameter['received'] = 1;
-        $requestParameter['method'] = $payment['method'];
-        $requestParameter['Status'] = $values['Status'];
-        $requestParameter['SBIePayReferenceID'] = $values['SBIePayReferenceID'];
-        $refund = $this->createGatewayPaymentEntity($requestParameter);
+
+        $params['refund_id'] = $input['refund']['id'];
+        $params['received'] = 1;
+        $params['method'] = $payment['method'];
+        $params['Status'] = $values['Status'];
+        $params['SBIePayReferenceID'] = $values['SBIePayReferenceID'];
+
+        $refund = $this->createGatewayPaymentEntity($params);
 
         if ($values['Status'] !== Status::SUCCESS)
         {
@@ -171,7 +163,8 @@ class Gateway extends Base\Gateway
         try
         {
             $this->verify($input);
-        } catch (Exception\PaymentVerificationException $e)
+        }
+        catch (Exception\PaymentVerificationException $e)
         {
             ;
         }
@@ -186,8 +179,7 @@ class Gateway extends Base\Gateway
         $verify = $e->getVerifyObject();
 
         if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true)
-        )
+            ($verify->gatewaySuccess === true))
         {
             $payment = $verify->payment;
             $payment->fill($verify->verifyResponseContent);
@@ -265,7 +257,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->payment;
 
-        $requestParameter = array(
+        $params = array(
             'Atrn'            => $input['SBIePayReferenceID'],
             'MerchantId'      => $input['MerchantId'],
             'MerchantOrderNo' => $input['MerchantOrderNo'],
@@ -274,34 +266,26 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $requestParameter['MerchantId'] = $this->getTestMerchantId();
+            $params['MerchantId'] = $this->getTestMerchantId();
         }
 
-        $content = EncryptDecrypt::encryptData(['encryptQuery' => $requestParameter], $this->getSecret());
+        $content = $this->encrypt(['encryptQuery' => $params]);
 
-        $content['merchIdVal'] = $requestParameter['MerchantId'];
+        $content['merchIdVal'] = $params['MerchantId'];
         $content['aggIdVal'] = 'SBIEPAY';
 
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
+        $request = $this->getStandardRequestArray($content);
 
         $this->response = $this->sendGatewayRequest($request);
 
-        $data = $this->response->body;
-        $crawler = new Crawler($data, 'http://www.example.com');
-        $form = $crawler->filter('form')->form();
-        $values = $form->getValues();
+        $values = $this->getFormValues($this->response->body, $request['url']);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $content);
 
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
-        $verify->verifyResponseContent = EncryptDecrypt::decryptData($values['encStatusData'], $this->getSecret());
+        $verify->verifyResponseContent = $this->decrypt($values['encStatusData']);
 
         return $verify;
     }
@@ -394,24 +378,23 @@ class Gateway extends Base\Gateway
         return $gatewayMapId;
     }
 
-    protected function getEncryptedDataForAuthorizeRequest($requestParameter, $paymentDetails)
+    protected function getEncryptedDataForAuthorizeRequest($params, $paymentDetails)
     {
         $encryptData = array(
-           'EncryptTrans'          => $requestParameter,
+           'EncryptTrans'          => $params,
            'EncryptpaymentDetails' => $paymentDetails,
            'EncryptbillingDetails' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"),
            'EncryptshippingDetais' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"));
 
-        return EncryptDecrypt::encryptData($encryptData, $this->getSecret());
+        return $this->encrypt($encryptData);
     }
 
     protected function postRequest($content)
     {
         $content = http_build_query($content);
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
+
+        $request = $this->getStandardRequestArray($content, 'get');
+
         $response = $this->sendGatewayRequest($request);
     }
 
@@ -446,6 +429,15 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
+    protected function encrypt($content)
+    {
+        return Security::encrypt($content, $this->getSecret());
+    }
+
+    protected function decrypt($str)
+    {
+        return Security::decrypt($str, $this->getSecret());
+    }
 
     protected function getLiveSecret()
     {

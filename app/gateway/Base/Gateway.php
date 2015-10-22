@@ -5,6 +5,7 @@ namespace Gateway\Base;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -335,6 +336,17 @@ class Gateway
         $this->config = $app['config']->get($configGatewayStr);
     }
 
+    protected function getFormValues($form, $url)
+    {
+        $crawler = new Crawler($form, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        $content = $form->getValues();
+
+        return $content;
+    }
+
     protected function getTestAccessCode()
     {
         $code = null;
@@ -372,5 +384,16 @@ class Gateway
         }
 
         return $orderedData;
+    }
+
+    protected function getStandardRequestArray(array $content = [], $method = 'post')
+    {
+        $request = array(
+            'url' => $this->getUrl(),
+            'method' => $method,
+            'content' => $content,
+        );
+
+        return $request;
     }
 }

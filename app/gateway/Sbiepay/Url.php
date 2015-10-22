@@ -7,7 +7,7 @@ class Url
     const TEST_DOMAIN   = 'https://test.sbiepay.com/secure';
     const LIVE_DOMAIN   = '';
 
-    const PAY           = '/MerchantHostedListener';
-    const VERIFY         = '/AggMerchantStatusQueryAction';
+    const AUTHORIZE     = '/MerchantHostedListener';
+    const VERIFY        = '/AggMerchantStatusQueryAction';
     const REFUND        = '/AggregatorRefundRequest';
 }

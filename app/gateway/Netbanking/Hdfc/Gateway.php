@@ -285,9 +285,8 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $crawler = new Crawler($response->body, $request['url']);
-            $form = $crawler->filter('form')->form();
-            $values = $form->getValues();
+            $values = $this->getFormValues($response->body, $request['url']);
+
             $url = $values['REDIRECTURL'];
         }
         catch (\InvalidArgumentException $e)
