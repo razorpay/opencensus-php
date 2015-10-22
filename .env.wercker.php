@@ -61,8 +61,8 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
 
-    'SBIEPAY_GATEWAY_TEST_MERCHANT_ID'              => 'random',
-    'SBIEPAY_GATEWAY_TEST_HASH_SECRET'              => 'random',
+    'SBIEPAY_GATEWAY_TEST_MERCHANT_ID'              => '1100533',
+    'SBIEPAY_GATEWAY_TEST_HASH_SECRET'              => 'fDd3829vcEDg23j/aqDUOQ==',
 
     'PAYZAPP_WALLET_TEST_MERCHANT_ID'               => '293rij9wrj9wefj9we8',
     'PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'           => '1111',
