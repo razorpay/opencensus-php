@@ -1,5 +1,6 @@
 <?php
 
+use Razorpay\Api\Request as ApiRequest;
 use Http\AppResponse;
 
 /*
@@ -50,6 +51,11 @@ Route::filter('auth.merchant', function()
     {
         return Response::json(array('success' => false, 'data' => array()));
     }
+    else
+    {
+        $merchant = Auth::merchant()->user();
+        ApiRequest::addHeader('X-Dashboard-Merchant', $merchant->email);
+    }
 });
 
 Route::filter('auth.admin', function()
@@ -57,6 +63,11 @@ Route::filter('auth.admin', function()
     if (Auth::admin()->guest())
     {
         return Response::json(array('success' => false, 'data' => array()));
+    }
+    else
+    {
+        $adminUsername = Auth::admin()->user()->username;
+        ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
     }
 });
 

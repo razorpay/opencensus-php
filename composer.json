@@ -4,7 +4,7 @@
     "keywords": ["dashboard", "razorpay"],
     "require": {
         "laravel/framework": "4.2.*",
-        "razorpay/razorpay": "dev-master",
+        "razorpay/razorpay": "1.2.*",
         "rmccue/requests": ">=1.0",
         "aws/aws-sdk-php-laravel": "1.*",
         "doctrine/cache": "1.*",
@@ -60,5 +60,7 @@
     "config": {
         "preferred-install": "dist"
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": "proprietary"
 }
