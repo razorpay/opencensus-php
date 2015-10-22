@@ -36,7 +36,7 @@ return [
             [
                 'merchant_id' => '10000000000000',
                 'amount' => 4386000,
-                'fees' => 28500,
+                'fees' => 114000,
                 'status' => 'failed',
                 'channel' => 'kotak',
                 'failure_reason' => 'Remitt info: some random info',

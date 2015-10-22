@@ -159,15 +159,6 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
-    public function expireAuthorizations()
-    {
-        $timestamp = time() - 24 * 60 * 60;
-
-        $count = (new Payment\Repository)->expireAuthorizedPayments($timestamp);
-
-        return array('count' => $count);
-    }
-
     public function notifyAuthorizedPayments()
     {
         $date = Carbon::yesterday('Asia/Kolkata');
@@ -192,7 +183,7 @@ class Service extends Base\Service
                 $data[$payment->getPublicId()] =  $payment->getAmount();
             }
 
-            $this->slackPost($message, $data, $pretext);
+            $this->slackPost($message, $data);
         }
 
         return ['count' => $count];

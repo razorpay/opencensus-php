@@ -202,6 +202,34 @@ class Notify
         return $subject;
     }
 
+    protected function getMerchantForSlack()
+    {
+        $website = $this->template['merchant']['website'];
+        $text    = $this->template['merchant']['billing_label'];
+
+        return "<$website|$text>";
+    }
+
+    /**
+     * Returns slack formatted version of a payment id
+     * @param  string $id Payment Id
+     * @return string
+     */
+    protected function getPaymentLinkForSlack($id)
+    {
+        return "<https://dashboard.razorpay.com/admin#/app/payments/live/$id|$id>";
+    }
+
+    /**
+     * Returns slack formatted version of a refund id
+     * @param  string $id Refund id
+     * @return string     Formatted URL to Refund
+     */
+    protected function getRefundLinkForSlack($id)
+    {
+        return "<https://dashboard.razorpay.com/admin#/app/entity/live/refund/$id|$id>";
+    }
+
     /**
      * Returns a flat array that is to be sent to Slack for a trigger event
      * We don't need to send out the original payment details for a refund
@@ -220,46 +248,33 @@ class Notify
         switch ($event)
         {
             case self::AUTHORIZED:
-                $data = $this->template;
+                $data = $this->template['payment'];
+                $data['id'] = $this->getPaymentLinkForSlack($data['id']);
+                unset($data['method']);
                 break;
 
+            // Capture is unused right now
             case self::CAPTURED:
                 $data = $this->template['payment'];
                 break;
 
             case self::REFUNDED:
                 $data = $this->template['refund'];
-                $data['merchant'] = $this->template['merchant'];
+                $data['id'] = $this->getRefundLinkForSlack($data['id']);
+                $data['payment_id'] = $this->getPaymentLinkForSlack($data['payment_id']);
                 break;
         }
 
+        // Add merchant data
+        $data['merchant'] = $this->getMerchantForSlack();
+
+        // This is for both pyaments and refund
+        if (isset($data['timestamp']))
+        {
+            unset($data['timestamp']);
+        }
+
         $data = $this->flatten($data);
-
-        /**
-         * See the getMethodWithDetail method in Models\Payment\Entity
-         * for why its numeric array
-         */
-        if ((array_key_exists('payment.method.0', $data)) and
-            ($data['payment.method.0'] === 'Card'))
-        {
-            // We don't want to post the card number on Slack
-            unset($data['payment.method.1']);
-            unset($data['payment.method.0']);
-
-            // We just show the method as Card
-            // Without any further details
-            $data['payment.method'] = 'Card';
-        }
-
-        // Similarly merchant.email is an array
-        // So will be broken into merchant.email.{X}
-        // If there is only 1 email, we would clean it up
-        if ((array_key_exists('merchant.email.1', $data) === false) and
-            (array_key_exists('merchant.email.0', $data)))
-        {
-            $data['merchant.email'] = $data['merchant.email.0'];
-            unset($data['merchant.email.0']);
-        }
 
         return $data;
     }

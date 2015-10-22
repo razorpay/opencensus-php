@@ -9,6 +9,8 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
+    protected $entity = 'Settlement';
+
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
@@ -22,5 +24,12 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    protected $entity = 'Settlement';
+    public function getSettlementWithFeesAsNullOrZero()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::FEE, '=', '0')
+                    ->orWhereNull(Entity::FEE)
+                    ->get();
+    }
 }

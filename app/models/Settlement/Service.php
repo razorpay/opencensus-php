@@ -91,7 +91,7 @@ class Service extends Base\Service
     public function calculatePrevousSettlementFees()
     {
         $repo = new Settlement\Repository;
-        $settlements = $repo->getSettlementWithFeesAsNull();
+        $settlements = $repo->getSettlementWithFeesAsNullOrZero();
 
         foreach ($settlements as $setl)
         {
