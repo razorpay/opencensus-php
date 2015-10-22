@@ -39,10 +39,11 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function settle($txns, $amount, $apiFee, $gatewayFee)
+    public function settle($txns, $amount, $fee, $apiFee, $gatewayFee)
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
+        $this->fee = $fee;
         $this->txns = $txns;
 
         $setl = $this->createSetlEntityAndTxn();
@@ -58,7 +59,7 @@ class Merchant
     public function collectApiFees($apiFee)
     {
         $this->amount = $apiFee;
-        $this->apiFee = 0;
+        $this->fee = 0;
         $this->txns = new Base\PublicCollection;
 
         $adjInput = array(
@@ -124,11 +125,9 @@ class Merchant
     {
         $setl = (new Settlement\Entity)->generateId();
 
-        $fee =
-
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
-        $setl->setFees($this->apiFee);
+        $setl->setFees($this->fee);
         $setl->setChannel($this->channel);
 
         $setl->transaction()->associate($this->setlTransaction);

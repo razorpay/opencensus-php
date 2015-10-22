@@ -29,6 +29,29 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
     ];
 
+    protected static $editValidators = [
+        'csv_email'
+    ];
+
+    protected function validateCsvEmail($input)
+    {
+        if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
+            return;
+
+        $emails = $input[Entity::TRANSACTION_REPORT_EMAIL];
+
+        foreach ($emails as $email)
+        {
+            $email = trim($email); // Remove whitespace
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "The provided transaction report email is invalid: $email",
+                    Entity::TRANSACTION_REPORT_EMAIL);
+            }
+        }
+    }
+
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
         $attributes = array(

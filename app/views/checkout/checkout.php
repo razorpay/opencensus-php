@@ -1,5 +1,5 @@
 <?php
-$fonts = 'https://s3.amazonaws.com/checkout-live/lato';
+$fonts = 'https://cdn.razorpay.com/lato';
 ?>
 <!DOCTYPE html>
 <html dir="ltr">

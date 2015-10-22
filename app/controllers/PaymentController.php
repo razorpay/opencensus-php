@@ -135,13 +135,6 @@ class PaymentController extends BaseController
         return ApiResponse::json($refundExcel);
     }
 
-    public function postAuthExpire()
-    {
-        $data = $this->payment->expireAuthorizations();
-
-        return ApiResponse::json($data);
-    }
-
     public function postTimeout()
     {
         $data = $this->payment->timeoutOldPayments();

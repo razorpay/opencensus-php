@@ -59,15 +59,15 @@ class RefundExcel
         $fullpath = $this->getExcelFullFilePath();
 
         $data['file'] = $fullpath;
-        $data['body'] = '
-            Please forward the HDFC Netbanking refunds file to:
-                Directpay.Refunds@hdfcbank.com,
-                Kavita.Puthran@hdfcbank.com,
-                Charusheela.Ghorpade@hdfcbank.com,
-                Santosh.Ghorpade@hdfcbank.com,
-                Santosh.Malap@hdfcbank.com,
-                Keshav.Mishra@hdfcbank.com,
-                Ashish.Mandhare@hdfcbank.com';
+        $data['body'] = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
+
+        // @note: May also cc -
+        //  Kavita.Puthran@hdfcbank.com,
+        //  Charusheela.Ghorpade@hdfcbank.com,
+        //  Santosh.Ghorpade@hdfcbank.com,
+        //  Santosh.Malap@hdfcbank.com,
+        //  Keshav.Mishra@hdfcbank.com,
+        //  Ashish.Mandhare@hdfcbank.com
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {

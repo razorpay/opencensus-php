@@ -24,7 +24,7 @@
                             <td class="center">
                               <h1>
                               <center>
-                                Refund Successful
+                                Payment Successful
                               </center>
                               </h1>
                             </td>
@@ -53,9 +53,7 @@
                             <td class="center">
                               <center>
                                 <h3 class="center">
-                                <a href="{{$merchant['website']}}"
-                                class="whitetext" style="text-decoration:none;"
-                                title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
+                                <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
                                 </h3>
                               </center>
                             </td>
@@ -66,31 +64,6 @@
                     </tr>
                   </table>
                 </center>
-              </td>
-            </tr>
-          </table>
-          <!-- Customer Information -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="eight columns">
-                  <tr>
-                    <td class="lighttext left-text-pad">
-                      <a class="email">{{$customer['email']}}</a>
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="four columns">
-                  <tr>
-                    <td class="right-text-pad lighttext" style="text-align: right;">
-                      {{$customer['phone']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
               </td>
             </tr>
           </table>
@@ -106,7 +79,7 @@
                           <tr>
                             <td class="center darktext">
                               <center>
-                                Refund Id: {{$refund['id']}}
+                                Payment Id: {{$payment['id']}}
                               </center>
                               <hr class="small">
                             </td>
@@ -120,31 +93,6 @@
               </td>
             </tr>
           </table>
-          <!-- Refund Details -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Refund Amount
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="eight columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right">
-                      {{$refund['amount']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
           <!-- Payment Details -->
           <table class="row">
             <tr>
@@ -152,7 +100,7 @@
                 <table class="four columns">
                   <tr>
                     <td class="darktext left-text-pad">
-                      Total Payment
+                      Amount
                     </td>
                     <td class="expander"></td>
                   </tr>
@@ -170,25 +118,55 @@
               </td>
             </tr>
           </table>
-@if($payment['orderId'])
-          <!-- Order Details -->
+          <!-- Customer EMail Details -->
           <table class="row">
             <tr>
               <td class="wrapper white">
                 <table class="four columns">
                   <tr>
                     <td class="darktext left-text-pad">
-                      Order ID
+                      Customer Details
                     </td>
                     <td class="expander"></td>
                   </tr>
                 </table>
               </td>
-              <td class="wrapper white offset-by-five last">
-                <table class="three columns">
+              <td class="wrapper white offset-by-two last">
+                <table class="six columns">
                   <tr>
                     <td class="right-text-pad darktext" style="text-align: right;">
-                    {{$payment['orderId']}}
+                      <!-- This is for no linking in gmail -->
+                      <a href="" class="darktext" style="color:#484B4C">
+                        {{$customer['email']}}</a>
+                      <br>
+                      {{$customer['phone']}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+@if($payment['orderId'])
+          <!-- Order Id (if available) -->
+          <table class="row">
+            <tr>
+              <td class="wrapper white">
+                <table class="four columns">
+                  <tr>
+                    <td class="darktext left-text-pad">
+                      Order Id
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper white last">
+                <table class="eight columns">
+                  <tr>
+                    <td class="right-text-pad darktext" style="text-align: right">
+                      {{$payment['orderId']}}
+                      </span>
                     </td>
                     <td class="expander"></td>
                   </tr>
@@ -210,8 +188,7 @@
                             <td class="center lighttext">
                               <hr class="wide">
                               <center>
-                                If this is correct, you don't need to take any further action.<br>
-                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
+                                You can view more payment details on the <a href="https://dashboard.razorpay.com/#/app/payments/pay_{{$payment['id']}}" title="Payment Details">Merchant Dashboard</a>.
                               </center>
                             </td>
                             <td class="expander"></td>
