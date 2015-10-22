@@ -35,6 +35,10 @@ trait SlackPoster
             // foreach ($settings as $key => $value) {
             //     $data[$key] = $value;
             // }
+            //
+
+            // If our data is nested, we need to flatten it
+            $postdata = flatten_array($postdata);
 
             /**
              * Attach all the extra fields

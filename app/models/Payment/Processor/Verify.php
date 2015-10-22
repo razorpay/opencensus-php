@@ -40,9 +40,6 @@ trait Verify
 
             $data['gateway'] = $e->getData();
 
-            // Slack does not accept nested data
-            $slackData = flatten_array($data);
-
             $this->notifyInSlack($slackData);
 
             throw $e;
@@ -59,11 +56,17 @@ trait Verify
 
     protected function notifyInSlack($data)
     {
-        if (!isset($data['message']))
+        // Use the message from $data if it has one
+        if (isset($data['message']))
+        {
+            $message = $data['message'];
+            unset($data['message']);
+        }
+        else
         {
             $message = 'Payment verification failed.';
         }
 
-        $this->slackPost($message, $data, '', ['color'=>'bad', 'icon' => ':-1:']);
+        $this->slackPost($message, $data, '', ['color'=>'bad', 'icon' => ':boom:']);
     }
 }

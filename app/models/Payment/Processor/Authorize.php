@@ -105,6 +105,7 @@ trait Authorize
         );
 
         $message = 'Payment failed earlier converted to authorized';
+
         $data = $payment->toArrayAdmin();
 
         $this->slackPost($message, $data, '', ['color' => 'bad']);
