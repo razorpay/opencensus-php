@@ -490,4 +490,13 @@ class AdminController extends BaseController
         list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function passThrough($path)
+    {
+        $method = Request::method();
+
+        list($error, $response) = (new Admin\Service)->makeRawApiCall($method, $path);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

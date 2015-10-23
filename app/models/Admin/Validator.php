@@ -15,6 +15,15 @@ class Validator extends Base\Validator
         'password'  =>      'required|between:6,50'
     );
 
+    protected static $apiCallRules = [
+        'auth'      =>      'required|in:proxy,admin',
+        'mode'      =>      'required|in:test,live',
+        'url'       =>      'required',
+        'merchant_id'=>     'sometimes|max:20',
+        'content_type'=>    'sometimes',
+        'body'      =>      'sometimes'
+    ];
+
     protected static $createRules = array(
         'name'                  => 'required|between:3,100|alpha_space',
         'username'              => 'required|between:3,50|alpha_dash|unique:admins',
@@ -30,7 +39,28 @@ class Validator extends Base\Validator
         'password_confirmation'     => 'required|between:6,50'
     );
 
+    protected static $apiCallValidators = array('apiCall');
+
     protected static $changePasswordValidators = array('changePassword');
+
+    protected function validateApiCall($input)
+    {
+        switch ($input['auth']) {
+            case 'proxy':
+                if (!isset($input['merchant_id']))
+                {
+                    $this->addError('merchant_id', 'Merchant Id must be specified for Proxy Auth');
+                }
+                break;
+
+            case 'admin':
+                break;
+
+            default:
+                $this->addError('auth', 'Invalid Auth Method Specified');
+                break;
+        }
+    }
 
     protected function validateChangePassword($input)
     {

@@ -8,6 +8,7 @@ use Models\Base;
 use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
+use Razorpay\Api\Request as ApiRequest;
 use Session;
 
 class Service extends Base\Service
@@ -1275,5 +1276,52 @@ class Service extends Base\Service
             return [[$e->getMessage()], null];
         }
 
+    }
+
+    public function makeRawApiCall($method, $path)
+    {
+        $input = Input::all();
+
+        $error = (new Admin\Validator)->validateInput('api_call', $input)->messages();
+
+        if ($error)
+        {
+            return [$error, []];
+        }
+
+        // Setup credentials based on auth
+        switch ($input['auth'])
+        {
+            case 'proxy':
+                $this->setApiCredentials($input['merchant_id'], $input['mode']);
+                break;
+
+            case 'admin':
+                $this->setApiCredentials(null, $input['mode']);
+                break;
+        }
+
+        // Prepare the request
+        $contentType = Input::get('content_type', 'application/x-www-form-urlencoded');
+
+        $body = Input::get('body', '');
+
+        ApiRequest::addHeader('Content-Type', $contentType);
+
+
+        // Fire the request
+        $request = new ApiRequest();
+
+        try
+        {
+            $response = $request->request($method, $input['url'], $body);
+        }
+        catch($e)
+        {
+            $error = $e->getMessage();
+            $response = "Request Error";
+        }
+
+        return [$error, $response];
     }
 }
