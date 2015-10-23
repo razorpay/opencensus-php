@@ -168,6 +168,13 @@ app.controller('ActionsCtrl', [
       });
       modalInstance.result.then($scope.initiateSetl, $.noop);
     };
+    $scope.openApiRequest = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'makeApiCallModalContent.html',
+        controller: 'ApiRequestCtrl'
+      });
+      modalInstance.result.then($scope.apiRequest, $.noop);
+    };
     $scope.openGenerateRefund = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundGenerateModalContent.html',
@@ -351,6 +358,27 @@ app.controller('ActionsCtrl', [
   function ($scope, $modalInstance, $http) {
     $scope.ok = function (date) {
       $modalInstance.close(date);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('ApiRequestCtrl', [
+  '$scope',
+  '$modalInstance',
+  function ($scope, $modalInstance) {
+    $scope.request = {
+      url: '',
+      mode: 'test',
+      method: 'get',
+      auth: 'admin',
+      merchant_id: '',
+      content_type: 'application/x-www-form-urlencoded',
+      body: ''
+    }
+    $scope.ok = function (request) {
+      console.debug(request);
+      $modalInstance.close();
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
