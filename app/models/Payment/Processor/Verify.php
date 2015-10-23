@@ -40,7 +40,7 @@ trait Verify
 
             $data['gateway'] = $e->getData();
 
-            $this->notifyInSlack($slackData);
+            $this->notifyInSlack($data);
 
             throw $e;
         }
