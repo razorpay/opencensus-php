@@ -12,6 +12,9 @@
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
+    <div class="row wrapper" ng-show="response!==null">
+      <pre class="col-lg-8 pull-right">{{toJson(response)}}</pre>
+    </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
         <a href class="list-group-item" ng-click="openInitiateSetl()">
@@ -44,6 +47,9 @@
           ng-confirm-click="Are you sure you want to trigger an error?"
         >
           Trigger Dummy Error
+        </a>
+        <a href class="list-group-item" ng-click="openApiRequest()">
+          Make API Call
         </a>
       </div>
     </div>
@@ -266,6 +272,81 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="makeApiCallModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Make a raw API call</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="url" class="col-lg-2 control-label">Url</label>
+        <div class="col-lg-10" >
+          <div class="input-group">
+            <div class="input-group-addon">https://api.razorpay.com/v1/</div>
+            <input type="text" class="form-control m-b" name="url" ng-model="data.url" placeholder="relative/url">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="data.mode">
+            <option value="test">TEST</option>
+            <option value="live">LIVE</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="method" class="col-lg-2 control-label">Request Method</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="method" ng-model="data.method">
+            <option value="get">GET</option>
+            <option value="post">POST</option>
+            <option value="put">PUT</option>
+            <option value="delete">DELETE</option>
+            <option value="patch">PATCH</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="auth" class="col-lg-2 control-label">Auth</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="auth" ng-model="data.auth">
+            <option value="proxy">Merchant</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" ng-show="data.auth==='proxy'">
+        <label for="merchant_id" class="col-lg-2 control-label">Merchant Id</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="merchant_id" ng-model="data.merchant_id" placeholder="merchant id">
+        </div>
+      </div>
+      <div class="form-group" ng-show="data.method!=='get'">
+        <label for="content_type" class="col-lg-2 control-label">Content-Type</label>
+        <div class="col-lg-10">
+          <select class="form-control m-b" name="content_type" ng-model="data.content_type">
+            <option value="application/x-www-form-urlencoded">URL Encoded</option>
+            <option value="application/json">JSON</option>
+            <option value="multipart/form-data">Multipart</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" ng-show="data.method!='get'">
+        <label for="body" class="col-lg-3">Request Body</label>
+        <div class="col-lg-12 col-sm-12">
+          <textarea rows="10" ng-model="data.body" class="form-control" name="body" id="body"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(data)">OK</button>
   </div>
 </script>
 

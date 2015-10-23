@@ -211,6 +211,12 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::group(array('before' => 'auth.superadmin'), function()
     {
+
+        // This is the RAW API route which processes api calls
+
+        Route::post('/api/{path?}', 'AdminController@passThrough')
+            ->where('path', '.*$');
+
         Route::get('/admin/users', 'AdminController@getAdmins');
 
         Route::post('/admin/users/add', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
