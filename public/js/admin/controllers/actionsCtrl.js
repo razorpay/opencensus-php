@@ -141,12 +141,13 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('success', 'API Request successful', true);
         } else {
           $scope.alerts.resetAlerts();
+          $scope.response = null;
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+        $scope.alerts.addAlert('danger', 'The API request failed on the dashboard side.', true);
       });
     }
 

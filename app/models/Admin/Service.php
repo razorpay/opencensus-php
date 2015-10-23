@@ -9,6 +9,7 @@ use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Razorpay\Api\Request as ApiRequest;
+use Razorpay\Api\Errors as ApiError;
 use Session;
 
 class Service extends Base\Service
@@ -1278,9 +1279,9 @@ class Service extends Base\Service
 
     }
 
-    public function makeRawApiCall($method, $path)
+    public function makeRawApiCall($path)
     {
-        $input = Input::all();
+        $input = \Input::all();
 
         $error = (new Admin\Validator)->validateInput('api_call', $input)->messages();
 
@@ -1302,24 +1303,23 @@ class Service extends Base\Service
         }
 
         // Prepare the request
-        $contentType = Input::get('content_type', 'application/x-www-form-urlencoded');
+        $contentType = \Input::get('content_type', 'application/x-www-form-urlencoded');
 
-        $body = Input::get('body', '');
+        $body = \Input::get('body', '');
 
         ApiRequest::addHeader('Content-Type', $contentType);
-
 
         // Fire the request
         $request = new ApiRequest();
 
         try
         {
-            $response = $request->request($method, $input['url'], $body);
+            $response = $request->request($input['method'], $path, $body);
         }
-        catch($e)
+        catch (\Exception $e)
         {
-            $error = $e->getMessage();
-            $response = "Request Error";
+            $error = [$e->getMessage(), "Status Code: {$e->getHttpStatusCode()}"];
+            $response = null;
         }
 
         return [$error, $response];

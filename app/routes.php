@@ -214,7 +214,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
         // This is the RAW API route which processes api calls
 
-        Route::any('/api/{path?}', 'AdminController@passThrough')
+        Route::post('/api/{path?}', 'AdminController@passThrough')
             ->where('path', '.*$');
 
         Route::get('/admin/users', 'AdminController@getAdmins');

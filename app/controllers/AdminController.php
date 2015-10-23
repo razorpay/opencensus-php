@@ -491,11 +491,9 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function passThrough($path)
+    public function passThrough($path = '')
     {
-        $method = Request::method();
-
-        list($error, $response) = (new Admin\Service)->makeRawApiCall($method, $path);
+        list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
 
         return AppResponse::jsonResponse($error, $response);
     }
