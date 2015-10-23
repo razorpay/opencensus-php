@@ -6,6 +6,7 @@ app.controller('ActionsCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+    $scope.response = null;
     $scope.alerts = alertsFactory.getHandler();
     $scope.initiateSetl = function (channel) {
       var request = $http({
@@ -123,6 +124,32 @@ app.controller('ActionsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.toJson = function (data) {
+      return angular.toJson(data, 4);
+    };
+
+    $scope.apiRequest = function(data) {
+      var url = '/api/' + data.url;
+      delete data['url'];
+
+      var req = $http.post(url, data);
+
+      req.success(function (data) {
+        if (data.success) {
+          $scope.response = data;
+          $scope.alerts.addAlert('success', 'API Request successful', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.verifyPayment = function (payment_id) {
       var request = $http({
         method: 'get',
@@ -173,7 +200,9 @@ app.controller('ActionsCtrl', [
         templateUrl: 'makeApiCallModalContent.html',
         controller: 'ApiRequestCtrl'
       });
-      modalInstance.result.then($scope.apiRequest, $.noop);
+      modalInstance.result.then(function(data) {
+        $scope.apiRequest(data);
+      }, $.noop);
     };
     $scope.openGenerateRefund = function () {
       var modalInstance = $modal.open({
@@ -367,7 +396,8 @@ app.controller('ActionsCtrl', [
   '$scope',
   '$modalInstance',
   function ($scope, $modalInstance) {
-    $scope.request = {
+
+    $scope.data = {
       url: '',
       mode: 'test',
       method: 'get',
@@ -376,9 +406,8 @@ app.controller('ActionsCtrl', [
       content_type: 'application/x-www-form-urlencoded',
       body: ''
     }
-    $scope.ok = function (request) {
-      console.debug(request);
-      $modalInstance.close();
+    $scope.ok = function (data) {
+      $modalInstance.close(data);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
