@@ -34,6 +34,11 @@ class Service extends Base\Service
     {
         $merchant = (new Merchant\Core)->create($input);
 
+        // The merchant is created on email confirmation on dashboard side
+        // This is when we send the welcome email
+
+        $this->sendEmail('emails.merchant.welcome', 'Welcome to Razorpay', $merchant->toArray());
+
         return $merchant->toArrayPublic();
     }
 
@@ -447,5 +452,23 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function sendNewsletter($merchantId, $input)
+    {
+        (new Merchant\Validator)->validateInput('send_email', $input);
+
+        $template = $input['template'];
+
+        $merchant = $this->repo->findOrFailPublic($id)->toArray();
+    }
+
+    protected function sendEmail($template, $subject, $data)
+    {
+        Mail::queue($template, $data, function($message) use ($data, $subject){
+
+            $message->to($data['email'], $data['name'])
+                ->subject($subject);
+        });
     }
 }
