@@ -158,7 +158,7 @@ app.controller('EntityDetailCtrl', [
           'bank_account',
           'billdesk',
           'card',
-          'dailysettlement',
+          'daily_settlement',
           'hdfc',
           'iin',
           'kotak',
