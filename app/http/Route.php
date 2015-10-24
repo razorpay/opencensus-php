@@ -217,6 +217,7 @@ final class Route
         'setl_return_generate',
         'setl_return',
         'setl_delete_file',
+        'setl_calc_previous_fees',
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
         'payment_verify',
