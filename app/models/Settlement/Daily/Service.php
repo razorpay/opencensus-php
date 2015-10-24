@@ -40,7 +40,7 @@ class Service extends Base\Service
 
     protected function calculatePreviousDailySettlementFeesCore($repo)
     {
-        $dailySettlements = $repo->fetch([]);
+        $dailySettlements = $repo->getIfFeesIsNull();
 
         $setlRepo = new Settlement\Repository;
 
