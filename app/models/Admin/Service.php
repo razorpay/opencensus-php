@@ -9,7 +9,7 @@ use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Razorpay\Api\Request as ApiRequest;
-use Razorpay\Api\Errors as ApiError;
+use Razorpay\Api\Errors\Error as ApiError;
 use Session;
 
 class Service extends Base\Service
@@ -1314,11 +1314,12 @@ class Service extends Base\Service
 
         try
         {
-            $response = $request->request($input['method'], $path, $body);
+            $response = $request->request($method, $path, $body);
         }
-        catch (\Exception $e)
+        catch (ApiError $e)
         {
             $error = [$e->getMessage(), "Status Code: {$e->getHttpStatusCode()}"];
+
             $response = null;
         }
 
