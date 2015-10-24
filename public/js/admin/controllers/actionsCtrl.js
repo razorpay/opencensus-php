@@ -403,7 +403,7 @@ app.controller('ActionsCtrl', [
     $scope.data = {
       url: '',
       mode: 'test',
-      method: 'get',
+      method: 'GET',
       auth: 'admin',
       merchant_id: '',
       content_type: 'application/x-www-form-urlencoded',

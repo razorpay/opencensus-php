@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         'merchant_id'=>     'sometimes|max:20',
         'content_type'=>    'sometimes',
         'body'      =>      'sometimes',
-        'method'    =>      'required|in:get,post,put,delete,patch'
+        'method'    =>      'required|in:GET,POST,PUT,DELETE,PATCH'
     ];
 
     protected static $createRules = array(

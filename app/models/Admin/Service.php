@@ -1314,7 +1314,7 @@ class Service extends Base\Service
 
         try
         {
-            $response = $request->request($method, $path, $body);
+            $response = $request->request($input['method'], $path, $body);
         }
         catch (ApiError $e)
         {
