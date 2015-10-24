@@ -30,6 +30,16 @@ class Service extends Base\Service
     {
         $repo = new Daily\Repository;
 
+        $result = $repo->transaction(function() use ($repo)
+                {
+                    return $this->calculatePreviousDailySettlementFeesCore($repo);
+                });
+
+        return $result;
+    }
+
+    protected function calculatePreviousDailySettlementFeesCore($repo)
+    {
         $dailySettlements = $repo->fetch([]);
 
         $setlRepo = new Settlement\Repository;
