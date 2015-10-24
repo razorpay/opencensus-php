@@ -39,7 +39,7 @@ class Service extends Base\Service
         $map = array(
             'refund'            => Models\Payment\Refund::class,
             'iin'               => Models\Card\IIN::class,
-            'dailysettlement'   => Models\Settlement\Daily::class,
+            'daily_settlement'  => Models\Settlement\Daily::class,
             'atom'              => Gateway\Atom::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
             'kotak'             => Gateway\Kotak::class,
