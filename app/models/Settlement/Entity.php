@@ -78,6 +78,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHANNEL);
     }
 
+    public function getFees()
+    {
+        return $this->getAttribute(self::FEES);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
