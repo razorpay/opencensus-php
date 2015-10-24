@@ -133,7 +133,9 @@ app.controller('ActionsCtrl', [
       var url = '/api/' + data.url;
       delete data['url'];
 
-      var req = $http.post(url, data);
+      var req = $http.post(url, data, {
+        transformRequest: transformRequestAsFormPost
+      });
 
       req.success(function (data) {
         if (data.success) {
