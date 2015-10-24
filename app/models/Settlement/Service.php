@@ -87,4 +87,34 @@ class Service extends Base\Service
 
         return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
+
+    public function calculatePrevousSettlementFees()
+    {
+        $repo = new Settlement\Repository;
+        $settlements = $repo->getSettlementWithFeesAsNullOrZero();
+
+        $totalFees = 0;
+        $totalCount = 0;
+
+        foreach ($settlements as $setl)
+        {
+            $txns = $setl->setlTransactions;
+
+            $fees = 0;
+
+            foreach ($txns as $txn)
+            {
+                $fees += $txn->getFee();
+            }
+
+            $setl->setFees($fees);
+
+            $repo->saveOrFail($setl);
+
+            $totalFees += $fees;
+            $totalCount += $setl->count();
+        }
+
+        return ['fees' => $totalFees, 'count' => $totalCount];
+    }
 }

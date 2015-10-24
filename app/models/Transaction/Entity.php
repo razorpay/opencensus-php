@@ -200,6 +200,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
     public function getGatewayFee()
     {
         return (int) $this->getAttribute(self::GATEWAY_FEE);

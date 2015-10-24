@@ -72,14 +72,14 @@ class Reconciler
         {
             $this->txnRepo->rollback();
 
-            (new Settlement\SlackNotification)->queueOperationFailure('mpr_reconciliation', $e);
+            (new Settlement\SlackNotification)->failure('mpr_reconciliation', $e);
 
             throw $e;
         }
 
         $data = ['txn_count' => $txns->count()];
 
-        (new Settlement\SlackNotification)->queueOperationSuccess('mpr_reconciliation', $data);
+        (new Settlement\SlackNotification)->success('mpr_reconciliation', $data);
 
         return $txns;
     }

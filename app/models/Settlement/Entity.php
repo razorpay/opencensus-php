@@ -11,7 +11,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
-    const FEE                   = 'fee';
+    const FEES                  = 'fees';
     const STATUS                = 'status';
     const TRANSACTION_ID        = 'transaction_id';
     const CHANNEL               = 'channel';
@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
 //        self::AMOUNT,
-        self::FEE,
+        self::FEES,
         self::STATUS,
         self::MERCHANT_ID,
         self::TRANSACTION_ID);
@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
-        self::FEE,
+        self::FEES,
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::AMOUNT,
-        self::FEE,
+        self::FEES,
         self::STATUS,
         self::CREATED_AT);
 
@@ -122,9 +122,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
-    public function setFee($fee)
+    public function setFees($fee)
     {
-        $this->setAttribute(self::FEE, $fee);
+        $this->setAttribute(self::FEES, $fee);
     }
 
     public function getTransactionId()
@@ -132,9 +132,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
-    public function getFeeAttribute()
+    public function getFeesAttribute()
     {
-        $fee = $this->attributes[self::FEE];
+        $fee = $this->attributes[self::FEES];
 
         if ($fee !== null)
         {
@@ -155,10 +155,11 @@ class Entity extends Base\PublicEntity
     {
         if ($this->getAmount() <= 0)
         {
-            throw new Exception\LogicException(
-                'Something very wrong is happening! ' .
-                'Settlement amount should not be 0 or -ve',
-                $this->toArray());
+            // @note Disable this temporarily.
+            // throw new Exception\LogicException(
+            //     'Something very wrong is happening! ' .
+            //     'Settlement amount should not be 0 or -ve',
+            //     $this->toArray());
         }
     }
 }

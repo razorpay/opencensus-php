@@ -3,9 +3,11 @@
 namespace Models\Base;
 
 use App;
+use Services\SlackPoster;
 
 class Service
 {
+    use SlackPoster;
     /**
      * The application instance.
      *

@@ -50,7 +50,7 @@ class Plan extends PublicCollection
     /**
      * Returns an array containing multiple plans
      * Has the normal attributes 'entity', 'collection',
-     * 'count' etc. with pricing plans and thie rrules
+     * 'count' etc. with pricing plans and their rules
      * The function assumes that the plan rules in the
      * collection are already sorted descending by
      * plan_id and id. Actually, this should be ensured

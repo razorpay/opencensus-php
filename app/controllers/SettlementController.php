@@ -117,4 +117,11 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postSettlementCalculateFees()
+    {
+        $data = (new Settlement\Service)->calculatePrevousSettlementFees();
+
+        return ApiResponse::json($data);
+    }
 }

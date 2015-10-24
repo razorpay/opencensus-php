@@ -128,6 +128,20 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditTransactionEmailWithCsv()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditTransactionEmailWithError()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantEmail()
     {
         $this->createMerchant();

@@ -382,7 +382,7 @@ class Service extends Base\Service
             $plan['rules'],
             function($rule)
             {
-                return $rule['payment_method']  == 'card';
+                return $rule['payment_method']  === 'card';
             }
         ))[0];
 
@@ -428,6 +428,8 @@ class Service extends Base\Service
         // sent will hold array of merchant data
         $response = ['sent' => [], 'skipped' => 0];
 
+        $counts = ['sent' => 0, 'skipped' => 0];
+
         foreach ($merchants as $merchant)
         {
             $dailyReport = new DailyReport($merchant->getId());
@@ -445,6 +447,5 @@ class Service extends Base\Service
         }
 
         return $response;
-
     }
 }
