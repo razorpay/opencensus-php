@@ -26,9 +26,9 @@
         <!-- / buttons -->
 
         <!-- nabar right -->
-        
+
         <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown hidden-sm" ng-controller="modeCtrl">
+          <li class="dropdown hidden-xs" ng-controller="modeCtrl">
             <a href class="dropdown-toggle" data-toggle="dropdown">
               {{mode() | titlecase}} Mode<b class="caret"></b>
             </a>
@@ -37,7 +37,7 @@
                 <a ng-click="selectMode(mode)" class="dropdown-toggle" href>{{mode | titlecase}}</a>
               </li>
             </ul>
-          </li> 
+          </li>
         <!-- Language selector -->
           <li class="dropdown hidden-sm">
             <a href class="dropdown-toggle" data-toggle="dropdown">
@@ -48,7 +48,7 @@
                 <a ng-click="setLang(langKey)" class="dropdown-toggle" href>{{label}}</a>
               </li>
             </ul>
-          </li>         
+          </li>
           <li>
             <a target="_blank" href="https://docs.razorpay.com">
               <span translate="header.navbar.DOCUMENTATION">Documentation</span>
@@ -78,7 +78,7 @@
               </li>
             </ul>
             <!-- / dropdown -->
-            
+
             <li class="hidden-xs">
               <a ui-fullscreen></a>
             </li>
