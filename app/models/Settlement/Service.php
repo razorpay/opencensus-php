@@ -93,6 +93,9 @@ class Service extends Base\Service
         $repo = new Settlement\Repository;
         $settlements = $repo->getSettlementWithFeesAsNullOrZero();
 
+        $totalFees = 0;
+        $totalCount = 0;
+
         foreach ($settlements as $setl)
         {
             $txns = $setl->setlTransactions;
@@ -107,6 +110,11 @@ class Service extends Base\Service
             $setl->setFees($fees);
 
             $repo->saveOrFail($setl);
+
+            $totalFees += $fees;
+            $totalCount += $setl->count();
         }
+
+        return ['fees' => $totalFees, 'count' => $totalCount];
     }
 }
