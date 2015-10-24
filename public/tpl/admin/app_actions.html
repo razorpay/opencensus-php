@@ -303,11 +303,11 @@
         <label for="method" class="col-lg-2 control-label">Request Method</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="method" ng-model="data.method">
-            <option value="get">GET</option>
-            <option value="post">POST</option>
-            <option value="put">PUT</option>
-            <option value="delete">DELETE</option>
-            <option value="patch">PATCH</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="PATCH">PATCH</option>
           </select>
         </div>
       </div>
@@ -326,7 +326,7 @@
           <input type="text" class="form-control m-b" name="merchant_id" ng-model="data.merchant_id" placeholder="merchant id">
         </div>
       </div>
-      <div class="form-group" ng-show="data.method!=='get'">
+      <div class="form-group" ng-show="data.method!=='GET' && data.method!=='DELETE'">
         <label for="content_type" class="col-lg-2 control-label">Content-Type</label>
         <div class="col-lg-10">
           <select class="form-control m-b" name="content_type" ng-model="data.content_type">
@@ -336,7 +336,7 @@
           </select>
         </div>
       </div>
-      <div class="form-group" ng-show="data.method!='get'">
+      <div class="form-group" ng-show="data.method!='GET' && data.method!=='DELETE'">
         <label for="body" class="col-lg-3">Request Body</label>
         <div class="col-lg-12 col-sm-12">
           <textarea rows="10" ng-model="data.body" class="form-control" name="body" id="body"></textarea>
