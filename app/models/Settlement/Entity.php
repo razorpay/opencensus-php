@@ -155,10 +155,11 @@ class Entity extends Base\PublicEntity
     {
         if ($this->getAmount() <= 0)
         {
-            throw new Exception\LogicException(
-                'Something very wrong is happening! ' .
-                'Settlement amount should not be 0 or -ve',
-                $this->toArray());
+            // @note Disable this temporarily.
+            // throw new Exception\LogicException(
+            //     'Something very wrong is happening! ' .
+            //     'Settlement amount should not be 0 or -ve',
+            //     $this->toArray());
         }
     }
 }
