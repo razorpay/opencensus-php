@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const DATE              = 'date';
     const CHANNEL           = 'channel';
     const AMOUNT            = 'amount';
+    const FEES              = 'fees';
     const API_FEE           = 'api_fee';
     const GATEWAY_FEE       = 'gateway_fee';
     const SETTLEMENT_COUNT  = 'settlement_count';
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
+        self::FEES,
         self::API_FEE,
         self::GATEWAY_FEE,
         self::SETTLEMENT_COUNT,
@@ -67,6 +69,12 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::DATE] = self::getTodayTimestamp();
     }
+
+    public function setFees($fees)
+    {
+        $this->setAttribute(self::FEES, $fees);
+    }
+
 
     public static function getTodayTimestamp()
     {
@@ -114,6 +122,11 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getFeesAttribute()
+    {
+        return (int) $this->attributes[self::FEES];
     }
 
     public function getApiFeeAttribute()
