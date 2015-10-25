@@ -62,13 +62,11 @@ class Core extends Base\Core
 
     public function updateOnCapture(Payment\Entity $payment)
     {
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
         $txn = $payment->transaction;
 
-        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
-
-        $txnData = array(Transaction\Entity::SETTLED_AT => $settledAt);
-        $txn->fill($txnData);
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
         $this->updateMerchantBalance($txn);
 
@@ -79,10 +77,7 @@ class Core extends Base\Core
     {
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
-        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-
-        $setlSchedule = $payment->merchant->getSettlementSchedule();
-        $settledAt = $this->getSettledAtTimestamp($capturedAt, $setlSchedule);
+        $settledAt = $this->getSettledAtTimestamp($payment);
 
         $amount = $payment->getAmount();
         $credit = $amount - $fee;
@@ -297,7 +292,16 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function getSettledAtTimestamp($timestamp, $addDays)
+    protected function getSettledAtTimestamp($payment)
+    {
+        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
+
+        $addDays = $payment->merchant->getSettlementSchedule();
+
+        return $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+    }
+
+    public function calculateSettledAtTimestamp($timestamp, $addDays)
     {
         assert ($addDays >= 1);
 

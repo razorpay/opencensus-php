@@ -82,7 +82,7 @@ class AtomTransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
-        $testData['settled_at'] = (new \Models\Transaction\Core)->getSettledAtTimestamp(time(), 3);
+        $testData['settled_at'] = (new \Models\Transaction\Core)->calculateSettledAtTimestamp(time(), 3);
 
         $this->assertArraySelectiveEquals($testData, $txn);
     }
@@ -109,7 +109,7 @@ class AtomTransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
-        $testData['settled_at'] = (new \Models\Transaction\Core)->getSettledAtTimestamp(time(), 3);
+        $testData['settled_at'] = (new \Models\Transaction\Core)->calculateSettledAtTimestamp(time(), 3);
 
         $this->assertArraySelectiveEquals($testData, $txn);
     }

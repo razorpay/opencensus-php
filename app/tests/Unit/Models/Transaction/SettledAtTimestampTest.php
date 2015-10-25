@@ -64,7 +64,7 @@ class SettledAtTimestampTest extends TestCase
     protected function runSettledAtFunc($map, $addDays)
     {
         $class = new ReflectionClass('Models\Transaction\Core');
-        $method = $class->getMethod('getSettledAtTimestamp');
+        $method = $class->getMethod('calculateSettledAtTimestamp');
         $method->setAccessible(true);
 
         $core = new Transaction\Core;
