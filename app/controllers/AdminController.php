@@ -87,24 +87,9 @@ class AdminController extends BaseController
 
     public function getMerchant($id)
     {
-        $details = (new Admin\Service)->fetchMerchantDetails($id);
+        list($error, $data) = (new Admin\Service)->fetchFullMerchantDetails($id);
 
-        if (isset($details['confirm_token']))
-        {
-            return AppResponse::jsonResponse(['Merchant not confirmed']);
-        }
-
-        $terminal = (new Admin\Service)->fetchMerchantTerminal($id);
-
-        $pricing_plan = (new Admin\Service)->fetchMerchantPricing($id);
-
-        $data = array(
-                    'details' => $details,
-                    'terminals' => $terminal,
-                    'pricing_plan' => $pricing_plan
-                );
-
-        return AppResponse::jsonResponse([], $data);
+        return AppResponse::jsonResponse($error, $data);
     }
 
 

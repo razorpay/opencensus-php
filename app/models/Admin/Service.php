@@ -86,7 +86,7 @@ class Service extends Base\Service
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
                                 ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');
 
-        if(isset($input['archived']))
+        if (isset($input['archived']))
         {
             $data = $data->whereNotNull('archived_at')->get();
         }
@@ -97,11 +97,11 @@ class Service extends Base\Service
 
         // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
-        if(reset($input) !== false)
+        if (reset($input) !== false)
         {
             list($key, $value) = each($input);
 
-            switch($key)
+            switch ($key)
             {
                 case "activated":
                     $response = $data->filter(function($merchant) use($value)
@@ -214,7 +214,7 @@ class Service extends Base\Service
 
                 $file = $result;
             }
-            catch(\Exception $e)
+            catch (\Exception $e)
             {
                 $file = 'ERROR';
             }
@@ -238,6 +238,33 @@ class Service extends Base\Service
             'activation' => $activationDetails,
             'merchant'   => $details
         );
+
+        return [[], $data];
+    }
+
+    public function fetchFullMerchantDetails($id)
+    {
+        $details = null;
+
+        if ($id === '10NodalAccount')
+        {
+            $details = $this->fetchMerchantDetails($id);
+
+            if (isset($details['confirm_token']))
+            {
+                return [['Merchant not confirmed'], null];
+            }
+        }
+
+        $terminal = $this->fetchMerchantTerminal($id);
+
+        $pricingPlan = $this->fetchMerchantPricing($id);
+
+        $data = array(
+                    'details' => $details,
+                    'terminals' => $terminal,
+                    'pricing_plan' => $pricing_plan
+                );
 
         return [[], $data];
     }
@@ -319,10 +346,10 @@ class Service extends Base\Service
                 }
 
                 $data = $this->api
-                    ->merchant
-                    ->fetch($id)
-                    ->edit($input)
-                    ->toArray();
+                            ->merchant
+                            ->fetch($id)
+                            ->edit($input)
+                            ->toArray();
 
                 if (isset($input['transaction_report_email']))
                 {
@@ -330,7 +357,7 @@ class Service extends Base\Service
                     $error = MerchantDetails\Service::changeTransactionEmail($id, $csvEmail);
                 }
             }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            catch (\Razorpay\Api\Errors\BadRequestError $e)
             {
                 $error[] = $e->getMessage();
             }
@@ -353,7 +380,7 @@ class Service extends Base\Service
             $error = $e;
         }
 
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -387,7 +414,7 @@ class Service extends Base\Service
             {
                 $data = $this->api->merchant->fetch($id)->setBanks($input)->toArray();
             }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            catch (\Razorpay\Api\Errors\BadRequestError $e)
             {
                 $error[] = $e->getMessage();
             }
@@ -410,7 +437,7 @@ class Service extends Base\Service
         {
             $data = $this->api->adjustment->create($input)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -429,7 +456,7 @@ class Service extends Base\Service
         {
             $data = $this->api->settlement->initiate($channel)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -448,7 +475,7 @@ class Service extends Base\Service
         {
             $data = $this->api->IIN->create($input)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -469,7 +496,7 @@ class Service extends Base\Service
                                     ->verify()
                                     ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -490,7 +517,7 @@ class Service extends Base\Service
                 ->authorizeFailed()
                 ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -511,7 +538,7 @@ class Service extends Base\Service
                 ->refundAuthorized()
                 ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -532,7 +559,7 @@ class Service extends Base\Service
                 ->refund($input)
                 ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -553,7 +580,7 @@ class Service extends Base\Service
                 ->capture($input)
                 ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -646,7 +673,7 @@ class Service extends Base\Service
             {
                 $data = $this->api->merchant->fetch($id)->setTerminal($input)->toArray();
             }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            catch (\Razorpay\Api\Errors\BadRequestError $e)
             {
                 $error[] = $e->getMessage();
             }
@@ -675,7 +702,7 @@ class Service extends Base\Service
         {
             $data = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -718,7 +745,7 @@ class Service extends Base\Service
 
             $this->api->merchant->fetch($id)->activate();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -763,7 +790,7 @@ class Service extends Base\Service
         {
             $this->api->merchant->fetch($id)->enable();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -792,7 +819,7 @@ class Service extends Base\Service
                 return array("Live merchants can not be archived.");
             }
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -837,7 +864,7 @@ class Service extends Base\Service
         {
             $this->api->merchant->fetch($id)->disable();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -857,7 +884,7 @@ class Service extends Base\Service
         {
             $this->api->merchant->fetch($id)->editMethods([$method => 1]);
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -877,7 +904,7 @@ class Service extends Base\Service
         {
             $this->api->merchant->fetch($id)->editMethods([$method => 0]);
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -899,7 +926,7 @@ class Service extends Base\Service
 
             $response = $response['items'];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -919,7 +946,7 @@ class Service extends Base\Service
         {
             $response = $this->api->pricing->fetch($id)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -939,7 +966,7 @@ class Service extends Base\Service
         {
             $response = $this->api->pricing->fetch($id)->createRule($input)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -959,7 +986,7 @@ class Service extends Base\Service
         {
             $response = $this->api->pricing->create($input)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -979,7 +1006,7 @@ class Service extends Base\Service
         {
             $response = $this->api->admin->fetchMultipleEntities($entity, $input)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -1008,7 +1035,7 @@ class Service extends Base\Service
         {
             $response = $this->api->admin->fetchEntityById($entity, $id)->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -1057,7 +1084,7 @@ class Service extends Base\Service
             $response = $this->api->merchant->generateBeneficiaryFile();
         }
 
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -1109,7 +1136,7 @@ class Service extends Base\Service
                     $creevey->compressAndSave($key, $localFilePath,
                         $input[$key]->getClientOriginalName());
                 }
-                catch(\Exception $e)
+                catch (\Exception $e)
                 {
                     return [$e->getMessage()];
                 }
@@ -1178,7 +1205,7 @@ class Service extends Base\Service
             return [null, $this->api->admin->sendTestNewsletter($input)
                 ->toArray()];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [$e->getMessage(), null];
         }
@@ -1193,7 +1220,7 @@ class Service extends Base\Service
             return [null, $this->api->admin->sendNewsletter($input)
                 ->toArray()];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [$e->getMessage(), null];
         }
@@ -1214,7 +1241,7 @@ class Service extends Base\Service
                 return ['Error not triggered', null];
             }
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [$e->getMessage(), null];
         }
@@ -1228,7 +1255,7 @@ class Service extends Base\Service
             $response = $this->api->terminal->delete($terminalId);
             return [null, $response->toArray()];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [$e->getMessage(), null];
         }
@@ -1242,7 +1269,7 @@ class Service extends Base\Service
             $response = $this->api->terminal->edit($terminalId, $input);
             return [null, $response->toArray()];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [$e->getMessage(), null];
         }
@@ -1256,7 +1283,7 @@ class Service extends Base\Service
             $response = $this->api->payment->verifyAll();
             return [null, $response->toArray()];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [[$e->getMessage()], null];
         }
@@ -1272,7 +1299,7 @@ class Service extends Base\Service
             $response = $this->api->refund->generateNetBankingExcel($input);
             return [null, $response->toArray()];
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [[$e->getMessage()], null];
         }
