@@ -30,6 +30,9 @@ class CreateBalance extends Migration
             $table->bigInteger(Balance::ON_HOLD)
                   ->default(0);
 
+            $table->bigInteger(Balance::CREDITS)
+                  ->default(0);
+
             $table->integer(Balance::CREATED_AT);
             $table->integer(Balance::UPDATED_AT);
 

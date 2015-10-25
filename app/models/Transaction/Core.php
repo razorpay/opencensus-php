@@ -75,11 +75,38 @@ class Core extends Base\Core
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
+        $credit = $fee = 0;
+        $pricingRuleId = null;
+
+        // Suppose free credit exists
+        $credits = 'some amount';
+
+        $amount = $payment->getAmount();
+
+        if ($credits > 0)
+        {
+            $credits -= $amount;
+            $credit = 0;
+            $fee = 0;
+            $pricingRuleId = 'FreeCreditsRule';
+
+            if ($credits < 0)
+            {
+                $credits = 0;
+            }
+        }
+        else
+        {
+            list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
+            $credit = $amount - $fee;
+        }
+
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         $amount = $payment->getAmount();
+
         $credit = $amount - $fee;
 
         $txnData = array(
