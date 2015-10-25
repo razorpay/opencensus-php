@@ -246,7 +246,7 @@ class Service extends Base\Service
     {
         $details = null;
 
-        if ($id === '10NodalAccount')
+        if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
 
@@ -263,8 +263,7 @@ class Service extends Base\Service
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
-                    'pricing_plan' => $pricing_plan
-                );
+                    'pricing_plan' => $pricingPlan);
 
         return [[], $data];
     }
