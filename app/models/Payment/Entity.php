@@ -346,7 +346,7 @@ class Entity extends Base\PublicEntity
 
     public function isCaptured()
     {
-        return ($this->getAttribute(self::CAPTURED_AT) !== null);
+        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
     }
 
     public function isPartiallyOrFullyRefunded()
@@ -372,6 +372,11 @@ class Entity extends Base\PublicEntity
     protected function isStatus($status)
     {
         return ($this->getAttribute(self::STATUS) === $status);
+    }
+
+    public function hasBeenCaptured()
+    {
+        return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
     public function isNetbanking()

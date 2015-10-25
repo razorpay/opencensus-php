@@ -164,17 +164,9 @@ trait Refund
 
             $this->repo->lockForUpdate($payment->getKey());
 
+            $this->createTransactionForRefund($this->refund, $payment);
+
             $this->updatePaymentRefunded();
-
-            $gateway = $payment->getGateway();
-
-            if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-                ($payment->getCaptureTimestamp() !== null))
-            {
-                $txn = (new Transaction\Core)->createFromRefund($this->refund);
-
-                $txn->saveOrFail();
-            }
 
             $this->payment->saveOrFail();
             $this->refund->saveOrFail();
@@ -198,6 +190,21 @@ trait Refund
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
+        }
+    }
+
+    protected function createTransactionForRefund($refund, $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+            ($payment->getCaptureTimestamp() !== null))
+        {
+            $txn = (new Transaction\Core)->createFromRefund($refund);
+
+            $txn->saveOrFail();
+
+            return $txn;
         }
     }
 }
