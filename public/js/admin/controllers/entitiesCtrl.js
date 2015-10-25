@@ -69,6 +69,7 @@ app.controller('EntitiesCtrl', [
 
     var statusList = [
           'all',
+          'created',
           'authorized',
           'failed',
           'captured',
