@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
+        self::SETTLEMENT_SCHEDULE,
         self::METHODS,
         self::CREATED_AT,
         self::UPDATED_AT);
