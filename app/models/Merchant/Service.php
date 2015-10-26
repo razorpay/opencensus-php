@@ -45,7 +45,7 @@ class Service extends Base\Service
 
         Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
         {
-            $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
+            $m->to($merchant['email'], $merchant['name'])->subject('Razorpay | Confirm Your Email');
         });
     }
 
