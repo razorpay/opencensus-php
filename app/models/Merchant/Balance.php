@@ -19,7 +19,8 @@ class Balance extends Base\UniqueIdEntity
 
     protected $visible = array(
         self::ID,
-        self::BALANCE);
+        self::BALANCE,
+        self::CREDITS);
 
     protected function addAmount($amount)
     {
@@ -113,6 +114,13 @@ class Balance extends Base\UniqueIdEntity
         }
 
         $this->setAttribute(self::CREDITS, $credits);
+    }
+
+    public function setFreeCredits($freeCredits)
+    {
+        assert ($amount >= 0);
+
+        $this->setAttribute(self::CREDITS, $freeCredits);
     }
 
     public function getBalanceAttribute()

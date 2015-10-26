@@ -247,6 +247,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postFreeCredits($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editFreeCredits($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPaymentMethods()
     {
         $data = (new Merchant\Service)->getPaymentMethods();

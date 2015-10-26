@@ -39,6 +39,17 @@ class Repository extends Base\Repository
         return Merchant\Balance::findOrFailPublic($merchant->getId());
     }
 
+    public function editMerchantFreeCredits($merchant, $freeCredits)
+    {
+        $balance = $this->getBalanceLockForUpdate($merchant->getId());
+
+        $balance->setFreeCredits($freeCredits);
+
+        $balance->saveOrFail();
+
+        return $balance;
+    }
+
     public function updateBalance($balance)
     {
         $balance->saveOrFail();
