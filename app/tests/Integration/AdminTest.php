@@ -199,7 +199,7 @@ class AdminTest extends TestCase
 
         // Edit Merchant Details
         $this->browser
-            ->click(l::linkContaining('Edit Merchant MCC, Website, DBA & International'))
+            ->click(l::linkContaining('Edit Merchant'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length > 0", 20000)
             ->select(l::IdOrName('international'), 'Yes')
             ->type(l::IdOrName('category'), '1234')
@@ -207,6 +207,7 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('billing_label'), 'razorpay')
             // Make sure CSV emails are supported
             ->type(l::IdOrName('transaction_report_email'), 'test@razorpay.com, nemo@razorpay.com')
+            ->type(l::IdOrName('settlement_schedule'), '5')
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length == 0", 20000)
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
