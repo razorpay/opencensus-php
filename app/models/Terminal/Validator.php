@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|integer|digits:8'
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15'
     );
 
     protected static $billdeskTerminalRules = array(
