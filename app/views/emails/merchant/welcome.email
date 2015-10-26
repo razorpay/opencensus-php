@@ -4,78 +4,75 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width"/>
   </head>
-  <body class="body" style="background:#EBECEE;">
-    @include('emails.partials.css')
-    <table class="row"> <!-- Styles go on the row -->
+  <body>
+    <link rel="stylesheet" type="text/css" href="ink.css">
+    <link rel="stylesheet" type="text/css" href="welcome.css">
+    <table class="row">
       <tr>
-        <td class="center" align="center"> <!-- Center the container -->
-          <center>
+        <td class="wrapper">
 
-            <table class="container"> <!-- Container restricts the content width -->
-              <tr>
-                <td class="wrapper last"> <!-- Wrapper stays on the inner table -->
-
-                  <table class="twelve columns newsletter-header-bg">
-                    <tr height="180" style="height:180px;">
-                      <td background="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" bgcolor="#24bbea" width="580" height="180" valign="top" style="padding-bottom: 0px;">
-                        <!--[if gte mso 9]>
-                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:580px;height:180px;">
-                          <v:fill type="tile" src="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" color="#24bbea" />
-                          <v:textbox inset="0,0,0,0">
-                        <![endif]-->
-                        <div>
-                          <h1>
-                            Welcome To
-                          </h1>
-                          <h1>
-                            Razorpay
-                          </h1>
-                        </div>
-                        <!--[if gte mso 9]>
-                          </v:textbox>
-                          </v:rect>
-                        <![endif]-->
-                      </td>
-                      <td class="expander"></td>
-                    </tr>
-                  </table>
-
-                </td>
-              </tr>
-            </table>
-
-          </center>
+          <table class="four columns">
+            <tr>
+              <td class="center">
+                <img class="center" src="https://s3.amazonaws.com/checkout-live/logo.png">
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
+
+    <!-- Heading -->
+    <table class="row">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <hr><br>
+                <h1><center>
+                  Welcome Onboard
+                </center></h1>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
     <!-- Contact Us -->
     <table class="container">
       <tr>
         <td>
           <table class="row">
             <tr>
-              <td class="wrapper last white">
-                <table class="twelve columns">
+              <td class="wrapper offset-by-one">
+                <table class="ten columns">
                   <tr>
-                    <td class="dark">
-<div class="newsletter">
+                    <td class="center newsletter">
 <p>Hi {{{$name}}},</p>
 
-<p>Welcome to the Razorpay family.</p>
+<p>
+  Welcome to the Razorpay family.
+  <br>
+  In order for us to take you live, here are the next steps and timelines:
+</p>
 
-<p>In order for us to take you live, here are the next steps and timelines:
-
-<h5>KYC Process</h5>
+<h3>KYC Process</h3>
 
 <p>The first step involves filling up the activation form on the <a href="https://dashboard.razorpay.com">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="https://dashboard.razorpay.com/#/app/activation">Activation</a> panel. All requirements have a basic explanation alongside to help you through the process.
 
 <p>This process is crucial as we share the same KYC with our partner banks who do their own due diligence. Also, signing up allows you to <a href="https://dashboard.razorpay.com/#/app/keys">generate test keys</a> from our dashboard which can be used for integrating payments in your product. You can just swap your test keys with your live keys once your account is activated.</p>
 
-<h5>API Integration</h5>
+<h3>API Integration</h3>
 
 <p>In parallel, you can start integrating our API with your product. The documentation (including Mobile SDKs and Plugins) is available at <a href="https://razorpay.com/integrations">razorpay.com/integrations</a>. Feel free to drop a mail at <a href="mailto:support@razorpay.com">support@razorpay.com</a> in case of any queries.</p>
 
-<h5>Activation Timeline</h5>
+<h3>Activation Timeline</h3>
 
 <p>As soon as the KYC Process in completed by you, depending on the business segment, we will take you live in the upcoming 2-3 days.</p>
 
@@ -84,7 +81,6 @@
   <br>
   Team Razorpay
 </p>
-</div>
                     </td>
                     <td class="expander"></td>
                   </tr>
@@ -95,6 +91,79 @@
         </td>
       </tr>
     </table>
-    @include('emails.partials.footer', ['message'=>$message])
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <center>
+                  <hr>
+                  <a href="https://razorpay.com/terms/">Terms &amp; Conditions</a>
+                  |
+                  <a href="https://razorpay.com/privacy/">Privacy Policy</a>
+                  |
+                  <a href="https://razorpay.com/refund/">Refund Policy</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="three columns offset-by-six">
+            <tr>
+              <td class="center">
+                <center>
+                  <a href="https://facebook.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                  </a>
+                  <a href="https://twitter.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                  </a>
+                  <a href="https://github.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                  </a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="seven columns">
+            <tr>
+              <td class="center">
+                <center>
+                  This message was sent to <a href="mailto:{{$email}}">
+                  {{{$email}}}</a>. Reach out to us by replying
+                  to this email or at <a href="mailto:support@razorpay.com">
+                  support@razorpay.com</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
   </body>
 </html>
