@@ -53,6 +53,11 @@ class Balance extends Base\UniqueIdEntity
         return $this->getAttribute(self::BALANCE);
     }
 
+    public function getCredits()
+    {
+        return $this->getAttribute(self::CREDITS);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity', 'id');
@@ -96,9 +101,28 @@ class Balance extends Base\UniqueIdEntity
         }
     }
 
+    public function subtractCredits($amount)
+    {
+        $credits = $this->getCredits();
+
+        $credits -= $amount;
+
+        if ($credits < 0)
+        {
+            $credits = 0;
+        }
+
+        $this->setAttribute(self::CREDITS, $credits);
+    }
+
     public function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
+    }
+
+    public function getCreditsAttribute()
+    {
+        return (int) $this->attributes[self::CREDITS];
     }
 
     public function save(array $options = array())

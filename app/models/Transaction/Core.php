@@ -78,22 +78,19 @@ class Core extends Base\Core
         $credit = $fee = 0;
         $pricingRuleId = null;
 
-        // Suppose free credit exists
-        $credits = 'some amount';
+        $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
+
+        $freeCredits = $merchant->getCredits();
 
         $amount = $payment->getAmount();
 
-        if ($credits > 0)
+        if ($freeCredits > 0)
         {
-            $credits -= $amount;
-            $credit = 0;
-            $fee = 0;
             $pricingRuleId = 'FreeCreditsRule';
+            $credit = $amount;
+            $fee = 0;
 
-            if ($credits < 0)
-            {
-                $credits = 0;
-            }
+            $merchantBalance->subtractCredits($amount);
         }
         else
         {
@@ -262,10 +259,9 @@ class Core extends Base\Core
     {
         $channel = $txn->getChannel();
 
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate($channel);
+        $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
 
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $txn->merchant->getKey());
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $merchantBalance->updateBalance($txn);
         $this->merchantRepo->updateBalance($merchantBalance);
@@ -306,7 +302,7 @@ class Core extends Base\Core
     {
         $channel = $txn->getChannel();
 
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate($channel);
+        $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
 
         $nodalBalance->updateBalance($txn);
         $this->merchantRepo->updateBalance($nodalBalance);
@@ -317,6 +313,35 @@ class Core extends Base\Core
         $txn->fill($attributes);
 
         return $txn;
+    }
+
+
+    protected function getEscrowBalanceLockForUpdate($channel)
+    {
+        if ($this->nodalBalance !== null)
+        {
+            return $this->nodalBalance;
+        }
+
+        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate($channel);
+
+        $this->nodalBalance = $nodalBalance;
+
+        return $nodalBalance;
+    }
+
+    protected function getBalanceLockForUpdate(Merchant\Entity $merchant)
+    {
+        if ($this->merchantBalance !== null)
+        {
+            return $this->merchantBalance;
+        }
+
+        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate($merchant->getId());
+
+        $this->merchantBalance = $merchantBalance;
+
+        return $merchantBalance;
     }
 
     protected function getSettledAtTimestamp($payment)
