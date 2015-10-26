@@ -28,8 +28,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::FEE, '=', '0')
-                    ->orWhereNull(Entity::FEE)
+        return $repo::where(Entity::FEES, '=', '0')
+                    ->orWhereNull(Entity::FEES)
                     ->get();
     }
 }

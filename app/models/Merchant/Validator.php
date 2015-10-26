@@ -21,7 +21,8 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255',
-        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean'
+        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
+        Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
     );
 
     protected static $editEmailRules = [

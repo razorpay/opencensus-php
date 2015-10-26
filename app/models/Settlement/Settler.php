@@ -264,6 +264,7 @@ class Settler
         $this->dailySettlement->amount = $totalSetlAmount;
         $this->dailySettlement->api_fee = $totalSetlApiFee;
         $this->dailySettlement->gateway_fee = $totalSetlGatewayFee;
+        $this->dailySettlement->fees = $totalSetlFee;
 
         $amounts = array(
             'amount' => $totalSetlAmount,

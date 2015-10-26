@@ -3,6 +3,7 @@
 namespace Models\Transaction;
 
 use Carbon\Carbon;
+use EE\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Merchant;
@@ -61,13 +62,11 @@ class Core extends Base\Core
 
     public function updateOnCapture(Payment\Entity $payment)
     {
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
         $txn = $payment->transaction;
 
-        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
-
-        $txnData = array(Transaction\Entity::SETTLED_AT => $settledAt);
-        $txn->fill($txnData);
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
         $this->updateMerchantBalance($txn);
 
@@ -78,8 +77,7 @@ class Core extends Base\Core
     {
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
-        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
+        $settledAt = $this->getSettledAtTimestamp($payment);
 
         $amount = $payment->getAmount();
         $credit = $amount - $fee;
@@ -178,7 +176,7 @@ class Core extends Base\Core
         }
         else
         {
-            ; // throw exception
+            throw new Exception\LogicException('Should not have reached here');
         }
 
         return $txn;
@@ -294,26 +292,75 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function getSettledAtTimestamp($timestamp, $addDays)
+    protected function getSettledAtTimestamp($payment)
     {
+        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
+
+        $addDays = $payment->merchant->getSettlementSchedule();
+
+        return $this->calculateSettledAtTimestamp($capturedAt, $addDays);
+    }
+
+    public function calculateSettledAtTimestamp($timestamp, $addDays)
+    {
+        assert ($addDays >= 1);
+
         $timestamp = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
-        $day = (int) $timestamp->format('w');
 
-        // if payment is on Sunday, add 1 extra
-        if ($day === 0)
-            $addDays += 1;
-
-        $day = $day + $addDays;
-
-        if ($day >= 6)
-        {
-            $addDays += 2;
-        }
+        $addDays = $this->getActualNumberOfDaysToAdd($timestamp, $addDays);
 
         $settledAt = $timestamp->startOfDay()
                                 ->addDays($addDays)
                                 ->timestamp;
 
         return $settledAt;
+    }
+
+    protected function getSettlementSchedule($payment)
+    {
+        $setlSchedule = $payment->merchant->getSettlementSchedule();
+
+        if (($setlSchedule < 3) and
+            ($method !== Method::CARD))
+        {
+            $setlSchedule = 3;
+        }
+
+        return $setlSchedule;
+    }
+
+    protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
+    {
+        $currentDay = (int) $timestamp->format('w');
+
+        $day = $currentDay + $addDays;
+
+        if ($day % 7 === 6)
+        {
+            $addDays += 2;
+        }
+        else if ($day % 7 === 0)
+        {
+            if ($addDays === 1)
+            {
+                $addDays += 1;
+            }
+            else
+            {
+                $addDays += 2;
+            }
+        }
+        else if ($day > 7)
+        {
+            $addDays += 2;
+        }
+
+        if (($currentDay === 6) and
+            ($addDays !== 2))
+        {
+            $addDays -= 1;
+        }
+
+        return $addDays;
     }
 }

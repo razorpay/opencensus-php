@@ -37,4 +37,5 @@ t.className = 'show ' + (s ? 's' : 'f');
 document.getElementById('icon').innerHTML = s ? '&#10004' : '!';
 onmessage=function(e){if(e&&e.data=='pingback')close()}
 try{opener.onComplete(JSON.stringify(data))&&close()}catch(e){}
+>>>>>>> development
 </script></body></html>

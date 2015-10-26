@@ -13,6 +13,7 @@ $factory('Models\Merchant\Entity', [
     'category' => 1100,
     'transaction_report_email' => $faker->email,
     'receipt_email_enabled' => true,
+    'settlement_schedule' => 3,
 ]);
 
 $factory('Models\Terminal\Entity', [

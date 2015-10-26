@@ -141,7 +141,7 @@ return [
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 0,
+        'escrow_balance' => 998575,
         'channel' => 'kotak',
         'settled' => false,
         'settled_at' => 1,

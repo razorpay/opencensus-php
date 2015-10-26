@@ -8,6 +8,7 @@ use Constants\Mode;
 use Mail;
 use Models\Payment;
 use Services\SlackPoster;
+use Trace\TraceCode;
 
 class Notify
 {
@@ -54,6 +55,8 @@ class Notify
 
         $this->config = $this->app->config->get('applications.mailgun');
         $this->mode = $this->app['rzp.mode'];
+
+        $this->trace = $this->app['trace'];
     }
 
     /**
@@ -162,12 +165,30 @@ class Notify
      */
     public function trigger($event)
     {
-        // Send out notification for Slack
-        $this->notifyViaSlack($event);
+        /**
+         * This is wrapped in a try-catch block as this is not
+         * critical path for the payment operation
+         * We should continue running even if this raises critical error.
+         */
+        try
+        {
+            // Send out notification for Slack
+            $this->notifyViaSlack($event);
 
-        // Mails use the entire template
-        // So there is no need to get separate data for each
-        $this->notifyViaMail($event);
+            // Mails use the entire template
+            // So there is no need to get separate data for each
+            $this->notifyViaMail($event);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_NOTIFY_FAILED, [
+                    'payment_id' => $payment->getPublicId(),
+                    'message'    => 'Payment Notify raised an exception',
+                    'exception'  => $e->getData()
+                ]
+            );
+        }
     }
 
     protected function getSubject($event, $merchant = true)
