@@ -72,6 +72,8 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = array('method');
 
+    protected static $modifiers = array('inputRemoveBlanks');
+
     protected $defaults = array(
         self::CATEGORY                  => null,
         self::GATEWAY_MERCHANT_ID       => null,
