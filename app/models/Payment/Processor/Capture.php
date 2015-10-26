@@ -118,6 +118,9 @@ trait Capture
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
+
+        $notifier = new Notify($this->payment);
+        $notifier->trigger(Notify::CAPTURED);
     }
 
     protected function updatePaymentCaptured()
@@ -131,8 +134,7 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = (($payment->getAuthorizeTimestamp() < 1442174411) or
-                 ($payment->transaction === null));
+        $auth = ($payment->transaction === null);
 
         if ($auth === true)
         {

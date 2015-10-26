@@ -2,13 +2,12 @@
 
 namespace Models\Settlement;
 
+use Services\SlackPoster;
 use Queue;
 
 class SlackNotification
 {
-    protected $queue;
-
-    protected $slack;
+    use SlackPoster;
 
     protected $operations = array(
         'mpr_generation',
@@ -23,43 +22,39 @@ class SlackNotification
         'setl_reconciliation'   => 'Settlements reconciled. ',
         'setl_return'           => 'Settlements returns occurred. ');
 
-    public function __construct()
+    public function success($operation, $data)
     {
-        $this->queue = Queue::getFacadeRoot();
+        $data = [
+            'message' => $this->messages[$operation],
+            'status'  => 'good'
+        ] + $data;
+
+        $this->send($data);
     }
 
-    public function queueOperationSuccess($operation, $data)
+    public function failure($operation, $e)
     {
-        $data = ['message' => $this->messages[$operation]] + $data;
+        $data = [
+            'message'           => 'Failed operation: ' . $operation,
+            'exception_class'   => get_class($e),
+            'exception_message' => $e->getMessage(),
+            'status'            => 'bad'
+        ];
 
-        $str = json_encode($data, JSON_PRETTY_PRINT);
-        $message = '```' . $str . '```';
-
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $message);
+        $this->send($data);
     }
 
-    public function queueOperationFailure($operation, $e)
+    public function send($data)
     {
-        $message = 'Failed operation: ' . $operation . PHP_EOL;
+        $message = $data['message'];
+        $color   = $data['status'];
 
-        $message .= 'Exception class: ' . get_class($e) . ', ' .
-                    'Exception message: ' . $e->getMessage();
+        unset($data['message'], $data['status']);
 
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $message);
-    }
-
-    public function sendSlackNotification($job, $message)
-    {
-        $channel = '#settlements';
-        $username = 'settlements';
-
-        $job->delete();
-
-        $app = \App::getFacadeRoot();
-        $app['slack']->send($message, $channel, $username);
+        $this->slackPost($message, $data, '', [
+            'channel'   => '#settlements',
+            'username'  => 'settlements',
+            'color'     => $color
+        ]);
     }
 }

@@ -4,6 +4,7 @@ namespace Models\Payment;
 
 use EE\Exception;
 use Models\Base;
+use Models\Merchant\Methods;
 use Models\Payment;
 use Models\Card;
 use EE\Error\ErrorCode;
@@ -62,15 +63,6 @@ class Repository extends Base\Repository
         $repo::lockForUpdate()->findOrFail($id);
     }
 
-    public function expireAuthorizedPayments($timestamp)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::CREATED_AT, '<', $timestamp)
-                    ->update(array(Payment\Entity::STATUS => 'authorization_expired'));
-    }
-
     public function timeoutOldPayments($timestamp)
     {
         $repo = $this->repo;
@@ -91,6 +83,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->orderBy(Payment\Entity::MERCHANT_ID)
                     ->get();
     }
 

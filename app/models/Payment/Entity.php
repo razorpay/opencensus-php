@@ -346,7 +346,7 @@ class Entity extends Base\PublicEntity
 
     public function isCaptured()
     {
-        return ($this->getAttribute(self::CAPTURED_AT) !== null);
+        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
     }
 
     public function isPartiallyOrFullyRefunded()
@@ -372,6 +372,11 @@ class Entity extends Base\PublicEntity
     protected function isStatus($status)
     {
         return ($this->getAttribute(self::STATUS) === $status);
+    }
+
+    public function hasBeenCaptured()
+    {
+        return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
     public function isNetbanking()
@@ -527,6 +532,21 @@ class Entity extends Base\PublicEntity
         return floor($diff / (60*24*24));
     }
 
+    /**
+     * This function returns the current payment method
+     * and a detail string for that particular method
+     * as a 2 length array. The array is numeric, instead
+     * of associative because the detail key would be dependent
+     * on the method itself otherwise (card.number, wallet.name, bank.name)
+     * for eg.
+     *
+     * As such, we send a numeric array with the following details:
+     *
+     * ['card', $formattedCardNumber] (Just last 4 digits)
+     * ['netbanking', $bankName] (Readable name for the bank)
+     * ['wallet', $walletName] (Readable wallet name like PayTM)
+     * @return array Payment Method Details
+     */
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());
@@ -569,6 +589,12 @@ class Entity extends Base\PublicEntity
     public function getOrderId()
     {
         $notes = $this->getNotes();
+
+        // Shortcut for direct order_id being set
+        if (isset($notes['order_id']))
+        {
+            return $notes['order_id'];
+        }
 
         foreach ($notes as $key => $value)
         {

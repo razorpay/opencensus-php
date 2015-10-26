@@ -39,7 +39,7 @@ class Service extends Base\Service
         $map = array(
             'refund'            => Models\Payment\Refund::class,
             'iin'               => Models\Card\IIN::class,
-            'dailysettlement'   => Models\Settlement\Daily::class,
+            'daily_settlement'  => Models\Settlement\Daily::class,
             'atom'              => Gateway\Atom::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
             'amex'              => Gateway\Amex::class,
@@ -64,14 +64,28 @@ class Service extends Base\Service
 
     protected function getEntityClass($entity)
     {
-        return $this->getEntityNamespace($entity) . '\Entity';
+        $class = $this->getEntityNamespace($entity) . '\Entity';
+
+        if (class_exists($class) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity: ' . $entity);
+        }
+
+        return $class;
     }
 
     protected function getEntityRepository($entity)
     {
-        $namespace = $this->getEntityNamespace($entity);
+        $class = $this->getEntityNamespace($entity) . '\Repository';
 
-        return $namespace.'\Repository';
+        if (class_exists($class) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid repository: ' . $entity);
+        }
+
+        return $class;
     }
 
     public function sendTestNewsletter($input)

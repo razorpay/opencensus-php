@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e5b27a79a081d2c935e84b443502e464",
-    "content-hash": "0cc91c434c0defd830d4b0f4fdd7366d",
+    "hash": "0ad0b36ee726100ee78f91fba8e16a95",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -232,23 +231,25 @@
         },
         {
             "name": "d11wtq/boris",
-            "version": "v1.0.10",
+            "version": "v1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/borisrepl/boris.git",
-                "reference": "31055b15e2d3fe47f31f6aa8e277f8f3fc7eb483"
+                "reference": "125dd4e5752639af7678a22ea597115646d89c6e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/borisrepl/boris/zipball/31055b15e2d3fe47f31f6aa8e277f8f3fc7eb483",
-                "reference": "31055b15e2d3fe47f31f6aa8e277f8f3fc7eb483",
+                "url": "https://api.github.com/repos/borisrepl/boris/zipball/125dd4e5752639af7678a22ea597115646d89c6e",
+                "reference": "125dd4e5752639af7678a22ea597115646d89c6e",
                 "shasum": ""
             },
             "require": {
+                "php": ">=5.3.0"
+            },
+            "suggest": {
                 "ext-pcntl": "*",
                 "ext-posix": "*",
-                "ext-readline": "*",
-                "php": ">=5.3.0"
+                "ext-readline": "*"
             },
             "bin": [
                 "bin/boris"
@@ -260,11 +261,7 @@
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A tiny, but robust REPL (Read-Evaluate-Print-Loop) for PHP.",
-            "time": "2015-03-01 08:05:19"
+            "time": "2014-01-17 12:21:18"
         },
         {
             "name": "doctrine/annotations",
@@ -1361,17 +1358,69 @@
             "time": "2015-05-06 17:52:51"
         },
         {
-            "name": "monolog/monolog",
-            "version": "1.17.1",
+            "name": "maknz/slack",
+            "version": "dev-queue",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "0524c87587ab85bc4c2d6f5b41253ccb930a5422"
+                "url": "https://github.com/razorpay/slack.git",
+                "reference": "733cfda4cac3323612428f549d967404e57317d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/0524c87587ab85bc4c2d6f5b41253ccb930a5422",
-                "reference": "0524c87587ab85bc4c2d6f5b41253ccb930a5422",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/733cfda4cac3323612428f549d967404e57317d8",
+                "reference": "733cfda4cac3323612428f549d967404e57317d8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "guzzlehttp/guzzle": "~6.0|~5.0|~4.0",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "illuminate/queue": "4.*",
+                "mockery/mockery": "0.9.*",
+                "phpunit/phpunit": "4.2.*"
+            },
+            "suggest": {
+                "illuminate/support": "Required for Laravel support"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Maknz\\Slack\\": "src/"
+                }
+            },
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "maknz",
+                    "email": "github@mak.geek.nz"
+                }
+            ],
+            "description": "A simple PHP package for sending messages to Slack, with a focus on ease of use and elegant syntax. Includes Laravel support out of the box.",
+            "keywords": [
+                "laravel",
+                "slack"
+            ],
+            "support": {
+                "source": "https://github.com/razorpay/slack/tree/queue"
+            },
+            "time": "2015-10-15 00:00:30"
+        },
+        {
+            "name": "monolog/monolog",
+            "version": "1.17.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Seldaek/monolog.git",
+                "reference": "bee7f0dc9c3e0b69a6039697533dca1e845c8c24"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/bee7f0dc9c3e0b69a6039697533dca1e845c8c24",
+                "reference": "bee7f0dc9c3e0b69a6039697533dca1e845c8c24",
                 "shasum": ""
             },
             "require": {
@@ -1385,10 +1434,11 @@
                 "aws/aws-sdk-php": "^2.4.9",
                 "doctrine/couchdb": "~1.0@dev",
                 "graylog2/gelf-php": "~1.0",
+                "jakub-onderka/php-parallel-lint": "0.9",
                 "php-console/php-console": "^3.1.3",
                 "phpunit/phpunit": "~4.5",
                 "phpunit/phpunit-mock-objects": "2.3.0",
-                "raven/raven": "~0.11",
+                "raven/raven": "^0.13",
                 "ruflin/elastica": ">=0.90 <3.0",
                 "swiftmailer/swiftmailer": "~5.3",
                 "videlalvaro/php-amqplib": "~2.4"
@@ -1434,7 +1484,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2015-08-31 09:17:37"
+            "time": "2015-10-14 12:51:02"
         },
         {
             "name": "nesbot/carbon",
@@ -1529,16 +1579,16 @@
         },
         {
             "name": "patchwork/utf8",
-            "version": "v1.2.3",
+            "version": "v1.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tchwork/utf8.git",
-                "reference": "a7a9a987d01d052ff9c99510ecbd07ebc6c270f2"
+                "reference": "25a55c6c668de61cc3b97aab4237ebf6dadabe17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tchwork/utf8/zipball/a7a9a987d01d052ff9c99510ecbd07ebc6c270f2",
-                "reference": "a7a9a987d01d052ff9c99510ecbd07ebc6c270f2",
+                "url": "https://api.github.com/repos/tchwork/utf8/zipball/25a55c6c668de61cc3b97aab4237ebf6dadabe17",
+                "reference": "25a55c6c668de61cc3b97aab4237ebf6dadabe17",
                 "shasum": ""
             },
             "require": {
@@ -1584,7 +1634,7 @@
                 "utf-8",
                 "utf8"
             ],
-            "time": "2015-06-25 08:17:49"
+            "time": "2015-10-14 08:58:12"
         },
         {
             "name": "phpoffice/phpexcel",
@@ -3440,16 +3490,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "2.2.3",
+            "version": "2.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "ef1ca6835468857944d5c3b48fa503d5554cff2f"
+                "reference": "eabf68b476ac7d0f73793aada060f1c1a9bf8979"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/ef1ca6835468857944d5c3b48fa503d5554cff2f",
-                "reference": "ef1ca6835468857944d5c3b48fa503d5554cff2f",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/eabf68b476ac7d0f73793aada060f1c1a9bf8979",
+                "reference": "eabf68b476ac7d0f73793aada060f1c1a9bf8979",
                 "shasum": ""
             },
             "require": {
@@ -3498,7 +3548,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-09-14 06:51:16"
+            "time": "2015-10-06 15:47:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -3680,16 +3730,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.8.10",
+            "version": "4.8.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "463163747474815c5ccd4ae12b5b355ec12158e8"
+                "reference": "be067d6105286b74272facefc2697038f8807b77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/463163747474815c5ccd4ae12b5b355ec12158e8",
-                "reference": "463163747474815c5ccd4ae12b5b355ec12158e8",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/be067d6105286b74272facefc2697038f8807b77",
+                "reference": "be067d6105286b74272facefc2697038f8807b77",
                 "shasum": ""
             },
             "require": {
@@ -3748,7 +3798,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-10-01 09:14:30"
+            "time": "2015-10-14 13:49:40"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -4091,16 +4141,16 @@
         },
         {
             "name": "sebastian/global-state",
-            "version": "1.0.0",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/global-state.git",
-                "reference": "c7428acdb62ece0a45e6306f1ae85e1c05b09c01"
+                "reference": "bc37d50fea7d017d3d340f230811c9f1d7280af4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/global-state/zipball/c7428acdb62ece0a45e6306f1ae85e1c05b09c01",
-                "reference": "c7428acdb62ece0a45e6306f1ae85e1c05b09c01",
+                "url": "https://api.github.com/repos/sebastianbergmann/global-state/zipball/bc37d50fea7d017d3d340f230811c9f1d7280af4",
+                "reference": "bc37d50fea7d017d3d340f230811c9f1d7280af4",
                 "shasum": ""
             },
             "require": {
@@ -4138,7 +4188,7 @@
             "keywords": [
                 "global state"
             ],
-            "time": "2014-10-06 09:23:50"
+            "time": "2015-10-12 03:26:01"
         },
         {
             "name": "sebastian/recursion-context",
@@ -4283,6 +4333,7 @@
     "stability-flags": {
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
+        "maknz/slack": 20,
         "codacy/coverage": 20
     },
     "prefer-stable": false,

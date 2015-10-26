@@ -39,6 +39,13 @@ class Repository extends Base\Repository
         $this->validateDate($params);
     }
 
+    public function getIfFeesIsNull()
+    {
+        $repo = $this->repo;
+
+        return $repo::whereNull(Daily\Entity::FEES)->get();
+    }
+
     protected function validateDate($params)
     {
         if (isset($params['date']) === false)

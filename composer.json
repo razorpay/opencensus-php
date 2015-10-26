@@ -12,12 +12,17 @@
         "mailgun/mailgun-php": "~1.8",
         "aws/aws-sdk-php-laravel": "1.*",
         "symfony/event-dispatcher": "~2.2",
+        "maknz/slack": "dev-queue",
         "cebe/markdown": "~1.0.1"
     },
     "repositories": [
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/spine.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/slack.git"
         }
     ],
     "require-dev": {

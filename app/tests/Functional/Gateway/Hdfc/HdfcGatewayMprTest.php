@@ -26,7 +26,7 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
-        $this->mockSlack(5);
+        //$this->mockSlack(5);
 
         $this->mockDashboardRequest(2);
 
@@ -153,7 +153,7 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function fetchAndMatchDailySettlement()
     {
-        $content = $this->getEntities('dailysettlement', [], true);
+        $content = $this->getEntities('daily_settlement', [], true);
 
         $data = array(
             'entity' => 'collection',

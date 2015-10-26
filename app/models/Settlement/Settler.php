@@ -168,14 +168,14 @@ class Settler
     {
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
+        (new SlackNotification)->success('setl_initiate', $data);
 
         Dashboard::send('settlement', $settlements);
     }
 
     protected function failureNotification($exception)
     {
-        (new SlackNotification)->queueOperationFailure('setl_initiate', $exception);
+        (new SlackNotification)->failure('setl_initiate', $exception);
     }
 
     protected function process($txns, $channel)
@@ -199,11 +199,12 @@ class Settler
         $totalSetlAmount = 0;
         $totalSetlGatewayFee = 0;
         $totalSetlApiFee = 0;
+        $totalSetlFee = 0;
 
         while ($i < $count)
         {
             // Settlement amount
-            $setlAmount = $setlGatewayFee = $setlApiFee = 0;
+            $setlAmount = $setlGatewayFee = $setlApiFee = $setlFee = 0;
             $setlTxns = new Base\PublicCollection;
 
             // Get merchant
@@ -224,6 +225,7 @@ class Settler
                 $setlAmount += $txn->getCredit() - $txn->getDebit();
                 $setlGatewayFee += $txn->getGatewayFee();
                 $setlApiFee += $txn->getApiFee();
+                $setlFee += $txn->getFee();
 
                 $setlTxns->push($txn);
                 $i++;
@@ -236,13 +238,14 @@ class Settler
             }
 
             $setl = (new Settlement\Merchant($merchant, $channel))->settle(
-                                        $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
+                                        $setlTxns, $setlAmount, $setlFee, $setlApiFee, $setlGatewayFee);
 
             $settlements->push($setl);
             $txnsSettled = $txnsSettled->merge($setlTxns);
 
             $totalSetlAmount += $setlAmount;
             $totalSetlApiFee += $setlApiFee;
+            $totalSetlFee += $setlFee;
             $totalSetlGatewayFee += $setlGatewayFee;
         }
 
@@ -261,6 +264,7 @@ class Settler
         $this->dailySettlement->amount = $totalSetlAmount;
         $this->dailySettlement->api_fee = $totalSetlApiFee;
         $this->dailySettlement->gateway_fee = $totalSetlGatewayFee;
+        $this->dailySettlement->fees = $totalSetlFee;
 
         $amounts = array(
             'amount' => $totalSetlAmount,

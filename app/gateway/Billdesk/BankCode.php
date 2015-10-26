@@ -32,6 +32,7 @@ class BankCodes
         IFSC::IOBA => 'IOB',
         IFSC::JAKA => 'JKB',
         IFSC::KARB => 'KBL',
+        IFSC::KKBK => '162',
         IFSC::KVBL => 'KVB',
         IFSC::ORBC => 'OBC',
         IFSC::PMCB => 'PMC',

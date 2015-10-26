@@ -25,6 +25,10 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    /**
+     *  This updates the merchant email
+     *  Don't use lightly
+     */
     public function putMerchantEmail($id)
     {
         $input = Input::all();

@@ -8,7 +8,6 @@
     <table class="container" style="background: #EBECEE;">
       <tr>
         <td>
-          @include('emails.partials.header', ['message' => $message])
           <!-- Text Header -->
           <table class="container">
             <tr>
@@ -37,7 +36,6 @@
               </td>
             </tr>
           </table>
-          @include('emails.partials.header_image', ['image' => 'report', 'alt' => 'Daily Transaction Report'], ['message' => $message])
           <!-- Header Subtext -->
           <table class="container">
             <tr>
@@ -50,7 +48,7 @@
                           <td class="center">
                             <center>
                             <h2 class="center" style="text-align: center;">
-                              <a href="" style="color:white; text-decoration:none;">{{{$merchant['billing_label']}}}</a>
+                              {{{$merchant['billing_label']}}}
                             </h2>
                             </center>
                           </td>
@@ -130,7 +128,6 @@
               </td>
             </tr>
           </table>
-          @include('emails.partials.separator', ['message' => $message])
 @if($captured['payments']['count'] > 0)
           <table class="white container">
             <tr>
@@ -218,7 +215,6 @@
           </table>
           @endforeach
           <!-- Note that separator is part of captured section -->
-          @include('emails.partials.separator', ['message' => $message])
 @endif
 @if ($authorized['payments']['count'] > 0)
           <table class="white container">
@@ -307,7 +303,7 @@
           </table>
           @endforeach
           <!-- Note that separator is part of authorized section -->
-          @include('emails.partials.separator', ['message' => $message])
+
 @endif
 @if($settlement)
 <!-- Settlement Section -->
@@ -371,7 +367,7 @@
           <!-- There is no separator after settlements -->
 @endif
 
-          @include('emails.partials.footer', ['message' => $message])
+
         </td>
       </tr>
     </table>

@@ -8,6 +8,7 @@ class Holidays
 {
     public static $holidays = array(
         [2, 10],
+        [22, 10],
     );
 
     public static function isTodayHoliday($mode)

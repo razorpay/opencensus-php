@@ -159,15 +159,6 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
-    public function expireAuthorizations()
-    {
-        $timestamp = time() - 24 * 60 * 60;
-
-        $count = (new Payment\Repository)->expireAuthorizedPayments($timestamp);
-
-        return array('count' => $count);
-    }
-
     public function notifyAuthorizedPayments()
     {
         $date = Carbon::yesterday('Asia/Kolkata');
@@ -180,21 +171,19 @@ class Service extends Base\Service
 
         if ($count !== 0)
         {
-            $paymentIds = $payments->getIds();
-
-            $channel = '#transactions';
-            $username = 'transactions';
+            $payments->getIds();
 
             $date->subDay(1);
 
             $message = 'Payment authorizations till ' . $date->format('d-m-y');
 
+            $data = [];
             foreach ($payments as $payment)
             {
-                $message .= ' \n ' . $payment->getPublicId();
+                $data[$payment->getPublicId()] =  $payment->getAmount();
             }
 
-            $this->app['slack']->send($message, $channel, $username);
+            $this->slackPost($message, $data);
         }
 
         return ['count' => $count];
@@ -341,11 +330,42 @@ class Service extends Base\Service
             'error'         => $error,
             'total time'    => $time . ' secs');
 
-        $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
+        $message = 'Payment verify result';
 
-        $this->app['slack']->send($message, '#transactions', 'transactions');
+        $this->slackPost($message, $results);
 
         return $results;
+    }
+
+    public function sendReminderMerchantMailForAuthorizedPayments()
+    {
+        $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false);
+        $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true);
+    }
+
+    public function sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay($day, $final = false)
+    {
+        $today = Carbon::today('Asia/Kolkata');
+        $from = $today->subDays($day)->timestamp;
+        $to = $today->subDays($day + 1)->timestamp;
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
+                                                $from, $to);
+
+        $grouped = $payments->groupBy(Payment\Entity::MERCHANT_ID);
+
+        $subject = 'Reminder: The authorized payment(s) will be refunded after 2 days if not captured';
+
+        if ($final)
+        {
+            $subject = 'Final reminder: The authorized payment(s) will be refuneded after 1 day if not captured';
+        }
+
+        foreach ($grouped as $merchantId => $payments)
+        {
+            // @todo: nemo
+            // Send mail to the merchants
+        }
     }
 
     protected function processor()

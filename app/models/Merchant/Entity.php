@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const BILLING_LABEL             = 'billing_label';
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
+    const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
 
@@ -39,11 +40,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
-        self::CATEGORY,
         self::WEBSITE,
+        self::CATEGORY,
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
@@ -77,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT          => null,
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
+        self::SETTLEMENT_SCHEDULE   => 3,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -216,6 +219,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::CATEGORY];
     }
 
+    public function getSettlementScheduleAttribute()
+    {
+        return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
+    }
+
     public function getWebsite()
     {
         return $this->attributes[self::WEBSITE];
@@ -236,9 +244,41 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
+    /**
+     * Returns all transaction emails associated with the merchant
+     * @return array array of email addresses
+     */
     public function getTransactionReportEmail()
     {
-        return $this->attributes[self::TRANSACTION_REPORT_EMAIL];
+        return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
+    }
+
+    public function getTransactionReportEmailAttribute()
+    {
+        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
+
+        // Just so there is no whitespace before or after the email
+        return array_map('trim', $emails);
+    }
+
+    public function setTransactionReportEmailAttribute($emails)
+    {
+        if (is_array($emails))
+        {
+            $this->attributes[self::TRANSACTION_REPORT_EMAIL] =
+                implode(',', $emails);
+        }
+        else
+        {
+            // This is only called for the factory instances
+            // of the merchant entity
+            $this->attributes[self::TRANSACTION_REPORT_EMAIL] = $emails;
+        }
+    }
+
+    public function getSettlementSchedule()
+    {
+        return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
     }
 
     public function holdFunds()
@@ -250,6 +290,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getReceiptEmailEnabledAttribute();
     }
+
 
     public function getRedactedAccountNumber()
     {
@@ -263,9 +304,14 @@ class Entity extends Base\PublicEntity
             // This does not give a precise result,
             // but it looks good in groups of 4
             //
+            // (strlen($ac) - 4) = Length of the segment we want to convert to X
+            // divide by 4 to get number of such segments
+            // and take ceil so we have a whole number of these
 
             $repeat = ceil((strlen($ac) - 4)/4);
 
+            // repeat this section $repeat times
+            // and then just append the original last 4 digits
             return str_repeat('XXXX-', $repeat) . substr($ac, -4);
         }
         else
