@@ -48,6 +48,20 @@ class TerminalTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testRestoreTerminal()
+    {
+        $merchant = $this->fixtures
+                         ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
+                         ->addTerminal('atom', ['id' => 'testatomrandom', 'used_count' => 5])
+                         ->get();
+
+        $t = $this->deleteTerminal2('testatomrandom');
+        $this->assertNotNull($t['deleted_at']);
+
+        $t = $this->restoreTerminal('testatomrandom');
+        $this->assertNull($t['deleted_at']);
+    }
+
     public function testEditAxisMigsTerminal()
     {
         $terminal = $this->fixtures->create(

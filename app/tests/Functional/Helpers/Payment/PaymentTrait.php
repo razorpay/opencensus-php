@@ -385,6 +385,29 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function deleteTerminal2($tid)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid,
+            'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function restoreTerminal($tid)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid.'/restore',
+            'method' => 'put');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+
     protected function editTerminal($tid, $input)
     {
         $request = array(

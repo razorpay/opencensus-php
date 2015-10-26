@@ -234,4 +234,9 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
     }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
+    }
 }
