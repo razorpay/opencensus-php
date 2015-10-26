@@ -16,9 +16,9 @@ use Models\Adjustment;
 
 class Core extends Base\Core
 {
-    protected $entities = array();
+    protected $merchantBalance = null;
 
-    protected $record;
+    protected $nodalBalance = null;
 
     public function __construct()
     {
@@ -80,7 +80,7 @@ class Core extends Base\Core
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
 
-        $freeCredits = $merchant->getCredits();
+        $freeCredits = $merchantBalance->getCredits();
 
         $amount = $payment->getAmount();
 
