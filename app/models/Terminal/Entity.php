@@ -72,6 +72,8 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = array('method');
 
+    protected static $modifiers = array('inputRemoveBlanks');
+
     protected $defaults = array(
         self::CATEGORY                  => null,
         self::GATEWAY_MERCHANT_ID       => null,
@@ -233,5 +235,10 @@ class Entity extends Base\PublicEntity
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
+    }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 }

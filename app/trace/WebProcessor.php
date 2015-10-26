@@ -64,9 +64,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'context'       => $this->context);
 
         $userData = array(
-            'script_owner'  => get_current_user(),
-            'user_info'     => posix_getpwuid(posix_getuid()),
-            'group_info'    => posix_getgrgid(posix_getgid()),
+            'merchant'      => $this->request->headers->get('X-Dashboard-Merchant'),
+            'admin_user'    => $this->request->headers->get('X-Dashboard-Username'),
         );
 
         $serverData = array_merge($serverData, $userData);

@@ -36,13 +36,13 @@
                   <td class="center lighttext">
                     <center style="padding-left: 33px;">
                       <a href="https://facebook.com/razorpay" class="logo">
-                        <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/facebook.png'); ?>" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                        <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook"/>
                       </a>
                       <a href="https://twitter.com/razorpay" class="logo">
-                        <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/twitter.png'); ?>" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                        <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter"/>
                       </a>
                       <a href="https://github.com/razorpay" class="logo">
-                        <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/github.png'); ?>" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                        <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub"/>
                       </a>
                     </center>
                   </td>
