@@ -225,6 +225,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
+    public function setEscrowBalance($balance)
+    {
+        assert ($balance >= 0);
+
+        $this->setAttribute(self::ESCROW_BALANCE, $balance);
+    }
+
+    public function setBalance($balance)
+    {
+        assert ($balance >= 0);
+
+        $this->setAttribute(self::BALANCE, $balance);
+    }
+
     public function setPublicEntityIdAttribute(array & $array)
     {
         $entity = Transaction\Type::getEntityClass($array[self::TYPE]);

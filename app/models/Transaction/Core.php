@@ -257,26 +257,18 @@ class Core extends Base\Core
 
     public function updateBalances(Transaction\Entity $txn, $updateEscrowBalance = true)
     {
-        $channel = $txn->getChannel();
-
-        $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
-
-        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
-
-        $merchantBalance->updateBalance($txn);
-        $this->merchantRepo->updateBalance($merchantBalance);
+        $txn = $this->updateMerchantBalance($txn);
 
         if ($updateEscrowBalance === true)
         {
-            $nodalBalance->updateBalance($txn);
-            $this->merchantRepo->updateBalance($nodalBalance);
+            $txn = $this->updateEscrowBalance($txn);
         }
+        else
+        {
+            $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
 
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $txn->fill($attributes);
+            $txn->setEscrowBalance($nodalBalance->getBalance());
+        }
 
         return $txn;
     }
@@ -289,11 +281,7 @@ class Core extends Base\Core
         $merchantBalance->updateBalance($txn);
         $this->merchantRepo->updateBalance($merchantBalance);
 
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-        );
-
-        $txn->fill($attributes);
+        $txn->setBalance($merchantBalance->getBalance());
 
         return $txn;
     }
@@ -307,14 +295,10 @@ class Core extends Base\Core
         $nodalBalance->updateBalance($txn);
         $this->merchantRepo->updateBalance($nodalBalance);
 
-        $attributes = array(
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $txn->fill($attributes);
+        $txn->setEscrowBalance($nodalBalance->getBalance());
 
         return $txn;
     }
-
 
     protected function getEscrowBalanceLockForUpdate($channel)
     {
