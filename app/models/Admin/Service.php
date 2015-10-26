@@ -324,42 +324,39 @@ class Service extends Base\Service
 
     public function postEditMerchant($id, $input)
     {
-        $error = (new Merchant\Validator)->validateInput('edit', $input)->messages();
+        $error = [];
 
         $data = [];
 
-        if (empty($error))
+        $this->setApiCredentials();
+
+        try
         {
-            $this->setApiCredentials();
-
-            try
+            if (isset($input['transaction_report_email']))
             {
-                if (isset($input['transaction_report_email']))
-                {
-                    $csvEmail = $input['transaction_report_email'];
-                    $input['transaction_report_email'] =
-                        array_map(
-                            'trim',
-                            explode(',', $input['transaction_report_email'])
-                        );
-                }
-
-                $data = $this->api
-                            ->merchant
-                            ->fetch($id)
-                            ->edit($input)
-                            ->toArray();
-
-                if (isset($input['transaction_report_email']))
-                {
-                    // Only when it is changed on API side we update on the dashboard side as well
-                    $error = MerchantDetails\Service::changeTransactionEmail($id, $csvEmail);
-                }
+                $csvEmail = $input['transaction_report_email'];
+                $input['transaction_report_email'] =
+                    array_map(
+                        'trim',
+                        explode(',', $input['transaction_report_email'])
+                    );
             }
-            catch (\Razorpay\Api\Errors\BadRequestError $e)
+
+            $data = $this->api
+                        ->merchant
+                        ->fetch($id)
+                        ->edit($input)
+                        ->toArray();
+
+            if (isset($input['transaction_report_email']))
             {
-                $error[] = $e->getMessage();
+                // Only when it is changed on API side we update on the dashboard side as well
+                $error = MerchantDetails\Service::changeTransactionEmail($id, $csvEmail);
             }
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
         }
 
         return array($error, $data);

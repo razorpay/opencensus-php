@@ -88,10 +88,10 @@
         <a href class="list-group-item" ng-click="openAddAdjustment()">
           Add Adjustment
         </a>
-        <a href class="list-group-item" ng-click="openEditMerchant()">
-          Edit Merchant MCC, Website, DBA &amp; International
+        <a tooltip="Click me!" href class="list-group-item" ng-click="openEditMerchant()">
+          Edit Merchant
         </a>
-        <a href class="list-group-item" ng-click="openEditMerchantEmail()">
+        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
           Edit Merchant Email
         </a>
         <a href class="list-group-item" ng-click="openAutofillForms()">
@@ -205,6 +205,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.hold_funds == 1 ? 'Yes' : 'No'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.hold_funds == 1, 'fa-times text-danger':merchant.details.hold_funds == 0}"></i></span>
           Funds on Hold
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
+          Settlement Schedule <i class="fa fa-clock-o"></i>
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
@@ -511,7 +515,7 @@
     <h3 class="modal-title">Edit Merchant</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join()}">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule}">
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
         <div class="col-lg-10" >
@@ -543,6 +547,12 @@
         <label for="transaction_report_email" class="col-lg-2 control-label">Transaction Report Email:</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="transaction_report_email" ng-model="merchant.transaction_report_email" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="settlement_schedule" class="col-lg-2 control-label">Settlement Schedule</label>
+        <div class="col-lg-10">
+          <input type="number" min="1" max="30" class="form-control m-b" name="settlement_schedule" ng-model="merchant.settlement_schedule" />
         </div>
       </div>
     </form>

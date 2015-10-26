@@ -58,16 +58,6 @@ class Validator extends Base\Validator
         'banks'                                      => 'required|array'
     );
 
-    protected static $editRules = array(
-        'website'                   => 'sometimes|url',
-        'category'                  => 'sometimes|numeric|digits:4',
-        'international'             => 'sometimes|boolean',
-        'billing_label'             => 'sometimes|max:255',
-        'hold_funds'                => 'sometimes|in:0,1',
-        'receipt_email_enabled'     => 'sometimes|in:0,1',
-        'transaction_report_email'  => 'sometimes|max:255'
-    );
-
     protected static $api_dashboard_mappings = array(
             'id'        => 'id',
             'name'      => 'name',
