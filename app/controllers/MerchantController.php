@@ -207,8 +207,6 @@ class MerchantController extends BaseController
               ->subject('New Contact form submission - '.$input['name']);
         });
 
-        (new Merchant\Service)->slackPost('New Sales Lead!', $input, '#sales', '@channel', 'warning');
-
         $response = AppResponse::jsonResponse([]);
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
 
