@@ -16,6 +16,7 @@
         "guzzlehttp/guzzle": "~4.0",
         "maatwebsite/excel": "1.*",
         "vipsoft/unzip": "^1.1",
+        "zae/strict-transport-security": "0.0.2",
         "schuppo/password-strength": "~0.7"
     },
     "require-dev": {

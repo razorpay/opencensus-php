@@ -126,6 +126,10 @@ return array(
         'Trace\TraceServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
+
+        // HSTS Headers don't work on HTTP
+        // So we don't care if its available everywhere
+        'Zae\StrictTransportSecurity\ServiceProvider\L4HTSTServiceProvider'
 	),
 
 	/*
