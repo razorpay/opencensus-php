@@ -43,7 +43,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    'transaction_report_email'=>'nodal@razorpay.com'
+                    'transaction_report_email'=>'nodal@razorpay.com',
+                    'settlement_schedule' => 3,
                     )
                 );
 
@@ -63,7 +64,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    'transaction_report_email'=>'nodal@razorpay.com'
+                    'transaction_report_email'=>'nodal@razorpay.com',
+                    'settlement_schedule' => 3,
                     )
                 );
 
@@ -83,7 +85,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    'transaction_report_email'=>'fees@razorpay.com'
+                    'transaction_report_email'=>'fees@razorpay.com',
+                    'settlement_schedule' => 3,
                     )
                 );
 
@@ -104,7 +107,8 @@ class DatabaseSeeder extends Seeder
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    'transaction_report_email'=>'test@razorpay.com'
+                    'transaction_report_email'=>'test@razorpay.com',
+                    'settlement_schedule' => 3,
                     )
                 );
 
@@ -125,7 +129,8 @@ class DatabaseSeeder extends Seeder
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
-                    'transaction_report_email'=>'demo@razorpay.com'
+                    'transaction_report_email'=>'demo@razorpay.com',
+                    'settlement_schedule' => 3,
                     )
                 );
 

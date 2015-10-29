@@ -1,5 +1,6 @@
 <?php
 $fonts = 'https://cdn.razorpay.com/lato';
+// $checkout = 'http://checkout.pronav.in/dist';
 ?>
 <!DOCTYPE html>
 <html dir="ltr">
