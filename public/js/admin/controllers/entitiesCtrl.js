@@ -269,12 +269,12 @@ app.controller('EntitiesCtrl', [
     $scope.next = function () {
       clear('id');
       $scope.entity.skip += $scope.count;
-      generateTable();
+      $scope.generateTable();
     };
     $scope.prev = function () {
       clear('id');
       $scope.entity.skip -= $scope.count;
-      generateTable();
+      $scope.generateTable();
     };
     $scope.search = function () {
       clear('skip');
@@ -318,7 +318,7 @@ app.controller('EntitiesCtrl', [
     $scope.showTable = function () {
       clear('id');
       clear('skip');
-      generateTable();
+      $scope.generateTable();
     };
 
     $scope.getStatusClass = function (status) {
@@ -390,13 +390,22 @@ app.controller('EntitiesCtrl', [
       }
       return query;
     }
-    function generateTable() {
+
+    $scope.generateTable = function(csv) {
       if (!$scope.entity_type) {
         console.log('Error: No Entity Type Specified');
         return;
       }
       var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters, $scope.from, $scope.to);
-      var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type, {
+
+      var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
+
+      if (csv) {
+        window.open(url + '/csv');
+        return;
+      }
+
+      var request = $http.get(url, {
         params: query
       });
 

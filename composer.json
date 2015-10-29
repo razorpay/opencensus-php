@@ -16,7 +16,8 @@
         "guzzlehttp/guzzle": "~4.0",
         "maatwebsite/excel": "1.*",
         "vipsoft/unzip": "^1.1",
-        "schuppo/password-strength": "~0.7"
+        "schuppo/password-strength": "~0.7",
+        "league/csv": "7.1.2"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",

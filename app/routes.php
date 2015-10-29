@@ -205,7 +205,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
     });
 
-    Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
+    Route::get('/admin/{mode}/fetchentity/{entity}/{format?}', 'AdminController@getMultipleEntities');
 
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 
