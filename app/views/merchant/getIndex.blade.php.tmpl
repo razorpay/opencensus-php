@@ -84,6 +84,10 @@
     }
     </script>
     <script>
+    (function(){
+      if (typeof SupportKit === 'undefined') {
+        return false;
+      }
       function createCookie(name, value, days){
         if (days) {
           var date = new Date();
@@ -179,6 +183,7 @@
           }
         })
       }
+    })();
     </script>
 
     <!-- Merchant Js-->
