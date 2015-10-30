@@ -29,8 +29,28 @@ class AppResponse
 
     public static function csvResponse(array $data)
     {
-        $csv = Writer::createFromFileObject(new SplTempFileObject());
+        foreach ($data['items'] as &$item)
+        {
+            foreach ($item as $key => $value)
+            {
+                if (is_array($value))
+                {
+                    unset($item[$key]);
+
+                    if(($key = array_search($key, $data['headings'])) !== false)
+                    {
+                        unset($data['headings'][$key]);
+                    }
+                }
+            }
+        }
+
+        $file = new SplTempFileObject();
+
+        $csv = Writer::createFromFileObject($file);
+
         $csv->insertOne($data['headings']);
+
         $csv->insertAll($data['items']);
 
         $response = Response::make($csv);
