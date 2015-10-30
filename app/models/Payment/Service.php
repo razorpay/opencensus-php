@@ -342,7 +342,7 @@ class Service extends Base\Service
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
         return [
-            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(0, false),
+            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
             'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
         ];
     }
