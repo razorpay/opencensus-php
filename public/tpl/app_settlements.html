@@ -40,7 +40,7 @@
           <tr ng-repeat="row in entity.items">
             <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.amount/100 | currency:"INR "}}</td>
-            <td>{{row.created_at*1000 | fromNow}}</td>
+            <td>{{row.created_at*1000 | date:'medium'}}</td>
             <td>{{row.fees/100 | currency:"INR" }}</td>
           </tr>
           <tr ng-show="entity.count === 0">
