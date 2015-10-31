@@ -21,7 +21,8 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->repo = new Merchant\Repository();
+        $this->repo = new Merchant\Repository;
+        $this->balanceRepo = new Merchant\Balance\Repository;
     }
 
     /**
@@ -84,13 +85,13 @@ class Service extends Base\Service
             ($merchant->getActivatedAttribute() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
-            $balance[Balance::ID] = $merchantId;
-            $balance[Balance::BALANCE] = 0;
+            $balance[Balance\Entity::ID] = $merchantId;
+            $balance[Balance\Entity::BALANCE] = 0;
 
             return $balance;
         }
 
-        $balance = $this->repo->getMerchantBalance($merchant);
+        $balance = $this->balanceRepo->getMerchantBalance($merchant);
 
         return $balance->toArray();
     }
@@ -101,7 +102,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $balance = $this->repo->transaction(function () use ($freeCredits)
+        $balance = $this->balanceRepo->transaction(function () use ($freeCredits)
             {
                 $this->repo->editMerchantFreeCredits($freeCredits);
             });

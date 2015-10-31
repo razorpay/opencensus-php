@@ -184,7 +184,7 @@ trait Refund
     {
         $merchant = $refund->merchant;
 
-        $balance = (new Merchant\Repository)->getMerchantBalance($merchant);
+        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
         if ($balance->getBalance() < $refund->getAmount())
         {

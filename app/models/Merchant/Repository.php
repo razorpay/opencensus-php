@@ -25,68 +25,6 @@ class Repository extends Base\Repository
         Entity::METHODS                 => 'sometimes|string',
     );
 
-    public function getBalanceLockForUpdate($id)
-    {
-        return Balance\Entity::lockForUpdate()->findOrFail($id);
-    }
-
-    public function getMerchantBalanceLockForUpdate($merchant)
-    {
-        return $this->getBalanceLockForUpdate($merchant->getKey());
-    }
-
-    public function getMerchantBalance($merchant)
-    {
-        return Balance\Entity::findOrFailPublic($merchant->getId());
-    }
-
-    public function editMerchantFreeCredits($merchant, $freeCredits)
-    {
-        return $this->repo->transaction(function () use ($merchant, $freeCredits)
-        {
-            $this->repo->editMerchantFreeCreditsInTransaction($merchant, $freeCredits);
-        });
-
-    }
-
-    private function editMerchantFreeCreditsInTransaction($merchant, $freeCredits)
-    {
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate('kotak');
-
-        $nodalCredits = $nodalBalance->getCredits();
-        $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
-        $nodalBalance->setCredits($nodalCredits);
-
-        $balance->setFreeCredits($freeCredits);
-
-        $balance->saveOrFail();
-        $nodalBalance->saveOrFail();
-
-        return $balance;
-    }
-
-    public function updateBalance($balance)
-    {
-        $balance->saveOrFail();
-    }
-
-    public function getEscrowBalanceLockForUpdate($channel)
-    {
-        $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';
-
-        return $this->$func();
-    }
-
-    public function getKotakBalanceLockForUpdate()
-    {
-        return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
-    }
-
-    public function getAtomBalanceLockForUpdate()
-    {
-        return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
-    }
-
     public function getPricingPlanOrFailPublic($merchant)
     {
         $pricing = $merchant->getPricingPlanId();

@@ -24,6 +24,7 @@ class Core extends Base\Core
     {
         $this->merchant = \BasicAuth::getMerchant();
         $this->merchantRepo = new Merchant\Repository;
+        $this->balanceRepo = new Merchant\Balance\Repository;
     }
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
@@ -267,13 +268,11 @@ class Core extends Base\Core
 
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
-        assert ($this->merchantRepo->isTransactionActive());
-
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
+        $merchantBalance = $this->balanceRepo->getBalanceLockForUpdate(
                                                     $txn->merchant->getId());
 
         $merchantBalance->updateBalance($txn);
-        $this->merchantRepo->updateBalance($merchantBalance);
+        $this->balanceRepo->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());
 
@@ -282,14 +281,12 @@ class Core extends Base\Core
 
     public function updateEscrowBalance(Transaction\Entity $txn)
     {
-        assert ($this->merchantRepo->isTransactionActive());
-
         $channel = $txn->getChannel();
 
         $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
 
         $nodalBalance->updateBalance($txn);
-        $this->merchantRepo->updateBalance($nodalBalance);
+        $this->balanceRepo->updateBalance($nodalBalance);
 
         $txn->setEscrowBalance($nodalBalance->getBalance());
 
@@ -319,14 +316,12 @@ class Core extends Base\Core
 
     protected function getEscrowBalanceLockForUpdate($channel)
     {
-        assert ($this->merchantRepo->isTransactionActive());
-
         if ($this->nodalBalance !== null)
         {
             return $this->nodalBalance;
         }
 
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate($channel);
+        $nodalBalance = $this->balanceRepo->getEscrowBalanceLockForUpdate($channel);
 
         $this->nodalBalance = $nodalBalance;
 
@@ -335,14 +330,12 @@ class Core extends Base\Core
 
     protected function getBalanceLockForUpdate(Merchant\Entity $merchant)
     {
-        assert ($this->merchantRepo->isTransactionActive());
-
         if ($this->merchantBalance !== null)
         {
             return $this->merchantBalance;
         }
 
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate($merchant->getId());
+        $merchantBalance = $this->balanceRepo->getBalanceLockForUpdate($merchant->getId());
 
         $this->merchantBalance = $merchantBalance;
 

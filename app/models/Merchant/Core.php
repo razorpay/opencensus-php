@@ -66,7 +66,7 @@ class Core extends Base\Core
 
         $merchantBalance->setConnection($mode);
 
-        $this->repo->updateBalance($merchantBalance);
+        (new Merchant\Balance\Repository)->updateBalance($merchantBalance);
 
         return $merchantBalance;
     }
