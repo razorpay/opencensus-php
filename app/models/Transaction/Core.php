@@ -300,6 +300,12 @@ class Core extends Base\Core
     {
         assert ($txn->isTypePayment() === true);
 
+        if (($txn->getFee() !== 0) or
+            ($txn->getCredit() !== $txn->getAmount()))
+        {
+            return;
+        }
+
         $credits = $txn->getAmount();
 
         $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
