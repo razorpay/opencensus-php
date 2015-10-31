@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Merchant;
+use Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -26,7 +27,7 @@ class Repository extends Base\Repository
 
     public function getBalanceLockForUpdate($id)
     {
-        return Merchant\Balance::lockForUpdate()->findOrFail($id);
+        return Balance\Entity::lockForUpdate()->findOrFail($id);
     }
 
     public function getMerchantBalanceLockForUpdate($merchant)
@@ -36,7 +37,7 @@ class Repository extends Base\Repository
 
     public function getMerchantBalance($merchant)
     {
-        return Merchant\Balance::findOrFailPublic($merchant->getId());
+        return Balance\Entity::findOrFailPublic($merchant->getId());
     }
 
     public function editMerchantFreeCredits($merchant, $freeCredits)

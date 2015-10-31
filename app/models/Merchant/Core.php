@@ -62,7 +62,7 @@ class Core extends Base\Core
 
     public function createBalance($merchant, $mode)
     {
-        $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
+        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
 
         $merchantBalance->setConnection($mode);
 

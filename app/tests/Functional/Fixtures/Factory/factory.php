@@ -28,7 +28,7 @@ $factory('Models\Terminal\Entity', [
     'gateway_secure_secret' => null,
 ]);
 
-$factory('Models\Merchant\Balance', [
+$factory('Models\Merchant\Balance\Entity', [
     'id' => $faker->uniqueid,
     'balance' => 0,
 ]);

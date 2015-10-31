@@ -148,7 +148,7 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->hasOne(
-            'Models\Merchant\Balance', self::ID, 'id');
+            'Models\Merchant\Entity\Balance', self::ID, 'id');
     }
 
     public function bankAccount()
