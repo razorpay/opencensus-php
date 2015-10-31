@@ -6,7 +6,8 @@ app.controller('EntitiesCtrl', [
   '$state',
   '$modal',
   '$stateParams',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams) {
+  'admin',
+  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
     $scope.entity_type = $stateParams.type;
     $scope.mode = $stateParams.mode;
     //Intialise alerts and scope functions
@@ -28,6 +29,10 @@ app.controller('EntitiesCtrl', [
 
     $scope.minTimestamp = moment('2015-01-01').unix();
     $scope.maxTimestamp = moment().unix();
+
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
 
     $scope.timestamps = function (type) {
 
@@ -401,7 +406,7 @@ app.controller('EntitiesCtrl', [
       var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
 
       if (csv) {
-        window.open(url + '/csv');
+        window.open(url + '/csv?' + $.param(query));
         return;
       }
 

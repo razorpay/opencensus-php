@@ -205,10 +205,6 @@ Route::group(array('before' => 'auth.admin'), function()
 
     });
 
-    Route::get('/admin/{mode}/fetchentity/{entity}/{format?}', 'AdminController@getMultipleEntities');
-
-    Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
-
     Route::group(array('before' => 'auth.superadmin'), function()
     {
 
@@ -224,7 +220,14 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+
+        Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities');
     });
+
+    Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
+
+    // This is a generic route and needs to be defined below
+    Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 });
 
 Route::group(array('before' => 'guest.admin'), function()
