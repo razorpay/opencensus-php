@@ -24,6 +24,11 @@ app.controller('UserCtrl', [
             }
           }
         });
+
+        if (typeof SupportKit === 'undefined') {
+          return;
+        };
+
         SupportKit.user = {
           givenName: data.name,
           surname: 'Merchant',

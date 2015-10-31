@@ -120,19 +120,19 @@
             Transaction Id
           </a>
           <a href class="list-group-item" ng-show="entity.authorized_at!==0">
-            <span class="pull-right">{{entity.authorized_at*1000 | fromNow}} ({{entity.authorized_at*1000 | date : 'medium'}})</span>
+            <span class="pull-right">{{entity.authorized_at*1000 | date:'medium'}} ({{entity.authorized_at*1000 | date : 'medium'}})</span>
             Authorized At
           </a>
           <a href class="list-group-item" ng-show="entity.created_at!==0">
-            <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
+            <span class="pull-right">{{entity.created_at*1000 | date:'medium'}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At
           </a>
           <a href class="list-group-item" ng-show="entity.updated_at2!==0">
-            <span class="pull-right">{{entity.updated_at*1000 | fromNow}} ({{entity.updated_at*1000 | date : 'medium'}})</span>
+            <span class="pull-right">{{entity.updated_at*1000 | date:'medium'}} ({{entity.updated_at*1000 | date : 'medium'}})</span>
             Updated At
           </a>
           <a href class="list-group-item" ng-show="entity.captured_at!==null">
-            <span class="pull-right">{{entity.captured_at*1000 | fromNow}} ({{entity.captured_at*1000 | date : 'medium'}})</span>
+            <span class="pull-right">{{entity.captured_at*1000 | date:'medium'}} ({{entity.captured_at*1000 | date : 'medium'}})</span>
             Captured At
           </a>
           <a class="list-group-item" ui-sref="app.entitiesdetail({mode:mode, type: 'terminal', id:entity.terminal_id})">
@@ -162,7 +162,7 @@
           </a>
           <div collapse="isRefundsCollapsed" class="panel-body">
             <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
-              <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
+              <span class="pull-right">{{refund.created_at*1000 | date:'medium'}} ({{refund.created_at*1000 | date:'medium'}})</span>
               {{refund.amount/100 | currency:refund.currency + " "}}
             </a>
           </div>
