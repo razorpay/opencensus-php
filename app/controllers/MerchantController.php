@@ -280,8 +280,7 @@ class MerchantController extends BaseController
 
         $data['methods'] = json_encode($methods);
 
-        return View::make('checkout.checkout')
-                   ->with($data);
+        return ApiResponse::generateResponse($data);
     }
 
     /**

@@ -194,6 +194,11 @@ class ApiResponse
 
             return \View::make('gateway.callback')->with('data', $data);
         }
+        else if (self::isCheckoutRoute($route))
+        {
+            return \View::make('checkout.checkout')
+                        ->with($data);
+        }
 
         return self::json($data, $status);
     }
@@ -260,10 +265,17 @@ class ApiResponse
         return (in_array($route, $callbackRoutes));
     }
 
+    protected static function isCheckoutRoute($route)
+    {
+        $checkoutRoute = array(
+            'checkout');
+
+        return (in_array($route, $checkoutRoute));
+    }
+
     protected static function isJsonpRoute($route)
     {
         $jsonpRoutes = array(
-            'checkout',
             'merchant_methods',
             'merchant_public_get_banks',
             'payment_cancel',
