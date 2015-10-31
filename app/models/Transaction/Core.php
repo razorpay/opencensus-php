@@ -28,32 +28,12 @@ class Core extends Base\Core
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
-        list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
-
-        $amount = $payment->getAmount();
-        $credit = $amount - $fee;
-
-        $txnData = array(
-            Transaction\Entity::AMOUNT          => $amount,
-            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::FEE             => $fee,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::DEBIT           => 0,
-            Transaction\Entity::CURRENCY        => 'INR',
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
-            Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
-
-        if ($payment->getGateway() === Payment\Gateway::ATOM)
-        {
-            $this->paymentOnAtomGateway($txnData, $payment, $fee);
-        }
-
-        $txn = new Transaction\Entity($txnData);
+        $txn = new Transaction\Entity;
         $txn->generateId();
 
-        $txn->entity()->associate($payment);
-        $txn->merchant()->associate($payment->merchant);
-        $payment->transaction()->associate($txn);
+        $this->fillTxnFeesAndAmount($txn, $payment);
+
+        $this->txnCreationFromPaymentOperation($txn, $payment);
 
         $this->updateEscrowBalance($txn);
 
@@ -62,9 +42,9 @@ class Core extends Base\Core
 
     public function updateOnCapture(Payment\Entity $payment)
     {
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
         $txn = $payment->transaction;
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
@@ -74,6 +54,43 @@ class Core extends Base\Core
     }
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
+    {
+        $txn = new Transaction\Entity;
+        $txn->generateId();
+
+        $this->fillTxnFeesAndAmount($txn, $payment);
+
+        $this->txnCreationFromPaymentOperation($txn, $payment);
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->updateBalances($txn);
+
+        return $txn;
+    }
+
+    protected function txnCreationFromPaymentOperation($txn, $payment)
+    {
+        $txnData = array(
+            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
+            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
+
+        if ($payment->getGateway() === Payment\Gateway::ATOM)
+        {
+            $this->paymentOnAtomGateway($txnData, $payment, $txn->getFee());
+        }
+
+        $txn->fill($txnData);
+
+        $txn->entity()->associate($payment);
+        $txn->merchant()->associate($payment->merchant);
+        $payment->transaction()->associate($txn);
+    }
+
+    protected function fillTxnFeesAndAmount(& $txn, $payment)
     {
         $credit = $fee = 0;
         $pricingRuleId = null;
@@ -98,38 +115,11 @@ class Core extends Base\Core
             $credit = $amount - $fee;
         }
 
-        list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
-
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        $amount = $payment->getAmount();
-
-        $credit = $amount - $fee;
-
-        $txnData = array(
-            Transaction\Entity::AMOUNT          => $amount,
-            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::FEE             => $fee,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::DEBIT           => 0,
-            Transaction\Entity::CURRENCY        => 'INR',
-            Transaction\Entity::SETTLED_AT      => $settledAt,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
-            Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
-
-        if ($payment->getGateway() === Payment\Gateway::ATOM)
-        {
-            $this->paymentOnAtomGateway($txnData, $payment, $fee);
-        }
-
-        $txn = new Transaction\Entity($txnData);
-        $txn->generateId();
-
-        $txn->entity()->associate($payment);
-        $txn->merchant()->associate($payment->merchant);
-        $payment->transaction()->associate($txn);
-
-        $this->updateBalances($txn);
+        $txn->setPricingRule($pricingRuleId);
+        $txn->setAmount($amount);
+        $txn->setCredit($credit);
+        $txn->setDebit(0);
+        $txn->setFee($fee);
 
         return $txn;
     }

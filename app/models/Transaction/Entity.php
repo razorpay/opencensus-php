@@ -239,6 +239,39 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BALANCE, $balance);
     }
 
+    public function setAmount($amount)
+    {
+        assert ($amount > 0);
+
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setFee($fee)
+    {
+        assert ($fee >= 0);
+
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setCredit($credit)
+    {
+        assert ($credit >= 0);
+
+        $this->setAttribute(self::CREDIT, $credit);
+    }
+
+    public function setDebit($amount)
+    {
+        assert ($amount >= 0);
+
+        $this->setAttribute(self::DEBIT, $amount);
+    }
+
+    public function setPricingRule($ruleId)
+    {
+        $this->setAttribute(self::PRICING_RULE_ID, $ruleId);
+    }
+
     public function setPublicEntityIdAttribute(array & $array)
     {
         $entity = Transaction\Type::getEntityClass($array[self::TYPE]);
