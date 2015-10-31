@@ -35,6 +35,8 @@ class Core extends Base\Core
 
         $this->txnCreationFromPaymentOperation($txn, $payment);
 
+        $this->updateFreeCredits($txn);
+
         $this->updateEscrowBalance($txn);
 
         return $txn;
@@ -265,8 +267,10 @@ class Core extends Base\Core
 
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
+        assert ($this->merchantRepo->isTransactionActive());
+
         $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $txn->merchant->getKey());
+                                                    $txn->merchant->getId());
 
         $merchantBalance->updateBalance($txn);
         $this->merchantRepo->updateBalance($merchantBalance);
@@ -278,6 +282,8 @@ class Core extends Base\Core
 
     public function updateEscrowBalance(Transaction\Entity $txn)
     {
+        assert ($this->merchantRepo->isTransactionActive());
+
         $channel = $txn->getChannel();
 
         $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
@@ -290,8 +296,25 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function updateFreeCredits($txn)
+    {
+        assert ($txn->isTypePayment() === true);
+
+        $credits = $txn->getAmount();
+
+        $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
+
+        $nodalBalance->subtractCredits($credits);
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $merchantBalance->subtractCredits($credits);
+    }
+
     protected function getEscrowBalanceLockForUpdate($channel)
     {
+        assert ($this->merchantRepo->isTransactionActive());
+
         if ($this->nodalBalance !== null)
         {
             return $this->nodalBalance;
@@ -306,6 +329,8 @@ class Core extends Base\Core
 
     protected function getBalanceLockForUpdate(Merchant\Entity $merchant)
     {
+        assert ($this->merchantRepo->isTransactionActive());
+
         if ($this->merchantBalance !== null)
         {
             return $this->merchantBalance;

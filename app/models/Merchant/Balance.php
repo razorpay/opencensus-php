@@ -118,9 +118,14 @@ class Balance extends Base\UniqueIdEntity
 
     public function setFreeCredits($freeCredits)
     {
+        return $this->setCredits($freeCredits);
+    }
+
+    public function setCredits($credits)
+    {
         assert ($amount >= 0);
 
-        $this->setAttribute(self::CREDITS, $freeCredits);
+        $this->setAttribute(self::CREDITS, $credits);
     }
 
     public function getBalanceAttribute()

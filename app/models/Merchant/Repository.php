@@ -41,11 +41,25 @@ class Repository extends Base\Repository
 
     public function editMerchantFreeCredits($merchant, $freeCredits)
     {
-        $balance = $this->getBalanceLockForUpdate($merchant->getId());
+        return $this->repo->transaction(function () use ($merchant, $freeCredits)
+        {
+            $this->repo->editMerchantFreeCreditsInTransaction($merchant, $freeCredits);
+        });
+
+    }
+
+    private function editMerchantFreeCreditsInTransaction($merchant, $freeCredits)
+    {
+        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate('kotak');
+
+        $nodalCredits = $nodalBalance->getCredits();
+        $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
+        $nodalBalance->setCredits($nodalCredits);
 
         $balance->setFreeCredits($freeCredits);
 
         $balance->saveOrFail();
+        $nodalBalance->saveOrFail();
 
         return $balance;
     }

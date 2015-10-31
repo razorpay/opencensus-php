@@ -102,9 +102,9 @@ class Service extends Base\Service
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
         $balance = $this->repo->transaction(function () use ($freeCredits)
-                        {
-                            $this->repo->editMerchantFreeCredits($freeCredits);
-                        });
+            {
+                $this->repo->editMerchantFreeCredits($freeCredits);
+            });
 
         return $balance->toArray();
     }
