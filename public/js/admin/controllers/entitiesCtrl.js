@@ -67,6 +67,8 @@ app.controller('EntitiesCtrl', [
 
     var booleanList = ['all', 0, 1];
 
+    var booleanList2 = ['all', true, false];
+
     var statusList = [
           'all',
           'created',
@@ -129,21 +131,9 @@ app.controller('EntitiesCtrl', [
         international: booleanList,
         category: ['MCC Code'],
         receipt_email_enabled: booleanList,
-        paytm: [
-          'all',
-          true,
-          false
-        ],
-        mobikwik: [
-          'all',
-          true,
-          false
-        ],
-        card: [
-          'all',
-          true,
-          false
-        ]
+        paytm: booleanList2,
+        mobikwik: booleanList2,
+        card: booleanList2
       },
       netbanking: {
         payment_id: ['Payment Id'],
@@ -164,12 +154,14 @@ app.controller('EntitiesCtrl', [
         ],
         refund_status: [
           'all',
+          'null',
           'partial',
           'full'
         ],
         status: statusList,
         verified: [
           'all',
+          'null',
           0,
           1
         ],
@@ -189,11 +181,14 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
-      refund: { merchant_id: ['Merchant Id'] },
+      refund: {
+        merchant_id: ['Merchant Id'],
+        payment_id: ['Payment Id'],
+      },
       terminal: {
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
-        shared: ['all', 0, 1]
+        shared: booleanList
       },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
