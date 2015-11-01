@@ -158,7 +158,7 @@ class ApiResponse
         return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
     }
 
-    protected static function generateResponse($data = array(), $status = 200)
+    public static function generateResponse($data = array(), $status = 200)
     {
         $app = \App::getFacadeRoot();
 
@@ -193,6 +193,11 @@ class ApiResponse
             $data['http_status_code'] = $status;
 
             return \View::make('gateway.callback')->with('data', $data);
+        }
+        else if (self::isCheckoutRoute($route))
+        {
+            return \View::make('checkout.checkout')
+                        ->with($data);
         }
 
         return self::json($data, $status);
@@ -260,10 +265,17 @@ class ApiResponse
         return (in_array($route, $callbackRoutes));
     }
 
+    protected static function isCheckoutRoute($route)
+    {
+        $checkoutRoute = array(
+            'checkout');
+
+        return (in_array($route, $checkoutRoute));
+    }
+
     protected static function isJsonpRoute($route)
     {
         $jsonpRoutes = array(
-            'checkout',
             'merchant_methods',
             'merchant_public_get_banks',
             'payment_cancel',
