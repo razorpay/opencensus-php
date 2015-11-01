@@ -5,7 +5,7 @@ namespace Models\Merchant\Balance;
 use EE\Exception;
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID = 'id';
     const BALANCE = 'balance';
@@ -21,6 +21,10 @@ class Entity extends Base\UniqueIdEntity
         self::ID,
         self::BALANCE,
         self::CREDITS);
+
+    protected $entity = 'balance';
+
+    protected $genereateIdOnCreate = false;
 
     protected function addAmount($amount)
     {
