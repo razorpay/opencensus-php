@@ -91,4 +91,9 @@ trait EntityFetchTrait
 
         return $content;
     }
+
+    public function getNodalAccountBalance()
+    {
+        return $this->getEntityById('balance', '10NodalAccount', true);
+    }
 }

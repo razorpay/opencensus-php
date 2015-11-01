@@ -154,4 +154,9 @@ class Merchant extends Base
     {
         return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
     }
+
+    public function addCreditsToNodalAccount($credits)
+    {
+        return $this->addCredits($credits, '10NodalAccount');
+    }
 }
