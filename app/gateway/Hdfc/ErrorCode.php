@@ -42,6 +42,7 @@ class ErrorCode
     const GW00170   = 'GW00170';
     const GW00171   = 'GW00171';
 
+    const GW00176   = 'GW00176';
     const GW00177   = 'GW00177';
 
     const GW00181   = 'GW00181';
@@ -181,6 +182,7 @@ class ErrorCode
 
         Hdfc\ErrorCode::GW00170   => 'Terminal ID Mismatch',
 
+        Hdfc\ErrorCode::GW00176   => 'Failed Previous Captures check.',
         Hdfc\ErrorCode::GW00177   => 'Failed Capture Greater Than Auth check',
 
         Hdfc\ErrorCode::GW00181   => 'Failed Credit Greater Than Debit check',
@@ -265,6 +267,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00166   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
         Hdfc\ErrorCode::GW00167   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
         Hdfc\ErrorCode::GW00170   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        Hdfc\ErrorCode::GW00176   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,
         Hdfc\ErrorCode::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
         Hdfc\ErrorCode::GW00181   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         Hdfc\ErrorCode::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
