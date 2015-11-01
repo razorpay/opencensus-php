@@ -1,5 +1,12 @@
 <?php
 $fonts = 'https://cdn.razorpay.com/lato';
+
+if (isset($error))
+{
+    echo json_encode($error);
+}
+else
+{
 ?>
 <!DOCTYPE html>
 <html dir="ltr">
@@ -21,3 +28,7 @@ $fonts = 'https://cdn.razorpay.com/lato';
   </script>
   <script src="<?= $checkout ?>/v1/checkout-frame.js"></script>
 </html>
+
+<?php
+}
+?>

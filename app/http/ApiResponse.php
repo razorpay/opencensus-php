@@ -158,7 +158,7 @@ class ApiResponse
         return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
     }
 
-    protected static function generateResponse($data = array(), $status = 200)
+    public static function generateResponse($data = array(), $status = 200)
     {
         $app = \App::getFacadeRoot();
 
