@@ -18,8 +18,8 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|string',
-        Entity::VERIFIED        => 'sometimes|boolean',
-        Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
+        Entity::VERIFIED        => 'sometimes|in:null,0,1',
+        Entity::REFUND_STATUS   => 'sometimes|in:null,partial,full',
         Entity::BANK            => 'sometimes',
         Entity::METHOD          => 'sometimes',
         Entity::GATEWAY         => 'sometimes',

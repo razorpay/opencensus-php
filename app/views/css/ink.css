@@ -110,13 +110,6 @@ table.container table.row {
   display: block;
 }
 
-td.shortwrapper {
-	padding: 0px 20px 0px 0px;
-  position: relative;
-  font-size: 12px;
-  line-height: 1em;
-}
-
 td.wrapper {
   padding: 10px 20px 0px 0px;
   position: relative;
@@ -212,31 +205,6 @@ table.twelve .panel center { min-width: 560px; }
 .body .columns td.twelve,
 .body .column td.twelve { width: 100%; }
 
-.body .columns th.one,
-.body .column th.one { width: 8.333333%; }
-.body .columns th.two,
-.body .column th.two { width: 16.666666%; }
-.body .columns th.three,
-.body .column th.three { width: 25%; }
-.body .columns th.four,
-.body .column th.four { width: 33.333333%; }
-.body .columns th.five,
-.body .column th.five { width: 41.666666%; }
-.body .columns th.six,
-.body .column th.six { width: 50%; }
-.body .columns th.seven,
-.body .column th.seven { width: 58.333333%; }
-.body .columns th.eight,
-.body .column th.eight { width: 66.666666%; }
-.body .columns th.nine,
-.body .column th.nine { width: 75%; }
-.body .columns th.ten,
-.body .column th.ten { width: 83.333333%; }
-.body .columns th.eleven,
-.body .column th.eleven { width: 91.666666%; }
-.body .columns th.twelve,
-.body .column th.twelve { width: 100%; }
-
 td.offset-by-one { padding-left: 50px; }
 td.offset-by-two { padding-left: 100px; }
 td.offset-by-three { padding-left: 150px; }
@@ -265,14 +233,14 @@ table.columns .left-text-pad,
 table.columns .text-pad-left,
 table.column .left-text-pad,
 table.column .text-pad-left {
-  padding-left: 45px;
+  padding-left: 10px;
 }
 
 table.columns .right-text-pad,
 table.columns .text-pad-right,
 table.column .right-text-pad,
 table.column .text-pad-right {
-  padding-right: 45px;
+  padding-right: 10px;
 }
 
 /* Block Grid */
@@ -348,11 +316,9 @@ img.center {
 
 /* Typography */
 
-body{
-	color: #222222;
-}
-
 body, table.body, h1, h2, h3, h4, h5, h6, p, td {
+  color: #222222;
+  font-family: -apple-system, ".SFNSText-Regular", "San Francisco", "Oxygen", "Ubuntu", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
   font-weight: normal;
   padding:0;
   margin: 0;
@@ -464,11 +430,10 @@ table.large-button td {
   display: block;
   width: auto !important;
   text-align: center;
-  background: #2F87C7;
-  border-bottom: 2px solid #2C7CAF;
-  color: #f2f2f2;
+  background: #2ba6cb;
+  border: 1px solid #2284a1;
+  color: #ffffff;
   padding: 8px 0;
-  margin-bottom: 1em;
 }
 
 table.tiny-button td {
@@ -492,17 +457,35 @@ table.tiny-button td a,
 table.small-button td a,
 table.medium-button td a,
 table.large-button td a {
+  font-weight: bold;
   text-decoration: none;
-  font-family: "Lucida Sans", "Helvetica", "Arial", sans-serif;
-  color: #f2f2f2;
-  font-size: 12px;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  font-size: 16px;
 }
 
-/* table.button:hover td,
+table.tiny-button td a {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+table.small-button td a {
+  font-size: 16px;
+}
+
+table.medium-button td a {
+  font-size: 20px;
+}
+
+table.large-button td a {
+  font-size: 24px;
+}
+
+table.button:hover td,
 table.button:visited td,
 table.button:active td {
   background: #2795b6 !important;
-} */
+}
 
 table.button:hover td a,
 table.button:visited td a,
@@ -510,13 +493,13 @@ table.button:active td a {
   color: #fff !important;
 }
 
-/* table.button:hover td,
+table.button:hover td,
 table.tiny-button:hover td,
 table.small-button:hover td,
 table.medium-button:hover td,
 table.large-button:hover td {
   background: #2795b6 !important;
-} */
+}
 
 table.button:hover td a,
 table.button:active td a,
@@ -703,16 +686,3 @@ body.outlook p {
     display: inherit !important;
   }
 }
-.logo img{
-	float: none;
-}
-.logo a{
-	float: left;
-}
-pre{
-	font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace !important;
-}
-.leftalign{
-	text-align: left !important;
-}
-

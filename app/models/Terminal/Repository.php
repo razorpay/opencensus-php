@@ -45,6 +45,14 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getById($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::withTrashed()
+                    ->findOrFailPublic($id);
+    }
+
     public function getByMerchantId($mid)
     {
         $repo = $this->repo;
@@ -95,9 +103,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
+        $successCount = $entity->getUsedCount();
         $count = $this->getTotalUsedCount($entity);
 
-        if ($count === 0)
+        if (($count === 0) and
+            ($successCount === 0))
         {
             $entity->forceDelete();
 

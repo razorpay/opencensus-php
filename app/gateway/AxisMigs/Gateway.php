@@ -244,10 +244,7 @@ class Gateway extends Base\Gateway
         if (($verify->match === true) and
             ($payment['received'] === false))
         {
-            unset(
-                $content['TxnAmount'],
-                $content['BankID'],
-                $content['ItemCode']);
+            unset($content['vpc_Command']);
 
             $payment->fill($content);
             $payment->saveOrFail();

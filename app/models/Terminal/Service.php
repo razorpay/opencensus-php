@@ -95,4 +95,23 @@ class Service extends Base\Service
 
         return $terminal->toArrayPublic();
     }
+
+    public function restoreTerminal($id)
+    {
+        $terminalRepo = new Terminal\Repository;
+
+        $terminal = $terminalRepo->getById($id);
+
+        if ($terminal->isDeleted() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Terminal provided is not deleted');
+        }
+
+        (new Terminal\Core)->validateExistingTerminal($terminal);
+
+        $terminal->restore();
+
+        return $terminal->toArrayPublic();
+    }
 }

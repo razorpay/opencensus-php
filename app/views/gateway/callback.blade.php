@@ -7,14 +7,17 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
 #text.s #icon{background:#61BC6D}
 #text.f{color:#EF6050;}
 #text.f #icon{background:#EF6050}
-</style></head><body>
-<div id="text"><div id="icon"></div><br>Payment<br></div>
+#closer{position:fixed;bottom:20px;width:100%;left:0;color:#7f7f7f;font-size:14px;}
+</style>
+<meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+</head><body>
+<div id="text"><div id="icon"></div><br>Payment<br>
+</div>
+<div id="closer">
+You can safely close this tab
+</div>
 <script>
-function c(name, value, days){
-  if(days){var date = new Date();date.setTime(date.getTime()+(days*24*60*60*1000));var expires = "; expires="+date.toGMTString()}
-  else var expires = "";
-  document.cookie = name+"="+value+expires+"; path=/";
-}
+
 // Do not remove the below 'callback data' comments because they help
 // during tests for extracting callback data from js
 
@@ -25,17 +28,16 @@ var data = {{json_encode($data);}};
 if(window.CheckoutBridge){
   if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(JSON.stringify(data))}
 } else {
-  c('rzp', JSON.stringify(data));
-  if(window.opener && typeof window.opener.postMessage == 'function') window.opener.postMessage(data, '*')
+  document.cookie = "onComplete="+JSON.stringify(data)+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
 }
 
+function g(id){return document.getElementById(id)}
 function razorpay_callback(){return JSON.stringify(data)}
-var t = document.getElementById('text');
-var s = 'razorpay_payment_id' in data;
-t.innerHTML += s ? 'Successful' : 'Failed';
-t.className = 'show ' + (s ? 's' : 'f');
-document.getElementById('icon').innerHTML = s ? '&#10004' : '!';
-onmessage=function(e){if(e&&e.data=='pingback')close()}
+var t = g('text')
+var s = 'razorpay_payment_id' in data
+t.innerHTML += s ? 'Successful' : 'Failed'
+t.className = 'show ' + (s ? 's' : 'f')
+g('icon').innerHTML = s ? '&#10004' : '!'
 try{opener.onComplete(JSON.stringify(data))&&close()}catch(e){}
->>>>>>> development
+g('closer').style.display = 'block'
 </script></body></html>

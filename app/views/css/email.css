@@ -1,9 +1,6 @@
 /* Your custom styles go here */
-body, .body, .greybg{
+.body, .greybg{
 	background:#EBECEE;
-}
-*{
-	font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important;
 }
 .white{
 	background:#ffffff;
@@ -135,4 +132,45 @@ h3{
 	font-size: 20px;
 	font-weight: bold;
 	color: white;
+}
+
+table.button td,
+table.tiny-button td,
+table.small-button td,
+table.medium-button td,
+table.large-button td {
+  background: #2F87C7;
+  border: 1px solid #2284a1;
+  color: #f2f2f2;
+  border-bottom: 2px solid #2C7CAF;
+  margin-bottom: 1em;
+}
+
+table.button td a,
+table.tiny-button td a,
+table.small-button td a,
+table.medium-button td a,
+table.large-button td a {
+	font-weight: normal;
+  font-family: "Lucida Sans", Helvetica, Arial, sans-serif !important;
+  color: #f2f2f2 !important;
+}
+
+table.button:hover td,
+table.button:visited td,
+table.button:active td {
+  background: inherit !important;
+}
+
+.logo img{
+	float: none;
+}
+.logo a{
+	float: left;
+}
+pre{
+	font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace !important;
+}
+.leftalign{
+	text-align: left !important;
 }

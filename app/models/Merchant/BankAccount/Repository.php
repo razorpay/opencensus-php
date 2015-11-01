@@ -13,6 +13,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'BankAccount';
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    );
+
     public function updateBankAccount($ba)
     {
         $ba->saveOrFail();
