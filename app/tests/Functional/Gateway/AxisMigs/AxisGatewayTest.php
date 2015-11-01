@@ -100,6 +100,8 @@ class AxisGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment();
 
         $this->verifyPayment($payment['id']);
+        $payment = $this->getLastEntity('axis_migs', true);
+        $this->assertEquals('pay', $payment['vpc_Command']);
     }
 
     public function testAuthorizeFailedPayment()

@@ -74,7 +74,7 @@ trait RepositoryFetch
             }
             else
             {
-                $query = $query->where($key, '=', $params[$key]);
+                $this->addQueryParamDefault($query, $params, $key);
             }
         }
 
@@ -88,11 +88,6 @@ trait RepositoryFetch
     protected function buildFetchQueryAdditional($params, $query)
     {
         return;
-    }
-
-    protected function addQueryOrder($query)
-    {
-        $query->orderBy(Common::ID, 'desc');
     }
 
     protected function validateFetchParams(array $params)
@@ -159,6 +154,18 @@ trait RepositoryFetch
         return $query->findOrFailPublic($id);
     }
 
+    protected function addQueryParamDefault($query, $params, $key)
+    {
+        if ($params[$key] === 'null')
+        {
+            $query->whereNull($key);
+        }
+        else
+        {
+            $query = $query->where($key, '=', $params[$key]);
+        }
+    }
+
     protected function addQueryParamFrom($query, $params)
     {
         $repo = $this->repo;
@@ -173,6 +180,11 @@ trait RepositoryFetch
 
         $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
+    }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Common::ID, 'desc');
     }
 
     protected function addQueryParamCount($query, $params)
