@@ -13,6 +13,12 @@ class Repository extends Base\Repository
 
     protected $entity = 'Refund';
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num',
+        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
+    );
+
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
         $repo = $this->repo;
