@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
 use Models\Merchant;
-use Models\Merchant\Balance;
+use Models\Merchant\Balance\Entity as Balance;
 
 class CreateBalance extends Migration
 {
