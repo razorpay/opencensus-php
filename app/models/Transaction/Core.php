@@ -306,11 +306,20 @@ class Core extends Base\Core
 
         $credits = $txn->getAmount();
 
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $freeCredits = $merchantBalance->getCredits();
+
+        assert($freeCredits > 0);
+
+        if ($freeCredits < $credits)
+        {
+            $credits = $freeCredits;
+        }
+
         $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
 
         $nodalBalance->subtractCredits($credits);
-
-        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $merchantBalance->subtractCredits($credits);
     }
