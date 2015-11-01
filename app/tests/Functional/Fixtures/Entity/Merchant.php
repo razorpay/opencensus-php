@@ -150,4 +150,8 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function addCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
+    }
 }

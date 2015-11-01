@@ -40,6 +40,8 @@ class Core extends Base\Core
 
         $this->updateEscrowBalance($txn);
 
+        $this->balanceRepo->updateBalance($this->merchantBalance);
+
         return $txn;
     }
 
@@ -68,6 +70,8 @@ class Core extends Base\Core
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        $this->updateFreeCredits($txn);
 
         $this->updateBalances($txn);
 
@@ -109,8 +113,6 @@ class Core extends Base\Core
             $pricingRuleId = 'FreeCreditsRule';
             $credit = $amount;
             $fee = 0;
-
-            $merchantBalance->subtractCredits($amount);
         }
         else
         {
@@ -268,8 +270,7 @@ class Core extends Base\Core
 
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
-        $merchantBalance = $this->balanceRepo->getBalanceLockForUpdate(
-                                                    $txn->merchant->getId());
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $merchantBalance->updateBalance($txn);
         $this->balanceRepo->updateBalance($merchantBalance);
