@@ -353,20 +353,21 @@ class TerminalPicker
 
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
-        if ($network === Card\Network::MAES)
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        $networks = array(
+            Network::MAES,
+            Network::RUPAY,
+            Network::DICL);
+
+        if (in_array($network, $networks))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
         }
-
-        // Disable rupay in live
-        if (($this->mode === Mode::LIVE) and
-            ($network === Card\Network::RUPAY))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-        }
-
     }
 
     protected function getSharedTerminalForWallet($payment)

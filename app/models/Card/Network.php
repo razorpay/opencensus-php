@@ -58,7 +58,7 @@ class Network
 
     public static $unsupportedNetworks = array(
         self::AMEX,
-        self::DICL,
+//        self::DICL,
         self::DISC,
         self::JCB,
 //        self::MAES,
