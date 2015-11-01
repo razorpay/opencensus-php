@@ -269,19 +269,22 @@ class MerchantController extends BaseController
 
         $context = $app['config']->get('app.context');
 
-        if ($context === 'production')
-            $url = 'https://checkout.razorpay.com';
-        else if ($context === 'beta')
-            $url = 'https://betacheckout.razorpay.com';
-        else
-            $url = $app['config']->get('app.checkout');
+        $url = $app['config']->get('app.checkout');
+
+        $urlMap = array(
+            'production'    => 'https://checkout.razorpay.com',
+            'beta'          => 'https://betacheckout.razorpay.com');
+
+        if (in_array($context, array_keys($urlMap)))
+        {
+            $url = $urlMap[$context];
+        }
 
         $data['checkout'] = $url;
 
         $data['methods'] = json_encode($methods);
 
-        return View::make('checkout.checkout')
-                   ->with($data);
+        return ApiResponse::generateResponse($data);
     }
 
     /**
