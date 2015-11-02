@@ -3,6 +3,8 @@
 namespace Http;
 
 use Response;
+use League\Csv\Writer;
+use SplTempFileObject;
 
 class AppResponse
 {
@@ -23,5 +25,40 @@ class AppResponse
         }
 
         return Response::json($response);
+    }
+
+    public static function csvResponse(array $data)
+    {
+        foreach ($data['items'] as &$item)
+        {
+            foreach ($item as $key => $value)
+            {
+                if (is_array($value))
+                {
+                    unset($item[$key]);
+
+                    if(($key = array_search($key, $data['headings'])) !== false)
+                    {
+                        unset($data['headings'][$key]);
+                    }
+                }
+            }
+        }
+
+        $file = new SplTempFileObject();
+
+        $csv = Writer::createFromFileObject($file);
+
+        $csv->insertOne($data['headings']);
+
+        $csv->insertAll($data['items']);
+
+        $response = Response::make($csv);
+
+        $response->header('Content-Type', 'text/csv');
+        $response->header('Content-Disposition','attachment;filename=export.csv');
+        $response->header('Content-Description', 'File Transfer');
+
+        return $response;
     }
 }

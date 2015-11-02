@@ -6,7 +6,8 @@ app.controller('EntitiesCtrl', [
   '$state',
   '$modal',
   '$stateParams',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams) {
+  'admin',
+  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
     $scope.entity_type = $stateParams.type;
     $scope.mode = $stateParams.mode;
     //Intialise alerts and scope functions
@@ -28,6 +29,10 @@ app.controller('EntitiesCtrl', [
 
     $scope.minTimestamp = moment('2015-01-01').unix();
     $scope.maxTimestamp = moment().unix();
+
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
 
     $scope.timestamps = function (type) {
 
@@ -264,12 +269,12 @@ app.controller('EntitiesCtrl', [
     $scope.next = function () {
       clear('id');
       $scope.entity.skip += $scope.count;
-      generateTable();
+      $scope.generateTable();
     };
     $scope.prev = function () {
       clear('id');
       $scope.entity.skip -= $scope.count;
-      generateTable();
+      $scope.generateTable();
     };
     $scope.search = function () {
       clear('skip');
@@ -313,7 +318,7 @@ app.controller('EntitiesCtrl', [
     $scope.showTable = function () {
       clear('id');
       clear('skip');
-      generateTable();
+      $scope.generateTable();
     };
 
     $scope.getStatusClass = function (status) {
@@ -385,13 +390,22 @@ app.controller('EntitiesCtrl', [
       }
       return query;
     }
-    function generateTable() {
+
+    $scope.generateTable = function(csv) {
       if (!$scope.entity_type) {
         console.log('Error: No Entity Type Specified');
         return;
       }
       var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters, $scope.from, $scope.to);
-      var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type, {
+
+      var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
+
+      if (csv) {
+        window.open(url + '/csv?' + $.param(query));
+        return;
+      }
+
+      var request = $http.get(url, {
         params: query
       });
 

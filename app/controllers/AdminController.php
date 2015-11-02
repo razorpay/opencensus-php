@@ -359,13 +359,20 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getMultipleEntities($mode, $entity)
+    public function getMultipleEntities($mode, $entity, $format = 'json')
     {
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, $entity, $input);
 
-        return AppResponse::jsonResponse($error, $data);
+        if ($format === 'csv' and empty($error) === true)
+        {
+            return AppResponse::csvResponse($data);
+        }
+        else
+        {
+            return AppResponse::jsonResponse($error, $data);
+        }
     }
 
     public function getEntityById($mode, $entity, $id)

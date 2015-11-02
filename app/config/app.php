@@ -125,7 +125,7 @@ return array(
         'Maknz\Slack\SlackServiceProvider',
         'Trace\TraceServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
-        'Schuppo\PasswordStrength\PasswordStrengthServiceProvider'
+        'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
 	),
 
 	/*
