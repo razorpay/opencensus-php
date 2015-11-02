@@ -35,6 +35,7 @@ final class Route
         'payment_auto_capture'              => ['post',     'payments/autocapture',                     'PaymentController@postAutoCapture'                             ],
         'payment_auto_capture_email'        => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                         ],
         'payment_verify_all'                => ['get',      'payments/verify/all',                      'PaymentController@getVerifyPayments'                           ],
+        'payments_capture_reminder'         => ['get',      'payments/all/reminder',                    'PaymentController@sendReminderMailForAuthorizedPayments'       ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                   ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                                  ],
         'refund_netbanking_generate_excel'  => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                   ],
@@ -231,6 +232,7 @@ final class Route
         'payment_auto_capture',
         'payment_auto_capture_email',
         'payment_verify_all',
+        'payments_capture_reminder',
         'refund_netbanking_generate_excel',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
@@ -273,7 +275,8 @@ final class Route
             'mock_gateways' => array(
                 'mockhdfc_enroll',
                 'mockhdfc_auth_enrolled',
-                'mockhdfc_payment',),
+                'mockhdfc_payment',
+            ),
 
             'cron' => array(
                 'hdfc_mpr_generate',
@@ -285,13 +288,17 @@ final class Route
                 'merchant_daily_report',
                 'payment_auto_capture',
                 'payment_verify_all',
-                'refund_netbanking_generate_excel'),
+                'refund_netbanking_generate_excel',
+                'payment_verify_all',
+            ),
 
             'mailgun' => array(
-                'hdfc_mpr_reconcile'),
+                'hdfc_mpr_reconcile',
+            ),
 
             'hosted' => array(
-                'merchant_secret'),
+                'merchant_secret',
+            ),
         );
 
     protected static $jsonpRoutes = array(

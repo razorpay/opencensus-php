@@ -5,6 +5,8 @@ namespace Models\Payment;
 use Carbon\Carbon;
 use EE\Exception;
 
+use Mail;
+
 use Models\Base;
 use Models\Merchant;
 use Models\Payment;
@@ -339,33 +341,76 @@ class Service extends Base\Service
 
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
-        $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false);
-        $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true);
+        return [
+            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
+            'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
+        ];
     }
 
     public function sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay($day, $final = false)
     {
+        $result = [];
+
         $today = Carbon::today('Asia/Kolkata');
         $from = $today->subDays($day)->timestamp;
-        $to = $today->subDays($day + 1)->timestamp;
+        $to = $today->subDays($day)->addDays(1)->timestamp;
 
         $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
                                                 $from, $to);
 
         $grouped = $payments->groupBy(Payment\Entity::MERCHANT_ID);
 
-        $subject = 'Reminder: The authorized payment(s) will be refunded after 2 days if not captured';
+        foreach ($grouped as $merchantId => $payments)
+        {
+            // Send mail only if we have some payments
+            if (count($payments) !== 0)
+            {
+                $this->sendAuthorizedPaymentsReminderMail(
+                    $merchantId, $payments, $final);
+
+                $result[$merchantId] = count($payments);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Sends the authorized payments reminder email
+     * @param  string $merchantId [description]
+     * @param  array $payments   [description]
+     * @param  string $subject Subject for the email
+     * @param  boolean $final Whether this is the final payment reminder
+     * @return null
+     */
+    protected function sendAuthorizedPaymentsReminderMail($merchantId, array $payments, $final)
+    {
+        // date format = 6th July 2015
+        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        $subject = "Razorpay | Authorized Payments Reminder for $date";
 
         if ($final)
         {
-            $subject = 'Final reminder: The authorized payment(s) will be refuneded after 1 day if not captured';
+            $subject = "Razorpay | Final Authorized Payments Reminder for $date";
         }
 
-        foreach ($grouped as $merchantId => $payments)
-        {
-            // @todo: nemo
-            // Send mail to the merchants
-        }
+        $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
+
+        $data = compact('merchant', 'payments', 'final');
+
+        $emails = $merchant[Merchant\Entity::TRANSACTION_REPORT_EMAIL];
+        $name = $merchant['name'];
+
+        Mail::send('emails.merchant.authorized_reminder', $data,
+            function ($message) use ($subject, $emails, $name) {
+
+                foreach ($emails as $email)
+                {
+                    $message->to($email, $name);
+                }
+
+                $message->subject($subject);
+        });
     }
 
     protected function processor()

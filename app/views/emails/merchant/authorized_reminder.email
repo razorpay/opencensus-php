@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          @include('emails.partials.header', ['message' => $message])
+          <!-- Text Header -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg" style="background:#39ACE5;">
+                  <tr>
+                    <td class="wrapper offset-by-two">
+                      <table class="eight columns ">
+                        <tr>
+                          <td class="center">
+                            <center>
+                              <h2 class="center">
+                                Authorized Payments Reminder
+                              </h2>
+                            </center>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.header_image', ['image' => 'report', 'alt' => 'Authorized Payments Reminder'], ['message' => $message])
+          <!-- Header Subtext -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper offset-by-two" style="background:#39ACE5;">
+                      <table class="eight columns">
+                        <tr>
+                          <td class="center">
+                            <center>
+                            <h2 class="center" style="text-align: center;">
+                              <a href="" style="color:white; text-decoration:none;">{{{$merchant['billing_label']}}}</a>
+                            </h2>
+                            </center>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Header Subtext -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper offset-by-four">
+                      <table class="four columns">
+                        <tr>
+                          <td>
+                            <table class="small-button">
+                              <tr>
+                                <td>
+                                  <a title="Open Dashboard" href="https://dashboard.razorpay.com">Open Dashboard</a>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Main text -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="darktext left-text-pad right-text-pad">
+<p>Hi {{{$merchant['name']}}},</p>
+
+@if($final)
+<p>The following payments will be refunded after 1 day if they are not captured.</p>
+@else
+<p>The following payments will be refunded after 2 days if they are not captured.</p>
+@endif
+<p>You can capture these payments by clicking on the payment link below and
+capturing it in the dashboard.</p>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper">
+                    <table class="five columns">
+                      <tr>
+                        <td class="lighttext left-text-pad">Payment ID</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper">
+                    <table class="three columns">
+                      <tr>
+                        <td class="lighttext center">Time</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper last">
+                    <table class="four columns">
+                      <tr>
+                        <td class="lighttext right-text-pad">Amount</td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          @foreach ($payments as $payment)
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper">
+                    <table class="five columns">
+                      <tr>
+                        <td class="darktext left-text-pad">
+                          <a href="https://dashboard.razorpay.com/#/app/payments/{{{$payment['public_id']}}}">
+                          {{{$payment['public_id']}}}
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper">
+                    <table class="three columns">
+                      <tr>
+                        <td class="darktext center">
+                          {{{\Carbon\Carbon::createFromTimeStamp($payment['authorized_at'], "Asia/Kolkata")->format('h:i a')}}}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper last">
+                    <table class="four columns">
+                      <tr>
+                        <td class="darktext right-text-pad">INR {{{number_format($payment['amount']/100, 2)}}}</td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @endforeach
+          @include('emails.partials.footer', ['message' => $message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

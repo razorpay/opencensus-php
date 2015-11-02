@@ -185,4 +185,9 @@ class PaymentController extends BaseController
 
         return ApiResponse::json($input);
     }
+
+    public function sendReminderMailForAuthorizedPayments()
+    {
+        return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
+    }
 }
