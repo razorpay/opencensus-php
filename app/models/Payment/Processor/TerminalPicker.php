@@ -353,11 +353,6 @@ class TerminalPicker
 
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return;
-        }
-
         $networks = array(
             Network::MAES,
             Network::RUPAY,
