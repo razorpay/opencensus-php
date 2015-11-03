@@ -98,14 +98,11 @@ class Service extends Base\Service
 
     public function editFreeCredits($merchantId, $input)
     {
-        $freeCredits = $input['free_credits'];
+        $freeCredits = $input['credits'];
 
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $balance = $this->balanceRepo->transaction(function () use ($freeCredits)
-            {
-                $this->repo->editMerchantFreeCredits($freeCredits);
-            });
+        $balance = $this->balanceRepo->editMerchantFreeCredits($merchant, $freeCredits);
 
         return $balance->toArray();
     }

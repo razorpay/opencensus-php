@@ -38,14 +38,17 @@ class Repository extends Base\Repository
     {
         assert ($this->isTransactionActive());
 
-        return $this->repo->transaction(function () use ($merchant, $freeCredits)
+//        return $this->transaction(array($this, 'editMerchantFreeCreditsInTransaction'));
+
+        return $this->transaction(function () use ($merchant, $freeCredits)
         {
-            $this->repo->editMerchantFreeCreditsInTransaction($merchant, $freeCredits);
+            return $this->editMerchantFreeCreditsInTransaction($merchant, $freeCredits);
         });
     }
 
     private function editMerchantFreeCreditsInTransaction($merchant, $freeCredits)
     {
+        $balance = $this->findOrFail($merchant->getId());
         $nodalBalance = $this->getEscrowBalanceLockForUpdate('kotak');
 
         $nodalCredits = $nodalBalance->getCredits();

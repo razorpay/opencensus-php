@@ -3,11 +3,11 @@
 namespace Tests\Functional\Merchant;
 
 use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MerchantTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -337,6 +337,34 @@ class MerchantTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('url', $content);
+    }
+
+    public function testEditCredits()
+    {
+        $this->merchantEditCredits('10000000000000', '10000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(10000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(10000, $nodalBalance['credits']);
+
+        $merchant = $this->fixtures->create('merchant:with_balance');
+        $id = $merchant->getId();
+        $this->merchantEditCredits($id, '20000');
+        $balance = $this->getEntityById('balance', $id, true);
+        $this->assertEquals(20000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(30000, $nodalBalance['credits']);
+
+        $this->merchantEditCredits('10000000000000', '5000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(5000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(25000, $nodalBalance['credits']);
     }
 
     protected function startTest()
