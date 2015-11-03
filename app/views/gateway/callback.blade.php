@@ -38,6 +38,11 @@ var s = 'razorpay_payment_id' in data
 t.innerHTML += s ? 'Successful' : 'Failed'
 t.className = 'show ' + (s ? 's' : 'f')
 g('icon').innerHTML = s ? '&#10004' : '!'
-try{opener.onComplete(JSON.stringify(data))&&close()}catch(e){}
-g('closer').style.display = 'block'
+data = JSON.stringify(data)
+if(window.opener){
+  try{opener.onComplete(data)&&close()}catch(e){}
+	opener.postMessage(data, '*')
+} else {
+  if(!/Windows Phone/.test(navigator.userAgent)) close()
+}
 </script></body></html>

@@ -23,6 +23,7 @@ header('P3P: CP="NO P3P"');
       return null;
     }
     var load = JSON.parse(g('submitPayload'));
+    document.cookie = 'submitPayload=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     var form = document.forms[0];
     form.setAttribute('action', load.url);
 
