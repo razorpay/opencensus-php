@@ -98,7 +98,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
-        $content = (array)simplexml_load_string($response->body);
+
+        $content = $this->xmlToArray($response->body);
 
         $this->verifySecureHashForQueryRequest($content);
 
@@ -221,7 +222,8 @@ class Gateway extends Base\Gateway
 
 
         $response = $this->sendGatewayRequest($request);
-        $content = (array)simplexml_load_string($response->body);
+        $content = $this->xmlToArray($response->body);
+
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
         if ($content['statuscode'] !== '0')
@@ -419,6 +421,20 @@ class Gateway extends Base\Gateway
                 $input['gateway']['statuscode'],
                 $input['gateway']['statusmessage']);
         }
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $res = simplexml_load_string($xml);
+
+        if ($res === false)
+        {
+            throw new Exception\RuntimeException(
+                'Failed to convert xml to array',
+                ['xml' => $xml]);
+        }
+
+        return (array) $res;
     }
 
 }
