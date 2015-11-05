@@ -1285,6 +1285,25 @@ class Service extends Base\Service
         }
     }
 
+    public function editCredits($merchantId, $input)
+    {
+        $this->setApiCredentials(null, 'live');
+
+        try
+        {
+            $response = $this->api->merchant->
+                fetch($merchantId)->editCredits($input);
+
+            return [null, $response->toArray()];
+        }
+
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+
+    }
+
     public function generateNetBankingRefunds($input)
     {
         $this->setApiCredentials(null, $input['mode']);

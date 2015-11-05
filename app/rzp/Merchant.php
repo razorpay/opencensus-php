@@ -148,4 +148,11 @@ class Merchant extends Entity
 
         return $this->request('GET', $relativeUrl);
     }
+
+    public function editCredits($params)
+    {
+        $relativeUrl = $this->getEntityUrl() . $this->id . '/credits';
+
+        return $this->request('POST', $relativeUrl, $params);
+    }
 }

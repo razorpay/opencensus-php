@@ -134,6 +134,10 @@
           <span class="pull-right">{{merchant.balance.live/100 | currency:'INR ' }}</span>
           Balance (Live)
         </a>
+        <a ng-show="merchant.credits.live >= 0" ng-click="openEditCredits(merchant.credits.live)" class="list-group-item">
+          <span class="pull-right">{{merchant.credits.live/100 | currency:'INR ' }}</span>
+          Free Credits
+        </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
@@ -670,6 +674,28 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(comment)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="editCreditsModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Free Credits</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Free Credits:</label>
+        <div class="col-lg-6">
+          <input type="number" min="0" max="50000000"
+            class="form-control m-b" ng-model="credits" step="1000000"
+          >
+          {{credits/100|currency:'INR '}}
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(credits)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">

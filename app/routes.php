@@ -199,6 +199,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
 
+        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
+
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
 
         Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
