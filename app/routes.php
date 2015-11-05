@@ -223,7 +223,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
 
-        Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities');
+        Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
+            ->where('format', 'csv');
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
