@@ -367,6 +367,16 @@ class MerchantTest extends TestCase
         $this->assertEquals(25000, $nodalBalance['credits']);
     }
 
+    public function testEditCreditsWrongFormat()
+    {
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function ()
+            {
+               $this->merchantEditCredits('10000000000000', 'abcde');
+            });
+    }
+
     protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
