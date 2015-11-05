@@ -110,7 +110,8 @@ class Core extends Base\Core
 
         if ($freeCredits > 0)
         {
-            $pricingRuleId = 'FreeCreditsRule';
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
             $credit = $amount;
             $fee = 0;
 

@@ -55,6 +55,7 @@ class Fixtures
         $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
 
         $this->create('pricing:default_plan');
+        // $this->create('pricing:zero_pricing_plan');
 
         $entities = $this->create('merchant:default_test_merchant');
 
