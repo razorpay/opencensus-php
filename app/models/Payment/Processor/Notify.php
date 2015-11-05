@@ -16,6 +16,7 @@ class Notify
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
+    const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
 
     // TODO: Shift to constants once we update PHP
     protected $mailViews = [
@@ -34,12 +35,18 @@ class Notify
         self::REFUNDED      =>  [
             'customer'  => 'emails.refund.common',
             'merchant'  => 'emails.refund.common'
-        ]
+        ],
+        self::FAILED_TO_AUTHORIZED => [
+            'customer'  => [
+                'html'  =>  'emails.payment.customer',
+                'text'  =>  'emails.payment.customer_text'
+            ],
+            'merchant'  =>  'emails.payment.failed_to_authorized'
+        ],
     ];
 
     protected $payment;
     protected $refund;
-    protected $config;
     protected $mode;
 
     /**
@@ -53,7 +60,6 @@ class Notify
         $this->payment = $payment;
         $this->refreshTemplate();
 
-        $this->config = $this->app->config->get('applications.mailgun');
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
@@ -144,6 +150,7 @@ class Notify
 
         // We don't send out a notification on capture
         $slackMessages = [
+            self::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
             self::AUTHORIZED    =>  'Payment Authorized',
             self::REFUNDED      =>  'Payment Refunded'
         ];
@@ -268,6 +275,8 @@ class Notify
     {
         switch ($event)
         {
+            // Both cases are the same
+            case self::FAILED_TO_AUTHORIZED:
             case self::AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
