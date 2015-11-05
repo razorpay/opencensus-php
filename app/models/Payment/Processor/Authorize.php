@@ -94,7 +94,9 @@ trait Authorize
             $payment->setErrorNull();
             $payment->setVerified(true);
 
-            $this->postPaymentAuthorizeProcessing($payment);
+            // The second argument marks the payment as converted from failed
+            // to authorized
+            $this->postPaymentAuthorizeProcessing($payment, true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -221,7 +223,7 @@ trait Authorize
         return $data;
     }
 
-    protected function postPaymentAuthorizeProcessing($payment)
+    protected function postPaymentAuthorizeProcessing($payment, $wasFailed = false)
     {
         $this->updatePaymentAuthorized();
 
@@ -243,7 +245,17 @@ trait Authorize
 
         // Trigger notification events for authorization
         $notifier = new Notify($payment);
-        $notifier->trigger(Notify::AUTHORIZED);
+
+        if ($wasFailed)
+        {
+            $trigger = Notify::FAILED_TO_AUTHORIZED;
+        }
+        else
+        {
+            $trigger = Notify::AUTHORIZED;
+        }
+
+        $notifier->trigger($trigger);
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
