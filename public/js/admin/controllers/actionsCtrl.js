@@ -172,10 +172,10 @@ app.controller('ActionsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.authorizeFailedPayment = function (payment_id) {
+    $scope.authorizeFailedPayment = function (payment_id, mode) {
       var request = $http({
         method: 'post',
-        url: '/admin/live/payments/' + payment_id + '/authorize_failed'
+        url: '/admin/'+mode+'/payments/' + payment_id + '/authorize_failed'
       });
       request.success(function (data) {
         if (data.success) {
@@ -233,7 +233,9 @@ app.controller('ActionsCtrl', [
         templateUrl: 'authorizeFailedPaymentModalContent.html',
         controller: 'authorizeFailedPaymentModalCtrl'
       });
-      modalInstance.result.then($scope.authorizeFailedPayment, $.noop);
+      modalInstance.result.then(function(data) {
+        $scope.authorizeFailedPayment(data.id, data.mode);
+      }, $.noop);
     };
     $scope.triggerError = function () {
       var request = $http({
@@ -342,8 +344,9 @@ app.controller('ActionsCtrl', [
   '$modalInstance',
   '$http',
   function ($scope, $modalInstance, $http) {
-    $scope.ok = function (id) {
-      $modalInstance.close(id);
+    $scope.mode = 'live';
+    $scope.ok = function (id, mode) {
+      $modalInstance.close({id:id, mode:mode});
     };
   }
 ]).controller('sendNewsletterCtrl', [

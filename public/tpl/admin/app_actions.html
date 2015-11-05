@@ -267,11 +267,20 @@
           <input type="text" class="form-control m-b" name="payment" ng-model="id" placeholder="Payment Id"/>
         </div>
       </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="test">TEST</option>
+            <option value="live">LIVE</option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(id, mode)">OK</button>
   </div>
 </script>
 
