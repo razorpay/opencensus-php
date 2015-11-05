@@ -63,6 +63,9 @@ class CreateTransactions extends Migration
             $table->bigInteger(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
+            $table->boolean(Transaction::GRATIS)
+                  ->default(0);
+
             $table->string(Transaction::CHANNEL, 8);
 
             $table->boolean(Transaction::SETTLED)

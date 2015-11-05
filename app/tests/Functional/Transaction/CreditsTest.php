@@ -32,6 +32,7 @@ class CreditsTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(true, $txn['gratis']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
         $this->assertEquals(1050000, $balance['balance']);
@@ -52,6 +53,7 @@ class CreditsTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(true, $txn['gratis']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
         $this->assertEquals(1000000, $balance['balance']);
@@ -72,6 +74,7 @@ class CreditsTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(true, $txn['gratis']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
         $this->assertEquals(1500000, $balance['balance']);

@@ -128,6 +128,7 @@ $factory('Models\Transaction\Entity', [
     'debit' => 0,
     'balance' => $faker->randomNumber,
     'gateway_fee' => null,
+    'gratis' => false,
     'channel' => 'kotak'
 ]);
 

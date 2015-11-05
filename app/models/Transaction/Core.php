@@ -113,6 +113,8 @@ class Core extends Base\Core
             $pricingRuleId = 'FreeCreditsRule';
             $credit = $amount;
             $fee = 0;
+
+            $txn->setGratis(true);
         }
         else
         {
