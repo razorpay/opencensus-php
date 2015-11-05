@@ -98,6 +98,8 @@ class Service extends Base\Service
 
     public function editFreeCredits($merchantId, $input)
     {
+        (new Merchant\Validator)->validateInput('edit_credits', $input);
+
         $freeCredits = $input['credits'];
 
         $merchant = $this->repo->findOrFailPublic($merchantId);
