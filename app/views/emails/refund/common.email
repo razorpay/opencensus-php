@@ -106,7 +106,7 @@
                           <tr>
                             <td class="center darktext">
                               <center>
-                                Refund Id: {{$refund['id']}}
+                                Refund Id: {{$refund['public_id']}}
                               </center>
                               <hr class="small">
                             </td>

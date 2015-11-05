@@ -321,6 +321,7 @@ class Notify
             ],
             'payment'   =>  [
                 'id'        =>  $this->payment->getId(),
+                'public_id' =>  $this->payment->getPublicId(),
                 'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
                 'timestamp' =>  $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
@@ -336,7 +337,8 @@ class Notify
                 'id'        =>  $this->refund->getId(),
                 'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
                 'timestamp' =>  $this->refund->getCreatedAt(),
-                'payment_id'=>  $this->refund->payment->getId()
+                'payment_id'=>  $this->refund->payment->getId(),
+                'public_id' =>  $this->refund->getPublicId(),
             ];
         }
 
