@@ -271,7 +271,7 @@ class Service extends Base\Service
 
     public function verifyAllPayments()
     {
-        $ts = time() - 60 * 60;
+        $ts = time() - 30 * 60;
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
@@ -301,6 +301,10 @@ class Service extends Base\Service
             }
             catch (Exception\GatewayTimeoutException $e)
             {
+                $this->trace->info(
+                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    ['payment_id' => $payment->getId()]);
+
                 // Just continue
                 $timedOut++;
             }

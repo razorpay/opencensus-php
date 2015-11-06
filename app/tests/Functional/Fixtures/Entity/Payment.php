@@ -85,7 +85,7 @@ class Payment extends Base
         $defaultValues = array(
             'bank'  => 'HDFC',
             'status' => 'authorized',
-            'gateway' => 'atom',
+            'gateway' => 'billdesk',
             'method' => 'netbanking',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
@@ -111,7 +111,7 @@ class Payment extends Base
         $defaultValues = array(
             'bank'  => 'HDFC',
             'status' => 'failed',
-            'gateway' => 'atom',
+            'gateway' => 'billdesk',
             'method' => 'netbanking',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
