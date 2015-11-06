@@ -48,6 +48,8 @@ class Entity extends Base\UniqueIdEntity
         self::PERCENT_RATE  => 0,
         self::FIXED_RATE    => 0);
 
+    const ZERO_PRICING = '10ZeroPricingP';
+
     protected function modifyInputProvideDefaults(& $input)
     {
         $nullables = array(self::PAYMENT_METHOD_TYPE, self::PAYMENT_NETWORK, self::PAYMENT_ISSUER);

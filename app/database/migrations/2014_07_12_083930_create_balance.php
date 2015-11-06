@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
 use Models\Merchant;
-use Models\Merchant\Balance;
+use Models\Merchant\Balance\Entity as Balance;
 
 class CreateBalance extends Migration
 {
@@ -28,6 +28,9 @@ class CreateBalance extends Migration
                   ->default(0);
 
             $table->bigInteger(Balance::ON_HOLD)
+                  ->default(0);
+
+            $table->bigInteger(Balance::CREDITS)
                   ->default(0);
 
             $table->integer(Balance::CREATED_AT);

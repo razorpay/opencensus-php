@@ -1,0 +1,91 @@
+<?php
+
+namespace Models\Merchant\Balance;
+
+use Models\Base;
+use Models\Merchant;
+
+class Repository extends Base\Repository
+{
+    use Base\RepositoryFetch;
+
+    protected $entity = 'Balance';
+
+    // protected $appFetchParamRules = array(
+    //     Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    // );
+
+    public function getBalanceLockForUpdate($id)
+    {
+        assert ($this->isTransactionActive());
+
+        return Entity::lockForUpdate()->findOrFail($id);
+    }
+
+    public function getMerchantBalanceLockForUpdate($merchant)
+    {
+        assert ($this->isTransactionActive());
+
+        return $this->getBalanceLockForUpdate($merchant->getKey());
+    }
+
+    public function getMerchantBalance($merchant)
+    {
+        return Entity::findOrFailPublic($merchant->getId());
+    }
+
+    public function editMerchantFreeCredits($merchant, $freeCredits)
+    {
+        return $this->transaction(function () use ($merchant, $freeCredits)
+        {
+            return $this->editMerchantFreeCreditsInTransaction($merchant, $freeCredits);
+        });
+    }
+
+    private function editMerchantFreeCreditsInTransaction($merchant, $freeCredits)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance = $this->findOrFail($merchant->getId());
+        $nodalBalance = $this->getEscrowBalanceLockForUpdate('kotak');
+
+        $nodalCredits = $nodalBalance->getCredits();
+        $nodalCredits = $nodalCredits - $balance->getCredits() + $freeCredits;
+        $nodalBalance->setCredits($nodalCredits);
+
+        $balance->setFreeCredits($freeCredits);
+
+        $balance->saveOrFail();
+        $nodalBalance->saveOrFail();
+
+        return $balance;
+    }
+
+    public function updateBalance($balance)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance->saveOrFail();
+    }
+
+    public function getEscrowBalanceLockForUpdate($channel)
+    {
+        $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';
+
+        return $this->$func();
+    }
+
+    public function getKotakBalanceLockForUpdate()
+    {
+        assert ($this->isTransactionActive());
+
+        return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
+    }
+
+    public function getAtomBalanceLockForUpdate()
+    {
+        assert ($this->isTransactionActive());
+
+        return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
+    }
+}

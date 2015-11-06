@@ -24,7 +24,7 @@ class Base
     protected static $map = array(
         'atom'          => Gateway\Atom\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,
-        'balance'       => Models\Merchant\Balance::class,
+        'balance'       => Models\Merchant\Balance\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
         'methods'       => Models\Merchant\Methods\Entity::class,
         'card'          => Models\Card\Entity::class,
