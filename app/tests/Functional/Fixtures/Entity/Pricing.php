@@ -6,13 +6,6 @@ use Models;
 
 class Pricing extends Base
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Models\Pricing\Repository;
-    }
-
     public function createDefaultPlan()
     {
         $pricingPlanId = '1hDYlICobzOCYt';
@@ -122,7 +115,7 @@ class Pricing extends Base
 
         $this->addPricingRulesToDb($rows);
 
-        $pricing = $this->repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
+//        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     public function createZeroPricingplan()
@@ -157,17 +150,17 @@ class Pricing extends Base
                 );
 
         $this->addPricingRulesToDb($rows);
-
-        $pricing = $this->repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     protected function addPricingRulesToDb($rows)
     {
+        $repo = new Models\Pricing\Repository;
+
         foreach ($rows as $row)
         {
             $pricing = new Models\Pricing\Entity;
             $pricing->fill($row);
-            $this->repo->saveOrFail($pricing);
+            $repo->saveOrFail($pricing);
         }
-    }
+   }
 }
