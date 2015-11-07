@@ -79,7 +79,7 @@
                           <tr>
                             <td class="center darktext">
                               <center>
-                                Payment Id: {{$payment['id']}}
+                                Payment Id: {{$payment['public_id']}}
                               </center>
                               <hr class="small">
                             </td>
