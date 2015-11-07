@@ -68,6 +68,13 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
+    public function createBalance($balance)
+    {
+        assert ($balance->exists === false);
+
+        $balance->saveOrFail();
+    }
+
     public function getEscrowBalanceLockForUpdate($channel)
     {
         $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';

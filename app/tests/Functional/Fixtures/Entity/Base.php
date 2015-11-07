@@ -166,6 +166,20 @@ class Base
         return $entity;
     }
 
+    protected function transaction(callable $callable)
+    {
+        $db = \DB::getFacadeRoot();
+
+        return $db->transaction($callable);
+    }
+    protected function callInTransaction($callable, $args)
+    {
+        return $this->db->transaction(function ()
+        {
+            return call_user_func($callable);
+        });
+    }
+
     protected function eloquentUnguard()
     {
         Eloquent::unguard();
