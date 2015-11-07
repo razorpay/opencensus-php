@@ -68,18 +68,9 @@ class Pricing extends Base
                     ),
                 );
 
-        $repo = new Models\Pricing\Repository;
+        $this->addPricingRulesToDb($rows);
 
-        foreach ($rows as $row)
-        {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
-        }
-
-        $pricing = $this->repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
-
-        return $pricing;
+        // $pricing = $this->repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     public function createStandardPlan()
