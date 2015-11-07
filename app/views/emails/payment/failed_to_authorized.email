@@ -67,6 +67,32 @@
               </td>
             </tr>
           </table>
+
+          <!-- Payment Id -->
+          <table class="row">
+            <tr>
+              <td>
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="eleven columns left-text-pad">
+                          <tr>
+                            <td class="darktext">
+<p>This payment (earlier marked as failed) has now been converted to authorized.</p>
+<p>This means that money was deducted from the customer's account. Please capture this payment and process it immediately.</p>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+
           <!-- Payment Id -->
           <table class="row">
             <tr>
@@ -79,7 +105,7 @@
                           <tr>
                             <td class="center darktext">
                               <center>
-                                Payment Id: {{$payment['id']}}
+                                Payment Id: {{$payment['public_id']}}
                               </center>
                               <hr class="small">
                             </td>
@@ -93,6 +119,7 @@
               </td>
             </tr>
           </table>
+
           <!-- Payment Details -->
           <table class="row">
             <tr>
