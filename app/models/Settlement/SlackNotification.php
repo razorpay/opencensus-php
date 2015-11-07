@@ -51,10 +51,13 @@ class SlackNotification
 
         unset($data['message'], $data['status']);
 
-        $this->slackPost($message, $data, '', [
-            'channel'   => '#settlements',
-            'username'  => 'settlements',
-            'color'     => $color
-        ]);
+        $this->slackPost(
+            $message,
+            $data,
+            [
+                'channel'   => '#settlements',
+                'username'  => 'settlements',
+                'color'     => $color
+            ]);
     }
 }
