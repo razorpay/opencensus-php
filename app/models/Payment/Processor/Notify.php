@@ -18,6 +18,11 @@ class Notify
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
 
+    protected static $RECEIPT_EMAILS = [
+        self::AUTHORIZED,
+        self::FAILED_TO_AUTHORIZED
+    ];
+
     // TODO: Shift to constants once we update PHP
     protected $mailViews = [
         self::AUTHORIZED    =>  [
@@ -41,7 +46,10 @@ class Notify
                 'html'  =>  'emails.payment.customer',
                 'text'  =>  'emails.payment.customer_text'
             ],
-            'merchant'  =>  'emails.payment.failed_to_authorized'
+            'merchant'  =>  [
+                'html'  =>  'emails.payment.failed_to_authorized',
+                'text'  =>  'emails.payment.failed_to_authorized_text',
+            ],
         ],
     ];
 
@@ -137,7 +145,7 @@ class Notify
             $to = $this->template[$type]['email'];
 
             // This finally sends the mail
-            if ($this->isMailEnabled($event))
+            if ($this->isMailEnabled($event, $isMerchant))
             {
                 $this->sendMail($view, $subject, $to);
             }
@@ -430,16 +438,37 @@ class Notify
     }
 
     /**
+     * Whether a given email is meant to be a customer receipt email
+     * A receipt email is defined as a mail sent to the customer
+     * on a succesful payment. This is currently just the following:
+     *   - AUTHORIZED
+     *   - FAILED_TO_AUTHORIZED
+     * @param  string  $event      Event for which the mail is intended
+     * @param  boolean $isMerchant Whether this mail is for the merchant.
+     * @return boolean
+     */
+    protected function isCustomerReceiptEmail($event, $isMerchant)
+    {
+        // If the mail is for a merchant, it can't be a customer receipt email
+        if ($isMerchant) {
+            return false;
+        }
+
+        return in_array($event, self::RECEIPT_EMAILS);
+    }
+
+    /**
      * Whether or not we need to trigger the notifications
      * The order of conditions in this is imporant
      * @param string $event Event triggered
      * @return boolean
      */
-    protected function isMailEnabled($event)
+    protected function isMailEnabled($event, $isMerchant = false)
     {
         // If the merchant has disabled customer emails
+        // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
-            ($event === self::AUTHORIZED))
+            $this->isCustomerReceiptEmail($event, $isMerchant))
         {
             return false;
         }
