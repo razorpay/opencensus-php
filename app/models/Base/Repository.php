@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\App;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    protected $app;
+
     protected $db;
 
     protected $auth;
@@ -15,9 +17,9 @@ class Repository extends \Razorpay\Spine\Repository
     {
         parent::__construct();
 
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->auth = $app['basicauth'];
+        $this->auth = $this->app['basicauth'];
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
@@ -47,5 +49,17 @@ class Repository extends \Razorpay\Spine\Repository
     protected function throwException(array $e)
     {
         throw new Exception\DbQueryException($e);
+    }
+
+    public function isTransactionActive()
+    {
+        $env = $this->app->environment();
+
+        if ($env === 'testing')
+        {
+            return ($this->db->transactionLevel() > 1);
+        }
+
+        return ($this->db->transactionLevel() > 0);
     }
 }

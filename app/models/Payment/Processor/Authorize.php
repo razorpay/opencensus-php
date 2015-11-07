@@ -412,31 +412,34 @@ trait Authorize
 
     protected function updatePaymentAuthorized()
     {
-        $payment = $this->payment;
-
-        $payment->setAmountAuthorized();
-
-        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-        $payment->setAuthorizeTimestamp();
-
-        $payment->terminal->incrementUsedCount();
-
-        $payment->saveOrFail();
-        $payment->terminal->saveOrFail();
-
-        $gateway = $payment->getGateway();
-
-        if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+        $this->repo->transaction(function()
         {
-            $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+            $payment = $this->payment;
 
-            $txn->saveOrFail();
-        }
+            $payment->setAmountAuthorized();
 
-        $payment->saveOrFail();
+            $payment->setStatus(Payment\Status::AUTHORIZED);
 
-        $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+            $payment->setAuthorizeTimestamp();
+
+            $payment->terminal->incrementUsedCount();
+
+            $payment->saveOrFail();
+            $payment->terminal->saveOrFail();
+
+            $gateway = $payment->getGateway();
+
+            if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+            {
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+                $txn->saveOrFail();
+            }
+
+            $payment->saveOrFail();
+
+            $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+        });
     }
 
     protected function isGatewayActuallyAuthorizingPayment($payment)
