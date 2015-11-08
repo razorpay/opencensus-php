@@ -185,7 +185,7 @@ class Service extends Base\Service
                 $data[$payment->getPublicId()] =  $payment->getAmount();
             }
 
-            $this->slackPost($message, $data);
+            $this->slackPost($message, $data, ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];
