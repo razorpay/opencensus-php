@@ -117,7 +117,7 @@ class Pricing extends Base
                     array(
                         'id' => '1ZeroPricingR1',
                         'plan_id' => '10ZeroPricingP',
-                        'plan_name' => 'zero_pricing_plan',
+                        'plan_name' => 'ZeroPricingPlan',
                         'payment_method' => 'card',
                         'percent_rate' => 0,
                         'fixed_rate' => 0,
@@ -125,7 +125,7 @@ class Pricing extends Base
                     array(
                         'id' => '1ZeroPricingR2',
                         'plan_id' => '10ZeroPricingP',
-                        'plan_name' => 'zero_pricing_plan',
+                        'plan_name' => 'ZeroPricingPlan',
                         'payment_method' => 'netbanking',
                         'percent_rate' => 0,
                         'fixed_rate' => 0,
@@ -133,7 +133,7 @@ class Pricing extends Base
                     array(
                         'id' => '1ZeroPricingR3',
                         'plan_id' => '10ZeroPricingP',
-                        'plan_name' => 'zero_pricing_plan',
+                        'plan_name' => 'ZeroPricingPlan',
                         'payment_method' => 'wallet',
                         'percent_rate' => 0,
                         'fixed_rate' => 0,
