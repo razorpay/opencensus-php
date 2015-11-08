@@ -108,7 +108,7 @@ trait Authorize
 
         $data = $payment->toArrayAdmin();
 
-        $this->slackPost($message, $data, ['color' => 'bad']);
+        $this->slackPost($message, $data, ['color' => 'bad', 'channel' => '#tech_logs']);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
