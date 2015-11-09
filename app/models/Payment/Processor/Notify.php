@@ -18,7 +18,7 @@ class Notify
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
 
-    protected static $RECEIPT_EMAILS = [
+    protected static $receptEmails = [
         self::AUTHORIZED,
         self::FAILED_TO_AUTHORIZED
     ];
@@ -454,7 +454,7 @@ class Notify
             return false;
         }
 
-        return in_array($event, self::RECEIPT_EMAILS);
+        return in_array($event, self::$receptEmails);
     }
 
     /**
