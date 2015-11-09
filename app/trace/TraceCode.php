@@ -56,6 +56,7 @@ class TraceCode
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
     const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
+    const GATEWAY_REQUESTY_TIMEOUT                  = 'GATEWAY_REQUESTY_TIMEOUT';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';

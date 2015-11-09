@@ -8,7 +8,6 @@
 namespace Tests\Functional;
 
 use Artisan;
-use DB;
 use Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase

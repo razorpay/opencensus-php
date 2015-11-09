@@ -95,5 +95,7 @@ return array(
 
     'CRON_PASSWORD'                         => 'a923r8u98uwaf98uw9w8fu',
 
+    'RUN_FIXTURES'                          => true,
     'RUN_FIXTURES_ONCE'                     => true,
+    'TRUNCATE_DATABASE'                     => false,
 );

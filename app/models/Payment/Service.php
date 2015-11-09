@@ -185,7 +185,7 @@ class Service extends Base\Service
                 $data[$payment->getPublicId()] =  $payment->getAmount();
             }
 
-            $this->slackPost($message, $data);
+            $this->slackPost($message, $data, ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];
@@ -271,7 +271,7 @@ class Service extends Base\Service
 
     public function verifyAllPayments()
     {
-        $ts = time() - 60 * 60;
+        $ts = time() - 30 * 60;
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
@@ -301,6 +301,10 @@ class Service extends Base\Service
             }
             catch (Exception\GatewayTimeoutException $e)
             {
+                $this->trace->info(
+                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    ['payment_id' => $payment->getId()]);
+
                 // Just continue
                 $timedOut++;
             }
@@ -334,7 +338,7 @@ class Service extends Base\Service
 
         $message = 'Payment verify result';
 
-        $this->slackPost($message, $results);
+        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
 
         return $results;
     }

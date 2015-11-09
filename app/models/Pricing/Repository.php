@@ -80,6 +80,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getZeroPricingPlanRuleForMethod($method)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', Pricing\Entity::ZERO_PRICING)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->firstOrFail();
+    }
+
     public function getPricingPlans()
     {
         $repo = $this->repo;

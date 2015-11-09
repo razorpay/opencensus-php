@@ -14,6 +14,15 @@ class Fee
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
+    public function getZeroPricingPlanRule($payment)
+    {
+        $planId = Pricing\Entity::ZERO_PRICING;
+
+        $method = $payment->getMethod();
+
+        return (new Pricing\Repository)->getZeroPricingPlanRuleForMethod($method)->getId();
+    }
+
     public function calculateMerchantFees($payment)
     {
         $pricingPlanId = $this->getPricingPlanId($payment->merchant);
@@ -125,7 +134,8 @@ class Fee
 
         if ($rule === null)
         {
-            throw new Exception\LogicException('No appropriate pricing rule found', ['payment' => $payment->toArray()]);
+            throw new Exception\LogicException(
+                'No appropriate pricing rule found', ['payment' => $payment->toArray()]);
         }
 
         return $rule;

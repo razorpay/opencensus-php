@@ -67,6 +67,13 @@ trait Verify
             $message = 'Payment verification failed.';
         }
 
-        $this->slackPost($message, $data, '', ['color'=>'bad', 'icon' => ':boom:']);
+        $this->slackPost(
+            $message,
+            $data,
+            [
+                'color' => 'bad',
+                'icon' => ':boom:',
+                'channel' => '#tech_logs'
+            ]);
     }
 }

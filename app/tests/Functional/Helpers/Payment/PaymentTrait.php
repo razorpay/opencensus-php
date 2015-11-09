@@ -420,6 +420,18 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function merchantEditCredits($id, $credits)
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/credits',
+            'method' => 'post',
+            'content' => ['credits' => $credits]);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;

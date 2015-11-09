@@ -13,6 +13,6 @@ class GatewayController extends BaseController
         $input['gateway'] = $gateway;
 
         $app = \App::getFacadeRoot();
-        $app['slack']->send($input, 'transactions', '#transactions');
+        $app['slack']->send($input, 'transactions', '#tech_logs');
     }
 }
