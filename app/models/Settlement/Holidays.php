@@ -9,6 +9,8 @@ class Holidays
     public static $holidays = array(
         [2, 10],
         [22, 10],
+        [11, 11],
+        [12, 11],
     );
 
     public static function isTodayHoliday($mode)
