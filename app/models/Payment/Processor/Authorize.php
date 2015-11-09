@@ -227,6 +227,8 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
+        $this->callbackPaymentAuthorize($payment);
+
         //
         // The returned value could be either Payment
         // model or an array containing callback data.
@@ -258,6 +260,20 @@ trait Authorize
         $notifier->trigger($trigger);
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function callbackPaymentAuthorize($payment)
+    {
+        $merchant = $payment->merchant;
+
+        $url = $merchant->getPaymentAuthorizeCallbackUrl();
+
+        $request = array(
+            'method' => 'post',
+            'url' => $url,
+            'content' => $payment->toPublicArray());
+
+        // Post this request in a job queue.
     }
 
     protected function checkForRecentFailedPayment($payment)
