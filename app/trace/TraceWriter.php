@@ -16,25 +16,34 @@ class TraceWriter extends Logger
     // used as channel for Monolog\Logger
     const CHANNEL = "Razorpay API";
 
+    protected $app;
+
     protected $config = array();
 
     protected $debug = false;
 
     protected $testHandler = null;
 
-    public function __construct()
+    public function __construct($app)
     {
         parent::__construct(static::CHANNEL);
 
-        $this->config = Config::get('trace');
+        $this->app = $app;
 
-        $this->debug = Config::get('app.debug');
-
-        $this->contextEnv = Config::get('app.context');
+        $this->getConfig($this->app['config']);
 
         $this->defineHandlers();
 
         $this->defineProcessors();
+    }
+
+    protected function getConfig($config)
+    {
+        $this->config = $config->get('trace');
+
+        $this->debug = $config->get('app.debug');
+
+        $this->contextEnv = $config->get('app.context');
     }
 
     protected function defineHandlers()

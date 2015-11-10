@@ -7,11 +7,6 @@ use Trace\TraceFields;
 
 class Trace extends TraceWriter
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function addRecord($level, $message, array $context = array())
     {
         $traceCode = $message;
@@ -44,5 +39,10 @@ class Trace extends TraceWriter
         TraceFields::checkFields($code, array_keys($context));
 
         return $context;
+    }
+
+    public function traceException(\Exception $exception)
+    {
+        $this->app['exception.handler']->traceException($exception);
     }
 }
