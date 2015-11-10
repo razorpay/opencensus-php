@@ -405,16 +405,21 @@ class Service extends Base\Service
         $emails = $merchant[Merchant\Entity::TRANSACTION_REPORT_EMAIL];
         $name = $merchant['name'];
 
-        Mail::send('emails.merchant.authorized_reminder', $data,
-            function ($message) use ($subject, $emails, $name) {
+        Mail::send(
+            'emails.merchant.authorized_reminder',
+            $data,
+            function ($message) use ($subject, $emails, $name)
+            {
 
                 foreach ($emails as $email)
                 {
                     $message->to($email, $name);
                 }
 
+                $message->cc('notifications@razorpay.com');
+
                 $message->subject($subject);
-        });
+            });
     }
 
     protected function processor()
