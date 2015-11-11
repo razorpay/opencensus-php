@@ -78,7 +78,8 @@ trait Refund
      * @param  Payment\Refund\Entity $refund  Refund Entity
      * @return null
      */
-    protected function sendRefundNotification(Payment\Entity $payment,
+    protected function sendRefundNotification(
+        Payment\Entity $payment,
         Payment\Refund\Entity $refund)
     {
         //
