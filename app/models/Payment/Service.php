@@ -173,19 +173,12 @@ class Service extends Base\Service
 
         if ($count !== 0)
         {
-            $payments->getIds();
-
             $date->subDay(1);
 
-            $message = 'Payment authorizations till ' . $date->format('d-m-y');
+            $message = 'Payment authorizations till ' .
+                        $date->format('d-m-y') . ': ' . $count;
 
-            $data = [];
-            foreach ($payments as $payment)
-            {
-                $data[$payment->getPublicId()] =  $payment->getAmount();
-            }
-
-            $this->slackPost($message, $data, ['channel' => '#tech_logs']);
+            $this->slackPost($message, [], ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];
