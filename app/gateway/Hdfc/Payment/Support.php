@@ -76,6 +76,11 @@ trait Support
 
         if ($this->error)
         {
+            if ($this->isAnAcceptedError() === true)
+            {
+                return;
+            }
+
             $this->throwException($this->supportPaymentResponse['error']);
         }
     }
@@ -156,6 +161,34 @@ trait Support
         }
 
         return ! ($this->error);
+    }
+
+    protected function isAnAcceptedError()
+    {
+        assert ($this->error === true);
+
+        $response = $this->supportPaymentResponse;
+
+        $error = $response['error'];
+        $input = $this->input;
+
+        $payment = $this->model;
+
+        if (($this->action === Action::CAPTURE) and
+            ($error['code'] === Hdfc\ErrorCode::GW00176) and
+            ($input['payment']['status'] === 'authorized') and
+            ($input['payment']['amount_authorized'] === $input['amount']))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_FORCED,
+                $this->supportPaymentResponse);
+
+            $this->error = null;
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function setSupportPaymentType($type)
