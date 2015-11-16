@@ -149,11 +149,11 @@ class Repository extends Base\Repository
     protected function addQueryParamIin($query, $params)
     {
         $query->join(
-            Payment\Entity::getTableName(),
+            Card\Entity::getTableName(),
             function ($join) use ($params)
             {
                 $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+                $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
 
                 $join->on($paymentCardId, '=', $cardId)
                      ->where(Card\Entity::IIN, '=', $params[Card\Entity::IIN]);
@@ -165,11 +165,11 @@ class Repository extends Base\Repository
     protected function addQueryParamLast4($query, $params)
     {
         $query->join(
-            Payment\Entity::getTableName(),
+            Card\Entity::getTableName(),
             function ($join) use ($params)
             {
                 $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-                $cardId = Methods\Entity::getAttributeWithTableName(Card\Entity::ID);
+                $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
 
                 $join->on($paymentCardId, '=', $cardId)
                      ->where(Card\Entity::LAST4, '=', $params[Card\Entity::IIN]);
