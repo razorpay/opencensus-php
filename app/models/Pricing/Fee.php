@@ -10,7 +10,7 @@ use Models\Pricing;
 
 class Fee
 {
-    const SERVICE_TAX_PERCENT = 14;
+    const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 

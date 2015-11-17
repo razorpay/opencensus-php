@@ -27,6 +27,8 @@ trait Refund
      */
     protected function refund($id, $input)
     {
+        $this->trace->info(TraceCode::PAYMENT_REFUND_REQUEST, $input);
+
         $payment = $this->retrieve($id);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);

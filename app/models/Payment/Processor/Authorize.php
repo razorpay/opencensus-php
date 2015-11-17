@@ -54,6 +54,8 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -95,7 +97,7 @@ trait Authorize
 
             // The second argument marks the payment as converted from failed
             // to authorized
-            $this->postPaymentAuthorizeProcessing($payment, true);
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -165,6 +167,8 @@ trait Authorize
             throw $e;
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -222,12 +226,15 @@ trait Authorize
         return $data;
     }
 
-    protected function postPaymentAuthorizeProcessing($payment, $wasFailed = false)
+    protected function updateAndNotifyPaymentAuthorized($payment, $wasFailed = false)
     {
         $this->updatePaymentAuthorized();
 
         $this->notifyAuthorized($payment, $wasFailed);
+    }
 
+    protected function postPaymentAuthorizeProcessing($payment)
+    {
         //
         // The returned value could be either Payment
         // model or an array containing callback data.

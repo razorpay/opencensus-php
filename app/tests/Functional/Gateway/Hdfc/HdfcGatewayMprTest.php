@@ -165,7 +165,7 @@ class HdfcGatewayMprTest extends TestCase
                     'channel' => 'kotak',
                     'amount' => 4414500,
 //                    'amount' => 4387640,
-                    'api_fee' => 28500,
+                    'api_fee' => 29000,
                     'gateway_fee' => 85500,
                     'settlement_count' => 2,
                     'transaction_count' => 11,

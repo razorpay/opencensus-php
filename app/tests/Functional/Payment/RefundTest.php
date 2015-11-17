@@ -113,6 +113,11 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], 0);
     }
 
+    public function testRefundWithBlankAmount()
+    {
+        $this->startTest($this->payment['public_id'], '');
+    }
+
     public function testRefundWithSpacedAmount()
     {
         $this->startTest($this->payment['public_id'], ' 100');
