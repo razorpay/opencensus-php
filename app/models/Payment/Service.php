@@ -338,34 +338,51 @@ class Service extends Base\Service
 
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
-        return [
+        $result = [
             'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
             'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
         ];
+
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZE_REMINDER, $result);
+
+        return $result;
     }
 
     public function sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay($day, $final = false)
     {
-        $result = [];
+        $result = [
+            // This holds the counts
+            'counts'=>[]
+        ];
 
-        $today = Carbon::today('Asia/Kolkata');
-        $from = $today->subDays($day)->timestamp;
-        $to = $today->subDays($day)->addDays(1)->timestamp;
+        // This is the start of the day 00:00, $day ago
+        $start = Carbon::today('Asia/Kolkata')->subDays($day);
+        $end   = Carbon::today('Asia/Kolkata')->subDays($day)->addDays(1);
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
-                                                $from, $to);
+        $to = $end->timestamp;
+        $from = $start->timestamp;
 
-        $grouped = $payments->groupBy(Payment\Entity::MERCHANT_ID);
+        $result['from'] = (string) $start;
+        $result['to']   = (string) $end;
+
+        $authorizedPayments = (new Payment\Repository)
+            ->getAuthorizedPaymentsBetweenTimestamps($from, $to);
+
+        $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
+
+        // Put the counts in for debug purposes
+        $result['counts']['payments'] = count($authorizedPayments);
+        $result['counts']['merchants'] = count($grouped);
 
         foreach ($grouped as $merchantId => $payments)
         {
             // Send mail only if we have some payments
-            if (count($payments) !== 0)
+            if (count($payments) > 0)
             {
                 $this->sendAuthorizedPaymentsReminderMail(
                     $merchantId, $payments, $final);
 
-                $result[$merchantId] = count($payments);
+                $result['counts'][$merchantId] = count($payments);
             }
         }
 
