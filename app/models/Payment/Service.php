@@ -163,7 +163,7 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
-        $days = 5;
+        $days = 10;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
@@ -178,7 +178,7 @@ class Service extends Base\Service
             $merchant = $payment->merchant;
 
             $refund = $this->processor($merchant)
-                           ->refundAuthorizedPayment($payment->getId(), []);
+                           ->refundAuthorizedPayment($payment->getPublicId(), []);
 
             $refunded++;
         }
@@ -187,7 +187,6 @@ class Service extends Base\Service
         $this->slackPost($message, [], ['channel' => '#tech_logs']);
 
         return ['refunded' => $refunded];
-    }
     }
 
     public function notifyAuthorizedPayments()
