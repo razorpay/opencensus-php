@@ -60,10 +60,6 @@ class DailyReport
 
         $data = $this->data;
 
-        $this->trace->info(
-            TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
-            $data);
-
         // This is a debug view only for raising proper errors
         \View::make('emails.merchant.daily_report_debug', $data)->render();
 

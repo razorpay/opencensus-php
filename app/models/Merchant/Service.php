@@ -4,14 +4,18 @@ namespace Models\Merchant;
 
 use Constants\Mode;
 use Mail;
+
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
+
 use EE\Exception;
 use EE\Error\ErrorCode;
+
+use Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -465,6 +469,12 @@ class Service extends Base\Service
                 $response['sent'][] = $sent;
             }
         }
+
+        // Log just the result of the settlement reports
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
+            $response
+        );
 
         return $response;
     }
