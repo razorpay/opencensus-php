@@ -67,9 +67,9 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor()->verify($payment);
+        $data = $this->processor($merchant)->verify($payment);
 
         return $data;
     }
@@ -87,9 +87,9 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor()->authorizeFailedPayment($payment);
+        $data = $this->processor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
@@ -159,6 +159,34 @@ class Service extends Base\Service
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $payment->toArrayPublic();
+    }
+
+    public function refundOldAuthorizedPayments()
+    {
+        $days = 10;
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp($ts);
+
+        $refunded = 0;
+
+        foreach ($payments as $payment)
+        {
+            assert ($payment->isAuthorized() === true);
+
+            $merchant = $payment->merchant;
+
+            $refund = $this->processor($merchant)
+                           ->refundAuthorizedPayment($payment->getPublicId(), []);
+
+            $refunded++;
+        }
+
+        $message = 'Authorized payments refunded: ' . $refunded;
+        $this->slackPost($message, [], ['channel' => '#tech_logs']);
+
+        return ['refunded' => $refunded];
     }
 
     public function notifyAuthorizedPayments()
@@ -432,15 +460,20 @@ class Service extends Base\Service
             });
     }
 
-    protected function processor()
+    protected function processor($merchant = null)
     {
-        return Payment\Processor\Processor::create($this->getBindings());
+        return Payment\Processor\Processor::create($this->getBindings($merchant));
     }
 
-    protected function getBindings()
+    protected function getBindings(Merchant\Entity $merchant = null)
     {
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
         $bindings = array(
-            'merchant'  => $this->merchant,
+            'merchant'  => $merchant,
             'core'      => $this->core,
             'trace'     => $this->trace,
             'mode'      => $this->mode);

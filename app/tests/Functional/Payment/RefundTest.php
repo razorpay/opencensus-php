@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Payment;
 
+use Carbon\Carbon;
 use Mockery;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -121,6 +122,22 @@ class RefundTest extends TestCase
     public function testRefundWithSpacedAmount()
     {
         $this->startTest($this->payment['public_id'], ' 100');
+    }
+
+    public function testRefundofOldAuthorizedPayments()
+    {
+        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10);
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+
+        $payments = $this->fixtures->times(2)->create('payment:authorized');
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(2, $content['refunded']);
     }
 
     public function testFetchRefundById()
