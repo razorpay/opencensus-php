@@ -11,7 +11,7 @@ class Settlement extends Entity
 
     public function all($options = array())
     {
-        return parent::all();
+        return parent::all($options);
     }
 
     public function initiate($channel)
