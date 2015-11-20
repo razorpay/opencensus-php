@@ -41,11 +41,31 @@ t.innerHTML += s ? 'Successful' : 'Failed'
 t.className = 'show ' + (s ? 's' : 'f')
 g('icon').innerHTML = s ? '&#10004' : '!'
 
-if(window.opener){
-  try{opener.onComplete(data)&&close()}catch(e){}
-	opener.postMessage(data, '*')
+onerror = function(message){
+  message = JSON.stringify({
+    access_token: '3cddb790e27342ad86f431498a1f8342',
+    data: {
+      environment: 'production',
+      platform: 'popup',
+      body: {
+        message: {
+          body: message
+        }
+      }
+    }
+  })
+  var xhr = new XMLHttpRequest()
+  xhr.open('post', 'https://api.rollbar.com/api/1/item/', true)
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  xhr.send(message)
 }
-//else {
-//  if(!/Windows Phone/.test(navigator.userAgent)) close()
-//}
+
+if(!window.CheckoutBridge) {
+  try {
+    opener.onComplete(data)
+    close()
+  } catch(e){
+    onerror(e.message)
+  }  
+}
 </script></body></html>
