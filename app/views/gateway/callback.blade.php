@@ -35,8 +35,8 @@ if(window.CheckoutBridge){
 
 function g(id){return document.getElementById(id)}
 function razorpay_callback(){return data}
-var t = g('text')
 
+var t = g('text')
 t.innerHTML += s ? 'Successful' : 'Failed'
 t.className = 'show ' + (s ? 's' : 'f')
 g('icon').innerHTML = s ? '&#10004' : '!'
@@ -60,12 +60,12 @@ onerror = function(message){
   xhr.send(message)
 }
 
-if(!window.CheckoutBridge) {
-  try {
-    opener.onComplete(data)
-    close()
-  } catch(e){
-    onerror(e.message)
-  }  
+if(!window.CheckoutBridge){
+  if(window.opener) {
+    try{opener.onComplete(data)&&close()}catch(e){onerror(e.message)}
+    opener.postMessage(data,'*')
+  } else {
+    onerror('Orphan popup');
+  }
 }
 </script></body></html>
