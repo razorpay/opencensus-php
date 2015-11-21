@@ -367,18 +367,16 @@ app.controller('ActionsCtrl', [
     admin.identity().then(function (admin) {
       $scope.adminEmail = admin.email;
     });
-    $scope.test = function (subj_1, subj_2, msg) {
+    $scope.test = function (subject, msg) {
       $modalInstance.close({
-        subj_1: subj_1,
-        subj_2: subj_2,
+        subject: subject,
         msg: msg
       });
     };
-    $scope.ok = function (lists, subj_1, subj_2, msg) {
+    $scope.ok = function (lists, subject, msg) {
       $modalInstance.close({
         lists: Object.keys(lists).join(),
-        subj_1: subj_1,
-        subj_2: subj_2,
+        subject: subject,
         msg: msg
       });
     };

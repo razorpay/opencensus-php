@@ -78,17 +78,9 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="col-lg-3 control-label" for="subject_line_1">Subject Line 1</label>
+          <label class="col-lg-3 control-label" for="subject">Subject</label>
           <div class="col-lg-9">
-            <input type="text" class="form-control m-b" maxlength="100" name="subject_line_1" ng-model="subject_line_1" placeholder="Razorpay">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="col-lg-3 control-label" for="subject_line_2">Subject Line 2</label>
-          <div class="col-lg-9">
-            <input type="text" class="form-control m-b" maxlength="100" name="subject_line_2" ng-model="subject_line_2" placeholder="Newsletter">
-            <span class="help-block m-b-none">Try to break your subject in two lines
-            equally. They will be joined together to form the subject.</span>
+            <input type="text" class="form-control m-b" maxlength="100" name="subject" ng-model="subject" placeholder="Razorpay">
           </div>
         </div>
       </div>
@@ -111,8 +103,8 @@
       The test email will be sent to {{adminEmail}}
     </div>
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-info" ng-click="test(subject_line_1, subject_line_2, message)">Send Test</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject_line_1, subject_line_2, message)"
+    <button class="btn btn-info" ng-click="test(subject, message)">Send Test</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject, message)"
       ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
     >OK</button>
   </div>
