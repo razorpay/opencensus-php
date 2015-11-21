@@ -418,7 +418,7 @@ class Service extends Base\Service
         $config = $this->app->config->get('applications.mailgun');
         $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
-        $this->app['mailer']->queue(
+        Mail::queue(
             [
                 'html' => 'emails.merchant.activation',
                 'text' => 'emails.merchant.activation_text'
