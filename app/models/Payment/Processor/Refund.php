@@ -27,7 +27,9 @@ trait Refund
      */
     protected function refund($id, $input)
     {
-        $this->trace->info(TraceCode::PAYMENT_REFUND_REQUEST, $input);
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            ['id' => $id, 'input' => $input]);
 
         $payment = $this->retrieve($id);
 
