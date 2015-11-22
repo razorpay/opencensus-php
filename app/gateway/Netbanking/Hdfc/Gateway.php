@@ -372,6 +372,8 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayTimeoutException(
                 'Hdfc netbanking gateway could not be reached');
         }
+
+        return $response;
     }
 
     protected function getHashOfString($str)
