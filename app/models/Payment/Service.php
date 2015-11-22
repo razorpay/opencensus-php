@@ -163,7 +163,7 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
-        $days = 10;
+        $days = 7;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
