@@ -130,6 +130,7 @@ app.controller('EntitiesCtrl', [
         received: booleanList
       },
       merchant: {
+        email: ['Email'],
         activated: booleanList,
         hold_funds: booleanList,
         live: booleanList,
