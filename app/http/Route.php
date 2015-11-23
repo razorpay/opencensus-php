@@ -293,6 +293,7 @@ final class Route
                 'payment_auto_capture',
                 'payment_verify_all',
                 'refund_netbanking_generate_excel',
+                'payment_refund_authorized',
                 'payment_capture_reminder',
                 'payment_verify_all',
             ),
