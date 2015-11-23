@@ -339,9 +339,10 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $methods = new Merchant\Methods\Entity;
+
         return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
-            $merchant, $input
-        );
+            $merchant, $input);
     }
 
     public function setBanksForAllMerchants($input)

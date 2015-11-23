@@ -28,7 +28,7 @@ class Core extends Base\Core
 
         $this->createBalance($merchant, Mode::TEST);
 
-        (new Methods\Core)->setAllPaymentBanks($merchant);
+        (new Methods\Core)->setDefaultMethods($merchant);
 
         return $merchant;
     }
