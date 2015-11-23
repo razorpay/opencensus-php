@@ -52,6 +52,7 @@ class Service extends Base\Service
             'hdfc'              => Gateway\Hdfc::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
             'balance'           => Models\Merchant\Balance::class,
+            'methods'           => Models\Merchant\Methods::class,
         );
 
         if (array_key_exists($entity, $map))
