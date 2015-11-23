@@ -254,8 +254,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (($verify->match === true) and
-            ($payment['received'] === false))
+        if ($payment['received'] === false)
         {
             unset($content['vpc_Command']);
 
