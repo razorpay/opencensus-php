@@ -41,6 +41,8 @@ class Fee
 
         $fee = $this->getFeesByPercentAndFixedRates($amount, $percent, $fixed);
 
+        assert ($fee < $amount);
+
         return $fee;
     }
 
