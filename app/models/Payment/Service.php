@@ -169,24 +169,73 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp($ts);
 
+        $authorized = $payments->count();
         $refunded = 0;
+
+        $timedOut = 0; $failed = 0; $error = 0;
+        $time = time();
 
         foreach ($payments as $payment)
         {
-            assert ($payment->isAuthorized() === true);
+            try
+            {
+                assert ($payment->isAuthorized() === true);
 
-            $merchant = $payment->merchant;
+                $merchant = $payment->merchant;
 
-            $refund = $this->processor($merchant)
-                           ->refundAuthorizedPayment($payment->getPublicId(), []);
+                $refund = $this->processor($merchant)
+                               ->refundAuthorizedPayment(
+                                    $payment->getPublicId(), []);
 
-            $refunded++;
+                $refunded++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                // Now Just continue
+            }
+            catch (Exception\GatewayTimeoutException $e)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    ['payment_id' => $payment->getId()]);
+
+                // Just continue
+                $timedOut++;
+            }
+            catch (\Exception $e)
+            {
+                // @note: If payment refund fails due to any reason
+                // other than expected ones, we should log it as an error
+                // exception.
+                //
+                // If for eg, exception is BadRequestException, then it won't
+                // get logged by global handler because it's not a critical
+                // exception but in this context it really shouldn't have
+                // occurred.
+
+                $this->app['exception.handler']->traceException($e);
+
+                // Just continue
+                $error++;
+            }
         }
 
-        $message = 'Authorized payments refunded: ' . $refunded;
-        $this->slackPost($message, [], ['channel' => '#tech_logs']);
+        $time = time() - $time;
 
-        return ['refunded' => $refunded];
+        $results = array(
+            'authorized'    => $authorized,
+            'refunded'      => $refunded,
+            'error'         => $error,
+            'failed'        => $failed,
+            'timed out'     => $timedOut,
+            'total time'    => $time . ' secs');
+
+        $message = 'Authorized payments refunded: ' . $refunded;
+        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+
+        return $results;
     }
 
     public function notifyAuthorizedPayments()
@@ -331,7 +380,7 @@ class Service extends Base\Service
             }
             catch (\Exception $e)
             {
-                // @note: If payment verification failes due to any reason
+                // @note: If payment verification fails due to any reason
                 // other than expected ones, we should log it as an error
                 // exception.
                 //

@@ -138,6 +138,8 @@ class RefundTest extends TestCase
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(2, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(2, $content['authorized']);
     }
 
     public function testFetchRefundById()
