@@ -12,6 +12,7 @@ class Table
     const METHODS           = 'merchant_banks';
     const PRICING           = 'pricing';
     const PAYMENT           = 'payments';
+    const WEBHOOK           = 'webhooks';
     const MERCHANT          = 'merchants';
     const TERMINAL          = 'terminals';
     const ADJUSTMENT        = 'adjustment';
