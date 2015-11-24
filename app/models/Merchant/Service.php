@@ -280,4 +280,27 @@ class Service extends Base\Service
 
         return array($error, $key_data);
     }
+
+    public function getWebhooks($mode)
+    {
+        $merchantId = \Auth::merchant()->user()->id;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = [];
+        $data = null;
+
+        try
+        {
+            // This is just semantics
+            // completely equivalent to all() for now
+            $data = $this->api->webhook->fetch()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
 }

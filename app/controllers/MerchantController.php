@@ -212,4 +212,10 @@ class MerchantController extends BaseController
 
         return $response;
     }
+
+
+    public function getWebhooks($mode)
+    {
+        return (new Merchant\Service)->getWebhooks($mode);
+    }
 }

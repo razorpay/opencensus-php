@@ -60,6 +60,8 @@ Route::group(array('before' => 'auth.merchant'), function()
 
     Route::get('/apihost', 'MerchantController@getApihost');
 
+    Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/password', 'MerchantController@postPassword');
@@ -79,6 +81,10 @@ Route::group(array('before' => 'auth.merchant'), function()
         Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
 
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
+
+        Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
+
+        Route::put('/{mode}/webhooks', 'MerchantController@postEditWebhook');
     });
 });
 
