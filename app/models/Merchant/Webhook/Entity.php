@@ -18,6 +18,11 @@ class Entity extends Base\PublicEntity
 
     protected $table            = \Constants\Table::WEBHOOK;
 
+    protected $defaults = array(
+        self::ACTIVE => true,
+        self::FAILURE_COUNT => 0,
+    );
+
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
@@ -25,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     public function isActive()
     {
-        return (bool) $this->getAttribute(self::ACTIVE);
+        return $this->getAttribute(self::ACTIVE);
     }
 
     public function getFailureCount()
@@ -52,5 +57,15 @@ class Entity extends Base\PublicEntity
         $events = $this->attributes[self::EVENTS];
 
         return Name::getEvents($events);
+    }
+
+    public function getActivatedAttribute()
+    {
+        return (bool) $this->attributes[self::ACTIVE];
+    }
+
+    public function getFailureCountAttribute()
+    {
+        return (int) $this->attributes[self::FAILURE_COUNT];
     }
 }

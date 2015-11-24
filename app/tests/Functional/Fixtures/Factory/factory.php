@@ -197,3 +197,10 @@ $factory('Models\Merchant\Methods\Entity', [
     'banks' => '[]',
     'paytm' => '0',
 ]);
+
+$factory('Models\Merchant\Webhook\Entity', [
+    'merchant_id' => 10000000000000,
+    'url' => $faker->url,
+    'active' => true,
+    'active' => 1,
+]);

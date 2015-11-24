@@ -25,13 +25,15 @@ class CreateWebhooks extends Migration
 
             $table->char(Webhook::MERCHANT_ID, Webhook::ID_LENGTH);
 
-            $table->boolean(Webhook::ACTIVE);
+            $table->boolean(Webhook::ACTIVE)
+                  ->default(1);
 
             $table->string(Webhook::URL);
 
             $table->integer(Webhook::EVENTS);
 
-            $table->integer(Webhook::FAILURE_COUNT);
+            $table->integer(Webhook::FAILURE_COUNT)
+                  ->default(0);
 
             $table->integer(Webhook::CREATED_AT);
             $table->integer(Webhook::UPDATED_AT);

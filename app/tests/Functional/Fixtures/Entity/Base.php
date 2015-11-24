@@ -35,6 +35,7 @@ class Base
         'methods'       => Models\Merchant\Methods\Entity::class,
         'payment'       => Models\Payment\Entity::class,
         'pricing'       => Models\Pricing\Entity::class,
+        'webhook'       => Models\Merchant\Webhook::class,
         'refund'        => Models\Payment\Refund\Entity::class,
         'settlement'    => Models\Settlement\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
