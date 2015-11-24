@@ -39,6 +39,13 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         'methods');
 
+    protected $defaults = array(
+        self::CARD      => false,
+        self::PAYTM     => false,
+        self::MOBIKWIK  => false,
+        self::BANKS     => [],
+    );
+
     public function setMethods(array $input = array())
     {
         $this->edit($input, 'setMethods');

@@ -52,6 +52,7 @@ class Service extends Base\Service
             'hdfc'              => Gateway\Hdfc::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
             'balance'           => Models\Merchant\Balance::class,
+            'methods'           => Models\Merchant\Methods::class,
         );
 
         if (array_key_exists($entity, $map))
@@ -96,7 +97,7 @@ class Service extends Base\Service
         {
             // Now we send the newsletter
             $mailer = new Newsletter($input['email'],
-                [$input['subj_1'], $input['subj_2']], $input['msg'],
+                $input['subject'], $input['msg'],
                 true // Test Email to self
             );
 
@@ -115,7 +116,7 @@ class Service extends Base\Service
         if(empty($errors))
         {
             $mailer = new Newsletter($input['lists'],
-                [$input['subj_1'], $input['subj_2']], $input['msg']
+                $input['subject'], $input['msg']
             );
 
             return $mailer->send();

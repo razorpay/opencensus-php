@@ -27,6 +27,10 @@ trait Refund
      */
     protected function refund($id, $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            ['id' => $id, 'input' => $input]);
+
         $payment = $this->retrieve($id);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
@@ -78,7 +82,8 @@ trait Refund
      * @param  Payment\Refund\Entity $refund  Refund Entity
      * @return null
      */
-    protected function sendRefundNotification(Payment\Entity $payment,
+    protected function sendRefundNotification(
+        Payment\Entity $payment,
         Payment\Refund\Entity $refund)
     {
         //

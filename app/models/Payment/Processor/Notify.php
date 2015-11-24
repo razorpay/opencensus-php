@@ -196,13 +196,16 @@ class Notify
         }
         catch (\Exception $e)
         {
+            // Shouldn't fail for any reason
             $this->trace->error(
-                TraceCode::PAYMENT_NOTIFY_FAILED, [
-                    'payment_id' => $payment->getPublicId(),
-                    'message'    => 'Payment Notify raised an exception',
-                    'exception'  => $e->getData()
+                TraceCode::PAYMENT_NOTIFY_FAILED,
+                [
+                    'payment_id' => $this->payment->getPublicId(),
+                    'message'    => 'Payment Notify raised an exception'
                 ]
             );
+
+            $this->trace->traceException($e);
         }
     }
 
@@ -450,7 +453,8 @@ class Notify
     protected function isCustomerReceiptEmail($event, $isMerchant)
     {
         // If the mail is for a merchant, it can't be a customer receipt email
-        if ($isMerchant) {
+        if ($isMerchant)
+        {
             return false;
         }
 
@@ -468,7 +472,7 @@ class Notify
         // If the merchant has disabled customer emails
         // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
-            $this->isCustomerReceiptEmail($event, $isMerchant))
+            ($this->isCustomerReceiptEmail($event, $isMerchant)))
         {
             return false;
         }
@@ -485,9 +489,9 @@ class Notify
     protected function isEnabled($event)
     {
         // We only send notifications if Mode is not TEST
-        // or if the env=dev
-        // so env=dev overrides TEST mode
-        if ($this->app->environment('dev'))
+        // or if the env=dev or env=testing
+        // so env=dev or env=testing overrides TEST mode
+        if ($this->app->environment('dev', 'testing'))
         {
             return true;
         }

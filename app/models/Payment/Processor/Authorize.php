@@ -54,6 +54,8 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -63,9 +65,8 @@ trait Authorize
 
         if ($payment->isFailed() === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Non failed payment given for authorization where failed payment is needed',
-                ['payment_id' => $payment->getPublicId()]);
+            throw new Exception\BadRequestValidationFailureException(
+                'Non failed payment given for authorization where failed payment is needed');
         }
 
         $data = array(
@@ -96,7 +97,7 @@ trait Authorize
 
             // The second argument marks the payment as converted from failed
             // to authorized
-            $this->postPaymentAuthorizeProcessing($payment, true);
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -166,6 +167,8 @@ trait Authorize
             throw $e;
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -223,12 +226,17 @@ trait Authorize
         return $data;
     }
 
-    protected function postPaymentAuthorizeProcessing($payment, $wasFailed = false)
+    protected function updateAndNotifyPaymentAuthorized($payment, $wasFailed = false)
     {
         $this->updatePaymentAuthorized();
 
         $this->callbackPaymentAuthorize($payment);
 
+        $this->notifyAuthorized($payment, $wasFailed);
+    }
+
+    protected function postPaymentAuthorizeProcessing($payment)
+    {
         //
         // The returned value could be either Payment
         // model or an array containing callback data.
@@ -245,6 +253,11 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
+        return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function notifyAuthorized($payment, $wasFailed)
+    {
         // Trigger notification events for authorization
         $notifier = new Notify($payment);
 
@@ -258,8 +271,6 @@ trait Authorize
         }
 
         $notifier->trigger($trigger);
-
-        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
     protected function callbackPaymentAuthorize($payment)

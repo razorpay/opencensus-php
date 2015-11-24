@@ -194,7 +194,7 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence())
+        if ($this->verifyKeyExistence() === true)
         {
             $response = $this->verifySecret();
 
@@ -751,7 +751,13 @@ class BasicAuth
 
     public function sign($str)
     {
+        if ($this->key === null)
+        {
+            throw new Exception\LogicException('Key cannot be null here');
+        }
+
         $secret = Crypt::decrypt($this->key->getSecret());
+
         return hash_hmac('sha1', $str, $secret);
     }
 }

@@ -10,7 +10,7 @@ use Models\Pricing;
 
 class Fee
 {
-    const SERVICE_TAX_PERCENT = 14;
+    const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
@@ -40,6 +40,8 @@ class Fee
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
         $fee = $this->getFeesByPercentAndFixedRates($amount, $percent, $fixed);
+
+        assert ($fee < $amount);
 
         return $fee;
     }

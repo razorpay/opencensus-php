@@ -67,9 +67,9 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor()->verify($payment);
+        $data = $this->processor($merchant)->verify($payment);
 
         return $data;
     }
@@ -87,9 +87,9 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor()->authorizeFailedPayment($payment);
+        $data = $this->processor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
@@ -161,6 +161,83 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    public function refundOldAuthorizedPayments()
+    {
+        $days = 7;
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp($ts);
+
+        $authorized = $payments->count();
+        $refunded = 0;
+
+        $timedOut = 0; $failed = 0; $error = 0;
+        $time = time();
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                assert ($payment->isAuthorized() === true);
+
+                $merchant = $payment->merchant;
+
+                $refund = $this->processor($merchant)
+                               ->refundAuthorizedPayment(
+                                    $payment->getPublicId(), []);
+
+                $refunded++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                // Now Just continue
+            }
+            catch (Exception\GatewayTimeoutException $e)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    ['payment_id' => $payment->getId()]);
+
+                // Just continue
+                $timedOut++;
+            }
+            catch (\Exception $e)
+            {
+                // @note: If payment refund fails due to any reason
+                // other than expected ones, we should log it as an error
+                // exception.
+                //
+                // If for eg, exception is BadRequestException, then it won't
+                // get logged by global handler because it's not a critical
+                // exception but in this context it really shouldn't have
+                // occurred.
+
+                $this->app['exception.handler']->traceException($e);
+
+                // Just continue
+                $error++;
+            }
+        }
+
+        $time = time() - $time;
+
+        $results = array(
+            'authorized'    => $authorized,
+            'refunded'      => $refunded,
+            'error'         => $error,
+            'failed'        => $failed,
+            'timed out'     => $timedOut,
+            'total time'    => $time . ' secs');
+
+        $message = 'Authorized payments refunded: ' . $refunded;
+        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+
+        return $results;
+    }
+
     public function notifyAuthorizedPayments()
     {
         $date = Carbon::yesterday('Asia/Kolkata');
@@ -173,19 +250,12 @@ class Service extends Base\Service
 
         if ($count !== 0)
         {
-            $payments->getIds();
-
             $date->subDay(1);
 
-            $message = 'Payment authorizations till ' . $date->format('d-m-y');
+            $message = 'Payment authorizations till ' .
+                        $date->format('d-m-y') . ': ' . $count;
 
-            $data = [];
-            foreach ($payments as $payment)
-            {
-                $data[$payment->getPublicId()] =  $payment->getAmount();
-            }
-
-            $this->slackPost($message, $data, ['channel' => '#tech_logs']);
+            $this->slackPost($message, [], ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];
@@ -310,7 +380,7 @@ class Service extends Base\Service
             }
             catch (\Exception $e)
             {
-                // @note: If payment verification failes due to any reason
+                // @note: If payment verification fails due to any reason
                 // other than expected ones, we should log it as an error
                 // exception.
                 //
@@ -345,34 +415,51 @@ class Service extends Base\Service
 
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
-        return [
+        $result = [
             'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
             'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
         ];
+
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZE_REMINDER, $result);
+
+        return $result;
     }
 
     public function sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay($day, $final = false)
     {
-        $result = [];
+        $result = [
+            // This holds the counts
+            'counts'=>[]
+        ];
 
-        $today = Carbon::today('Asia/Kolkata');
-        $from = $today->subDays($day)->timestamp;
-        $to = $today->subDays($day)->addDays(1)->timestamp;
+        // This is the start of the day 00:00, $day ago
+        $start = Carbon::today('Asia/Kolkata')->subDays($day);
+        $end   = Carbon::today('Asia/Kolkata')->subDays($day)->addDays(1);
 
-        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
-                                                $from, $to);
+        $to = $end->timestamp;
+        $from = $start->timestamp;
 
-        $grouped = $payments->groupBy(Payment\Entity::MERCHANT_ID);
+        $result['from'] = (string) $start;
+        $result['to']   = (string) $end;
+
+        $authorizedPayments = (new Payment\Repository)
+            ->getAuthorizedPaymentsBetweenTimestamps($from, $to);
+
+        $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
+
+        // Put the counts in for debug purposes
+        $result['counts']['payments'] = count($authorizedPayments);
+        $result['counts']['merchants'] = count($grouped);
 
         foreach ($grouped as $merchantId => $payments)
         {
             // Send mail only if we have some payments
-            if (count($payments) !== 0)
+            if (count($payments) > 0)
             {
                 $this->sendAuthorizedPaymentsReminderMail(
                     $merchantId, $payments, $final);
 
-                $result[$merchantId] = count($payments);
+                $result['counts'][$merchantId] = count($payments);
             }
         }
 
@@ -405,27 +492,37 @@ class Service extends Base\Service
         $emails = $merchant[Merchant\Entity::TRANSACTION_REPORT_EMAIL];
         $name = $merchant['name'];
 
-        Mail::send('emails.merchant.authorized_reminder', $data,
-            function ($message) use ($subject, $emails, $name) {
+        Mail::send(
+            'emails.merchant.authorized_reminder',
+            $data,
+            function ($message) use ($subject, $emails, $name)
+            {
 
                 foreach ($emails as $email)
                 {
                     $message->to($email, $name);
                 }
 
+                $message->cc('notifications@razorpay.com');
+
                 $message->subject($subject);
-        });
+            });
     }
 
-    protected function processor()
+    protected function processor($merchant = null)
     {
-        return Payment\Processor\Processor::create($this->getBindings());
+        return Payment\Processor\Processor::create($this->getBindings($merchant));
     }
 
-    protected function getBindings()
+    protected function getBindings(Merchant\Entity $merchant = null)
     {
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
         $bindings = array(
-            'merchant'  => $this->merchant,
+            'merchant'  => $merchant,
             'core'      => $this->core,
             'trace'     => $this->trace,
             'mode'      => $this->mode);
