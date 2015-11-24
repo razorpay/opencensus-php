@@ -216,13 +216,17 @@ class MerchantController extends BaseController
 
     public function getWebhooks($mode)
     {
-        return (new Merchant\Service)->getWebhooks($mode);
+        $response = (new Merchant\Service)->getWebhooks($mode);
+
+        return AppResponse::jsonResponse($response);
     }
 
     public function postAddWebhook($mode)
     {
         $input = Input::all();
 
-        return (new Merchant\Service)->createWebhook($mode, $input);
+        $response = (new Merchant\Service)->createWebhook($mode, $input);
+
+        return AppResponse::jsonResponse($response);
     }
 }

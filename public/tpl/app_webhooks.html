@@ -68,17 +68,17 @@
         <label class="col-lg-2 control-label">Active Events</label>
         <div class="col-lg-10">
           <div class="checkbox">
-            <label><input ng-model="webhook.events.payment_authorized" type="checkbox" value="payment.authorized">payment.authorized</label>
+            <label><input ng-model="webhook.events['payment.authorized']" type="checkbox" value="payment.authorized">payment.authorized</label>
           </div>
           <div class="checkbox">
-            <label><input ng-model="webhook.events.payment_captured" type="checkbox" value="payment.captured">payment.captured</label>
+            <label><input ng-model="webhook.events['payment.captured']" type="checkbox" value="payment.captured">payment.captured</label>
           </div>
           <div class="checkbox">
-            <label><input ng-model="webhook.events.payment_created" type="checkbox" value="payment.created">payment.created</label>
+            <label><input ng-model="webhook.events['payment.created']" type="checkbox" value="payment.created">payment.created</label>
           </div>
-          <div class="checkbox">
-            <label><input ng-model="webhook.events.settlement_created" type="checkbox" value="settlement.created">settlement.created</label>
-          </div>
+          <!--<div class="checkbox">
+            <label><input ng-model="webhook.events['settlement.created']" type="checkbox" value="settlement.created">settlement.created</label>
+          </div>-->
         </div>
       </div>
     </form>

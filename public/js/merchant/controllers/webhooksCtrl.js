@@ -15,7 +15,26 @@ app.controller('WebhooksCtrl', [
     };
 
     $scope.createWebhook = function(webhook) {
-      console.debug(webhook);
+
+      var request = $http({
+        method: 'post',
+        url: '/' + $scope.mode + '/webhooks',
+        //transformRequest: transformRequestAsFormPost,
+        data: webhook
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Webhook Added', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
     }
 
     $scope.openCreateWebook = function() {
@@ -36,8 +55,8 @@ app.controller('WebhooksCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.webhooks.items.push(data.data);
-          $scope.webhooks.count = parseInt($scope.webhooks.count) + 1;
+          $scope.webhooks.items = data.data;
+          $scope.webhooks.count = parseInt($scope.webhooks.count);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -48,6 +67,9 @@ app.controller('WebhooksCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+    // Fetch the webhooks now
+    $scope.fetchWebhooks();
 }]).controller('newWebhookCtrl', [
   '$scope',
   '$modalInstance',
@@ -55,7 +77,7 @@ app.controller('WebhooksCtrl', [
     $scope.webhook = {
       url: "",
       events: {
-        'payment_authorized': true
+        'payment.authorized': true
       }
     };
     $scope.ok = function (webhook) {

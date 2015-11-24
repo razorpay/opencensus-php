@@ -298,7 +298,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors[] = $e->getMessage();
+            $errors = $e->getMessage();
         }
 
         return [$errors, $data];
@@ -321,7 +321,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors[] = $e->getMessage();
+            $errors = $e->getMessage();
         }
 
         return [$errors, $data];
