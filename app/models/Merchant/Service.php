@@ -303,4 +303,27 @@ class Service extends Base\Service
 
         return [$errors, $data];
     }
+
+    public function createWebhook($mode, $input)
+    {
+        $merchantId = \Auth::merchant()->user()->id;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = [];
+        $data = null;
+
+        try
+        {
+            // This is just semantics
+            // completely equivalent to all() for now
+            $data = $this->api->webhook->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
 }
