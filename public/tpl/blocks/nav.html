@@ -41,9 +41,13 @@
   </li>
   <li class="line dk"></li>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">          
+
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Settings</span>
-  </li>  
+  </li>
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+    <span translate="aside.nav.settings.SETTINGS">Settings</span>
+  </li>
   <li>
     <a id="keysNav" ui-sref="app.keys">
       <i class="icon-key icon text-success-lter"></i>
@@ -55,6 +59,12 @@
       <i class="icon-question icon text-success-lter"></i>
       <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
       <span>Activation</span>
+    </a>
+  </li>
+  <li>
+    <a id="webhookNav" ui-sref="app.webhooks">
+      <i class="icon-share icon text-success-lter"></i>
+      Webhook
     </a>
   </li>
   <li>
