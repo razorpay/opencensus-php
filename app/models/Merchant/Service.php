@@ -389,6 +389,34 @@ class Service extends Base\Service
         return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
+    public function createMerchantWebhook($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $webhook = (new Merchant\Webhook\Core)->createWebhook($merchant, $input);
+
+        return $webhook->toArray();
+    }
+
+    public function getMerchantWebhooks($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $webhooks = (new Merchant\Webhook\Core)->getWebhooks($merchant);
+
+        return $webhooks->toArray();
+    }
+
+    public function editMerchantWebhook($merchantId, $webhookId, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($merchantId);
+
+        $webhook = (new Merchant\Webhook\Core)-.editWebhook(
+            $merchant, $webhookId, $input);
+
+        return $webhook->toArray();
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $file = (new BankAccount\BeneficiaryFile)->generate();
