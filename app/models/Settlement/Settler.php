@@ -225,6 +225,10 @@ class Settler
                 if (($txn->getBalance() === 0) and
                     ($txn->isTypeRefund()))
                 {
+                    $this->trace->info(
+                        TraceCode::TRANSACTION_REFUND_TRACE,
+                        ['id' => $txn->getId()]);
+
                     $txn[Transaction\Entity::SETTLED_AT] = null;
                     $txn->saveOrFail();
                     $i++;
