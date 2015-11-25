@@ -222,6 +222,15 @@ class Settler
                     continue;
                 }
 
+                if (($txn->getBalance() === 0) and
+                    ($txn->isTypeRefund()))
+                {
+                    $txn[Transaction\Entity::SETTLED_AT] = null;
+                    $txn->saveOrFail();
+                    $i++;
+                    continue;
+                }
+
                 $setlAmount += $txn->getCredit() - $txn->getDebit();
                 $setlGatewayFee += $txn->getGatewayFee();
                 $setlApiFee += $txn->getApiFee();

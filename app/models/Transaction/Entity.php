@@ -147,6 +147,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getBalance()
+    {
+        return (int) $this->getAttribute(self::BALANCE);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     public function getAmountAttribute()
