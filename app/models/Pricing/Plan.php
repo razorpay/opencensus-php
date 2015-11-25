@@ -2,6 +2,7 @@
 
 namespace Models\Pricing;
 
+use Models\Card\Network;
 use Models\Base\PublicCollection;
 
 class Plan extends PublicCollection
@@ -27,7 +28,16 @@ class Plan extends PublicCollection
 
         foreach ($this->items as $item)
         {
-            array_push($rules, $item->toArray());
+            $rule = $item->toArray();
+
+            if (($rule['payment_method'] === 'card') and
+                ($rule['payment_network'] !== null))
+            {
+                $rule['payment_network_name'] =
+                    Network::getFullName($rule['payment_network']);
+            }
+
+            array_push($rules, $rule);
         }
 
         $this->setPlanAttributes(
