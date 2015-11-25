@@ -136,7 +136,12 @@ class Network
 
     public static function getFullName($network)
     {
-        return self::$fullName[$network];
+        if (array_key_exists($network, self::$fullName))
+        {
+            return self::$fullName[$network];
+        }
+
+        return self::$fullName[self::UNKNOWN];
     }
 
     public static function getCode($fullName)

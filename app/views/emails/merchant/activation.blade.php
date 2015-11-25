@@ -60,10 +60,28 @@
 
 <a title="Merchant Website" href="{{$merchant['website']}}" style="color: #2ba6cb; text-decoration: none;">{{{$merchant['billing_label']}}}</a>
 
-is now active. You have opted for the {{{$plan['plan_name']}}} plan.
-(₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction on all modes of payment).</p>
+is now active. You have opted for the {{{$plan['name']}}} plan. The pricing details
+associated with the plan are:
 
-<p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>.</p>
+</p><ul align="left">
+  @foreach ($plan['rules'] as $rule)
+    @if ($rule['payment_method'] === 'card')
+      @if ($rule['payment_network'] !== null)
+        <li style="text-align:left;" align="left">{{{$rule['payment_network_name']}}} Cards - {{{$rule['display']}}}</li>
+      @else
+        <li style="text-align:left;" align="left">
+        {{{isset($rule['payment_method_type']) ? ucfirst($rule['payment_method_type']) : 'All'}}} Cards - {{{$rule['display']}}}
+        </li>
+      @endif
+    @elseif ($rule['payment_method'] === 'netbanking')
+      <li style="text-align:left;" align="left">Net Banking - {{{$rule['display']}}}</li>
+    @elseif ($rule['payment_method'] === 'wallet')
+      <li style="text-align:left;" align="left">Wallets - {{{$rule['display']}}}</li>
+    @endif
+  @endforeach
+  <li style="text-align:left;" align="left">+1% Extra on International Transactions</li>
+  <li style="text-align:left;" align="left">Service Taxes Extra (14.5%)</li>
+</ul><p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>.</p>
 
 <p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com" style="color: #2ba6cb; text-decoration: none;">email</a>.</p>
 

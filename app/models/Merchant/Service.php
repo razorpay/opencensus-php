@@ -397,18 +397,13 @@ class Service extends Base\Service
 
     protected function sendActivationEmail($merchant)
     {
-        //TODO: This needs to be refactored when we go for differentiated pricing
+
         $plan = $merchant->getPricingPlan();
 
-        // array_values resets the array numeric keys and then we can pick the first rule
-        // @todo: explain this part
-        $plan = array_values(array_filter(
-            $plan['rules'],
-            function($rule)
-            {
-                return $rule['payment_method']  === 'card';
-            }
-        ))[0];
+        foreach ($plan['rules'] as &$rule)
+        {
+            $rule['display'] = Pricing\Plan::formattedPricing($rule);
+        }
 
         $data = [
             'merchant'  =>  $merchant->toArray(),

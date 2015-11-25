@@ -13,6 +13,9 @@ class Entity extends Base\UniqueIdEntity
     const PAYMENT_METHOD        = 'payment_method';
     const PAYMENT_METHOD_TYPE   = 'payment_method_type';
     const PAYMENT_NETWORK       = 'payment_network';
+
+    // Humanized name of the payment network
+    const PAYMENT_NETWORK_NAME  = 'payment_network_name';
     const PAYMENT_ISSUER        = 'payment_issuer';
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
