@@ -25,17 +25,15 @@ class Validator extends Base\Validator
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
     );
 
-    protected static $editCreditsRules = [
+    protected static $editCreditsRules = array(
         Balance\Entity::CREDITS             => 'required|integer|min:0|max:50000000'
-    ];
+    );
 
-    protected static $editEmailRules = [
+    protected static $editEmailRules = array(
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
-    ];
+    );
 
-    protected static $editValidators = [
-        'csv_email'
-    ];
+    protected static $editValidators = array('csv_email');
 
     protected function validateCsvEmail($input)
     {

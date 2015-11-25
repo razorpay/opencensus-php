@@ -230,7 +230,7 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
-        $this->callbackPaymentAuthorize($payment);
+        $this->eventPaymentAuthorized($payment);
 
         $this->notifyAuthorized($payment, $wasFailed);
     }
@@ -273,18 +273,9 @@ trait Authorize
         $notifier->trigger($trigger);
     }
 
-    protected function callbackPaymentAuthorize($payment)
+    protected function eventPaymentAuthorized($payment)
     {
-        $merchant = $payment->merchant;
-
-        $url = $merchant->getPaymentAuthorizeCallbackUrl();
-
-        $request = array(
-            'method' => 'post',
-            'url' => $url,
-            'content' => $payment->toPublicArray());
-
-        // Post this request in a job queue.
+        ;
     }
 
     protected function checkForRecentFailedPayment($payment)

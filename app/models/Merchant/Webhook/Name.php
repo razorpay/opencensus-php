@@ -31,4 +31,20 @@ class Name
 
         return $events;
     }
+
+    public static function validateEventNames($events)
+    {
+        foreach ($events as $event)
+        {
+
+
+        }
+    }
+
+    public static function validateEventName($event)
+    {
+        $event = strtoupper(str_replace($event, '.', '_'));
+
+        return (defined(__CLASS__.'::'.$event));
+    }
 }
