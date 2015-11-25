@@ -114,7 +114,7 @@ class Settler
             $this->setlRepo->commit();
         }
         catch (\Exception $e)
-        {
+        {throw $e;
             $this->setlRepo->rollback();
 
             $this->settlementFailure('kotak', $e);

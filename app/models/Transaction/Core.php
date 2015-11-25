@@ -156,9 +156,7 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
-        $createdAt = $refund->getAttribute(Refund\Entity::CREATED_AT);
-
-        $settledAt = $createdAt + 1;
+        $settledAt = time() + 2;
 
         $txnData = array(
             Transaction\Entity::AMOUNT      => $refund->getAmount(),
@@ -177,7 +175,11 @@ class Core extends Base\Core
 
         $channel = $payment->transaction->getChannel();
 
-        $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+        if ($payment->hasBeenCaptured())
+        {
+            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+        }
+
         $txnData[Transaction\Entity::CHANNEL] = $channel;
 
         $txn = new Transaction\Entity($txnData);

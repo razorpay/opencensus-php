@@ -308,4 +308,9 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getType() === Type::PAYMENT);
     }
+
+    public function isTypeRefund()
+    {
+        return ($this->getType() === Type::REFUND);
+    }
 }
