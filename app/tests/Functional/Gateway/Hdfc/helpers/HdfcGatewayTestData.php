@@ -10,6 +10,7 @@ return [
         'amount' => 50000,
         'method' => 'card',
         'status' => 'captured',
+        'captured' => true,
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
         'refund_status' => null,
@@ -89,3 +90,4 @@ return [
         'entity' => 'hdfc',
     ],
 ];
+
