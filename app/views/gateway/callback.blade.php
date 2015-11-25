@@ -66,6 +66,10 @@ if(!window.CheckoutBridge){
     opener.postMessage(data,'*')
   } else {
     onerror('Orphan popup');
+    if(/CriOS/.test(navigator.userAgent)){
+      setTimeout(close, 3500);
+    }
   }
 }
+
 </script></body></html>
