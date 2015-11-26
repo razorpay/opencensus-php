@@ -154,6 +154,7 @@ app.controller('EntityDetailCtrl', [
           'atom',
           'axis_genius',
           'axis_migs',
+          'balance',
           'bank_account',
           'bank_account',
           'billdesk',

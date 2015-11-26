@@ -96,6 +96,8 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
+      balance: {
+      },
       billdesk: {
         AuthStatus: [
           'all',
