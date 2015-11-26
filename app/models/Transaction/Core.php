@@ -156,7 +156,7 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
-        $settledAt = time() + 1;
+        $settledAt = 1;
 
         $txnData = array(
             Transaction\Entity::AMOUNT      => $refund->getAmount(),
