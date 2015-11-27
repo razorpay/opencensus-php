@@ -400,14 +400,10 @@ class Service extends Base\Service
 
         $plan = $merchant->getPricingPlan();
 
-        foreach ($plan['rules'] as &$rule)
-        {
-            $rule['display'] = Pricing\Plan::formattedPricing($rule);
-        }
-
         $data = [
             'merchant'  =>  $merchant->toArray(),
             'plan'      =>  $plan,
+            'rules'     => $this->formatPricingRules($plan['rules'])
         ];
 
         $config = $this->app->config->get('applications.mailgun');
@@ -427,6 +423,46 @@ class Service extends Base\Service
                 $message->subject($subject);
             }
         );
+    }
+
+    protected function formatPricingRules($rules)
+    {
+        $newRules = [];
+
+        foreach ($rules as $rule)
+        {
+            $rule['pricing_display'] = Pricing\Plan::formattedPricing($rule);
+
+            // This just holds Wallet/Card/Net Banking as of now
+            $display = Payment\Method::formatted($rule['payment_method']);
+
+            // This now holds Credit/Debit/All
+            $method = $rule['payment_method_type'] ? : 'All';
+
+            // If we have a payment_network (such as AMEX/DICL)
+            if ($rule['payment_network'] !== null)
+            {
+                // This becomes "American Express Cards"
+                $display = $rule['payment_network_name'] . ' Cards';
+            }
+            elseif ($method !== null and $rule['payment_method'] === 'card')
+            {
+                // This is Credit/Debit/All Cards
+                $display = ucfirst($method) . ' Cards';
+            }
+
+            // We flip this around to store the rules as an array with the
+            // pricing display as the key. Since the pricing display is
+            // deterministic (see Pricing\Plan::formattedPricing)
+            // The same pricing gives the same display
+            //
+            // Now we can iterate over the newRules array and display
+            // the list of pricing options at the same pricing in the same
+            // line easily
+            $newRules[$rule['pricing_display']][] = $display;
+        }
+
+        return $newRules;
     }
 
     /**

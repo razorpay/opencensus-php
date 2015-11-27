@@ -118,20 +118,8 @@ is now active. You have opted for the {{{$plan['name']}}} plan. The pricing deta
 associated with the plan are:
 
 <ul align="left">
-  @foreach ($plan['rules'] as $rule)
-    @if ($rule['payment_method'] === 'card')
-      @if ($rule['payment_network'] !== null)
-        <li style="text-align:left;" align="left">{{{$rule['payment_network_name']}}} Cards - {{{$rule['display']}}}</li>
-      @else
-        <li style="text-align:left;" align="left">
-        {{{isset($rule['payment_method_type']) ? ucfirst($rule['payment_method_type']) : 'All'}}} Cards - {{{$rule['display']}}}
-        </li>
-      @endif
-    @elseif ($rule['payment_method'] === 'netbanking')
-      <li style="text-align:left;" align="left">Net Banking - {{{$rule['display']}}}</li>
-    @elseif ($rule['payment_method'] === 'wallet')
-      <li style="text-align:left;" align="left">Wallets - {{{$rule['display']}}}</li>
-    @endif
+  @foreach ($rules as $pricing => $methodDisplay)
+    <li style="text-align:left;" align="left">{{implode(',', $methodDisplay)}} - {{$pricing}}</li>
   @endforeach
   <li style="text-align:left;" align="left">+1% Extra on International Transactions</li>
   <li style="text-align:left;" align="left">Service Taxes Extra (14.5%)</li>
