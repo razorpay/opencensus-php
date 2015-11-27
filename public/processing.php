@@ -6,11 +6,13 @@ header('Pragma: no-cache');
 header('P3P: CP="NO P3P"');
 ?>
 <html>
+<head>
+  <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+</head>
 <body>
-  <div style="text-align: center; position: fixed; top: 50%; width: 100%; left: 0; margin-top: -20px;">
-  Processing, Please Wait...
-  </div>
-  <form></form>
+  <form style="text-align: center; position: fixed; top: 50%; width: 100%; left: 0; margin-top: -20px; font-size: 16px;">
+    Processing, Please Wait...
+  </form>
   <script>
     var form = document.forms[0];
     function g(name){
@@ -27,9 +29,12 @@ header('P3P: CP="NO P3P"');
       var next = g('nextRequest');
 
       if(next){
-        window.a = next;
         var load = JSON.parse(atob(next));
         document.cookie = 'nextRequest=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        if(load.result){
+          form.innerHTML = load.result + '<br>You can close this tab now.';
+          return;
+        }
         form.setAttribute('action', load.url);
         form.setAttribute('method', load.method || 'get');
 
@@ -40,7 +45,7 @@ header('P3P: CP="NO P3P"');
             formHTML += '<input type="hidden" name="'+j+'" value="'+load.content[i]+'">';
           }
         }
-        form.innerHTML = formHTML;
+        form.innerHTML += formHTML;
         form.submit();
       }
     }, 300)

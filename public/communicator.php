@@ -11,6 +11,10 @@ header('Pragma: no-cache');
 	</head>
 	<body>
 	<script>
+		function rm(key){
+			document.cookie = key + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/'
+		}
+		rm('nextRequest');
 		function readHash(){
 			var hash = location.hash.slice(1);
 			if(hash){
@@ -33,7 +37,7 @@ header('Pragma: no-cache');
 			var msg = readCookie('onComplete')
 			if(msg){
 				parent.postMessage(msg, '*')
-				document.cookie = 'onComplete=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/'
+				rm('onComplete');
 			}
 		}, 150)
 	</script>
