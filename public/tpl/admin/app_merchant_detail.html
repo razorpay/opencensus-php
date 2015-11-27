@@ -18,38 +18,44 @@
           See Activation Form Details
         </a>
         <a href class="list-group-item" ng-show="merchant.details.locked==0" ng-click="lockForm()">
-          Lock Activation Form
+          Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.locked==1" ng-click="unlockForm()">
-          Unlock Activation Form
+          Unlock Activation Form <i class="pull-right fa fa-unlock"></i>
         </a>
         <a href class="list-group-item"
         ng-show="merchant.details.activated==0"
         ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
         ng-click="activateMerchant()"
         >
-          Activate Merchant
+          Activate Merchant <i class="pull-right fa fa-check-square"></i>
         </a>
         <a href class="list-group-item"
         ng-show="merchant.details.hold_funds==0"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"
         >
-          Hold Merchant Funds
+          Hold Merchant Funds <i class="pull-right fa fa-hand-stop-o"></i>
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds==1"
-        ng-confirm-click="Are you sure you want to release this merchant's funds?"
-        ng-click="releaseMerchantFunds()"
+          ng-show="merchant.credits.live >= 0"
+          ng-click="openEditCredits(merchant.credits.live)"
         >
-          Release Merchant Funds
+          Edit Free Credits <i class="pull-right fa fa-plus-square-o"></i>
+        </a>
+        <a href class="list-group-item"
+          ng-show="merchant.details.hold_funds==1"
+          ng-confirm-click="Are you sure you want to release this merchant's funds?"
+          ng-click="releaseMerchantFunds()"
+        >
+          Release Merchant Funds <i class="pull-right fa fa-thumbs-up"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.activated==1 && merchant.details.live==0" ng-click="enableLive()">
-          Enable Live Transactions
+          Enable Live Transactions <i class="pull-right fa fa-check"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.live==1 "ng-click="disableLive()"
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
-          Disable Live Transactions
+          Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.paytm == false" ng-click="enableMethod('paytm')">
           Enable Paytm
@@ -64,55 +70,55 @@
           Disable Mobikwik
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
-          Enable Card
+          Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')">
-          Disable Card
+          Disable Card <i class="pull-right fa fa-credit-card-alt"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0" ng-click="setReceiptEmail(1)">
-          Enable Receipt Email
+          Enable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1" ng-click="setReceiptEmail(0)">
-          Disable Receipt Email
+          Disable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
 
         <a href class="list-group-item" ng-click="openAssignPricing()">
-          Assign Pricing
+          Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
         <a href class="list-group-item" ng-click="openAssignTerminal()">
-          Assign Terminal
+          Assign Terminal <i class="pull-right fa fa-terminal"></i>
         </a>
         <a href class="list-group-item" ng-click="openAssignBanks()">
-          Assign Banks
+          Assign Banks <i class="pull-right fa fa-university"></i>
         </a>
         <a href class="list-group-item" ng-click="openAddAdjustment()">
-          Add Adjustment
+          Add Adjustment <i class="pull-right fa fa-adjust"></i>
         </a>
         <a tooltip="Click me!" href class="list-group-item" ng-click="openEditMerchant()">
-          Edit Merchant
+          Edit Merchant <i class="pull-right fa fa-pencil-square"></i>
         </a>
         <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
-          Edit Merchant Email
+          Edit Merchant Email <i class="pull-right fa fa-envelope"></i>
         </a>
         <a href class="list-group-item" ng-click="openAutofillForms()">
-          Autofill Activation Form
+          Autofill Activation Form <i class="pull-right fa fa-magic"></i>
         </a>
         <a href class="list-group-item" ng-click="openEditComment()">
-          Edit Comment
+          Edit Comment <i class="pull-right fa fa-commenting"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.archived_at != null" ng-click="unarchiveMerchant()"
         >
-          Unarchive Merchant
+          Unarchive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.archived_at === null" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
-          Archive Merchant
+          Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
         <a href class="list-group-item" ng-click="openUploadScreenshot()">
-          Upload screenshots
+          Upload screenshots <i class="pull-right fa fa-upload"></i>
         </a>
         <a href class="list-group-item" ng-click="captureScreenshot()">
-          Capture Screenshots
+          Capture Screenshots <i class="pull-right fa fa-camera"></i>
         </a>
       </div>
     </div>
@@ -130,7 +136,7 @@
           <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
           Balance (Test)
         </a>
-        <a href class="list-group-item">
+        <a href class="list-group-item" ng-show="merchant.details.live == 1">
           <span class="pull-right">{{merchant.balance.live/100 | currency:'INR ' }}</span>
           Balance (Live)
         </a>
@@ -142,7 +148,8 @@
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
         </a>
-        <a href class="list-group-item">
+        <a href="mailto:{{merchant.details.email}}" class="list-group-item"
+        >
           <span class="pull-right">{{merchant.details.email}}</span>
           Email
         </a>
@@ -150,7 +157,7 @@
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
         </a>
-        <a href class="list-group-item">
+        <a href="{{merchant.details.website}}" class="list-group-item">
           <span class="pull-right">{{merchant.details.website}}</span>
           Website
         </a>
