@@ -143,6 +143,7 @@ final class Route
         'payment_create',
         'payment_create_checkout',
         'payment_create_jsonp',
+        'payment_create_ajax',
         'payment_cancel',
         'merchant_public_get_banks',
         'merchant_methods',
