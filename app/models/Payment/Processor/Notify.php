@@ -124,6 +124,8 @@ class Notify
                 }
 
                 $message->subject($subject);
+                $message->from('reports@razorpay.com');
+                $message->replyTo('support@razorpay.com');
             }
         );
     }
