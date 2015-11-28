@@ -26,6 +26,7 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
+        Entity::CAPTURED        => 'sometimes|in:0,1',
         Card\Entity::IIN        => 'sometimes|integer|digits:6',
         Card\Entity::LAST4      => 'sometimes|integer|digits:4',
     );
@@ -148,33 +149,53 @@ class Repository extends Base\Repository
 
     protected function addQueryParamIin($query, $params)
     {
-        $query->join(
-            Card\Entity::getTableName(),
-            function ($join) use ($params)
-            {
-                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-                $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+        $this->joinQueryCard($query);
 
-                $join->on($paymentCardId, '=', $cardId)
-                     ->where(Card\Entity::IIN, '=', $params[Card\Entity::IIN]);
-            });
+        $query->where(Card\Entity::IIN, '=', $params[Card\Entity::IIN]);
 
         $query->select($query->getModel()->getTable().'.*');
     }
 
     protected function addQueryParamLast4($query, $params)
     {
-        $query->join(
-            Card\Entity::getTableName(),
-            function ($join) use ($params)
-            {
-                $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-                $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+        $this->joinQueryCard($query);
 
-                $join->on($paymentCardId, '=', $cardId)
-                     ->where(Card\Entity::LAST4, '=', $params[Card\Entity::IIN]);
-            });
+        $query->where(Card\Entity::LAST4, '=' $params[Card\Entity::LAST4]);
 
         $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryCaptured($query, $params)
+    {
+        $captured = $params[Entity::CAPTURED];
+
+        if ($captured === '0')
+        {
+            $query->whereNull(Entity::CAPTURED_AT);
+        }
+        else
+        {
+            $quere->whereNotNull(Entity::CAPTURED_AT);
+        }
+    }
+
+    protected function joinQueryCard($query)
+    {
+        $joins = $query->joins;
+
+        $joined = false;
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === Card\Entity::getTableName())
+            {
+                return;
+            }
+        }
+
+        $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+
+        $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
     }
 }
