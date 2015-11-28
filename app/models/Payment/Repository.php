@@ -160,7 +160,7 @@ class Repository extends Base\Repository
     {
         $this->joinQueryCard($query);
 
-        $query->where(Card\Entity::LAST4, '=' $params[Card\Entity::LAST4]);
+        $query->where(Card\Entity::LAST4, '=', $params[Card\Entity::LAST4]);
 
         $query->select($query->getModel()->getTable().'.*');
     }
