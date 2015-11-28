@@ -14,12 +14,12 @@ class Entity extends Base\PublicEntity
     const FAILURE_COUNT     = 'failure_count';
     const ACTIVE            = 'active';
 
-    protected $entity           = 'webhook';
+    protected $entity       = 'webhook';
 
-    protected $table            = \Constants\Table::WEBHOOK;
+    protected $table        = \Constants\Table::WEBHOOK;
 
     protected $defaults = array(
-        self::ACTIVE => true,
+        self::ACTIVE        => true,
         self::FAILURE_COUNT => 0,
     );
 
@@ -59,7 +59,7 @@ class Entity extends Base\PublicEntity
         return Name::getEvents($events);
     }
 
-    public function getActivatedAttribute()
+    public function getActiveAttribute()
     {
         return (bool) $this->attributes[self::ACTIVE];
     }

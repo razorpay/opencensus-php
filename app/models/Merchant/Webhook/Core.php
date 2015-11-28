@@ -19,8 +19,7 @@ class Core extends Base\Core
     {
         $repo = new Webhook\Repository;
 
-        $webhook = $repo->findByIdAndMerchantId(
-                    $webhookId, $merchant->getId());
+        $webhook = $repo->findByIdAndMerchantId($webhookId, $merchant->getId());
 
         $webhook->edit($input);
 

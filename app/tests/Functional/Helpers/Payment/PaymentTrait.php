@@ -434,6 +434,30 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function createWebhook($input)
+    {
+        $request = array(
+            'url' => '/webhooks',
+            'method' => 'post',
+            'content' => $input);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editWebhook($wid, $input)
+    {
+        $request = array(
+            'url' => '/webhooks/'.$wid,
+            'method' => 'put',
+            'content' => $input);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function merchantEditCredits($id, $credits)
     {
         $request = array(

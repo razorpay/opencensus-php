@@ -38,6 +38,9 @@ class CreateWebhooks extends Migration
             $table->integer(Webhook::CREATED_AT);
             $table->integer(Webhook::UPDATED_AT);
 
+            $table->index(Webhook::ACTIVE);
+            $table->index(Webhook::CREATED_AT);
+
             $table->foreign(Webhook::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

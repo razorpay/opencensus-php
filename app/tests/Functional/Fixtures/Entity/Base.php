@@ -22,24 +22,25 @@ class Base
     }
 
     protected static $map = array(
+        'key'           => Models\Key\Entity::class,
         'atom'          => Gateway\Atom\Entity::class,
-        'adjustment'    => Models\Adjustment\Entity::class,
-        'balance'       => Models\Merchant\Balance\Entity::class,
-        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
-        'methods'       => Models\Merchant\Methods\Entity::class,
         'card'          => Models\Card\Entity::class,
         'hdfc'          => Gateway\Hdfc\Entity::class,
-        'card_detail'   => Models\Card\Detail::class,
-        'key'           => Models\Key\Entity::class,
-        'merchant'      => Models\Merchant\Entity::class,
+        'refund'        => Models\Payment\Refund\Entity::class,
+        'webhook'       => Models\Merchant\Webhook\Entity::class,
+        'methods'       => Models\Merchant\Methods\Entity::class,
+        'balance'       => Models\Merchant\Balance\Entity::class,
         'methods'       => Models\Merchant\Methods\Entity::class,
         'payment'       => Models\Payment\Entity::class,
         'pricing'       => Models\Pricing\Entity::class,
         'webhook'       => Models\Merchant\Webhook::class,
-        'refund'        => Models\Payment\Refund\Entity::class,
-        'settlement'    => Models\Settlement\Entity::class,
+        'merchant'      => Models\Merchant\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
-        'transaction'   => Models\Transaction\Entit::class,
+        'adjustment'    => Models\Adjustment\Entity::class,
+        'settlement'    => Models\Settlement\Entity::class,
+        'card_detail'   => Models\Card\Detail::class,
+        'transaction'   => Models\Transaction\Entity::class,
+        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
     );
 
     public function create(array $attributes = array())

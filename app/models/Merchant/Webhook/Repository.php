@@ -9,20 +9,18 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
+    protected $entity = 'Webhook';
+
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
+        Entity::ACTIVE      => 'sometimes|in:0,1',
+    );
+
     public function findByMerchant($merchant)
     {
         $repo = $this->repo;
 
         return $repo->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->get();
-    }
-
-    public function findByIdAndMerchantId($webhookId, $merchantId)
-    {
-        $repo = $this->repo;
-
-        return $repo->where(Entity::ID, '=', $webhookId)
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->findOrFailPublic();
     }
 }
