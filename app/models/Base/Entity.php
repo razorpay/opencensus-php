@@ -86,4 +86,11 @@ class Entity extends EloquentEx
     {
         return $this->getAttribute(self::UPDATED_AT);
     }
+
+    public function setId($id)
+    {
+        UniqueIdEntity::verifyUniqueId($id, true);
+
+        return $this->setAttribute('id', $id);
+    }
 }
