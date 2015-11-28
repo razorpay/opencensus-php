@@ -114,6 +114,23 @@ class PaymentCreateController extends BaseController
         return ApiResponse::json($data);
     }
 
+    /**
+     * Creates a new payment with an AJAX Request
+     * Sets the proper CORS headers
+     */
+    public function postAJAX()
+    {
+        $input = Input::all();
+
+        unset($input['callback']);
+
+        $data = $this->payment->process($input);
+
+        $response = ApiResponse::json($data);
+
+        return $response->header('Access-Control-Allow-Origin', '*');
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();

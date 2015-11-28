@@ -82,6 +82,10 @@ class DailyReport
                 $message->to($to);
             }
 
+            $message->from('reports@razorpay.com');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
             $message->cc('notifications@razorpay.com');
 
             $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);

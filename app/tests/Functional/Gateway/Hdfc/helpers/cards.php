@@ -41,6 +41,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'authorized',
+                'captured' => false,
             ],
         ],
     ],

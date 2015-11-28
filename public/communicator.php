@@ -11,6 +11,18 @@ header('Pragma: no-cache');
 	</head>
 	<body>
 	<script>
+		function rm(key){
+			document.cookie = key + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/'
+		}
+		rm('nextRequest');
+		function readHash(){
+			var hash = location.hash.slice(1);
+			if(hash){
+				document.cookie = 'nextRequest=' + hash + ";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+			}
+		}
+		readHash(location.hash);
+		onhashchange = readHash;
 		function readCookie(name){
 			var nameEQ = name + "=";
 			var ca = document.cookie.split(';');
@@ -25,8 +37,9 @@ header('Pragma: no-cache');
 			var msg = readCookie('onComplete')
 			if(msg){
 				parent.postMessage(msg, '*')
+				rm('onComplete');
 			}
-		}, 400)
+		}, 150)
 	</script>
 	</body>
 </html>

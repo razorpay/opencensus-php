@@ -140,12 +140,12 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-
-        $status = VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
             $verify->gatewaySuccess = false;
+
             // Could be the case where the transaction didn't even hit mobikwik
             if (($payment['received'] === false) and
                 (($payment['statuscode'] === null) or
@@ -162,7 +162,7 @@ class Gateway extends Base\Gateway
         else if ($content['statuscode'] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
-            //Gateway success , api success
+
             if ($payment['statuscode'] === Status::SUCCESS)
             {
                 $verify->apiSuccess = true;
@@ -172,21 +172,17 @@ class Gateway extends Base\Gateway
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
             }
-
         }
 
-        $verify->status = $status;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
-
-        if (($verify->match === true) and
-            ($payment['received'] === false))
+        if ($payment['received'] === false)
         {
             $payment->fill($content);
             $payment->saveOrFail();
         }
 
-        return $status;
+        return $verify->status;
     }
 
     public function refund(array $input)

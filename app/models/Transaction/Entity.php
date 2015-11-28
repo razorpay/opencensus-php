@@ -147,6 +147,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getBalance()
+    {
+        return (int) $this->getAttribute(self::BALANCE);
+    }
+
+    public function getSettledAt()
+    {
+        return $this->getAttribute(self::SETTLED_AT);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     public function getAmountAttribute()
@@ -307,5 +317,10 @@ class Entity extends Base\PublicEntity
     public function isTypePayment()
     {
         return ($this->getType() === Type::PAYMENT);
+    }
+
+    public function isTypeRefund()
+    {
+        return ($this->getType() === Type::REFUND);
     }
 }

@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
+    const CAPTURED              = 'captured';
     const CURRENCY              = 'currency';
     const DESCRIPTION           = 'description';
     const ERROR_CODE            = 'error_code';
@@ -77,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::REFUND_STATUS,
+        self::CAPTURED,
         self::DESCRIPTION,
         self::BANK,
         self::WALLET,
@@ -107,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
+        self::CAPTURED,
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
@@ -117,7 +120,7 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = array(self::ID);
 
-    protected $appends = array(self::PUBLIC_ID);
+    protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
     protected static $modifiers = array(self::CONTACT, self::BANK);
 
@@ -130,6 +133,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED   => 0,
         self::SIGNED            => 0,
         self::VERIFIED          => null,
+        self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0);
 
 // --------------------- Generators --------------------------------------------
@@ -330,6 +334,11 @@ class Entity extends Base\PublicEntity
             $verified = (int) $verified;
 
         return $verified;
+    }
+
+    public function getCapturedAttribute()
+    {
+        return ($this->attributes[self::CAPTURED_AT] !== null);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
