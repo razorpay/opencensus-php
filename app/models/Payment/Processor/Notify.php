@@ -311,9 +311,12 @@ class Notify
         // Add merchant data
         $data['merchant'] = $this->getMerchantForSlack();
 
-        $orderId = $data['orderId'];
-        unset($data['orderId']);
-        $data['orderId'] = $orderId;
+        if (isset($data['orderId']))
+        {
+            $orderId = $data['orderId'];
+            unset($data['orderId']);
+            $data['orderId'] = $orderId;
+        }
 
         // This is for both pyaments and refund
         if (isset($data['timestamp']))
