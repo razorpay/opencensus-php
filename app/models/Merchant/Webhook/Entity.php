@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
 
     protected $table        = \Constants\Table::WEBHOOK;
 
+    protected $genereateIdOnCreate = true;
+
     protected $defaults = array(
         self::ACTIVE        => true,
         self::FAILURE_COUNT => 0,
