@@ -43,7 +43,7 @@ class Name
 
     public static function validateEventName($event)
     {
-        $event = strtoupper(str_replace($event, '.', '_'));
+        $event = strtoupper(str_replace('.', '_', $event));
 
         return (defined(__CLASS__.'::'.$event));
     }

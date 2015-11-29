@@ -3,6 +3,7 @@
 namespace Models\Merchant\Webhook;
 
 use Models\Base;
+use Models\Merchant\Webhook;
 
 class Core extends Base\Core
 {

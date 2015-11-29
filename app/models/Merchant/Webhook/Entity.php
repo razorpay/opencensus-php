@@ -23,6 +23,11 @@ class Entity extends Base\PublicEntity
         self::FAILURE_COUNT => 0,
     );
 
+    protected $fillable = array(
+        self::URL,
+        self::EVENTS,
+    );
+
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
@@ -44,12 +49,12 @@ class Entity extends Base\PublicEntity
 
         foreach ($events as $event)
         {
-            $e = str_replace($event, '.', '_');
+            $e = str_replace('.', '_', $event);
             $e = strtoupper($e);
             $int = $int xor constant(Name::class.'::'.$e);
         }
 
-        $this->setAttribute(self::EVENTS, $int);
+        $this->attributes[self::EVENTS] = $int;
     }
 
     public function getEventsAttribute()
