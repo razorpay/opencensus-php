@@ -54,10 +54,15 @@ class PaymentCreateController extends BaseController
     {
         $input = Input::all();
 
-        if (isset($input['callback_url']))
+        if (empty($input['callback_url']) === false)
         {
             $app = App::getFacadeRoot();
             $app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+        else
+        {
+            // It could be just blank or an empty array. Hence unset it here only.
+            unset($input['callback_url']);
         }
 
         $data = $this->payment->process($input);
