@@ -20,6 +20,26 @@ app.controller('PaymentDetailCtrl', [
       };
       return mapper[status];
     };
+
+    $scope.displayClass = function (value) {
+      if (value === null) {
+        return 'label label-warning col-lg-1';
+      } else if (value === '') {
+        return 'label label-info';
+      } else {
+        return '';
+      }
+    };
+
+    $scope.displayValue = function(value) {
+      if (value === null) {
+        return 'null';
+      }
+      else {
+        return value;
+      }
+    }
+
     $scope.openRefundModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundModalContent.html',
