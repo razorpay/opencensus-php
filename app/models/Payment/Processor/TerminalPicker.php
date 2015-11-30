@@ -296,6 +296,16 @@ class TerminalPicker
 
         $this->network = $network;
 
+        if ($payment->merchant->isInternational())
+        {
+            $terminal = Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
+
+            if ($this->sharedTerminalExistsAndCardNetworkSupported($terminal, $network))
+            {
+                return $this->terminal;
+            }
+        }
+
         $sharedCardTerminals = array(
             Shared::KOTAK_RAZORPAY_TERMINAL,
             Shared::HDFC_RAZORPAY_TERMINAL,
@@ -303,10 +313,7 @@ class TerminalPicker
 
         foreach ($sharedCardTerminals as $terminal)
         {
-            $gateway = Shared::getGatewayForTerminal($terminal);
-
-            if (($this->terminalExists($terminal)) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
+            if ($this->sharedTerminalExistsAndCardNetworkSupported($terminal, $network))
             {
                 return $this->terminal;
             }
@@ -431,5 +438,13 @@ class TerminalPicker
         $this->terminal = $this->repo->find($terminal);
 
         return $this->terminal;
+    }
+
+    protected function sharedTerminalExistsAndCardNetworkSupported($terminal, $network)
+    {
+        $gateway = Shared::getGatewayForTerminal($terminal);
+
+        return (($this->terminalExists($terminal)) and
+                (Gateway::isCardNetworkSupported($network, $gateway)));
     }
 }
