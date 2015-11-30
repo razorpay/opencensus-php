@@ -10,15 +10,12 @@ app.controller('EntityDetailCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.mode = $stateParams.mode;
     $scope.entity = { id: $stateParams.id };
+    $scope.loadType = $stateParams.type;
     $scope.generate = function (entityType) {
-      $scope.entity.type = entityType;
-      fetchEntity();
+      fetchEntity(entityType);
     };
-    if ($stateParams.type) {
-      $scope.entity.type = $stateParams.type;
-    }
-    function fetchEntity() {
-      var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity.type + '/' + $scope.entity.id;
+    function fetchEntity(entityType) {
+      var url = '/admin/' + $scope.mode + '/fetchentity/' + entityType + '/' + $scope.entity.id;
       var request = $http.get(url);
       request.success(function (data) {
         $scope.alerts.resetAlerts();
@@ -33,6 +30,7 @@ app.controller('EntityDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
     // Type is same as returned by getType
     $scope.getState = function (type) {
       switch (type) {
@@ -51,18 +49,18 @@ app.controller('EntityDetailCtrl', [
       // Set timezone to IST
       moment().zone(5.5);
       switch (type) {
-      case 'timestamp':
-        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
-      case 'amount':
-        return 'INR ' + (value / 100).toFixed(2);
-      default:
-        if (value === null) {
-          return 'null';
-        } else if (value === '') {
-          return '"\u2000"';
-        } else {
-          return value;
-        }
+        case 'timestamp':
+          return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+        case 'amount':
+          return 'INR ' + (value / 100).toFixed(2);
+        default:
+          if (value === null) {
+            return 'null';
+          } else if (value === '') {
+            return '"\u2000"';
+          } else {
+            return value;
+          }
       }
     };
     $scope.displayClass = function (value) {
@@ -74,10 +72,12 @@ app.controller('EntityDetailCtrl', [
         return '';
       }
     };
+
     // Removes _id from end
     $scope.getEntity = function (key) {
       return key.substr(0, key.length - 3);
     };
+
     // Terminal Specific actions
     $scope.terminal = {
       delete: function (id) {
@@ -134,6 +134,7 @@ app.controller('EntityDetailCtrl', [
         });
       }
     };
+
     $scope.getKeys = function () {
       var keys = Object.keys($scope.entity);
       return keys;

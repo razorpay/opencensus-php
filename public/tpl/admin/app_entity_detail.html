@@ -4,10 +4,10 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(entity.type)">
+<div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(loadType)">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Entity Id: <strong>{{entity.id}}</strong>
+      Entity Id: <strong>{{entity.id}}</strong><br>
     </div>
   <div class="text-center m-t">
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -15,10 +15,10 @@
     <div class="row wrapper">
       <div class="list-group">
         <a class="list-group-item" ng-repeat="key in getKeys()"
-          ng-init="value = entity[key];type = getType(key, value)" ui-sref="{{getState(type)}}"
+          ng-init="value = entity[key];valueType = getType(key, value);" ui-sref="{{getState(valueType)}}"
         >
           <span class="pull-right" ng-class="displayClass(value)">
-            {{displayValue(value, type)}}
+            {{displayValue(value, valueType)}}
           </span>
           {{key|titlecase}}
         </a>
