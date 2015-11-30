@@ -25,23 +25,29 @@ app.controller('UserCtrl', [
           }
         });
 
-        if (typeof SupportKit === 'undefined') {
-          return;
+        if (typeof Smooch !== 'undefined') {
+          function sk_user(){
+            Smooch.updateUser({
+              givenName: data.name,
+              email: data.email,
+              properties: {
+                id: data.id,
+                activated: data.activated,
+                locked: data.locked,
+                submitted: data.submitted
+              }
+            })
+            $('#sk-footer input').off('focus', window.sklistener);
+            $('.sk-intro').html(intro_text);
+          }
+
+          if(sk_ready){
+            sk_user();
+          } else {
+            Smooch.on('ready', sk_user);
+          }
         };
 
-        Smooch.updateUser({
-          givenName: data.name,
-          surname: 'Merchant',
-          email: data.email,
-          properties: {
-            id: data.id,
-            email: data.email,
-            name: data.name,
-            activated: data.activated,
-            locked: data.locked,
-            submitted: data.submitted
-          }
-        })
         analytics.identify(data.id, {
           name: data.name,
           email: data.email,
