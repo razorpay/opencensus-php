@@ -131,4 +131,11 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getSettlementFixer()
+    {
+        $data = (new Transaction\Service)->settlementFixer();
+
+        return ApiResponse::json($data);
+    }
 }
