@@ -287,8 +287,7 @@ class Service extends Base\Service
 
         $this->setApiCredentials($merchantId, $mode);
 
-        $errors = [];
-        $data = null;
+        $errors = $data = null;
 
         try
         {
