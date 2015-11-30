@@ -29,7 +29,7 @@ app.controller('UserCtrl', [
           return;
         };
 
-        SupportKit.user = {
+        Smooch.updateUser({
           givenName: data.name,
           surname: 'Merchant',
           email: data.email,
@@ -41,8 +41,7 @@ app.controller('UserCtrl', [
             locked: data.locked,
             submitted: data.submitted
           }
-        };
-        SupportKit._updateUser();
+        })
         analytics.identify(data.id, {
           name: data.name,
           email: data.email,

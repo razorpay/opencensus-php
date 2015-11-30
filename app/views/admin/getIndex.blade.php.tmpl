@@ -1,10 +1,13 @@
-<?php include('../partials/head.html');?>
+@include('partials/head')
 
-<?php include('../partials/common.html');?>
+<link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
+<link rel='stylesheet' href='{{asset('css/generated/style.css')}}' type='text/css' />
 
-  <!-- jQuery & angular -->
-  <script src="{{asset('js/generated/pre.js')}}"></script>
-  <!-- App -->
-  <script src="{{asset('js/generated/admin.js')}}"></script>
+@include('partials/common')
 
-<?php include('../partials/footer.html'); ?>
+<!-- jQuery & angular -->
+<script src='{{asset('js/generated/pre.js')}}'></script>
+<!-- App -->
+<script src='{{asset('js/generated/admin.js')}}'></script>
+
+@include('partials/footer')

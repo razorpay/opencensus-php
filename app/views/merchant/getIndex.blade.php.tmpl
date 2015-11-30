@@ -1,8 +1,15 @@
-<?php include('../partials/head.html');?>
+@include('partials/head')
 
-<?php include('../partials/common.html');?>
+<link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
+<link rel='stylesheet' href='{{asset('css/generated/style.css')}}' type='text/css' />
 
-  <!-- Merchant Js-->
-  <script src="{{asset('js/generated/merchant.js')}}"></script>
+@include('partials/common')
 
-<?php include('../partials/footer.html'); ?>
+<!-- jQuery & angular -->
+<script src='{{asset('js/generated/pre.js')}}'></script>
+<!-- Merchant Js-->
+<script src='{{asset('js/generated/merchant.js')}}'></script>
+<!-- supportkiy code -->
+@include('partials/supportkit')
+
+@include('partials/footer')
