@@ -80,15 +80,15 @@
             <span class="pull-right">{{entity.description}}<span ng-hide="entity.description">No Description</span></span>
             Description
           </a>
-          <a href class="list-group-item" ng-show="entity.error_code">
-            <span class="pull-right">
-              {{entity.error_code}}
+          <a href class="list-group-item">
+            <span class="pull-right" ng-class="displayClass(entity.error_code)">
+              {{displayValue(entity.error_code)}}
             </span>
             Error
           </a>
-          <div href class="list-group-item panel-body" ng-show="entity.error_description">
-            <span class="pull-right col-lg-8 text-right">
-              {{entity.error_description}}
+          <div href class="list-group-item panel-body">
+            <span class="pull-right col-lg-8 text-right" ng-class="displayClass(entity.error_code)">
+              {{displayValue(entity.error_description)}}
             </span>
             Error Description
           </div>
@@ -165,6 +165,10 @@
               <span class="pull-right">{{refund.created_at*1000 | date:'medium'}}</span>
               {{refund.amount/100 | currency:refund.currency + " "}}
             </a>
+          </div>
+          <div class="list-group-item" style="overflow:auto;">
+            <pre class="col-lg-8 pull-right">{{toJson(entity)}}</pre>
+            Raw
           </div>
         </div>
         <div class="text-center">
