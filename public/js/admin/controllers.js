@@ -21,18 +21,18 @@ angular.module('app.controllers', [
       // for chart colors
       color: {
         primary: '#7266ba',
-        info: '#23b7e5',
+        info:    '#23b7e5',
         success: '#27c24c',
         warning: '#fad733',
-        danger: '#f05050',
-        light: '#e8eff0',
-        dark: '#3a3f51',
-        black: '#1c2b36'
+        danger:  '#f05050',
+        light:   '#e8eff0',
+        dark:    '#3a3f51',
+        black:   '#1c2b36'
       },
       settings: {
         themeID: 9,
         navbarHeaderColor: 'bg-dark',
-        navbarCollapseColor: 'bg-primary',
+        navbarCollapseColor: 'bg-white-only',
         asideColor: 'bg-dark',
         headerFixed: true,
         asideFixed: true,
