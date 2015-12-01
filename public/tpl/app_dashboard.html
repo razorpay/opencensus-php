@@ -78,15 +78,15 @@
         </div>
         <div class="col-md-7">
           <div class="panel wrapper">
-            <label class="i-switch bg-warning pull-right">
-              <input type="checkbox" ng-model="showSpline">
-              <i></i>
-            </label>
             <h4 class="font-thin m-t-none m-b text-muted">Successful Transactions</h4>
+                <!-- lines: { show: true, lineWidth: 1, fill:true, fillColor: { colors: [{opacity: 0.2}, {opacity: 0.8}] } } -->
 
             <div ui-jq="plot" ui-refresh="refreshGraph" ui-options="
               [
-                { data: {{successfull.data}}, label:'Successful Transactions', points: { show: true, radius: 1}, splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.8*showSpline }}
+                { data: {{successfull.data}},
+                label:'Successful Transactions',
+                points: { show: true, radius: 1},
+                splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.6*showSpline }}
               ],
               {{successfull.options}}
             " style="height:246px" >
@@ -100,14 +100,13 @@
       <!-- service -->
       <div class="panel hbox hbox-auto-xs no-border">
         <div class="col wrapper">
-          <label class="i-switch bg-warning pull-right">
-              <input type="checkbox" ng-model="showSpline">
-              <i></i>
-          </label>
           <h4 class="font-thin m-t-none m-b-none text-primary-lt">Transaction Volume</h4>
           <div ui-jq="plot" ui-refresh="refreshGraph" ui-options="
             [
-              { data: {{transactions.data}}, label:'Transaction Volume', points: { show: true, radius: 1}, splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.8*showSpline }}
+              { data: {{transactions.data}},
+              label:'Transaction Volume',
+              points: { show: true, radius: 1},
+              splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.6*showSpline }}
             ],
             {{transactions.options}}
           " style="height:240px" >
@@ -130,12 +129,12 @@
               <span class="pull-right">{{paymentaggregations.MAES}}%</span>
               <span class="hidden-folded">Maestro</span>
             </div>
-            <progressbar value="paymentaggregations.MAES" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.MAES" class="progress-xs m-t-sm bg-white" animate="true"></progressbar>
             <div class="text-center-folded">
               <span class="pull-right">{{paymentaggregations.NETBANKING}}%</span>
               <span class="hidden-folded">Net Banking</span>
             </div>
-            <progressbar value="paymentaggregations.NETBANKING" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.NETBANKING" class="progress-xs m-t-sm bg-white" animate="true" type="success"></progressbar>
             <div class="text-center-folded">
               <span class="pull-right">{{paymentaggregations.OTHER}}%</span>
               <span class="hidden-folded">Other</span>

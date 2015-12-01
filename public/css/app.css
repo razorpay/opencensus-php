@@ -564,10 +564,10 @@ body {
   overflow: auto;
 }
 .app-footer {
+  color: #adb2c4;
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
 }
 .hbox {
   display: table;
@@ -680,8 +680,7 @@ body {
   .navbar-header {
     width: 200px;
   }
-  .app-content,
-  .app-footer {
+  .app-content {
     margin-left: 200px;
   }
   .visible-folded {
@@ -3916,4 +3915,7 @@ a.text-black:hover {
 a code {
 	color: #58666e;
 	font-size: inherit;
+}
+.legend .legendLabel{
+  color: #333;
 }
