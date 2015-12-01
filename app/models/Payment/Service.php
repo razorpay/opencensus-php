@@ -500,7 +500,9 @@ class Service extends Base\Service
                     $message->to($email, $name);
                 }
 
+                $message->from('reports@razorpay.com')
                 $message->cc('notifications@razorpay.com');
+                $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
             });
