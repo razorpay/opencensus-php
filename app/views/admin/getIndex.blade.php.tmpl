@@ -1,93 +1,13 @@
-<!DOCTYPE html>
-<html lang="en" data-ng-app="app">
-<head>
-    <meta charset="utf-8">
-    <meta name="google" value="notranslate" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Razorpay Merchant Dashboard">
-    <meta name="author" content="Razorpay">
-    <link rel="shortcut icon" href="{{asset('img/logo.png')}}">
-    <title>Razorpay - Admin Panel</title>
-    <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-</head>
-<body ng-controller="AppCtrl">
-    <!-- The Splash Screen Begins (must be first) -->
-    <div id="splash" ng-if="flag" style="position: absolute;top: 50%;left: 50%;margin-left: -100px;margin-top: -100px;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="200" height="200" fill="#7266BA">
-          <circle cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(45 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.125s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(90 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.25s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(135 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.375s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(180 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(225 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.625s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(270 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.75s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(315 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.875s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-          <circle transform="rotate(180 16 16)" cx="16" cy="3" r="0">
-            <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />
-          </circle>
-        </svg>
-    </div>
-    <!-- Splash Screen ends -->
-    <link rel="stylesheet" href="{{asset('css/generated/style.css')}}" type="text/css" />
-    <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':app.settings.asideFixed, 'app-aside-folded':app.settings.asideFolded}" ui-view></div>
+@include('partials/head')
 
-    <!--rollbar-->
-    <script>
-      var _rollbarConfig = {
-          accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
-          captureUncaught: true,
-          payload: {
-              environment: "dev"
-          },
-          enabled: false
-      };
+<link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
+<link rel='stylesheet' href='{{asset('css/generated/style.css')}}' type='text/css' />
 
-      var list = {
-        Production: 'dashboard.razorpay.com',
-        Beta: 'betadashboard.razorpay.com'
-      }
+@include('partials/common')
 
-      for(var i in list){
-        if(window.location.hostname == list[i]){
-          _rollbarConfig.payload.environment = i;
-          _rollbarConfig.enabled = true;
-        }
-      }
+<!-- jQuery & angular -->
+<script src='{{asset('js/generated/pre.js')}}'></script>
+<!-- App -->
+<script src='{{asset('js/generated/admin.js')}}'></script>
 
-      !function(a,b){function c(b){this.shimId=++h,this.notifier=null,this.parentShim=b,this.logger=function(){},a.console&&void 0===a.console.shimId&&(this.logger=a.console.log)}function d(b,c,d){a._rollbarWrappedError&&(d[4]||(d[4]=a._rollbarWrappedError),d[5]||(d[5]=a._rollbarWrappedError._rollbarContext),a._rollbarWrappedError=null),b.uncaughtError.apply(b,d),c&&c.apply(a,d)}function e(b){var d=c;return g(function(){if(this.notifier)return this.notifier[b].apply(this.notifier,arguments);var c=this,e="scope"===b;e&&(c=new d(this));var f=Array.prototype.slice.call(arguments,0),g={shim:c,method:b,args:f,ts:new Date};return a._rollbarShimQueue.push(g),e?c:void 0})}function f(a,b){if(b.hasOwnProperty&&b.hasOwnProperty("addEventListener")){var c=b.addEventListener;b.addEventListener=function(b,d,e){c.call(this,b,a.wrap(d),e)};var d=b.removeEventListener;b.removeEventListener=function(a,b,c){d.call(this,a,b&&b._wrapped?b._wrapped:b,c)}}}function g(a,b){return b=b||this.logger,function(){try{return a.apply(this,arguments)}catch(c){b("Rollbar internal error:",c)}}}var h=0;c.init=function(a,b){var e=b.globalAlias||"Rollbar";if("object"==typeof a[e])return a[e];a._rollbarShimQueue=[],a._rollbarWrappedError=null,b=b||{};var h=new c;return g(function(){if(h.configure(b),b.captureUncaught){var c=a.onerror;a.onerror=function(){var a=Array.prototype.slice.call(arguments,0);d(h,c,a)};var g,i,j="EventTarget,Window,Node,ApplicationCache,AudioTrackList,ChannelMergerNode,CryptoOperation,EventSource,FileReader,HTMLUnknownElement,IDBDatabase,IDBRequest,IDBTransaction,KeyOperation,MediaController,MessagePort,ModalWindow,Notification,SVGElementInstance,Screen,TextTrack,TextTrackCue,TextTrackList,WebSocket,WebSocketWorker,Worker,XMLHttpRequest,XMLHttpRequestEventTarget,XMLHttpRequestUpload".split(",");for(g=0;g<j.length;++g)i=j[g],a[i]&&a[i].prototype&&f(h,a[i].prototype)}return a[e]=h,h},h.logger)()},c.prototype.loadFull=function(a,b,c,d,e){var f=g(function(){var a=b.createElement("script"),e=b.getElementsByTagName("script")[0];a.src=d.rollbarJsUrl,a.async=!c,a.onload=h,e.parentNode.insertBefore(a,e)},this.logger),h=g(function(){var b;if(void 0===a._rollbarPayloadQueue){var c,d,f,g;for(b=new Error("rollbar.js did not load");c=a._rollbarShimQueue.shift();)for(f=c.args,g=0;g<f.length;++g)if(d=f[g],"function"==typeof d){d(b);break}}"function"==typeof e&&e(b)},this.logger);g(function(){c?f():a.addEventListener?a.addEventListener("load",f,!1):a.attachEvent("onload",f)},this.logger)()},c.prototype.wrap=function(b,c){try{var d;if(d="function"==typeof c?c:function(){return c||{}},"function"!=typeof b)return b;if(b._isWrap)return b;if(!b._wrapped){b._wrapped=function(){try{return b.apply(this,arguments)}catch(c){throw c._rollbarContext=d()||{},c._rollbarContext._wrappedSource=b.toString(),a._rollbarWrappedError=c,c}},b._wrapped._isWrap=!0;for(var e in b)b.hasOwnProperty(e)&&(b._wrapped[e]=b[e])}return b._wrapped}catch(f){return b}};for(var i="log,debug,info,warn,warning,error,critical,global,configure,scope,uncaughtError".split(","),j=0;j<i.length;++j)c.prototype[i[j]]=e(i[j]);var k="//d37gvrvc0wt4s1.cloudfront.net/js/v1.1/rollbar.min.js";_rollbarConfig.rollbarJsUrl=_rollbarConfig.rollbarJsUrl||k;var l=c.init(a,_rollbarConfig);l.loadFull(a,b,!1,_rollbarConfig)}(window,document);
-    </script>
-
-    <!-- jQuery & angular -->
-    <script src="{{asset('js/generated/pre.js')}}"></script>
-    <!-- App -->
-    <script src="{{asset('js/generated/admin.js')}}"></script>
-    <!-- Lazy loading -->
-
-    <!-- Segment -->
-    <script type="text/javascript">
-      !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","group","track","ready","alias","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t){var e=document.createElement("script");e.type="text/javascript";e.async=!0;e.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(e,n)};analytics.SNIPPET_VERSION="3.0.1";
-        if(window.location.hostname=="dashboard.razorpay.com") {
-            analytics.load("RRXUUC0k2TlRbM7TlVFgh10dDVWuGn76");
-            analytics.page() 
-        }
-      }}();
-    </script>
-</body>
-</html>
+@include('partials/footer')
