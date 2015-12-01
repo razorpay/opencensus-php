@@ -63,8 +63,6 @@ class XLSFileHandler
 
     protected function parse($filePath)
     {
-        ini_set("memory_limit","2G");
-
         // The Laravel Excel Reader crashed due to some unknown reason
         // So, using the internal PHPExecl object
         $objPHPExcel = Excel::load($filePath)->excel;
