@@ -39,18 +39,24 @@
   <script>
     var _rollbarConfig = {
         accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
-        captureUncaught: true
+        captureUncaught: true,
+        payload: {}
     };
 
     var list = {
       Production: 'dashboard.razorpay.com',
-      Beta: 'betadashboard.razorpay.com'
+      Beta: 'betadashboard.razorpay.com',
+      Development: 'dashboard.razorpay.dev'
     }
 
     for(var i in list){
       if(window.location.hostname == list[i]){
         _rollbarConfig.payload.environment = i;
-        _rollbarConfig.enabled = true;
+
+        // Only enable rollbar if we are not in Development
+        if (i !== 'Development') {
+            _rollbarConfig.enabled = true;
+        };
       }
     }
 
