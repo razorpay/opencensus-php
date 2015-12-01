@@ -87,7 +87,7 @@ class Service extends Base\Service
                                 ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');
 
         if (isset($input['archived']))
-        {
+  {
             $data = $data->whereNotNull('archived_at')->get();
         }
         else
@@ -1422,4 +1422,22 @@ class Service extends Base\Service
 
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
     }
+
+    public function tagMerchant($merchantId, $input)
+    {
+        $error = (new Admin\Validator)->validateInput('add_tags', $input)
+            ->messages();
+
+        if (empty($error))
+        {
+            $merchant = MerchantDetails\Entity::findOrFail($merchantId);
+            $merchant->retag(explode(',', $input['tags']));
+            return [null, $merchant->toArray()];
+        }
+        else
+        {
+            return [$error, null];
+        }
+    }
 }
+

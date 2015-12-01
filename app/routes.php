@@ -158,6 +158,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
 
+        Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
+
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
 
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
