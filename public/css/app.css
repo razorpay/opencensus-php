@@ -3919,3 +3919,27 @@ a code {
 .legend .legendLabel{
   color: #333;
 }
+.input-date{
+  width: 180px;
+  float: left;
+}
+.input-date + div{
+  margin-left: 12px;
+}
+.input-date .input-group-addon{
+  border-radius: 2px;
+  cursor: pointer;
+}
+@media(max-width: 840px){
+  .input-date{
+    width: 140px;
+  }
+  .input-date .input-group-addon{
+    display: none;
+  }
+}
+@media(max-width: 540px){
+  .date-filter{
+    display: none;
+  }
+}
