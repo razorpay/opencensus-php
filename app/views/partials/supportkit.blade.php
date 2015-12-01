@@ -64,7 +64,6 @@ if (screen && screen.width > 480) {
 
         sk_intro.html(intro_text);
         $(this).off('focus', chat_attempt);
-
       }
     })
   }))
