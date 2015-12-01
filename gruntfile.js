@@ -39,7 +39,6 @@ module.exports = function(grunt){
                         'public/js/angular/angular-cookies.min.js',
                         'public/js/angular/angular-animate.min.js',
                         'public/js/angular/angular-ui-router.min.js',
-                        'public/js/angular/angular-translate.js',
                         'public/js/angular/angular-idle.min.js',
                         'public/js/angular/ngStorage.min.js',
                         'public/js/angular/ui-load.js',

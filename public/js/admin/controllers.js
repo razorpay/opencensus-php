@@ -1,14 +1,12 @@
 'use strict';
 /* Controllers */
 angular.module('app.controllers', [
-  'pascalprecht.translate',
   'ngCookies'
 ]).controller('AppCtrl', [
   '$scope',
-  '$translate',
   '$localStorage',
   '$window',
-  function ($scope, $translate, $localStorage, $window) {
+  function ($scope, $localStorage, $window) {
     // add 'ie' classes to html
     var isIE = !!navigator.userAgent.match(/MSIE/i);
     isIE && angular.element($window.document.body).addClass('ie');
@@ -48,15 +46,7 @@ angular.module('app.controllers', [
     $scope.$watch('app.settings', function () {
       $localStorage.settings = $scope.app.settings;
     }, true);
-    // angular translate
-    $scope.langs = { en: 'English' };
-    $scope.selectLang = $scope.langs[$translate.proposedLanguage()] || 'English';
-    $scope.setLang = function (langKey) {
-      // set the current lang
-      $scope.selectLang = $scope.langs[langKey];
-      // You can change the language during runtime
-      $translate.use(langKey);
-    };
+
     function isSmartDevice($window) {
       // Adapted from http://www.detectmobilebrowsers.com
       var ua = $window.navigator.userAgent || $window.navigator.vendor || $window.opera;
