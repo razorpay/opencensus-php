@@ -33,13 +33,12 @@ module.exports = function(grunt){
                     ],
 
                     'public/js/generated/pre.js': [
-                        'public/js/jquery/jquery.min.js',
+                        'public/js/jquery/jquery-2.1.4.min.js',
                         'public/js/libs/angular-file-upload-shim.min.js',
                         'public/js/angular/angular.min.js',
                         'public/js/angular/angular-cookies.min.js',
                         'public/js/angular/angular-animate.min.js',
                         'public/js/angular/angular-ui-router.min.js',
-                        'public/js/angular/angular-translate.js',
                         'public/js/angular/angular-idle.min.js',
                         'public/js/angular/ngStorage.min.js',
                         'public/js/angular/ui-load.js',

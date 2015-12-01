@@ -1,14 +1,12 @@
 'use strict';
 /* Controllers */
 angular.module('app.controllers', [
-  'pascalprecht.translate',
   'ngCookies'
 ]).controller('AppCtrl', [
   '$scope',
-  '$translate',
   '$localStorage',
   '$window',
-  function ($scope, $translate, $localStorage, $window) {
+  function ($scope, $localStorage, $window) {
     // add 'ie' classes to html
     var isIE = !!navigator.userAgent.match(/MSIE/i);
     isIE && angular.element($window.document.body).addClass('ie');
@@ -21,18 +19,18 @@ angular.module('app.controllers', [
       // for chart colors
       color: {
         primary: '#7266ba',
-        info: '#23b7e5',
+        info:    '#23b7e5',
         success: '#27c24c',
         warning: '#fad733',
-        danger: '#f05050',
-        light: '#e8eff0',
-        dark: '#3a3f51',
-        black: '#1c2b36'
+        danger:  '#f05050',
+        light:   '#e8eff0',
+        dark:    '#3a3f51',
+        black:   '#1c2b36'
       },
       settings: {
         themeID: 9,
         navbarHeaderColor: 'bg-dark',
-        navbarCollapseColor: 'bg-primary',
+        navbarCollapseColor: 'bg-white-only',
         asideColor: 'bg-dark',
         headerFixed: true,
         asideFixed: true,
@@ -48,15 +46,7 @@ angular.module('app.controllers', [
     $scope.$watch('app.settings', function () {
       $localStorage.settings = $scope.app.settings;
     }, true);
-    // angular translate
-    $scope.langs = { en: 'English' };
-    $scope.selectLang = $scope.langs[$translate.proposedLanguage()] || 'English';
-    $scope.setLang = function (langKey) {
-      // set the current lang
-      $scope.selectLang = $scope.langs[langKey];
-      // You can change the language during runtime
-      $translate.use(langKey);
-    };
+
     function isSmartDevice($window) {
       // Adapted from http://www.detectmobilebrowsers.com
       var ua = $window.navigator.userAgent || $window.navigator.vendor || $window.opera;

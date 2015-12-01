@@ -17,11 +17,11 @@
             <div class="input-group" tooltip-placement="bottom" tooltip="Date Range" >
                 <input type="text" class="form-control " datepicker-popup="dd-MMMM-yyyy" ng-model="date.startDate" is-open="date.opened.1" min-date="'1970-01-01'" datepicker-options="date.dateOptions" ng-required="true" close-text="Close" />
                 <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="date.open($event, 1)"><i class="glyphicon glyphicon-calendar"></i></button>
+                  <button type="button" class="btn btn-default" ng-click="date.open($event, 1)"><i class="icon icon-calendar"></i></button>
                 </span>
                 <input type="text" class="form-control" datepicker-popup="dd-MMMM-yyyy" ng-model="date.endDate" is-open="date.opened.2" min-date="'1970-01-01'" datepicker-options="date.dateOptions" ng-required="true" close-text="Close" />
                 <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="date.open($event, 2)"><i class="glyphicon glyphicon-calendar"></i></button>
+                  <button type="button" class="btn btn-default" ng-click="date.open($event, 2)"><i class="icon icon-calendar"></i></button>
                 </span>
 
             </div>
@@ -57,20 +57,20 @@
               </div>
             </div>
             <div class="col-xs-6">
-              <div class="block panel padder-v bg-success dker item">
+              <div class="block panel padder-v bg-info item">
                 <span class="text-white font-thin h1 block">{{aggregations.data.payments}}</span>
                 <span class="text-muted text-xs">Total Payments</span>
               </div>
             </div>
             <div class="col-xs-6">
-              <div href class="block panel padder-v bg-danger dker item">
+              <div href class="block panel padder-v bg-primary item">
                 <span class="text-white font-thin h1 block">{{aggregations.data.refunds}}</span>
                 <span class="text-muted text-xs">Total Refunds</span>
               </div>
             </div>
             <div class="col-xs-12 m-b-md">
-              <div href class="block panel padder-v bg-info dker item">
-                <span class="text-white font-thin h1 block">{{aggregations.data.amount | currency:"₹"}}</span>
+              <div href class="block panel padder-v bg-light dk item">
+                <span class="text-primary-dk font-thin h1 block">{{aggregations.data.amount | currency:"₹"}}</span>
                 <span class="text-muted text-xs">Total Volume</span>
               </div>
             </div>
