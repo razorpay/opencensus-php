@@ -38,4 +38,11 @@ class Service extends Base\Service
 
         return $iin->toArrayPublic();
     }
+
+    public function importIin($input)
+    {
+        $result = (new XLSImporter)->import($input);
+
+        return $result;
+    }
 }

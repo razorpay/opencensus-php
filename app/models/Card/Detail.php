@@ -7,14 +7,13 @@ use Constants\Table;
 
 class Detail extends Base\Entity
 {
-    const IIN           = 'iin';
-    const CATEGORY      = 'category';
-    const NETWORK       = 'network';
-    const TYPE          = 'type';
-    const COUNTRY       = 'country';
-    const ISSUER        = 'issuer';
-    const TRIVIA        = 'trivia';
-    const INTERNATIONAL = 'international';
+    const IIN       = 'iin';
+    const CATEGORY  = 'category';
+    const NETWORK   = 'network';
+    const TYPE      = 'type';
+    const COUNTRY   = 'country';
+    const ISSUER    = 'issuer';
+    const TRIVIA    = 'trivia';
 
     protected $table = Table::IIN;
 

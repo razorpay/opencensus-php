@@ -46,6 +46,7 @@ final class Route
         'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                         ],
         'iin_fetch_multiple'                => ['get',      'iins',                                     'CardController@getIins'                                        ],
         'iin_add'                           => ['post',     'iins',                                     'CardController@postIin'                                        ],
+        'iin_import_post'                   => ['post',     'iins/import',                              'CardController@postIinFile'                                    ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                             ],
         'merchant_secret'                   => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                               ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                                   ],
@@ -250,8 +251,9 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'iin_import_post',
         'send_test_newsletter',
-        'send_newsletter'
+        'send_newsletter',
         );
 
     public static $proxy = array(
