@@ -36,7 +36,6 @@ class IinTest extends TestCase
 
     public function testImportIin()
     {
-        $this->fixtures->create('iin:db_entries');
         $file = $this->getUploadedIinFile();
 
         $testData = $this->testData['testImportIin'];

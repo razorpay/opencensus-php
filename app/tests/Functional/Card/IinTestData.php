@@ -69,7 +69,7 @@ return [
                 'file' => '',
             ],
             'content' => [
-                'network' => 'Master',
+                'network' => 'MasterCard',
             ],
         ],
         'response' => [
@@ -79,7 +79,7 @@ return [
                         [
                             'iin' =>'513456',
                             'category' => 'PREMIUM',
-                            'network' => 'Master',
+                            'network' => 'MasterCard',
                             'type' => 'debit',
                             'country' => 'IN',
                             'issuer' => null
@@ -87,7 +87,7 @@ return [
                         [
                             'iin' =>'513456',
                             'category' => 'CLASSIC',
-                            'network' => 'Master',
+                            'network' => 'MasterCard',
                             'type' => 'debit',
                             'country' => 'IN',
                             'issuer' => null
@@ -95,23 +95,23 @@ return [
                     ]
                 ],
                 'db_conflicts'=> [
-                    '510128' => [
+                    '549752' => [
                         'db_entry' => [
-                            'iin' => 510128,
-                            'category' => 'Gold',
-                            'network' => 'MasterCard',
-                            'type' => 'debit',
-                            'country' => 'IN',
-                            'issuer' => "SBI CARDS AND PAYMENT SERVICES PVT., LTD.",
-                            'trivia' => null,
+                            'iin'       => 549752,
+                            'category'  => 'STANDARD',
+                            'network'   => 'MasterCard',
+                            'type'      => 'credit',
+                            'country'   => 'IN',
+                            'issuer'    => 'PUNJAB NATIONAL BANK',
+                            'trivia'    => 'random trivia'
                         ],
                         'file_entry' => [
-                            'iin' => "510128",
-                            'category' => "CLASSIC",
-                            'network' => "Master",
-                            'type' => "credit",
-                            'country' => null,
-                            'issuer' => null,
+                            'iin'       => '549752',
+                            'category'  => 'STANDARD',
+                            'network'   => 'MasterCard',
+                            'type'      => 'credit',
+                            'country'   => 'IN',
+                            'issuer'    => null,
                         ],
                     ],
                 ],
