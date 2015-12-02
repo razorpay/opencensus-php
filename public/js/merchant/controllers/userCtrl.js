@@ -46,6 +46,9 @@ app.controller('UserCtrl', [
           } else {
             Smooch.on('ready', sk_user);
           }
+          setTimeout(function(){
+            Smooch.close()
+          })
         };
 
         analytics.identify(data.id, {
