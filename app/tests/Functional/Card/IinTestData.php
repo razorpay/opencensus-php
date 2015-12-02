@@ -104,7 +104,6 @@ return [
                             'country' => 'IN',
                             'issuer' => "SBI CARDS AND PAYMENT SERVICES PVT., LTD.",
                             'trivia' => null,
-                            'international' => null,
                         ],
                         'file_entry' => [
                             'iin' => "510128",
