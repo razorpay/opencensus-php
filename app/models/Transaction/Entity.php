@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const BALANCE           = 'balance';
     const GATEWAY_FEE       = 'gateway_fee';
     const API_FEE           = 'api_fee';
+    const GRATIS            = 'gratis';
     const ESCROW_BALANCE    = 'escrow_balance';
     const RECONCILED_AT     = 'reconciled_at';
     const CHANNEL           = 'channel';
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::GRATIS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
@@ -66,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::GRATIS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
@@ -81,7 +84,12 @@ class Entity extends Base\PublicEntity
 
     protected $dates = array(
         self::SETTLED_AT,
-        );
+    );
+
+    protected $defaults = array(
+        self::GRATIS    => false,
+    );
+
 
     public function merchant()
     {
@@ -124,11 +132,6 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::DEBIT);
     }
 
-    public function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
     public function getNetAmount()
     {
         return $this->getCredit() - $this->getDebit();
@@ -144,7 +147,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getBalance()
+    {
+        return (int) $this->getAttribute(self::BALANCE);
+    }
+
+    public function getSettledAt()
+    {
+        return $this->getAttribute(self::SETTLED_AT);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
+    }
 
     public function getFeeAttribute()
     {
@@ -186,6 +204,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SETTLED];
     }
 
+    public function getGratisAttribute()
+    {
+        return (bool) $this->attributes[self::GRATIS];
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
 
     public function getGateway()
@@ -225,6 +248,58 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
+    public function setEscrowBalance($balance)
+    {
+        assert ($balance >= 0);
+
+        $this->setAttribute(self::ESCROW_BALANCE, $balance);
+    }
+
+    public function setBalance($balance)
+    {
+        assert ($balance >= 0);
+
+        $this->setAttribute(self::BALANCE, $balance);
+    }
+
+    public function setAmount($amount)
+    {
+        assert ($amount > 0);
+
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setFee($fee)
+    {
+        assert ($fee >= 0);
+
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setCredit($credit)
+    {
+        assert ($credit >= 0);
+
+        $this->setAttribute(self::CREDIT, $credit);
+    }
+
+    public function setGratis($gratis)
+    {
+        $this->setAttribute(self::GRATIS, $gratis);
+    }
+
+    public function setDebit($amount)
+    {
+        assert ($amount >= 0);
+
+        $this->setAttribute(self::DEBIT, $amount);
+    }
+
+    public function setPricingRule($ruleId)
+    {
+        $this->setAttribute(self::PRICING_RULE_ID, $ruleId);
+    }
+
     public function setPublicEntityIdAttribute(array & $array)
     {
         $entity = Transaction\Type::getEntityClass($array[self::TYPE]);
@@ -242,5 +317,10 @@ class Entity extends Base\PublicEntity
     public function isTypePayment()
     {
         return ($this->getType() === Type::PAYMENT);
+    }
+
+    public function isTypeRefund()
+    {
+        return ($this->getType() === Type::REFUND);
     }
 }

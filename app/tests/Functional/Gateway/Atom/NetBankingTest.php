@@ -48,7 +48,7 @@ class NetbankingTest extends TestCase
 
     public function testNetbankingPaymentRefund()
     {
-        $payment = $this->fixtures->create('payment:netbanking_captured');
+        $payment = $this->fixtures->create('payment:netbanking_captured', ['gateway' => 'atom']);
 
         $refund = $this->refundPayment($payment->getPublicId());
 

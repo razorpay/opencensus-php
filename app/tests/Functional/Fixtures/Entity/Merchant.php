@@ -80,6 +80,17 @@ class Merchant extends Base
         return $merchant;
     }
 
+    public function createWithBalance()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+        return $merchant;
+    }
+
     public function createBankAccount($attributes)
     {
         $name = random_alpha_string(10);
@@ -150,4 +161,13 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function editCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
+    }
+
+    public function editCreditsforNodalAccount($credits)
+    {
+        return $this->editCredits($credits, '10NodalAccount');
+    }
 }

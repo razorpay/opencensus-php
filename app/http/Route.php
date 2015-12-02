@@ -16,6 +16,7 @@ final class Route
         'payment_create'                    => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                     ],
         'payment_create_checkout'           => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'     ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                 ],
+        'payment_create_ajax'               => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                              ],
         'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                          ],
         'payment_callback_get'              => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                          ],
         'payment_callback_with_key_post'    => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                          ],
@@ -35,6 +36,8 @@ final class Route
         'payment_auto_capture'              => ['post',     'payments/autocapture',                     'PaymentController@postAutoCapture'                             ],
         'payment_auto_capture_email'        => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                         ],
         'payment_verify_all'                => ['get',      'payments/verify/all',                      'PaymentController@getVerifyPayments'                           ],
+        'payment_capture_reminder'          => ['get',      'payments/all/reminder',                    'PaymentController@sendReminderMailForAuthorizedPayments'       ],
+        'payment_refund_authorized'         => ['post',     'payments/refund/authorized',               'PaymentController@postRefundOldAUthorizedPayments'             ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                   ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                                  ],
         'refund_netbanking_generate_excel'  => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                   ],
@@ -71,6 +74,7 @@ final class Route
         'merchant_live_enable'              => ['post',     'merchants/{id}/live/enable',               'MerchantController@postLiveEnable'                             ],
         'merchant_live_disable'             => ['post',     'merchants/{id}/live/disable',              'MerchantController@postLiveDisable'                            ],
         'merchant_fetch_balance'            => ['get',      'merchants/{id}/balance',                   'MerchantController@getBalance'                                 ],
+        'merchant_edit_free_credits'        => ['post',     'merchants/{id}/credits',                   'MerchantController@postFreeCredits',                           ],
         'merchant_beneficiary_file'         => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                 ],
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
@@ -89,6 +93,7 @@ final class Route
         'setl_fetch_by_id'                  => ['get',      'settlements/{id}',                         'SettlementController@getSettlement'                            ],
         'setl_fetch_multiple'               => ['get',      'settlements',                              'SettlementController@getSettlements'                           ],
         'setl_fetch_transactions'           => ['get',      'settlements/{id}/transactions',            'SettlementController@getSettlementTransactions'                ],
+        'setl_fixer'                        => ['get',      'settlements/fixer',                        'SettlementController@getSettlementFixer'                       ],
         'hdfc_mpr_reconcile'                => ['post',     'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'                  ],
         'hdfc_mpr_generate'                 => ['post',     'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'                   ],
         'setl_delete_file'                  => ['delete',   'settlements/file/{setlFileType}',          'SettlementController@deleteSettlementFile'                     ],
@@ -142,6 +147,7 @@ final class Route
         'payment_create',
         'payment_create_checkout',
         'payment_create_jsonp',
+        'payment_create_ajax',
         'payment_cancel',
         'merchant_public_get_banks',
         'merchant_methods',
@@ -206,6 +212,7 @@ final class Route
         'merchant_set_banks',
         'merchant_set_all_banks',
         'merchant_fetch_balance',
+        'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'terminal_delete',
         'terminal_edit',
@@ -226,6 +233,7 @@ final class Route
         'setl_return',
         'setl_delete_file',
         'setl_calc_previous_fees',
+        'setl_fixer',
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
         'daily_setl_calc_previous_fees',
@@ -236,6 +244,8 @@ final class Route
         'payment_auto_capture',
         'payment_auto_capture_email',
         'payment_verify_all',
+        'payment_capture_reminder',
+        'payment_refund_authorized',
         'refund_netbanking_generate_excel',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
@@ -279,7 +289,8 @@ final class Route
             'mock_gateways' => array(
                 'mockhdfc_enroll',
                 'mockhdfc_auth_enrolled',
-                'mockhdfc_payment',),
+                'mockhdfc_payment',
+            ),
 
             'cron' => array(
                 'hdfc_mpr_generate',
@@ -291,13 +302,19 @@ final class Route
                 'merchant_daily_report',
                 'payment_auto_capture',
                 'payment_verify_all',
-                'refund_netbanking_generate_excel'),
+                'refund_netbanking_generate_excel',
+                'payment_refund_authorized',
+                'payment_capture_reminder',
+                'payment_verify_all',
+            ),
 
             'mailgun' => array(
-                'hdfc_mpr_reconcile'),
+                'hdfc_mpr_reconcile',
+            ),
 
             'hosted' => array(
-                'merchant_secret'),
+                'merchant_secret',
+            ),
         );
 
     protected static $jsonpRoutes = array(

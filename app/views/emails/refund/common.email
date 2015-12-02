@@ -106,7 +106,7 @@
                           <tr>
                             <td class="center darktext">
                               <center>
-                                Refund Id: {{$refund['id']}}
+                                Refund Id: {{$refund['public_id']}}
                               </center>
                               <hr class="small">
                             </td>
@@ -210,7 +210,10 @@
                             <td class="center lighttext">
                               <hr class="wide">
                               <center>
-                                If this is correct, you don't need to take any further action.<br>
+                                Please note that successful refunds will
+                                reflect in your bank account in the next
+                                4-5 days.
+                                <br>
                                 Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
                               </center>
                             </td>

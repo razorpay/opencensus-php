@@ -354,6 +354,23 @@ class Gateway extends Base\Gateway
         return $this->getHashOfString($str);
     }
 
+    protected function sendGatewayRequest($request)
+    {
+        $response = parent::sendGatewayRequest($request);
+
+        $body = $response->body;
+
+        $msg = 'Unable to reach destination.';
+
+        if (strpos($body, $msg) !== false)
+        {
+            throw new Exception\GatewayTimeoutException(
+                'Hdfc netbanking gateway could not be reached');
+        }
+
+        return $response;
+    }
+
     protected function getHashOfString($str)
     {
         $secret = $this->getSecret();

@@ -45,6 +45,36 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchTransactionsForAuthorizedRefundedPayments()
+    {
+        $repo = $this->repo;
+
+        $txns = $repo::where(Transaction\Entity::TYPE, '=', Type::REFUND)
+                     ->where(Transaction\Entity::SETTLED, '=', 1)
+                     ->whereNull(Transaction\Entity::BALANCE)
+                     ->get();
+
+        //
+        // Transactions with only refunded authorized payments
+        // The previous txns can contain those refunds where balance went to 0
+        // after the refund.
+        //
+        $txns2 = new Base\PublicCollection;
+
+        foreach ($txns as $txn)
+        {
+            $refund = $txn->entity;
+            $payment = $refund->payment;
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                $txns2->push($txn);
+            }
+        }
+
+        return $txns2;
+    }
+
     public function settled($txns, $settledAt)
     {
         $repo = $this->repo;

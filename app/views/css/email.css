@@ -174,3 +174,13 @@ pre{
 .leftalign{
 	text-align: left !important;
 }
+.footer td{
+	color:#aaa;
+	font-size:12px;
+	line-height: 18px;
+}
+.footer a, footer a:visited, footer a:hover{
+	display: inline-block;
+	color:#aaa !important;
+	text-decoration: none;
+}

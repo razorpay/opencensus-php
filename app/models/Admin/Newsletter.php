@@ -17,7 +17,7 @@ class Newsletter
 {
     protected $email;
 
-    function __construct($recipient, array $subject = [], $msg, $test = false)
+    function __construct($recipient, $subject = "Razorpay Newsletter", $msg, $test = false)
     {
         $this->config = Config::get('applications.mailgun');
 
@@ -136,7 +136,7 @@ class Newsletter
 
         $this->getMailgunInstance()->post('lists', [
             'address'       => $listAddress,
-            'description'   => $this->getSubject(),
+            'description'   => $this->data['subject'],
             'name'          => "Newsletter at $timestamp"
         ]);
 
@@ -208,18 +208,13 @@ class Newsletter
 
             $message->from($from, $config['from_name']);
 
-            $message->subject($this->getSubject());
+            $message->subject($this->data['subject']);
         });
 
         return [
             'email' => $this->email,
             'count' => $this->count
         ];
-    }
-
-    protected function getSubject()
-    {
-        return implode(' ', $this->data['subject']);
     }
 
     protected function getBody($msg)
@@ -231,9 +226,11 @@ class Newsletter
 $msg
 </div>
 EOT;
-        $view_directory = app_path()."/views/";
-        // $ink_css =      file_get_contents($view_directory.'css/ink.css');
-        $cssContent =   file_get_contents($view_directory.'css/email.css');
+        $viewDirectory = app_path()."/views/";
+        //$ink_css =      file_get_contents($viewDirectory.'css/ink.css');
+        $cssContent =   file_get_contents($viewDirectory.'css/email.css')
+            . PHP_EOL
+            . file_get_contents($viewDirectory . 'css/newsletter.css');
 
         // $cssContent = $ink_css. PHP_EOL . $common_css;
 

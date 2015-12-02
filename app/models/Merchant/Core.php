@@ -28,7 +28,7 @@ class Core extends Base\Core
 
         $this->createBalance($merchant, Mode::TEST);
 
-        (new Methods\Core)->setAllPaymentBanks($merchant);
+        (new Methods\Core)->setDefaultMethods($merchant);
 
         return $merchant;
     }
@@ -62,11 +62,11 @@ class Core extends Base\Core
 
     public function createBalance($merchant, $mode)
     {
-        $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
+        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
 
         $merchantBalance->setConnection($mode);
 
-        $this->repo->updateBalance($merchantBalance);
+        (new Merchant\Balance\Repository)->createBalance($merchantBalance);
 
         return $merchantBalance;
     }

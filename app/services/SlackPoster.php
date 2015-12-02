@@ -17,7 +17,7 @@ trait SlackPoster
      * @param array  $settings array of common settings such as channel, color etc
      * @return null
      */
-    public function slackPost($headline, array $postdata, $pretext = '', array $settings = [])
+    public function slackPost($headline, array $postdata, array $settings = [], $pretext = '')
     {
         // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
         if(Config::get('slack.mock') === false)

@@ -99,7 +99,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
-        $content = (array)simplexml_load_string($response->body);
+
+        $content = $this->xmlToArray($response->body);
 
         $this->verifySecureHashForQueryRequest($content);
 
@@ -140,12 +141,12 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-
-        $status = VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
             $verify->gatewaySuccess = false;
+
             // Could be the case where the transaction didn't even hit mobikwik
             if (($payment['received'] === false) and
                 (($payment['statuscode'] === null) or
@@ -162,7 +163,7 @@ class Gateway extends Base\Gateway
         else if ($content['statuscode'] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
-            //Gateway success , api success
+
             if ($payment['statuscode'] === Status::SUCCESS)
             {
                 $verify->apiSuccess = true;
@@ -172,21 +173,17 @@ class Gateway extends Base\Gateway
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
             }
-
         }
 
-        $verify->status = $status;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
-
-        if (($verify->match === true) and
-            ($payment['received'] === false))
+        if ($payment['received'] === false)
         {
             $payment->fill($content);
             $payment->saveOrFail();
         }
 
-        return $status;
+        return $verify->status;
     }
 
     public function refund(array $input)
@@ -222,7 +219,8 @@ class Gateway extends Base\Gateway
 
 
         $response = $this->sendGatewayRequest($request);
-        $content = (array)simplexml_load_string($response->body);
+        $content = $this->xmlToArray($response->body);
+
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
         if ($content['statuscode'] !== '0')
@@ -425,6 +423,20 @@ class Gateway extends Base\Gateway
                 $input['gateway']['statuscode'],
                 $input['gateway']['statusmessage']);
         }
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $res = simplexml_load_string($xml);
+
+        if ($res === false)
+        {
+            throw new Exception\RuntimeException(
+                'Failed to convert xml to array',
+                ['xml' => $xml]);
+        }
+
+        return (array) $res;
     }
 
 }

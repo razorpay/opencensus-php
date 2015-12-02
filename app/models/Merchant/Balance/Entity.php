@@ -1,15 +1,16 @@
 <?php
 
-namespace Models\Merchant;
+namespace Models\Merchant\Balance;
 
 use EE\Exception;
 use Models\Base;
 
-class Balance extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID = 'id';
     const BALANCE = 'balance';
     const ON_HOLD = 'on_hold';
+    const CREDITS = 'credits';
 
     protected $table = \Constants\Table::BALANCE;
 
@@ -18,7 +19,12 @@ class Balance extends Base\UniqueIdEntity
 
     protected $visible = array(
         self::ID,
-        self::BALANCE);
+        self::BALANCE,
+        self::CREDITS);
+
+    protected $entity = 'balance';
+
+    protected $genereateIdOnCreate = false;
 
     protected function addAmount($amount)
     {
@@ -50,6 +56,11 @@ class Balance extends Base\UniqueIdEntity
     public function getBalance()
     {
         return $this->getAttribute(self::BALANCE);
+    }
+
+    public function getCredits()
+    {
+        return $this->getAttribute(self::CREDITS);
     }
 
     public function merchant()
@@ -95,9 +106,40 @@ class Balance extends Base\UniqueIdEntity
         }
     }
 
+    public function subtractCredits($amount)
+    {
+        $credits = $this->getCredits();
+
+        $credits -= $amount;
+
+        if ($credits < 0)
+        {
+            $credits = 0;
+        }
+
+        $this->setAttribute(self::CREDITS, $credits);
+    }
+
+    public function setFreeCredits($freeCredits)
+    {
+        return $this->setCredits($freeCredits);
+    }
+
+    public function setCredits($credits)
+    {
+        assert ($credits >= 0);
+
+        $this->setAttribute(self::CREDITS, $credits);
+    }
+
     public function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
+    }
+
+    public function getCreditsAttribute()
+    {
+        return (int) $this->attributes[self::CREDITS];
     }
 
     public function save(array $options = array())

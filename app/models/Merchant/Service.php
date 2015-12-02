@@ -4,14 +4,18 @@ namespace Models\Merchant;
 
 use Constants\Mode;
 use Mail;
+
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
+
 use EE\Exception;
 use EE\Error\ErrorCode;
+
+use Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -21,7 +25,8 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->repo = new Merchant\Repository();
+        $this->repo = new Merchant\Repository;
+        $this->balanceRepo = new Merchant\Balance\Repository;
     }
 
     /**
@@ -84,13 +89,26 @@ class Service extends Base\Service
             ($merchant->getActivatedAttribute() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
-            $balance[Balance::ID] = $merchantId;
-            $balance[Balance::BALANCE] = 0;
+            $balance[Balance\Entity::ID] = $merchantId;
+            $balance[Balance\Entity::BALANCE] = 0;
 
             return $balance;
         }
 
-        $balance = $this->repo->getMerchantBalance($merchant);
+        $balance = $this->balanceRepo->getMerchantBalance($merchant);
+
+        return $balance->toArray();
+    }
+
+    public function editFreeCredits($merchantId, $input)
+    {
+        (new Merchant\Validator)->validateInput('edit_credits', $input);
+
+        $freeCredits = $input['credits'];
+
+        $merchant = $this->repo->findOrFailPublic($merchantId);
+
+        $balance = $this->balanceRepo->editMerchantFreeCredits($merchant, $freeCredits);
 
         return $balance->toArray();
     }
@@ -321,9 +339,10 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $methods = new Merchant\Methods\Entity;
+
         return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
-            $merchant, $input
-        );
+            $merchant, $input);
     }
 
     public function setBanksForAllMerchants($input)
@@ -379,28 +398,19 @@ class Service extends Base\Service
 
     protected function sendActivationEmail($merchant)
     {
-        //TODO: This needs to be refactored when we go for differentiated pricing
-        $plan = $merchant->getPricingPlan();
 
-        // array_values resets the array numeric keys and then we can pick the first rule
-        // @todo: explain this part
-        $plan = array_values(array_filter(
-            $plan['rules'],
-            function($rule)
-            {
-                return $rule['payment_method']  === 'card';
-            }
-        ))[0];
+        $plan = $merchant->getPricingPlan();
 
         $data = [
             'merchant'  =>  $merchant->toArray(),
             'plan'      =>  $plan,
+            'rules'     => $this->formatPricingRules($plan['rules'])
         ];
 
         $config = $this->app->config->get('applications.mailgun');
         $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
-        $this->app['mailer']->queue(
+        Mail::queue(
             [
                 'html' => 'emails.merchant.activation',
                 'text' => 'emails.merchant.activation_text'
@@ -414,6 +424,46 @@ class Service extends Base\Service
                 $message->subject($subject);
             }
         );
+    }
+
+    protected function formatPricingRules($rules)
+    {
+        $newRules = [];
+
+        foreach ($rules as $rule)
+        {
+            $rule['pricing_display'] = Pricing\Plan::formattedPricing($rule);
+
+            // This just holds Wallet/Card/Net Banking as of now
+            $display = Payment\Method::formatted($rule['payment_method']);
+
+            // This now holds Credit/Debit/All
+            $method = $rule['payment_method_type'] ? : 'All';
+
+            // If we have a payment_network (such as AMEX/DICL)
+            if ($rule['payment_network'] !== null)
+            {
+                // This becomes "American Express Cards"
+                $display = $rule['payment_network_name'] . ' Cards';
+            }
+            elseif ($method !== null and $rule['payment_method'] === 'card')
+            {
+                // This is Credit/Debit/All Cards
+                $display = ucfirst($method) . ' Cards';
+            }
+
+            // We flip this around to store the rules as an array with the
+            // pricing display as the key. Since the pricing display is
+            // deterministic (see Pricing\Plan::formattedPricing)
+            // The same pricing gives the same display
+            //
+            // Now we can iterate over the newRules array and display
+            // the list of pricing options at the same pricing in the same
+            // line easily
+            $newRules[$rule['pricing_display']][] = $display;
+        }
+
+        return $newRules;
     }
 
     /**
@@ -451,6 +501,12 @@ class Service extends Base\Service
                 $response['sent'][] = $sent;
             }
         }
+
+        // Log just the result of the settlement reports
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
+            $response
+        );
 
         return $response;
     }

@@ -2,10 +2,7 @@
 
 namespace Models\Transaction;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
 use Models\Base;
-use Models\Gateway;
 use Models\Transaction;
 
 class Service extends Base\Service
@@ -24,5 +21,15 @@ class Service extends Base\Service
         $txn = (new Transaction\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $txn->toArrayPublic();
+    }
+
+    public function settlementFixer()
+    {
+        $repo = new Transaction\Repository;
+
+        return $repo->transaction(function()
+        {
+            return (new BugFixer)->settlementFixerInTxn();
+        });
     }
 }

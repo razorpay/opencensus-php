@@ -4,61 +4,57 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width"/>
   </head>
-  <body class="body" style="background:#EBECEE;">
-    @include('emails.partials.css')
-    <table class="row"> <!-- Styles go on the row -->
+  <body>
+    <link rel="stylesheet" type="text/css" href="ink.css">
+    <link rel="stylesheet" type="text/css" href="welcome.css">
+    <table class="row">
       <tr>
-        <td class="center" align="center"> <!-- Center the container -->
-          <center>
+        <td class="wrapper">
 
-            <table class="container"> <!-- Container restricts the content width -->
-              <tr>
-                <td class="wrapper last"> <!-- Wrapper stays on the inner table -->
-
-                  <table class="twelve columns newsletter-header-bg">
-                    <tr height="180" style="height:180px;">
-                      <td background="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" bgcolor="#24bbea" width="580" height="180" valign="top" style="padding-bottom: 0px;">
-                        <!--[if gte mso 9]>
-                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:580px;height:180px;">
-                          <v:fill type="tile" src="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" color="#24bbea" />
-                          <v:textbox inset="0,0,0,0">
-                        <![endif]-->
-                        <div>
-                          <h1>
-                            {{{$subject[0]}}}
-                          </h1>
-                          <h1>
-                            {{{$subject[1]}}}
-                          </h1>
-                        </div>
-                        <!--[if gte mso 9]>
-                          </v:textbox>
-                          </v:rect>
-                        <![endif]-->
-                      </td>
-                      <td class="expander"></td>
-                    </tr>
-                  </table>
-
-                </td>
-              </tr>
-            </table>
-
-          </center>
+          <table class="four columns">
+            <tr>
+              <td class="center">
+                <img class="center" src="https://s3.amazonaws.com/checkout-live/logo.png">
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
+
+    <!-- Heading -->
+    <table class="row">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <hr><br>
+                <h1><center class="darktext">
+                  {{{$subject}}}
+                </center></h1>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
     <!-- Contact Us -->
     <table class="container">
       <tr>
         <td>
           <table class="row">
             <tr>
-              <td class="wrapper last white">
-                <table class="twelve columns">
+              <td class="wrapper offset-by-one">
+                <table class="ten columns">
                   <tr>
-                    <td class="dark">
-                        {{$body}}
+                    <td class="center">
+{{$body}}
                     </td>
                     <td class="expander"></td>
                   </tr>
@@ -69,6 +65,79 @@
         </td>
       </tr>
     </table>
-    @include('emails.partials.footer', ['message'=>$message])
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <center>
+                  <hr>
+                  <a href="https://razorpay.com/terms/">Terms &amp; Conditions</a>
+                  |
+                  <a href="https://razorpay.com/privacy/">Privacy Policy</a>
+                  |
+                  <a href="https://razorpay.com/refund/">Refund Policy</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="three columns offset-by-six">
+            <tr>
+              <td class="center">
+                <center>
+                  <a href="https://facebook.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                  </a>
+                  <a href="https://twitter.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                  </a>
+                  <a href="https://github.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                  </a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="seven columns">
+            <tr>
+              <td class="center">
+                <center>
+                  This message was sent to <a href="mailto:%recipient_name%">
+                  %recipient_name%</a>. Reach out to us by replying
+                  to this email or at <a href="mailto:support@razorpay.com">
+                  support@razorpay.com</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
   </body>
 </html>

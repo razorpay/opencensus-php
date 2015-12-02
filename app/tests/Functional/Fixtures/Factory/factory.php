@@ -30,7 +30,7 @@ $factory('Models\Terminal\Entity', [
     'gateway_secure_secret' => null,
 ]);
 
-$factory('Models\Merchant\Balance', [
+$factory('Models\Merchant\Balance\Entity', [
     'id' => $faker->uniqueid,
     'balance' => 0,
 ]);
@@ -130,6 +130,7 @@ $factory('Models\Transaction\Entity', [
     'debit' => 0,
     'balance' => $faker->randomNumber,
     'gateway_fee' => null,
+    'gratis' => false,
     'channel' => 'kotak'
 ]);
 

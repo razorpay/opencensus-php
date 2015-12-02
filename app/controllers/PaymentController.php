@@ -61,6 +61,15 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    public function postRefundOldAUthorizedPayments()
+    {
+        $input = Input::all();
+
+        $data = $this->payment->refundOldAuthorizedPayments($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->payment->authorizeFailed($id);
@@ -184,5 +193,10 @@ class PaymentController extends BaseController
         $input = Input::all();
 
         return ApiResponse::json($input);
+    }
+
+    public function sendReminderMailForAuthorizedPayments()
+    {
+        return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
     }
 }

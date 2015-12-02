@@ -92,8 +92,8 @@ class Server
             return;
         }
 
-        throw new Exception\LogicException(
-            'Unexpected referer value. Referer: ' . $referer);
+        // throw new Exception\LogicException(
+        //     'Unexpected referer value. Referer: ' . $referer);
     }
 
     protected function getGatewayInstance()

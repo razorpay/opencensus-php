@@ -7,8 +7,13 @@ use Carbon\Carbon;
 class Holidays
 {
     public static $holidays = array(
-        [2, 10],
+        [2,  10],
         [22, 10],
+        [11, 11],
+        [12, 11],
+        [25, 11],
+        [24, 12],
+        [25, 12],
     );
 
     public static function isTodayHoliday($mode)

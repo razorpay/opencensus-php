@@ -12,6 +12,73 @@ class UniqueIdEntity extends Entity
 
     protected $genereateIdOnCreate = false;
 
+    const BASE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+    public static $baseValues = array(
+        '0' => 0,
+        '1' => 1,
+        '2' => 2,
+        '3' => 3,
+        '4' => 4,
+        '5' => 5,
+        '6' => 6,
+        '7' => 7,
+        '8' => 8,
+        '9' => 9,
+        'A' => 10,
+        'B' => 11,
+        'C' => 12,
+        'D' => 13,
+        'E' => 14,
+        'F' => 15,
+        'G' => 16,
+        'H' => 17,
+        'I' => 18,
+        'J' => 19,
+        'K' => 20,
+        'L' => 21,
+        'M' => 22,
+        'N' => 23,
+        'O' => 24,
+        'P' => 25,
+        'Q' => 26,
+        'R' => 27,
+        'S' => 28,
+        'T' => 29,
+        'U' => 30,
+        'V' => 31,
+        'W' => 32,
+        'X' => 33,
+        'Y' => 34,
+        'Z' => 35,
+        'a' => 36,
+        'b' => 37,
+        'c' => 38,
+        'd' => 39,
+        'e' => 40,
+        'f' => 41,
+        'g' => 42,
+        'h' => 43,
+        'i' => 44,
+        'j' => 45,
+        'k' => 46,
+        'l' => 47,
+        'm' => 48,
+        'n' => 49,
+        'o' => 50,
+        'p' => 51,
+        'q' => 52,
+        'r' => 53,
+        's' => 54,
+        't' => 55,
+        'u' => 56,
+        'v' => 57,
+        'w' => 58,
+        'x' => 59,
+        'y' => 60,
+        'z' => 61,
+    );
+
     //const UNIQUE_ID_CHECK_REGEX = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
 
     /**
@@ -138,18 +205,10 @@ class UniqueIdEntity extends Entity
 
     public static function generateUniqueId()
     {
-        // Timestmap of 1st Jan 2014!!
-        // 1388534400
-        $ts1stJan2014 = 1388534400;
-
         // Get current nanotime from 1st Jan 1970
         $nanotime = self::getNanotimeInteger();
 
-        // Subtract nanotime of 1st Jan 2014
-        $nanotime -= $ts1stJan2014*1000*1000*1000;
-
-        // Convert to base 62
-        $b62 = self::base62($nanotime);
+        $b62 = self::nanotimeToBase62($nanotime);
 
         // Generate 3 random bytes, convert to hex and then to dec
         // @note: do not use bindec i.e. convert directly to dec
@@ -180,7 +239,7 @@ class UniqueIdEntity extends Entity
 
     protected static function base62($num)
     {
-        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $index = self::BASE;
 
         $res = '';
         do {
@@ -200,19 +259,47 @@ class UniqueIdEntity extends Entity
         $randInt = self::base10(substr($uid, 10));
 
         $str = $nanotimeInt . $randInt;
+
         return $str;
     }
 
-    protected static function base10($str)
+    public static function uidToTimestamp($uid)
     {
-        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $b62 = substr($uid, 0, 10);
 
-        $res = 0;
+        $nanotime = self::base10($b62);
 
-        $len = strlen($str);
-        for ($i = 0; $i < $len; $i++)
+        $timestamp = $nanotime / 1000000000;
+
+        return $timestamp;
+    }
+
+    public static function nanotimeToBase62($nanotime)
+    {
+        // Timestmap of 1st Jan 2014!!
+        // 1388534400
+        $ts1stJan2014 = 1388534400;
+
+        // Subtract nanotime of 1st Jan 2014
+        $nanotime -= $ts1stJan2014*1000*1000*1000;
+
+        // Convert to base 62
+        $b62 = self::base62($nanotime);
+
+        return $b62;
+    }
+
+    public static function base10($num, $b = 62)
+    {
+        $base = self::BASE;
+
+        $limit = strlen($num);
+
+        $res = strpos($base,$num[0]);
+
+        for ($i=1; $i < $limit; $i++)
         {
-            $res = 62 * $res + strpos($index, $str[$i]);
+            $res = $b * $res + strpos($base,$num[$i]);
         }
 
         return $res;

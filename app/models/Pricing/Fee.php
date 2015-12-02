@@ -10,9 +10,18 @@ use Models\Pricing;
 
 class Fee
 {
-    const SERVICE_TAX_PERCENT = 14;
+    const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
+
+    public function getZeroPricingPlanRule($payment)
+    {
+        $planId = Pricing\Entity::ZERO_PRICING;
+
+        $method = $payment->getMethod();
+
+        return (new Pricing\Repository)->getZeroPricingPlanRuleForMethod($method)->getId();
+    }
 
     public function calculateMerchantFees($payment)
     {
@@ -31,6 +40,8 @@ class Fee
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
         $fee = $this->getFeesByPercentAndFixedRates($amount, $percent, $fixed);
+
+        assert ($fee < $amount);
 
         return $fee;
     }
@@ -125,7 +136,8 @@ class Fee
 
         if ($rule === null)
         {
-            throw new Exception\LogicException('No appropriate pricing rule found', ['payment' => $payment->toArray()]);
+            throw new Exception\LogicException(
+                'No appropriate pricing rule found', ['payment' => $payment->toArray()]);
         }
 
         return $rule;

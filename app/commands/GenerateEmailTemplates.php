@@ -49,7 +49,9 @@ class GenerateEmailTemplates extends Command {
             'emails/payment/merchant',
             'emails/refund/common',
             'emails/merchant/daily_report_debug',
-            'emails/merchant/welcome'
+            'emails/merchant/welcome',
+            'emails/merchant/authorized_reminder',
+            'emails/payment/failed_to_authorized',
         ];
 
         $view_directory = app_path()."/views/";

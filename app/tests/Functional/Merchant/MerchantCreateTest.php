@@ -37,6 +37,8 @@ class MerchantCreateTest extends TestCase
         $this->checkBalances();
 
         $this->checkNetbankingBanks();
+
+        $this->checkMethods();
     }
 
     protected function createMerchant()
@@ -77,6 +79,16 @@ class MerchantCreateTest extends TestCase
         $this->checkNetbankingBanksInMode('test');
 
         $this->checkNetbankingBanksInMode('live');
+    }
+
+    protected function checkMethods()
+    {
+        $this->ba->appAuthTest();
+
+        $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
+
+        $this->assertEquals($methods['mobikwik'], true);
+        $this->assertEquals($methods['paytm'], false);
     }
 
     protected function checkNetbankingBanksInMode($mode)

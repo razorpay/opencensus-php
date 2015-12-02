@@ -354,6 +354,20 @@ trait PaymentTrait
         return $refund;
     }
 
+    protected function refundOldAuthorizedPayments()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/refund/authorized',
+            'content' => []);
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        return $data;
+    }
+
     protected function authorizeFailedPayment($id)
     {
         $request = array(
@@ -416,6 +430,18 @@ trait PaymentTrait
             'url' => '/terminals/'.$tid,
             'method' => 'put',
             'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function merchantEditCredits($id, $credits)
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/credits',
+            'method' => 'post',
+            'content' => ['credits' => $credits]);
 
         $this->ba->appAuth();
 

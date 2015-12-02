@@ -110,9 +110,20 @@
                             <td class="darktext left-text-pad right-text-pad">
 <p>Hi {{{$merchant['name']}}},</p>
 
-<p>Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You have opted for the {{{$plan['plan_name']}}} plan.
-(₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction
-on all modes of payment).</p>
+<p>Your Razorpay account for
+
+<a title="Merchant Website" href="{{$merchant['website']}}">{{{$merchant['billing_label']}}}</a>
+
+is now active. You have opted for the {{{$plan['name']}}} plan. The pricing details
+associated with the plan are:
+
+<ul align="left">
+  @foreach ($rules as $pricing => $methodDisplay)
+    <li style="text-align:left;" align="left">{{implode(',', $methodDisplay)}} - {{$pricing}}</li>
+  @endforeach
+  <li style="text-align:left;" align="left">+1% Extra on International Transactions</li>
+  <li style="text-align:left;" align="left">Service Taxes Extra (14.5%)</li>
+</ul>
 
 <p>In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation">here</a>.</p>
 

@@ -16,6 +16,12 @@ class Notify
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
+    const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
+
+    protected static $receptEmails = [
+        self::AUTHORIZED,
+        self::FAILED_TO_AUTHORIZED
+    ];
 
     // TODO: Shift to constants once we update PHP
     protected $mailViews = [
@@ -34,12 +40,21 @@ class Notify
         self::REFUNDED      =>  [
             'customer'  => 'emails.refund.common',
             'merchant'  => 'emails.refund.common'
-        ]
+        ],
+        self::FAILED_TO_AUTHORIZED => [
+            'customer'  => [
+                'html'  =>  'emails.payment.customer',
+                'text'  =>  'emails.payment.customer_text'
+            ],
+            'merchant'  =>  [
+                'html'  =>  'emails.payment.failed_to_authorized',
+                'text'  =>  'emails.payment.failed_to_authorized_text',
+            ],
+        ],
     ];
 
     protected $payment;
     protected $refund;
-    protected $config;
     protected $mode;
 
     /**
@@ -53,7 +68,6 @@ class Notify
         $this->payment = $payment;
         $this->refreshTemplate();
 
-        $this->config = $this->app->config->get('applications.mailgun');
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
@@ -110,6 +124,8 @@ class Notify
                 }
 
                 $message->subject($subject);
+                $message->from('reports@razorpay.com');
+                $message->replyTo('support@razorpay.com');
             }
         );
     }
@@ -131,7 +147,7 @@ class Notify
             $to = $this->template[$type]['email'];
 
             // This finally sends the mail
-            if ($this->isMailEnabled($event))
+            if ($this->isMailEnabled($event, $isMerchant))
             {
                 $this->sendMail($view, $subject, $to);
             }
@@ -144,6 +160,7 @@ class Notify
 
         // We don't send out a notification on capture
         $slackMessages = [
+            self::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
             self::AUTHORIZED    =>  'Payment Authorized',
             self::REFUNDED      =>  'Payment Refunded'
         ];
@@ -181,13 +198,16 @@ class Notify
         }
         catch (\Exception $e)
         {
+            // Shouldn't fail for any reason
             $this->trace->error(
-                TraceCode::PAYMENT_NOTIFY_FAILED, [
-                    'payment_id' => $payment->getPublicId(),
-                    'message'    => 'Payment Notify raised an exception',
-                    'exception'  => $e->getData()
+                TraceCode::PAYMENT_NOTIFY_FAILED,
+                [
+                    'payment_id' => $this->payment->getPublicId(),
+                    'message'    => 'Payment Notify raised an exception'
                 ]
             );
+
+            $this->trace->traceException($e);
         }
     }
 
@@ -268,6 +288,8 @@ class Notify
     {
         switch ($event)
         {
+            // Both cases are the same
+            case self::FAILED_TO_AUTHORIZED:
             case self::AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
@@ -288,6 +310,13 @@ class Notify
 
         // Add merchant data
         $data['merchant'] = $this->getMerchantForSlack();
+
+        if (isset($data['orderId']))
+        {
+            $orderId = $data['orderId'];
+            unset($data['orderId']);
+            $data['orderId'] = $orderId;
+        }
 
         // This is for both pyaments and refund
         if (isset($data['timestamp']))
@@ -321,6 +350,7 @@ class Notify
             ],
             'payment'   =>  [
                 'id'        =>  $this->payment->getId(),
+                'public_id' =>  $this->payment->getPublicId(),
                 'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
                 'timestamp' =>  $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
@@ -336,7 +366,8 @@ class Notify
                 'id'        =>  $this->refund->getId(),
                 'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
                 'timestamp' =>  $this->refund->getCreatedAt(),
-                'payment_id'=>  $this->refund->payment->getId()
+                'payment_id'=>  $this->refund->payment->getId(),
+                'public_id' =>  $this->refund->getPublicId(),
             ];
         }
 
@@ -419,16 +450,38 @@ class Notify
     }
 
     /**
+     * Whether a given email is meant to be a customer receipt email
+     * A receipt email is defined as a mail sent to the customer
+     * on a succesful payment. This is currently just the following:
+     *   - AUTHORIZED
+     *   - FAILED_TO_AUTHORIZED
+     * @param  string  $event      Event for which the mail is intended
+     * @param  boolean $isMerchant Whether this mail is for the merchant.
+     * @return boolean
+     */
+    protected function isCustomerReceiptEmail($event, $isMerchant)
+    {
+        // If the mail is for a merchant, it can't be a customer receipt email
+        if ($isMerchant)
+        {
+            return false;
+        }
+
+        return in_array($event, self::$receptEmails);
+    }
+
+    /**
      * Whether or not we need to trigger the notifications
      * The order of conditions in this is imporant
      * @param string $event Event triggered
      * @return boolean
      */
-    protected function isMailEnabled($event)
+    protected function isMailEnabled($event, $isMerchant = false)
     {
         // If the merchant has disabled customer emails
+        // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
-            ($event === self::AUTHORIZED))
+            ($this->isCustomerReceiptEmail($event, $isMerchant)))
         {
             return false;
         }
@@ -445,9 +498,9 @@ class Notify
     protected function isEnabled($event)
     {
         // We only send notifications if Mode is not TEST
-        // or if the env=dev
-        // so env=dev overrides TEST mode
-        if ($this->app->environment('dev'))
+        // or if the env=dev or env=testing
+        // so env=dev or env=testing overrides TEST mode
+        if ($this->app->environment('dev', 'testing'))
         {
             return true;
         }

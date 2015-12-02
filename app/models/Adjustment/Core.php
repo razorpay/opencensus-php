@@ -11,6 +11,16 @@ class Core extends Base\Core
 {
     public function createAdjustment($input, $merchant)
     {
+        $adjRepo = new Adjustment\Repository;
+
+        return $adjRepo->transaction(function() use ($input, $merchant)
+            {
+                return $this->createAdjInTransaction($input, $merchant);
+            });
+    }
+
+    protected function createAdjInTransaction($input, $merchant)
+    {
         $updateEscrow = true;
 
         if (isset($input['update_escrow']))

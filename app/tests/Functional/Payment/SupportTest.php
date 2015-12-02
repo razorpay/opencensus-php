@@ -61,13 +61,10 @@ class SupportTest extends TestCase
 
     public function testVerifyAllPayments()
     {
-        $this->app['config']->set('gateway.mock_atom', true);
+        $createdAt = time() - 60 * 60;
 
-        $this->fixtures->create('terminal:atom_terminal');
-
-        $this->gateway = 'atom';
-
-        $this->fixtures->create('payment:netbanking_failed');
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
 
         $request = array(
             'url' => '/payments/verify/all',
@@ -79,14 +76,14 @@ class SupportTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(
-            $content,
             [
-                'verified'      => 0,
+                'verified'      => 1,
                 'failed'        => 0,
                 'authorized'    => 0,
                 'timed out'     => 0,
                 'error'         => 0,
                 'total time'    => '0 secs',
-            ]);
+            ],
+            $content);
     }
 }

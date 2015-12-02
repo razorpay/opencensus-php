@@ -313,6 +313,16 @@ class TerminalPicker
 
         $this->network = $network;
 
+        if ($payment->merchant->isInternational())
+        {
+            $terminal = Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
+
+            if ($this->sharedTerminalExistsAndCardNetworkSupported($terminal, $network))
+            {
+                return $this->terminal;
+            }
+        }
+
         $sharedCardTerminals = array(
             Shared::KOTAK_RAZORPAY_TERMINAL,
             Shared::HDFC_RAZORPAY_TERMINAL,
@@ -320,8 +330,7 @@ class TerminalPicker
 
         foreach ($sharedCardTerminals as $sharedTerminalId)
         {
-            if ($this->terminalExistsAndSupportsCardNetwork(
-                            $sharedTerminalId, $network))
+            if ($this->terminalExistsAndSupportsCardNetwork($sharedTerminalId, $network))
             {
                 return $this->terminal;
             }
@@ -386,20 +395,16 @@ class TerminalPicker
 
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
-        if ($network === Card\Network::MAES)
+        $networks = array(
+            Network::MAES,
+            Network::RUPAY,
+            Network::DICL);
+
+        if (in_array($network, $networks))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
         }
-
-        // Disable rupay in live
-        if (($this->mode === Mode::LIVE) and
-            ($network === Card\Network::RUPAY))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-        }
-
     }
 
     protected function getSharedTerminalForWallet($payment)
@@ -518,5 +523,13 @@ class TerminalPicker
         $this->terminal = $this->repo->find($terminal);
 
         return $this->terminal;
+    }
+
+    protected function sharedTerminalExistsAndCardNetworkSupported($terminal, $network)
+    {
+        $gateway = Shared::getGatewayForTerminal($terminal);
+
+        return (($this->terminalExists($terminal)) and
+                (Gateway::isCardNetworkSupported($network, $gateway)));
     }
 }

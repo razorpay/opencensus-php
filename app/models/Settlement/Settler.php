@@ -114,7 +114,7 @@ class Settler
             $this->setlRepo->commit();
         }
         catch (\Exception $e)
-        {
+        {throw $e;
             $this->setlRepo->rollback();
 
             $this->settlementFailure('kotak', $e);
@@ -220,6 +220,24 @@ class Settler
                 {
                     $i++;
                     continue;
+                }
+
+                if (($txn->getBalance() === 0) and
+                    ($txn->isTypeRefund()))
+                {
+                    $payment = $txn->entity->payment;
+
+                    if ($payment->hasBeenCaptured() === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::TRANSACTION_REFUND_TRACE,
+                            ['id' => $txn->getId()]);
+
+                        $txn[Transaction\Entity::SETTLED_AT] = null;
+                        $txn->saveOrFail();
+                        $i++;
+                        continue;
+                    }
                 }
 
                 $setlAmount += $txn->getCredit() - $txn->getDebit();

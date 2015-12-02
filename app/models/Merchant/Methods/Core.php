@@ -101,25 +101,36 @@ class Core extends Base\Core
         return $this->setPaymentBanks($banks, $input);
     }
 
-    public function setAllPaymentBanks($merchant)
+    public function setDefaultMethods($merchant)
+    {
+        $methods = (new Methods\Entity)->build();
+
+        $methods->merchant()->associate($merchant);
+
+        $methods->setMobikwik(true);
+
+        $this->setAllPaymentBanks($methods);
+
+        $this->repo->saveOrFail($methods);
+    }
+
+    public function setAllPaymentBanks($methods)
     {
         $input = [
             'banks' => \Models\Payment\Processor\Netbanking::getAllBanks()
         ];
 
-        $banks = $this->setPaymentBanksForMerchant($merchant, $input);
-
-        return $banks;
+        $this->setPaymentBanks($methods, $input);
     }
 
-    protected function setPaymentBanks($banks, $input)
+    protected function setPaymentBanks($methods, $input)
     {
         (new Validator)->validateInput('addBanks', $input);
 
-        $banks->setBanks($input['banks']);
-        $this->repo->saveOrFail($banks);
+        $methods->setBanks($input['banks']);
+        $this->repo->saveOrFail($methods);
 
-        return $this->getEnabledDisabledBanks($banks);
+        return $this->getEnabledDisabledBanks($methods);
     }
 
     protected function getEnabledDisabledBanks($banks)

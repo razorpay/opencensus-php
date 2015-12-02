@@ -54,6 +54,8 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -63,9 +65,8 @@ trait Authorize
 
         if ($payment->isFailed() === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Non failed payment given for authorization where failed payment is needed',
-                ['payment_id' => $payment->getPublicId()]);
+            throw new Exception\BadRequestValidationFailureException(
+                'Non failed payment given for authorization where failed payment is needed');
         }
 
         $data = array(
@@ -94,7 +95,9 @@ trait Authorize
             $payment->setErrorNull();
             $payment->setVerified(true);
 
-            $this->postPaymentAuthorizeProcessing($payment);
+            // The second argument marks the payment as converted from failed
+            // to authorized
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -108,7 +111,7 @@ trait Authorize
 
         $data = $payment->toArrayAdmin();
 
-        $this->slackPost($message, $data, '', ['color' => 'bad']);
+        $this->slackPost($message, $data, ['color' => 'bad', 'channel' => '#tech_logs']);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
@@ -169,6 +172,8 @@ trait Authorize
             throw $e;
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -226,10 +231,15 @@ trait Authorize
         return $data;
     }
 
-    protected function postPaymentAuthorizeProcessing($payment)
+    protected function updateAndNotifyPaymentAuthorized($payment, $wasFailed = false)
     {
         $this->updatePaymentAuthorized();
 
+        $this->notifyAuthorized($payment, $wasFailed);
+    }
+
+    protected function postPaymentAuthorizeProcessing($payment)
+    {
         //
         // The returned value could be either Payment
         // model or an array containing callback data.
@@ -246,11 +256,24 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
+        return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function notifyAuthorized($payment, $wasFailed)
+    {
         // Trigger notification events for authorization
         $notifier = new Notify($payment);
-        $notifier->trigger(Notify::AUTHORIZED);
 
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        if ($wasFailed)
+        {
+            $trigger = Notify::FAILED_TO_AUTHORIZED;
+        }
+        else
+        {
+            $trigger = Notify::AUTHORIZED;
+        }
+
+        $notifier->trigger($trigger);
     }
 
     protected function checkForRecentFailedPayment($payment)
@@ -417,31 +440,34 @@ trait Authorize
 
     protected function updatePaymentAuthorized()
     {
-        $payment = $this->payment;
-
-        $payment->setAmountAuthorized();
-
-        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-        $payment->setAuthorizeTimestamp();
-
-        $payment->terminal->incrementUsedCount();
-
-        $payment->saveOrFail();
-        $payment->terminal->saveOrFail();
-
-        $gateway = $payment->getGateway();
-
-        if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+        $this->repo->transaction(function()
         {
-            $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+            $payment = $this->payment;
 
-            $txn->saveOrFail();
-        }
+            $payment->setAmountAuthorized();
 
-        $payment->saveOrFail();
+            $payment->setStatus(Payment\Status::AUTHORIZED);
 
-        $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+            $payment->setAuthorizeTimestamp();
+
+            $payment->terminal->incrementUsedCount();
+
+            $payment->saveOrFail();
+            $payment->terminal->saveOrFail();
+
+            $gateway = $payment->getGateway();
+
+            if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+            {
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+                $txn->saveOrFail();
+            }
+
+            $payment->saveOrFail();
+
+            $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+        });
     }
 
     protected function isGatewayActuallyAuthorizingPayment($payment)
