@@ -39,7 +39,8 @@ class CreateTransactions extends Migration
                   ->unsigned();
 
             $table->integer(Transaction::SERVICE_TAX)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
             $table->char(Transaction::PRICING_RULE_ID, Transaction::ID_LENGTH)
                   ->nullable();
