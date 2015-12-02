@@ -286,11 +286,11 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function putWebhoook($id)
+    public function putWebhook($id)
     {
         $input = Input::all();
 
-        $data = (new Merchant\Service)->editWebhook($id);
+        $data = (new Merchant\Service)->editWebhook($id, $input);
 
         return ApiResponse::json($data);
     }

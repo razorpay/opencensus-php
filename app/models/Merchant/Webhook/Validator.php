@@ -16,8 +16,9 @@ class Validator extends Base\Validator
     protected static $createValidators = array('events');
 
     protected static $editRules = array(
-        Entity::URL     => 'required|string|url|max:255',
-        Entity::EVENTS  => 'required|array',
+        Entity::URL     => 'sometimes|string|url|max:255',
+        Entity::EVENTS  => 'sometimes|array',
+        Entity::ACTIVE  => 'sometimes|in:0,1',
     );
 
     protected function validateEvents($input)

@@ -11,7 +11,7 @@ use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
-use Models\Webhook;
+use Models\Merchant\Webhook;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -393,21 +393,21 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $webhooks = (new Merchant\Webhook\Core)->getWebhooks($merchant);
+        $webhooks = (new Webhook\Core)->getWebhooks($merchant);
 
         return $webhooks->toArray();
     }
 
     public function createWebhook($input)
     {
-        $webhook = (new Merchant\Webhook\Core)->createWebhook($this->merchant, $input);
+        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
 
         return $webhook->toArray();
     }
 
     public function editWebhook($webhookId, $input)
     {
-        $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhook, $input);
+        $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArray();
     }

@@ -27,7 +27,17 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::URL,
+        self::ACTIVE,
         self::EVENTS,
+    );
+
+    protected $visible = array(
+        self::ID,
+        self::URL,
+        self::EVENTS,
+        self::ACTIVE,
+        self::MERCHANT_ID,
+        self::FAILURE_COUNT,
     );
 
     protected $public = array(
@@ -57,21 +67,16 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::FAILURE_COUNT);
     }
 
-    public function setEventsAttribute(array $events)
+    public function setEventsAttribute($events)
     {
-        $int = 0;
+        $hex = 0;
 
-        foreach ($events as $event => $value)
+        if (isset($this->attributes[self::EVENTS]))
         {
-            if ($value !== '1')
-            {
-                continue;
-            }
-
-            $int = $int ^ Name::getBitValue($event);
+            $hex = $this->attributes[self::EVENTS];
         }
 
-        $this->attributes[self::EVENTS] = $int;
+        $this->attributes[self::EVENTS] = Name::getHexValue($events, $hex);
     }
 
     public function getEventsAttribute()
