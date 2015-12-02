@@ -14,10 +14,26 @@ app.controller('AdminsCtrl', [
     });
     generateTable();
     $scope.delete = function (id) {
-      var request = $http.get('/admin/users/' + id + '/delete');
+      var request = $http.delete('/admin/users/' + id);
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Admin deleted successfully', true);
+          generateTable();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.promote = function (id) {
+      var request = $http.post('/admin/users/' + id + '/superadmin');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Admin promoted successfully', true);
           generateTable();
         } else {
           $scope.alerts.resetAlerts();
@@ -43,7 +59,7 @@ app.controller('AdminsCtrl', [
     function newAdminRequest(data) {
       var request = $http({
         method: 'post',
-        url: '/admin/users/add',
+        url: '/admin/users',
         transformRequest: transformRequestAsFormPost,
         data: data
       });

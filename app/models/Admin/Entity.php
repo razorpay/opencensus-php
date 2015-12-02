@@ -64,6 +64,15 @@ class Entity extends Base\Entity implements UserInterface
         return ($this->superadmin == 1);
     }
 
+    /**
+     * Promotes a user to a superadmin
+     */
+    public function promote()
+    {
+        $this->superadmin = 1;
+        $this->save();
+    }
+
     public function setPasswordAttribute($password)
     {
         $this->attributes['password'] = \Hash::make($password);

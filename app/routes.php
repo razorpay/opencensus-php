@@ -217,9 +217,11 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/users', 'AdminController@getAdmins');
 
-        Route::post('/admin/users/add', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
+        Route::post('/admin/users', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
 
-        Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
+        Route::post('/admin/users/{id}/superadmin', array('before'=>'csrf', 'uses'=> 'AdminController@postPromoteAdmin'));
+
+        Route::delete('/admin/users/{id}', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
 
