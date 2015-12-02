@@ -1,7 +1,15 @@
 Hi,
 
-Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You can now start accepting payments from your customers. You have opted for the {{{$plan['plan_name']}}} plan. (₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction
-on all modes of payment).
+Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You can now start accepting payments from your customers. You have opted for the {{{$plan['name']}}} plan.
+
+The plan grants you the following rates:
+
+@foreach ($rules as $pricing => $methodDisplay)
+- {{implode(',', $methodDisplay)}} - {{$pricing}}
+@endforeach
+
+- +1% Extra on International Transactions
+- Service Taxes Extra (14.5% currently)
 
 In case you haven't integrated our API in your application, the instructions can be found at https://docs.razorpay.com.
 

@@ -163,7 +163,9 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
-        $days = 6;
+        // Since we are taking 12 am of today, we only need to subtract 4 days from today
+        // to arrive at 5 days before.
+        $days = 4;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
@@ -498,7 +500,9 @@ class Service extends Base\Service
                     $message->to($email, $name);
                 }
 
+                $message->from('reports@razorpay.com');
                 $message->cc('notifications@razorpay.com');
+                $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
             });

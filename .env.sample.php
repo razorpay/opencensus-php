@@ -87,4 +87,7 @@ return array(
     'AWS_S3_SETTLEMENT_BUCKET'                      => '',
 
     'CRON_PASSWORD'                                 => 'RANDOM_CRON_PASSWORD',
+
+    'MOBIKWIK_MOCK'                                 => true,
+    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'             => 'asdasdsad',
 );

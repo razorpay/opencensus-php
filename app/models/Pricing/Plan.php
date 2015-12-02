@@ -2,6 +2,8 @@
 
 namespace Models\Pricing;
 
+use Models\Payment\Method;
+use Models\Card\Network;
 use Models\Base\PublicCollection;
 
 class Plan extends PublicCollection
@@ -27,7 +29,20 @@ class Plan extends PublicCollection
 
         foreach ($this->items as $item)
         {
-            array_push($rules, $item->toArray());
+            $rule = $item->toArray();
+
+            // We need to send the human version of the payment network name
+            // as well, so DICL becomes Diners Club and
+            // AMEX becomes American Express
+            if (($rule[Entity::PAYMENT_METHOD] === Method::CARD) and
+                ($rule[Entity::PAYMENT_NETWORK] !== null))
+            {
+                $network = $rule[Entity::PAYMENT_NETWORK];
+                $rule[Entity::PAYMENT_NETWORK_NAME] =
+                    Network::getFullName($network);
+            }
+
+            array_push($rules, $rule);
         }
 
         $this->setPlanAttributes(
@@ -37,6 +52,36 @@ class Plan extends PublicCollection
             count($this->items));
 
         return $plan;
+    }
+
+    /**
+     * Returns a string version of the rule's
+     * Pricing
+     * @param  array  $rule array containing the PERCENT_RATE
+     * and the FIXED_RATE
+     * @return string String representation of the rates
+     */
+    public static function formattedPricing(array $rule)
+    {
+        $res = "";
+        $percent = false;
+
+        if ($rule[Entity::PERCENT_RATE] !== 0)
+        {
+            $res .= $rule[Entity::PERCENT_RATE]/100 . "% TDR";
+            $percent = true;
+        }
+
+        if ($rule[Entity::FIXED_RATE] !== 0)
+        {
+            if ($percent === true)
+            {
+                $res .= " + ";
+            }
+            $res .= "INR " . $rule[Entity::FIXED_RATE]/100 . " Fixed Charge";
+        }
+
+        return $res;
     }
 
     protected function getDefaultPlanCollectionValues()
