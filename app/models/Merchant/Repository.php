@@ -24,6 +24,7 @@ class Repository extends Base\Repository
         Entity::INTERNATIONAL           => 'sometimes|boolean',
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
+        Entity::PRICING_PLAN_ID         => 'sometimes|string',
     );
 
     public function getPricingPlanOrFailPublic($merchant)
