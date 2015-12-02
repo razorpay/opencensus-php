@@ -27,7 +27,6 @@ trait RequestResponseFlowTrait
             else
             {
                 $response = $this->makeRequest($data['request']);
-                //sd($response->getContent());
             }
         }
         catch (BaseException $e)

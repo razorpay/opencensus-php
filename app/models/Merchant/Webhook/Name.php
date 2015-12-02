@@ -7,25 +7,36 @@ use Models\Base;
 
 class Name
 {
-    const PAYMENT_AUTHORIZED = 0x1;
+    const PAYMENT_AUTHORIZED = 'payment.authorized';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
     );
 
-    protected static $names = array(
-        self::PAYMENT_AUTHORIZED => 'payment.authorized',
+    protected static $bitMap = array(
+        self::PAYMENT_AUTHORIZED => 0x1,
     );
 
-    public static function getEvents($int)
+    protected static $names = array(
+        self::PAYMENT_AUTHORIZED,
+    );
+
+    public static function getAllEventNames()
+    {
+        return self::$names;
+    }
+
+    public static function getEnabledEvents($int)
     {
         $events = array();
 
         foreach (self::$events as $event)
         {
-            if ($event xor $int === true)
+            $bit = self::$bitMap[$event];
+
+            if ($bit ^ $int === false)
             {
-                array_push($events, self::$names[$event]);
+                array_push($events, $event);
             }
         }
 
@@ -46,5 +57,13 @@ class Name
         $event = strtoupper(str_replace('.', '_', $event));
 
         return (defined(__CLASS__.'::'.$event));
+    }
+
+    public static function getBitValue($event)
+    {
+        $event = str_replace('_', '.', $event);
+        $event = strtolower($event);
+
+        return self::$bitMap[$event];
     }
 }

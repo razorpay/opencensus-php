@@ -24,12 +24,20 @@ class Validator extends Base\Validator
     {
         $events = $input[Entity::EVENTS];
 
-        foreach ($events as $event)
+        foreach ($events as $event => $value)
         {
             if (Name::validateEventName($event) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a valid event name: ' . $event,
+                    Entity::EVENTS);
+            }
+
+            if (($value !== '0') and
+                ($value !== '1'))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Not a valid event value',
                     Entity::EVENTS);
             }
         }

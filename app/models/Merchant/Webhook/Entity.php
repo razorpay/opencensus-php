@@ -30,6 +30,18 @@ class Entity extends Base\PublicEntity
         self::EVENTS,
     );
 
+    protected $public = array(
+        self::ID,
+        self::URL,
+        self::EVENTS,
+        self::ACTIVE,
+    );
+
+    public function merchant()
+    {
+        return $this->belongsTo(\Models\Merchant\Entity::class);
+    }
+
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
@@ -49,11 +61,14 @@ class Entity extends Base\PublicEntity
     {
         $int = 0;
 
-        foreach ($events as $event)
+        foreach ($events as $event => $value)
         {
-            $e = str_replace('.', '_', $event);
-            $e = strtoupper($e);
-            $int = $int xor constant(Name::class.'::'.$e);
+            if ($value !== '1')
+            {
+                continue;
+            }
+
+            $int = $int ^ Name::getBitValue($event);
         }
 
         $this->attributes[self::EVENTS] = $int;
@@ -63,7 +78,18 @@ class Entity extends Base\PublicEntity
     {
         $events = $this->attributes[self::EVENTS];
 
-        return Name::getEvents($events);
+        $events = Name::getEnabledEvents($events);
+
+        $names = Name::getAllEventNames();
+
+        $eventsArray = [];
+
+        foreach ($names as $name)
+        {
+            $eventsArray[$name] = in_array($name, $events);
+        }
+
+        return $eventsArray;
     }
 
     public function getActiveAttribute()

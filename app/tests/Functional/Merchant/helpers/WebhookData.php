@@ -12,7 +12,7 @@ return [
             'content' => [
                 'url' => 'http://example.com',
                 'events' => [
-                    'payment.authorized',
+                    'payment.authorized' => '1',
                 ],
             ],
             'method' => 'POST'
@@ -22,9 +22,9 @@ return [
                 'merchant_id' => '10000000000000',
                 'url' => 'http://example.com',
                 'events' => [
-                    'payment.authorized',
+                    'payment.authorized' => true,
                 ],
-                'active' => 1,
+                'active' => true,
                 'failure_count' => 0,
             ]
         ]

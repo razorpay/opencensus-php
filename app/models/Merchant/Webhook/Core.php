@@ -11,6 +11,8 @@ class Core extends Base\Core
     {
         $webhook = (new Webhook\Entity)->build($input);
 
+        $webhook->merchant()->associate($merchant);
+
         (new Webhook\Repository)->saveOrFail($webhook);
 
         return $webhook;
