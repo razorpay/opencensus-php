@@ -201,14 +201,8 @@ $factory(Models\Merchant\Methods\Entity::class, [
 $factory(Models\Merchant\Webhook\Entity::class, [
     'merchant_id' => 10000000000000,
     'url' => $faker->url,
+    'events' => [
+        'payment.authorized' => true,
+    ],
     'active' => true,
-    'active' => 1,
-]);
-
-$factory(Models\Merchant\Webhook\Entity::class,[
-    'merchant_id' => 10000000000000,
-    'url' => 'test',
-    'events' => 0x1,
-    'failure_count' => 0,
-    'active' => 1,
 ]);

@@ -33,7 +33,7 @@ class Base
         'methods'       => Models\Merchant\Methods\Entity::class,
         'payment'       => Models\Payment\Entity::class,
         'pricing'       => Models\Pricing\Entity::class,
-        'webhook'       => Models\Merchant\Webhook::class,
+        'webhook'       => Models\Merchant\Webhook\Entity::class,
         'merchant'      => Models\Merchant\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,

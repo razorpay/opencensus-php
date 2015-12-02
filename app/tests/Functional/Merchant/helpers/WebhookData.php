@@ -29,4 +29,28 @@ return [
             ]
         ]
     ],
+
+    'testEditWebhook' => [
+        'request' => [
+            'content' => [
+                'url' => 'http://random2.com',
+                'events' => [
+                    'payment.authorized' => '0',
+                ],
+                'active' => '0',
+            ],
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'url' => 'http://random2.com',
+                'events' => [
+                    'payment.authorized' => false,
+                ],
+                'active' => false,
+                'failure_count' => 0,
+            ],
+        ]
+    ],
 ];

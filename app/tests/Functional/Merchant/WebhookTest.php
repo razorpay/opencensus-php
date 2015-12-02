@@ -22,4 +22,19 @@ class WebhookTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testEditWebhook()
+    {
+        $input = array(
+            'url' => 'http://random.com',
+            'events' => [
+                'payment.authorized' => '1',
+            ]);
+
+        $webhook = $this->createWebhook($input);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->startTest();
+    }
 }
