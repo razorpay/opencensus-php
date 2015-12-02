@@ -334,6 +334,25 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText("Admin created successfully");
+
+        // Test Promote Admin
+        $this->browser
+            ->click(l::css('.btn-admin-promote'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+
+        $this->assertBodyHasText("Admin promoted successfully");
+
+        $this->browser
+            ->click(l::css('.btn-admin-delete'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+
+        $this->assertBodyHasText("Admin deleted successfully");
     }
 
     /**

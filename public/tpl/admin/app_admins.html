@@ -35,10 +35,10 @@
             <td>{{row.superadmin == 1 ? "Super Admin" : "Standard Admin"}}</td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>
             <td>
-              <a ng-show="row.username != admin.username" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="delete(row.id)">
+              <a class="btn-admin-delete" ng-show="row.username != admin.username" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="delete(row.id)">
                 <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
               </a>
-              <a ng-show="row.username != admin.username && admin.superadmin == 1 && row.superadmin != 1" ng-confirm-click="Are you sure you want to promote this admin?" ng-click="promote(row.id)">
+              <a class="btn-admin-promote" ng-show="row.username != admin.username && admin.superadmin == 1 && row.superadmin != 1" ng-confirm-click="Are you sure you want to promote this admin?" ng-click="promote(row.id)">
                 <i class="fa fa-user-secret" tooltip="Make superadmin"></i>
               </a>
             </td>
