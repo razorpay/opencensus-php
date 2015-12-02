@@ -20,60 +20,71 @@ module.exports = function(grunt){
             }
         },
 
-        concat: {
-            dist: {
-                files: {
-                    'public/css/generated/style.css': [
-                        'public/css/bootstrap.css',
-                        'public/css/animate.css',
-                        'public/css/font-awesome.min.css',
-                        'public/css/simple-line-icons.css',
-                        'public/css/font.css',
-                        'public/css/app.css'
-                    ],
-
-                    'public/js/generated/pre.js': [
-                        'public/js/jquery/jquery-2.1.4.min.js',
-                        'public/js/libs/angular-file-upload-shim.min.js',
-                        'public/js/angular/angular.min.js',
-                        'public/js/angular/angular-cookies.min.js',
-                        'public/js/angular/angular-animate.min.js',
-                        'public/js/angular/angular-ui-router.min.js',
-                        'public/js/angular/angular-idle.min.js',
-                        'public/js/angular/ngStorage.min.js',
-                        'public/js/angular/ui-load.js',
-                        'public/js/angular/ui-jq.js',
-                        'public/js/angular/ui-validate.js',
-                        'public/js/angular/ui-bootstrap-tpls.min.js',
-                        'public/js/angular/angular-busy.js',
-                        'public/js/libs/angular-file-upload.min.js',
-                        'public/js/libs/angulartics.min.js',
-                        'public/js/libs/angulartics-segmentio.min.js'
-                    ],
-
-                    'public/js/generated/merchant.js': [
-                        'public/js/libs/angular-recaptcha.js',
-                        'public/js/merchant/**/*.js',
-                        'public/js/*.js',
-                        'public/js/libs/moment.min.js'
-                    ],
-
-                    'public/js/generated/admin.js': [
-                        'public/js/admin/**/*.js',
-                        'public/js/*.js',
-                        'public/js/libs/moment.min.js'
-                    ]
-                }
+        stylus: {
+          compile: {
+            options: {
+              'include css': true,
+              use: [
+                require('bootstrap-styl')
+              ],
+            },
+            files: {
+              'public/css/generated/style.css': 'public/css/app.styl'
             }
+          }
         },
 
-        cssmin: {
-            development: {},
-            production: {
-                files: {
-                    'public/css/generated/style.css': [ 'public/css/generated/style.css' ]
-                }
+        postcss: {
+          development: {},
+          production: {
+            options: {
+              processors: [
+                require('autoprefixer')({browsers: 'last 10 versions'}), // add vendor prefixes
+                require('cssnano')() // minify the result
+              ]
+            },
+            dist: {
+              src: 'public/css/generated/app.css'
+            }            
+          }
+        },
+
+        concat: {
+          dist: {
+            files: {
+              'public/js/generated/pre.js': [
+                'public/js/jquery/jquery-2.1.4.min.js',
+                'public/js/libs/angular-file-upload-shim.min.js',
+                'public/js/angular/angular.min.js',
+                'public/js/angular/angular-cookies.min.js',
+                'public/js/angular/angular-animate.min.js',
+                'public/js/angular/angular-ui-router.min.js',
+                'public/js/angular/angular-idle.min.js',
+                'public/js/angular/ngStorage.min.js',
+                'public/js/angular/ui-load.js',
+                'public/js/angular/ui-jq.js',
+                'public/js/angular/ui-validate.js',
+                'public/js/angular/ui-bootstrap-tpls.min.js',
+                'public/js/angular/angular-busy.js',
+                'public/js/libs/angular-file-upload.min.js',
+                'public/js/libs/angulartics.min.js',
+                'public/js/libs/angulartics-segmentio.min.js'
+              ],
+
+              'public/js/generated/merchant.js': [
+                'public/js/libs/angular-recaptcha.js',
+                'public/js/merchant/**/*.js',
+                'public/js/*.js',
+                'public/js/libs/moment.min.js'
+              ],
+
+              'public/js/generated/admin.js': [
+                'public/js/admin/**/*.js',
+                'public/js/*.js',
+                'public/js/libs/moment.min.js'
+              ]
             }
+          }
         },
 
         uglify: {
@@ -130,7 +141,7 @@ module.exports = function(grunt){
                 'public/js/*.js',
                 'public/js/admin/**/*.js',
                 'public/js/merchant/**/*.js',
-                'public/css/*.css'
+                'public/css/*.styl'
                 ],
             tasks: 'default',
             options: {
@@ -145,8 +156,9 @@ module.exports = function(grunt){
         [
             'clean',
             'concat',
-            'cssmin:'+config.environment,
-            'uglify:'+config.environment,
+            'stylus',
+            'postcss:' + config.environment,
+            'uglify:' + config.environment,
             'preprocess',
             'hashres'
         ]
