@@ -138,6 +138,7 @@ app.controller('EntitiesCtrl', [
         live: booleanList,
         international: booleanList,
         category: ['MCC Code'],
+        pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList,
         paytm: booleanList2,
         mobikwik: booleanList2,
