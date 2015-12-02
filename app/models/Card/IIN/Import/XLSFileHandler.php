@@ -3,7 +3,7 @@
 namespace Models\Card\IIN\Import;
 
 use Excel;
-
+use EE\Exception;
 /**
  * This class extracts the data from the file and return the column names
  * and the rows.
@@ -41,7 +41,7 @@ class XLSFileHandler
             return $input['file'];
         }
 
-        throw new Exception('Input file not set');
+        throw new Exception\BadRequestException('Input file not set');
     }
 
     /**
@@ -63,7 +63,7 @@ class XLSFileHandler
 
         if ($res === false)
         {
-            throw new Exception("Failed to rename the file");
+            throw new Exception\RuntimeException("Failed to rename the file");
         }
 
         return $newFilePath;
@@ -106,8 +106,8 @@ class XLSFileHandler
 
         $data = $sheet->rangeToArray('A1' . ':' . $highestColumn . $highestRow,
                                     null,
-                                    TRUE,
-                                    FALSE);
+                                    true,
+                                    false);
 
         $columnIndex = $this->getColumnHeaderIndex($data, $highestRow);
         $columnNames = $data[$columnIndex];
@@ -124,7 +124,7 @@ class XLSFileHandler
 
         // Skipping the the rows that contain atleast one null column
         // They are mostly page/file title
-        for ($row = 0; $row <= $highestRow; $row++)
+        for ($row = 0; $row < $highestRow; $row++)
         {
             for($i = 0; $i < $len; $i++)
             {
@@ -143,7 +143,7 @@ class XLSFileHandler
         $len = count($rows[0]);
 
         // Skipping if the following row contains all cells null
-        for ($row = $startIndex; $row <= $highestRow; $row++)
+        for ($row = $startIndex; $row < $highestRow; $row++)
         {
             for($i = 1; $i < $len; $i++)
             {

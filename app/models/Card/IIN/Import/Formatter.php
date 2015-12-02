@@ -3,6 +3,7 @@
 namespace Models\Card\IIN\Import;
 
 use Models\Card;
+use EE\Exception;
 
 /**
  * This class takes the column names, rows and the input and tries to
@@ -95,7 +96,7 @@ class Formatter
             }
         }
 
-        throw new Exception("Was not able to determine the network type.");
+        throw new Exception\ServerErrorException("Was not able to determine the network type.");
     }
 
     /**
