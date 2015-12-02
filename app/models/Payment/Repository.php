@@ -181,7 +181,9 @@ class Repository extends Base\Repository
 
     protected function joinQueryCard($query)
     {
-        $joins = $query->joins;
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ? $joins : [];
 
         $joined = false;
 
