@@ -11,6 +11,10 @@ use Models\Pricing;
 class Fee
 {
     const SERVICE_TAX_PERCENT = 14.5;
+    const SERVICE_TAX_PERCENT_BEFORE_15NOV = 14.0;
+    const SERVICE_TAX_PERCENT_BEFORE_1JUNE = 12.36;
+    const TIMESTAMP_1JUNE = 1433136600;
+    const TIMESTAMP_16NOV = 1447651800;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
@@ -29,34 +33,66 @@ class Fee
 
         $rule = $this->getRelevantPricingRule($pricingPlanId, $payment);
 
-        $fee = $this->getFees($rule, $payment->getAmount());
+        $serviceTaxPercentage = $this->getServiceTaxPercentage($payment->getAuthorizeTimestamp());
+        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $serviceTaxPercentage);
 
-        return array($fee, $rule->getKey());
+        return array($fee, $serviceTax, $rule->getKey());
     }
 
-    protected function getFees($rule, $amount)
+    public function calculateServiceTax($txn, $payment)
+    {
+        $pricingRepo = new Pricing\Repository;
+        $rule = $pricingRepo->getPricingPlanRule($txn->getPricingRule());
+
+        $serviceTaxPercentage = $this->getServiceTaxPercentage($payment->getCaptureTimestamp());
+
+        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $serviceTaxPercentage);
+
+        assert($fee === $txn->getFee());
+
+        return $serviceTax;   
+    }
+
+    protected function getServiceTaxPercentage($timestamp)
+    {
+        $serviceTaxPercentage = self::SERVICE_TAX_PERCENT;
+
+        if ($timestamp < self::TIMESTAMP_1JUNE)
+        {
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENT_BEFORE_1JUNE;
+        }
+        else if ($timestamp < self::TIMESTAMP_16NOV)
+        {
+            //service tax rates changed after 15th but service was updated on 16th
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENT_BEFORE_15NOV;
+        }
+
+        return $serviceTaxPercentage;
+    }
+
+    protected function getFees($rule, $amount, $serviceTaxPercentage)
     {
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
-        $fee = $this->getFeesByPercentAndFixedRates($amount, $percent, $fixed);
+        list($fee, $serviceTax) = $this->getFeesByPercentAndFixedRates($amount, $serviceTaxPercentage, $percent, $fixed);
 
         assert ($fee < $amount);
 
-        return $fee;
+        return  array($fee, $serviceTax);
     }
 
-    protected function getFeesByPercentAndFixedRates($amount, $percent, $fixed)
+    protected function getFeesByPercentAndFixedRates($amount, $serviceTaxPercentage, $percent, $fixed)
     {
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
 
-        $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
+        $serviceTax = (int) ceil(($fee * $serviceTaxPercentage) / 100);
 
         $fee += $serviceTax;
 
-        return $fee;
+        return array($fee, $serviceTax);
     }
 
     protected function getFeesByPercentAndFixedRatesForAtom($amount, $percent, $fixed)

@@ -99,7 +99,7 @@ class Core extends Base\Core
 
     protected function fillTxnFeesAndAmount(& $txn, $payment)
     {
-        $credit = $fee = 0;
+        $credit = $fee = $serviceTax = 0;
         $pricingRuleId = null;
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
@@ -114,12 +114,13 @@ class Core extends Base\Core
 
             $credit = $amount;
             $fee = 0;
+            $serviceTax = 0;
 
             $txn->setGratis(true);
         }
         else
         {
-            list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
             $credit = $amount - $fee;
         }
 
@@ -128,8 +129,22 @@ class Core extends Base\Core
         $txn->setCredit($credit);
         $txn->setDebit(0);
         $txn->setFee($fee);
+        $txn->setServiceTax($serviceTax);
 
         return $txn;
+    }
+
+    public function fillServiceTax(& $txn, $payment)
+    {
+        if($txn->getGratisAttribute() === true)
+        {
+            $txn->setServiceTax(0);
+        }
+        else
+        {
+            $serviceTax = (new Pricing\Fee)->calculateServiceTax($txn, $payment);
+            $txn->setServiceTax($serviceTax);
+        }
     }
 
     protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)

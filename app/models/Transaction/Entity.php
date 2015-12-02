@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const SETTLED           = 'settled';
     const SETTLED_AT        = 'settled_at';
     const SETTLEMENT_ID     = 'settlement_id';
+    const SERVICE_TAX       = 'service_tax';
 
     protected $table = \Constants\Table::TRANSACTION;
 
@@ -53,7 +54,8 @@ class Entity extends Base\PublicEntity
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
         self::CHANNEL,
-        self::SETTLED_AT);
+        self::SETTLED_AT,
+        self::SERVICE_TAX);
 
     protected $public = array(
         self::ID,
@@ -209,6 +211,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::GRATIS];
     }
 
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
 
     public function getGateway()
@@ -241,6 +248,16 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getPricingRule()
+    {
+        return $this->getAttribute(self::PRICING_RULE_ID);
     }
 
     public function setReconciledAt($timestamp)
@@ -307,6 +324,13 @@ class Entity extends Base\PublicEntity
         $sign = $entity::getIdPrefix();
 
         $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
+    }
+
+    public function setServiceTax($servicetax)
+    {
+        assert($servicetax >= 0);
+
+        $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
     public function isReconciled()

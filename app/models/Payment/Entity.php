@@ -41,6 +41,8 @@ class Entity extends Base\PublicEntity
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const CALLBACK_URL          = 'callback_url';
+    const SERVICE_TAX           = 'service_tax';
+    const FEE                   = 'fee';
 
     const CURRENCY_LENGTH       = 3;
 
@@ -66,7 +68,9 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
-        self::CALLBACK_URL);
+        self::CALLBACK_URL,
+        self::FEE,
+        self::SERVICE_TAX);
 
     protected $visible = array(
         self::ID,
@@ -99,7 +103,9 @@ class Entity extends Base\PublicEntity
         self::VERIFIED,
         self::CALLBACK_URL,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT,
+        self::FEE,
+        self::SERVICE_TAX);
 
     protected $public = array(
         self::ID,
@@ -258,6 +264,16 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setServiceTax($serviceTax)
+    {
+        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setFee($fee)
+    {
+        $this->setAttribute(self::FEE, $fee);
     }
 
     public function setErrorNull()
@@ -529,6 +545,16 @@ class Entity extends Base\PublicEntity
     public function getErrorDescription()
     {
         return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
     }
 
     public function getDaysSinceAuthorized()

@@ -10,6 +10,7 @@ use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\Payment;
+use Models\Transaction;
 
 use Trace\Trace;
 use Trace\TraceCode;
@@ -525,5 +526,52 @@ class Service extends Base\Service
             'mode'      => $this->mode);
 
         return $bindings;
+    }
+
+    public function computeServiceTax()
+    {
+        $payments = (new Payment\Repository)->getNonTaxComputedPayments();
+
+        $totalRecords = 0;
+        $updatedRecords = 0;
+        $failedRecords = 0;
+        $totalServiceTax = 0;
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $txn = $payment->transaction;
+                $this->merchant = $payment->merchant;
+                (new Transaction\Core)->fillServiceTax($txn, $payment);
+
+                $payment->setServiceTax($txn->getServiceTax());
+                $payment->setFee($txn->getFee());
+             
+                //DB::transaction(function() use($txn, $payment)
+                //{
+                    $txn->saveOrFail();
+                    $payment->saveOrFail();
+                //})
+
+                $updatedRecords++;
+                $totalServiceTax += $txn -> getServiceTax();
+            }
+            catch(\Exception $e)
+            {
+                $this->app['exception.handler']->traceException($e);
+                $failedRecords++;
+            }
+
+            $totalRecords++;
+        }
+
+        $results = array(
+            'total'                 => $totalRecords,
+            'updated'               => $updatedRecords,
+            'failed'                => $failedRecords,
+            'total service tax'     => $totalServiceTax);
+
+        return $results;
     }
 }
