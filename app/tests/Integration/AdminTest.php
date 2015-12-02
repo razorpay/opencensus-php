@@ -55,16 +55,18 @@ class AdminTest extends TestCase
     /**
      * Tests admin login
      */
-    public function testLogin()
+    public function testLogin($pwd = '123456')
     {
         $this->browser
             ->open(URL::to('/admin#/access/signin'))    // Visits login page
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 3000)
             ->type(l::IdOrName('username'), $this->admin->username)   // Fill username
-            ->type(l::IdOrName('password'), '123456')   // Fill password
+            ->type(l::IdOrName('password'), $pwd)   // Fill password
             ->click(l::IdOrName('submit'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 3000);
         $this->assertBodyHasText("Pending Activations");
+
+        return $this->browser;
     }
 
     /**
@@ -344,15 +346,6 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText("Admin promoted successfully");
-
-        $this->browser
-            ->click(l::css('.btn-admin-delete'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
-            ->click(l::css('.confirm-ok'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
-
-        $this->assertBodyHasText("Admin deleted successfully");
     }
 
     /**
@@ -397,5 +390,24 @@ class AdminTest extends TestCase
             ->click(l::css('.user-dropdown'))
             ->click(l::linkContaining('Logout'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000);
+    }
+
+    /**
+     * Just run this after everything has ran
+     */
+    public function testDeleteAdmin()
+    {
+        $this->testLogin('1234567')
+            ->open(URL::to('/admin'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#adminsNav').length > 0", 20000)
+            ->click(l::IdOrName('adminsNav'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.admins-table > tbody > tr').length > 0", 20000)
+            ->click(l::css('.btn-admin-delete'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+
+        $this->assertBodyHasText("Admin deleted successfully");
     }
 }
