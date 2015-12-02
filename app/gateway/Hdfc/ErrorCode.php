@@ -238,7 +238,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00005   => 'Denied by risk. Response result code is "DENIED BY RISK"',
         Hdfc\ErrorCode::RP00006   => 'Authorization not approved. Response result code is "NOT APPROVED"',
         Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done. Response result code is "NOT CAPTURED"',
-        Hdfc\ErrorCode::RP00008   => 'Gateway error. Wrong response http status_code. Response status_code is greater than 500 signifying gateway server error',
+        Hdfc\ErrorCode::RP00008   => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
     );
 
