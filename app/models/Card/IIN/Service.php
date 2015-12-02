@@ -41,7 +41,7 @@ class Service extends Base\Service
 
     public function importIin($input)
     {
-        $result = (new XLSImporter)->import($input);
+        $result = (new Import\XLSImporter)->import($input);
 
         return $result;
     }

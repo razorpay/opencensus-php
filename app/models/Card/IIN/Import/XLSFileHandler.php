@@ -1,12 +1,20 @@
 <?php
 
-namespace Models\Card\IIN;
+namespace Models\Card\IIN\Import;
 
 use Excel;
 
+/**
+ * This class extracts the data from the file and return the column names
+ * and the rows.
+ */
 class XLSFileHandler
 {
 
+    /**
+     * This function is called by the Importer class. It return the column names
+     * and rows.
+     */
     public function getData($input)
     {
         $file = $this->getFile($input);
@@ -19,6 +27,13 @@ class XLSFileHandler
         return $data;
     }
 
+    /**
+     * return the file from input array
+     *
+     * @param array $input the input array
+     *
+     * @return SplFileInfo      the file info object from the input array
+     */
     protected function getFile($input)
     {
         if (isset($input['file']))
@@ -29,6 +44,14 @@ class XLSFileHandler
         throw new Exception('Input file not set');
     }
 
+    /**
+     * renames the file to its correct name. The excel parser has problem
+     * processing the file without proper extension.
+     *
+     * @param SplFileInfo $file   the file object from input
+     *
+     * @return string  path to the new file.
+     */
     protected function moveFile($file)
     {
 
@@ -51,6 +74,13 @@ class XLSFileHandler
         return $newFilePath;
     }
 
+    /**
+     * Deletes the file after processing.
+     *
+     * @param string $file  the path of the file to delete.
+     *
+     * @return bool  Returns true on success or false on failure
+     */
     protected function removeFile($file)
     {
         return unlink($file);
@@ -61,6 +91,18 @@ class XLSFileHandler
        return storage_path('iins');
     }
 
+    /**
+     * This function extracts the columns and rows from the file.
+     *
+     * The return array contains keys <code>columns</code> and
+     * <code>data</code>. <code>columns</code> contains the column names.
+     * <code>data</code> contains the rows.
+     *
+     *
+     * @param string $filePath    the path of the file to process
+     *
+     * @return array    as described above
+     */
     protected function parse($filePath)
     {
         // The Laravel Excel Reader crashed due to some unknown reason

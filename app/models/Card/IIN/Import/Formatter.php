@@ -1,9 +1,13 @@
 <?php
 
-namespace Models\Card\IIN;
+namespace Models\Card\IIN\Import;
 
 use Models\Card;
 
+/**
+ * This class takes the column names, rows and the input and tries to
+ * format the data as best as possible.
+ */
 class Formatter
 {
     private $mapping = array(
@@ -40,16 +44,37 @@ class Formatter
 
     private $network;
 
+    /**
+     * This function is called by the importer class with the reqired
+     * parameters.
+     *
+     * This returns after structuring the data. Each row array is converted
+     * to arrays with keys with keys from Card\Detail.
+     *
+     * @param array $input      the post data received
+     * @param array $columns    the title of each column
+     * @param array $data       the rows
+     *
+     * @return The structured data.
+     */
     public function formatData($input, $columns, $data)
     {
-        $this->setNetwotkType($input);
+        $this->setNetworkType($input);
         $structured = $this->structureData($columns, $data);
 
         return $structured;
 
     }
 
-    protected function setNetwotkType($input)
+    /**
+     * Determines the network type from the user input network, or from the file
+     * name.
+     *
+     * It sets the $network variable.
+     *
+     * @param array $input the post data
+     */
+    protected function setNetworkType($input)
     {
         if (isset($input['network']))
         {
@@ -74,6 +99,15 @@ class Formatter
         throw new Exception("Was not able to determine the network type.");
     }
 
+    /**
+     * Checks if the is a known mapping of the key (from Card\Detail) to the
+     * column name.
+     *
+     * @param string $key    The key to map to the columns
+     * @param array $column  The array of column names.
+     *
+     * @return int          The index of column that maps.
+     */
     private function getFromMapping($key, $columns)
     {
         foreach ($this->mapping[$key] as $option)
@@ -90,6 +124,15 @@ class Formatter
         return false;
     }
 
+    /**
+     * This does the main work. It takes the column names and the rows and
+     * tries to structure the data.
+     *
+     * @param array $columns     the column names.
+     * @param array $data        the rows.
+     *
+     * @return array            the rows after structuring.
+     */
     protected function structureData($columns, $data)
     {
         $map = array();
