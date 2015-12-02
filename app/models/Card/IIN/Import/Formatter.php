@@ -8,6 +8,9 @@ use EE\Exception;
 /**
  * This class takes the column names, rows and the input and tries to
  * format the data as best as possible.
+ *
+ * Formatted data: Each input row should be a associative array with keys
+ * from Card\Detail.
  */
 class Formatter
 {
@@ -56,7 +59,7 @@ class Formatter
      * @param array $columns    the title of each column
      * @param array $data       the rows
      *
-     * @return The structured data.
+     * @return array The structured data.
      */
     public function formatData($input, $columns, $data)
     {
