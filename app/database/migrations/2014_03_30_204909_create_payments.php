@@ -102,6 +102,12 @@ class CreatePayments  extends Migration
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
 
+            $table->integer(Transaction::FEE)
+                  ->unsigned();
+
+            $table->integer(Transaction::SERVICE_TAX)
+                  ->unsigned();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
