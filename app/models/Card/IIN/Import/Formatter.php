@@ -76,7 +76,7 @@ class Formatter
      */
     protected function setNetworkType($input)
     {
-        if (isset($input['network']))
+        if (isset($input['network']) && $input['network'] !== "")
         {
             $this->network = $input['network'];
             return;
@@ -85,7 +85,6 @@ class Formatter
         if (isset($input['file']))
         {
             $filename = $input['file']->getClientOriginalName();
-            var_dump($filename);
             foreach ($this->networkType as $nt => $origName)
             {
                 if (stripos($filename, $nt) !== false)

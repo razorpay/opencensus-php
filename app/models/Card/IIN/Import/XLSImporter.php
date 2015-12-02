@@ -51,9 +51,9 @@ class XLSImporter
         $count = count($cleaned);
 
         // Too many entries crashes the sql query
-        for ($i = 0; $i < $count; $i += 5000)
+        foreach (array_chunk($cleaned, 5000) as $chunks)
         {
-            IIN\Entity::insert(array_slice($cleaned, $i, 5000));
+            IIN\Entity::insert($chunks);
         }
 
     }

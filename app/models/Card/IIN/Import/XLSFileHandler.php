@@ -56,13 +56,8 @@ class XLSFileHandler
     {
 
         $originalName = $file->getClientOriginalName();
-        $dir = $this->getStorageDir();
-        $newFilePath = $dir . DIRECTORY_SEPARATOR . $originalName;
-
-        if (file_exists($dir) === false)
-        {
-            mkdir($dir, 0777);
-        }
+        $dir = "/tmp";
+        $newFilePath = $dir . "/" . $originalName;
 
         $res = rename($file->getRealPath(), $newFilePath);
 
@@ -86,11 +81,6 @@ class XLSFileHandler
         return unlink($file);
     }
 
-    protected function getStorageDir()
-    {
-       return storage_path('iins');
-    }
-
     /**
      * This function extracts the columns and rows from the file.
      *
@@ -107,46 +97,60 @@ class XLSFileHandler
     {
         // The Laravel Excel Reader crashed due to some unknown reason
         // So, using the internal PHPExecl object
-        $objPHPExcel = Excel::load($filePath)->excel;
+        $excelReader = Excel::load($filePath)->excel;
 
-        $sheet = $objPHPExcel->getSheet(0);
+        $sheet = $excelReader->getSheet(0);
         $highestRow = $sheet->getHighestRow();
         $highestColumn = $sheet->getHighestColumn();
         $columnNames = array();
 
+        $data = $sheet->rangeToArray('A1' . ':' . $highestColumn . $highestRow,
+                                    null,
+                                    TRUE,
+                                    FALSE);
+
+        $columnIndex = $this->getColumnHeaderIndex($data, $highestRow);
+        $columnNames = $data[$columnIndex];
+
+        $rowIndex = $this->skipBlankColumns($data, $columnIndex + 1, $highestRow);
+
+        $rows = array_slice($data, $rowIndex);
+        return ['columns' => $columnNames, 'data' => $rows];
+    }
+
+    protected function getColumnHeaderIndex($rows, $highestRow)
+    {
+        $len = count($rows[0]);
+
         // Skipping the the rows that contain atleast one null column
         // They are mostly page/file title
-        for ($row = 1; $row <= $highestRow; $row++)
+        for ($row = 0; $row <= $highestRow; $row++)
         {
-            $rowData = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row, NULL, TRUE, FALSE)[0];
-
-            for($i = 0; $i < count($rowData); $i++)
+            for($i = 0; $i < $len; $i++)
             {
-                if($rowData[$i] == NULL )
+                if($rows[$row][$i] === null )
                 {
                     continue 2;
                 }
             }
-            break;
+            return $row;
         }
 
-        $columnNames = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row, NULL, TRUE, FALSE)[0];
+    }
 
-        // Skipping if the following row contains all colums null
-        for ($row++; $row <= $highestRow; $row++)
+    protected function skipBlankColumns($rows, $startIndex, $highestRow)
+    {
+        $len = count($rows[0]);
+
+        // Skipping if the following row contains all cells null
+        for ($row = $startIndex; $row <= $highestRow; $row++)
         {
-            $rowData = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $row, NULL, TRUE, FALSE)[0];
-
-            for($i = 1; $i < count($rowData); $i++)
+            for($i = 1; $i < $len; $i++)
             {
-                if($rowData[$i] != NULL )
-                    break 2;
+                if($rows[$row][$i] != null )
+                    return $row;
             }
         }
-
-        $data = $sheet->rangeToArray('A' . $row . ':' . $highestColumn . $highestRow, NULL, TRUE, FALSE);
-
-        return ['columns' => $columnNames, 'data' => $data];
     }
 
 }
