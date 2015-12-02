@@ -1,12 +1,9 @@
 <script>
+var intro_text = '';
+var sk_ready = false;
+
 if (screen && screen.width > 480) {
-  document.write(unescape("%3Cscript src='//cdn.smooch.io/smooch.min.js'%3E%3C/script%3E"));
-}
-</script>
-<script>
-  var intro_text = '';
-  var sk_ready = false;
-  (function(){
+  $($.getScript('https://cdn.smooch.io/smooch.min.js', function(){
     var rzp_email = '';
     var rzp_phone = '';
     if (typeof Smooch === 'undefined') {
@@ -67,8 +64,8 @@ if (screen && screen.width > 480) {
 
         sk_intro.html(intro_text);
         $(this).off('focus', chat_attempt);
-
       }
     })
-  })();
+  }))
+}
 </script>

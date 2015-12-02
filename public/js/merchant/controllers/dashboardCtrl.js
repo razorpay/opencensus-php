@@ -88,15 +88,14 @@ app.controller('DashboardAggregationsCtrl', [
       $scope.showSpline = true;
       $scope.refreshGraph = false;
       //Variable that is toggled whenever we want the graph to be refreshed
-      $scope.successfull = {
+      var graphOptions = {
         data: [[
-            0,
-            0
-          ]],
+          0,
+          0
+        ]],
         options: {
           colors: [
-            $scope.app.color.info,
-            $scope.app.color.primary
+            $scope.app.color.info
           ],
           series: { shadowSize: 3 },
           xaxis: {
@@ -120,38 +119,8 @@ app.controller('DashboardAggregationsCtrl', [
           }
         }
       };
-      $scope.transactions = {
-        data: [[
-            0,
-            0
-          ]],
-        options: {
-          colors: [
-            $scope.app.color.info,
-            $scope.app.color.primary
-          ],
-          series: { shadowSize: 3 },
-          xaxis: {
-            mode: 'time',
-            timezone: 'browser'
-          },
-          yaxis: { font: { color: '#a1a7ac' } },
-          grid: {
-            hoverable: true,
-            clickable: true,
-            borderWidth: 0,
-            color: '#dce5ec'
-          },
-          tooltip: true,
-          tooltipOpts: {
-            defaultTheme: false,
-            shifts: {
-              x: 10,
-              y: -25
-            }
-          }
-        }
-      };
+      $scope.successfull = graphOptions;
+      $scope.transactions = $.extend({}, graphOptions);
       $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Count: %y';
       $scope.transactions.options.tooltipOpts.content = 'Date: %x <br/> Amount: \u20B9%y';
     }
