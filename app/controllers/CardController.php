@@ -58,4 +58,12 @@ class CardController extends BaseController
 
     }
 
+    public function postIinGenerate()
+    {
+        $input = Input::all();
+        $fileName = (new Card\IIN\Service)->generateIinFile($input);
+
+        return ApiResponse::json($fileName);
+    }
+
 }

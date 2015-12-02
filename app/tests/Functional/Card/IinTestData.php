@@ -5,6 +5,7 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
+use Tests\Functional\Fixtures\Entity\Iin;
 return [
     'testAddIin' => [
         'request' => [
@@ -56,6 +57,65 @@ return [
                     [
                     ]
                 ]
+            ]
+        ],
+    ],
+
+    'testImportIin' => [
+        'request' => [
+            'url' => '/iins/import',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'Master',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'duplicates'  => [
+                    '513456' => [
+                        [
+                            'iin' =>'513456',
+                            'category' => 'PREMIUM',
+                            'network' => 'Master',
+                            'type' => 'debit',
+                            'country' => 'IN',
+                            'issuer' => null
+                        ],
+                        [
+                            'iin' =>'513456',
+                            'category' => 'CLASSIC',
+                            'network' => 'Master',
+                            'type' => 'debit',
+                            'country' => 'IN',
+                            'issuer' => null
+                        ],
+                    ]
+                ],
+                'db_conflicts'=> [
+                    '510128' => [
+                        'db_entry' => [
+                            'iin' => 510128,
+                            'category' => 'Gold',
+                            'network' => 'MasterCard',
+                            'type' => 'debit',
+                            'country' => 'IN',
+                            'issuer' => "SBI CARDS AND PAYMENT SERVICES PVT., LTD.",
+                            'trivia' => null,
+                            'international' => null,
+                        ],
+                        'file_entry' => [
+                            'iin' => "510128",
+                            'category' => "CLASSIC",
+                            'network' => "Master",
+                            'type' => "credit",
+                            'country' => null,
+                            'issuer' => null,
+                        ],
+                    ],
+                ],
             ]
         ],
     ],

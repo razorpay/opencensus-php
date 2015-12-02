@@ -45,4 +45,11 @@ class Service extends Base\Service
 
         return $result;
     }
+
+    public function generateIinFile($input)
+    {
+        $result = (new Import\IinGenerator)->generate($input);
+
+        return $result;
+    }
 }
