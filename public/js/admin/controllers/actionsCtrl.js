@@ -124,19 +124,13 @@ app.controller('ActionsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-
     $scope.toJson = function (data) {
       return angular.toJson(data, 4);
     };
-
-    $scope.apiRequest = function(data) {
+    $scope.apiRequest = function (data) {
       var url = '/api/' + data.url;
-      delete data['url'];
-
-      var req = $http.post(url, data, {
-        transformRequest: transformRequestAsFormPost
-      });
-
+      delete data.url;
+      var req = $http.post(url, data, { transformRequest: transformRequestAsFormPost });
       req.success(function (data) {
         if (data.success) {
           $scope.response = data;
@@ -151,8 +145,7 @@ app.controller('ActionsCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', 'The API request failed on the dashboard side.', true);
       });
-    }
-
+    };
     $scope.verifyPayment = function (payment_id) {
       var request = $http({
         method: 'get',
@@ -175,7 +168,7 @@ app.controller('ActionsCtrl', [
     $scope.authorizeFailedPayment = function (payment_id, mode) {
       var request = $http({
         method: 'post',
-        url: '/admin/'+mode+'/payments/' + payment_id + '/authorize_failed'
+        url: '/admin/' + mode + '/payments/' + payment_id + '/authorize_failed'
       });
       request.success(function (data) {
         if (data.success) {
@@ -203,7 +196,7 @@ app.controller('ActionsCtrl', [
         templateUrl: 'makeApiCallModalContent.html',
         controller: 'ApiRequestCtrl'
       });
-      modalInstance.result.then(function(data) {
+      modalInstance.result.then(function (data) {
         $scope.apiRequest(data);
       }, $.noop);
     };
@@ -233,7 +226,7 @@ app.controller('ActionsCtrl', [
         templateUrl: 'authorizeFailedPaymentModalContent.html',
         controller: 'authorizeFailedPaymentModalCtrl'
       });
-      modalInstance.result.then(function(data) {
+      modalInstance.result.then(function (data) {
         $scope.authorizeFailedPayment(data.id, data.mode);
       }, $.noop);
     };
@@ -346,7 +339,10 @@ app.controller('ActionsCtrl', [
   function ($scope, $modalInstance, $http) {
     $scope.mode = 'live';
     $scope.ok = function (id, mode) {
-      $modalInstance.close({id:id, mode:mode});
+      $modalInstance.close({
+        id: id,
+        mode: mode
+      });
     };
   }
 ]).controller('sendNewsletterCtrl', [
@@ -400,7 +396,6 @@ app.controller('ActionsCtrl', [
   '$scope',
   '$modalInstance',
   function ($scope, $modalInstance) {
-
     $scope.data = {
       url: '',
       mode: 'test',
@@ -409,7 +404,7 @@ app.controller('ActionsCtrl', [
       merchant_id: '',
       content_type: 'application/x-www-form-urlencoded',
       body: ''
-    }
+    };
     $scope.ok = function (data) {
       $modalInstance.close(data);
     };

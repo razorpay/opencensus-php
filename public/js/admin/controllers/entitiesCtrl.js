@@ -14,7 +14,7 @@ app.controller('EntitiesCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.count = 10;
     $scope.from = 0;
-    $scope.to   = 0;
+    $scope.to = 0;
     $scope.filters = {};
     $scope.headings = [];
     $scope.refreshTable = true;
@@ -26,36 +26,28 @@ app.controller('EntitiesCtrl', [
       countEnd: 0,
       skip: 0
     };
-
     $scope.minTimestamp = moment('2015-01-01').unix();
     $scope.maxTimestamp = moment().unix();
-
     admin.identity().then(function (data) {
       $scope.admin = data;
     });
-
     $scope.timestamps = function (type) {
-
       var ts = 0;
-      switch (type)
-      {
-        case 'from':
-          ts = $scope.from;
-          break;
-        case 'to':
-          ts = $scope.to;
-          break;
-        default:
-          return 'Timestamp Error';
+      switch (type) {
+      case 'from':
+        ts = $scope.from;
+        break;
+      case 'to':
+        ts = $scope.to;
+        break;
+      default:
+        return 'Timestamp Error';
       }
-
-      if (typeof ts === 'undefined')
-      {
+      if (typeof ts === 'undefined') {
         return '';
       }
       return moment.unix(ts).format('L LTS');
-    }
-
+    };
     var gatewayList = [
       'all',
       'atom',
@@ -69,20 +61,24 @@ app.controller('EntitiesCtrl', [
       'netbanking_hdfc',
       'sharp'
     ];
-
-    var booleanList = ['all', 0, 1];
-
-    var booleanList2 = ['all', true, false];
-
-    var statusList = [
-          'all',
-          'created',
-          'authorized',
-          'failed',
-          'captured',
-          'refunded'
+    var booleanList = [
+      'all',
+      0,
+      1
     ];
-
+    var booleanList2 = [
+      'all',
+      true,
+      false
+    ];
+    var statusList = [
+      'all',
+      'created',
+      'authorized',
+      'failed',
+      'captured',
+      'refunded'
+    ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
     // This list is alphabetically sorted, take care to maintain that
@@ -96,8 +92,7 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
-      balance: {
-      },
+      balance: {},
       billdesk: {
         AuthStatus: [
           'all',
@@ -123,7 +118,7 @@ app.controller('EntitiesCtrl', [
           'American Express',
           'RuPay',
           'Unknown',
-          'Discover',
+          'Discover'
         ],
         status: statusList
       },
@@ -138,6 +133,7 @@ app.controller('EntitiesCtrl', [
         live: booleanList,
         international: booleanList,
         category: ['MCC Code'],
+        pricing_plan_id: ['Pricing Plan Id'],
         receipt_email_enabled: booleanList,
         paytm: booleanList2,
         mobikwik: booleanList2,
@@ -179,7 +175,7 @@ app.controller('EntitiesCtrl', [
           'mobikwik'
         ],
         iin: ['Card IIN'],
-        last4: ['Card Last 4'],
+        last4: ['Card Last 4']
       },
       paytm: {
         payment_id: ['Payment Id'],
@@ -191,7 +187,7 @@ app.controller('EntitiesCtrl', [
       },
       refund: {
         merchant_id: ['Merchant Id'],
-        payment_id: ['Payment Id'],
+        payment_id: ['Payment Id']
       },
       terminal: {
         gateway: gatewayList,
@@ -213,10 +209,9 @@ app.controller('EntitiesCtrl', [
       },
       settlement: {
         transaction_id: ['Transaction Id'],
-        merchant_id: ['Merchant Id'],
+        merchant_id: ['Merchant Id']
       }
     };
-
     // This loop initializes the filters object
     for (var entity in $scope.availableFilters) {
       $scope.filters[entity] = {};
@@ -323,7 +318,6 @@ app.controller('EntitiesCtrl', [
       clear('skip');
       $scope.generateTable();
     };
-
     $scope.getStatusClass = function (status) {
       var mapper = {
         created: 'bg-light',
@@ -334,8 +328,6 @@ app.controller('EntitiesCtrl', [
       };
       return mapper[status] || 'bg-light';
     };
-
-
     $scope.getState = function (type, force) {
       switch (type) {
       case 'merchant_id':
@@ -360,15 +352,12 @@ app.controller('EntitiesCtrl', [
         count: count,
         skip: skip
       };
-
       if (from !== 0) {
         query.from = from;
       }
-
       if (to !== 0) {
         query.to = to;
       }
-
       // We send the methods param in a JSON encoded format
       if (entity === 'merchant') {
         var methods = {}, validMethods = [
@@ -393,25 +382,18 @@ app.controller('EntitiesCtrl', [
       }
       return query;
     }
-
-    $scope.generateTable = function(csv) {
+    $scope.generateTable = function (csv) {
       if (!$scope.entity_type) {
         console.log('Error: No Entity Type Specified');
         return;
       }
       var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters, $scope.from, $scope.to);
-
       var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
-
       if (csv) {
         window.open(url + '/csv?' + $.param(query));
         return;
       }
-
-      var request = $http.get(url, {
-        params: query
-      });
-
+      var request = $http.get(url, { params: query });
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
@@ -437,6 +419,6 @@ app.controller('EntitiesCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
   }
 ]);

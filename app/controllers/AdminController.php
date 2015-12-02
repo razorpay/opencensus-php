@@ -443,6 +443,16 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Promotes a user to a superadmin
+     */
+    public function postPromoteAdmin($id)
+    {
+        list($error) = (new Admin\Service)->promote($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function getMerchantHdfcExcel($id)
     {
         list($error, $file) = (new Admin\Service)->generateMerchantHdfcExcel($id);

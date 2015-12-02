@@ -20,7 +20,6 @@ app.controller('PaymentDetailCtrl', [
       };
       return mapper[status];
     };
-
     $scope.displayClass = function (value) {
       if (value === null) {
         return 'label label-warning col-lg-1';
@@ -30,16 +29,13 @@ app.controller('PaymentDetailCtrl', [
         return '';
       }
     };
-
-    $scope.displayValue = function(value) {
+    $scope.displayValue = function (value) {
       if (value === null) {
         return 'null';
-      }
-      else {
+      } else {
         return value;
       }
-    }
-
+    };
     $scope.openRefundModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundModalContent.html',
@@ -55,13 +51,11 @@ app.controller('PaymentDetailCtrl', [
       }, function () {
       });
     };
-
-    $scope.refundAuthorized = function() {
+    $scope.refundAuthorized = function () {
       var request = $http({
         method: 'post',
         url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/refund_authorized'
       });
-
       request.success(function (data) {
         if (data.success) {
           var payment = JSON.stringify(data.data);

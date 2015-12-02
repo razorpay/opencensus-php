@@ -189,6 +189,25 @@ class Service extends Base\Service
         return [$error, $admin->toArray()];
     }
 
+    /* Adds a new admin
+     * @param $data input array
+     * @return Status
+     */
+    public function promote($id)
+    {
+        $admin = Admin\Entity::findorfail($id);
+
+        try
+        {
+            $admin = $admin->promote();
+            return [null];
+        }
+        catch(\Exception $e)
+        {
+            return [$e->getMessage()];
+        }
+    }
+
     public function fetchMerchantActivationDetails($id)
     {
         $merchant_details =  MerchantDetails\Entity::findorfail($id);

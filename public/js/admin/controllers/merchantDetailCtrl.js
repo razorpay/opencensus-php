@@ -307,11 +307,9 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-
-    $scope.editCredits = function(credits) {
+    $scope.editCredits = function (credits) {
       var url = '/admin/merchants/' + $scope.merchant.id + '/credits';
-      var request = $http.put(url, {credits: credits});
-
+      var request = $http.put(url, { credits: credits });
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Merchant Credits edited successfully', true);
@@ -325,7 +323,7 @@ app.controller('MerchantDetailCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
     $scope.archiveMerchant = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/archive');
       request.success(function (data) {
@@ -436,23 +434,20 @@ app.controller('MerchantDetailCtrl', [
         $scope.editComment(merchant);
       }, $.noop);
     };
-
     $scope.openEditCredits = function (credits) {
       var modalInstance = $modal.open({
         templateUrl: 'editCreditsModalContent.html',
         controller: 'editCreditsModalCtrl',
         resolve: {
           credits: function () {
-            return credits
+            return credits;
           }
         }
       });
-
       modalInstance.result.then(function (merchant) {
         $scope.editCredits(merchant);
       }, $.noop);
     };
-
     $scope.openAssignBanks = function () {
       var currentId = $scope.merchant.id;
       var modalInstance = $modal.open({
@@ -517,13 +512,11 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.balance = {
             test: data.data.test.balance,
             live: data.data.live.balance
-          }
-
+          };
           $scope.merchant.credits = {
             test: data.data.test.credits,
             live: data.data.live.credits
-          }
-
+          };
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
