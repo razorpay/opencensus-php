@@ -212,7 +212,8 @@ app.controller('PaymentDetailCtrl', [
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
-          $scope.entity.refunds = data.data;
+          console.debug(data);
+          $scope.entity.refunds = data.data.items;
           $scope.isRefundsCollapsed = false;
         } else {
           angular.forEach(data.errors, function (error, key) {
