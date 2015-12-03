@@ -26,7 +26,14 @@ app.controller('UserCtrl', [
         });
 
         if (typeof Smooch !== 'undefined') {
-          function sk_user(){
+          var sk_user = function(){
+            window.skIntro && window.skIntro.html('');
+            $('#sk-footer input').off('focus', window.skFocusListener);
+            Smooch.user.on('change', function(){
+              var container = $('#sk-container').removeClass('sk-appear').addClass('sk-close')[0].offsetWidth;
+            })
+
+
             Smooch.updateUser({
               givenName: data.name,
               email: data.email,
@@ -37,18 +44,13 @@ app.controller('UserCtrl', [
                 submitted: data.submitted
               }
             })
-            $('#sk-footer input').off('focus', window.sklistener);
-            $('.sk-intro').html(intro_text);
           }
 
-          if(sk_ready){
+          if(Smooch.ready){
             sk_user();
           } else {
             Smooch.on('ready', sk_user);
           }
-          setTimeout(function(){
-            Smooch.close()
-          })
         };
 
         analytics.identify(data.id, {

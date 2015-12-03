@@ -14,9 +14,11 @@
   <!--rollbar-->
   <script>
     var _rollbarConfig = {
-        accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
-        captureUncaught: true,
-        payload: {}
+      accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
+      captureUncaught: true,
+      payload: {},
+      enabled: false,
+      verbose: true
     };
 
     var list = {
@@ -31,7 +33,8 @@
 
         // Only enable rollbar if we are not in Development
         if (i !== 'Development') {
-            _rollbarConfig.enabled = true;
+          _rollbarConfig.enabled = true;
+          _rollbarConfig.verbose = false;
         };
       }
     }
