@@ -17,6 +17,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::ACTIVATED               => 'sometimes|boolean',
+        Entity::ACTIVATED_AT            => 'sometimes|date',
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
         Entity::LIVE                    => 'sometimes|boolean',
         Entity::EMAIL                   => 'sometimes|string|max:255',
@@ -65,6 +66,15 @@ class Repository extends Base\Repository
         $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
 
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
+    }
+
+    public function getCountOfMerchantsActivatedBetween($from, $to)
+    {
+
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Entity::ACTIVATED_AT, [$from, $to])->count();
+
     }
 
     public function addQueryParamMethods($query, $params)
