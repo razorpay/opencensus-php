@@ -288,6 +288,13 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getPaymentRefunds($mode, $paymentId)
+    {
+        list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getVerifyPayment($id)
     {
         list($error, $data) = (new Admin\Service)->getVerifyPayment($id);

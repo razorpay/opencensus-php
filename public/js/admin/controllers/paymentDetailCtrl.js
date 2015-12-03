@@ -208,7 +208,7 @@ app.controller('PaymentDetailCtrl', [
         $scope.isRefundsCollapsed = true;
         return;
       }
-      var request = $http.get('/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds');
+      var request = $http.get('/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds');
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
