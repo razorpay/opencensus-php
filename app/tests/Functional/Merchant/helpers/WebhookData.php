@@ -75,4 +75,29 @@ return [
             ],
         ]
     ],
+
+    'testCreateWebhookWrongUrl' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'random2com',
+                'events' => [
+                    'payment.authorized' => '0',
+                ],
+            ],
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

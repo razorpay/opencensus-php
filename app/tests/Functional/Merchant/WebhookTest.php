@@ -45,4 +45,9 @@ class WebhookTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateWebhookWrongUrl()
+    {
+        $data = $this->startTest();
+   }
 }
