@@ -139,7 +139,7 @@ module.exports = function(grunt){
     watch: {
       styl: {
         files: 'public/css/*.styl',
-        tasks: 'stylus',
+        tasks: ['stylus', 'hashres'],
         options: {
           interrupt: true
         }
@@ -151,7 +151,7 @@ module.exports = function(grunt){
           'public/js/admin/**/*.js',
           'public/js/merchant/**/*.js'
         ],
-        tasks: 'concat',
+        tasks: ['concat', 'hashres'],
         options: {
           interrupt: true
         }

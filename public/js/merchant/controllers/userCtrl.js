@@ -26,7 +26,7 @@ app.controller('UserCtrl', [
         });
 
         if (typeof Smooch !== 'undefined') {
-          function sk_user(){
+          var sk_user = function(){
             Smooch.updateUser({
               givenName: data.name,
               email: data.email,
