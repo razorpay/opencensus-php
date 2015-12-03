@@ -33,7 +33,7 @@ app.controller('WebhooksCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Webhook Added', true);
+          $scope.alerts.addAlert('success', 'Webhook added', true);
 
           // Update the entire list
           $scope.fetchWebhooks();

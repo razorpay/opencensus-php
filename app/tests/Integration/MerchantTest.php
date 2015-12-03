@@ -99,6 +99,49 @@ class MerchantTest extends TestCase
         $this->assertBodyHasText("Successful Transactions");
     }
 
+    public function testWebhooks()
+    {
+        // Testing webhooks display
+         $this->browser
+            ->waitAndClickById('webhookNav')
+            ->waitForPresent('.webhooks-table')
+            ->waitForLoaded();
+
+        $this->assertBodyHasText("Webhooks");
+
+        // Testing create wevhook
+        $this->browser
+            ->click(l::IdOrName('createWebook'))
+            ->waitForPresent('.new-webhook-modal');
+
+        $this->assertBodyHasText("New Webhook");
+
+        // Check if display includes new webhook
+        $this->browser
+            ->type(l::IdOrName('new_webhook_url'), 'http://googleeee.com')
+            ->click(l::css('.modal-ok'))
+            ->waitForAbsent('.new-webhook-modal')
+            ->waitForLoaded();
+
+        $this->assertFalse($this->browser->isError());
+
+        $this->assertBodyHasText("Webhook added");
+        $this->assertBodyHasText('http://googleeee.com');
+
+        // Testing editing webhook
+        $this->browser
+            ->waitAndClickById('editWebook')
+            ->waitForPresent('.edit-webhook-modal')
+            ->type(l::IdOrName('edit_webhook_url'), 'https://googleeee.com')
+            ->click(l::css('.modal-ok'))
+            ->waitForLoaded();
+
+        $this->assertFalse($this->browser->isError());
+
+        $this->assertBodyHasText("Webhook edited");
+        $this->assertBodyHasText('https://googleeee.com');
+    }
+
     /**
      * Tests payments panel display
      */
@@ -337,11 +380,6 @@ class MerchantTest extends TestCase
             ->waitForLoaded();
 
         $this->assertBodyHasText("Password changed successfully");
-    }
-
-    public function testWebhooks()
-    {
-
     }
 
     /**
