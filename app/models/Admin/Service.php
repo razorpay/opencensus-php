@@ -53,6 +53,8 @@ class Service extends Base\Service
             'bank_account'      => Models\Merchant\BankAccount::class,
             'balance'           => Models\Merchant\Balance::class,
             'methods'           => Models\Merchant\Methods::class,
+            'webhook'           => Models\Merchant\Webhook::class,
+            'pricing'           => Models\Pricing::class,
         );
 
         if (array_key_exists($entity, $map))
