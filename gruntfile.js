@@ -134,12 +134,15 @@ module.exports = function(grunt){
       },
     },
 
-    clean: ['public/css/generated/*.css', 'public/js/generated/*.js'],
+    clean: {
+      css: 'public/css/generated/*.css',
+      js: 'public/js/generated/*.js'
+    },
 
     watch: {
       styl: {
         files: 'public/css/*.styl',
-        tasks: ['stylus', 'hashres'],
+        tasks: ['clean:css', 'stylus', 'hashres'],
         options: {
           interrupt: true
         }
@@ -151,7 +154,7 @@ module.exports = function(grunt){
           'public/js/admin/**/*.js',
           'public/js/merchant/**/*.js'
         ],
-        tasks: ['concat', 'hashres'],
+        tasks: ['clean:js', 'concat', 'hashres'],
         options: {
           interrupt: true
         }
