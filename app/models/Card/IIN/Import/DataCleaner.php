@@ -84,9 +84,10 @@ class DataCleaner
     {
         $dbRecords = $this->repo->find($this->uniqueIins);
 
-        foreach ($dbRecords as $entity) {
+        foreach ($dbRecords as $entity)
+        {
 
-            $iin = sprintf("%06d", $entity->getIinAttribute()) ;
+            $iin = (string)$entity->getIinAttribute();
 
             $this->dbConflicts[$iin] = array(
                                 'db_entry'   => $entity->toArray(),
