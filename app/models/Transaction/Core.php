@@ -97,7 +97,7 @@ class Core extends Base\Core
         $payment->transaction()->associate($txn);
     }
 
-    protected function fillTxnFeesAndAmount(& $txn, $payment)
+    protected function fillTxnFeesAndAmount($txn, $payment)
     {
         $credit = $fee = 0;
         $pricingRuleId = null;
