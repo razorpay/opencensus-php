@@ -40,15 +40,22 @@ class MerchantTest extends TestCase
     public function testRegister()
     {
         $this->browser
-            ->open(URL::to('/#/access/signup'))    // Visits the 'register page
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signup\"]').length > 0", 20000)
-            ->type(l::IdOrName('name'), $this->merchant->name)      // Fill name
-            ->type(l::IdOrName('email'), $this->merchant->email)   // Fill email
+            // Visits the 'register page
+            ->open('/admin')
+            ->open('/#/access/signup')
+            ->waitForPresent('form[name="signup"]')
+            //->waitForCondition("window.$('form[name=\"signup\"]').length > 0", 5000)
+            // Fill name
+            ->type(l::IdOrName('name'), $this->merchant->name)
+            // Fill email
+            ->type(l::IdOrName('email'), $this->merchant->email)
             ->type(l::IdOrName('password'), '123456xx')
             ->type(l::IdOrName('password_confirmation'), '123456xx')
             ->click(l::IdOrName('agree'))
-            ->click(l::IdOrName('submit'))                 // Click in the button
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            // Click in the button
+            ->click(l::IdOrName('submit'))
+            //->waitForCondition("window.$('.alert-success').length > 0", 5000);
+            ->waitForPresent('.alert-success');
 
         $this->assertBodyHasText("Please check your inbox for confirmation email from Razorpay");
     }
@@ -59,13 +66,13 @@ class MerchantTest extends TestCase
     public function testUserConfirmation()
     {
         $confirm_token = $this->merchant->confirm_token;
-
         $this->browser
-            ->open(URL::to('/admin'))
-            ->open(URL::to('/#/access/confirm/'.$confirm_token))    // Visits the 'register page
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->open('/admin')
+            ->open('/#/access/confirm/'.$confirm_token)    // Visits the 'register page
+            //->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForPresent('.alert-success');
 
-        $this->assertBodyHasText("Confirmation successfull.");
+        $this->assertBodyHasText("Confirmation successful");
     }
 
     /**
@@ -74,11 +81,16 @@ class MerchantTest extends TestCase
     public function testLogin()
     {
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000)
-            ->type(l::IdOrName('email'), $this->merchant->email)   // Fill name
-            ->type(l::IdOrName('password'), '123456xx')   // Fill slug
-            ->click(l::IdOrName('submit'))                 // Click in the button
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);                     // Wait for page to load
+            ->waitForPresent('form[name="signin"]')
+            // Fill name
+            ->type(l::IdOrName('email'), $this->merchant->email)
+            // Fill password
+            ->type(l::IdOrName('password'), '123456xx')
+            // Click in the button
+            ->click(l::IdOrName('submit'))
+            // Wait for page to load
+            ->waitForPresent('.navbar');
+
 
         $this->assertBodyHasText("Welcome to Razorpay");
 
@@ -93,10 +105,9 @@ class MerchantTest extends TestCase
     public function testPaymentsList()
     {
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#paymentsNav').length > 0", 20000)
-            ->click(l::IdOrName('paymentsNav'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.payments-table').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitAndClickById('paymentsNav')
+            ->waitForPresent('.payments-table')
+            ->waitForLoaded();
 
         $this->assertBodyHasText("List of all payments");
     }
@@ -107,10 +118,9 @@ class MerchantTest extends TestCase
     public function testRefundsPanel()
     {
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#refundsNav').length > 0", 20000)
-            ->click(l::IdOrName('refundsNav'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.refunds-table').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitAndClickById('refundsNav')
+            ->waitForPresent('.refunds-table')
+            ->waitForLoaded();
 
         $this->assertBodyHasText("List of all refunds");
     }
@@ -130,10 +140,9 @@ class MerchantTest extends TestCase
     {
         // Testing keys display
          $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#keysNav').length > 0", 20000)
-            ->click(l::IdOrName('keysNav'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.keys-table').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitAndClickById('keysNav')
+            ->waitForPresent('.keys-table')
+            ->waitForLoaded();
 
         $this->assertBodyHasText("API Keys");
 
@@ -142,7 +151,7 @@ class MerchantTest extends TestCase
         // Testing Generate new Key
         $this->browser
             ->click(l::IdOrName('generateKey'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length > 0", 20000);
+            ->waitForPresent('.new-key-modal');
 
         $this->assertBodyHasText("New Key");
 
@@ -151,28 +160,28 @@ class MerchantTest extends TestCase
         // New Key generated close the modal
         $this->browser
             ->click(l::css('.modal-ok'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
+            ->waitForPresent('.confirm-modal')
             ->click(l::css('.confirm-ok'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitForAbsent('.new-key-modal')
+            ->waitForLoaded();
 
-        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+        $this->assertFalse($this->browser->isError());
 
         $this->assertBodyHasText("Key Generated");
 
         // Testing rolling of key
         $this->browser
             ->click(l::css('.roll_key'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.roll-key-modal').length > 0", 20000)
+            ->waitForPresent('.roll-key-modal')
             ->click(l::css('.modal-ok'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length > 0", 20000)
+            ->waitForPresent('.new-key-modal')
             ->click(l::css('.modal-ok'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
+            ->waitForPresent('.confirm-ok')
             ->click(l::css('.confirm-ok'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitForAbsent('.new-key-modal')
+            ->waitForLoaded();
 
-        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+        $this->assertFalse($this->browser->isError());
 
         $this->assertBodyHasText("Key Rolled");
     }
@@ -184,31 +193,30 @@ class MerchantTest extends TestCase
     {
         // Testing keys display
          $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activationNav').length > 0", 20000)
-            ->click(l::IdOrName('activationNav'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitAndClickById('activationNav')
+            ->waitForPresent('.activation-wrapper')
+            ->waitForLoaded();
 
         $this->assertBodyHasText("Contact Details");
 
         // Fill in Contact details and save
         $this->browser
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step1\"] > fieldset > .alerts > .alert-danger').length > 0", 20000)
+            ->waitForPresent('form[name="step1"] > fieldset > .alerts > .alert-danger')
             ->type(l::IdOrName('contact_name'), 'Yo Name')   // Fill name
             ->type(l::IdOrName('contact_email'), 'email@umail.com')   // Fill slug
             ->type(l::IdOrName('transaction_report_email'), 'billing@umail.com')
             ->type(l::IdOrName('contact_mobile'), '9199192999')
             ->type(l::IdOrName('contact_landline'), '9191929393')
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step1\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
+            ->waitForPresent('form[name="step1"] > fieldset > .alerts > .alert-success');
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step1\"] > fieldset > .alerts > .alert-danger')));
 
         // Fill in business Details and save
         $this->browser
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step2\"]').is(':visible')", 20000)
+            ->waitForVisible('form[name="step2"]')
             ->select(l::IdOrName('business_type'), 'Partnership')
             ->type(l::IdOrName('business_name'), 'Test Company Pvt Ltd')
             ->type(l::IdOrName('business_dba'), 'Tester')
@@ -229,14 +237,14 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('promoter_pan'), 'PAE123')   // Fill name
             ->type(l::IdOrName('promoter_pan_name'), 'Promoter')   // Fill slug
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step2\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
+            ->waitForPresent('form[name="step2"] > fieldset > .alerts > .alert-success');
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step2\"] > fieldset > .alerts > .alert-danger')));
 
         // Fill in Promoters Details and save
         $this->browser
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"]').is(':visible')", 20000)
+            ->waitForVisible('form[name="step3"]')
             ->type(l::IdOrName('business_website'), 'http://testing.com')
             ->type(l::IdOrName('website_about'), 'http://testing.com')
             ->type(l::IdOrName('website_contact'), 'http://testing.com')
@@ -245,14 +253,14 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('website_refund'), 'http://testing.com')
             ->type(l::IdOrName('website_pricing'), 'http://testing.com')
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
+            ->waitForPresent('form[name="step3"] > fieldset > .alerts > .alert-success');
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step3\"] > fieldset > .alerts > .alert-danger')));
 
         // Fill in Bank Account Details and save
         $this->browser
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step4\"]').is(':visible')", 20000)
+            ->waitForVisible('form[name="step4"]')
             ->type(l::IdOrName('bank_name'), 'BankName')   // Fill name
             ->type(l::IdOrName('bank_account_number'), '123443')   // Fill slug
             ->type(l::IdOrName('bank_account_name'), 'Tester')   // Fill slug
@@ -266,7 +274,7 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('bank_beneficiary_state'), 'RJ')
             ->type(l::IdOrName('bank_beneficiary_pin'), '123443')
             ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step4\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
+            ->waitForPresent('form[name="step4"] > fieldset > .alerts > .alert-success');
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step4\"] > fieldset > .alerts > .alert-danger')));
 
@@ -274,7 +282,7 @@ class MerchantTest extends TestCase
         // S3 API is mocked in selenium/init.php to avoid requests to AWS
         $this->browser
             ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"]').is(':visible')", 20000)
+            ->waitForVisible('form[name="step5"]')
             ->attachFile(l::IdOrName('business_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 1", 20000)
             ->attachFile(l::IdOrName('business_pan_proof'), URL::to('/img/logo.png'))
@@ -284,20 +292,20 @@ class MerchantTest extends TestCase
             ->attachFile(l::IdOrName('promoter_address_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 4", 20000)
             ->click(l::css('form[name="step5"] > fieldset > .prev-next > .btn-save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
+            ->waitForPresent('form[name="step5"] > fieldset > .alerts > .alert-success');
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step4\"] > fieldset > .alerts > .alert-danger')));
 
         // Submit for activation
         $this->browser
             ->click(l::css('form[name="step5"] > fieldset > .prev-next > .btn-next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"]').is(':visible')", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000)
+            ->waitForVisible('form[name="step6"]')
+            ->waitForLoaded()
             ->click(l::IdOrName('agree_terms'))
             ->click(l::css('.btn-submit'));
 
-            // ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"] > fieldset > .alerts > .alert-success').length > 0", 20000)
-            // ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper > .alerts > .alert-info').length > 0", 20000);
+            // ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"] > fieldset > .alerts > .alert-success')
+            // ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper > .alerts > .alert-info');
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step6\"] > fieldset > .alerts > .alert-danger')));
     }
@@ -309,10 +317,9 @@ class MerchantTest extends TestCase
     {
         // Testing profile display
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 20000)
-            ->click(l::IdOrName('profileNav'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitAndClickById('profileNav')
+            ->waitForPresent('.profile-wrapper')
+            ->waitForLoaded();
 
         $this->assertBodyHasText($this->merchant->name);
 
@@ -321,15 +328,20 @@ class MerchantTest extends TestCase
         // Test Change Password
         $this->browser
             ->click(l::css('.btn-change-pwd'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length > 0", 20000)
+            ->waitForPresent('.change-pwd-modal')
             ->type(l::IdOrName('old_password'), '123456xx')
             ->type(l::IdOrName('password'), '1234567xx')
             ->type(l::IdOrName('password_confirmation'), '1234567xx')
             ->click(l::css('.modal-ok'))                 // Click in the button
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+            ->waitForPresent('.change-pwd-modal')
+            ->waitForLoaded();
 
         $this->assertBodyHasText("Password changed successfully");
+    }
+
+    public function testWebhooks()
+    {
+
     }
 
     /**
@@ -338,9 +350,9 @@ class MerchantTest extends TestCase
     public function testLogout()
     {
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.user-dropdown').length > 0", 20000)
+            ->waitForPresent('.user-dropdown')
             ->click(l::css('.user-dropdown'))
             ->click(l::linkContaining('Logout'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000);
+            ->waitForPresent('form[name="signin"]');
     }
 }

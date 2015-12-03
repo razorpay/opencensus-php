@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Integration;
 
+use Config, App;
 use Laracasts\TestDummy\Factory;
 use Eloquent;
 use DB;
@@ -13,9 +14,40 @@ class TestCase extends ZizacoIntegrationTestCase
         'merchant_details' => 'Models\MerchantDetails\Entity',
         'admin' => 'Models\Admin\Entity');
 
+    // Overriding this
+    protected function startBrowser()
+    {
+        // Set the Application URL containing the port of the test server
+        Config::set(
+            'app.url',
+            Config::get('app.url').':4443'
+        );
+
+        App::setRequestForConsoleEnvironment(); // This is a must
+
+        if(! TestCase::$loadedBrowser)
+        {
+            $client  = new \Selenium\Client('localhost', 4444);
+            $client->setBrowserClass('Tests\Integration\BrowserWrapper');
+            $this->browser = $client->getBrowser('http://localhost:4443');
+            $this->browser->start();
+            $this->browser->windowMaximize();
+
+            TestCase::$loadedBrowser = $this->browser;
+        }
+        else
+        {
+            $this->browser = TestCase::$loadedBrowser;
+            $this->browser->open('/');
+        }
+
+    }
+
 	public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
+
+        Factory::$factoriesPath = __DIR__.'/../factories/';
 
         // Refresh the db before a test
         exec('cd ' . __DIR__ . '/../.. & php artisan migrate --env=testing');
