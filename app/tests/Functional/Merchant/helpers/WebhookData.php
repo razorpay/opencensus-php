@@ -30,6 +30,28 @@ return [
         ]
     ],
 
+    'testGetWebhooks' => [
+        'request' => [
+            'url' => '/webhooks',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                   'entity' => "collection",
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'url' => "http://random.com",
+                            'events' => [
+                                'payment.authorized' => true
+                            ],
+                            'active' => true
+                        ]
+                    ]
+            ]
+        ]
+    ],
+
     'testEditWebhook' => [
         'request' => [
             'content' => [

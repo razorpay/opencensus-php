@@ -421,7 +421,7 @@ class Service extends Base\Service
 
     public function getWebhooks()
     {
-        $webhooks = (new Webhook\Repository)->fetch($input, $this->merchant->getId());
+        $webhooks = (new Webhook\Repository)->fetch([], $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }
