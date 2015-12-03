@@ -32,7 +32,7 @@ class WebhookTest extends TestCase
 
     public function testEditWebhook()
     {
-        $webhook = $this->createWebhook($this->webhookData);
+        $webhook = $this->createWebhook();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
 
