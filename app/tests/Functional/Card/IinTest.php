@@ -45,6 +45,17 @@ class IinTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testImportIinWithMapping()
+    {
+        $file = $this->getUploadedIinFile();
+
+        $testData = $this->testData['testImportIinWithMapping'];
+
+        $testData['request']['files']['file'] = $file;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

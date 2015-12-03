@@ -118,4 +118,97 @@ return [
             ]
         ],
     ],
+
+    'testImportIinWithMapping' => [
+        'request' => [
+            'url' => '/iins/import',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'MasterCard',
+                'mapping' => [
+                    'iin' => [
+                        'level' => 1,
+                        'columnName' => 'BIN',
+                    ],
+                    'category' => [
+                        'level' => 1,
+                        'columnName' => 'CARD_BRAND'
+                    ],
+                    'network' => [
+                        'level' => 0,
+                        'value' => 'MasterCard',
+                    ],
+                    'type' => [
+                        'level' => 2,
+                        'columnName' => 'TYPE',
+                        'map' => [
+                            'FC' => 'credit',
+                            'DC' => 'credit',
+                            'FD' => 'debit',
+                            'DD' => 'debit'
+                        ],
+                    ],
+                    'country' => [
+                        'level' => 2,
+                        'columnName' => 'TYPE',
+                        'map' => [
+                            'DC' => 'IN',
+                            'DD' => 'IN',
+                            'FD' => NULL,
+                            'FC' => NULL
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'duplicates'  => [
+                    '513456' => [
+                        [
+                            'iin' =>'513456',
+                            'category' => 'PREMIUM',
+                            'network' => 'MasterCard',
+                            'type' => 'debit',
+                            'country' => 'IN',
+                            'issuer' => null
+                        ],
+                        [
+                            'iin' =>'513456',
+                            'category' => 'CLASSIC',
+                            'network' => 'MasterCard',
+                            'type' => 'debit',
+                            'country' => 'IN',
+                            'issuer' => null
+                        ],
+                    ]
+                ],
+                'db_conflicts'=> [
+                    '549752' => [
+                        'db_entry' => [
+                            'iin'       => 549752,
+                            'category'  => 'STANDARD',
+                            'network'   => 'MasterCard',
+                            'type'      => 'credit',
+                            'country'   => 'IN',
+                            'issuer'    => 'PUNJAB NATIONAL BANK',
+                            'trivia'    => 'random trivia'
+                        ],
+                        'file_entry' => [
+                            'iin'       => '549752',
+                            'category'  => 'STANDARD',
+                            'network'   => 'MasterCard',
+                            'type'      => 'credit',
+                            'country'   => 'IN',
+                            'issuer'    => null,
+                        ],
+                    ],
+                ],
+            ]
+        ],
+    ],
+
 ];
