@@ -21,7 +21,7 @@ app.controller('PaymentDetailCtrl', [
       return mapper[status];
     };
     $scope.displayClass = function (value) {
-      if (value === null) {
+      if (value == null) {
         return 'label label-warning col-lg-1';
       } else if (value === '') {
         return 'label label-info';
@@ -29,6 +29,17 @@ app.controller('PaymentDetailCtrl', [
         return '';
       }
     };
+
+    $scope.timestamp = function(value) {
+      moment().zone(5.5);
+      // If not null and not zero
+      if (value) {
+        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST'
+      }
+      else {
+        return 'null';
+      }
+    }
     $scope.displayValue = function (value) {
       if (value === null) {
         return 'null';
@@ -197,11 +208,12 @@ app.controller('PaymentDetailCtrl', [
         $scope.isRefundsCollapsed = true;
         return;
       }
-      var request = $http.get('/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds');
+      var request = $http.get('/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds');
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
-          $scope.entity.refunds = data.data;
+          console.debug(data);
+          $scope.entity.refunds = data.data.items;
           $scope.isRefundsCollapsed = false;
         } else {
           angular.forEach(data.errors, function (error, key) {

@@ -203,8 +203,9 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
 
-        Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
+        Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
 
+        Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
     });
 
     Route::group(array('before' => 'auth.superadmin'), function()
