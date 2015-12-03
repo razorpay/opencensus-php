@@ -1,4 +1,6 @@
-// Webhooks Ctrl
+/**
+ * Webhooks Ctrl
+ */
 app.controller('WebhooksCtrl', [
   '$scope',
   '$http',
@@ -18,7 +20,7 @@ app.controller('WebhooksCtrl', [
       return Object.keys(webhook.events).filter(function (eventKey) {
         return webhook.events[eventKey] === true;
       }).length;
-    }
+    };
 
     $scope.createWebhook = function(webhook) {
 
@@ -37,14 +39,47 @@ app.controller('WebhooksCtrl', [
           $scope.fetchWebhooks();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
+
+    $scope.editWebhook = function(webhook) {
+
+      // This is the whitelist of things you
+      // can edit in a webhook
+      var payload = {
+        events: webhook.events,
+        active: webhook.active,
+        url: webhook.url
+      };
+
+      var request = $http({
+        method: 'put',
+        url: '/' + $scope.mode + '/webhooks/' + webhook.id,
+        data: payload
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Webhook edited', true);
+
+          // Update the entire list
+          $scope.fetchWebhooks();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
 
     $scope.openCreateWebook = function() {
       var modalInstance = $modal.open({
@@ -54,7 +89,22 @@ app.controller('WebhooksCtrl', [
       });
 
       modalInstance.result.then($scope.createWebhook, $.noop);
-    }
+    };
+
+    $scope.openEditWebhook = function(data) {
+      var modalInstance = $modal.open({
+        templateUrl: 'editWebhookModalContent.html',
+        controller: 'editWebhookCtrl',
+        backdrop: 'static',
+        resolve: {
+          webhook: function () {
+            return data;
+          }
+        }
+      });
+
+      modalInstance.result.then($scope.editWebhook, $.noop);
+    };
 
     $scope.fetchWebhooks = function() {
       var request = $http({
@@ -75,7 +125,7 @@ app.controller('WebhooksCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
 
     // Fetch the webhooks now
     $scope.fetchWebhooks();
@@ -91,6 +141,20 @@ app.controller('WebhooksCtrl', [
     };
     $scope.ok = function (webhook) {
       $modalInstance.close(webhook);
+    };
+  }
+]).controller('editWebhookCtrl', [
+  '$scope',
+  '$modalInstance',
+  'webhook',
+  function ($scope, $modalInstance, webhook) {
+    $scope.webhook = webhook;
+    $scope.ok = function (webhook) {
+      $modalInstance.close(webhook);
+    };
+
+    $scope.cancel = function (webhook) {
+      $modalInstance.dismiss('cancel');
     };
   }
 ]);

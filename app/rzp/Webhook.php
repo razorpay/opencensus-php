@@ -9,14 +9,19 @@ class Webhook extends Entity
         return parent::create($params);
     }
 
-    public function fetch($id = null)
+    public function all($options = [])
     {
-        return parent::all();
+        return parent::all($options);
+    }
+
+    public function fetch($id)
+    {
+        return parent::fetch($id);
     }
 
     public function edit($params)
     {
-        $relativeUrl = $this->getEntityUrl();
+        $relativeUrl = $this->getEntityUrl() . $this->id;
 
         return $this->request('PUT', $relativeUrl, $params);
     }

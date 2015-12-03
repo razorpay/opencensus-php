@@ -229,4 +229,14 @@ class MerchantController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function putEditWebhook($mode, $id)
+    {
+        $input = Input::all();
+
+        list($error, $data)  = (new Merchant\Service)
+            ->editWebhook($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

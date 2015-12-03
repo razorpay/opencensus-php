@@ -84,7 +84,7 @@ Route::group(array('before' => 'auth.merchant'), function()
 
         Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
 
-        Route::put('/{mode}/webhooks', 'MerchantController@postEditWebhook');
+        Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
     });
 });
 

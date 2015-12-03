@@ -291,9 +291,30 @@ class Service extends Base\Service
 
         try
         {
-            // This is just semantics
-            // completely equivalent to all() for now
-            $data = $this->api->webhook->fetch()->toArray();
+            $data = $this->api->webhook->all()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function editWebhook($mode, $webhookId, $input)
+    {
+        $merchantId = \Auth::merchant()->user()->id;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = null;
+
+        try
+        {
+            $data = $this->api->webhook
+                ->fetch($webhookId)
+                ->edit($input)
+                ->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
