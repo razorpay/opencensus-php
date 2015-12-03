@@ -10,6 +10,7 @@ use EE\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'Pricing';

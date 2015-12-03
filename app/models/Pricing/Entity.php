@@ -4,7 +4,7 @@ namespace Models\Pricing;
 
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const PLAN_ID               = 'plan_id';

@@ -83,6 +83,15 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals($id, $payment['items'][0]['id']);
     }
 
+    public function testRetrievePaymentWithCardIIN()
+    {
+        $this->ba->appAuth();
+
+        $payments = $this->getEntities('payment', ['iin' => '111111'], true);
+
+        $this->assertEquals($payments['count'], 0);
+    }
+
     /**
      * @group testRetrievePaymentWithCreateAt
      */

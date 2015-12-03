@@ -55,6 +55,8 @@ class Service extends Base\Service
             'sbiepay'           => Gateway\Sbiepay::class,
             'balance'           => Models\Merchant\Balance::class,
             'methods'           => Models\Merchant\Methods::class,
+            'webhook'           => Models\Merchant\Webhook::class,
+            'pricing'           => Models\Pricing::class,
         );
 
         if (array_key_exists($entity, $map))

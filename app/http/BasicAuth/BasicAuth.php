@@ -429,15 +429,7 @@ class BasicAuth
         //
         $key = $this->fetchKey($keyId);
 
-        $exists = ($key !== null);
-
-        if ($exists === false)
-        {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_KEY);
-        }
-
-        return $exists;
+        return ($key !== null);
     }
 
     /**
@@ -740,7 +732,10 @@ class BasicAuth
 
     protected function invalidApiKey()
     {
-        return ApiResponse::unauthorized(
+        $this->trace->info(
+            TraceCode::BAD_REQUEST_INVALID_API_KEY);
+
+       return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
