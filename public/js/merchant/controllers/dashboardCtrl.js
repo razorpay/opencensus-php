@@ -111,6 +111,7 @@ app.controller('DashboardAggregationsCtrl', [
           },
           tooltip: true,
           tooltipOpts: {
+            content: 'Date: %x <br/> Count: %y',
             defaultTheme: false,
             shifts: {
               x: 10,
@@ -120,8 +121,7 @@ app.controller('DashboardAggregationsCtrl', [
         }
       };
       $scope.successfull = graphOptions;
-      $scope.transactions = $.extend({}, graphOptions);
-      $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Count: %y';
+      $scope.transactions = $.extend(true, {}, graphOptions);
       $scope.transactions.options.tooltipOpts.content = 'Date: %x <br/> Amount: \u20B9%y';
     }
     function generateGraphs() {
