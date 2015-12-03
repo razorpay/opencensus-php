@@ -2,6 +2,7 @@
 
 namespace Models\Merchant\Webhook;
 
+use EE\Exception;
 use Models\Base;
 use Models\Merchant\Webhook;
 
@@ -9,6 +10,14 @@ class Core extends Base\Core
 {
     public function createWebhook($merchant, $input)
     {
+        $webhooks = $this->getWebhooks($merchant);
+
+        if ($webhooks->count() !== 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Webhook already created.');
+        }
+
         $webhook = (new Webhook\Entity)->build($input);
 
         $webhook->merchant()->associate($merchant);

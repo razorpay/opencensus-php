@@ -434,8 +434,16 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createWebhook($input)
+    protected function createWebhook(array $input = array())
     {
+        $defaultInput = array(
+            'url' => 'http://random.com',
+            'events' => [
+                'payment.authorized' => '1',
+            ]);
+
+        $input = array_merge($defaultInput, $input);
+
         $request = array(
             'url' => '/webhooks',
             'method' => 'post',

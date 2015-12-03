@@ -20,7 +20,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+        return $repo::where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->get();
     }
 }

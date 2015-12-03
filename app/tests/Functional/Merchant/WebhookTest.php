@@ -9,13 +9,6 @@ class WebhookTest extends TestCase
 {
     use PaymentTrait;
 
-    protected $webhookData = [
-        'url' => 'http://random.com',
-        'events' => [
-            'payment.authorized' => '1',
-        ]
-    ];
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WebhookData.php';
@@ -30,6 +23,13 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testRecreateWebhook()
+    {
+        $this->createWebhook();
+
+        $this->startTest();
+    }
+
     public function testEditWebhook()
     {
         $webhook = $this->createWebhook($this->webhookData);
@@ -41,7 +41,7 @@ class WebhookTest extends TestCase
 
     public function testGetWebhooks()
     {
-        $this->createWebhook($this->webhookData);
+        $this->createWebhook();
 
         $this->startTest();
     }
@@ -49,5 +49,5 @@ class WebhookTest extends TestCase
     public function testCreateWebhookWrongUrl()
     {
         $data = $this->startTest();
-   }
+    }
 }

@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity       = 'webhook';
 
+    const MAX_FAILURE_COUNT = 3;
+
     protected $table        = \Constants\Table::WEBHOOK;
 
     protected $genereateIdOnCreate = true;
@@ -47,6 +49,17 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
     );
 
+    public function edit(array $input = array(), $operation = 'edit')
+    {
+        parent::edit($input, $operation);
+
+        if ((isset($input[self::ACTIVE])) and
+            ($input[self::ACTIVE] === '1'))
+        {
+            $this->setAttribute(self::FAILURE_COUNT, 0);
+        }
+    }
+
     public function merchant()
     {
         return $this->belongsTo(\Models\Merchant\Entity::class);
@@ -64,7 +77,7 @@ class Entity extends Base\PublicEntity
 
     public function getFailureCount()
     {
-        return (int) $this->getAttribute(self::FAILURE_COUNT);
+        return $this->getAttribute(self::FAILURE_COUNT);
     }
 
     public function setEventsAttribute($events)
@@ -97,13 +110,20 @@ class Entity extends Base\PublicEntity
         return $eventsArray;
     }
 
-    public function getActiveAttribute()
+    protected function getActiveAttribute()
     {
         return (bool) $this->attributes[self::ACTIVE];
     }
 
-    public function getFailureCountAttribute()
+    protected function getFailureCountAttribute()
     {
         return (int) $this->attributes[self::FAILURE_COUNT];
+    }
+
+    protected function setFailureCountAttribute($count)
+    {
+        assert ($count <= self::MAX_FAILURE_COUNT);
+
+        $this->attributes[self::FAILURE_COUNT] = $count;
     }
 }
