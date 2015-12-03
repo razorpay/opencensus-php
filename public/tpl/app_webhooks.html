@@ -23,14 +23,19 @@
         <tbody>
           <tr ng-repeat="webhook in webhooks.items">
             <!-- <td>{{webhook.id}}</td> -->
-            <td><pre>{{webhook.url}}</pre></td>
+            <td><code>{{webhook.url}}</code></td>
             <td>{{webhook.created_at*1000 | date:'medium'}}</td>
             <td><i class="fa" ng-class="{'fa-check text-success': webhook.active == 1, 'fa-times text-danger':webhook.active == 0}"></i></td>
-            <td>{{webhook.events.length}} events</td>
+            <td>{{countActiveEvents(webhook)}} {{countActiveEvents(webhook)>1?'events' : 'event'}} enabled</td>
           </tr>
-          <tr ng-show="webhooks.count === 0">
+          <tr>
             <td colspan="4" class="text-center">
-              <a href id="createWebook" ng-click="openCreateWebook()">Setup your first {{mode | titlecase}} webhook</a>
+              <a ng-show="webhooks.count === 0" href id="createWebook" ng-click="openCreateWebook()">
+                Setup your {{mode | titlecase}} webhook
+              </a>
+              <a ng-show="webhooks.count != 0" href id="editWebook" ng-click="editWebhook()">
+                Edit your {{mode | titlecase}} webhook
+              </a>
             </td>
           </tr>
         </tbody>

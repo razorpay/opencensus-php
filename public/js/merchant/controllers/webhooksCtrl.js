@@ -14,6 +14,12 @@ app.controller('WebhooksCtrl', [
       count: 0
     };
 
+    $scope.countActiveEvents = function (webhook) {
+      return Object.keys(webhook.events).filter(function (eventKey) {
+        return webhook.events[eventKey] === true;
+      }).length;
+    }
+
     $scope.createWebhook = function(webhook) {
 
       var request = $http({
@@ -26,6 +32,9 @@ app.controller('WebhooksCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Webhook Added', true);
+
+          // Update the entire list
+          $scope.fetchWebhooks();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -55,8 +64,8 @@ app.controller('WebhooksCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.webhooks.items = data.data;
-          $scope.webhooks.count = parseInt($scope.webhooks.count);
+          $scope.webhooks.items = data.data.items;
+          $scope.webhooks.count = data.data.count;
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
