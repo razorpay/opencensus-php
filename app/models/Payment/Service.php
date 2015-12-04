@@ -535,12 +535,12 @@ class Service extends Base\Service
 
         $totalRecords = 0;
         $updatedRecords = 0;
-        $failedRecords = 0;
         $totalServiceTax = 0;
 
-        foreach ($payments as $payment)
+        $repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
         {
-            try
+            $totalRecords = $payments->count();
+            foreach ($payments as $payment)
             {
                 $txn = $payment->transaction;
                 $this->merchant = $payment->merchant;
@@ -548,29 +548,18 @@ class Service extends Base\Service
 
                 $payment->setServiceTax($txn->getServiceTax());
                 $payment->setFee($txn->getFee());
-             
-                $repo->transaction(function() use($txn, $payment)
-                {
-                    $txn->saveOrFail();
-                    $payment->saveOrFail();
-                });
+
+                $txn->saveOrFail();
+                $payment->saveOrFail();
 
                 $updatedRecords++;
                 $totalServiceTax += $txn -> getServiceTax();
-            }
-            catch(\Exception $e)
-            {
-                $this->app['exception.handler']->traceException($e);
-                $failedRecords++;
-            }
-
-            $totalRecords++;
-        }
+            }            
+        });
 
         $results = array(
             'total'                 => $totalRecords,
             'updated'               => $updatedRecords,
-            'failed'                => $failedRecords,
             'total service tax'     => $totalServiceTax);
 
         return $results;
