@@ -407,25 +407,31 @@ class Service extends Base\Service
     public function sendMerchantBeneficiaryFile()
     {
 
-        $now = Carbon::now("Asia/Kolkata");
-        $dayToday = $now->dayOfWeek;
         $filterDays = 1;
+        $now = Carbon::now("Asia/Kolkata");
 
+        $dayToday = $now->dayOfWeek;
         if($dayToday === Carbon::MONDAY)
         {
             $filterDays = 3;
         }
 
         $filterDate = $now->subDays($filterDays);
+        $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
+                                                        $filterDate->timestamp,
+                                                        $now->timestamp);
 
-        $merchantsActivatedSinceLastReport = $this->repo->
-                getCountOfMerchantsActivatedBetween(
-                    $filterDate->timestamp,
-                    $now->timestamp);
+        if ($merchantsActivatedSinceLastReport > 0)
+        {
+            (new BankAccount\BeneficiaryFile)->generate();
+        }
 
-        $file = (new BankAccount\BeneficiaryFile)->generate($merchantsActivatedSinceLastReport);
+        //Log response in trace
+        $this->trace->info(
+            TraceCode::SEND_BENEFICIARY_FILE,
+            $merchantsActivatedSinceLastReport);
 
-        return $file;
+        return $merchantsActivatedSinceLastReport;
     }
 
     protected function sendActivationEmail($merchant)
