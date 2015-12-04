@@ -13,25 +13,65 @@ use EE\Exception;
  * from Card\Detail.
  *
  * <h3>The configuration that is used to parse the rows.</h3>
+ * This maps the data in the Excel/CSV file to database columns.
  *
- * The formatting is done based on the value of
- * `$this->mapping` array. The columns(from `$this->columns`)
- * that are not present are set to null.
+ * The map can be submitted with the request as an array or as a JSON. If the map is not submitted, the
+ * default mapping (which is only able to parse the bin files that was used for
+ * testing and will definitely break for other file) will be used.
  *
- * The required key in each mapping is `level`.
+ * The map is an array having the column names (from database) as keys. Each
+ * column specifies a `level`.
  *
- * Each mapping has 3 levels.
+ * <h5> There are 3 _levels_ for mapping</h5>
+ * - *level 0*: Constant value for all rows. This supplied `value` is used.
+ *              The required key is `value`.
  *
- * Level 0: Constant value for all rows.
- *          This value of key `value` is used.
- *          The required key is `value`.
+ * - *level 1*: The data in the row under `columnName` is used directly.
+ *              The `columnName` is taken from the Excel file.
+ *              The required key is `columnName`.
  *
- * Level 1: The data in the row under `columnName` is used directly.
- *          The required key is `columnName`.
+ * - *level 2*: The data in row under `columnName` is to be mapped again.
+ *              This _second level_ of mapping is done using `map`.
+ *              The required keys are `columnName` and `map`.
  *
- * Level 2: The data in row under `columnName` is to be mapped again.
- *          This second level of mapping is done using `map`.
- *          The required keys are `columnName` and `map`.
+ * <h3>A sample mapping</h3>
+ *
+ * <code>
+ * 'mapping' => [
+ *     'iin' => [
+ *         'level' => 1,
+ *         'columnName' => 'BIN',          // Direct value from the column will be used
+ *     ],
+ *     'category' => [
+ *         'level' => 1,
+ *         'columnName' => 'CARD_BRAND'
+ *     ],
+ *     'network' => [
+ *         'level' => 0,
+ *         'value' => 'MasterCard',        // network will be MasterCard used for all rows
+ *     ],
+ *     'type' => [
+ *         'level' => 2,
+ *         'columnName' => 'TYPE',   // The value in the field TYPE will be looked up in the supplied map
+ *         'map' => [
+ *             'FC' => 'credit',
+ *             'DC' => 'credit',
+ *             'FD' => 'debit',
+ *             'DD' => 'debit'
+ *         ],
+ *     ],
+ *     'country' => [
+ *         'level' => 2,
+ *         'columnName' => 'TYPE',
+ *         'map' => [
+ *             'DC' => 'IN',
+ *             'DD' => 'IN',
+ *             'FD' => NULL,
+ *             'FC' => NULL
+ *         ],
+ *     ],
+ * ];
+ * </code>
  */
 class Formatter
 {
@@ -76,7 +116,9 @@ class Formatter
         Card\Detail::NETWORK,
         Card\Detail::TYPE,
         Card\Detail::COUNTRY,
-        Card\Detail::ISSUER);
+        Card\Detail::ISSUER,
+        Card\Detail::TRIVIA,
+    );
 
     // Mapping of string to be searched to
     // the original name that should be in database
@@ -111,7 +153,15 @@ class Formatter
     {
         if(isset($input['mapping']))
         {
-            $this->mapping = $input['mapping'];
+            if(gettype($input['mapping']) === 'array')
+            {
+                $this->mapping = $input['mapping'];
+            }
+            else
+            {
+                $this->mapping = json_decode($input['mapping'], true);
+            }
+
         }
         else
         {
