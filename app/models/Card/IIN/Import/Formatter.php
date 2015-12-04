@@ -15,7 +15,7 @@ use EE\Exception;
  * <h3>The configuration that is used to parse the rows.</h3>
  * This maps the data in the Excel/CSV file to database columns.
  *
- * The map can be submitted with the request as an array or as a JSON. If the map is not submitted, the
+ * The map has to be submitted with the request as an array or as a JSON. If the map is not submitted, the
  * default mapping (which is only able to parse the bin files that was used for
  * testing and will definitely break for other file) will be used.
  *
@@ -75,40 +75,7 @@ use EE\Exception;
  */
 class Formatter
 {
-    private $mapping = [
-        Card\Detail::IIN => [
-            'level' => 1,
-            'columnName' => 'BIN',
-        ],
-        Card\Detail::CATEGORY => [
-            'level' => 1,
-            'columnName' => 'CARD_BRAND'
-        ],
-        Card\Detail::NETWORK => [
-            'level' => 1,
-            'columnName' => 'NETWORK',
-        ],
-        Card\Detail::TYPE => [
-            'level' => 2,
-            'columnName' => 'TYPE',
-            'map' => [
-                'FC' => 'credit',
-                'DC' => 'credit',
-                'FD' => 'debit',
-                'DD' => 'debit'
-            ],
-        ],
-        Card\Detail::COUNTRY => [
-            'level' => 2,
-            'columnName' => 'TYPE',
-            'map' => [
-                'DC' => 'IN',
-                'DD' => 'IN',
-                'FD' => NULL,
-                'FC' => NULL
-            ],
-        ],
-    ];
+    private $mapping = null;
 
     private $columns = array(
         Card\Detail::IIN,
@@ -139,9 +106,6 @@ class Formatter
      */
     public function formatData($input, $columns, $data)
     {
-        $this->setNetworkType($input, $columns); // Should be removed after
-                            // shifting completly to mapping from `$input`
-
         $this->setMapping($input);
         $structured = $this->structureData($columns, $data);
 
@@ -165,49 +129,8 @@ class Formatter
         }
         else
         {
-            // throw new new Exception\BadRequestException('Input mapping not set');
-
-            // using the default mapping, this requires the network mapping to
-            // set manually. Remove that when we need that anymore.
+            throw new Exception\BadRequestException('Input mapping not set');
         }
-    }
-
-    /**
-     * Determines the network type from the user input network, or from the file
-     * name.
-     *
-     * It sets the $network variable.
-     *
-     * @param array $input the post data
-     */
-    protected function setNetworkType($input, $columns)
-    {
-        if (array_search($this->mapping[Card\Detail::NETWORK]['columnName'], $columns))
-        {
-            return;
-        }
-        if (isset($input['network']) and ($input['network'] !== ""))
-        {
-            $this->mapping[Card\Detail::NETWORK]['level'] = 0;
-            $this->mapping[Card\Detail::NETWORK]['value'] = $input['network'];
-            return;
-        }
-
-        if (isset($input['file']))
-        {
-            $filename = $input['file']->getClientOriginalName();
-            foreach ($this->networkType as $networkType => $origName)
-            {
-                if (stripos($filename, $networkType) !== false)
-                {
-                    $this->mapping[Card\Detail::NETWORK]['level'] = 0;
-                    $this->mapping[Card\Detail::NETWORK]['value'] = $origName;
-                    return;
-                }
-            }
-        }
-
-        throw new Exception\BadRequestException("Failed to determine the network type.");
     }
 
     /**
