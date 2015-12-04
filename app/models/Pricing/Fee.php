@@ -11,10 +11,10 @@ use Models\Pricing;
 class Fee
 {
     const SERVICE_TAX_PERCENT = 14.5;
-    const SERVICE_TAX_PERCENT_BEFORE_15NOV = 14.0;
-    const SERVICE_TAX_PERCENT_BEFORE_1JUNE = 12.36;
-    const TIMESTAMP_1JUNE = 1433136600;
-    const TIMESTAMP_16NOV = 1447651800;
+    const SERVICE_TAX_PERCENT_BEFORE_15NOV2015 = 14.0;
+    const SERVICE_TAX_PERCENT_BEFORE_1JUNE2015 = 12.36;
+    const TIMESTAMP_11JUNE2015 = 1434000600;
+    const TIMESTAMP_16NOV2015 = 1447651800;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
@@ -44,7 +44,24 @@ class Fee
         $pricingRepo = new Pricing\Repository;
         $rule = $pricingRepo->getPricingPlanRule($txn->getPricingRule());
 
-        $serviceTaxPercentage = $this->getServiceTaxPercentage($payment->getCaptureTimestamp());
+        $txnAuthTime = $payment->getAuthorizeTimestamp();
+        
+        //sd($txnAuthTime);   
+        //set the authorized_at time if not set
+        if(is_null($txnAuthTime) === True)
+        {
+            $txnCreatedTime = $payment->getCreatedTimestamp(); 
+            $txnCapturedTime = $payment->getCaptureTimestamp(); 
+          
+            assert(is_null($txnCreatedTime) === FALSE);
+            assert(is_null($txnCapturedTime) === FALSE);
+
+            $txnAuthTime = ($txnCreatedTime +  $txnCapturedTime)/2;
+
+            $payment->setAuthorizeTimestamp($txnAuthTime);
+        }
+
+        $serviceTaxPercentage = $this->getServiceTaxPercentage($txnAuthTime);
 
         list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $serviceTaxPercentage);
 
@@ -57,14 +74,15 @@ class Fee
     {
         $serviceTaxPercentage = self::SERVICE_TAX_PERCENT;
 
-        if ($timestamp < self::TIMESTAMP_1JUNE)
+        if ($timestamp < self::TIMESTAMP_11JUNE2015)
         {
-            $serviceTaxPercentage = self::SERVICE_TAX_PERCENT_BEFORE_1JUNE;
+            //service tax rates changed after 15th but service was updated on 11th june 2015
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENT_BEFORE_1JUNE2015;
         }
-        else if ($timestamp < self::TIMESTAMP_16NOV)
+        else if ($timestamp < self::TIMESTAMP_16NOV2015)
         {
-            //service tax rates changed after 15th but service was updated on 16th
-            $serviceTaxPercentage = self::SERVICE_TAX_PERCENT_BEFORE_15NOV;
+            //service tax rates changed after 15th but service was updated on 16th Nov 2015
+            $serviceTaxPercentage = self::SERVICE_TAX_PERCENT_BEFORE_15NOV2015;
         }
 
         return $serviceTaxPercentage;

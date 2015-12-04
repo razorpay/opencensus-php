@@ -530,7 +530,8 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
-        $payments = (new Payment\Repository)->getNonTaxComputedPayments();
+        $repo = new Payment\Repository;
+        $payments = $repo->getNonTaxComputedPayments();
 
         $totalRecords = 0;
         $updatedRecords = 0;
@@ -548,11 +549,11 @@ class Service extends Base\Service
                 $payment->setServiceTax($txn->getServiceTax());
                 $payment->setFee($txn->getFee());
              
-                //DB::transaction(function() use($txn, $payment)
-                //{
+                $repo->transaction(function() use($txn, $payment)
+                {
                     $txn->saveOrFail();
                     $payment->saveOrFail();
-                //})
+                });
 
                 $updatedRecords++;
                 $totalServiceTax += $txn -> getServiceTax();

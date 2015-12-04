@@ -134,7 +134,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function fillServiceTax(& $txn, $payment)
+    public function fillServiceTax($txn, $payment)
     {
         if($txn->getGratisAttribute() === true)
         {

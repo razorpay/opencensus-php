@@ -102,10 +102,10 @@ class Entity extends Base\PublicEntity
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
-        self::CREATED_AT,
-        self::UPDATED_AT,
         self::FEE,
-        self::SERVICE_TAX);
+        self::SERVICE_TAX,
+        self::CREATED_AT,
+        self::UPDATED_AT);
 
     protected $public = array(
         self::ID,
@@ -241,9 +241,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp()
+    public function setAuthorizeTimestamp($authTimestamp)
     {
-        $this->setAttribute(self::AUTHORIZED_AT, time());
+        if(is_null($authTimestamp))
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, time());
+        }
+        else
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);            
+        }
     }
 
     public function setBank($bank)
@@ -355,6 +362,21 @@ class Entity extends Base\PublicEntity
     public function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
+    }
+
+    public function getCreatedAttribute()
+    {
+        return ($this->attributes[self::CREATED_AT] !== null);
+    }
+
+        public function getFeeAttribute()
+    {
+        return (int) $this->attributes[self::FEE];
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -555,6 +577,11 @@ class Entity extends Base\PublicEntity
     public function getServiceTax()
     {
         return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getCreatedTimestamp()
+    {
+        return $this->getAttribute(self::CREATED_AT);
     }
 
     public function getDaysSinceAuthorized()
