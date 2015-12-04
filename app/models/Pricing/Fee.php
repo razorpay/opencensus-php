@@ -65,7 +65,11 @@ class Fee
 
         list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $serviceTaxPercentage);
 
-        assert($fee === $txn->getFee());
+        $diff = abs($fee - $txn->getFee());
+        if($diff > 1)
+        {
+            assert($fee === $txn->getFee());            
+        }
 
         return $serviceTax;   
     }
