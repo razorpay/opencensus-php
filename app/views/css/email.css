@@ -44,14 +44,12 @@ h3.center{
 .dark {
 	color:#2d2d2d;
 }
-.newsletter {
-	padding: 40px;
-}
-.newsletter-header-bg {
+
+.welcome-header-bg {
 	max-width: 580px;
 	min-height: 180px;
 }
-.newsletter-header-bg h1{
+.welcome-header-bg h1{
 	text-align: left;
 	margin-left: 40px;
 	margin-top: 40px;
@@ -60,7 +58,7 @@ h3.center{
 	font-weight: 200 !important;
 	color: white;
 }
-.newsletter, .newsletter p {
+.welcome, .welcome p {
 	font-size: 16px;
 	color: #2d2d2d;
 	text-align: justify;
@@ -68,11 +66,11 @@ h3.center{
 	background: white;
 	margin: 10px 0px 10px 0px;
 }
-.newsletter a, .newsletter a:hover {
+.welcome a, .welcome a:hover {
 	color: #24bbea;
 	text-decoration: none !important;
 }
-.newsletter h1{
+.welcome h1{
 	font-size: 24px;
 	line-height: 24px;
 	color: #24bbea;
