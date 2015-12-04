@@ -17,6 +17,10 @@ h1{
 	line-height: 24px;
 }
 
+.newsletter h2, .newsletter h3, .newsletter h4 {
+	text-align: left;
+}
+
 .newsletter h3{
 	font-size: 28px;
 	line-height: 24px;

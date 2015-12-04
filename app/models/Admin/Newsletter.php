@@ -227,12 +227,12 @@ $msg
 </div>
 EOT;
         $viewDirectory = app_path()."/views/";
-        //$ink_css =      file_get_contents($viewDirectory.'css/ink.css');
+        $ink_css =      file_get_contents($viewDirectory.'css/ink.css');
         $cssContent =   file_get_contents($viewDirectory.'css/email.css')
             . PHP_EOL
             . file_get_contents($viewDirectory . 'css/newsletter.css');
 
-        // $cssContent = $ink_css. PHP_EOL . $common_css;
+        $cssContent = $ink_css. PHP_EOL . $cssContent;
 
 
         $convertor = new CssToInlineStyles();
