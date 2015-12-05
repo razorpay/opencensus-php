@@ -383,15 +383,7 @@ class Core extends Base\Core
 
     protected function getSettlementSchedule($payment)
     {
-        $setlSchedule = $payment->merchant->getSettlementSchedule();
-
-        if (($setlSchedule < 3) and
-            ($method !== Method::CARD))
-        {
-            $setlSchedule = 3;
-        }
-
-        return $setlSchedule;
+        return $payment->merchant->getSettlementSchedule();
     }
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
