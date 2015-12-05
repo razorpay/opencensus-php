@@ -1415,4 +1415,11 @@ class Service extends Base\Service
 
         return [$error, $response];
     }
+
+    public function logDataExport($entity, $params)
+    {
+        $adminId = \Auth::admin()->get()->username;
+
+        $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
+    }
 }
