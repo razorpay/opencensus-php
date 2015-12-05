@@ -412,6 +412,8 @@ class AdminController extends BaseController
                 $data['headings'] = array_keys($data['items'][0]);
             }
 
+            (new Admin\Service)->logDataExport($entity, $input);
+
             return AppResponse::csvResponse($data);
         }
         else
