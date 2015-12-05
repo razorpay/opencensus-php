@@ -53,6 +53,7 @@ class Handler
             }
             else
             {
+                throw $exception;
                 sd($exception);
             }
         }

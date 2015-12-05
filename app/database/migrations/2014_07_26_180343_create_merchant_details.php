@@ -65,9 +65,9 @@ class CreateMerchantDetails extends Migration
 
             $table->string('business_model')->nullable();
 
-            $table->integer('transaction_volume')->unsigned();
+            $table->integer('transaction_volume')->unsigned()->default(0);
 
-            $table->integer('transaction_value')->unsigned();
+            $table->integer('transaction_value')->unsigned()->default(0);
 
             $table->string('promoter_pan')->nullable();
 
