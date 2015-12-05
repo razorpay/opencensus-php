@@ -82,16 +82,18 @@ class BeneficiaryFile
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
         $fullpath = $this->getExcelFullFilePath();
+        $merchantsCount = count($list);
 
-        $this->sendKotakBeneficiaryFileMail($fullpath);
+        $this->sendKotakBeneficiaryFileMail($fullpath, $merchantsCount);
 
         return ['url' => $fullpath];
     }
 
-    protected function sendKotakBeneficiaryFileMail($fullpath)
+    protected function sendKotakBeneficiaryFileMail($fullpath, $merchantsCount)
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
-                        'Razorpay and kindly update it on your end';
+                        'Razorpay and kindly update it on your end.' .
+                        'Beneficiaries Count is '. $merchantsCount .' .';
 
         $data['file'] = $fullpath;
 

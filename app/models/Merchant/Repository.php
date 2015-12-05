@@ -67,6 +67,15 @@ class Repository extends Base\Repository
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
+    public function getCountOfMerchantsActivatedBetween($from, $to)
+    {
+
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Entity::ACTIVATED_AT, [$from, $to])->count();
+
+    }
+
     public function addQueryParamMethods($query, $params)
     {
         $query->join(

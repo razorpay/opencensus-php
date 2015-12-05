@@ -3,6 +3,7 @@
 namespace Models\Merchant;
 
 use Constants\Mode;
+use Carbon\Carbon;
 use Mail;
 
 use Models\Base;
@@ -394,6 +395,42 @@ class Service extends Base\Service
         $file = (new BankAccount\BeneficiaryFile)->generate();
 
         return $file;
+    }
+
+
+    /**
+    *   Generate and Send the beneficary file to nodal account's bank
+    *   if a new merchant has been activated since
+    *   if (monday)  - 3 days
+    *   else         - 1 day
+    */
+    public function postMerchantBeneficiaryFile()
+    {
+        $filterDays = 1;
+        $today = Carbon::today('Asia/Kolkata');
+
+        $dayToday = $today->dayOfWeek;
+        if ($dayToday === Carbon::MONDAY)
+        {
+            $filterDays = 3;
+        }
+
+        $filterDate = $today->subDays($filterDays);
+        $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
+                                                        $filterDate->timestamp,
+                                                        $today->timestamp);
+
+        if ($merchantsActivatedSinceLastReport > 0)
+        {
+            (new BankAccount\BeneficiaryFile)->generate();
+        }
+
+        //Log response in trace
+        $this->trace->info(
+            TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
+            array('new_merchants_activated' => $merchantsActivatedSinceLastReport));
+
+        return $merchantsActivatedSinceLastReport;
     }
 
     protected function sendActivationEmail($merchant)
