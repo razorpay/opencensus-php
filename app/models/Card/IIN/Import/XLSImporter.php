@@ -34,11 +34,13 @@ class XLSImporter
         $duplicates = $dataCleaner->getDuplicateEntries();
         $conflits = $dataCleaner->getDBConflicts();
         $networkCheckFails = $dataCleaner->getNetworkCheckFails();
+        $successCount = count($cleaned);
 
         return array(
             'duplicates'   => $duplicates,
             'db_conflicts' => $conflits,
             'network_errors' => $networkCheckFails,
+            'success' => $successCount,
         );
     }
 

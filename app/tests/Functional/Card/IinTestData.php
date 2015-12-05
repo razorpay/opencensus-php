@@ -161,8 +161,9 @@ return [
                         'issuer'    => null,
                         'trivia'    => null,
                     ]
-                ]
-            ]
+                ],
+                'success' => 4,
+            ],
         ],
     ],
 
