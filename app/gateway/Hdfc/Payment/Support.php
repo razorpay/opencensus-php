@@ -246,7 +246,6 @@ trait Support
 
         if ($this->error)
         {
-
             $this->trace(
                 Trace::ERROR,
                 TraceCode::GATEWAY_SUPPORT_ERROR,
