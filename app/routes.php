@@ -225,12 +225,12 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::delete('/admin/users/{id}', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-
-        Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
-            ->where('format', 'csv');
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
+
+    Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
+            ->where('format', 'csv');
 
     // This is a generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
