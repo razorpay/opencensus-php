@@ -404,7 +404,7 @@ class Service extends Base\Service
     *   if (monday)  - 3 days
     *   else         - 1 day
     */
-    public function sendMerchantBeneficiaryFile()
+    public function postMerchantBeneficiaryFile()
     {
 
         $filterDays = 1;
