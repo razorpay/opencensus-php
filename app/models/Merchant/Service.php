@@ -406,7 +406,6 @@ class Service extends Base\Service
     */
     public function postMerchantBeneficiaryFile()
     {
-
         $filterDays = 1;
         $today = Carbon::today('Asia/Kolkata');
 
