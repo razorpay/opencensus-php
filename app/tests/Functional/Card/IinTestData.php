@@ -71,19 +71,19 @@ return [
             'content' => [
                 'mapping' => [
                     'iin' => [
-                        'level' => 1,
+                        'level' => 'direct',
                         'columnName' => 'BIN',
                     ],
                     'category' => [
-                        'level' => 1,
+                        'level' => 'direct',
                         'columnName' => 'CARD_BRAND'
                     ],
                     'network' => [
-                        'level' => 0,
+                        'level' => 'constant',
                         'value' => 'MasterCard',
                     ],
                     'type' => [
-                        'level' => 2,
+                        'level' => 'lookup',
                         'columnName' => 'TYPE',
                         'map' => [
                             'FC' => 'credit',
@@ -93,7 +93,7 @@ return [
                         ],
                     ],
                     'country' => [
-                        'level' => 2,
+                        'level' => 'lookup',
                         'columnName' => 'TYPE',
                         'map' => [
                             'DC' => 'IN',

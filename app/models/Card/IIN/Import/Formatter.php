@@ -23,14 +23,14 @@ use EE\Exception;
  * column specifies a `level`.
  *
  * <h5> There are 3 _levels_ for mapping</h5>
- * - *level 0*: Constant value for all rows. This supplied `value` is used.
+ * - *constant*: Constant value for all rows. This supplied `value` is used.
  *              The required key is `value`.
  *
- * - *level 1*: The data in the row under `columnName` is used directly.
+ * - *direct*: The data in the row under `columnName` is used directly.
  *              The `columnName` is taken from the Excel file.
  *              The required key is `columnName`.
  *
- * - *level 2*: The data in row under `columnName` is to be mapped again.
+ * - *lookup*: The data in row under `columnName` is to be mapped again.
  *              This _second level_ of mapping is done using `map`.
  *              The required keys are `columnName` and `map`.
  *
@@ -39,19 +39,19 @@ use EE\Exception;
  * <code>
  * 'mapping' => [
  *     'iin' => [
- *         'level' => 1,
+ *         'level' => 'direct',
  *         'columnName' => 'BIN',          // Direct value from the column will be used
  *     ],
  *     'category' => [
- *         'level' => 1,
+ *         'level' => 'direct,
  *         'columnName' => 'CARD_BRAND'
  *     ],
  *     'network' => [
- *         'level' => 0,
+ *         'level' => 'constant',
  *         'value' => 'MasterCard',        // network will be MasterCard used for all rows
  *     ],
  *     'type' => [
- *         'level' => 2,
+ *         'level' => 'lookup',
  *         'columnName' => 'TYPE',   // The value in the field TYPE will be looked up in the supplied map
  *         'map' => [
  *             'FC' => 'credit',
@@ -61,7 +61,7 @@ use EE\Exception;
  *         ],
  *     ],
  *     'country' => [
- *         'level' => 2,
+ *         'level' => 'lookup',
  *         'columnName' => 'TYPE',
  *         'map' => [
  *             'DC' => 'IN',
@@ -76,6 +76,12 @@ use EE\Exception;
 class Formatter
 {
     private $mapping = null;
+
+    const CONSTANT = 'constant';
+
+    const DIRECT   = 'direct';
+
+    const LOOKUP   = 'lookup';
 
     private $columns = array(
         Card\Detail::IIN,
@@ -147,7 +153,9 @@ class Formatter
         if (isset($this->mapping[$column]))
         {
             $mapping = $this->mapping[$column];
-            if (($mapping['level'] > 0) and !(isset($mapping['column'])))
+            if (
+                (($mapping['level'] === self::LOOKUP) || ($mapping['level'] === self::DIRECT))
+                and !(isset($mapping['column'])))
             {
                 $mapping['column'] = array_search(
                     $mapping['columnName'],
@@ -156,7 +164,7 @@ class Formatter
 
             return $mapping;
         }
-        return ['level' => 0, 'value' => null];
+        return ['level' => self::CONSTANT, 'value' => null];
     }
 
     /**
@@ -185,14 +193,14 @@ class Formatter
             {
                 switch ($map[$column]['level'])
                 {
-                    case 0:
+                    case self::CONSTANT:
                         $value = $map[$column]['value'];
                         break;
-                    case 1:
+                    case self::DIRECT:
                         $col = $map[$column]['column'];
                         $value = $row[$col];
                         break;
-                    case 2:
+                    case self::LOOKUP:
                         $col = $map[$column]['column'];
                         $intermediate = $row[$col];
                         $value = $map[$column]['map'][$intermediate];
