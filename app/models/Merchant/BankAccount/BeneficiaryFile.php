@@ -99,7 +99,7 @@ class BeneficiaryFile
 
         $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com', 'aggregator@kotak.com'];
+            $emails = ['settlements@razorpay.com'];
 
             $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
 

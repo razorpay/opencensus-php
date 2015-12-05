@@ -17,7 +17,6 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::ACTIVATED               => 'sometimes|boolean',
-        Entity::ACTIVATED_AT            => 'sometimes|date',
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
         Entity::LIVE                    => 'sometimes|boolean',
         Entity::EMAIL                   => 'sometimes|string|max:255',

@@ -408,18 +408,18 @@ class Service extends Base\Service
     {
 
         $filterDays = 1;
-        $now = Carbon::now("Asia/Kolkata");
+        $today = Carbon::today('Asia/Kolkata');
 
-        $dayToday = $now->dayOfWeek;
-        if($dayToday === Carbon::MONDAY)
+        $dayToday = $today->dayOfWeek;
+        if ($dayToday === Carbon::MONDAY)
         {
             $filterDays = 3;
         }
 
-        $filterDate = $now->subDays($filterDays);
+        $filterDate = $today->subDays($filterDays);
         $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
                                                         $filterDate->timestamp,
-                                                        $now->timestamp);
+                                                        $today->timestamp);
 
         if ($merchantsActivatedSinceLastReport > 0)
         {
@@ -428,7 +428,7 @@ class Service extends Base\Service
 
         //Log response in trace
         $this->trace->info(
-            TraceCode::SEND_BENEFICIARY_FILE,
+            TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
             $merchantsActivatedSinceLastReport);
 
         return $merchantsActivatedSinceLastReport;
