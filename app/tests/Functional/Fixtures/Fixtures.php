@@ -51,7 +51,13 @@ class Fixtures
 
         $this->merchant->setUp();
 
-        $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
+        $merchantData = [
+            'id' => '1cXSLlUU8V9sXl',
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+            'international' => 1
+        ];
+
+        $apiMerchant = $this->create('merchant', $merchantData);
         $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
 
         $this->create('pricing:default_plan');
