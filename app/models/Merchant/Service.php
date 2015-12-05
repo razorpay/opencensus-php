@@ -428,7 +428,7 @@ class Service extends Base\Service
         //Log response in trace
         $this->trace->info(
             TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
-            $merchantsActivatedSinceLastReport);
+            array('new_merchants_activated' => $merchantsActivatedSinceLastReport));
 
         return $merchantsActivatedSinceLastReport;
     }
