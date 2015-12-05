@@ -4,6 +4,7 @@ namespace Models\Card\IIN\Import;
 
 use Models\Card;
 use Models\Card\IIN;
+use EE\Exception;
 
 /**
  * This takes tha formatted data and cleans the duplicte entries and the
@@ -17,7 +18,19 @@ class DataCleaner
 
     protected $uniqueIins = array();
 
+    protected $networkCheckFails = array();
+
     protected $repo = null;
+
+    protected $networkRegexes = array(
+        'MasterCard'    => '/^5[1-5][0-9]{4,}$/',
+        'Visa'  => '/^4[0-9]{5,}$/',
+        'American Express'  => '/^3[47][0-9]{4,}$/',
+        'JCB'   => '/^(?:2131|1800|35[0-9]{3})/',
+        'Diners Club'  => '/^3(?:0[0-5]|[68][0-9])/',
+        'Discover'  => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
+        'Union Pay'   => '/^62[0-9]{4,}$/',
+    );
 
     public function __construct()
     {
@@ -49,6 +62,11 @@ class DataCleaner
     public function getDBConflicts()
     {
         return $this->dbConflicts;
+    }
+
+    public function getNetworkCheckFails()
+    {
+        return $this->networkCheckFails;
     }
 
     /**
@@ -124,8 +142,17 @@ class DataCleaner
             $iin = $rows[0][Card\Detail::IIN];
             if ($len === 1)
             {
-                array_push($this->uniqueIins, $iin);
-                $data[$iin] = $rows[0];
+
+                $network = $rows[0][Card\Detail::NETWORK];
+                if($this->checkNetworkValidity($iin, $network) === true)
+                {
+                    array_push($this->uniqueIins, $iin);
+                    $data[$iin] = $rows[0];
+                }
+                else
+                {
+                    $this->networkCheckFails[$iin] = $rows[0];
+                }
             }
             else
             {
@@ -133,5 +160,18 @@ class DataCleaner
             }
         }
         return $data;
+    }
+
+    protected function checkNetworkValidity($iin, $network)
+    {
+        //sd($network);
+        if(!isset($this->networkRegexes[$network]))
+        {
+             new Exception\BadRequestException("Unknown Network");
+        }
+
+        $regex = $this->networkRegexes[$network];
+        return (preg_match($regex, $iin) === 1);
+
     }
 }

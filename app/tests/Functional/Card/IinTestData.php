@@ -151,6 +151,17 @@ return [
                         ],
                     ],
                 ],
+                'network_errors' => [
+                    '497522' => [
+                        'iin'       => '497522',
+                        'category'  => 'CLASSIC',
+                        'network'   => 'MasterCard',
+                        'type'      => 'credit',
+                        'country'   => 'IN',
+                        'issuer'    => null,
+                        'trivia'    => null,
+                    ]
+                ]
             ]
         ],
     ],
