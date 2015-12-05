@@ -6,9 +6,9 @@
 * `sudo a2ensite dashboard.razorpay.dev.conf`
 * `sudo chmod -R o+wx app/storage/`
 * Copy over `.env.sample.php` to `.env.dev.php` and add db name & password.
-* Copy over `bootstrap\sample.environment.php` to `bootstrap\environment.php`. Specify `dev` environment for local development.
-* Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
+* Copy over `bootstrap\environment.sample.php` to `bootstrap\environment.php`. Specify `dev` environment for local development.
 * Run `php composer.phar install` to install laravel
+* Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * `npm install`
 * `npm install -g grunt-cli`
 * `cp app/config/grunt.sample.json app/config/grunt.json`
