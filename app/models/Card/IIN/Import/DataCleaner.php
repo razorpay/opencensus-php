@@ -140,7 +140,7 @@ class DataCleaner
         {
             $len = count($rows);
             $iin = $rows[0][Card\Detail::IIN];
-            if ($len === 1)
+            if ($this->checkDuplicates($rows))
             {
 
                 $network = $rows[0][Card\Detail::NETWORK];
@@ -160,6 +160,21 @@ class DataCleaner
             }
         }
         return $data;
+    }
+
+    protected function checkDuplicates($rows)
+    {
+        $row1 = $rows[0];
+        $i = 0;
+        $len = count($rows);
+        for($i = 1; $i < $len; $i++)
+        {
+            if(count(array_diff_assoc($row1, $rows[$i])) !== 0)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     protected function checkNetworkValidity($iin, $network)
