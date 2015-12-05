@@ -11,10 +11,6 @@ class IIN extends Entity
 
     protected function getEntityUrl()
     {
-        $fullClassName = get_class($this);
-        $pos = strrpos($fullClassName, '\\');
-        $className = substr($fullClassName, $pos + 1);
-        $className = strtolower($className);
-        return $className.'s/';
+        return strtolower((new \ReflectionClass($this))->getShortName()) . 's/';
     }
 }
