@@ -13,6 +13,8 @@ use Gateway\Base\VerifyResult;
 use Gateway\Wallet\Base;
 use Trace\Trace;
 use Trace\TraceCode;
+use ResponseCode;
+use Url;
 use View;
 
 class Gateway extends Base\Gateway
@@ -34,6 +36,12 @@ class Gateway extends Base\Gateway
         'dataPickUpCode'    => 'reference1',
         'actionCode'        => 'reference2',
         'txnAmount'         => 'amount',
+    );
+
+
+    protected $action_map = array(
+        'login'  => 'processMerchantAPI#LogIn',
+        'refund' => 'processMerchantAPI#Refund'
     );
 
     public function authorize(array $input)
@@ -143,7 +151,55 @@ class Gateway extends Base\Gateway
 
     public function refund(array $input)
     {
-        ;
+        parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                        $input['payment']['id'], Action::AUTHORIZE);
+
+
+        // step process
+        // have to login user
+        // have to perform refund
+
+        // URL not sure
+        $login_content = $this->prepareLoginContent($input);
+
+        $login_response = $this->postRequest($login_content, 'basic');
+
+        $login_response = parse_str($login_response);
+
+        if (ResponseCode::$login_response['status'] !== 'Sucess')
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [$content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        }
+
+        // URL confirmed
+        $refund_content = $this->prepareRefundContent($login_response);
+
+        $refund_response = $this->postRequest($login_content, 'basic');
+
+        $refund_response = parse_str($refund_response);
+
+        if (ResponseCode::$refund_response['status'] !== 'Sucess')
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [$content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        }
+
+        //Logout.
+
+        //save refund
+
+
     }
 
     public function verify(array $input)
@@ -160,6 +216,38 @@ class Gateway extends Base\Gateway
         parent::capture($input);
     }
 
+    protected function prepareLoginContent($input)
+    {
+        $login_request_content = array(
+            'pg_instance_id'    => $input['terminal'][''],
+            'merchant_id'       => $input['terminal']['gateway_merchant_id'],
+            'perform'           => $this->action_map['login'],
+            'login_id'          => $input['terminal']['gateway_login_id'],
+            'password'          => $input['terminal']['gateway_password'],
+            'pgName'            => 'RazorPay',
+        );
+
+        $login_request_content['message_hash'] = $this->getHashForLoginRequest($loginRequestContent);
+
+        return $login_request_content;
+    }
+
+    protected function prepareRefundContent($input, $login_context)
+    {
+        $refund_request_content =  array(
+            'pg_instance_id'                    => $input['terminal'][''],
+            'merchant_id'                       => $input['terminal']['gateway_merchant_id'],
+            'perform'                           => $this->action_map['refund'],
+            'orginal_transaction_id'            => '',
+            'original_merchant_reference_no'    => '',
+            'login_id'                          => $input['terminal']['gateway_login_id'],
+            'login_context'                     => $login_context,
+        );
+
+        $refund_request_content['message_hash'] = $this->getHashForRefundRequest($refund_request_content);
+
+        return $refund_request_content;
+    }
     protected function verifyPaymentCallbackResponse($input)
     {
         $resCode = (int) $input['resCode'];
@@ -244,17 +332,37 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function postRequest($content)
+    protected function postRequest($content, $type = null)
     {
-        $request = array(
-            'url' => 'https://' . $this->getUrl(),
-            'method' => 'post',
-            'content' => json_encode($content),
-            'headers' => ['Content-Type' => 'application/json']);
 
-        $response = $this->runRequestResponseFlow($request);
+        if($type === null)
+        {
 
-        $content = json_decode($response->body, true);
+            $request = array(
+                'method'  => 'post',
+                'url'     => 'https://' . $this->getUrl(),
+                'content' => json_encode($content),
+                'headers' => ['Content-Type' => 'application/json']);
+
+            $response = $this->runRequestResponseFlow($request);
+
+            $content = json_decode($response->body, true);
+
+        }else{
+
+            $type = strtoupper($type);
+            $request = array(
+                'method'  => 'post',
+                'url'     => 'https://' . Url::ACOSA_TEST_DOMAIN . Url::$type,
+                'content' => $content,
+                'headers' => ['Content-Type' => 'multipart/form-data']);
+
+            $response = $this->runRequestResponseFlow($request);
+
+            $content = $response->body;
+        }
+
+
 
         return $content;
     }
@@ -336,6 +444,37 @@ class Gateway extends Base\Gateway
         );
 
         $content['wpay'] = 'wpay';
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getHashForLoginRequest($content){
+
+        $fieldsInOrder = array(
+            'pg_instance_id',
+            'merchant_id',
+            'perform',
+            'login_id',
+            'pgName',
+        );
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getHashForRefundRequest(array $content){
+
+        $fieldsInOrder = array(
+            'pg_instance_id',
+            'merchant_id',
+            'perform',
+            'orginal_transaction_id',
+            'original_merchant_reference_no',
+            'login_id',
+        );
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 

@@ -10,4 +10,7 @@ class Url
     const PAY                   = '/vpcpay';
     const AMA                   = '/vpcdps';
     const VERIFY                = '/v1/wPay/pickup';
+
+    const ACOSA_TEST_DOMAIN     = 'pg.pc.enstage-sas.com';
+    const BASIC                 = '/AccosaPGAPI/MerchantAPI';
 }
