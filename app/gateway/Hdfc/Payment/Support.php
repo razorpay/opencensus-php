@@ -247,30 +247,30 @@ trait Support
         if ($this->error)
         {
 
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_SUPPORT_ERROR,
+                $this->supportPaymentResponse);
+
             $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->supportPaymentRequest['data'],
                                 $this->supportPaymentResponse['error'],
                                 $type,
                                 $paymentId,
                                 $refundId);
-
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_SUPPORT_ERROR,
-                $this->supportPaymentResponse);
         }
         else
         {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_SUPPORT_RESPONSE,
+                $this->supportPaymentResponse);
+
             $this->model = $this->repo->persistAfterSupportPayment(
                     $this->supportPaymentRequest['data'],
                     $this->supportPaymentResponse['data'],
                     $paymentId,
                     $refundId);
-
-            $this->trace(
-                Trace::INFO,
-                TraceCode::GATEWAY_SUPPORT_RESPONSE,
-                $this->supportPaymentResponse);
         }
     }
 
