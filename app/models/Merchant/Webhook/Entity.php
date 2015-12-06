@@ -65,6 +65,20 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(\Models\Merchant\Entity::class);
     }
 
+    public function incrementFailureCount()
+    {
+        $count = $this->getFailureCount();
+        $count++;
+        $this->setFailureCountAttribute($count);
+
+        assert($count <= self::MAX_FAILURE_COUNT);
+
+        if ($count === MAX_FAILURE_COUNT)
+        {
+            $this->deactivate();
+        }
+    }
+
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
@@ -125,5 +139,10 @@ class Entity extends Base\PublicEntity
         assert ($count <= self::MAX_FAILURE_COUNT);
 
         $this->attributes[self::FAILURE_COUNT] = $count;
+    }
+
+    protected function deactivate()
+    {
+        $this->setAttribute(self::ACTIVE, 0);
     }
 }
