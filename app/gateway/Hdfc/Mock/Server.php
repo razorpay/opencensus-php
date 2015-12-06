@@ -4,12 +4,13 @@ namespace Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment\Action;
 use Gateway\Hdfc\Mock;
 use Models\Card;
 
-class Server
+class Server extends Base\Mock\Server
 {
     protected $request;
 
@@ -303,6 +304,8 @@ class Server
             $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
         }
 
+        $res = $this->content($res);
+
         $xml = Hdfc\Utility::createXml($res);
 
         return $xml;
@@ -378,6 +381,7 @@ class Server
     {
         $input = $this->input;
 
+        $this->gateway = new Gateway;
         $fields = $this->gateway->getRequestFields($name);
 
         Hdfc\Utility::getFieldsFromXML(

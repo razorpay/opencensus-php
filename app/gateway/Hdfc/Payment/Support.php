@@ -3,6 +3,7 @@
 namespace Gateway\Hdfc\Payment;
 
 use EE\Exception;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use Models\Card;
@@ -174,10 +175,10 @@ trait Support
 
         $payment = $this->model;
 
-        if (($this->action === Action::CAPTURE) and
+        if (($this->action === Base\Action::CAPTURE) and
             ($error['code'] === Hdfc\ErrorCode::GW00176) and
             ($input['payment']['status'] === 'authorized') and
-            ($input['payment']['amount_authorized'] === $input['amount']))
+            ($input['payment']['amount_authorized'] === (int) $input['amount']))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CAPTURE_FORCED,
