@@ -199,4 +199,10 @@ class PaymentController extends BaseController
     {
         return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
     }
+
+    public function postComputeServiceTax()
+    {
+        $data = $this->payment->computeServiceTax();
+        return ApiResponse::json($data);
+    }
 }

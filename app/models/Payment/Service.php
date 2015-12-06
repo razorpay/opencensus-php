@@ -10,6 +10,7 @@ use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\Payment;
+use Models\Transaction;
 
 use Trace\Trace;
 use Trace\TraceCode;
@@ -527,5 +528,42 @@ class Service extends Base\Service
             'mode'      => $this->mode);
 
         return $bindings;
+    }
+
+    public function computeServiceTax()
+    {
+        $repo = new Payment\Repository;
+        $payments = $repo->getNonTaxComputedPayments();
+
+        $totalRecords = 0;
+        $updatedRecords = 0;
+        $totalServiceTax = 0;
+
+        $repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
+        {
+            $totalRecords = $payments->count();
+            foreach ($payments as $payment)
+            {
+                $txn = $payment->transaction;
+                $this->merchant = $payment->merchant;
+                (new Transaction\Core)->fillServiceTax($txn, $payment);
+
+                $payment->setServiceTax($txn->getServiceTax());
+                $payment->setFee($txn->getFee());
+
+                $txn->saveOrFail();
+                $payment->saveOrFail();
+
+                $updatedRecords++;
+                $totalServiceTax += $txn -> getServiceTax();
+            }
+        });
+
+        $results = array(
+            'total'                 => $totalRecords,
+            'updated'               => $updatedRecords,
+            'total service tax'     => $totalServiceTax);
+
+        return $results;
     }
 }

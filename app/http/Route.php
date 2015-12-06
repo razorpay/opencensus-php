@@ -138,6 +138,7 @@ final class Route
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
+        'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ]
     );
 
     public static $public = array(
@@ -255,7 +256,8 @@ final class Route
         'iin_fetch_multiple',
         'iin_add',
         'send_test_newsletter',
-        'send_newsletter'
+        'send_newsletter',
+        'payment_compute_tax',
         );
 
     public static $proxy = array(
