@@ -4,6 +4,8 @@ namespace Constants;
 
 class Table
 {
+    // Core entities
+
     const IIN               = 'iins';
     const KEY               = 'keys';
     const CARD              = 'cards';
@@ -20,4 +22,13 @@ class Table
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
     const DAILY_SETTLEMENT  = 'daily_settlements';
+
+    // Gateway related
+    const ATOM              = 'atom';
+    const HDFC              = 'hdfc';
+    const AXIS              = 'axis';
+    const PAYTM             = 'paytm';
+    const BILLDESK          = 'billdesk';
+    const MOBIKWIK          = 'mobikwik';
+    const NETBANKING        = 'netbanking';
 }
