@@ -104,4 +104,16 @@ class Repository extends Base\Repository
 
         $query->select($query->getModel()->getTable().'.*');
     }
+
+    /**
+     * Returns all the emails and names for all Merchants
+     * No limits
+     * @return [type] [description]
+     */
+    public function fetchAllMerchantContacts()
+    {
+        $repo = $this->repo;
+
+        return $repo::all(['name', 'email']);
+    }
 }
