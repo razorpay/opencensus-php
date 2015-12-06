@@ -175,6 +175,12 @@ class Entity extends Base\PublicEntity
             'Models\Transaction\Entity');
     }
 
+    public function webhook()
+    {
+        return $this->hasOne(
+            'Models\Merchant\Webhook\Entity');
+    }
+
     public function setPricingPlan($planId)
     {
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);

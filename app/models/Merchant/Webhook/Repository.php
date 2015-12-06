@@ -23,4 +23,10 @@ class Repository extends Base\Repository
         return $repo::where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->get();
     }
+
+    public function incrementFailureCount($webhook)
+    {
+        $webhook->incrementFailureCount();
+        $webhook->saveOrFail();
+    }
 }
