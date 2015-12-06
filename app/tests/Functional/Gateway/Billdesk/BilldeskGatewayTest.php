@@ -91,6 +91,7 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentRefund'], $refund);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
     }

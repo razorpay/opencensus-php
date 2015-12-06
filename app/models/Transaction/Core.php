@@ -174,12 +174,13 @@ class Core extends Base\Core
         $settledAt = 1;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT      => $refund->getAmount(),
-            Transaction\Entity::TYPE        => Transaction\Type::REFUND,
-            Transaction\Entity::FEE         => 0,
-            Transaction\Entity::DEBIT       => $refund->getAmount(),
-            Transaction\Entity::CREDIT      => 0,
-            Transaction\Entity::CURRENCY    => 'INR');
+            Transaction\Entity::AMOUNT          => $refund->getAmount(),
+            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
+            Transaction\Entity::FEE             => 0,
+            Transaction\Entity::SERVICE_TAX     => 0,
+            Transaction\Entity::DEBIT           => $refund->getAmount(),
+            Transaction\Entity::CREDIT          => 0,
+            Transaction\Entity::CURRENCY        => 'INR');
 
         $gateway = $refund->getGateway();
 
@@ -247,6 +248,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED         => 0,
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
+            Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,

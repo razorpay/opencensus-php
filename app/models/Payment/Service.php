@@ -554,7 +554,7 @@ class Service extends Base\Service
 
                 $updatedRecords++;
                 $totalServiceTax += $txn -> getServiceTax();
-            }            
+            }
         });
 
         $results = array(

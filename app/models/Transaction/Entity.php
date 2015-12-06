@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const CREDIT            = 'credit';
     const CURRENCY          = 'currency';
     const FEE               = 'fee';
+    const SERVICE_TAX       = 'service_tax';
     const PRICING_RULE_ID   = 'pricing_rule_id';
     const BALANCE           = 'balance';
     const GATEWAY_FEE       = 'gateway_fee';
@@ -29,7 +30,6 @@ class Entity extends Base\PublicEntity
     const SETTLED           = 'settled';
     const SETTLED_AT        = 'settled_at';
     const SETTLEMENT_ID     = 'settlement_id';
-    const SERVICE_TAX       = 'service_tax';
 
     protected $table = \Constants\Table::TRANSACTION;
 
@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::SERVICE_TAX,
         self::GRATIS,
         self::BALANCE,
         self::ESCROW_BALANCE,
@@ -70,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::SERVICE_TAX,
         self::GRATIS,
         self::BALANCE,
         self::ESCROW_BALANCE,
