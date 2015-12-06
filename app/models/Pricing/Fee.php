@@ -14,13 +14,18 @@ class Fee
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
+    public function __construct()
+    {
+        $this->repo = new Pricing\Repository;
+    }
+
     public function getZeroPricingPlanRule($payment)
     {
         $planId = Pricing\Entity::ZERO_PRICING;
 
         $method = $payment->getMethod();
 
-        return (new Pricing\Repository)->getZeroPricingPlanRuleForMethod($method)->getId();
+        return $this->repo->getZeroPricingPlanRuleForMethod($method)->getId();
     }
 
     public function calculateMerchantFees($payment)
@@ -36,32 +41,30 @@ class Fee
 
     public function calculateServiceTax($txn, $payment)
     {
-        $pricingRepo = new Pricing\Repository;
-        $rule = $pricingRepo->getPricingPlanRule($txn->getPricingRule());
+        $rule = $this->repo->getPricingPlanRule($txn->getPricingRule());
 
         $txnAuthTime = $payment->getAuthorizeTimestamp();
-        
-        //sd($txnAuthTime);   
-        //set the authorized_at time if not set
-        if(is_null($txnAuthTime) === True)
+
+        // Set the authorized_at time if not set
+        if (is_null($txnAuthTime) === True)
         {
-            $txnCreatedTime = $payment->getCreatedTimestamp(); 
-            $txnCapturedTime = $payment->getCaptureTimestamp(); 
-          
+            $txnCreatedTime = $payment->getCreatedTimestamp();
+            $txnCapturedTime = $payment->getCaptureTimestamp();
+
             assert(is_null($txnCreatedTime) === FALSE);
             assert(is_null($txnCapturedTime) === FALSE);
 
-            $txnAuthTime = ($txnCreatedTime +  $txnCapturedTime)/2;
+            $txnAuthTime = ($txnCreatedTime + 45);
 
             $payment->setAuthorizeTimestamp($txnAuthTime);
         }
 
         list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), 0);
-        $serviceTax = $txn->getFee() - $fee;
 
+        $serviceTax = $txn->getFee() - $fee;
         assert($serviceTax > 0);
 
-        return $serviceTax;   
+        return $serviceTax;
     }
 
     protected function getFees($rule, $amount, $serviceTaxPercentage)
@@ -69,7 +72,8 @@ class Fee
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
-        list($fee, $serviceTax) = $this->getFeesByPercentAndFixedRates($amount, $serviceTaxPercentage, $percent, $fixed);
+        list($fee, $serviceTax) = $this->getFeesByPercentAndFixedRates(
+                            $amount, $serviceTaxPercentage, $percent, $fixed);
 
         assert ($fee < $amount);
 
@@ -129,15 +133,13 @@ class Fee
 
     protected function getRelevantPricingRule($pricingPlanId, $payment)
     {
-        $pricingRepo = new Pricing\Repository;
-
         if ($payment->getMethod() === Payment\Method::CARD)
         {
             $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
         }
         else if ($payment->isNetbanking())
         {
-            $pricing = $pricingRepo->getPricingRulesForNetbanking($pricingPlanId);
+            $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
 
             if (count($pricing) > 1)
             {
@@ -149,7 +151,7 @@ class Fee
         }
         else if ($payment->isWallet())
         {
-            $pricing = $pricingRepo->getPricingRulesForWallet($pricingPlanId);
+            $pricing = $this->repo->getPricingRulesForWallet($pricingPlanId);
 
             if (count($pricing) > 1)
             {
@@ -179,9 +181,7 @@ class Fee
 
         $network = $card->getNetwork();
 
-        $pricingRepo = new Pricing\Repository;
-
-        $pricing = $pricingRepo->getPricingRulesForGivenCardNetwork($pricingPlanId, $network);
+        $pricing = $this->repo->getPricingRulesForGivenCardNetwork($pricingPlanId, $network);
 
         $rule = null;
         $rules = $pricing->all();

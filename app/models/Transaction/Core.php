@@ -136,13 +136,14 @@ class Core extends Base\Core
 
     public function fillServiceTax($txn, $payment)
     {
-        if($txn->getGratisAttribute() === true)
+        if ($txn->isGratis())
         {
             $txn->setServiceTax(0);
         }
         else
         {
             $serviceTax = (new Pricing\Fee)->calculateServiceTax($txn, $payment);
+
             $txn->setServiceTax($serviceTax);
         }
     }
