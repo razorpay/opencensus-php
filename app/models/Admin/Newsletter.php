@@ -56,7 +56,7 @@ class Newsletter
         switch($list)
         {
             case 'all':
-                $merchants = $repo->fetch([])->toArray();
+                $merchants = $repo->fetchAllMerchantContacts()->toArray();
                 break;
 
             case 'live':
