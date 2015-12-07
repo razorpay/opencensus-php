@@ -362,4 +362,9 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         return $res;
     }
+
+    protected function getTagsAttribute()
+    {
+        return $this->tagNames();
+    }
 }

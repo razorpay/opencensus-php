@@ -126,6 +126,9 @@
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
+        <a href class="list-group-item" ng-click="openTagMerchant()">
+          Tag Merchant <i class="pull-right fa fa-tag"></i>
+        </a>
         <a href class="list-group-item" ng-click="openUploadScreenshot()">
           Upload screenshots <i class="pull-right fa fa-upload"></i>
         </a>
@@ -144,6 +147,10 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
+        <a class="list-group-item" ng-show="merchant.details.tags.length > 0 " ng-click="openTagMerchant()">
+          <span class="pull-right">{{merchant.details.tags.join()}}</span>
+          Tags
+        </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
           Balance (Test)
@@ -724,6 +731,27 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(credits)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="tagModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Tag Merchant</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Tags:</label>
+        <div class="col-lg-6">
+          <input type="text" class="form-control m-b"
+            ng-model="tags"
+          >
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(tags)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">

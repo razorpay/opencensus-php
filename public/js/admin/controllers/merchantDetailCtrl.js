@@ -47,6 +47,33 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.tagMerchant = function(tags) {
+      // Tags will be a csv field
+      var request = $http({
+        url: '/admin/merchant/' + $scope.merchant.id + '/tags',
+        method: 'POST',
+        transformRequest: transformRequestAsFormPost,
+        data: {
+          tags: tags
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant tagged successfully.', true);
+          $scope.merchant.details.tags = data.data.tags;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.unlockForm = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unlock');
       request.success(function (data) {
@@ -371,6 +398,22 @@ app.controller('MerchantDetailCtrl', [
         $scope.assignPricing(plan_id);
       }, $.noop);
     };
+
+    $scope.openTagMerchant = function () {
+      var tags = $scope.merchant.details.tags || [];
+      var modalInstance = $modal.open({
+        templateUrl: 'tagModalContent.html',
+        controller: 'tagModalCtrl',
+        resolve: {
+          current: function () {
+            return tags;
+          }
+        }
+      });
+      modalInstance.result.then(function (tags) {
+        $scope.tagMerchant(tags);
+      }, $.noop);
+    };
     $scope.openAssignTerminal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'assignTerminalModalContent.html',
@@ -669,6 +712,20 @@ app.controller('MerchantDetailCtrl', [
     $scope.credits = credits;
     $scope.ok = function (credits) {
       $modalInstance.close(credits);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('tagModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    // We need to keep it to a csv field
+    $scope.tags = current.join();
+    $scope.ok = function (tags) {
+      $modalInstance.close(tags);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

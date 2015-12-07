@@ -144,10 +144,6 @@ class Entity extends Base\Entity
         'transaction_report_email'
     );
 
-    protected $appends = [
-        'tags'
-    ];
-
     protected static $uploadKeys = array(
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
@@ -264,11 +260,6 @@ class Entity extends Base\Entity
     protected function getStepsFinishedAttribute($stepsFinished)
     {
         return json_decode($stepsFinished, true);
-    }
-
-    protected function getTagsAttribute()
-    {
-        return $this->tagNames();
     }
 
     protected function setStepsFinishedAttribute($value)

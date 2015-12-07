@@ -314,7 +314,8 @@ class Service extends Base\Service
             'archived_at'       => $merchant['archived_at'],
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
-            'submitted'         => $merchant_details['submitted']
+            'submitted'         => $merchant_details['submitted'],
+            'tags'              => $merchant['tags']
         ) + $data;
 
         return $response;
@@ -1433,6 +1434,7 @@ class Service extends Base\Service
         {
             $merchant = Merchant\Entity::findOrFail($merchantId);
             $merchant->retag(explode(',', $input['tags']));
+            $merchant['tags'] = $merchant->tags;
             return [null, $merchant->toArray()];
         }
         else
@@ -1444,6 +1446,7 @@ class Service extends Base\Service
     public function getMerchantTags($merchantId)
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
+
         return [null, $merchant->tagNames()];
     }
 }

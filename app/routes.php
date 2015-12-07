@@ -140,6 +140,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
+    // Might delete this route later if its not used
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
 
     Route::group(array('before' => 'csrf'), function()
