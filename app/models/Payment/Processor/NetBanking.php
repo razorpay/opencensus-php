@@ -54,6 +54,7 @@ class Netbanking
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::CNRB,
+        IFSC::CORP,
         IFSC::COSB,
         IFSC::CSBK,
         IFSC::DCBL,
