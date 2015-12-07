@@ -8,6 +8,8 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
+    use \Conner\Tagging\TaggableTrait;
+
     public $incrementing = false;
 
     protected $table = 'merchants';

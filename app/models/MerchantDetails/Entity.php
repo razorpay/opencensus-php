@@ -6,8 +6,6 @@ use Models\Base;
 
 class Entity extends Base\Entity
 {
-    use \Conner\Tagging\TaggableTrait;
-
     protected static $URL_KEYS = [
         'business_website',
         'website_about',

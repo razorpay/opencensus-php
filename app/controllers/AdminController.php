@@ -528,4 +528,12 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    public function getMerchantTags($merchantId)
+    {
+        list($error, $response) = (new Admin\Service)
+            ->getMerchantTags($merchantId);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }
