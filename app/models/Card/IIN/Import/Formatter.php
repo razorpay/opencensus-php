@@ -121,9 +121,9 @@ class Formatter
 
     public function setMapping($input)
     {
-        if(isset($input['mapping']))
+        if (isset($input['mapping']))
         {
-            if(gettype($input['mapping']) === 'array')
+            if (gettype($input['mapping']) === 'array')
             {
                 $this->mapping = $input['mapping'];
             }

@@ -126,9 +126,9 @@ class XLSFileHandler
         // They are mostly page/file title
         for ($row = 0; $row < $highestRow; $row++)
         {
-            for($i = 0; $i < $len; $i++)
+            for ($i = 0; $i < $len; $i++)
             {
-                if($rows[$row][$i] === null )
+                if ($rows[$row][$i] === null )
                 {
                     continue 2;
                 }
@@ -145,9 +145,9 @@ class XLSFileHandler
         // Skipping if the following row contains all cells null
         for ($row = $startIndex; $row < $highestRow; $row++)
         {
-            for($i = 1; $i < $len; $i++)
+            for ($i = 1; $i < $len; $i++)
             {
-                if($rows[$row][$i] != null )
+                if ($rows[$row][$i] != null )
                     return $row;
             }
         }

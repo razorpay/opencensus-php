@@ -130,13 +130,13 @@ class DataCleaner
     {
         $indexed = array();
         // Indexeing the data based on IIN number
-        foreach($formattedData as $d)
+        foreach ($formattedData as $d)
         {
             $indexed[$d[Card\Detail::IIN]][] = $d;
         }
 
         $data = array();
-        foreach($indexed as $rows)
+        foreach ($indexed as $rows)
         {
             $len = count($rows);
             $iin = $rows[0][Card\Detail::IIN];
@@ -144,7 +144,7 @@ class DataCleaner
             {
 
                 $network = $rows[0][Card\Detail::NETWORK];
-                if($this->checkNetworkValidity($iin, $network) === true)
+                if ($this->checkNetworkValidity($iin, $network) === true)
                 {
                     array_push($this->uniqueIins, $iin);
                     $data[$iin] = $rows[0];
@@ -167,9 +167,9 @@ class DataCleaner
         $row1 = $rows[0];
         $i = 0;
         $len = count($rows);
-        for($i = 1; $i < $len; $i++)
+        for ($i = 1; $i < $len; $i++)
         {
-            if(count(array_diff_assoc($row1, $rows[$i])) !== 0)
+            if (count(array_diff_assoc($row1, $rows[$i])) !== 0)
             {
                 return false;
             }
@@ -180,7 +180,7 @@ class DataCleaner
     protected function checkNetworkValidity($iin, $network)
     {
         //sd($network);
-        if(!isset($this->networkRegexes[$network]))
+        if (!isset($this->networkRegexes[$network]))
         {
              new Exception\BadRequestException("Unknown Network");
         }
