@@ -28,7 +28,9 @@ class DatabaseSeeder extends Seeder
 
         DB::table('merchant_details')->insert(array(
             'merchant_id'   =>  '10000000000000',
-            'locked'        => 1
+            'locked'        => 1,
+            'created_at'    => time(),
+            'updated_at'    => time(),
             )
         );
 
@@ -44,7 +46,9 @@ class DatabaseSeeder extends Seeder
 
         DB::table('merchant_details')->insert(array(
             'merchant_id'   =>  '100DemoAccount',
-            'locked'        => 1
+            'locked'        => 1,
+            'created_at'    =>  time(),
+            'updated_at'    =>  time()
             )
         );
 
@@ -96,6 +100,7 @@ class DatabaseSeeder extends Seeder
                 'MC'      => 33,
                 'MAES'    =>  30,
                 'RUPAY'   => 11,
+                'created_at'    =>  time(),
                 'updated_at'    =>  time(),
                 'mode'          =>  'test'
                 )
@@ -279,21 +284,27 @@ class DatabaseSeeder extends Seeder
                 'username' => 'harshil',
                 'password'=> Hash::make('123456'),
                 'email' => 'harshil@razorpay.com',
-                'superadmin' => 1
+                'superadmin' => 1,
+                'created_at'    =>  time(),
+                'updated_at'    =>  time()
                 ),
                 array(
                 'name' => 'Shashank Kumar',
                 'username' => 'shk',
                 'password'=> Hash::make('123456'),
                 'email' => 'shashank@razorpay.com',
-                'superadmin' => 1
+                'superadmin' => 1,
+                'created_at'    =>  time(),
+                'updated_at'    =>  time()
                 ),
                 array(
                 'name' => 'Abhay Rana',
                 'username' => 'nemo',
                 'password'=> Hash::make('123456'),
                 'email' => 'das@razorpay.com',
-                'superadmin' => 0
+                'superadmin' => 0,
+                'created_at'    =>  time(),
+                'updated_at'    =>  time()
                 )
             )
         );
