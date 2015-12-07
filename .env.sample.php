@@ -59,6 +59,8 @@ return array(
     'PAYZAPP_WALLET_TEST_HASH_SECRET'                   => 'random',
     'PAYZAPP_WALLET_TEST_PG_INSTANCE_ID'                => 'random',
     'PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'                => 'random',
+    'PAYZAPP_WALLET_TEST_PG_HASH_KEY'                   => 'random',
+    'PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'                => 'random',
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'          => '000000',
 

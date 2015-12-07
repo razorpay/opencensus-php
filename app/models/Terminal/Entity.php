@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
+    const GATEWAY_MERCHANT_ID2          = 'gateway_merchant_id2';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
@@ -37,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CATEGORY,
         self::GATEWAY_MERCHANT_ID,
+        self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
@@ -50,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CATEGORY,
         self::GATEWAY_MERCHANT_ID,
+        self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::USED_COUNT,
         self::CREATED_AT,

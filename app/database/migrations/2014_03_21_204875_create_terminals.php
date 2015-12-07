@@ -38,6 +38,8 @@ class CreateTerminals extends Migration
 
             $table->string(Terminal::GATEWAY_MERCHANT_ID)->nullable();
 
+            $table->string(Terminal::GATEWAY_MERCHANT_ID2)->nullable();
+
             $table->string(Terminal::GATEWAY_TERMINAL_ID)->nullable();
 
             $table->text(Terminal::GATEWAY_TERMINAL_PASSWORD)->nullable();
