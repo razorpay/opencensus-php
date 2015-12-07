@@ -5,44 +5,53 @@ app.controller('MerchantsCtrl', [
   function ($scope, $http) {
     $scope.merchants = {};
     $scope.count = 0;
-    $scope.merchant_type = '1';
-    $scope.tags = '';
 
     $scope.regenerate = function () {
       $scope.merchant_type = '1';
+      $scope.tags = '';
       $scope.filter();
     };
 
     $scope.filter = function () {
       var query = {};
       switch ($scope.merchant_type) {
-      case '1':
-        query['activated']=1;
-        break;
-      case '2':
-        query['activated']=0;
-        break;
-      case '3':
-        query['pending']=1;
-        break;
-      case '4':
-        query['confirmed']=1;
-        break;
-      case '5':
-        query['dead']=1;
-        break;
-      case '6':
-        query['archived']=1;
-        break;
+
+        case '1':
+          query.activated  = 1;
+          break;
+
+        case '2':
+          query.activated  = 0;
+          break;
+
+        case '3':
+          query.pending    = 1;
+          break;
+
+        case '4':
+          query.confirmed  = 1;
+          break;
+
+        case '5':
+          query.dead       = 1;
+          break;
+
+        case '6':
+          query.archived   = 1;
+          break;
       }
 
       // If we have tags in the list, send them as well
       if ($scope.tags !== '') {
-        query['tags'] = $scope.tags;
-      };
+        query.tags = $scope.tags;
+      }
+
+      console.debug(query);
 
       generate(query);
     };
+
+    $scope.regenerate();
 
     function generate(query) {
       var url = '/admin/merchant/list';

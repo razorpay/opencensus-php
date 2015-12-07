@@ -98,6 +98,12 @@ class Service extends Base\Service
         ])->with('tagged');
 
 
+        if (isset($input['tags']))
+        {
+            $data = $data->withAllTags($input['tags']);
+        }
+
+
         if (isset($input['archived']))
         {
             $data = $data->whereNotNull('archived_at')->get();
