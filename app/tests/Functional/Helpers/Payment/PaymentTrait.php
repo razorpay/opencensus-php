@@ -554,6 +554,15 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultWalletPaymentArray($wallet = 'mobikwik')
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
+
+        return $payment;
+    }
+
     protected function submitPaymentCallbackForm($form)
     {
         //
@@ -716,6 +725,8 @@ trait PaymentTrait
             }
             else
             {
+                $gateway = $response->headers->get('X-gateway');
+
                 //
                 // When doing form posts relevant here, we put in a
                 // second form which is not submitted but it contains gateway

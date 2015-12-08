@@ -14,7 +14,7 @@ trait PaymentBilldeskTrait
         $mock = $this->isGatewayMocked();
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
-
+sd($url);
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(
