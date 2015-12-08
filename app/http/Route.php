@@ -127,7 +127,8 @@ final class Route
         'mock_amex_payment'                 => ['post',     'gateway/mockamex/payment',                 'MockGatewayController@postAmexPayment'                         ],
         'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                        ],
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                   ],
-        'mock_sbiepay_payment'              => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                     ],
+        'mock_sbiepay_payment'              => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                      ],
+        'mock_wallet_payment'               => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@postWalletPayment'                       ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
         'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
@@ -166,6 +167,7 @@ final class Route
         'mock_sharp_payment',
         'mock_sharp_payment_submit',
         'mock_sbiepay_payment',
+        'mock_wallet_payment',
         'dummy_return_callback',
         'dummy_critical_error',
     );

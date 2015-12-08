@@ -88,7 +88,10 @@ class PaymentCreateController extends BaseController
                 }
                 else if ($data['request']['method'] === 'direct')
                 {
-                    return $data['request']['content'];
+                    $response = Response::make($data['request']['content']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
                 }
             }
             else if ($data['type'] === 'return')
