@@ -68,7 +68,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
         Entity::GATEWAY_SECURE_SECRET       => 'required|integer|digits:21',
         Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:21',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
     );
 
     protected function validateGateway($input)

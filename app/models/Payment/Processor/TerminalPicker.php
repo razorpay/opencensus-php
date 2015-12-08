@@ -435,6 +435,11 @@ class TerminalPicker
                     'Wallet not supported');
             }
 
+            if ($this->terminalExists(Shared::PAYZAPP_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+
             $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
 
             $category = $payment->merchant->getCategory();
