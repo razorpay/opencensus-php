@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
                 'merName'               => 'RazorPay',
             ),
             'transactionInfo'   => array(
-                'txnAmount'             => $amount,
+                'txnAmount'             => $input['payment']['amount'],
                 'txnCurrency'           => '356',
                 'txnDesc'               => 'Transaction for amount' . $amount,
                 'merTxnId'              => $input['payment']['id'],

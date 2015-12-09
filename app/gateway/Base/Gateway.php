@@ -55,7 +55,8 @@ class Gateway
      */
     protected $domainType;
 
-    * Denotes if running in testing env
+    /**
+     * Denotes if running in testing env
      * @var boolean
      */
     protected $testing;
