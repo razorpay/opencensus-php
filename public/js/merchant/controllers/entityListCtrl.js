@@ -22,7 +22,8 @@ app.controller('EntityListCtrl', [
       count: 10,
       status: 'all',
       contact: '',
-      email: ''
+      email: '',
+      amount: ''
     };
 
     $scope.generate = function (entity) {
@@ -84,6 +85,13 @@ app.controller('EntityListCtrl', [
 
       if (q.contact === '') {
         delete q.contact;
+      }
+
+      if (q.amount !== '') {
+        q.amount = q.amount*100;
+      }
+      else {
+        delete q.amount;
       }
 
       // Figure out the proper URL to hit if we are fetching just a single

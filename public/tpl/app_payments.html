@@ -12,7 +12,7 @@
     </div>
     <div class="panel-body form-inline">
       <div class="row wrapper">
-        <div class="text-center m-t" ng-show="alert.getAlerts().length > 0">
+        <div class="text-center m-t" ng-show="alerts.getAlerts().length > 0">
           <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="col-sm-2 m-b-xs">
@@ -26,18 +26,26 @@
           </select>
         </div>
         <div class="col-sm-2">
+          Email:
           <input type="email" class="form-control input-sm w-sm inline" ng-model="query.email" placeholder="Customer Email"
             name="email" ng-enter="regenerate();"
           >
         </div>
         <div class="col-sm-2">
+          Contact:
           <input type="contact" class="form-control input-sm w-sm inline" ng-model="query.contact"
             placeholder="Customer Contact" name="contact" ng-enter="regenerate()"
           >
         </div>
-        <div class="col-sm-2">
-          <div class="input-group">
-            <input type="text" class="form-control input-sm w-xs inline" placeholder="Search Payment Id" ng-model="entity.id">
+        <!-- <div class="col-sm-2">
+          Amount:
+          <input type="number" class="form-control input-sm w-sm inline" ng-model="query.amount"
+            placeholder="Amount" name="amount" ng-enter="regenerate()"
+          >
+        </div> -->
+        <div class="col-sm-6 pull-right">
+          <div class="input-group pull-right">
+            <input type="text" class="form-control input-sm inline" placeholder="Search Payment Id" ng-model="entity.id">
             <span class="input-group-btn">
               <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
               <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
