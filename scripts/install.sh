@@ -11,8 +11,11 @@ cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncign
 # Fix permissions
 cd /home/ubuntu/dashboard/ && sudo chmod 775 -R app/storage
 
-# DB Migrate 
+# DB Migrate
 cd /home/ubuntu/dashboard/ && php artisan migrate
+
+# DB Automigrate (runs package migrations)
+cd /home/ubuntu/dashboard/ && php artisan automigrate
 
 # Take the app up
 cd /home/ubuntu/dashboard/ && php artisan up
