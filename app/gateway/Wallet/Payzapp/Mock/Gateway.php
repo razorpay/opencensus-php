@@ -25,6 +25,29 @@ class Gateway extends Payzapp\Gateway
         return $request;
     }
 
+    protected function makePickUpDataRequest($content)
+    {
+        $returnContent = array(
+            'resCode' => '000',
+            'resDesc' => 'SUCCESS',
+            'data' => [
+                'wibmoTxnId'    => $content['wibmoTxnId'],
+                'merId'         => $content['merchantInfo']['merId'],
+                'merTxnId'      => $content['merTxnId'],
+                'merAppData'    => '',
+                'pgStatusCode'  => '50020',
+                'pgTxnId'       => random_integer(8),
+                'cardType'      => 'Visa',
+                'txnAmt'        => 500,
+                'cardClassificationType' => 'Credit',
+                'cardHash'      => 'cRpzqfJynHah84KRyfGdU4TC5Mg=',
+                'cardMasked'    => '4329XXXXXXXX7413'
+            ]
+        );
+
+        return $returnContent;
+    }
+
     protected function getWIapDefaults($input)
     {
         $wIapDefaults = array(

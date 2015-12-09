@@ -46,10 +46,10 @@ class PayzappGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('wallet', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentBilldeskEntity'], $payment);
+            $this->testData['testPaymentPayzappEntity'], $payment);
     }
 
     public function testPaymentFailed()

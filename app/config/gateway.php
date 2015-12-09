@@ -93,7 +93,6 @@ return array(
     ),
 
     'wallet_payzapp' => array(
-        'pg_pgname'                 => $_ENV['PAYZAPP_WALLET_PG_NAME'],
         'pg_merchant_login_id'      => $_ENV['PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'],
         'test_merchant_id'          => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_ID'],
         'test_merchant_app_id'      => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'],

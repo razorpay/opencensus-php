@@ -115,6 +115,7 @@ class Gateway extends Base\Gateway
         $attrs['received'] = true;
 
         $serverData = $this->pickupData($input);
+
         $this->verifyPaymentCallbackResponse($serverData);
 
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
@@ -230,7 +231,7 @@ class Gateway extends Base\Gateway
         parent::capture($input);
     }
 
-    public function pickupData($input)
+    protected function pickupData($input)
     {
         $content = array(
             'wibmoTxnId'        =>      $input['gateway']['wibmoTxnId'],
@@ -247,9 +248,14 @@ class Gateway extends Base\Gateway
 
         $content['msgHash'] = $this->getHashForDataPickupRequest($content);
 
-        $content = $this->postRequest($content, 'pickup_data');
+        $content = $this->makePickUpDataRequest($content);
 
         return $content;
+    }
+
+    protected function makePickUpDataRequest($content)
+    {
+        return $this->postRequest($content, 'pickup_data');
     }
 
     protected function prepareLoginContent($input)
@@ -441,7 +447,7 @@ class Gateway extends Base\Gateway
         return $generatedHash;
     }
 
-    protected function getHashForDataPickupRequest($content)
+    public function getHashForDataPickupRequest($content)
     {
         $fieldsInOrder = array(
             'wpay',
@@ -457,6 +463,7 @@ class Gateway extends Base\Gateway
         $content = array_merge($content, $content['merchantInfo']);
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
         $hash = $this->getHashOfArray($orderedData);
 
         return $hash;
@@ -557,7 +564,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $str = $str . '|'.$secret.'|';s($str);
+        $str = $str . '|'.$secret.'|';
 
         $hash =  base64_encode(hash('sha256', $str, true));
 
