@@ -46,7 +46,7 @@
     <span>Settings</span>
   </li>
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-    <span translate="aside.nav.settings.SETTINGS">Settings</span>
+    <span>Settings</span>
   </li>
   <li>
     <a id="keysNav" ui-sref="app.keys">
@@ -61,7 +61,7 @@
       <span>Activation</span>
     </a>
   </li>
-  <li>
+  <li ng-show="user.tags.indexOf('Webhook') != -1">
     <a id="webhookNav" ui-sref="app.webhooks">
       <i class="icon-share icon text-success-lter"></i>
       Webhook
