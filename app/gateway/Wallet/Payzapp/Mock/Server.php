@@ -38,6 +38,10 @@ class Server extends Base\Mock\Server
 
     }
 
+    public function callback($input)
+    {
+    }
+
     public function verify($input)
     {
     }

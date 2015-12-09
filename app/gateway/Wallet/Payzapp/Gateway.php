@@ -38,12 +38,14 @@ class Gateway extends Base\Gateway
         'txnAmount'         => 'amount',
     );
 
-
-    protected $action_map = array(
-        'login'  => 'processMerchantAPI#LogIn',
-        'refund' => 'processMerchantAPI#Refund'
+    protected $perform = array(
+        'void'              => 'processMerchantAPI#DirectVoid',
+        'refund'            => 'processMerchantAPI#Refund',
     );
 
+    protected $acosaActions = array(
+        ACTION::VERIFY, ACTION::REFUND
+    );
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -135,6 +137,11 @@ class Gateway extends Base\Gateway
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
 
+        $serverData = $this->pickupData($input);
+        $this->verifyPaymentCallbackResponse($serverData);
+
+        $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
+
         $payment->fill($attrs);
         $payment->saveOrFail();
 
@@ -162,21 +169,21 @@ class Gateway extends Base\Gateway
         // have to perform refund
 
         // URL not sure
-        $login_content = $this->prepareLoginContent($input);
+        // $login_content = $this->prepareLoginContent($input);
 
-        $login_response = $this->postRequest($login_content, 'basic');
+        // $login_response = $this->postRequest($login_content, 'basic');
 
-        $login_response = parse_str($login_response);
+        // $login_response = parse_str($login_response);
 
-        if (ResponseCode::$login_response['status'] !== 'Sucess')
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content]);
+        // if (ResponseCode::$login_response['status'] !== 'Sucess')
+        // {
+        //     $this->trace->error(
+        //         TraceCode::PAYMENT_REFUND_FAILURE,
+        //         [$content]);
 
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
-        }
+        //     throw new Exception\GatewayErrorException(
+        //         ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        // }
 
         // URL confirmed
         $refund_content = $this->prepareRefundContent($login_response);
@@ -214,6 +221,28 @@ class Gateway extends Base\Gateway
     public function capture(array $input)
     {
         parent::capture($input);
+    }
+
+    public function pickupData($input)
+    {
+        $content = array(
+            'wibmoTxnId'        =>      $input['gateway']['wibmoTxnId'],
+            'dataPickupCode'    =>      $input['gateway']['dataPickUpCode'],
+            'merTxnId'          =>      $input['gateway']['merTxnId'],
+            'merchantInfo'      =>      array(
+                'merId'                 => $input['terminal']['gateway_merchant_id'],
+                'merAppId'              => $input['terminal']['gateway_terminal_id'],
+                'merCountryCode'        => 'IN',
+            )
+        );
+
+        $this->addMerchantDetailsInTest($content);
+
+        $content['msgHash'] = $this->getHashForDataPickupRequest($content);
+
+        $content = $this->postRequest($content, 'pickup_data');
+
+        return $content;
     }
 
     protected function prepareLoginContent($input)
@@ -305,7 +334,7 @@ class Gateway extends Base\Gateway
         $this->addMerchantDetailsInTest($content);
 
         $content['merchantInfo']['merCountryCode'] = 'IN';
-        $content['msgHash'] = $this->getHashForVerifyRequest($content);
+        $content['msgHash'] = $this->getHashForDataPickupRequest($content);
 
         $content = $this->postRequest($content);
 
@@ -334,13 +363,26 @@ class Gateway extends Base\Gateway
 
     protected function postRequest($content, $type = null)
     {
+        $url = $this->getUrl($type);
 
-        if($type === null)
+        if (in_array($this->action, $this->acosaActions))
         {
 
             $request = array(
                 'method'  => 'post',
-                'url'     => 'https://' . $this->getUrl(),
+                'url'     => 'https://' . $url,
+                'content' => $content,
+                'headers' => ['Content-Type' => 'multipart/form-data']);
+
+            $response = $this->runRequestResponseFlow($request);
+
+            $content = $response->body;
+
+        } else {
+
+            $request = array(
+                'method'  => 'post',
+                'url'     => 'https://' . $url,
                 'content' => json_encode($content),
                 'headers' => ['Content-Type' => 'application/json']);
 
@@ -348,23 +390,21 @@ class Gateway extends Base\Gateway
 
             $content = json_decode($response->body, true);
 
-        }else{
-
-            $type = strtoupper($type);
-            $request = array(
-                'method'  => 'post',
-                'url'     => 'https://' . Url::ACOSA_TEST_DOMAIN . Url::$type,
-                'content' => $content,
-                'headers' => ['Content-Type' => 'multipart/form-data']);
-
-            $response = $this->runRequestResponseFlow($request);
-
-            $content = $response->body;
         }
 
-
-
         return $content;
+    }
+
+    protected function getUrl($type = null)
+    {
+        if (in_array($this->action, $this->acosaActions))
+        {
+            $this->domainType = 'acosa';
+        }
+
+        $url = parent::getUrl($type);
+
+        return $url;
     }
 
     protected function verifySecureHash($input, $payment)
@@ -386,7 +426,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getHashForVerifyRequest($content)
+    protected function getHashForDataPickupRequest($content)
     {
         $fieldsInOrder = array(
             'wpay',
