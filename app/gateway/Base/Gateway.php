@@ -48,6 +48,14 @@ class Gateway
     protected $mock;
 
     /**
+     * Namespacing for URL's
+     * used in case where multiple
+     * domains need to be supported
+     * @var string
+     */
+    protected $domainType;
+
+    /**
      * Denotes if running in testing env
      * @var boolean
      */
@@ -309,11 +317,16 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $live = constant($urlClass . '::LIVE_DOMAIN');
+        $domainConstantName = strtoupper($this->mode)."_DOMAIN";
 
-        $test = constant($urlClass . '::TEST_DOMAIN');
+        if ($this->domainType !== null)
+        {
+            $domainType = strtoupper($this->domainType);
 
-        return ($this->mode === Mode::LIVE) ? $live : $test;
+            $domainConstantName = $domainType.'_'.$domainConstantName;
+        }
+
+        return constant($urlClass . '::' .$domainConstantName);
     }
 
     protected function getRelativeUrl($type)
@@ -325,6 +338,7 @@ class Gateway
 
     protected function getUrl($type = null)
     {
+
         $url = $this->getUrlDomain();
 
         if ($type === null)

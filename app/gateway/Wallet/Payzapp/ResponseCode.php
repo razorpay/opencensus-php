@@ -4,7 +4,7 @@ namespace \Gateway\Wallet\Payzapp;
 
 class ResponseCode
 {
-    public static $codes = array(
+    public static $statusCodes = array(
         50010 => 'Init',
         50011 => 'Capture Aborted',
         50016 => 'Switch Start',
@@ -13,5 +13,43 @@ class ResponseCode
         50020 => 'Success',
         50021 => 'Failed',
         50097 => 'Test Transaction',
-        );
+    );
+
+    public static $pgErrorCodes = array(
+        0       =>  'No Error',
+        1       =>  'Call Issuer',
+        2       =>  'Contact Switch Admin',
+        3       =>  'Retry After Some Time',
+        10001   =>  'Disabled Instance',
+        10002   =>  'Test Instance',
+        10003   =>  'Instance under Maintenance',
+        10004   =>  'Internal Server Error',
+        10005   =>  'Invalid Data Sent to Switch',
+        10006   =>  'Internal Error caused contact Switch Admin',
+        10011   =>  'Disabled Acquirer',
+        10012   =>  'Test Acquirer',
+        10013   =>  'Acquirer under Maintenance',
+        10021   =>  'Disabled Merchant',
+        10022   =>  'Test Merchant',
+        10023   =>  'Merchant under Maintenance',
+        10024   =>  'Bad Input Data in Request',
+        10025   =>  'PG Interface not allowed',
+        10030   =>  'Capture Aborted',
+        10031   =>  'Auth Aborted',
+        10032   =>  'Card Association not enabled',
+        10033   =>  'Card Range not enabled',
+        10040   =>  'Transaction not allowed - flow error',
+        12001   =>  'Acquirer Server Error',
+        12002   =>  'Acquirer Timeout',
+        12003   =>  'Acquirer Down',
+        12004   =>  'Acquirer Declined',
+        12005   =>  'Batch Closed',
+        12006   =>  'Totals Mismatched',
+        12007   =>  'Unable to settle',
+        13001   =>  'Issuer Server Error',
+        13002   =>  'Issuer Timeout',
+        13003   =>  'Issuer Down',
+        13004   =>  'Issuer Declined',
+        14003   =>  'MPI Error',
+    );
 }

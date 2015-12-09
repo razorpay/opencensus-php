@@ -54,6 +54,8 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                    => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                    => 'randomsecret',
 
+    'PAYZAPP_WALLET_PG_NAME'                            => 'random',
+    'PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'               => 'random',
     'PAYZAPP_WALLET_TEST_MERCHANT_ID'                   => 'random',
     'PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'               => 'random',
     'PAYZAPP_WALLET_TEST_HASH_SECRET'                   => 'random',
