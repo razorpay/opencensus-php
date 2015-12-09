@@ -25,7 +25,7 @@ class CreateAdmins extends Migration
 
 			$table->string('password', 100);
 
-			$table->string('remember_token');
+			$table->string('remember_token')->nullable();
 
 			$table->boolean('superadmin')->default(0);
 

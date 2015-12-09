@@ -366,32 +366,6 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /**
-     * Flattens an array recursively
-     * Concatenating keys using periods
-     * @param  array $array  input array
-     * @param  string $prefix prefix used to concat keys
-     * @return array flat version of input array
-     */
-    protected function flatten(array $array, $prefix = '')
-    {
-        $result = array();
-
-        foreach ($array as $key => $value)
-        {
-            if (is_array($value))
-            {
-                $result = $result + $this->flatten($value, $prefix . $key . '_');
-            }
-            else
-            {
-                $result[$prefix . $key] = $value;
-            }
-        }
-
-        return $result;
-    }
-
     public function getMultipleEntities($mode, $entity, $format = 'json')
     {
         $input = Input::all();
@@ -400,21 +374,9 @@ class AdminController extends BaseController
 
         if ($format === 'csv' and empty($error) === true)
         {
-            // Flatten all the inner keys
-            // So internal arrays (like notes)
-            // are converted properly
-            array_walk($data['items'], function(&$row) {
-                $row = $this->flatten($row);
-            });
-
-            if (count($data['items']) > 0)
-            {
-                $data['headings'] = array_keys($data['items'][0]);
-            }
-
             (new Admin\Service)->logDataExport($entity, $input);
 
-            return AppResponse::csvResponse($data);
+            return AppResponse::csvResponse($data['items']);
         }
         else
         {

@@ -25,24 +25,34 @@ app.controller('UserCtrl', [
           }
         });
 
-        if (typeof SupportKit === 'undefined') {
-          return;
-        };
+        if (typeof Smooch !== 'undefined') {
+          var sk_user = function(){
+            window.skIntro && window.skIntro.html('');
+            $('#sk-footer input').off('focus', window.skFocusListener);
+            Smooch.user.on('change', function(){
+              var container = $('#sk-container').removeClass('sk-appear').addClass('sk-close')[0].offsetWidth;
+            })
 
-        SupportKit.user = {
-          givenName: data.name,
-          surname: 'Merchant',
-          email: data.email,
-          properties: {
-            id: data.id,
-            email: data.email,
-            name: data.name,
-            activated: data.activated,
-            locked: data.locked,
-            submitted: data.submitted
+
+            Smooch.updateUser({
+              givenName: data.name,
+              email: data.email,
+              properties: {
+                id: data.id,
+                activated: data.activated,
+                locked: data.locked,
+                submitted: data.submitted
+              }
+            })
+          }
+
+          if(Smooch.ready){
+            sk_user();
+          } else {
+            Smooch.on('ready', sk_user);
           }
         };
-        SupportKit._updateUser();
+
         analytics.identify(data.id, {
           name: data.name,
           email: data.email,

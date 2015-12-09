@@ -3,38 +3,35 @@
   <div class="col" ng-controller="DashboardGraphsCtrl">
     <!-- main header -->
     <div class="bg-light lter b-b wrapper-md">
-      <div class="row">
-        <div class="col-sm-8 col-xs-12">
-          <h1 class="m-n font-thin h3 text-black">
-            Dashboard
-            <spinner class="inline"></spinner>
-          </h1>
+      <div class="pull-right date-filter">
 
-          <small class="text-muted">Welcome to Razorpay </small>
+        <!-- from date -->
+        <div class="input-group input-date" ng-click="date.open($event, 1)">
+          <input type="text" class="form-control" datepicker-popup="dd MMMM yyyy" ng-model="date.startDate" is-open="date.opened.1" min-date="'1970-01-01'" datepicker-options="date.dateOptions" ng-required="true" close-text="Close" />
+          <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
         </div>
-        <div class="col-sm-4 text-right hidden-xs">
-          <div class="inline text-left col-sm-10 no-padder">
-            <div class="input-group" tooltip-placement="bottom" tooltip="Date Range" >
-                <input type="text" class="form-control " datepicker-popup="dd-MMMM-yyyy" ng-model="date.startDate" is-open="date.opened.1" min-date="'1970-01-01'" datepicker-options="date.dateOptions" ng-required="true" close-text="Close" />
-                <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="date.open($event, 1)"><i class="glyphicon glyphicon-calendar"></i></button>
-                </span>
-                <input type="text" class="form-control" datepicker-popup="dd-MMMM-yyyy" ng-model="date.endDate" is-open="date.opened.2" min-date="'1970-01-01'" datepicker-options="date.dateOptions" ng-required="true" close-text="Close" />
-                <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="date.open($event, 2)"><i class="glyphicon glyphicon-calendar"></i></button>
-                </span>
+        <!-- to date -->
+        <div class="input-group input-date" ng-click="date.open($event, 2)">
+          <input type="text" class="form-control" datepicker-popup="dd MMMM yyyy" ng-model="date.endDate" is-open="date.opened.2" min-date="'1970-01-01'" datepicker-options="date.dateOptions" ng-required="true" close-text="Close" />
+          <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+        </div>
 
-            </div>
-          </div>
-          <div class="inline col-sm-2">
-            <div class="btn-group dropdown" >
-            <button class="btn btn-default dropdown-toggle">{{stats[statType] || "Daily"}}<span class="caret"></span></button>
-            <ul class="dropdown-menu pull-right">
-              <li ng-repeat="(key,label) in stats" ng-click="setStat(key)"><a dropdown-toggle href>{{label}}</a></li>
-            </ul>
+        <!-- filter -->
+        <div class="btn-group dropdown" >
+          <button class="btn btn-default dropdown-toggle">{{stats[statType] || "Daily"}}<span class="caret"></span></button>
+          <ul class="dropdown-menu pull-right">
+            <li ng-repeat="(key,label) in stats" ng-click="setStat(key)"><a dropdown-toggle href>{{label}}</a></li>
+          </ul>
         </div>
-          </div>
-        </div>
+
+      </div>
+      <div>
+        <h1 class="m-n font-thin h3 text-black">
+          Dashboard
+          <spinner class="inline"></spinner>
+        </h1>
+
+        <small class="text-muted">Welcome to Razorpay </small>
       </div>
     </div>
     <!-- / main header -->
@@ -57,20 +54,20 @@
               </div>
             </div>
             <div class="col-xs-6">
-              <div class="block panel padder-v bg-success dker item">
+              <div class="block panel padder-v bg-info item">
                 <span class="text-white font-thin h1 block">{{aggregations.data.payments}}</span>
                 <span class="text-muted text-xs">Total Payments</span>
               </div>
             </div>
             <div class="col-xs-6">
-              <div href class="block panel padder-v bg-danger dker item">
+              <div href class="block panel padder-v bg-primary item">
                 <span class="text-white font-thin h1 block">{{aggregations.data.refunds}}</span>
                 <span class="text-muted text-xs">Total Refunds</span>
               </div>
             </div>
             <div class="col-xs-12 m-b-md">
-              <div href class="block panel padder-v bg-info dker item">
-                <span class="text-white font-thin h1 block">{{aggregations.data.amount | currency:"₹"}}</span>
+              <div href class="block panel padder-v bg-light dk item">
+                <span class="text-primary-dk font-thin h1 block">{{aggregations.data.amount | currency:"₹"}}</span>
                 <span class="text-muted text-xs">Total Volume</span>
               </div>
             </div>
@@ -78,15 +75,15 @@
         </div>
         <div class="col-md-7">
           <div class="panel wrapper">
-            <label class="i-switch bg-warning pull-right">
-              <input type="checkbox" ng-model="showSpline">
-              <i></i>
-            </label>
             <h4 class="font-thin m-t-none m-b text-muted">Successful Transactions</h4>
+                <!-- lines: { show: true, lineWidth: 1, fill:true, fillColor: { colors: [{opacity: 0.2}, {opacity: 0.8}] } } -->
 
             <div ui-jq="plot" ui-refresh="refreshGraph" ui-options="
               [
-                { data: {{successfull.data}}, label:'Successful Transactions', points: { show: true, radius: 1}, splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.8*showSpline }}
+                { data: {{successfull.data}},
+                label:'Successful Transactions',
+                points: { show: true, radius: 1},
+                splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.6*showSpline }}
               ],
               {{successfull.options}}
             " style="height:246px" >
@@ -100,14 +97,13 @@
       <!-- service -->
       <div class="panel hbox hbox-auto-xs no-border">
         <div class="col wrapper">
-          <label class="i-switch bg-warning pull-right">
-              <input type="checkbox" ng-model="showSpline">
-              <i></i>
-          </label>
           <h4 class="font-thin m-t-none m-b-none text-primary-lt">Transaction Volume</h4>
           <div ui-jq="plot" ui-refresh="refreshGraph" ui-options="
             [
-              { data: {{transactions.data}}, label:'Transaction Volume', points: { show: true, radius: 1}, splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.8*showSpline }}
+              { data: {{transactions.data}},
+              label:'Transaction Volume',
+              points: { show: true, radius: 1},
+              splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.6*showSpline }}
             ],
             {{transactions.options}}
           " style="height:240px" >
@@ -130,12 +126,12 @@
               <span class="pull-right">{{paymentaggregations.MAES}}%</span>
               <span class="hidden-folded">Maestro</span>
             </div>
-            <progressbar value="paymentaggregations.MAES" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.MAES" class="progress-xs m-t-sm bg-white" animate="true"></progressbar>
             <div class="text-center-folded">
               <span class="pull-right">{{paymentaggregations.NETBANKING}}%</span>
               <span class="hidden-folded">Net Banking</span>
             </div>
-            <progressbar value="paymentaggregations.NETBANKING" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.NETBANKING" class="progress-xs m-t-sm bg-white" animate="true" type="success"></progressbar>
             <div class="text-center-folded">
               <span class="pull-right">{{paymentaggregations.OTHER}}%</span>
               <span class="hidden-folded">Other</span>

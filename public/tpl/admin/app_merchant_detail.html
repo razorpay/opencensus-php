@@ -322,6 +322,7 @@
                     <th>Gateway</th>
                     <th>Category</th>
                     <th>Merchant Id</th>
+                    <th>Merchant Id 2</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
                     <th>Created At</th>
@@ -333,6 +334,7 @@
                     <td>{{terminal.gateway}}</td>
                     <td>{{terminal.category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
+                    <td>{{terminal.gateway_merchant_id2}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
@@ -398,6 +400,7 @@
              <option value="axis_migs">Axis MIGS</option>
              <option value="axis_genius">Axis Genius</option>
              <option value="paytm">Paytm</option>
+             <option value="payzapp">Payzapp</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="kotak">Kotak</option>
@@ -415,6 +418,12 @@
         <label for="gateway_merchant_id" class="col-lg-3 control-label">Gateway Merchant Id:</label>
         <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="gateway_merchant_id" ng-model="terminal.gateway_merchant_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_merchant_id" class="col-lg-3 control-label">Gateway Merchant Id 2:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="gateway_merchant_id2" ng-model="terminal.gateway_merchant_id2" />
         </div>
       </div>
       <div class="form-group">

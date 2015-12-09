@@ -165,6 +165,7 @@ app.controller('EntityDetailCtrl', [
           'netbanking',
           'payment',
           'paytm',
+          'pricing',
           'refund',
           'settlement',
           'terminal',
