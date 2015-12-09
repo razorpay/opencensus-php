@@ -53,7 +53,7 @@
               <td class="wrapper offset-by-one">
                 <table class="ten columns">
                   <tr>
-                    <td class="center newsletter">
+                    <td class="center welcome">
 <p>Hi {{{$name}}},</p>
 
 <p>

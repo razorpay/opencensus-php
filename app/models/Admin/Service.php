@@ -54,6 +54,7 @@ class Service extends Base\Service
             'balance'           => Models\Merchant\Balance::class,
             'methods'           => Models\Merchant\Methods::class,
             'webhook'           => Models\Merchant\Webhook::class,
+            'pricing'           => Models\Pricing::class,
         );
 
         if (array_key_exists($entity, $map))
@@ -97,10 +98,10 @@ class Service extends Base\Service
         if(empty($errors))
         {
             // Now we send the newsletter
-            $mailer = new Newsletter($input['email'],
-                $input['subject'], $input['msg'],
-                true // Test Email to self
-            );
+            // Test Email to self
+            //
+            $mailer = new Newsletter(
+                        $input['email'], $input['subject'], $input['msg'], true);
 
             return $mailer->send();
         }
@@ -114,11 +115,12 @@ class Service extends Base\Service
     {
         $errors = (new Validator)->validateInput('send_newsletter', $input);
 
-        if(empty($errors))
+        if (empty($errors))
         {
-            $mailer = new Newsletter($input['lists'],
-                $input['subject'], $input['msg']
-            );
+            $mailer = new Newsletter(
+                            $input['lists'],
+                            $input['subject'],
+                            $input['msg']);
 
             return $mailer->send();
         }

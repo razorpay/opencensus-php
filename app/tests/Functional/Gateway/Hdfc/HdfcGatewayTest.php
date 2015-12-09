@@ -89,4 +89,15 @@ class HdfcGatewayTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNull($txn);
     }
+
+    public function testForcedCapture()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->captureErrorReturnGW00176();
+
+        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+        $this->assertEquals($payment['status'], 'captured');
+    }
 }

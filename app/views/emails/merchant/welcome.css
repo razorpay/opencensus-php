@@ -4,7 +4,8 @@ h1{
 	line-height: 24px;
 }
 
-.newsletter p{
+
+.welcome p{
 	text-align: justify;
 	margin-bottom: 20px;
 	color: #444444;
@@ -12,7 +13,7 @@ h1{
 	line-height: 24px;
 }
 
-.newsletter h3{
+.welcome h3{
 	font-size: 28px;
 	line-height: 24px;
 	color: #1aace5;
@@ -22,6 +23,41 @@ h1{
 	 */
 	margin-top: 40px;
 	margin-bottom: 20px;
+}
+
+
+.welcome-header-bg {
+	max-width: 580px;
+	min-height: 180px;
+}
+.welcome-header-bg h1{
+	text-align: left;
+	margin-left: 40px;
+	margin-top: 40px;
+	font-size: 36px;
+	line-height: 20px;
+	font-weight: 200 !important;
+	color: white;
+}
+.welcome, .welcome p {
+	font-size: 16px;
+	color: #2d2d2d;
+	text-align: justify;
+	line-height: 24px;
+	background: white;
+	margin: 10px 0px 10px 0px;
+}
+.welcome a, .welcome a:hover {
+	color: #24bbea;
+	text-decoration: none !important;
+}
+.welcome h1{
+	font-size: 24px;
+	line-height: 24px;
+	color: #24bbea;
+	background: white;
+	margin-top: 40px;
+	text-align: left;
 }
 
 .footer td{

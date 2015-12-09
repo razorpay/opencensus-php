@@ -31,8 +31,8 @@
           <table class="twelve columns">
             <tr>
               <td class="center">
-                <hr><br>
-                <h1><center class="darktext">
+                <hr style="min-height:1px;height:1px;background:#d9d9d9;"><br>
+                <h1><center class="darktext lighter">
                   {{{$subject}}}
                 </center></h1>
               </td>

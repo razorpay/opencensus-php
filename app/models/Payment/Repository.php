@@ -124,6 +124,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getNonTaxComputedPayments()
+    {
+        $repo = $this->repo;
+        return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNull(Payment\Entity::SERVICE_TAX)
+                    ->get();
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
@@ -181,7 +189,9 @@ class Repository extends Base\Repository
 
     protected function joinQueryCard($query)
     {
-        $joins = $query->joins;
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ? $joins : [];
 
         $joined = false;
 
