@@ -309,7 +309,8 @@ class AdminTest extends TestCase
     {
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
-            ->waitAndClickById('btn-tagMerchant')
+            ->waitForLoaded()
+            ->clickLinkWithText('Tag Merchant')
             ->waitForPresent('.merchant-tag-modal')
             // Fill tags
             ->type(l::IdOrName('merchant-tags'), 'international,webhook,random_tag')

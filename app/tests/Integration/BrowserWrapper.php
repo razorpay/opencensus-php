@@ -39,6 +39,11 @@ class BrowserWrapper extends Browser
         return $this->isElementPresent(l::css('.alert-danger'));
     }
 
+    public function clickLinkWithText($text)
+    {
+        return $this->click(l::linkContaining($text));
+    }
+
     public function open($url)
     {
         $url = URL::to($url);
