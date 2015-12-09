@@ -200,9 +200,11 @@ class Service extends Base\Service
 
     public function fetch($merchant_id)
     {
-        $merchant = Merchant\Entity::findOrFail($merchant_id)->toArray();
+        $merchant = Merchant\Entity::findOrFail($merchant_id);
 
-        return $merchant;
+        $merchant['tags'] = $merchant->tags;
+
+        return $merchant->toArray();
     }
 
     public function fetchKeysFromApi($merchant_id, $mode)
