@@ -46,8 +46,6 @@ app.controller('MerchantsCtrl', [
         query.tags = $scope.tags;
       }
 
-      console.debug(query);
-
       generate(query);
     };
 

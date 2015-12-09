@@ -305,6 +305,20 @@ class AdminTest extends TestCase
         $this->assertBodyHasText('Live transactions for merchant enabled successfully');
     }
 
+    public function testMerchantTagging()
+    {
+        $this->browser
+            ->waitAndClickById('btn-tagMerchant')
+            ->waitForPresent('.merchant-tag-modal')
+            // Fill tags
+            ->type(l::IdOrName('merchant-tags'), 'international,webhook,random_tag')
+            ->click(l::css('.modal-ok'))
+            ->waitForLoaded();
+
+        // It gets capitalized before being displayed
+        $this->assertBodyHasText('Random_Tag');
+    }
+
     /**
      * Tests Admins Mangement
      */
