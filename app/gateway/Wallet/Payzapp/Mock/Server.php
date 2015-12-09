@@ -31,11 +31,11 @@ class Server extends Base\Mock\Server
             'dataPickUpCode'            =>  '201512091604066125oW33aC8:2jG2cS5gT9',
             'wibmoTxnId'                =>  $wibmoTxnId,
             'merTxnId'                  =>  $input['transactionInfo']['merTxnId'],
-         );
+        );
 
         $request = array(
-            'url' => $input['callbackUrl'],
-            'content' => ['msg' => $msg],
+            'url' => $input['wIapDefaults']['wIapReturnUrl'],
+            'content' => $content,
             'method' => 'post',
         );
 

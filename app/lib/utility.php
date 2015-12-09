@@ -160,7 +160,7 @@ if (! function_exists('random_alpha_string'))
 
 if (! function_exists('random_alphanum_string'))
 {
-    function random_alpha_string($length = 1)
+    function random_alphanum_string($length = 1)
     {
         $chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
 

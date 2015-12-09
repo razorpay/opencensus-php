@@ -42,7 +42,7 @@ class Validator extends Base\Validator
     protected static $wIapDefaultsRules = array(
         'wIapManualTrigger'         => 'required|boolean',
         'wIapButtonId'              => 'required|in:wIapBtn',
-        'wIapWibmoDomain'           => 'wallet.pc.enstage-sas.com'
+        'wIapWibmoDomain'           => 'required|in:wallet.pc.enstage-sas.com',
         'wIapInlineResponse'        => 'required|boolean',
         'wIapInlineResponseHandler' => 'required|in:handleWibmoIapResponse',
         'wIapReturnUrl'             => 'required|url',
