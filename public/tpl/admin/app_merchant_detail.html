@@ -59,15 +59,27 @@
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.paytm == false" ng-click="enableMethod('paytm')">
           Enable Paytm
+          <strong class="pull-right label label-success">
+          P
+          </strong>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disableMethod('paytm')">
           Disable Paytm
+          <strong class="pull-right label label-danger">
+          P
+          </strong>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == false" ng-click="enableMethod('mobikwik')">
           Enable Mobikwik
+          <strong class="pull-right label label-success">
+          M
+          </strong>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == true"ng-click="disableMethod('mobikwik')">
           Disable Mobikwik
+          <strong class="pull-right label label-danger">
+          M
+          </strong>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
           Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
