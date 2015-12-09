@@ -116,14 +116,14 @@ class PayzappGatewayTest extends TestCase
 
             $end = strpos($content, '"}\');', $ix);
 
-            $content = substr($content, $ix, $end - $ix + 2);
+            $url = getTextBetweenStrings($content, '***', '***');
             $method = 'post';
+            $json = substr($content, $ix, $end - $ix + 2);
+            $content = ['json' => $json];
 
-            // define url
-            // make request
-
+            $this->ba->noAuth();
             $request = $this->makeFirstGatewayPaymentMockRequest(
-                                                    $url, $method, $content);
+                                                $url, $method, $content);
         }
         else
         {
