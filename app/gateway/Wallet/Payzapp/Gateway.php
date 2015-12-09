@@ -377,8 +377,19 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input, $payment)
     {
+        $generatedHash = $this->generateCallbackSecureHash($input, $payment);
+
         $hash = $input['gateway']['msgHash'];
 
+        if ($generatedHash !== $hash)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                                    'Failed checksum verification');
+        }
+    }
+
+    protected function generateCallbackSecureHash($input, $payment)
+    {
         $content = array_merge($payment, $input['gateway']);
 
         $content['merAppId'] = $this->getMerchantAppId($input);
@@ -387,11 +398,7 @@ class Gateway extends Base\Gateway
 
         $generatedHash = $this->getHashForAuthorizeResponse($content);
 
-        if ($generatedHash !== $hash)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                                    'Failed checksum verification');
-        }
+        return $generatedHash;
     }
 
     protected function getHashForVerifyRequest($content)
@@ -435,7 +442,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getHashForAuthorizeResponse($content)
+    public function getHashForAuthorizeResponse($content)
     {
         $fieldsInOrder = array(
             'wpay',
@@ -446,7 +453,6 @@ class Gateway extends Base\Gateway
             'txnAmount',
             'txnCurrency',
             'wibmoTxnId',
-            'resCode',
             'resCode',
             'dataPickUpCode'
         );
@@ -511,7 +517,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $str = $str . '|'.$secret.'|';
+        $str = $str . '|'.$secret.'|';s($str);
 
         $hash =  base64_encode(hash('sha256', $str, true));
 

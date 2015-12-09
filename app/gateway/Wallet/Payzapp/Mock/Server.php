@@ -33,6 +33,22 @@ class Server extends Base\Mock\Server
             'merTxnId'                  =>  $input['transactionInfo']['merTxnId'],
         );
 
+        $contentToHash = array(
+            'wpay'              => 'wpay',
+            'merId'             => $input['merchantInfo']['merId'],
+            'merAppId'          => $input['merchantInfo']['merAppId'],
+            'merTxnId'          => $input['transactionInfo']['merTxnId'],
+            'merAppData'        => $input['transactionInfo']['merAppData'],
+            'txnAmount'         => $input['transactionInfo']['txnAmount'],
+            'txnCurrency'       => '356',
+            'wibmoTxnId'        => $content['wibmoTxnId'],
+            'resCode'           => $content['resCode'],
+            'dataPickUpCode'    => $content['dataPickUpCode'],
+        );
+
+        $content['msgHash'] = $this->getGatewayInstance()
+                                   ->getHashForAuthorizeResponse($contentToHash);
+
         $request = array(
             'url' => $input['wIapDefaults']['wIapReturnUrl'],
             'content' => $content,
