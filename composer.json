@@ -18,7 +18,8 @@
         "vipsoft/unzip": "^1.1",
         "schuppo/password-strength": "~0.7",
         "league/csv": "7.1.2",
-        "rtconner/laravel-tagging": "~0.5"
+        "rtconner/laravel-tagging": "~0.5",
+        "marlek/laravel-automigrate": "dev-master"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",

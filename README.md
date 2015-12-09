@@ -9,11 +9,12 @@
 * Copy over `bootstrap\environment.sample.php` to `bootstrap\environment.php`. Specify `dev` environment for local development.
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
+* Run `php artisan automigrate` to run all package migrations
 * `npm install`
 * `npm install -g grunt-cli`
 * `cp app/config/grunt.sample.json app/config/grunt.json`
 * `grunt`
-
+* `grunt watch`
 
 ## Setup instructions for testing
 
@@ -24,4 +25,13 @@
 
 # Selenium
 
-If you can't get selenium to work, make sure `API_MOCK` is true in `.env.testing.php`
+If you can't get selenium to work, make sure `API_MOCK` is true in `.env.testing.php`.
+
+## Migrations
+
+We are using [laravel-automigrate][lam] plugin to manage third-party migrations (package migrations).
+If a package has a migration that you need to run manually, add it to the automigrate config
+file, and it will be automatically run on testing as well as production after the app
+migrations.
+
+[lam]: https://github.com/marlek/laravel-automigrate
