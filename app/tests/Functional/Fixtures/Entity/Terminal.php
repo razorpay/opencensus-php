@@ -109,6 +109,28 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedPayzappTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::PAYZAPP_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_payzapp',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => '298374982374928374928',
+            'gateway_merchant_id2'      => '3456',
+            'gateway_terminal_id'       => '293847923847293874983',
+            'gateway_terminal_password' => 'S9DFIU9S8DFU98SD',
+            'gateway_access_code'       => '2938',
+            'gateway_secure_secret'     => '102983092182309128123',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBilldeskTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
@@ -311,24 +333,6 @@ class Terminal extends Base
         );
 
         $attributes = array_merge($defaultValues, $attributes);
-
-        return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
-    public function createSharedPayzappTerminal()
-    {
-        $termId = '4r8Djlksdf0dGd';
-
-        $attributes = array(
-            'id'                        => '4r8Djlksdf0dGd',
-            'merchant_id'               => '1MercShareTerm',
-            'gateway'                   => 'payzapp',
-            'card'                      => 0,
-            'gateway_merchant_id'       => 'razorpay payzapp',
-            'gateway_terminal_id'       => 'terminal payzapp',
-            'gateway_terminal_password' => 'razorpay_password',
-            'category'                  => '1000',
-        );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

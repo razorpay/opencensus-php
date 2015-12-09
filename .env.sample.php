@@ -54,11 +54,14 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                    => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                    => 'randomsecret',
 
+    'PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'               => 'random',
     'PAYZAPP_WALLET_TEST_MERCHANT_ID'                   => 'random',
     'PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'               => 'random',
     'PAYZAPP_WALLET_TEST_HASH_SECRET'                   => 'random',
     'PAYZAPP_WALLET_TEST_PG_INSTANCE_ID'                => 'random',
     'PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'                => 'random',
+    'PAYZAPP_WALLET_TEST_PG_HASH_KEY'                   => 'random',
+    'PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'                => 'random',
 
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'          => '000000',
 

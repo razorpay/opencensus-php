@@ -38,7 +38,7 @@ return array(
     'mock_netbanking_kotak' => $_ENV['NETBANKING_KOTAK_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
     'mock_sbiepay'          => $_ENV['SBIEPAY_MOCK'],
-    'mock_payzapp'          => $_ENV['PAYZAPP_MOCK'],
+    'mock_wallet_payzapp'   => $_ENV['PAYZAPP_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -93,9 +93,14 @@ return array(
     ),
 
     'wallet_payzapp' => array(
-        'test_merchant_id'      => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_ID'],
-        'test_merchant_app_id'  => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'],
-        'test_hash_secret'      => $_ENV['PAYZAPP_WALLET_TEST_HASH_SECRET'],
+        'pg_merchant_login_id'      => $_ENV['PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'],
+        'test_merchant_id'          => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_ID'],
+        'test_merchant_app_id'      => $_ENV['PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'],
+        'test_hash_secret'          => $_ENV['PAYZAPP_WALLET_TEST_HASH_SECRET'],
+        'test_pg_instance_id'       => $_ENV['PAYZAPP_WALLET_TEST_PG_INSTANCE_ID'],
+        'test_pg_merchant_id'       => $_ENV['PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'],
+        'test_pg_hash_key'          => $_ENV['PAYZAPP_WALLET_TEST_PG_HASH_KEY'],
+        'live_pg_instance_id'       => $_ENV['PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'],
     ),
 
     'netbanking_hdfc' => array(

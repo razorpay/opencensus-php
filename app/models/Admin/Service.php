@@ -57,6 +57,7 @@ class Service extends Base\Service
             'methods'           => Models\Merchant\Methods::class,
             'webhook'           => Models\Merchant\Webhook::class,
             'pricing'           => Models\Pricing::class,
+            'wallet'            => Gateway\Wallet\Base::class,
         );
 
         if (array_key_exists($entity, $map))

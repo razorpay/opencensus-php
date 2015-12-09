@@ -405,7 +405,12 @@ class Service extends Base\Service
 
         $message = 'Payment verify result';
 
-        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        $total = $timedOut + $verified + $failed + $authorized + $error;
+
+        if ($total !== 0)
+        {
+            $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        }
 
         return $results;
     }
