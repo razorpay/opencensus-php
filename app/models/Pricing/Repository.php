@@ -126,8 +126,9 @@ class Repository extends Base\Repository
     public function getPricingPlanRule($id)
     {
         $repo = $this->repo;
+        $rule = $repo::findOrFailPublic($id);
 
-        $repo::findOrFailPublic($id);
+        return $rule;
     }
 
     public function deletePlanRule($id)

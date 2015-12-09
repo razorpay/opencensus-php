@@ -81,4 +81,28 @@ trait PaymentHdfcTrait
 
         return $tds;
     }
+
+    protected function captureErrorReturnGW00176()
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $content['vpc_TxnResponseCode'] = '5';
+                            $content = array(
+                                'error_code_tag' => 'GW00176',
+                                'error_text' =>   '',
+                                'result' => '!ERROR!-GW00176-Failed Previous Captures check.',
+                            );
+
+                            return $content;
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $content = $this->doAuthPayment();
+        });
+    }
 }

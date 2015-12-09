@@ -1009,6 +1009,6 @@ trait PaymentTrait
 
     protected function setMockServer($server)
     {
-        return $this->app['gateway']->setServer($this->gateway, $server);
+         return $this->app['gateway']->setServer($this->gateway, $server);
     }
 }

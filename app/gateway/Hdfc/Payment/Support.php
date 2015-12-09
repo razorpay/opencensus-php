@@ -3,6 +3,7 @@
 namespace Gateway\Hdfc\Payment;
 
 use EE\Exception;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use Models\Card;
@@ -76,6 +77,11 @@ trait Support
 
         if ($this->error)
         {
+            if ($this->isAnAcceptedError() === true)
+            {
+                return;
+            }
+
             $this->throwException($this->supportPaymentResponse['error']);
         }
     }
@@ -156,6 +162,34 @@ trait Support
         }
 
         return ! ($this->error);
+    }
+
+    protected function isAnAcceptedError()
+    {
+        assert ($this->error === true);
+
+        $response = $this->supportPaymentResponse;
+
+        $error = $response['error'];
+        $input = $this->input;
+
+        $payment = $this->model;
+
+        if (($this->action === Base\Action::CAPTURE) and
+            ($error['code'] === Hdfc\ErrorCode::GW00176) and
+            ($input['payment']['status'] === 'authorized') and
+            ($input['payment']['amount_authorized'] === (int) $input['amount']))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_FORCED,
+                $this->supportPaymentResponse);
+
+            $this->error = null;
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function setSupportPaymentType($type)
@@ -246,6 +280,10 @@ trait Support
 
         if ($this->error)
         {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_SUPPORT_ERROR,
+                $this->supportPaymentResponse);
 
             $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->supportPaymentRequest['data'],
@@ -253,24 +291,19 @@ trait Support
                                 $type,
                                 $paymentId,
                                 $refundId);
-
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_SUPPORT_ERROR,
-                $this->supportPaymentResponse);
         }
         else
         {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_SUPPORT_RESPONSE,
+                $this->supportPaymentResponse);
+
             $this->model = $this->repo->persistAfterSupportPayment(
                     $this->supportPaymentRequest['data'],
                     $this->supportPaymentResponse['data'],
                     $paymentId,
                     $refundId);
-
-            $this->trace(
-                Trace::INFO,
-                TraceCode::GATEWAY_SUPPORT_RESPONSE,
-                $this->supportPaymentResponse);
         }
     }
 

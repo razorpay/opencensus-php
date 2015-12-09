@@ -13,6 +13,8 @@ class Gateway extends Hdfc\Gateway
 {
     use Base\Mock\GatewayTrait;
 
+    protected $server;
+
     public function __construct()
     {
         parent::__construct();
@@ -42,7 +44,7 @@ class Gateway extends Hdfc\Gateway
 
     protected function callGatewayRequestFunctionInternally($requestVar)
     {
-        $server = new Server();
+        $server = $this->getServer();
         $server->setInput($requestVar['content']);
 
         $response = null;
@@ -120,5 +122,12 @@ class Gateway extends Hdfc\Gateway
                 '10 ' . static::TIMEOUT . '001 milliseconds with 0 bytes received', 'curlerror');
 
         }
+    }
+
+    protected function getServer()
+    {
+        $app = \App::getFacadeRoot();
+
+        return $app['gateway']->server('hdfc');
     }
 }

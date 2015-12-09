@@ -46,6 +46,7 @@ class Payment extends Base
         $payment = $this->createCardAuthorized($attributes);
 
         $payment['status'] = 'captured';
+        $payment['authorized_at'] = $attributes['created_at'];
         $payment['captured_at'] = $attributes['created_at'] + 10;
 
         $hdfcAttrArray = array(
@@ -71,6 +72,7 @@ class Payment extends Base
     public function createNetbankingCaptured(array $attributes = array())
     {
         $payment = $this->createNetbankingAuthorized($attributes);
+        $payment['authorized_at'] = $payment['created_at'];
         $payment['captured_at'] = $payment['created_at'] + 10;
 
         $txn = $this->updateTransactionOnCapture($payment);
@@ -143,6 +145,7 @@ class Payment extends Base
         $card = $this->fixtures->create('card');
 
         $defaultValues = array(
+            'authorized_at' => time(),
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'card_id' => $card['id'],

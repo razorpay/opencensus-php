@@ -76,6 +76,7 @@ final class Route
         'merchant_fetch_balance'            => ['get',      'merchants/{id}/balance',                   'MerchantController@getBalance'                                 ],
         'merchant_edit_free_credits'        => ['post',     'merchants/{id}/credits',                   'MerchantController@postFreeCredits',                           ],
         'merchant_beneficiary_file'         => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                 ],
+        'merchant_post_beneficiary_file'    => ['post',     'merchants/beneficiary/file/bank',          'MerchantController@postMerchantBeneficiaryFile'                ],
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
         'terminal_delete'                   => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                            ],
@@ -141,6 +142,7 @@ final class Route
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
+        'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ]
     );
 
     public static $public = array(
@@ -216,6 +218,7 @@ final class Route
         'merchant_fetch_balance',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
+        'merchant_post_beneficiary_file',
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
@@ -248,6 +251,7 @@ final class Route
         'payment_verify_all',
         'payment_capture_reminder',
         'payment_refund_authorized',
+        'payment_compute_tax',
         'refund_netbanking_generate_excel',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
@@ -260,7 +264,7 @@ final class Route
         'iin_fetch_multiple',
         'iin_add',
         'send_test_newsletter',
-        'send_newsletter'
+        'send_newsletter',
     );
 
     public static $proxy        = array(
@@ -302,6 +306,7 @@ final class Route
                 'payment_auth_notify',
                 'payment_timeout',
                 'merchant_daily_report',
+                'merchant_post_beneficiary_file',
                 'payment_auto_capture',
                 'payment_verify_all',
                 'refund_netbanking_generate_excel',

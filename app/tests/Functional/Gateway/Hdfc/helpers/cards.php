@@ -42,6 +42,8 @@ return [
             'content' => [
                 'status' => 'authorized',
                 'captured' => false,
+                'fee' => null,
+                'service_tax' => null,
             ],
         ],
     ],

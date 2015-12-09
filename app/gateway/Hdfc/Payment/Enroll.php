@@ -253,28 +253,28 @@ trait Enroll
     {
         if ($this->error)
         {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_ENROLL_ERROR,
+                $this->enrollResponse);
+
             $this->model = $this->repo->persistAfterEnrollError(
                             $this->id,
                             $this->enrollResponse['error'],
                             $this->enrollRequest['data']);
 
             $this->id = $this->model->id;
-
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_ENROLL_ERROR,
-                $this->enrollResponse);
         }
         else
         {
-            $this->model = $this->repo->persistAfterEnroll(
-                    $this->enrollRequest['data'],
-                    $this->enrollResponse['data']);
-
             $this->trace(
                 Trace::INFO,
                 TraceCode::GATEWAY_ENROLL_RESPONSE,
                 $this->enrollResponse);
+
+            $this->model = $this->repo->persistAfterEnroll(
+                    $this->enrollRequest['data'],
+                    $this->enrollResponse['data']);
         }
     }
 

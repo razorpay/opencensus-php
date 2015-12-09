@@ -270,6 +270,13 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postMerchantBeneficiaryFile()
+    {
+        $data = (new Merchant\Service)->postMerchantBeneficiaryFile();
+
+        return ApiResponse::json($data);
+    }
+
     public function getCheckout()
     {
         $methods = (new Merchant\Service)->getPaymentMethods();

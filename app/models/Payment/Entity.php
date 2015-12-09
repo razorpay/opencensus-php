@@ -41,6 +41,8 @@ class Entity extends Base\PublicEntity
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const CALLBACK_URL          = 'callback_url';
+    const SERVICE_TAX           = 'service_tax';
+    const FEE                   = 'fee';
 
     const CURRENCY_LENGTH       = 3;
 
@@ -66,7 +68,9 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
-        self::CALLBACK_URL);
+        self::CALLBACK_URL,
+        self::FEE,
+        self::SERVICE_TAX);
 
     protected $visible = array(
         self::ID,
@@ -98,6 +102,8 @@ class Entity extends Base\PublicEntity
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
+        self::FEE,
+        self::SERVICE_TAX,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -235,9 +241,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp()
+    public function setAuthorizeTimestamp($authTimestamp = NULL)
     {
-        $this->setAttribute(self::AUTHORIZED_AT, time());
+        if(is_null($authTimestamp))
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, time());
+        }
+        else
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);            
+        }
     }
 
     public function setBank($bank)
@@ -258,6 +271,16 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setServiceTax($serviceTax)
+    {
+        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setFee($fee)
+    {
+        $this->setAttribute(self::FEE, $fee);
     }
 
     public function setErrorNull()
@@ -339,6 +362,21 @@ class Entity extends Base\PublicEntity
     public function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
+    }
+
+    public function getCreatedAttribute()
+    {
+        return ($this->attributes[self::CREATED_AT] !== null);
+    }
+
+        public function getFeeAttribute()
+    {
+        return (int) $this->attributes[self::FEE];
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -529,6 +567,21 @@ class Entity extends Base\PublicEntity
     public function getErrorDescription()
     {
         return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getCreatedTimestamp()
+    {
+        return $this->getAttribute(self::CREATED_AT);
     }
 
     public function getDaysSinceAuthorized()
