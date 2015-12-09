@@ -85,8 +85,6 @@ class Gateway extends Base\Gateway
                                   ->with('request', $request)
                                   ->render();
 
-        $request['_wIapDefaults'] = $this->getWIapDefaults($request);
-
         return $request;
     }
 

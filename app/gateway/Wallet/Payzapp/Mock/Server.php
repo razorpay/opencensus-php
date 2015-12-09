@@ -20,13 +20,18 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        $wibmoTxnId = $this->getWibmoTxnId();
+
         $content = array(
-            'ResCode' => '',
-            'ResDesc' => '',
-            'MsgHash' => '',
-            'DataPickUpCode' => '',
-            'WibmoTxnId' => '',
-        );
+            'resCode'                   =>  '000',
+            'resDesc'                   =>  'SUCCESS',
+            'actionCode'                =>  '0',
+            'additionalUserInputData'   =>  '[object Object]',
+            'msgHash'                   =>  'cOMsjV/9Vw3dBN5ECr54tEl7ITCwWj4O+pWbqrz8ZuM=',
+            'dataPickUpCode'            =>  '201512091604066125oW33aC8:2jG2cS5gT9',
+            'wibmoTxnId'                =>  $wibmoTxnId,
+            'merTxnId'                  =>  $input['transactionInfo']['merTxnId'],
+         );
 
         $request = array(
             'url' => $input['callbackUrl'],
@@ -35,7 +40,6 @@ class Server extends Base\Mock\Server
         );
 
         return $this->makePostResponse($request);;
-
     }
 
     public function verify($input)
@@ -55,5 +59,15 @@ class Server extends Base\Mock\Server
     public static function getMockServerUrl()
     {
         $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
+    }
+
+    protected static function getWibmoTxnId()
+    {
+        return random_alphanum_string(21);
+    }
+
+    protected static function getDataPickupCode($wibmoTxnId)
+    {
+        return $wibmoTxnId . ':' . random_alphanum_string(10);
     }
 }

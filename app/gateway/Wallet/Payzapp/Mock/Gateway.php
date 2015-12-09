@@ -25,24 +25,26 @@ class Gateway extends Payzapp\Gateway
         return $request;
     }
 
-    protected function getWIapDefaults($request)
+    protected function getWIapDefaults($input)
     {
-        $wiapDefaults = array(
+        $wIapDefaults = array(
             // WebSDK Configurations
             'wIapManualTrigger'         => true,
             'wIapButtonId'              => 'wIapBtn',
-            'wIapWibmoDomain'           => "<?= $request['url'] ?>",
+            'wIapWibmoDomain'           => $this->getUrlDomain(),
             'wIapInlineResponse'        => false,
             'wIapInlineResponseHandler' => 'handleWibmoIapResponse',
-            'wIapReturnUrl'             => "<?= $request['callback_url'] ?>",
+            'wIapReturnUrl'             => $input['callbackUrl'],
         );
+
+        return $wIapDefaults;
     }
 
     protected function getAuthContent($input)
     {
         $content = parent::getAuthContent($input);
 
-        $content['wIapDefaults'] = $this->getWIapDefaults($request);
+        $content['wIapDefaults'] = $this->getWIapDefaults($input);
 
         return $content;
     }

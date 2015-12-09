@@ -701,7 +701,7 @@ trait PaymentTrait
         }
         else
         {
-            // Has to be either redirect or a html form post.
+            // Has to be either redirect or a html form post.o
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
                     ($this->isResponseInstanceType('http', $response)) and

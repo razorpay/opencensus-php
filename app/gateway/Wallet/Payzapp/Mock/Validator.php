@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         'transactionInfo'   => 'required|array',
         'customerInfo'      => 'required|array',
         'msgHash'           => 'required|string',
+        'wIapDefaults'      => 'required|array',
     );
 
     protected static $authValidators = array(
@@ -36,6 +37,15 @@ class Validator extends Base\Validator
     protected static $customerInfoRules = array(
         'custEmail'                 => 'required|email',
         'custMobile'                => 'required|integer|digits_between:9,12',
+    );
+
+    protected static $wIapDefaultsRules = array(
+        'wIapManualTrigger'         => 'required|boolean',
+        'wIapButtonId'              => 'required|in:wIapBtn',
+        'wIapWibmoDomain'           => 'wallet.pc.enstage-sas.com'
+        'wIapInlineResponse'        => 'required|boolean',
+        'wIapInlineResponseHandler' => 'required|in:handleWibmoIapResponse',
+        'wIapReturnUrl'             => 'required|url',
     );
 
     protected function validateAuthData($input)
