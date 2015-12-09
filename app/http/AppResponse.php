@@ -34,23 +34,18 @@ class AppResponse
      * @param  string $prefix prefix used to concat keys
      * @return array flat version of input array
      */
-    protected static function flatten(array $array, $prefix = '')
+    protected static function flatten(array $array)
     {
-        $result = array();
 
-        foreach ($array as $key => $value)
+        foreach ($array as &$value)
         {
             if (is_array($value))
             {
-                $result = $result + self::flatten($value, $prefix . $key . '_');
-            }
-            else
-            {
-                $result[$prefix . $key] = $value;
+                $value = '"'.json_encode($value);
             }
         }
 
-        return $result;
+        return $array;
     }
 
     public static function csvResponse(array $data)
@@ -65,42 +60,16 @@ class AppResponse
 
         foreach ($data as &$row)
         {
+            // This just converts array fields to JSON
             $row = self::flatten($row);
-            $csvMergeObject = $csvMergeObject + $row;
         }
 
-        $headings = array_keys($csvMergeObject);
-        sort($headings);
+        $headings = array_keys($data[0]);
 
         $file = new SplTempFileObject();
-
         $csv = Writer::createFromFileObject($file);
 
-        // This makes sure that we have uniform array keys for all rows
-        // and that no key is missing for any row
-        $csv->addFormatter(function ($row) use($headings) {
-            // Add extra keys to the array
-            $keysToAdd = array_diff($headings, array_keys($row));
-
-            foreach ($keysToAdd as $key)
-            {
-                $row[$key] = null;
-            }
-
-            // Sort the array by key
-            ksort($row);
-            return $row;
-        });
-
-        // We will force headings to become a key/pair so our formatter
-        // doesn't screw with them
-        $newHeadings = [];
-        foreach ($headings as $heading) {
-            $newHeadings[$heading] = $heading;
-        }
-
-        $csv->insertOne($newHeadings);
-
+        $csv->insertOne($headings);
         $csv->insertAll($data);
 
         $response = Response::make($csv);
