@@ -18,24 +18,24 @@ class Validator extends Base\Validator
     );
 
     protected static $merchantInfoRules = array(
-        'merId'                     => 'required|in:0122',
-        'merAppId'                  => 'required|alpha_num',
-        'merCountryCode'            => 'required|alpha_num|size:14',
-        'merName'                   => 'required|alpha_num',
+        'merId'                     => 'required|string|max:21',
+        'merAppId'                  => 'required|integer|digits:4',
+        'merCountryCode'            => 'required|in:IN',
+        'merName'                   => 'required|in:RazorPay',
     );
 
     protected static $transactionInfoRules = array(
-        'txnAmount'                 => 'required|in:0400',
-        'txnCurrency'               => 'required|alpha_num',
-        'txnDesc'                   => 'required|',
-        'merTxnId'                  => 'required|',
-        'merAppData'                => 'required|alpha_num|size:14',
-        'supportedPaymentType'      => 'required|numeric',
+        'txnAmount'                 => 'required|integer',
+        'txnCurrency'               => 'required|integer|in:356',
+        'txnDesc'                   => 'required|string|max:255',
+        'merTxnId'                  => 'required|alpha_num|size:14',
+        'merAppData'                => 'sometimes|',
+        'supportedPaymentType'      => 'required|array',
     );
 
     protected static $customerInfoRules = array(
-        'custEmail'                 => 'required',
-        'custMobile'                => 'required',
+        'custEmail'                 => 'required|email',
+        'custMobile'                => 'required|integer|digits_between:9,12',
     );
 
     protected function validateAuthData($input)
@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         foreach ($input as $key => $value)
         {
             if (is_array($input[$key]))
-            {sd('d');
+            {
                 $this->validateInput($key, $input[$key]);
             }
         }

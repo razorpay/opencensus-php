@@ -48,30 +48,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $amount = $input['payment']['amount'] / 100;
-
-        $content = array(
-            'merchantInfo' => array(
-                'merId'                 => $input['terminal']['gateway_merchant_id'],
-                'merAppId'              => $input['terminal']['gateway_terminal_id'],
-                'merCountryCode'        => 'IN',
-                'merName'               => 'RazorPay',
-            ),
-            'transactionInfo'   => array(
-                'txnAmount'             => $amount,
-                'txnCurrency'           => '356',
-                'txnDesc'               => 'Transaction for amount' . $amount,
-                'merTxnId'              => $input['payment']['id'],
-                'merAppData'            => '',
-                'supportedPaymentType'  => ['*'],
-            ),
-            'customerInfo' => array(
-                'custEmail'             => $input['payment']['email'],
-                'custMobile'            => $input['payment']['contact'],
-            ),
-        );
-
-        $this->addMerchantDetailsInTest($content);
+        $content = $this->getAuthContent($input);
 
         $contentToSave = [];
 
@@ -107,6 +84,8 @@ class Gateway extends Base\Gateway
         $request['content'] = View::make('gateway.payzapp')
                                   ->with('request', $request)
                                   ->render();
+
+        $request['_wIapDefaults'] = $this->getWIapDefaults($request);
 
         return $request;
     }
@@ -147,6 +126,36 @@ class Gateway extends Base\Gateway
             ]);
 
         $this->verifyPaymentCallbackResponse($input['gateway']);
+    }
+
+    protected function getAuthContent($input)
+    {
+        $amount = $input['payment']['amount'] / 100;
+
+        $content = array(
+            'merchantInfo' => array(
+                'merId'                 => $input['terminal']['gateway_merchant_id'],
+                'merAppId'              => $input['terminal']['gateway_terminal_id'],
+                'merCountryCode'        => 'IN',
+                'merName'               => 'RazorPay',
+            ),
+            'transactionInfo'   => array(
+                'txnAmount'             => $amount,
+                'txnCurrency'           => '356',
+                'txnDesc'               => 'Transaction for amount' . $amount,
+                'merTxnId'              => $input['payment']['id'],
+                'merAppData'            => '',
+                'supportedPaymentType'  => ['*'],
+            ),
+            'customerInfo' => array(
+                'custEmail'             => $input['payment']['email'],
+                'custMobile'            => $input['payment']['contact'],
+            ),
+        );
+
+        $this->addMerchantDetailsInTest($content);
+
+        return $content;
     }
 
     public function refund(array $input)
@@ -248,6 +257,7 @@ class Gateway extends Base\Gateway
 
         return $refund_request_content;
     }
+
     protected function verifyPaymentCallbackResponse($input)
     {
         $resCode = (int) $input['resCode'];
