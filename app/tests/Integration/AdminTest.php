@@ -308,6 +308,7 @@ class AdminTest extends TestCase
     public function testMerchantTagging()
     {
         $this->browser
+            ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
             ->waitAndClickById('btn-tagMerchant')
             ->waitForPresent('.merchant-tag-modal')
             // Fill tags
