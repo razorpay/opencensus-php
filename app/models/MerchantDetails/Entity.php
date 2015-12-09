@@ -156,7 +156,7 @@ class Entity extends Base\Entity
     );
 
     protected static $uploadDocuments = array(
-        'business_proof'        => "Please upload business proof",
+        'business_proof_url'    => "Please upload business proof",
         'business_pan_url'      => "Please upload business pan card scan.",
         'address_proof_url'     => "Please upload address proof.",
         'promoter_address_url'  => "Please upload authorised signatory address  proof."
