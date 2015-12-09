@@ -115,7 +115,7 @@ class Terminal extends Base
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => '1MercPayzaTerm',
+            'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'wallet_payzapp',
             'card'                      => 0,
             'netbanking'                => 0,
