@@ -14,7 +14,28 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
-        sd($input);
+        $input = json_decode($input['json'], true);
+
+        parent::authorize($input);
+
+        $this->validateAuthorizeInput($input);
+
+        $content = array(
+            'ResCode' => '',
+            'ResDesc' => '',
+            'MsgHash' => '',
+            'DataPickUpCode' => '',
+            'WibmoTxnId' => '',
+        );
+
+        $request = array(
+            'url' => $input['callbackUrl'],
+            'content' => ['msg' => $msg],
+            'method' => 'post',
+        );
+
+        return $this->makePostResponse($request);;
+
     }
 
     public function verify($input)
@@ -29,5 +50,10 @@ class Server extends Base\Mock\Server
     protected function getContentFromInput($input)
     {
         return $input;
+    }
+
+    public static function getMockServerUrl()
+    {
+        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
     }
 }

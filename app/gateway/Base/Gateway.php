@@ -55,6 +55,11 @@ class Gateway
      */
     protected $domainType;
 
+    * Denotes if running in testing env
+     * @var boolean
+     */
+    protected $testing;
+
     protected $sortRequestContent = true;
 
     public function __construct()
@@ -62,6 +67,11 @@ class Gateway
         $this->trace = \Trace::getFacadeRoot();
 
         $this->env = \App::getFacadeRoot()['env'];
+
+        if ($this->env === 'testing')
+        {
+            $this->testing = true;
+        }
 
         $this->loadGatewayConfig();
     }
