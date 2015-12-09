@@ -35,7 +35,7 @@ class MerchantTest extends TestCase
 
         // Make sure that the merchant has webhook tagged
         // So the webhook button is visible
-        $merchant->tag('webhook');
+        $this->merchant->tag('webhook');
     }
 
     /**
