@@ -97,6 +97,7 @@ class Service extends Base\Service
 
         if(empty($errors))
         {
+            //
             // Now we send the newsletter
             // Test Email to self
             //

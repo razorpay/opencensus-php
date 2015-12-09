@@ -9,38 +9,18 @@ class ApiEventSubscriber
 {
     public function __construct()
     {
-        ;
+        $app = \App::getFacadeRoot();
+
+        $this->event = $app['events'];
     }
 
-    public function onEvent($event)
+    public function onEvent($params)
     {
-        if ($event === Type::PAYMENT_AUTHORIZED)
-        {
-            $id = $param['id'];
+        $event = $this->getFiringEvent();
 
-            $payment = (new Payment\Repository)->findOrFail($id);
+        $func = 'on'.studly_case($event);
 
-            $attributes = array(
-                Enttiy::EVENT       => $event,
-                Entity::MERCHANT_ID => $payment->getMerchantId(),
-                Entity::CONTAINS    => Contains::getEntityNamesForEvent($event),
-                Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
-            );
-
-            $entity = Event\Entity::create($attributes);
-
-            $payload = array(
-                Constants\Entity::PAYMENT => [
-                    'entity' => $payment->toArrayPublic(),
-                ],
-            );
-
-            $entity->setPayload($payload);
-
-            $entity>merchant()->associate($payment->merchant);
-
-            Fire::fire($entity);
-        }
+        return $this->$func($params);
     }
 
     /**
@@ -51,6 +31,38 @@ class ApiEventSubscriber
      */
     public function subscribe($events)
     {
-        $events->listen('api.*', 'ApiEventSubscriber@onEvent');
+        $events->listen('api.*', 'Models\Event\ApiEventSubscriber@onEvent');
+    }
+
+    protected function getFiringEvent()
+    {
+        $event = $this->event->firing();
+        $event = substr($event, 4);
+
+        return $event;
+    }
+
+    protected function onPaymentAuthorized($payment)
+    {
+        $attributes = array(
+            Enttiy::EVENT       => $event,
+            Entity::MERCHANT_ID => $payment->getMerchantId(),
+            Entity::CONTAINS    => Contains::getEntityNamesForEvent($event),
+            Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
+        );
+
+        $entity = Event\Entity::create($attributes);
+
+        $payload = array(
+            Constants\Entity::PAYMENT => [
+                'entity' => $payment->toArrayPublic(),
+            ],
+        );
+
+        $entity->setPayload($payload);
+
+        $entity>merchant()->associate($payment->merchant);
+
+        Fire::fire($entity);
     }
 }

@@ -275,7 +275,7 @@ trait Authorize
 
     protected function eventPaymentAuthorized($payment)
     {
-        ;
+        $this->app['events']->fire('api.payment.authorized', array($payment));
     }
 
     protected function checkForRecentFailedPayment($payment)
