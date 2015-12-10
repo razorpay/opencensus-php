@@ -27,7 +27,7 @@ class ApiEventSubscriber
 
         $this->event = $app['events'];
 
-        $this->inferno = $app['webhook.inferno'];
+        $this->queue = $app['queue'];
     }
 
     public function onEvent($params)
@@ -84,7 +84,7 @@ class ApiEventSubscriber
 
         $payload = array(
             Constants\Entity::PAYMENT => [
-                'entity' => $payment->toArrayPublic(),
+                'data' => $payment->toArrayPublic(),
             ],
         );
 
@@ -93,11 +93,10 @@ class ApiEventSubscriber
         $event->merchant()->associate($payment->merchant);
 
         $data = array(
-            'event'         => $event->toArray(),
-            'webhook_id'    => $webhook->getId(),
-            'url'           => $webhook->getUrl());
+            'event'         => $event->toArrayPublic(),
+            'webhook_id'    => $webhook->getId());
 
-        $this->inferno->fire('Models\Merchant\Webhook\Inferno', $data);
+        $this->queue->push('Models\Merchant\Webhook\Queue', $data);
     }
 
     protected function fireWebhookForEvent($webhook, $event)

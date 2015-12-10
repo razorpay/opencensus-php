@@ -8,22 +8,22 @@ class Entity
     // Core entities
     //
 
-    const IIN               = 'iins';
-    const KEY               = 'keys';
-    const CARD              = 'cards';
-    const REFUND            = 'refunds';
+    const IIN               = 'iin';
+    const KEY               = 'key';
+    const CARD              = 'card';
+    const REFUND            = 'refund';
     const BALANCE           = 'balance';
-    const METHODS           = 'merchant_banks';
+    const METHODS           = 'merchant_bank';
     const PRICING           = 'pricing';
-    const PAYMENT           = 'payments';
-    const WEBHOOK           = 'webhooks';
-    const MERCHANT          = 'merchants';
-    const TERMINAL          = 'terminals';
+    const PAYMENT           = 'payment';
+    const WEBHOOK           = 'webhook';
+    const MERCHANT          = 'merchant';
+    const TERMINAL          = 'terminal';
     const ADJUSTMENT        = 'adjustment';
-    const SETTLEMENT        = 'settlements';
-    const TRANSACTION       = 'transactions';
-    const BANK_ACCOUNT      = 'bank_accounts';
-    const DAILY_SETTLEMENT  = 'daily_settlements';
+    const SETTLEMENT        = 'settlement';
+    const TRANSACTION       = 'transaction';
+    const BANK_ACCOUNT      = 'bank_account';
+    const DAILY_SETTLEMENT  = 'daily_settlement';
 
     //
     // Gateway entities

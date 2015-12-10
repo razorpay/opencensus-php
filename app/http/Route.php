@@ -506,5 +506,4 @@ final class Route
     {
         return self::getApiRoute($name)[1];
     }
-
 }

@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT);
 
     protected $public = array(
+        self::ENTITY,
         self::EVENT,
         self::MERCHANT_ID,
         self::CONTAINS,

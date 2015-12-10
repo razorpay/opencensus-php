@@ -19,13 +19,24 @@ class Inferno
             return;
         }
 
-        $request = $this->getRequestArray($data);
+        $request = $this->getRequestArray($data, $webhook);
 
         $response = $this->makeRequest($request);
 
-        if (substr($response->status_code, 0, 1) !== '2')
+        if ($this->isResponseStatusCodeSuccess($response->status_code))
         {
             $repo->incrementFailureCount($webhook);
+
+            if (($webhook->isActive() === false) or
+                ($job->attempts() > 3))
+            {
+                $job->delete();
+            }
+            else
+            {
+                // Attempt again after 1 hour
+                $job->release(3600);
+            }
         }
         else if ($webhook->getFailureCount() !== 0)
         {
@@ -48,16 +59,21 @@ class Inferno
         return $response;
     }
 
-    protected function getRequestArray($data)
+    protected function getRequestArray($event, $webhook)
     {
         $request = array(
-            'url' => $data['url'],
+            'url' => $webhook->getUrl(),
             'method' => 'post',
-            'content' => $data['event']);
+            'content' => $event);
 
         $request['header'] = [];
         $request['options'] = [];
 
         return $request;
+    }
+
+    protected function isResponseStatusCodeSuccess($statusCode)
+    {
+        return (substr($statusCode, 0, 1) !== '2');
     }
 }
