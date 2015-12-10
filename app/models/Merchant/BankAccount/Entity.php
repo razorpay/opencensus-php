@@ -129,6 +129,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function settlements()
+    {
+        return $this->hasMany('Models\Settlements\Entity');
+    }
+
     public function getBeneficiaryName()
     {
         return $this->getAttribute(self::BENEFICIARY_NAME);

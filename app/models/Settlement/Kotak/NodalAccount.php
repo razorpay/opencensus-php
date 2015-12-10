@@ -98,7 +98,7 @@ class NodalAccount
         {
             $merchant = $settlement->merchant;
 
-            $ba = $merchant->bankAccount;
+            $ba = $settlement->bankAccount;
 
             //
             // @note: Convert the amount to string for text file otherwise

@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
+    const BANK_ACCOUNT_ID       = 'bank_account_id';
     const AMOUNT                = 'amount';
     const FEES                  = 'fees';
     const STATUS                = 'status';
@@ -30,11 +31,13 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::STATUS,
         self::MERCHANT_ID,
+        self::BANK_ACCOUNT_ID,
         self::TRANSACTION_ID);
 
     protected $visible = array(
         self::ID,
         self::MERCHANT_ID,
+        self::BANK_ACCOUNT_ID,
         self::AMOUNT,
         self::FEES,
         self::STATUS,
@@ -56,6 +59,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo('Models\Merchant\BankAccount\Entity');
     }
 
     public function transaction()
