@@ -317,6 +317,52 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function changeBankAccount($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $bankAccountRepo = new BankAccount\Repository;
+        $oldba = $bankAccountRepo->getBankAccount($merchant);
+
+        if ($oldba === null)
+        {
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+
+        $baCopy = (new BankAccount\Entity)->build($input);
+        $baCopy->merchant()->associate($merchant);
+
+        if ($oldba->equals($baCopy))
+        {
+            return $oldba->toArray();
+        }
+
+        $oldba->delete();
+
+        $ba = (new BankAccount\Entity)->build($input);
+
+        $code = $ba->beneficiary_code;
+
+        $count = $bankAccountRepo->getBeneficiaryCodeCountByPattern($code);
+
+        if ($count === 0)
+            $count = '';
+        else
+            $count++;
+
+        $code .= $count;
+
+        $ba->beneficiary_code = $code;
+
+        $ba->merchant()->associate($merchant);
+
+        $bankAccountRepo->saveOrFail($ba);
+
+        return $this->repo->findOrFailPublic($id)->bankAccount->toArray();
+
+    }
+
     public function getBanks($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);

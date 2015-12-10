@@ -3,10 +3,13 @@
 namespace Models\Merchant\BankAccount;
 
 use EE\Exception;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletingTrait;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BENEFICIARY_CODE      = 'beneficiary_code';
@@ -23,6 +26,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CITY      = 'beneficiary_city';
     const BENEFICIARY_STATE     = 'beneficiary_state';
     const BENEFICIARY_COUNTRY   = 'beneficiary_country';
+    const DELETED_AT            = 'deleted_at';
 
     const IFSC_CODE_LENGTH = 11;
 
@@ -49,7 +53,6 @@ class Entity extends Base\PublicEntity
     );
 
     protected $visible = array(
-        self::ID,
         self::MERCHANT_ID,
         self::BENEFICIARY_CODE,
         self::IFSC_CODE,
@@ -87,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     );
 
     protected $guarded = array(self::ID);
