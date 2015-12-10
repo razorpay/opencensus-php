@@ -30,9 +30,6 @@ class CreateUsersTable extends Migration {
             
             $table->string('confirm_token')->nullable();
             
-            $table->char('current_merchant_id', 14)->nullable();
-            $table->foreign('current_merchant_id')->references('id')->on('merchants');
-            
             $table->integer('created_at');
             $table->integer('updated_at');
         });
@@ -45,11 +42,6 @@ class CreateUsersTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::table('users', function(Blueprint $table)
-        {
-            $table->dropForeign('users_current_merchant_id_foreign');
-        });
-
-      	Schema::drop('users');
+		Schema::drop('users');
 	}
 }

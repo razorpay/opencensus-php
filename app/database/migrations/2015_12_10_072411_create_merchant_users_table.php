@@ -16,20 +16,18 @@ class CreateMerchantUsersTable extends Migration {
         {
             $table->engine = 'InnoDB';
            
-            $table->char('merchant_id', 14)->index();
-            $table->char('user_id', 14)->index();
+            $table->char('merchant_id', 14);
+            $table->char('user_id', 14);
             
-            $table->string('role', 25);
+            $table->string('role');
             
             $table->foreign('merchant_id')
             	  ->references('id')
-            	  ->on('merchants')
-            	  ->onDelete('cascade');
+            	  ->on('merchants');
             
             $table->foreign('user_id')
             	  ->references('id')
-            	  ->on('users')
-            	  ->onDelete('cascade');
+            	  ->on('users');
         });
 	}
 
