@@ -4,6 +4,7 @@ namespace Models\Merchant;
 
 use Uuid;
 use Models\Base;
+use Models\User;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
@@ -64,6 +65,26 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'wallet'            =>  self::WALLET,
         'Unknown'           =>  self::UNKNOWN
     );
+
+    /**
+     * Determine if the merchant has any users.
+     *
+     * @return bool
+     */
+    public function hasUsers()
+    {
+        return count($this->users) > 0;
+    }
+
+    /**
+     * Get all of the users that belong to the merchant.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(
+            User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
+        )->withPivot('role');
+    }
 
     /**
      * Generates UUid ID
@@ -199,14 +220,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public static function getMerchantForConfirmation($token)
     {
         return static::where('confirm_token', '=', $token)->first();
-    }
-
-    /**
-     * Confirms a merchant
-     */
-    public function confirm()
-    {
-        $this->confirm_token = null;
     }
 
     /**
