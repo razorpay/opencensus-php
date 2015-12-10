@@ -6,20 +6,20 @@ use Requests;
 
 class Inferno
 {
-    public function fire($event, $webhook)
+    public function fire($job, $data)
     {
-        $merchant = $event->merchant;
-
         $repo = new Repository;
-        $webhook = $repo->findByMerchant($merchant);
 
-        $request = array(
-            'url' => $webhook->getUrl(),
-            'method' => 'post',
-            'content' => $payload->toJsonPublic());
+        $webhook = $repo->find($data['webhook_id']);
 
-        $request['header'] = [];
-        $request['options'] = [];
+        if ($webhook->isActive() === false)
+        {
+            $job->delete();
+
+            return;
+        }
+
+        $request = $this->getRequestArray($data);
 
         $response = $this->makeRequest($request);
 
@@ -27,10 +27,18 @@ class Inferno
         {
             $repo->incrementFailureCount($webhook);
         }
+        else if ($webhook->getFailureCount() !== 0)
+        {
+            $webhook->resetFailureCount();
+
+            $job->delete();
+        }
     }
 
     protected function makeRequest($request)
     {
+        $method = $request['method'];
+
         $response = Requests::$method(
                     $request['url'],
                     $request['header'],
@@ -38,5 +46,18 @@ class Inferno
                     $request['options']);
 
         return $response;
+    }
+
+    protected function getRequestArray($data)
+    {
+        $request = array(
+            'url' => $data['url'],
+            'method' => 'post',
+            'content' => $data['event']);
+
+        $request['header'] = [];
+        $request['options'] = [];
+
+        return $request;
     }
 }

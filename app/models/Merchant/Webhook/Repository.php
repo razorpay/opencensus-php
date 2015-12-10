@@ -29,4 +29,12 @@ class Repository extends Base\Repository
         $webhook->incrementFailureCount();
         $webhook->saveOrFail();
     }
+
+    public function findByMerchantId($merchantId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->first();
+    }
 }

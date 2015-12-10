@@ -73,7 +73,7 @@ class Entity extends Base\PublicEntity
 
         assert($count <= self::MAX_FAILURE_COUNT);
 
-        if ($count === MAX_FAILURE_COUNT)
+        if ($count === self::MAX_FAILURE_COUNT)
         {
             $this->deactivate();
         }
@@ -131,6 +131,13 @@ class Entity extends Base\PublicEntity
         return Name::isEventEnabled($hex, $event);
     }
 
+    public function resetFailureCount()
+    {
+        $this->setFailureCountAttribute(0);
+
+        $this->activate();
+    }
+
     protected function getActiveAttribute()
     {
         return (bool) $this->attributes[self::ACTIVE];
@@ -156,5 +163,10 @@ class Entity extends Base\PublicEntity
     protected function deactivate()
     {
         $this->setAttribute(self::ACTIVE, 0);
+    }
+
+    protected function activate()
+    {
+        $this->setAttribute(self::ACTIVE, 1);
     }
 }

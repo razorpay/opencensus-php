@@ -50,4 +50,11 @@ class WebhookTest extends TestCase
     {
         $data = $this->startTest();
     }
+
+    public function testWebhookIsFired()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->doAuthPayment();
+    }
 }

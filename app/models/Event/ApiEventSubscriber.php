@@ -2,6 +2,8 @@
 
 namespace Models\Event;
 
+use Constants;
+use Models\Event;
 use Models\Payment;
 use Webhook\Fire;
 
@@ -64,20 +66,21 @@ class ApiEventSubscriber
     {
         $webhook = $payment->merchant->webhook;
 
-        if ($this->fireWebhookForEvent($webhook, $this->event) === false)
+        $eventFired = $this->event;
+
+        if ($this->fireWebhookForEvent($webhook, $eventFired) === false)
         {
             return;
         }
 
         $attributes = array(
-            Entity::EVENT       => $event,
-            Entity::URL         => $webhook->getUrl(),
+            Entity::EVENT       => $eventFired,
             Entity::MERCHANT_ID => $payment->getMerchantId(),
-            Entity::CONTAINS    => Contains::getEntityNamesForEvent($event),
+            Entity::CONTAINS    => Contains::getEntityNamesForEvent($eventFired),
             Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
         );
 
-        $entity = Event\Entity::create($attributes);
+        $event = new Event\Entity($attributes);
 
         $payload = array(
             Constants\Entity::PAYMENT => [
@@ -85,11 +88,16 @@ class ApiEventSubscriber
             ],
         );
 
-        $entity->setPayload($payload);
+        $event->setPayload($payload);
 
-        $entity>merchant()->associate($payment->merchant);
+        $event->merchant()->associate($payment->merchant);
 
-        $this->inferno->fire($entity, $webhook);
+        $data = array(
+            'event'         => $event->toArray(),
+            'webhook_id'    => $webhook->getId(),
+            'url'           => $webhook->getUrl());
+
+        $this->inferno->fire('Models\Merchant\Webhook\Inferno', $data);
     }
 
     protected function fireWebhookForEvent($webhook, $event)

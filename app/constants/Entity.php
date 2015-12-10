@@ -40,22 +40,22 @@ class Entity
     const NETBANKING_HDFC   = 'netbanking_hdfc';
 
     public static $core = array(
-        const IIN               = 'iins';
-        const KEY               = 'keys';
-        const CARD              = 'cards';
-        const REFUND            = 'refunds';
-        const BALANCE           = 'balance';
-        const METHODS           = 'merchant_banks';
-        const PRICING           = 'pricing';
-        const PAYMENT           = 'payments';
-        const WEBHOOK           = 'webhooks';
-        const MERCHANT          = 'merchants';
-        const TERMINAL          = 'terminals';
-        const ADJUSTMENT        = 'adjustment';
-        const SETTLEMENT        = 'settlements';
-        const TRANSACTION       = 'transactions';
-        const BANK_ACCOUNT      = 'bank_accounts';
-        const DAILY_SETTLEMENT  = 'daily_settlements';
+        self::IIN,
+        self::KEY,
+        self::CARD,
+        self::REFUND,
+        self::BALANCE,
+        self::METHODS,
+        self::PRICING,
+        self::PAYMENT,
+        self::WEBHOOK,
+        self::MERCHANT,
+        self::TERMINAL,
+        self::ADJUSTMENT,
+        self::SETTLEMENT,
+        self::TRANSACTION,
+        self::BANK_ACCOUNT,
+        self::DAILY_SETTLEMENT,
     );
 
     public static $list = array(

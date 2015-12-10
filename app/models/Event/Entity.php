@@ -2,28 +2,27 @@
 
 namespace Models\Event;
 
+use Models\Base;
+
 class Entity extends Base\PublicEntity
 {
+    const ID                    = 'id';
     const EVENT                 = 'event';
     const MERCHANT_ID           = 'merchant_id';
     const CONTAINS              = 'contains';
     const PAYLOAD               = 'payload';
     const CREATED_AT            = 'created_at';
 
-    const URL                   = 'url';
-
     protected $entity           = 'event';
 
     protected $fillable = array(
         self::EVENT,
-        self::URL,
         self::MERCHANT_ID,
         self::CONTAINS,
         self::PAYLOAD,
         self::CREATED_AT);
 
     protected $visible = array(
-        self::URL,
         self::EVENT,
         self::CONTAINS,
         self::PAYLOAD,
@@ -35,4 +34,14 @@ class Entity extends Base\PublicEntity
         self::CONTAINS,
         self::PAYLOAD,
         self::CREATED_AT);
+
+    public function merchant()
+    {
+        return $this->belongsTo(\Models\Merchant\Entity::class);
+    }
+
+    public function setPayload($payload)
+    {
+        $this->setAttribute(self::PAYLOAD, $payload);
+    }
 }
