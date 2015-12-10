@@ -23,12 +23,15 @@ class CreateUsersTable extends Migration {
             $table->string('email', 255)->unique();
             
             $table->string('password', 100);
+
+            $table->string('contact_mobile')->nullable();
             
             $table->string('remember_token', 100)->nullable();
             
             $table->string('confirm_token')->nullable();
             
             $table->char('current_merchant_id', 14)->nullable();
+            $table->foreign('current_merchant_id')->references('id')->on('merchants');
             
             $table->integer('created_at');
             $table->integer('updated_at');
@@ -42,6 +45,11 @@ class CreateUsersTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('users');
+		Schema::table('users', function(Blueprint $table)
+        {
+            $table->dropForeign('users_current_merchant_id_foreign');
+        });
+
+      	Schema::drop('users');
 	}
 }
