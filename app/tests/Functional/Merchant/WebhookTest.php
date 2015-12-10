@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Merchant;
 
+use Mockery;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -51,9 +52,28 @@ class WebhookTest extends TestCase
         $data = $this->startTest();
     }
 
-    public function testWebhookIsFired()
+    public function testWebhookEventData()
     {
         $webhook = $this->createWebhook();
+
+        $class = \Models\Merchant\Webhook\Inferno::class;
+
+        $inferno = Mockery::mock($class.'[fire]');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('Illuminate\Queue\Jobs\Job'),
+                    Mockery::on(function ($data) use ($testData)
+                        {
+                            $this->assertArraySelectiveEquals($testData, $data);
+
+                            return true;
+                        }));
+
+        $this->app->instance('webhook.inferno', $inferno);
 
         $this->doAuthPayment();
     }
