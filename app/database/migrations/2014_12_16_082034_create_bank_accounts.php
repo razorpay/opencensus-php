@@ -18,8 +18,10 @@ class CreateBankAccounts extends Migration
     {
         Schema::create(Table::BANK_ACCOUNT, function(Blueprint $table)
         {
-            $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH)
+            $table->char(BankAccount::ID, BankAccount::ID_LENGTH)
                   ->primary();
+
+            $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
 
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 

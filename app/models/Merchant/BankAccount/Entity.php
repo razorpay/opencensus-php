@@ -7,6 +7,7 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BENEFICIARY_CODE      = 'beneficiary_code';
     const IFSC_CODE             = 'ifsc_code';
@@ -25,7 +26,7 @@ class Entity extends Base\PublicEntity
 
     const IFSC_CODE_LENGTH = 11;
 
-    protected $primaryKey = self::MERCHANT_ID;
+    protected $primaryKey = self::ID;
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
 
@@ -48,6 +49,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $visible = array(
+        self::ID,
         self::MERCHANT_ID,
         self::BENEFICIARY_CODE,
         self::IFSC_CODE,
@@ -66,6 +68,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
         self::MERCHANT_ID,
         self::ENTITY,
         self::BENEFICIARY_CODE,
@@ -86,10 +89,14 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     );
 
+    protected $guarded = array(self::ID);
+
     protected static $generators = array(
         self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
     );
+
+    protected $genereateIdOnCreate = true;
 
     public function build(array $input = array())
     {
