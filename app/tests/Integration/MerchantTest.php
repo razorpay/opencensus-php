@@ -4,6 +4,7 @@ namespace Tests\Integration;
 use Selenium\Locator as l;
 use Models;
 use URL;
+use Uuid;
 use Exception;
 
 class MerchantTest extends TestCase
