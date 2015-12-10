@@ -428,7 +428,6 @@ class Service extends Base\Service
         return $file;
     }
 
-
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since
@@ -465,6 +464,12 @@ class Service extends Base\Service
         return $merchantsActivatedSinceLastReport;
     }
 
+    /**
+     * Sends activation email to the merchant, cc's notifications
+     * Includes pricing details in the email (properly formatted)
+     * @param  Models\Merchant\Entity $merchant merchant entity
+     * @return null
+     */
     protected function sendActivationEmail($merchant)
     {
 
@@ -473,12 +478,23 @@ class Service extends Base\Service
         $data = [
             'merchant'  =>  $merchant->toArray(),
             'plan'      =>  $plan,
-            'rules'     => $this->formatPricingRules($plan['rules'])
+            'rules'     =>  $this->formatPricingRules($plan['rules'])
         ];
 
         $config = $this->app->config->get('applications.mailgun');
-        $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
+        // Figure out the subject for the activation email
+        $subjectName = $data['merchant']['name'];
+
+        if ((isset($data['merchant']['billing_label'])) and
+            not (empty($data['merchant']['billing_label'])))
+        {
+            $subjectName = $data['merchant']['billing_label'];
+        }
+
+        $subject = "Razorpay | Account activated for $subjectName";
+
+        // Send the activation email
         Mail::queue(
             [
                 'html' => 'emails.merchant.activation',
@@ -495,6 +511,17 @@ class Service extends Base\Service
         );
     }
 
+    /**
+     * Returns formatted pricing rules with proper display text
+     * as an array with the display text as the key
+     * [
+     *   "2%" => ["Credit Cards", "Wallets"],
+     *   "1.8%" => ["Wallets"],
+     *   "2.1%" => ["Net Banking"]
+     * ]
+     * @param  array $rules Array of rules
+     * @return array Formatted rules with flipped keys
+     */
     protected function formatPricingRules($rules)
     {
         $newRules = [];
@@ -537,6 +564,9 @@ class Service extends Base\Service
 
     /**
      * sends daily reports for all merchants that are currently live
+     * Returns an array with the keys: `skipped`, and `sent`,
+     * each containing the number of merchants in each category
+     * @return array debug response
      */
     public function sendDailyReportForAllMerchants()
     {
@@ -580,6 +610,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * Send newsletter to a particular merchant
+     *
+     * @param  string $merchantId Merchant Id
+     * @param  [type] $input      [description]
+     * @return null
+     */
     public function sendNewsletter($merchantId, $input)
     {
         (new Merchant\Validator)->validateInput('send_email', $input);
