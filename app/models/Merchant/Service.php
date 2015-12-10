@@ -190,13 +190,13 @@ class Service extends Base\Service
 
         $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
 
-        $terminal = (new Terminal\Repository)->getByMerchantId($id);
+        // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
-        if ($terminal === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
-        }
+        // if ($terminal === null)
+        // {
+        //     throw new Exception\BadRequestException(
+        //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
+        // }
 
         $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
@@ -446,6 +446,7 @@ class Service extends Base\Service
 
         $config = $this->app->config->get('applications.mailgun');
         $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
+
         Mail::queue(
             [
                 'html' => 'emails.merchant.activation',
@@ -499,9 +500,7 @@ class Service extends Base\Service
             // the list of pricing options at the same pricing in the same
             // line easily
             $newRules[$rule['pricing_display']][] = $display;
-
         }
-
 
         return $newRules;
     }
