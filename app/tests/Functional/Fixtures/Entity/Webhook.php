@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Fixtures\Entity;
 
-class Payment extends Base
+class Webhook extends Base
 {
     public function create(array $attributes = array())
     {
