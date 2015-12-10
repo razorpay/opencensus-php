@@ -190,13 +190,13 @@ class Service extends Base\Service
 
         $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
 
-        // $terminal = (new Terminal\Repository)->getByMerchantId($id);
+        $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
-        // if ($terminal === null)
-        // {
-        //     throw new Exception\BadRequestException(
-        //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
-        // }
+        if ($terminal === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
+        }
 
         $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
@@ -446,7 +446,6 @@ class Service extends Base\Service
 
         $config = $this->app->config->get('applications.mailgun');
         $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
-
         Mail::queue(
             [
                 'html' => 'emails.merchant.activation',
@@ -467,6 +466,8 @@ class Service extends Base\Service
     {
         $newRules = [];
 
+        $rules = $this->rearrangeRules($rules);
+
         foreach ($rules as $rule)
         {
             $rule['pricing_display'] = Pricing\Plan::formattedPricing($rule);
@@ -475,7 +476,7 @@ class Service extends Base\Service
             $display = Payment\Method::formatted($rule['payment_method']);
 
             // This now holds Credit/Debit/All
-            $method = $rule['payment_method_type'] ? : 'All';
+            $method = $rule['payment_method_type'] ? : 'Visa/Master Card/Diners';
 
             // If we have a payment_network (such as AMEX/DICL)
             if ($rule['payment_network'] !== null)
@@ -485,7 +486,7 @@ class Service extends Base\Service
             }
             elseif ($method !== null and $rule['payment_method'] === 'card')
             {
-                // This is Credit/Debit/All Cards
+                // This is Credit/Debit/[ Visa/Master Card/Diners ] Cards
                 $display = ucfirst($method) . ' Cards';
             }
 
@@ -498,9 +499,52 @@ class Service extends Base\Service
             // the list of pricing options at the same pricing in the same
             // line easily
             $newRules[$rule['pricing_display']][] = $display;
+
         }
 
+
         return $newRules;
+    }
+
+    protected function rearrangeRules(array $rules)
+    {
+        $arrangedRules      = array();
+
+        $orderOfRules = array('card', 'netbanking', 'wallet', 'exceptional');
+
+        foreach ($rules as $rule) {
+            switch ($rule['payment_method']) {
+                case 'card':
+                    if ($rule['payment_network'] === null)
+                    {
+                        $cardRules[] = $rule;
+                    }
+                    else
+                    {
+                        $exceptionalRules[] = $rule;
+                    }
+
+                    break;
+
+                case 'netbanking':
+                    $netbankingRules[] = $rule;
+                    break;
+
+                case 'wallet':
+                    $walletRules[] = $rule;
+                    break;
+
+                default:
+                    $exceptionalRules[] = $rule;
+                    break;
+            }
+        }
+
+        foreach ($orderOfRules as $ruleType) {
+            $arrangedRules = array_merge($arrangedRules, ${$ruleType.'Rules'});
+        }
+
+        return $arrangedRules;
     }
 
     /**
