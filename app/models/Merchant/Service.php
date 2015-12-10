@@ -2,8 +2,10 @@
 
 namespace Models\Merchant;
 
+use Uuid;
 use Models\Base;
 use Models\Merchant;
+use Models\User;
 use Models\MerchantDetails;
 use Mail;
 use Requests;
@@ -21,6 +23,21 @@ class Service extends Base\Service
         }
 
         $merchant->saveOrFail();
+
+        $user = new User\Entity;
+        $user->timestamps = false;
+
+        $user->id = Uuid::generate();
+        $user->name = $merchant->name;
+        $user->email = $merchant->email;
+        
+        $user->password = $merchant->password;
+        $user->confirm_token = $merchant->confirm_token;
+        $user->created_at = $merchant->created_at;
+        $user->updated_at = $merchant->updated_at;
+        
+        $user->saveOrFail();
+        $user->merchants()->attach($merchant, ['role' => 'owner']);
 
         $details = array('merchant_id' => $merchant->id);
 
