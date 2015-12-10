@@ -511,8 +511,10 @@ class Service extends Base\Service
 
         $orderOfRules = array('card', 'netbanking', 'wallet', 'exceptional');
 
-        foreach ($rules as $rule) {
-            switch ($rule['payment_method']) {
+        foreach ($rules as $rule)
+        {
+            switch ($rule['payment_method'])
+            {
                 case 'card':
                     if ($rule['payment_network'] === null)
                     {
