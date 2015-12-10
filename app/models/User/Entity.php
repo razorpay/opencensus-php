@@ -95,7 +95,7 @@ class Entity extends Base\Entity
     /**
      * Generates a one time use token of the given length
      */
-    public function generateOneTimeUseToken($length)
+    protected function generateOneTimeUseToken($length)
     {
         $factory = new RandomLibFactory;
         $generator = $factory->getLowStrengthGenerator();
