@@ -23,12 +23,12 @@ class Inferno
 
         $response = $this->makeRequest($request);
 
-        if ($this->isResponseStatusCodeSuccess($response->status_code))
+        if ($this->isResponseStatusCodeSuccess($response->status_code) === false)
         {
             $repo->incrementFailureCount($webhook);
 
             if (($webhook->isActive() === false) or
-                ($job->attempts() > 3))
+                ($job->attempts() >= 3))
             {
                 $job->delete();
             }
@@ -40,13 +40,13 @@ class Inferno
         }
         else if ($webhook->getFailureCount() !== 0)
         {
-            $webhook->resetFailureCount();
+            $repo->resetFailureCount($webhook);
 
             $job->delete();
         }
     }
 
-    protected function makeRequest($request)
+    public function makeRequest($request)
     {
         $method = $request['method'];
 
@@ -74,6 +74,6 @@ class Inferno
 
     protected function isResponseStatusCodeSuccess($statusCode)
     {
-        return (substr($statusCode, 0, 1) !== '2');
+        return (substr($statusCode, 0, 1) === '2');
     }
 }

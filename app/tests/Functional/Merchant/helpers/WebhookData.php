@@ -126,7 +126,7 @@ return [
         ],
     ],
 
-    'testWebhookIsFired' => [
+    'testWebhookEventData' => [
         'event' => [
             'event' => 'payment.authorized',
             'merchant_id' => null,

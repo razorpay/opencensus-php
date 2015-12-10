@@ -37,4 +37,10 @@ class Repository extends Base\Repository
         return $repo::where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
     }
+
+    public function resetFailureCount($webhook)
+    {
+        $webhook->resetFailureCount();
+        $webhook->saveOrFail();
+    }
 }

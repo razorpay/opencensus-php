@@ -56,9 +56,7 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook();
 
-        $class = \Models\Merchant\Webhook\Inferno::class;
-
-        $inferno = Mockery::mock($class.'[fire]');
+        $inferno = $this->mockInferno();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -76,5 +74,90 @@ class WebhookTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
 
         $this->doAuthPayment();
+    }
+
+    public function testDisableWebhookAfter3Attempts()
+    {
+        $webhook = $this->createWebhook();
+
+        $inferno = $this->mockInferno();
+
+        $response = new \Requests_Response;
+        $response->status_code = '501';
+
+        $inferno->shouldReceive('makeRequest')
+//                ->times(3)
+                ->andReturn($response);
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        $this->doAuthPayment();
+    }
+
+    public function testWebhookShouldNotFireWhenInactive()
+    {
+        $webhook = $this->createWebhook();
+        $this->fixtures->edit('webhook', $webhook['id'], ['active' => 0]);
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldNotReceive('fire');
+
+        $this->doAuthPayment();
+    }
+
+    public function testWebhookDisableOn3Failures()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->fixtures->edit('webhook', $webhook['id'], ['failure_count' => 2]);
+
+        $this->mockInfernoWithResponseStatusCode('501');
+
+        $this->doAuthPayment();
+
+        $webhook = $this->getLastEntity('webhook', true);
+        $this->assertEquals(3, $webhook['failure_count']);
+        $this->assertEquals(false, $webhook['active']);
+    }
+
+    public function testWebhookResetFailureCountAfterSuccessfulFiring()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->fixtures->edit(
+            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
+
+        $this->mockInfernoWithResponseStatusCode('200');
+
+        $this->doAuthPayment();
+
+        $webhook = $this->getLastEntity('webhook', true);
+        $this->assertEquals(0, $webhook['failure_count']);
+        $this->assertEquals(true, $webhook['active']);
+    }
+
+    protected function mockInfernoWithResponseStatusCode($statusCode)
+    {
+        $inferno = $this->mockInferno();
+
+        $response = new \Requests_Response;
+        $response->status_code = $statusCode;
+
+        $inferno->shouldReceive('makeRequest')
+                ->andReturn($response);
+
+        return $inferno;
+    }
+
+    protected function mockInferno()
+    {
+        $class = \Models\Merchant\Webhook\Inferno::class;
+
+        $inferno = Mockery::mock($class)->makePartial();
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        return $inferno;
     }
 }
