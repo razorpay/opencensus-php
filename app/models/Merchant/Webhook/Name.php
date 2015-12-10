@@ -67,6 +67,13 @@ class Name
         return $events;
     }
 
+    public static function isEventEnabled($hexEvent, $event)
+    {
+        $pos = self::getBitPosition($event);
+
+        return ($hexEvent >> $pos) & 1;
+    }
+
     public static function validateEventNames($events)
     {
         foreach ($events as $event)

@@ -124,6 +124,13 @@ class Entity extends Base\PublicEntity
         return $eventsArray;
     }
 
+    public function isEventEnabled($event)
+    {
+        $hex = $this->getEventsHexValue();
+
+        return Name::isEventEnabled($hex, $event);
+    }
+
     protected function getActiveAttribute()
     {
         return (bool) $this->attributes[self::ACTIVE];
@@ -139,6 +146,11 @@ class Entity extends Base\PublicEntity
         assert ($count <= self::MAX_FAILURE_COUNT);
 
         $this->attributes[self::FAILURE_COUNT] = $count;
+    }
+
+    protected function getEventsHexValue()
+    {
+        return $this->attributes[self::EVENTS];
     }
 
     protected function deactivate()

@@ -4,9 +4,9 @@ namespace Models\Merchant\Webhook;
 
 use Requests;
 
-class Fire
+class Inferno
 {
-    public function fire($event)
+    public function fire($event, $webhook)
     {
         $merchant = $event->merchant;
 
