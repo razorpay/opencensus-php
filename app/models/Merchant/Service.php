@@ -89,6 +89,12 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            if($merchant->hasUsers())
+            {
+                $user = $merchant->users()->first();
+                $user->email = $merchant->email;
+                $user->save();
+            }
             $merchant->save();
         }
 
@@ -107,6 +113,12 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            if($merchant->hasUsers())
+            {
+                $user = $merchant->users()->first();
+                $user->password = $merchant->password;
+                $user->save();
+            }
             $merchant->save();
         }
 
@@ -135,8 +147,15 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
-        $merchant->confirm();
+        $merchant->confirm_token = null;
         $merchant->saveOrFail();
+
+        if($merchant->hasUsers())
+        {
+            $user = $merchant->users()->first();
+            $user->confirm_token = $merchant->confirm_token;
+            $user->save();
+        }
 
         return array();
     }
