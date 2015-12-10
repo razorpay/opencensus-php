@@ -30,7 +30,7 @@ class MerchantTest extends TestCase
         }
         catch(Exception $e)
         {
-            $this->merchant = $this->buildEntity('merchant', array('id'=>\Models\Merchant\Entity::generateUniqueId(),'email' =>static::generateMerchantEmail()));
+            $this->merchant = $this->buildEntity('merchant', array('id'=> Uuid::generate(),'email' =>static::generateMerchantEmail()));
         }
     }
 

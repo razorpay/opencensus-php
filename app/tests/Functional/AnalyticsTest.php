@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Functional;
 
+use Uuid;
 use Models;
 use URL;
 
@@ -17,7 +18,7 @@ class AnalyticsTest extends TestCase
         $this->merchant = $this->createEntity(
             'merchant',
            array(
-                'id'=>\Models\Merchant\Entity::generateUniqueId(),
+                'id'=> Uuid::generate(),
                 'email' => static::generateMerchantEmail(),
                 'confirm_token' => static::generateRandomString(24)));
 
