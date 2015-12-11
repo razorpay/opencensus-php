@@ -127,8 +127,10 @@ class Repository extends Base\Repository
     public function getNonTaxComputedPayments()
     {
         $repo = $this->repo;
+
         return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNull(Payment\Entity::SERVICE_TAX)
+                    ->take(3000)
                     ->get();
     }
 
