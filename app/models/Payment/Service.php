@@ -537,6 +537,7 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
+        s(ini_get('max_execution_time'));
         $repo = new Payment\Repository;
         $payments = $repo->getNonTaxComputedPayments();
 
