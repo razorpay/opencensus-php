@@ -130,7 +130,7 @@ class Repository extends Base\Repository
 
         return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNull(Payment\Entity::SERVICE_TAX)
-                    ->take(1000)
+                    ->take(500)
                     ->get();
     }
 
