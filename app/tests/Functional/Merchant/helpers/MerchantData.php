@@ -515,7 +515,7 @@ return [
                     'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
-                    'paytm' => false,
+                    'paytm' => true,
                 ],
             ],
         ],

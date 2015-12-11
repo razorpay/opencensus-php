@@ -47,6 +47,11 @@ class Entity extends Base\PublicEntity
         self::BANKS     => [],
     );
 
+    protected $wallets = array(
+        self::PAYTM,
+        self::MOBIKWIK,
+    );
+
     public function setMethods(array $input = array())
     {
         $this->edit($input, 'setMethods');
@@ -80,6 +85,23 @@ class Entity extends Base\PublicEntity
     public function isMobikwikEnabled()
     {
         return $this->getMobikwikAttribute();
+    }
+
+    public function getEnabledWallets()
+    {
+        $data = array();
+
+        foreach ($this->wallets as $wallet)
+        {
+            $func = 'is'.ucfirst($wallet).'Enabled';
+
+            if ($this->$func())
+            {
+                $data[$wallet] = true;
+            }
+        }
+
+        return $data;
     }
 
     public function getBanks()

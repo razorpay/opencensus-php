@@ -269,6 +269,8 @@ class MerchantTest extends TestCase
             'gateway_terminal_password' => 'razorpay_password',
         );
 
+        $this->fixtures->merchant->enablePaytm();
+
         $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
 
         $content = $this->startTest();
