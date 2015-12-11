@@ -48,6 +48,14 @@
             <span class="pull-right">{{entity.contact}}</span>
             Contact
           </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.fee/100 | currency:""}}</span>
+            Fee
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.service_tax/100 | currency:""}}</span>
+            Service Tax
+          </a>
           <a href class="list-group-item" ng-show="entity.error_code">
             <span class="pull-right">
               {{entity.error_code}}
@@ -60,10 +68,6 @@
             </span>
             Error Description
           </div>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
-            Created At
-          </a>
           <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.notes.length != 0">Show/Hide</button>
@@ -83,6 +87,10 @@
               <span ng-hide="entity.refund_status">No Refunds</span>
             </span>
             Refunds
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
+            Created At
           </a>
           <div collapse="isRefundsCollapsed" class="panel-body">
             <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
