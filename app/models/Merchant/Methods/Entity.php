@@ -29,8 +29,8 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::BANKS,
         self::PAYTM,
-        self::MOBIKWIK,
-        self::PAYZAPP);
+        self::PAYZAPP,
+        self::MOBIKWIK);
 
     protected $visible = array(
         self::MERCHANT_ID,
@@ -54,8 +54,8 @@ class Entity extends Base\PublicEntity
 
     protected $wallets = array(
         self::PAYTM,
-        self::MOBIKWIK,
-    );
+        self::PAYZAPP,
+        self::MOBIKWIK);
 
     public function setMethods(array $input = array())
     {
@@ -114,11 +114,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANKS);
     }
 
-    public function setBanks(array $banks)
-    {
-        $this->setAttribute(self::BANKS, $banks);
-    }
-
     public function getPaytm()
     {
         return $this->getAttribute(self::PAYTM);
@@ -132,14 +127,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MOBIKWIK);
     }
 
+    public function setBanks(array $banks)
+    {
+        $this->setAttribute(self::BANKS, $banks);
+    }
+
     public function setPaytm($paytm)
     {
         $this->setAttribute(self::PAYTM, $paytm);
-    }
-
-    public function getPaytmAttribute()
-    {
-        return (bool) $this->attributes[self::PAYTM];
     }
 
     public function setCard($card)
@@ -147,9 +142,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD, $card);
     }
 
+    public function getPaytmAttribute()
+    {
+        return (bool) $this->attributes[self::PAYTM];
+    }
+
     public function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
+    }
+
+    public function getMobikwikAttribute()
+    {
+        return (bool) $this->attributes[self::MOBIKWIK];
+    }
+
+    public function getPayzappAttribute()
+    {
+        return (bool) $this->attributes[self::PAYZAPP];
     }
 
     public function getBanksAttribute()
@@ -173,16 +183,13 @@ class Entity extends Base\PublicEntity
 
     public function getWalletAttribute()
     {
-        return array('paytm' => $this->getPaytmAttribute());
-    }
+        $wallets = array();
 
-    public function getMobikwikAttribute()
-    {
-        return (bool) $this->attributes[self::MOBIKWIK];
-    }
+        foreach ($this->wallets as $wallet)
+        {
+            $wallets[$wallet] = $this->isWalletEnabled($wallet);
+        }
 
-    public function getPayzappAttribute()
-    {
-        return (bool) $this->attributes[self::PAYZAPP];
+        return $wallets;
     }
 }
