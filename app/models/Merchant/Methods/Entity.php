@@ -14,6 +14,8 @@ class Entity extends Base\PublicEntity
     const MOBIKWIK          = 'mobikwik';
     const PAYZAPP           = 'payzapp';
 
+    const METHODS           = 'methods';
+
     protected $primaryKey = self::MERCHANT_ID;
 
     protected $table = \Constants\Table::METHODS;
@@ -27,23 +29,26 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::BANKS,
         self::PAYTM,
-        self::MOBIKWIK);
+        self::MOBIKWIK,
+        self::PAYZAPP);
 
     protected $visible = array(
         self::MERCHANT_ID,
         self::CARD,
         self::BANKS,
         self::PAYTM,
+        self::PAYZAPP,
         self::MOBIKWIK);
 
     protected $public = array(
         self::ENTITY,
-        'methods');
+        self::METHODS);
 
     protected $defaults = array(
         self::CARD      => false,
         self::PAYTM     => false,
         self::MOBIKWIK  => false,
+        self::PAYZAPP   => false,
         self::BANKS     => [],
     );
 
@@ -79,7 +84,7 @@ class Entity extends Base\PublicEntity
 
     public function isPayzappEnabled()
     {
-        return true;
+        return $this->getPayzappAttribute();
     }
 
     public function isMobikwikEnabled()
@@ -124,7 +129,6 @@ class Entity extends Base\PublicEntity
     }
     public function getMobikwik()
     {
-//        return true;
         return $this->getAttribute(self::MOBIKWIK);
     }
 
@@ -175,5 +179,10 @@ class Entity extends Base\PublicEntity
     public function getMobikwikAttribute()
     {
         return (bool) $this->attributes[self::MOBIKWIK];
+    }
+
+    public function getPayzappAttribute()
+    {
+        return (bool) $this->attributes[self::PAYZAPP];
     }
 }
