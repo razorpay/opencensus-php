@@ -120,6 +120,8 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::FEE,
+        self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
@@ -249,7 +251,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);            
+            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
         }
     }
 
