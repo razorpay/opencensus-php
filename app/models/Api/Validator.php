@@ -12,6 +12,8 @@ class Validator extends Base\Validator
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
-        'status'        => 'sometimes'
+        'status'        => 'sometimes',
+        'email'         => 'sometimes|email',
+        'contact'       => 'sometimes|digits_between:10,12'
     );
 }

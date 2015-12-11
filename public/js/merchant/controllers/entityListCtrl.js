@@ -1,4 +1,6 @@
-//Entities Listing Controller
+/**
+ * Entities Listing Controller
+ */
 app.controller('EntityListCtrl', [
   '$scope',
   '$http',
@@ -15,51 +17,94 @@ app.controller('EntityListCtrl', [
       countEnd: 0,
       skip: 0
     };
-    $scope.filter = 'all';
+
+    $scope.query = {
+      count: 10,
+      status: 'all',
+      contact: '',
+      email: '',
+      amount: ''
+    };
+
     $scope.generate = function (entity) {
       $scope.entity.type = entity;
       generateTable();
     };
+
     $scope.next = function () {
       clear('id');
       $scope.entity.skip += 10;
       generateTable();
     };
+
     $scope.prev = function () {
       clear('id');
       $scope.entity.skip -= 10;
       generateTable();
     };
+
     $scope.search = function () {
       clear('skip');
       generateTable();
     };
-    $scope.regenerate = regenerate;
+
+    $scope.regenerate = function regenerate() {
+      clear('skip');
+      clear('id');
+      generateTable();
+    };
+
     function clear(field) {
       if (field === 'id')
         $scope.entity.id = '';
       if (field === 'skip')
         $scope.entity.skip = 0;
     }
-    function regenerate(status) {
-      $scope.filter = status;
-      clear('skip');
-      clear('id');
-      generateTable();
-    }
+
     function generateTable() {
       if (!$scope.entity.type) {
         console.log('Error: No Entity Type Sepcified');
         return;
       }
-      var query = 'count=10' + '&skip=' + $scope.entity.skip;
-      if ($scope.filter !== 'all') {
-        query += '&status=' + $scope.filter;
+
+      $scope.query.skip = $scope.entity.skip;
+
+      // /live/payments
+      var baseuRL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
+      var request;
+
+      var q = jQuery.extend({}, $scope.query);
+
+      if (q.status === 'all') {
+        delete q.status;
       }
-      if ($scope.entity.id === '')
-        var request = $http.get('/' + $scope.mode + '/' + $scope.entity.type + 's?' + query);
-      else
-        var request = $http.get('/' + $scope.mode + '/' + $scope.entity.type + 's/' + $scope.entity.id);
+
+      if (q.email === '') {
+        delete q.email;
+      }
+
+      if (q.contact === '') {
+        delete q.contact;
+      }
+
+      if (q.amount !== '') {
+        q.amount = q.amount*100;
+      }
+      else {
+        delete q.amount;
+      }
+
+      // Figure out the proper URL to hit if we are fetching just a single
+      // entity or a collection
+      if ($scope.entity.id === '') {
+        request = $http.get(baseuRL, {params: q});
+      }
+      else {
+        request = $http.get(baseuRL + '/' + $scope.entity.id, {
+          params: q
+        });
+      }
+
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
