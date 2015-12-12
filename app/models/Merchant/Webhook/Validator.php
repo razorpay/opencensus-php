@@ -27,7 +27,7 @@ class Validator extends Base\Validator
 
         foreach ($events as $event => $value)
         {
-            if (Name::validateEventName($event) === false)
+            if (Event::validateEventName($event) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a valid event name: ' . $event,

@@ -23,13 +23,16 @@ class Inferno
 
         $response = $this->makeRequest($request);
 
-        if ($this->isResponseStatusCodeSuccess($response->status_code) === false)
+        if ($response->success === false)
         {
-            $repo->incrementFailureCount($webhook);
+            // It's a failure, increment failure count.
+            $repo->bumpFailureCount($webhook);
 
             if (($webhook->isActive() === false) or
                 ($job->attempts() >= 3))
             {
+                // Webhook is now inactive
+                // So let's just delete the job
                 $job->delete();
             }
             else
@@ -38,9 +41,12 @@ class Inferno
                 $job->release(3600);
             }
         }
-        else if ($webhook->getFailureCount() !== 0)
+        else
         {
-            $repo->resetFailureCount($webhook);
+            if ($webhook->getFailureCount() !== 0)
+            {
+                $repo->resetFailureCount($webhook);
+            }
 
             $job->delete();
         }
@@ -70,10 +76,5 @@ class Inferno
         $request['options'] = [];
 
         return $request;
-    }
-
-    protected function isResponseStatusCodeSuccess($statusCode)
-    {
-        return (substr($statusCode, 0, 1) === '2');
     }
 }

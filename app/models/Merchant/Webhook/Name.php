@@ -10,7 +10,7 @@ use Models\Base;
  * See this link for a guide on bitwise operations:
  * http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c
  */
-class Name
+class Event
 {
     const PAYMENT_AUTHORIZED = 'payment.authorized';
 
@@ -34,7 +34,7 @@ class Name
     {
         foreach ($events as $event => $value)
         {
-            $pos = Name::getBitPosition($event);
+            $pos = Event::getBitPosition($event);
 
             $value = ($value === '1') ? 1 : 0;
 
@@ -74,28 +74,11 @@ class Name
         return ($hexEvent >> $pos) & 1;
     }
 
-    public static function validateEventNames($events)
-    {
-        foreach ($events as $event)
-        {
-
-
-        }
-    }
-
     public static function validateEventName($event)
     {
         $event = strtoupper(str_replace('.', '_', $event));
 
         return (defined(__CLASS__.'::'.$event));
-    }
-
-    public static function getBitValue($event)
-    {
-        $event = str_replace('_', '.', $event);
-        $event = strtolower($event);
-
-        return self::$bitMap[$event];
     }
 
     public static function getBitPosition($event)

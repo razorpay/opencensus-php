@@ -65,18 +65,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(\Models\Merchant\Entity::class);
     }
 
-    public function incrementFailureCount()
+    public function bumpFailureCount()
     {
-        $count = $this->getFailureCount();
-        $count++;
+        $count = $this->getFailureCount() + 1;
+
         $this->setFailureCountAttribute($count);
-
-        assert($count <= self::MAX_FAILURE_COUNT);
-
-        if ($count === self::MAX_FAILURE_COUNT)
-        {
-            $this->deactivate();
-        }
     }
 
     public function getUrl()
@@ -103,16 +96,16 @@ class Entity extends Base\PublicEntity
             $hex = $this->attributes[self::EVENTS];
         }
 
-        $this->attributes[self::EVENTS] = Name::getHexValue($events, $hex);
+        $this->attributes[self::EVENTS] = Event::getHexValue($events, $hex);
     }
 
     public function getEventsAttribute()
     {
         $events = $this->attributes[self::EVENTS];
 
-        $events = Name::getEnabledEvents($events);
+        $events = Event::getEnabledEvents($events);
 
-        $names = Name::getAllEventNames();
+        $names = Event::getAllEventNames();
 
         $eventsArray = [];
 
@@ -128,7 +121,7 @@ class Entity extends Base\PublicEntity
     {
         $hex = $this->getEventsHexValue();
 
-        return Name::isEventEnabled($hex, $event);
+        return Event::isEventEnabled($hex, $event);
     }
 
     public function resetFailureCount()
@@ -153,6 +146,11 @@ class Entity extends Base\PublicEntity
         assert ($count <= self::MAX_FAILURE_COUNT);
 
         $this->attributes[self::FAILURE_COUNT] = $count;
+
+        if ($count === self::MAX_FAILURE_COUNT)
+        {
+            $this->deactivate();
+        }
     }
 
     protected function getEventsHexValue()

@@ -24,9 +24,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function incrementFailureCount($webhook)
+    public function bumpFailureCount($webhook)
     {
-        $webhook->incrementFailureCount();
+        $webhook->bumpFailureCount();
         $webhook->saveOrFail();
     }
 
