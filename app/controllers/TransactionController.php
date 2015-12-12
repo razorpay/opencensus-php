@@ -117,13 +117,11 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function postGenerateReport($mode)
+    public function getGenerateReport($mode, $month, $year)
     {
         $this->checkMode($mode);
 
-        $month = Input::get('month');
-
-        list($error, $file) = (new Api\Service)->generateReportForMonth($month, $mode);
+        list($error, $file) = (new Api\Service)->generateReportForMonth($month, $year, $mode);
 
         if (empty($error) === false){
             return AppResponse::jsonResponse($error);
