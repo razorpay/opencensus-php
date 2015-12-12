@@ -66,7 +66,6 @@ class Repository extends Base\Repository
         return $repo::where(Transaction\Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Transaction\Entity::CREATED_AT, '>=', $startOfMonth)
                     ->where(Transaction\Entity::CREATED_AT, '<=', $endOfMonth)
-                    ->with('payment')
                     ->get();
     }
 
