@@ -30,6 +30,14 @@ class Event
         self::PAYMENT_AUTHORIZED => 0,
     );
 
+    /**
+     * Takes the hex value and merges it
+     * with the hex value of the events passed.
+     *
+     * @param  array    $events
+     * @param  integer  $hex
+     * @return integer
+     */
     public static function getHexValue($events, $hex)
     {
         foreach ($events as $event => $value)
@@ -38,6 +46,7 @@ class Event
 
             $value = ($value === '1') ? 1 : 0;
 
+            // Sets the bit value for the current event.
             $hex ^= ((-1 * $value) ^ $hex) & (1 << $pos);
         }
 
