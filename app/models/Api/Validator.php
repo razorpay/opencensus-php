@@ -16,4 +16,8 @@ class Validator extends Base\Validator
         'email'         => 'sometimes|email',
         'contact'       => 'sometimes|digits_between:10,12'
     );
+
+    protected static $generateReportRules = array(
+        'month'         => 'in:January,February,March,April,May,June,July,August,September,October,November,December',
+    );
 }
