@@ -117,6 +117,21 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    public function postGenerateReport($mode)
+    {
+        $this->checkMode($mode);
+
+        $month = Input::get('month');
+
+        list($error, $file) = (new Api\Service)->generateReportForMonth($month, $mode);
+
+        if (empty($error) === false){
+            return AppResponse::jsonResponse($error);
+        }
+
+        $file->download('xlsx');
+    }
+
     public function postCapturePayment($mode, $id = null)
     {
         $this->checkMode($mode);
