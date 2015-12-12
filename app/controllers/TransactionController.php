@@ -123,7 +123,8 @@ class TransactionController extends BaseController
 
         list($error, $file) = (new Api\Service)->generateReportForMonth($month, $year, $mode);
 
-        if (empty($error) === false){
+        if (empty($error) === false)
+        {
             return AppResponse::jsonResponse($error);
         }
 
