@@ -79,6 +79,8 @@ Route::group(array('before' => 'auth.merchant'), function()
         Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
 
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
+
+        Route::post('/{mode}/generatereport', 'TransactionController@postGenerateReport');
     });
 });
 
