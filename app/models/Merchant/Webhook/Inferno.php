@@ -72,8 +72,12 @@ class Inferno
             'method' => 'post',
             'content' => $event);
 
-        $request['header'] = [];
-        $request['options'] = [];
+        $request['header'] = [
+            'User-Agent' => 'Razorpay-Webhook/v1',
+            'Content-Type' => 'application/json',
+        ];
+
+        $request['options'] = ['timeout' => 15];
 
         return $request;
     }
