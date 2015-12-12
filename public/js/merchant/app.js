@@ -113,6 +113,9 @@ var app = angular.module('app', [
     }).state('app.addfunds', {
       url: '/addfunds',
       templateUrl: 'tpl/app_addfunds.html'
+    }).state('app.generatereport', {
+      url: '/generatereport',
+      templateUrl: 'tpl/app_generate_report.html'
     }).state('app.keys', {
       url: '/keys',
       templateUrl: 'tpl/app_keys.html'
