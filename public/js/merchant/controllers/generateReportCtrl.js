@@ -8,16 +8,19 @@ app.controller('GenerateReportCtrl', [
   'transformRequestAsFormPost',
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
-    $scope.month = 'January';
+    $scope.report = {
+      month: 1,
+      year: 2015
+    };
     
     $scope.generateReport = function () {
       
       var request = $http({
-        method: 'POST',
+        method: 'GET',
         responseType: 'arraybuffer',
-        url: '/' + $scope.mode + '/generatereport',
+        url: '/' + $scope.mode + '/generatereport/' + $scope.report.month + '/' + $scope.report.year,
         transformRequest: transformRequestAsFormPost,
-        data: { month: $scope.month },
+        data: $scope.report,
         headers: {
           'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         }
@@ -29,8 +32,7 @@ app.controller('GenerateReportCtrl', [
           var blob = new Blob([data], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           });
-          var objectUrl = URL.createObjectURL(blob);
-          window.open(objectUrl);
+          saveAs(blob, 'transaction_report' + '.xlsx');
         } 
         else {
           $scope.alerts.resetAlerts();
