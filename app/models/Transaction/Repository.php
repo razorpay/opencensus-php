@@ -52,8 +52,15 @@ class Repository extends Base\Repository
         assert($month > 0);
         assert($month <= 12);
 
-        $startOfMonth = Carbon::today()->startOfDay()->month($month)->timestamp;
-        $endOfMonth = Carbon::today()->startOfDay()->month($month+1)->timestamp - 1;
+        $startOfMonth = Carbon::today('Asia/Kolkata')
+                              ->month($month)
+                              ->year($year)
+                              ->timestamp;
+
+        $endOfMonth = Carbon::today('Asia/Kolkata')
+                            ->month($month + 1)
+                            ->year($year);
+                            ->timestamp;
 
         $repo = $this->repo;
 

@@ -37,9 +37,10 @@ class Service extends Base\Service
     {
         $merchantId = $input['merchant_id'];
         $month = (int) $input['month'];
+        $year = (int) $input['year'];
 
         $txns = (new Transaction\Repository)->fetchTransactionByMonthAndMerchantId(
-                                                $merchantId, $month);
+                                                $merchantId, $month, $year);
 
         $reportTxns = array();
 
@@ -55,12 +56,18 @@ class Service extends Base\Service
     {
         $reportTxn = $txn->toArrayPublic();
 
-        $reportTxn['created_at'] = date('m/d/y', $txn['created_at']);
+        $reportTxn['created_at'] = date('d/m/y', $txn['created_at']);
         $reportTxn['debit'] = $txn['debit'] / 100;
         $reportTxn['credit'] = $txn['credit'] / 100;
         $reportTxn['fee'] = $txn['fee'] / 100;
         $reportTxn['service_tax'] = $txn['service_tax'] / 100;
-        $reportTxn['settled_at'] = date('m/d/y', $txn['settled_at']);
+
+        $reportTxn['settled_at'] = null;
+
+        if ($txn['settled_at'] !== null)
+        {
+            $reportTxn['settled_at'] = date('d/m/y', $txn['settled_at']);
+        }
 
         if ($txn->isTypePayment())
         {
