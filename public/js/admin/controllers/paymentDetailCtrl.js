@@ -20,6 +20,31 @@ app.controller('PaymentDetailCtrl', [
       };
       return mapper[status];
     };
+
+    // Keys currently added the to good-looking view
+    var shownByDefault = [
+      'id', 'merchant_id', 'amount', 'method', 'card_id', 'gateway', 'status',
+      'amount_refunded', 'amount_authorized', 'refund_status', 'currency',
+      'description', 'error_code', 'error_description', 'email', 'contact',
+      'notes', 'transaction_id', 'authorized_at', 'captured_at', 'created_at',
+      'updated_at', 'authorized_at', 'terminal_id', 'signed', 'verified',
+      'internal_error_code', 'bank', 'wallet'
+    ];
+
+    /**
+     * Returns the keys not present in the default view
+     */
+    $scope.keysNotShown = function() {
+      var keys = [];
+      for (var key in $scope.entity) {
+        // If the entity has that key and its not currently shown
+        if ($scope.entity.hasOwnProperty(key) && shownByDefault.indexOf(key)<0) {
+          keys.push(key);
+        }
+      }
+      return keys;
+    }
+
     $scope.displayClass = function (value) {
       if (value == null) {
         return 'label label-warning col-lg-1';
@@ -47,6 +72,7 @@ app.controller('PaymentDetailCtrl', [
         return value;
       }
     };
+
     $scope.openRefundModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundModalContent.html',

@@ -92,6 +92,12 @@
             </span>
             Error Description
           </div>
+          <div href class="list-group-item panel-body" ng-show="entity.internal_error_code">
+            <span class="pull-right col-lg-8 text-right">
+              {{displayValue(entity.internal_error_code)}}
+            </span>
+            Internal Error Code
+          </div>
           <a href class="list-group-item">
             <span class="pull-right">{{entity.email}}</span>
             Email
@@ -152,6 +158,20 @@
               <i class="fa" ng-class="{'fa-check text-success': entity.verified === 1, ' fa-times text-danger':entity.verified === 0, 'fa-meh-o': entity.verified===null}"></i>
             </span>
             Verified
+          </a>
+          <a class="list-group-item" ng-repeat="key in keysNotShown()"
+            ng-init="value = entity[key]"
+          >
+            <span class="pull-right" ng-class="displayClass(value)">
+              {{displayValue(value)}}
+            </span>
+            {{key|titlecase}}
+          </a>
+          <a href class="list-group-item" ng-repeat="key in keysNotShown()">
+            <span class="pull-right" ng-class="displayClass(entity[key])" tooltip="{{key}}">
+              {{displayValue(entity[key])}}
+            </span>
+            {{key}}
           </a>
           <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
             <span class="pull-right">
