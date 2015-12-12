@@ -59,26 +59,16 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX);
 
     protected $public = array(
-        self::ID,
-        self::ENTITY,
         self::ENTITY_ID,
         self::TYPE,
-        self::MERCHANT_ID,
         self::DEBIT,
         self::CREDIT,
         self::AMOUNT,
         self::CURRENCY,
         self::FEE,
-        self::API_FEE,
-        self::GATEWAY_FEE,
         self::SERVICE_TAX,
-        self::GRATIS,
-        self::BALANCE,
-        self::ESCROW_BALANCE,
-        self::PRICING_RULE_ID,
-        self::RECONCILED_AT,
-        self::CHANNEL,
         self::SETTLED,
+        self::CREATED_AT,
         self::SETTLED_AT);
 
     protected $publicSetters = array(
@@ -114,6 +104,14 @@ class Entity extends Base\PublicEntity
         $class .= ucfirst($type).'\\'.'Entity';
 
         return $this->belongsTo($class, self::ENTITY_ID);
+    }
+
+    public function payment()
+    {
+        if ($this->isTypePayment())
+        {
+            return $this->belongsTo('Models\Payment\Entity', self::ENTITY_ID);
+        }
     }
 
     public function settlement()

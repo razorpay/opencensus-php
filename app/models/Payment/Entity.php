@@ -500,6 +500,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTES);
     }
 
+    public function getNotesJson()
+    {
+        return $this->attributes[self::NOTES];
+    }
+
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
@@ -584,6 +589,11 @@ class Entity extends Base\PublicEntity
     public function getCreatedTimestamp()
     {
         return $this->getAttribute(self::CREATED_AT);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
     }
 
     public function getDaysSinceAuthorized()

@@ -32,4 +32,42 @@ class Service extends Base\Service
             return (new BugFixer)->settlementFixerInTxn();
         });
     }
+
+    public function getMonthlyReport($input)
+    {
+        $merchantId = $input['merchant_id'];
+        $month = (int) $input['month'];
+
+        $txns = (new Transaction\Repository)->fetchTransactionByMonthAndMerchantId(
+                                                $merchantId, $month);
+
+        $reportTxns = array();
+
+        foreach ($txns as $txn)
+        {
+            array_push($reportTxns, $this->toArrayReport($txn));
+        }
+
+        return $reportTxns;
+    }
+
+    protected function toArrayReport($txn)
+    {
+        $reportTxn = $txn->toArrayPublic();
+
+        $reportTxn['created_at'] = date('m/d/y', $txn['created_at']);
+        $reportTxn['debit'] = $txn['debit'] / 100;
+        $reportTxn['credit'] = $txn['credit'] / 100;
+        $reportTxn['fee'] = $txn['fee'] / 100;
+        $reportTxn['service_tax'] = $txn['service_tax'] / 100;
+        $reportTxn['settled_at'] = date('m/d/y', $txn['settled_at']);
+
+        if ($txn->isTypePayment())
+        {
+            $reportTxn['description'] = $txn->entity->getDescription();
+            $reportTxn['notes'] = $txn->entity->getNotesJson();
+        }
+
+        return $reportTxn;
+    }
 }
