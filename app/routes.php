@@ -80,7 +80,7 @@ Route::group(array('before' => 'auth.merchant'), function()
 
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
 
-        Route::post('/{mode}/generatereport', 'TransactionController@postGenerateReport');
+        Route::get('/{mode}/generatereport/{month}/{year}', 'TransactionController@getGenerateReport');
     });
 });
 
