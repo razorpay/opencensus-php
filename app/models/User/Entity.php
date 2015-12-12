@@ -3,11 +3,8 @@
 namespace Models\User;
 
 use Uuid;
-use Hash;
 use Models\Base;
 use Models\Merchant;
-use Models\Invitation;
-use Illuminate\Database\Eloquent\Model;
 use RandomLib\Factory as RandomLibFactory;
 
 
@@ -99,10 +96,10 @@ class Entity extends Base\Entity
     /**
      * Get the user's role on a given merchant.
      *
-     * @param  \Razorpay\Models\merchant  $merchant
+     * @param  \Models\Merchant\Entity  $merchant
      * @return string
      */
-    public function merchantRole($merchant)
+    public function getMerchantRole($merchant)
     {
         $merchant = $this->merchants->find($merchant->id);
 
