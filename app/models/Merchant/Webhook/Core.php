@@ -33,15 +33,11 @@ class Core extends Base\Core
 
         $webhook->edit($input);
 
-        $repo->saveOrFail($webhook);
-
-        return $webhook;
+        return $repo->saveOrFail($webhook);
     }
 
     public function getWebhooks($merchant)
     {
-        $webhooks = (new Webhook\Repository)->findByMerchant($merchant);
-
-        return $webhooks;
+        return (new Webhook\Repository)->findByMerchant($merchant);
     }
 }
