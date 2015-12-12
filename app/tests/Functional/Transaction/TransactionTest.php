@@ -28,7 +28,7 @@ class TransactionTest extends TestCase
 
         $adj = $this->runRequestResponseFlow($testData);
 
-        $txn = $this->getLastTransaction();
+        $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterAddingAdjustment'];
         $testData['entity_id'] = $adj['id'];
@@ -47,7 +47,7 @@ class TransactionTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $txn = $this->getLastTransaction();
+        $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterCapturingPayment'];
         $testData['entity_id'] = $payment['id'];
@@ -61,7 +61,7 @@ class TransactionTest extends TestCase
     {
         $refund = $this->doAuthCaptureAndRefundPayment();
 
-        $txn = $this->getLastTransaction();
+        $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterRefundingPayment'];
         $testData['entity_id'] = $refund['id'];

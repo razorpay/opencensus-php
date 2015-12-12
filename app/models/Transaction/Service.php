@@ -56,6 +56,9 @@ class Service extends Base\Service
     {
         $reportTxn = $txn->toArrayPublic();
 
+        unset($reportTxn['id']);
+        unset($reportTxn['entity']);
+
         $reportTxn['created_at'] = date('d/m/y', $txn['created_at']);
         $reportTxn['debit'] = $txn['debit'] / 100;
         $reportTxn['credit'] = $txn['credit'] / 100;

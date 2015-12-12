@@ -59,6 +59,8 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX);
 
     protected $public = array(
+        self::ID,
+        self::ENTITY,
         self::ENTITY_ID,
         self::TYPE,
         self::DEBIT,
