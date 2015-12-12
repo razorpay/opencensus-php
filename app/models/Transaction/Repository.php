@@ -47,7 +47,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchTransactionByMonthAndMerchantId($merchantId, $month)
+    public function fetchTransactionByMonthAndMerchantId($merchantId, $month, $year)
     {
         assert($month > 0);
         assert($month <= 12);
@@ -59,7 +59,7 @@ class Repository extends Base\Repository
 
         $endOfMonth = Carbon::today('Asia/Kolkata')
                             ->month($month + 1)
-                            ->year($year);
+                            ->year($year)
                             ->timestamp;
 
         $repo = $this->repo;
