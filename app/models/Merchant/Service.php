@@ -85,15 +85,19 @@ class Service extends Base\Service
             return [["Email change forbidden on this account"], null];
         }
 
+        $email = $merchant->email;
         $error = $merchant->changeEmail($input);
 
         if (empty($error))
         {
             if($merchant->hasUsers())
             {
-                $user = $merchant->users()->first();
-                $user->email = $merchant->email;
-                $user->save();
+                $user = $merchant->users()->where('email',$email)->first();
+                if($user)
+                {
+                    $user->email = $merchant->email;
+                    $user->save();
+                }
             }
             $merchant->save();
         }
@@ -109,15 +113,19 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
+        $email = $merchant->email;
         $error = $merchant->changePassword($input);
 
         if (empty($error))
         {
             if($merchant->hasUsers())
             {
-                $user = $merchant->users()->first();
-                $user->password = $merchant->password;
-                $user->save();
+                $user = $merchant->users()->where('email',$email)->first();
+                if($user)
+                {
+                    $user->password = $merchant->password;
+                    $user->save();
+                }
             }
             $merchant->save();
         }
@@ -148,13 +156,17 @@ class Service extends Base\Service
         }
 
         $merchant->confirm_token = null;
+        $email = $merchant->email;
         $merchant->saveOrFail();
 
         if($merchant->hasUsers())
         {
-            $user = $merchant->users()->first();
-            $user->confirm_token = $merchant->confirm_token;
-            $user->save();
+            $user = $merchant->users()->where('email',$email)->first();
+            if($user)
+            {
+                $user->confirm_token = $merchant->confirm_token;
+                $user->save();
+            }
         }
 
         return array();

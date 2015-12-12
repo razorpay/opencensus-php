@@ -37,14 +37,18 @@ class PasswordController extends BaseController
 
 		$response = Password::merchant()->reset($credentials, function($merchant, $password)
 		{
+			$email = $merchant->email;
 			$merchant->password = $password;
 			$merchant->save();
 
 			if($merchant->hasUsers())
 			{
-				$user = $merchant->users()->first();
-				$user->password = $merchant->password;
-				$user->save();
+				$user = $merchant->users()->where('email',$email)->first();
+				if($user)
+				{
+					$user->password = $merchant->password;
+					$user->save();
+				}
 			}
 		});
 
