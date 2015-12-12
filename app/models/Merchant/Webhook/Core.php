@@ -22,7 +22,9 @@ class Core extends Base\Core
 
         $webhook->merchant()->associate($merchant);
 
-        return (new Webhook\Repository)->saveOrFail($webhook);
+        (new Webhook\Repository)->saveOrFail($webhook);
+
+        return $webhook;
     }
 
     public function editWebhook($merchant, $webhookId, $input)
@@ -33,7 +35,9 @@ class Core extends Base\Core
 
         $webhook->edit($input);
 
-        return $repo->saveOrFail($webhook);
+        $repo->saveOrFail($webhook);
+
+        return $webhook;
     }
 
     public function getWebhooks($merchant)

@@ -66,6 +66,8 @@ class WebhookTest extends TestCase
                     Mockery::type('Illuminate\Queue\Jobs\Job'),
                     Mockery::on(function ($data) use ($testData)
                         {
+                            $data['event'] = json_decode($data['event'], true);
+
                             $this->assertArraySelectiveEquals($testData, $data);
 
                             return true;
@@ -112,7 +114,7 @@ class WebhookTest extends TestCase
 
         $this->fixtures->edit('webhook', $webhook['id'], ['failure_count' => 2]);
 
-        $this->mockInfernoWithResponseStatusCode('501');
+        $this->mockInfernoWithResponseStatusCode(501);
 
         $this->doAuthPayment();
 
@@ -128,7 +130,7 @@ class WebhookTest extends TestCase
         $this->fixtures->edit(
             'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
 
-        $this->mockInfernoWithResponseStatusCode('200');
+        $this->mockInfernoWithResponseStatusCode(200);
 
         $this->doAuthPayment();
 
@@ -143,6 +145,16 @@ class WebhookTest extends TestCase
 
         $response = new \Requests_Response;
         $response->status_code = $statusCode;
+
+        $success = false;
+
+        if (($statusCode >= 200) and
+            ($statusCode < 300))
+        {
+            $success = true;
+        }
+
+        $response->success = $success;
 
         $inferno->shouldReceive('makeRequest')
                 ->andReturn($response);

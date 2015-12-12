@@ -93,8 +93,10 @@ class ApiEventSubscriber
         $event->merchant()->associate($payment->merchant);
 
         $data = array(
-            'event'         => $event->toArrayPublic(),
+            'event'         => json_encode($event->toArrayPublic()),
             'webhook_id'    => $webhook->getId());
+
+        $data = json_encode($data);
 
         $this->queue->push('Models\Merchant\Webhook\Queue', $data);
     }

@@ -10,6 +10,8 @@ class Queue
     {
         $app = \App::getFacadeRoot();
 
+        $data = json_decode($data, true);
+
         $app['webhook.inferno']->fire($job, $data);
     }
 }
