@@ -32,7 +32,7 @@ app.controller('GenerateReportCtrl', [
           var blob = new Blob([data], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           });
-          saveAs(blob, 'transaction_report' + '.xlsx');
+          saveAs(blob, 'transaction_report.xlsx');
         } 
         else {
           $scope.alerts.resetAlerts();
