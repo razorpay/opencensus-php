@@ -8,11 +8,12 @@ app.controller('GenerateReportCtrl', [
   'transformRequestAsFormPost',
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
+    var date = new Date();
     $scope.report = {
-      month: 1,
+      month: date.getMonth() == 0 ? 12 : date.getMonth(),
       year: 2015
     };
-    
+
     $scope.generateReport = function () {
       
       var request = $http({
