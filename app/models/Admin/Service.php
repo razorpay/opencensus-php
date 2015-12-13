@@ -313,7 +313,8 @@ class Service extends Base\Service
             'archived_at'       => $merchant['archived_at'],
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
-            'submitted'         => $merchant_details['submitted']
+            'submitted'         => $merchant_details['submitted'],
+            'submitted_at'      => $merchant_details['submitted_at']
         ) + $data;
 
         return $response;
