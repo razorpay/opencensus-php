@@ -96,7 +96,7 @@ class Service extends Base\Service
         else if ($txn->isTypeRefund())
         {
             $refund = $txn->entity;
-            $payment = $entity->payment;
+            $payment = $refund->payment;
 
             if ($payment->hasBeenCaptured() === false)
             {
