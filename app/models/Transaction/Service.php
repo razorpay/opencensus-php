@@ -75,6 +75,8 @@ class Service extends Base\Service
         $reportTxn['service_tax'] = $txn['service_tax'] / 100;
 
         $reportTxn['settled_at'] = null;
+        $reportTxn['description'] = null;
+        $reportTxn['notes'] = null;
 
         if ($txn['settled_at'] !== null)
         {
