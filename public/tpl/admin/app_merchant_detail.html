@@ -194,6 +194,16 @@
           Registration Date
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" ng-if="merchant.details.submitted_at">{{merchant.details.submitted_at*1000 | date:'medium'}}</span>
+          <span class="pull-right" ng-if="!merchant.details.submitted_at">NULL</span>
+          Submission Date
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" ng-if="merchant.details.activated_at">{{merchant.details.activated_at*1000 | date:'medium'}}</span>
+          <span class="pull-right" ng-if="!merchant.details.activated_at">NULL</span>
+          Activatation Date
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
             <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirm_token == null, 'fa-times text-danger':merchant.details.confirm_token != null}"></i>
           </span>
