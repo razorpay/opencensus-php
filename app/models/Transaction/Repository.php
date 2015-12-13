@@ -56,8 +56,16 @@ class Repository extends Base\Repository
                               ->year($year)
                               ->timestamp;
 
+        $endMonth = $month + 1;
+
+        if ($endMonth === 13)
+        {
+            $endMonth = 0;
+            $year++;
+        }
+
         $endOfMonth = Carbon::today('Asia/Kolkata')
-                            ->month($month + 1)
+                            ->month($endMonth)
                             ->year($year)
                             ->timestamp;
 
