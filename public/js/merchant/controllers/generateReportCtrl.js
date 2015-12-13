@@ -11,7 +11,7 @@ app.controller('GenerateReportCtrl', [
     var date = new Date();
     $scope.report = {
       month: date.getMonth() == 0 ? 12 : date.getMonth(),
-      year: 2015
+      year: date.getMonth() == 0 ? date.getFullYear() - 1 : date.getFullYear()  
     };
 
     $scope.generateReport = function () {
