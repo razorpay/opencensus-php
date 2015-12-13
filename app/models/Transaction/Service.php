@@ -2,6 +2,7 @@
 
 namespace Models\Transaction;
 
+use Carbon\Carbon;
 use Models\Base;
 use Models\Transaction;
 
@@ -44,9 +45,16 @@ class Service extends Base\Service
 
         $reportTxns = array();
 
+        date_default_timezone_set('Asia/Kolkata');
+
         foreach ($txns as $txn)
         {
-            array_push($reportTxns, $this->toArrayReport($txn));
+            $reportTxn = $this->toArrayReport($txn);
+
+            if ($reportTxn !== null)
+            {
+                array_push($reportTxns, $this->toArrayReport($txn));
+            }
         }
 
         return $reportTxns;
@@ -60,6 +68,7 @@ class Service extends Base\Service
         unset($reportTxn['entity']);
 
         $reportTxn['created_at'] = date('d/m/y', $txn['created_at']);
+        $reportTxn['amount'] = $txn['amount'] / 100;
         $reportTxn['debit'] = $txn['debit'] / 100;
         $reportTxn['credit'] = $txn['credit'] / 100;
         $reportTxn['fee'] = $txn['fee'] / 100;
@@ -74,8 +83,25 @@ class Service extends Base\Service
 
         if ($txn->isTypePayment())
         {
-            $reportTxn['description'] = $txn->entity->getDescription();
-            $reportTxn['notes'] = $txn->entity->getNotesJson();
+            $payment = $txn->entity;
+
+            $reportTxn['description'] = $payment->getDescription();
+            $reportTxn['notes'] = $payment->getNotesJson();
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                return;
+            }
+        }
+        else if ($txn->isTypeRefund())
+        {
+            $refund = $txn->entity;
+            $payment = $entity->payment;
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                return;
+            }
         }
 
         return $reportTxn;
