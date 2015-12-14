@@ -69,16 +69,10 @@
           P
           </strong>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == false" ng-click="enableMethod('mobikwik')">
-          Enable Mobikwik
+        <a href class="list-group-item" ng-click="processWallets(merchant.terminals.items)">
+          Activate/Deactivate Wallets
           <strong class="pull-right label label-success">
-          M
-          </strong>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == true"ng-click="disableMethod('mobikwik')">
-          Disable Mobikwik
-          <strong class="pull-right label label-danger">
-          M
+          W
           </strong>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
@@ -381,6 +375,27 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="processMerchantWallets.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Activate/Deactivate Merchant Wallet Accounts</h3>
+  </div>
+  <div class="modal-body wallets-modal">
+  <form class="form-horizontal">
+    <div class="form-group" >
+      <div class="row" ng-repeat="(gateway, wallet) in walletsAvlbl">
+        <label class="col-lg-6 control-label">{{ wallet | titlecase }}</label>
+        <input class="col-lg-6" name="gateways[]" value="{{gateway}}" {{ gateway in walletsEnabled ? checked : '' }}  type="checkbox"/>
+      </div>
+    </div>
+    <h5 ng-if="loading">Loading Wallets....</h5>
+    <h4 ng-if="loading === false && wallets.length == 0">No Wallets available.</h4>
+  </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Check merchant wallet status carefully before confirming." ng-click="ok(gateways)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="assignTerminalModalContent.html">

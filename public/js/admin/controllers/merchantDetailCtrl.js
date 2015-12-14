@@ -380,6 +380,21 @@ app.controller('MerchantDetailCtrl', [
         $scope.assignTerminal(terminal);
       }, $.noop);
     };
+    $scope.processWallets = function (merchantTerminals) {
+      var modalInstance = $modal.open({
+        templateUrl: 'processMerchantWallets.html',
+        controller: 'processMerchantWalletsCtrl',
+        resolve: {
+          terminals: function () {
+            return merchantTerminals;
+          }
+        }
+      });
+      modalInstance.result.then(function(walletsEnabled) {
+        console.log(walletsEnabled);
+        //$scope.setWalletsBasedOnForm(walletsEnabled);
+      }, $.noop);
+    };
     $scope.openEditMerchant = function () {
       var modalInstance = $modal.open({
         templateUrl: 'editMerchantModalContent.html',
@@ -551,6 +566,30 @@ app.controller('MerchantDetailCtrl', [
     });
     $scope.ok = function (pricing_plan_id) {
       $modalInstance.close(pricing_plan_id);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('processMerchantWalletsCtrl', [
+  '$scope',
+  '$modalInstance',
+  'terminals',
+  function ($scope, $modalInstance, terminals) {
+    $scope.walletsAvlbl = {
+      'paytm': 'paytm',
+      'mobikwik': 'mobikwik',
+      'wallet_payzapp': 'payzapp',
+    };
+    $scope.walletsEnabled = [];
+    terminals.forEach(function(element, index){
+      if(element.gateway in $scope.walletsAvlbl){
+          $scope.walletsEnabled.push(element.gateway);
+      }
+    });
+    $scope.ok = function (terminalsEnabled) {
+      console.log(terminalsEnabled);
+      $modalInstance.close(terminalsEnabled);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
