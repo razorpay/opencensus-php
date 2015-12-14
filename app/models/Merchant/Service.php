@@ -477,7 +477,7 @@ class Service extends Base\Service
             $display = Payment\Method::formatted($rule['payment_method']);
 
             // This now holds Credit/Debit/All
-            $method = $rule['payment_method_type'] ? : 'Visa/Master Card/Diners';
+            $method = $rule['payment_method_type'] ? : 'Visa/MasterCard/Discover/Diners';
 
             // If we have a payment_network (such as AMEX/DICL)
             if ($rule['payment_network'] !== null)
