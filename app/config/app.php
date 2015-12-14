@@ -126,6 +126,7 @@ return array(
         'Trace\TraceServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
+        'Razorpay\Providers\UuidServiceProvider',
 	),
 
 	/*
@@ -195,6 +196,7 @@ return array(
 		'Slack'			  => 'Maknz\Slack\Facades\Slack',
 		'Trace'           => 'Trace\Facade',
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
+        'Uuid'            => 'Razorpay\Facades\Uuid',
 	),
 
 	'context' => $_ENV['CONTEXT'],
