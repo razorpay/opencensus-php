@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
             'merTxnId'          =>      $input['gateway']['merTxnId'],
             'merchantInfo'      =>      array(
                 'merId'                 => $input['terminal']['gateway_merchant_id'],
-                'merAppId'              => $input['terminal']['gateway_terminal_id'],
+                'merAppId'              => $input['terminal']['gateway_access_code'],
                 'merCountryCode'        => 'IN',
             )
         );
