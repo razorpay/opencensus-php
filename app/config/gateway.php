@@ -37,7 +37,7 @@ return array(
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
     'mock_netbanking_kotak' => $_ENV['NETBANKING_KOTAK_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
-    'mock_sbiepay'          => $_ENV['SBIEPAY_MOCK'],
+    'mock_sbiepay'          => false,
     'mock_wallet_payzapp'   => $_ENV['PAYZAPP_MOCK'],
 
     'hdfc' => array(
