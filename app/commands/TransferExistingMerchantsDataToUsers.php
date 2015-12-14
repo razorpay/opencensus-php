@@ -40,11 +40,7 @@ class TransferExistingMerchantsDataToUsers extends Command {
 	public function fire()
 	{
 		//Data will be copied in batches - Will not eat all of the RAM
-        $eachBatch = $this->option('batch');
-
-        if(is_null($eachBatch))
-        	$eachBatch = 300;
-
+        $eachBatch = 300;
         $created_at = $this->argument('timestamp');
         
         $this->info("Data transfer in staring at record with created_at as $created_at in batches of $eachBatch.");
@@ -91,18 +87,6 @@ class TransferExistingMerchantsDataToUsers extends Command {
 	{
 		return array(
 			array('timestamp', InputArgument::REQUIRED, 'Timestamp value for the 1st record in users table.'),
-		);
-	}
-
-	/**
-	 * Get the console command options.
-	 *
-	 * @return array
-	 */
-	protected function getOptions()
-	{
-		return array(
-			array('batch', null, InputOption::VALUE_OPTIONAL, 'The data is transferred in batches.', null),
 		);
 	}
 }
