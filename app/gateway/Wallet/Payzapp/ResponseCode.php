@@ -1,6 +1,6 @@
 <?php
 
-namespace \Gateway\Wallet\Payzapp;
+namespace Gateway\Wallet\Payzapp;
 
 class ResponseCode
 {
