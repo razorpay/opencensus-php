@@ -254,9 +254,7 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $verify->status = $status;
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $this->verifyContentSaveIfNeeded($verify->match, $payment, $content);
 
