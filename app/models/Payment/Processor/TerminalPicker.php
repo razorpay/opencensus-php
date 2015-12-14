@@ -233,6 +233,12 @@ class TerminalPicker
         {
             return $gatewayTerms[Payment\Gateway::MOBIKWIK];
         }
+
+        if ((isset($gatewayTerms[Payment\Gateway::WALLET_PAYZAPP]) === true) and
+            ($wallet === Wallet::PAYZAPP))
+        {
+            return $gatewayTerms[Payment\Gateway::WALLET_PAYZAPP];
+        }
     }
 
     protected function getSharedTerminal($payment)
