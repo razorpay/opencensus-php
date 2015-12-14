@@ -63,6 +63,9 @@ return array(
     'PAYZAPP_WALLET_TEST_PG_HASH_KEY'                   => 'random',
     'PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'                => 'random',
 
+    'SBIEPAY_GATEWAY_TEST_MERCHANT_ID'                  => '111111',
+    'SBIEPAY_GATEWAY_TEST_HASH_SECRET'                  => 'dFe2312deFVd46g/bdeRGD==',
+
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'          => '000000',
 
     'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'         => '',
@@ -78,6 +81,7 @@ return array(
     'MOBIKWIK_MOCK'                                     => true,
     'PAYTM_MOCK'                                        => true,
     'PAYZAPP_MOCK'                                      => true,
+    'SBIEPAY_MOCK'                                      => true,
     'NETBANKING_HDFC_MOCK'                              => true,
     'NETBANKING_KOTAK_MOCK'                             => true,
 
