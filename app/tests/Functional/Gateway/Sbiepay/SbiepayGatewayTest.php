@@ -11,6 +11,8 @@ class SbiepayGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/SbiepayGatewayTestData.php';
 
         parent::setUp();
