@@ -88,14 +88,14 @@ class Service extends Base\Service
             return [["Email change forbidden on this account"], null];
         }
 
-        $email = $merchant->email;
+        $originalEmail = $merchant->email;
         $error = $merchant->changeEmail($input);
 
         if (empty($error))
         {
             if($merchant->hasUsers())
             {
-                $user = $merchant->users()->where('email',$email)->first();
+                $user = $merchant->users()->where('email',$originalEmail)->first();
                 if($user)
                 {
                     $user->email = $merchant->email;
@@ -104,7 +104,11 @@ class Service extends Base\Service
             }
             $merchant->save();
         }
-
+        
+        $merchantDetails = $merchant->merchantDetails;
+        $merchantDetails->contact_email = $merchant->email;
+        $merchantDetails->save();
+    
         return [$error, null];
     }
 
