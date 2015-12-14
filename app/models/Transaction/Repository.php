@@ -2,6 +2,7 @@
 
 namespace Models\Transaction;
 
+use Carbon\Carbon;
 use Models\Base;
 use Models\Transaction;
 
@@ -42,6 +43,37 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
+                    ->get();
+    }
+
+    public function fetchTransactionByMonthAndMerchantId($merchantId, $month, $year)
+    {
+        assert($month > 0);
+        assert($month <= 12);
+
+        $startOfMonth = Carbon::today('Asia/Kolkata')
+                              ->month($month)
+                              ->year($year)
+                              ->timestamp;
+
+        $endMonth = $month + 1;
+
+        if ($endMonth === 13)
+        {
+            $endMonth = 0;
+            $year++;
+        }
+
+        $endOfMonth = Carbon::today('Asia/Kolkata')
+                            ->month($endMonth)
+                            ->year($year)
+                            ->timestamp;
+
+        $repo = $this->repo;
+
+        return $repo::where(Transaction\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Transaction\Entity::CREATED_AT, '>=', $startOfMonth)
+                    ->where(Transaction\Entity::CREATED_AT, '<=', $endOfMonth)
                     ->get();
     }
 
