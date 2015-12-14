@@ -917,9 +917,17 @@ class Service extends Base\Service
         return array();
     }
 
-    public function enableMerchantMethod($id, $method)
+    /**
+     * Edits the merchant's methods
+     *
+     * @param  string $id      Merchant Id
+     * @param  array $methods Array containing methods
+     *                        with values 0/1
+     * @return array $error
+     */
+    public function editMethods($id, $methods)
     {
-        $error = array();
+        $error = [];
 
         $merchant = Merchant\Entity::findorfail($id);
 
@@ -927,34 +935,14 @@ class Service extends Base\Service
 
         try
         {
-            $this->api->merchant->fetch($id)->editMethods([$method => 1]);
+            $this->api->merchant->fetch($id)->editMethods($methods);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getMessage());
+            return [$e->getMessage()];
         }
 
-        return array();
-    }
-
-    public function disableMerchantMethod($id, $method)
-    {
-        $error = array();
-
-        $merchant = Merchant\Entity::findorfail($id);
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $this->api->merchant->fetch($id)->editMethods([$method => 0]);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return array($e->getMessage());
-        }
-
-        return array();
+        return $error;
     }
 
     public function fetchPricingPlans()

@@ -186,17 +186,11 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantMethodEnable($id, $method)
+    public function postEditMethods($id)
     {
+        $input = \Input::all();
 
-        $error = (new Admin\Service)->enableMerchantMethod($id, $method);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantMethodDisable($id, $method)
-    {
-        $error = (new Admin\Service)->disableMerchantMethod($id, $method);
+        $error = (new Admin\Service)->editMethods($id, $input);
 
         return AppResponse::jsonResponse($error);
     }
