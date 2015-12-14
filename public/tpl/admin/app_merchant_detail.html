@@ -57,28 +57,10 @@
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == false" ng-click="enableMethod('paytm')">
-          Enable Paytm
+        <a href class="list-group-item" ng-click="openEditWallets()">
+          Activate/Deactivate Wallets
           <strong class="pull-right label label-success">
-          P
-          </strong>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disableMethod('paytm')">
-          Disable Paytm
-          <strong class="pull-right label label-danger">
-          P
-          </strong>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == false" ng-click="enableMethod('mobikwik')">
-          Enable Mobikwik
-          <strong class="pull-right label label-success">
-          M
-          </strong>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.mobikwik == true"ng-click="disableMethod('mobikwik')">
-          Disable Mobikwik
-          <strong class="pull-right label label-danger">
-          M
+          W
           </strong>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
@@ -381,6 +363,26 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="editMerchantWallets.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Activate/Deactivate Merchant Wallet Accounts</h3>
+  </div>
+  <div class="modal-body wallets-modal">
+  <form class="form-horizontal">
+    <div class="form-group" >
+      <div class="row" ng-repeat="(wallet, value) in methods">
+        <label class="col-lg-6 control-label">{{ wallet | titlecase }}</label>
+        <input class="col-lg-6" name="{{wallet}}" ng-model="methods[wallet]" type="checkbox"/>
+      </div>
+    </div>
+
+  </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok()">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="assignTerminalModalContent.html">

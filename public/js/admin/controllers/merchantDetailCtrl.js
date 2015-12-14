@@ -119,38 +119,51 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.editMethods = function(methods, msg) {
+
+      for (var i in methods) {
+        methods[i] = methods[i] ? 1 : 0;
+      }
+
+      msg = typeof msg !== 'undefined' ? msg : 'Methods edited successfully';
+
+      var request = $http({
+        method: 'post',
+        url: '/admin/merchant/' + $scope.merchant.id + '/methods',
+        transformRequest: transformRequestAsFormPost,
+        data: methods
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', msg, true);
+          $.extend($scope.merchant.details.methods, methods);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.enableMethod = function (method) {
-      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/methods/' + method + '/enable');
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', method + ' transactions for merchant enabled successfully', true);
-          $scope.merchant.details.methods[method] = true;
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      var methods = {};
+      methods[method] = 1;
+
+      $scope.editMethods(methods, method + ' enabled for merchant successfully');
     };
+
     $scope.disableMethod = function (method) {
-      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/methods/' + method + '/disable');
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', method + ' transactions for merchant disabled successfully', true);
-          $scope.merchant.details.methods[method] = false;
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      var methods = {};
+      methods[method] = 0;
+
+      $scope.editMethods(methods, method + ' disabled for merchant successfully');
     };
+
     $scope.setReceiptEmail = function (value) {
       var editMerchant = { 'receipt_email_enabled': value };
       $scope.editMerchant(editMerchant);
@@ -380,6 +393,20 @@ app.controller('MerchantDetailCtrl', [
         $scope.assignTerminal(terminal);
       }, $.noop);
     };
+    $scope.openEditWallets = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'editMerchantWallets.html',
+        controller: 'editMerchantWalletsCtrl',
+        resolve: {
+          methods: function () {
+            return $scope.merchant.details.methods;
+          }
+        }
+      });
+      modalInstance.result.then(function(methods) {
+        $scope.editMethods(methods);
+      }, $.noop);
+    };
     $scope.openEditMerchant = function () {
       var modalInstance = $modal.open({
         templateUrl: 'editMerchantModalContent.html',
@@ -551,6 +578,28 @@ app.controller('MerchantDetailCtrl', [
     });
     $scope.ok = function (pricing_plan_id) {
       $modalInstance.close(pricing_plan_id);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editMerchantWalletsCtrl', [
+  '$scope',
+  '$modalInstance',
+  'methods',
+  function ($scope, $modalInstance, methods) {
+    // Makes sure we have all methods listed
+    var wallets = ['paytm', 'mobikwik', 'payzapp'];
+    $scope.methods = {};
+
+    wallets.map(function (key) {
+      // Assign a default of false and override if we have it
+      $scope.methods[key] = false;
+      $scope.methods[key] = methods[key];
+    })
+
+    $scope.ok = function () {
+      $modalInstance.close($scope.methods);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
