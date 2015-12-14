@@ -17,7 +17,8 @@
         "maatwebsite/excel": "1.*",
         "vipsoft/unzip": "^1.1",
         "schuppo/password-strength": "~0.7",
-        "league/csv": "7.1.2"
+        "league/csv": "7.1.2",
+        "ircmaxell/random-lib": "^1.1"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
@@ -43,7 +44,10 @@
             "app/rzp",
             "app/exception",
             "app/trace"
-        ]
+        ],
+        "psr-4":{
+            "Razorpay\\":"Razorpay"
+        }
     },
     "scripts": {
         "post-install-cmd": [

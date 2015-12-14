@@ -2,17 +2,6 @@
 
 class PasswordController extends BaseController
 {
-
-	/**
-	 * Display the password reminder view.
-	 *
-	 * @return Response
-	 */
-	public function getRemind()
-	{
-		return View::make('password.remind');
-	}
-
 	/**
 	 * Handle a POST request to remind a user of their password.
 	 *
@@ -46,11 +35,21 @@ class PasswordController extends BaseController
 			'email', 'password', 'password_confirmation', 'token'
 		);
 
-		$response = Password::merchant()->reset($credentials, function($user, $password)
+		$response = Password::merchant()->reset($credentials, function($merchant, $password)
 		{
-			$user->password = $password;
+			$email = $merchant->email;
+			$merchant->password = $password;
+			$merchant->save();
 
-			$user->save();
+			if($merchant->hasUsers())
+			{
+				$user = $merchant->users()->where('email',$email)->first();
+				if($user)
+				{
+					$user->password = $merchant->password;
+					$user->save();
+				}
+			}
 		});
 
 		switch ($response)

@@ -5,6 +5,7 @@ use Selenium\Locator as l;
 use Laracasts\TestDummy\Factory;
 use Models;
 use URL;
+use Uuid;
 use Exception;
 
 class AdminTest extends TestCase
@@ -41,7 +42,7 @@ class AdminTest extends TestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
-            $this->merchant = $this->createEntity('merchant', array('id'=>\Models\Merchant\Entity::generateUniqueId(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
+            $this->merchant = $this->createEntity('merchant', array('id'=> Uuid::generate(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
             $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
 

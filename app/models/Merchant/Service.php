@@ -4,6 +4,7 @@ namespace Models\Merchant;
 
 use Models\Base;
 use Models\Merchant;
+use Models\User;
 use Models\MerchantDetails;
 use Mail;
 use Requests;
@@ -22,7 +23,14 @@ class Service extends Base\Service
 
         $merchant->saveOrFail();
 
-        $details = array('merchant_id' => $merchant->id);
+        $user = User\Entity::createFromMerchant($merchant);
+        $user->saveOrFail();
+        $user->merchants()->attach($merchant, ['role' => 'owner']);
+
+        $details = array(
+            'merchant_id' => $merchant->id,
+            'contact_email' => $merchant->email
+        );
 
         MerchantDetails\Entity::createOrFail($details);
 
@@ -80,13 +88,27 @@ class Service extends Base\Service
             return [["Email change forbidden on this account"], null];
         }
 
+        $originalEmail = $merchant->email;
         $error = $merchant->changeEmail($input);
 
         if (empty($error))
         {
+            if($merchant->hasUsers())
+            {
+                $user = $merchant->users()->where('email',$originalEmail)->first();
+                if($user)
+                {
+                    $user->email = $merchant->email;
+                    $user->save();
+                }
+            }
             $merchant->save();
         }
-
+        
+        $merchantDetails = $merchant->merchantDetails;
+        $merchantDetails->contact_email = $merchant->email;
+        $merchantDetails->save();
+    
         return [$error, null];
     }
 
@@ -98,10 +120,20 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
+        $email = $merchant->email;
         $error = $merchant->changePassword($input);
 
         if (empty($error))
         {
+            if($merchant->hasUsers())
+            {
+                $user = $merchant->users()->where('email',$email)->first();
+                if($user)
+                {
+                    $user->password = $merchant->password;
+                    $user->save();
+                }
+            }
             $merchant->save();
         }
 
@@ -130,8 +162,19 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
-        $merchant->confirm();
+        $merchant->confirm_token = null;
+        $email = $merchant->email;
         $merchant->saveOrFail();
+
+        if($merchant->hasUsers())
+        {
+            $user = $merchant->users()->where('email',$email)->first();
+            if($user)
+            {
+                $user->confirm_token = $merchant->confirm_token;
+                $user->save();
+            }
+        }
 
         return array();
     }
