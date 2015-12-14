@@ -505,6 +505,16 @@ class Service extends Base\Service
         return $newRules;
     }
 
+    /**
+     * Rearrange $rules to display in emails in appropriate order
+     * Rules are arranged on basis of usage:
+     *  Basic Card Rules,
+     *  Basic Netbanking Rules,
+     *  Basic Wallet Rules,
+     *  Any Other Exceptional Cases,
+     * @param array $rules
+     * @return array
+     */
     protected function rearrangeRules(array $rules)
     {
         $arrangedRules      = array();
@@ -541,7 +551,8 @@ class Service extends Base\Service
             }
         }
 
-        foreach ($orderOfRules as $ruleType) {
+        foreach ($orderOfRules as $ruleType)
+        {
             $arrangedRules = array_merge($arrangedRules, ${$ruleType.'Rules'});
         }
 
