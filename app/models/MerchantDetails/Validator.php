@@ -3,6 +3,7 @@
 namespace Models\MerchantDetails;
 
 use Models\Base;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 class Validator extends Base\Validator
 {
@@ -169,11 +170,19 @@ class Validator extends Base\Validator
         else
         {
             $extension = strtolower($file->getClientOriginalExtension());
-            $mime = $file->getMimeType();
-            if ((in_array($extension, static::$allowed_extensions) === false) or
-                (in_array($mime, static::$allowed_mimes) === false))
+
+            try
             {
-                $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
+                $mime = $file->getMimeType();
+                if ((in_array($extension, static::$allowed_extensions) === false) or
+                    (in_array($mime, static::$allowed_mimes) === false))
+                {
+                    $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
+                }
+            }
+            catch(FileNotFoundException $e)
+            {
+                $error[] = 'File not uploaded properly. Please try again';
             }
         }
 
