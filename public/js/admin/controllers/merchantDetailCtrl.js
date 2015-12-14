@@ -121,9 +121,9 @@ app.controller('MerchantDetailCtrl', [
     };
 
     $scope.editMethods = function(methods, msg) {
-
+      var postMethods = {};
       for (var i in methods) {
-        methods[i] = methods[i] ? 1 : 0;
+        postMethods[i] = methods[i] ? 1 : 0;
       }
 
       msg = typeof msg !== 'undefined' ? msg : 'Methods edited successfully';
@@ -132,13 +132,14 @@ app.controller('MerchantDetailCtrl', [
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/methods',
         transformRequest: transformRequestAsFormPost,
-        data: methods
+        data: postMethods
       });
 
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', msg, true);
-          $.extend($scope.merchant.details.methods, methods);
+          $scope.merchant.details.methods =
+            $.extend($scope.merchant.details.methods, methods);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {

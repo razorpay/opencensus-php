@@ -230,6 +230,10 @@
           Paytm
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.payzapp == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payzapp == true, 'fa-times text-danger':merchant.details.methods.payzapp == false}"></i></span>
+          Payzapp
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
           Mobikwik
         </a>
