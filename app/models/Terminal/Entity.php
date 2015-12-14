@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 14;
+    const MAX_TERMINALS_COUNT           = 15;
 
     protected $fillable = array(
         self::MERCHANT_ID,

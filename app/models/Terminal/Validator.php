@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::GATEWAY                     => 'required',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
@@ -63,10 +64,10 @@ class Validator extends Base\Validator
 
     protected static $walletPayzappTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:wallet_payzapp',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:21',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|integer|digits:21',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string|size:21',
         Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
     );
