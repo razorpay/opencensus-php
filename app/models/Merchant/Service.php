@@ -27,7 +27,10 @@ class Service extends Base\Service
         $user->saveOrFail();
         $user->merchants()->attach($merchant, ['role' => 'owner']);
 
-        $details = array('merchant_id' => $merchant->id);
+        $details = array(
+            'merchant_id' => $merchant->id,
+            'contact_email' => $merchant->email
+        );
 
         MerchantDetails\Entity::createOrFail($details);
 
