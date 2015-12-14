@@ -241,6 +241,27 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest($verify)
     {
+        $content = $this->getPaymentVerifyRequestContentArray($verify);
+
+        $content = $this->postRequest($content);
+
+        unset($content['Checksum']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $content);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function getPaymentVerifyRequestContentArray($verify)
+    {
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
         $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
 
@@ -257,20 +278,6 @@ class Gateway extends Base\Gateway
         {
             $content['Merchant ID'] = $this->getTestMerchantId();
         }
-
-        $content = $this->postRequest($content);
-
-        unset($content['Checksum']);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $content);
-
-        $verify->verifyResponse = $this->response;
-
-        $verify->verifyResponseBody = $this->response->body;
-
-        $verify->verifyResponseContent = $content;
 
         return $content;
     }
