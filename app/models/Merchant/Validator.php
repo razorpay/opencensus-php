@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         'mode'                                      => 'required|in:test,live',
         'gateway'                                   => '',
         'gateway_merchant_id'                       => '',
+        'gateway_merchant_id2'                      => '',
         'gateway_terminal_id'                       => '',
         'gateway_terminal_password'                 => 'confirmed',
         'gateway_terminal_password_confirmation'    => '',
