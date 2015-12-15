@@ -99,11 +99,6 @@ abstract class Mailer
      */
     protected function getEmailFor($department)
     {
-        $emails = App::make('config')->get('razorpay.emails');
-        foreach ($emails as $email) 
-        {
-            if($email['name'] == $department)
-                return $email['email'];
-        }
+        return App::make('config')->get("razorpay.emails.$department");
     }
 }
