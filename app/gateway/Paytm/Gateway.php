@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
                 // Check that refund amount matches.
                 if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
                 {
-                    $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
+                    $verify->status = VerifyResult::REFUND_AMOUNT_MISMATCH;
                 }
             }
             else if ($payment['statuscode'] !== Status::SUCCESS)
