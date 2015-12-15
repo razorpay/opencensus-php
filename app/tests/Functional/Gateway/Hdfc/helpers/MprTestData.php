@@ -43,5 +43,44 @@ return [
                 'entity' => 'settlement',
             ],
         ]
-    ]
+    ],
+    'testUploadMprSetlTxnsData' => [
+        'entity' => 'collection',
+        'count' => 2,
+        'items' => [
+            [
+               'type' => 'settlement',
+               'merchant_id' => '1ApiFeeAccount',
+               'amount' => 29000,
+               'fee' => 0,
+               'service_tax' => 0,
+               'debit' => 29000,
+               'credit' => 0,
+               'currency' => "INR",
+               'balance' => 1000000,
+               'gateway_fee' => 0,
+               'api_fee' => 0,
+               'escrow_balance' => 1029000,
+               'channel' => 'kotak',
+               'entity' => 'transaction',
+           ],
+           [
+               'type' => 'settlement',
+               'merchant_id' => '10000000000000',
+               'amount' => 4385500,
+               'fee' => 0,
+               'service_tax' => 14500,
+               'debit' => 4385500,
+               'credit' => 0,
+               'currency' => "INR",
+               'balance' => 1000000,
+               'gateway_fee' => 0,
+               'api_fee' => 0,
+               'escrow_balance' => 1000000,
+               'channel' => 'kotak',
+               'entity' => 'transaction',
+           ]
+
+        ],
+    ],
 ];
