@@ -20,7 +20,7 @@ _wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($request['content'])."'" ?
 
 </script>
 
-<script src="https://<?= $request['url']?>/v1/wIAP.js"></script>
+<script src="https://www.<?= $request['url']?>/v1/wIAP.js"></script>
 
 </head>
 

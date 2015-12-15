@@ -127,6 +127,34 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MOBIKWIK);
     }
 
+    public function setWallets($wallets)
+    {
+        foreach ($wallets as $wallet) {
+            switch ($wallet) {
+                case self::MOBIKWIK:
+                case self::PAYTM:
+                case self::PAYZAPP:
+                    $this->setAttribute($wallet, true);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    public function getWallets()
+    {
+        $walletsStatus = array();
+
+        foreach ($this->wallets as $wallet)
+        {
+            $walletsStatus[$wallet] = $this->getAttribute($wallet);
+        }
+
+        return $walletsStatus;
+    }
+
     public function setBanks(array $banks)
     {
         $this->setAttribute(self::BANKS, $banks);

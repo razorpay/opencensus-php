@@ -38,6 +38,7 @@ class Entity extends Base\Entity
         'wallet',
         'received',
         'amount',
+        'action',
         'email',
         'contact',
         'gateway_merchant_id',
