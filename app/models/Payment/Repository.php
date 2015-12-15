@@ -121,14 +121,17 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
                     ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
+                    ->take(50)
                     ->get();
     }
 
     public function getNonTaxComputedPayments()
     {
         $repo = $this->repo;
+
         return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNull(Payment\Entity::SERVICE_TAX)
+                    ->take(500)
                     ->get();
     }
 

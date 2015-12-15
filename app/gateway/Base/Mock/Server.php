@@ -57,6 +57,11 @@ class Server
         return $this->getGatewayInstance()->generateHash($content);
     }
 
+    protected function getSecret()
+    {
+        return $this->getGatewayInstance()->getSecret();
+    }
+
     protected function checkReferer()
     {
         $request = $this->request;
@@ -169,6 +174,16 @@ class Server
     public function content(& $content)
     {
         return $content;
+    }
+
+    protected function makeResponse($msg)
+    {
+        $response = \Response::make($msg);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     protected function makePostResponse($request)

@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-        $status = VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
                 // Check that refund amount matches.
                 if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
                 {
-                    $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
+                    $verify->status = VerifyResult::REFUND_AMOUNT_MISMATCH;
                 }
             }
             else if ($payment['statuscode'] !== Status::SUCCESS)
@@ -254,13 +254,11 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $verify->status = $status;
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $this->verifyContentSaveIfNeeded($verify->match, $payment, $content);
 
-        return $status;
+        return $verify->status;
     }
 
     protected function verifyContentSaveIfNeeded($match, $payment, $content)

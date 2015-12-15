@@ -677,7 +677,7 @@ class BasicAuth
         if (($key === null) or
             ($key === ''))
         {
-           return ApiResponse::provideApiKey();
+            return ApiResponse::provideApiKey();
         }
 
         $this->viaQueryParams = true;

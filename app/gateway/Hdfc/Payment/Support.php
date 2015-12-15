@@ -33,10 +33,15 @@ trait Support
 
         $result = $this->model['result'];
 
+        //
+        // If the result is captured, and support type is capture request,
+        // then we need to check whether it was a purchase txn or auth.
+        // For purchase txn, simply return back from here.
+        //
         if (($result === Result::CAPTURED) and
             ($type === 'capture'))
         {
-            if ($input['card']['network_code'] === Card\Network::MAES)
+            if (in_array($input['card']['network_code'], $this->purchase))
             {
                 return;
             }
@@ -94,8 +99,11 @@ trait Support
         {
             $status = Status::AUTHORIZED;
 
-            if ($input['card']['network_code'] === Card\Network::MAES)
+            // For purchase transactions, status will be captured.
+            if (in_array($input['card']['network_code'], $this->purchase))
+            {
                 $status = Status::CAPTURED;
+            }
         }
         else if ($type === 'refund')
         {
@@ -284,6 +292,12 @@ trait Support
                 Trace::ERROR,
                 TraceCode::GATEWAY_SUPPORT_ERROR,
                 $this->supportPaymentResponse);
+
+            // If it's a timeout, then just return without saving.
+            if ($this->supportPaymentResponse['error']['code'] === Hdfc\ErrorCode::RP00003)
+            {
+                return;
+            }
 
             $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->supportPaymentRequest['data'],

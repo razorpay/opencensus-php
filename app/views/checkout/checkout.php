@@ -1,5 +1,5 @@
 <?php
-$fonts = 'https://cdn.razorpay.com/lato';
+$fonts = 'https://cdn.razorpay.com/lato2';
 // $checkout = 'http://checkout.pronav.in/dist';
 ?>
 <!DOCTYPE html>

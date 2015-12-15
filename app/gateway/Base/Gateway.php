@@ -5,6 +5,7 @@ namespace Gateway\Base;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -46,11 +47,32 @@ class Gateway
      */
     protected $mock;
 
+    /**
+     * Namespacing for URL's
+     * used in case where multiple
+     * domains need to be supported
+     * @var string
+     */
+    protected $domainType;
+
+    /**
+     * Denotes if running in testing env
+     * @var boolean
+     */
+    protected $testing;
+
     protected $sortRequestContent = true;
 
     public function __construct()
     {
         $this->trace = \Trace::getFacadeRoot();
+
+        $this->env = \App::getFacadeRoot()['env'];
+
+        if ($this->env === 'testing')
+        {
+            $this->testing = true;
+        }
 
         $this->loadGatewayConfig();
     }
@@ -102,9 +124,9 @@ class Gateway
             $request['options']  = array();
         }
 
-        if (isset($request['header']) === false)
+        if (isset($request['headers']) === false)
         {
-            $request['header'] = array();
+            $request['headers'] = array();
         }
 
         $method = 'post';
@@ -121,7 +143,7 @@ class Gateway
 
         $response = Requests::$method(
                     $request['url'],
-                    $request['header'],
+                    $request['headers'],
                     $request['content'],
                     $request['options']);
 
@@ -243,7 +265,7 @@ class Gateway
         return $this->getHashOfString($hashString);
     }
 
-    protected function getSecret()
+    public function getSecret()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -295,11 +317,16 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $live = constant($urlClass . '::LIVE_DOMAIN');
+        $domainConstantName = strtoupper($this->mode)."_DOMAIN";
 
-        $test = constant($urlClass . '::TEST_DOMAIN');
+        if ($this->domainType !== null)
+        {
+            $domainType = strtoupper($this->domainType);
 
-        return ($this->mode === Mode::LIVE) ? $live : $test;
+            $domainConstantName = $domainType.'_'.$domainConstantName;
+        }
+
+        return constant($urlClass . '::' .$domainConstantName);
     }
 
     protected function getRelativeUrl($type)
@@ -311,6 +338,7 @@ class Gateway
 
     protected function getUrl($type = null)
     {
+
         $url = $this->getUrlDomain();
 
         if ($type === null)
@@ -331,6 +359,17 @@ class Gateway
 
         $app = \App::getFacadeRoot();
         $this->config = $app['config']->get($configGatewayStr);
+    }
+
+    protected function getFormValues($form, $url)
+    {
+        $crawler = new Crawler($form, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        $content = $form->getValues();
+
+        return $content;
     }
 
     protected function getTestAccessCode()
@@ -370,5 +409,16 @@ class Gateway
         }
 
         return $orderedData;
+    }
+
+    protected function getStandardRequestArray(array $content = [], $method = 'post')
+    {
+        $request = array(
+            'url' => $this->getUrl(),
+            'method' => $method,
+            'content' => $content,
+        );
+
+        return $request;
     }
 }

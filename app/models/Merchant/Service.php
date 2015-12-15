@@ -406,10 +406,7 @@ class Service extends Base\Service
             'entity'        => 'methods',
             'card'          => true,
             'netbanking'    => [],
-            'wallet'        => [
-                'paytm'     => false,
-                'mobikwik'  => false,
-            ]);
+            'wallet'        => []);
 
         $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
 
@@ -417,8 +414,7 @@ class Service extends Base\Service
         {
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
-            $data['wallet']['paytm'] = $methods->isPaytmEnabled();
-            $data['wallet']['mobikwik'] = $methods->isMobikwikEnabled();
+            $data['wallet'] = $methods->getEnabledWallets();
         }
 
         if ($this->mode === Mode::TEST)

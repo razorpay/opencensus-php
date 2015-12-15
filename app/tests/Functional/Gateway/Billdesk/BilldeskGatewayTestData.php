@@ -170,9 +170,7 @@ return [
 //                    'BARB' => 'Bank of Baroda',
                     'YESB' => 'Yes Bank',
                 ],
-                'wallet' => [
-                    'paytm' => false,
-                ],
+                'wallet' => [],
             ],
         ],
     ],

@@ -406,7 +406,12 @@ class Service extends Base\Service
 
         $message = 'Payment verify result';
 
-        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        $total = $timedOut + $verified + $failed + $authorized + $error;
+
+        if ($total !== 0)
+        {
+            $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        }
 
         return $results;
     }
@@ -532,6 +537,7 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
+        s(ini_get('max_execution_time'));
         $repo = new Payment\Repository;
         $payments = $repo->getNonTaxComputedPayments();
 

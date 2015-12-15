@@ -57,14 +57,14 @@ class Network
     );
 
     public static $unsupportedNetworks = array(
-        self::AMEX,
+//        self::AMEX,
 //        self::DICL,
         self::DISC,
         self::JCB,
 //        self::MAES,
 //        self::RUPAY,
         self::UNP,
-    );
+     );
 
     public static $cvvLength = array(
         self::AMEX => 4);

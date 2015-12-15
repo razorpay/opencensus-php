@@ -131,6 +131,11 @@ class Merchant extends Base
         return $this->edit($id, ['hold_funds' => $hold]);
     }
 
+    public function enableWallet($id = '10000000000000', $wallet)
+    {
+        return $this->fixtures->edit('methods', $id, [$wallet => true]);
+    }
+
     public function enablePaytm($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['paytm' => true]);
