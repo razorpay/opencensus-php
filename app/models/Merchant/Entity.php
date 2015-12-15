@@ -22,11 +22,13 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
+    const BETA_FEATURES             = 'beta_features';
 
     /**
      * Refers to methods relation and not a property;
      */
     const METHODS                   = 'methods';
+    const ALLOWED_BETA_FEATURES     = array('webhooks');
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::BETA_FEATURES,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -81,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
+        self::BETA_FEATURES         => null,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -114,6 +118,11 @@ class Entity extends Base\PublicEntity
             '8299');
 
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
+    }
+
+    public function isBetaEnabled()
+    {
+        return !is_null($this->getAttribute(self::BETA_FEATURES));
     }
 
     public function activate()
@@ -249,12 +258,36 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
+    public function getBetaFeatures()
+    {
+        return $this->getAttribute(self::BETA_FEATURES);
+    }
+
     public function getTransactionReportEmailAttribute()
     {
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
 
         // Just so there is no whitespace before or after the email
         return array_map('trim', $emails);
+    }
+
+    public function getBetaFeaturesAttribute()
+    {
+        $features = explode(',', $this->attributes[self::BETA_FEATURES]);
+        return array_map('trim', $features);
+    }
+
+    public function setBetaFeaturesAttribute($features)
+    {
+        if (is_array($features))
+        {
+            $this->attributes[self::BETA_FEATURES] =
+                implode(',', $features);
+        }
+        else
+        {
+            $this->attributes[self::BETA_FEATURES] = $features;
+        }
     }
 
     public function setTransactionReportEmailAttribute($emails)

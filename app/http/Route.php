@@ -77,6 +77,8 @@ final class Route
         'merchant_edit_free_credits'        => ['post',     'merchants/{id}/credits',                   'MerchantController@postFreeCredits',                           ],
         'merchant_beneficiary_file'         => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                 ],
         'merchant_post_beneficiary_file'    => ['post',     'merchants/beneficiary/file/bank',          'MerchantController@postMerchantBeneficiaryFile'                ],
+        'merchant_add_features'             => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                       ],
+        'merchant_get_features'             => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                        ],
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
         'terminal_delete'                   => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                            ],
@@ -139,7 +141,8 @@ final class Route
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
-        'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ]
+        'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
+        'get_features'                      => ['get',      'features',                                 'MerchantController@getAllFeatues'                              ],
     );
 
     public static $public = array(
@@ -260,6 +263,9 @@ final class Route
         'send_test_newsletter',
         'send_newsletter',
         'payment_compute_tax',
+        'merchant_add_features',
+        'merchant_get_features',
+        'get_features',
         );
 
     public static $proxy = array(

@@ -312,4 +312,36 @@ class MerchantController extends BaseController
         $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
     }
+
+    /**
+    * Gets the list of beta fetures enabled for merchant
+    * @param  [string] $id [merchant id]
+    * @return [array]      [array of feature names]
+    */
+    public function getMerchantFeatures($id)
+    {
+        $data = (new Merchant\Service)->getMerchantBetaFeatures($id);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Adds or updated the list of beta fetures for an merchant
+     * @param  [string]     $id     [merchant id]
+     * @return [merchant]           [updated entity]
+     */
+    public function postMerchantFeatures($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->addOrUpdateMerchantBetaFeatures($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAllFeatues()
+    {
+        $data = Merchant\Entity::ALLOWED_BETA_FEATURES;
+        return ApiResponse::json($data);
+    }
 }

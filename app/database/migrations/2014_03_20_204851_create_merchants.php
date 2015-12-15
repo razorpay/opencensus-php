@@ -64,6 +64,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
+            $table->string(Merchant::BETA_FEATURES);
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
 

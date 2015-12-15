@@ -66,6 +66,29 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function addOrUpdateMerchantBetaFeatures($id, array $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        foreach($input as $key => $value)
+        {
+            $input[$key] = strtolower($input[$key]);
+        }
+
+        $merchant = (new Merchant\Core)->addOrUpdateMerchantBetaFeatures($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function getMerchantBetaFeatures($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $features = $merchant->getBetaFeatures();
+
+        return $features;
+    }
+
     public function fetch($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
