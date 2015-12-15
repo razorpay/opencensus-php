@@ -294,7 +294,7 @@ trait Support
                 $this->supportPaymentResponse);
 
             // If it's a timeout, then just return without saving.
-            if ($this->supportPaymentResponse['error']['code'] === ErrorCode::RP00003)
+            if ($this->supportPaymentResponse['error']['code'] === Hdfc\ErrorCode::RP00003)
             {
                 return;
             }
