@@ -28,7 +28,8 @@ class Entity extends Base\PublicEntity
      * Refers to methods relation and not a property;
      */
     const METHODS                   = 'methods';
-    const ALLOWED_BETA_FEATURES     = array('webhooks');
+    
+    public static $allowed_beta_features = array('webhooks');
 
     protected $table = \Constants\Table::MERCHANT;
 

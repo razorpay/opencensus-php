@@ -60,7 +60,7 @@ class Validator extends Base\Validator
 
     protected function validateBetaFeatures($input)
     {
-        if (isset($input[Entity::BETA_FEATURES]) === false)
+        if (isset($input[Entity::BETA_FEATURES]) === false or trim($input[Entity::BETA_FEATURES]) === '')
             return;
 
         $features = $input[Entity::BETA_FEATURES];
@@ -69,7 +69,7 @@ class Validator extends Base\Validator
         foreach ($features as $feature)
         {
             $feature = trim($feature); // Remove whitespace
-            if (in_array($feature, Entity::ALLOWED_BETA_FEATURES) === false)
+            if (in_array($feature, Entity::$allowed_beta_features) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "The provided beta feature is invalid: $feature",
