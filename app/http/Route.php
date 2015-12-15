@@ -15,7 +15,7 @@ final class Route
         'merchant_methods'                  => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                          ],
         'payment_create'                    => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                     ],
         'payment_create_checkout'           => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'     ],
-        'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getJSONP'                              ],
+        'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                 ],
         'payment_create_ajax'               => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                              ],
         'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                          ],
         'payment_callback_get'              => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                          ],
@@ -126,8 +126,11 @@ final class Route
         'mock_mobikwik_payment'             => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                     ],
         'mock_billdesk_payment'             => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                     ],
         'mock_sharp_payment'                => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                         ],
+        'mock_amex_payment'                 => ['post',     'gateway/mockamex/payment',                 'MockGatewayController@postAmexPayment'                         ],
         'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                        ],
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                   ],
+        'mock_sbiepay_payment'              => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                      ],
+        'mock_wallet_payment'               => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@postWalletPayment'                       ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
         'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
@@ -135,6 +138,7 @@ final class Route
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
+        'gateway_payment_callback_kotak'    => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                               ],
         'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                     ],
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
@@ -155,6 +159,7 @@ final class Route
         'mockatom_choose_org',
         'mockatom_rzp_payment',
         'mockatom_rzp_payment_submit',
+        'mock_amex_payment',
         'mock_axis_migs_payment',
         'mock_axis_genius_payment',
         'mock_kotak_payment',
@@ -164,6 +169,8 @@ final class Route
         'mock_billdesk_payment',
         'mock_sharp_payment',
         'mock_sharp_payment_submit',
+        'mock_sbiepay_payment',
+        'mock_wallet_payment',
         'dummy_return_callback',
         'dummy_critical_error',
     );
@@ -245,6 +252,7 @@ final class Route
         'payment_verify_all',
         'payment_capture_reminder',
         'payment_refund_authorized',
+        'payment_compute_tax',
         'refund_netbanking_generate_excel',
         'transaction_monthly_report',
         'hdfc_mpr_reconcile',
@@ -259,10 +267,9 @@ final class Route
         'iin_add',
         'send_test_newsletter',
         'send_newsletter',
-        'payment_compute_tax',
-        );
+    );
 
-    public static $proxy = array(
+    public static $proxy        = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'transaction_fetch_by_id',
@@ -281,6 +288,7 @@ final class Route
     public static $direct = array(
         'transparent_redirect_get',
         'transparent_redirect_post',
+        'gateway_payment_callback_kotak',
     );
 
     public static $internalApps = array(
@@ -374,7 +382,7 @@ final class Route
     {
         $request = \Request::getFacadeRoot();
 
-        $schema = $request->getScheme().'://';
+        $schema = $request->getScheme() . '://';
         $host = $request->getHost();
 
         $auth = '';
@@ -408,7 +416,7 @@ final class Route
     {
         $jsonpRoutes = self::$jsonpRoutes;
 
-        return in_array($route, $jsonpRoute);
+        return in_array($route, $jsonpRoutes);
     }
 
     protected static function addRoutes($type)
@@ -443,7 +451,7 @@ final class Route
 
         self::add3dSecureRoute();
 
-        $router->group(array('prefix' => 'v1'), function() use ($router)
+        $router->group(array('prefix' => 'v1'), function () use ($router)
         {
             //
             // First define internal routes and then private and finally public
@@ -459,13 +467,14 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.direct', 'direct');
         });
 
-        $router->get('/', function()
+        $router->get('/', function ()
         {
             $response['message'] = "Welcome to Razorpay API.";
+
             return ApiResponse::json($response);
         });
 
-        $router->any('{all}', function($uri)
+        $router->any('{all}', function ($uri)
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
@@ -473,7 +482,7 @@ final class Route
 
     protected static function addFilterOnRouteGroups($router, $filter, $routeGroup)
     {
-        $router->group(array('before' => $filter), function() use ($routeGroup)
+        $router->group(array('before' => $filter), function () use ($routeGroup)
         {
             self::addRoutes($routeGroup);
         });

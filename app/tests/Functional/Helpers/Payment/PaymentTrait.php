@@ -10,6 +10,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
+    use PaymentAmexTrait;
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
     use PaymentAxisMigsTrait;
@@ -20,6 +21,7 @@ trait PaymentTrait
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
+    use PaymentSbiepayTrait;
 
     use RequestResponseFlowTrait
     {
@@ -493,6 +495,16 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getPaymentMethods()
+    {
+        $request = [
+            'url' => '/methods',
+            'method' => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultPaymentArray()
     {
         //
@@ -538,6 +550,15 @@ trait PaymentTrait
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
+
+        return $payment;
+    }
+
+    protected function getDefaultWalletPaymentArray($wallet = 'mobikwik')
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
 
         return $payment;
     }
@@ -680,7 +701,7 @@ trait PaymentTrait
         }
         else
         {
-            // Has to be either redirect or a html form post.
+            // Has to be either redirect or a html form post.o
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
                     ($this->isResponseInstanceType('http', $response)) and
@@ -704,6 +725,8 @@ trait PaymentTrait
             }
             else
             {
+                $gateway = $response->headers->get('X-gateway');
+
                 //
                 // When doing form posts relevant here, we put in a
                 // second form which is not submitted but it contains gateway
@@ -736,7 +759,7 @@ trait PaymentTrait
 
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
-        return $this->$func($response, $callback);
+        return $this->$func($response, $callback, $gateway);
     }
 
     protected function processMerchantReturnCallbackForm($response)
@@ -919,12 +942,20 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $statusCode = $response->getStatusCode();
-        $this->assertEquals($statusCode, '302');
+        $statusCode = (int) $response->getStatusCode();
 
-        $url = $response->getTargetUrl();
 
-        return $url;
+        if ($statusCode === 302)
+        {
+            return $response->getTargetUrl();
+        }
+        else if ($statusCode === 200)
+        {
+            // Probably a form here.
+            // Return url, method, content from that.
+
+            return $this->getFormRequestFromResponse($response->getContent(), $url);
+        }
     }
 
     public function getLocalMerchantCallbackUrl()

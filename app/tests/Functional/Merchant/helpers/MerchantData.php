@@ -195,7 +195,7 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'international' => true,
-                'category' => '1111',
+                'category' => 1111,
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
@@ -515,7 +515,7 @@ return [
                     'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
-                    'paytm' => false,
+                    'paytm' => true,
                 ],
             ],
         ],
