@@ -13,15 +13,8 @@ return array(
 
 	'emails' => array(
 
-		array(
-
-			'name' => 'contact',
-			'email' => 'contact@razorpay.com'
-		),
-		array(
-			
-			'name' => 'sales',
-			'email' => 'sales@razorpay.com'
-		),
+		'contact' => 'contact@razorpay.com',
+		
+		'sales' => 'sales@razorpay.com'
 	),
 );
