@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Razorpay\Mailers;
 
@@ -7,15 +7,18 @@ use Models\Merchant\Entity as MerchantEntity;
 
 class UserMailer extends Mailer
 {
+    const INVALID_USER_ERROR = "A valid user object must be provided for delivering an email.";
+
     /**
      * Create a new abstract mailer instance.
      *
-     * @param \Models\Merchant\Entity $user
+     * @param MerchantEntity $user
      */
     public function __construct(MerchantEntity $user)
     {
-        if(!is_object($user)){
-            throw new InvalidContactInformationException("A valid user object must be provided for delivering an email.");
+        if(!is_object($user))
+        {
+            throw new InvalidContactInformationException(self::INVALID_USER_ERROR);
         }
 
         $this->to = $user->name;
@@ -27,7 +30,7 @@ class UserMailer extends Mailer
     /**
      * Responsible for sending out an account confirmation email to the user
      *
-     * @return \Razorpay\Mailer\UserMailer
+     * @return self
      */
     public function accountVerification()
     {
@@ -40,25 +43,24 @@ class UserMailer extends Mailer
     /**
      * Responsible for sending out an activation form submission confirmation email to the user
      *
-     * @return \Razorpay\Mailer\UserMailer
+     * @return self
      */
     public function confirmActivationSubmission()
     {
-        //sd($this->data);
-        $this->subject = 'Razorpay | Account pending approval for ' 
-        . $this->data['merchant_details']['business_name'];
+        $this->subject = 'Razorpay | Account pending approval for '
+            . $this->data['merchant_details']['business_name'];
 
         $this->to = $this->data['merchant_details']['contact_name'];
         $this->email = $this->data['merchant_details']['contact_email'];
         $this->view = 'emails.submission';
-        
+
         return $this;
     }
 
     /**
      * Responsible for sending notification to sales team about activation form submission
      *
-     * @return \Razorpay\Mailer\UserMailer
+     * @return self
      */
     public function notifyActivationSubmission()
     {

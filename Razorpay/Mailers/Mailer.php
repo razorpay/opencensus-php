@@ -1,9 +1,9 @@
-<?php 
+<?php
 
 namespace Razorpay\Mailers;
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\App;
+use Mail;
+use Config;
 
 abstract class Mailer
 {
@@ -43,11 +43,11 @@ abstract class Mailer
     protected $data;
 
     /**
-     * Additional options that can be passed to the subclass
+     * Additional callback that can be passed to the subclass
      *
      * @var Closure
      */
-    protected $options;
+    protected $callback;
 
     /**
      * Indicates where the mail job should be queued or not.
@@ -59,7 +59,7 @@ abstract class Mailer
     /**
      * The method make sures that the mail job is queued
      *
-     * @return boolean
+     * @return self
      */
     public function queue()
     {
@@ -70,7 +70,7 @@ abstract class Mailer
     /**
      * The method that delivers the email
      *
-     * @return boolean
+     * @return boolean Result of the Mail::queue call
      */
     public function deliver()
     {
@@ -79,17 +79,28 @@ abstract class Mailer
         $email = $this->email;
         $to = $this->to;
         $subject = $this->subject;
-        $options = $this->options;
+        $callback = $this->callback;
 
-        return Mail::$method($this->view,$this->data,function($message) 
-            use($email,$to,$subject,$options)
-        {
-            $message->to($email,$to)->subject($subject);
-            
-            if(is_callable($options)){
-                call_user_func($options,$message);
+        return Mail::$method($this->view, $this->data, function($message)
+            use($email, $to, $subject, $callback)
+            {
+                $message->to($email,$to)->subject($subject);
+
+                if(is_callable($callback))
+                {
+                    call_user_func($callback, $message);
+                }
             }
-        }); 
+        );
+    }
+
+    /**
+     * Sends the mail after enabling the queue.
+     * @return boolean Result of the Mail::queue call
+     */
+    public function queueAndDeliver()
+    {
+        return $this->queue()->deliver();
     }
 
     /**
@@ -99,6 +110,6 @@ abstract class Mailer
      */
     protected function getEmailFor($department)
     {
-        return App::make('config')->get("razorpay.emails.$department");
+        return Config::get("razorpay.emails.$department");
     }
 }

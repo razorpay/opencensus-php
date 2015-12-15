@@ -20,8 +20,13 @@ class CreateFailedJobsTable extends Migration {
 			$table->text('connection');
 			$table->text('queue');
 			$table->text('payload');
-			
+
+            /**
+             * Workaround Known issue in L4
+             * @see http://stackoverflow.com/q/18067614/368328
+             */
 			$table->timestamp('failed_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+
 		});
 	}
 

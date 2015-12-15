@@ -35,7 +35,7 @@ class Service extends Base\Service
 
         MerchantDetails\Entity::createOrFail($details);
 
-        (new UserMailer($merchant))->accountVerification()->queue()->deliver();
+        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
         $slackData = [
             'id'    => $merchant->id,
@@ -95,11 +95,11 @@ class Service extends Base\Service
             }
             $merchant->save();
         }
-        
+
         $merchantDetails = $merchant->merchantDetails;
         $merchantDetails->contact_email = $merchant->email;
         $merchantDetails->save();
-    
+
         return [$error, null];
     }
 
@@ -223,7 +223,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
-                (new UserMailer($merchant))->accountVerification()->queue()->deliver();
+                (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
                 return [[], []];
             }

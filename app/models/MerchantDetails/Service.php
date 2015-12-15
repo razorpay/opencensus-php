@@ -204,12 +204,13 @@ class Service extends Base\Service
 
         $mailer = new UserMailer(\Auth::merchant()->user());
 
-        $mailer->confirmActivationSubmission()->queue()->deliver();
+        $mailer->confirmActivationSubmission()->queueAndDeliver();
 
-        $mailer->notifyActivationSubmission()->queue()->deliver();
+        $mailer->notifyActivationSubmission()->queueAndDeliver();
 
         // Take screenshots as well
         $urls = $merchantDetails->getUrls();
+
         Queue::push('Models\Admin\Creevey', [
             $customer['id'],
             $urls,

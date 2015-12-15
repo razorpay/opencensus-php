@@ -1,9 +1,8 @@
-<?php 
+<?php
 
 namespace Razorpay\Mailers;
 
 use Models\Merchant\Entity as MerchantEntity;
-use Illuminate\Config\Repository as ConfigRepository;
 
 class CompanyMailer extends Mailer
 {
@@ -15,12 +14,14 @@ class CompanyMailer extends Mailer
     public function with($data)
     {
         $this->data = $data;
-        
+
         return $this;
     }
 
     /**
      * Responsible for sending the contact email
+     * Drops the message field, which is passed to us via the
+     * razorpay.com website and renames it to content
      *
      * @return \Razorpay\Mailer\UserMailer
      */
@@ -33,7 +34,7 @@ class CompanyMailer extends Mailer
         $this->to = 'Razorpay Contact';
         $this->email = $this->getEmailFor('contact');
         $this->view = 'emails.contact';
-        
+
         return $this;
     }
 }
