@@ -204,7 +204,8 @@ class Settler
         while ($i < $count)
         {
             // Settlement amount
-            $setlAmount = $setlGatewayFee = $setlApiFee = $setlFee = 0;
+            $setlAmount = $setlGatewayFee = $setlApiFee = $setlFee =
+                        $serviceTax = 0;
             $setlTxns = new Base\PublicCollection;
 
             // Get merchant
@@ -244,6 +245,7 @@ class Settler
                 $setlGatewayFee += $txn->getGatewayFee();
                 $setlApiFee += $txn->getApiFee();
                 $setlFee += $txn->getFee();
+                $serviceTax += $txn->getServiceTax();
 
                 $setlTxns->push($txn);
                 $i++;
@@ -256,7 +258,12 @@ class Settler
             }
 
             $setl = (new Settlement\Merchant($merchant, $channel))->settle(
-                                        $setlTxns, $setlAmount, $setlFee, $setlApiFee, $setlGatewayFee);
+                                        $setlTxns,
+                                        $setlAmount,
+                                        $setlFee,
+                                        $setlApiFee,
+                                        $setlGatewayFee,
+                                        $serviceTax);
 
             $settlements->push($setl);
             $txnsSettled = $txnsSettled->merge($setlTxns);
