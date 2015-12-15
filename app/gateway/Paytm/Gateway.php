@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-        $status = VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
@@ -254,11 +254,11 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $this->verifyContentSaveIfNeeded($verify->match, $payment, $content);
 
-        return $status;
+        return $verify->status;
     }
 
     protected function verifyContentSaveIfNeeded($match, $payment, $content)
