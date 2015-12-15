@@ -9,7 +9,7 @@
         <h2>Your Razorpay Account is pending approval</h2>
 
         <div>
-            <p>Hi {{{$name}}},</p>
+            <p>Hi {{{$merchant_details['contact_name']}}},</p>
 
             <p>Your Razorpay activation form is complete and we have notified the admins to verify the details. We will communicate to you if anything else is required.</p>
 

@@ -3,6 +3,7 @@
 use Http\AppResponse;
 use Models\Merchant;
 use Models\MerchantDetails;
+use Razorpay\Mailers\CompanyMailer;
 
 class MerchantController extends BaseController
 {
@@ -166,18 +167,6 @@ class MerchantController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function sendConfirmationMail($job, $data)
-    {
-        $merchant = $data['merchant'];
-
-        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
-        {
-            $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
-        });
-
-        $job->delete();
-    }
-
     public function optionsContact()
     {
         $response = AppResponse::jsonResponse([]);
@@ -200,12 +189,7 @@ class MerchantController extends BaseController
             return AppResponse::jsonResponse($error);
         }
 
-        Mail::send('emails.contact',compact('input'), function($m) use($input)
-        {
-            $m->from($input['email'], $input['name'])
-              ->to('contact@razorpay.com', 'Razorpay Contact')
-              ->subject('New Contact form submission - '.$input['name']);
-        });
+        (new CompanyMailer)->with($input)->contact()->queue()->deliver();
 
         $response = AppResponse::jsonResponse([]);
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
