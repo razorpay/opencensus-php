@@ -422,6 +422,46 @@ return [
         ]
     ],
 
+    'testChangeBankAccount' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020005304612497',
+                'beneficiary_name'      => 'T3st R4zorpay',
+                'beneficiary_address1'  => '4ddr3ss 1',
+                'beneficiary_address2'  => '4ddr3ss 2',
+                'beneficiary_address3'  => '4ddr3ss 3',
+                'beneficiary_address4'  => '4ddr3ss 4',
+                'beneficiary_email'     => 'r4nd0m@email.com',
+                'beneficiary_mobile'    => '9876543210',
+                'beneficiary_city'      => 'Mumbai',
+                'beneficiary_state'     => 'MH',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '567890',
+            ],
+            'url' => '/merchants/10000000000000/bank_account',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020005304612497',
+                'beneficiary_code' => 'T3ST',
+                'beneficiary_name' => 'T3st R4zorpay',
+                'beneficiary_address1' => '4ddr3ss 1',
+                'beneficiary_address2' => '4ddr3ss 2',
+                'beneficiary_address3' => '4ddr3ss 3',
+                'beneficiary_city' => 'Mumbai',
+                'beneficiary_state' => 'MH',
+                'beneficiary_country' => 'IN',
+                'beneficiary_pin' => '567890',
+                'beneficiary_email' => 'r4nd0m@email.com',
+                'beneficiary_mobile' => '9876543210',
+            ]
+        ]
+    ],
+
     'testSetBanks' => [
         'request' => [
             'url' => '/merchants/10000000000000/banks',

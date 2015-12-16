@@ -3,10 +3,14 @@
 namespace Models\Merchant\BankAccount;
 
 use EE\Exception;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletingTrait;
+
+    const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BENEFICIARY_CODE      = 'beneficiary_code';
     const IFSC_CODE             = 'ifsc_code';
@@ -22,10 +26,11 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CITY      = 'beneficiary_city';
     const BENEFICIARY_STATE     = 'beneficiary_state';
     const BENEFICIARY_COUNTRY   = 'beneficiary_country';
+    const DELETED_AT            = 'deleted_at';
 
     const IFSC_CODE_LENGTH = 11;
 
-    protected $primaryKey = self::MERCHANT_ID;
+    protected $primaryKey = self::ID;
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
 
@@ -66,6 +71,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
         self::MERCHANT_ID,
         self::ENTITY,
         self::BENEFICIARY_CODE,
@@ -84,12 +90,17 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     );
+
+    protected $guarded = array(self::ID);
 
     protected static $generators = array(
         self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
     );
+
+    protected $genereateIdOnCreate = true;
 
     public function build(array $input = array())
     {
@@ -120,6 +131,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function settlements()
+    {
+        return $this->hasMany('Models\Settlements\Entity');
     }
 
     public function getBeneficiaryName()
