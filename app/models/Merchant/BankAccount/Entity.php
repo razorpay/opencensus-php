@@ -177,4 +177,12 @@ class Entity extends Base\PublicEntity
 
         return ($orig == $copy);
     }
+
+    public function generateIdFromCreatedAt()
+    {
+        $createdAt = $this->getAttribute(self::CREATED_AT);
+        $this->setAttribute(
+            self::ID,
+            self::generateUniqueIdFromTimestamp($createdAt));
+    }
 }

@@ -333,7 +333,7 @@ class Service extends Base\Service
         try {
             foreach ($bankAccounts as $bankAcc)
             {
-                $bankAcc->generateId();
+                $bankAcc->generateIdFromCreatedAt();
                 $bankAccountRepo->save($bankAcc);
                 $count++;
             }
