@@ -97,6 +97,7 @@ class Entity extends Base\PublicEntity
     protected $guarded = array(self::ID);
 
     protected static $generators = array(
+        self::ID,
         self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
         self::ID,
