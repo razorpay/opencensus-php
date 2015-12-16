@@ -274,20 +274,36 @@ class Service extends Base\Service
 
         if ($ba !== null)
         {
-            $baCopy = (new BankAccount\Entity)->build($input);
-            $baCopy->merchant()->associate($merchant);
+            $baNew = (new BankAccount\Entity)->build($input);
+            $baNew->merchant()->associate($merchant);
 
-            if ($ba->equals($baCopy))
+            if ($ba->equals($baNew))
             {
                 return $ba->toArray();
             }
 
-            $ba->checkAndDelete();
+            return $this->changeBankAccount($merchant, $ba, $baNew);
         }
 
         $ba = (new BankAccount\Entity)->build($input);
 
-        $code = $ba->beneficiary_code;
+        return $this->attachBankAccountToMerchant($merchant, $ba);
+    }
+
+    protected function changeBankAccount($merchant, $oldBankAccont, $newBankAccount)
+    {
+        s("here");
+        $oldBankAccont->checkAndDelete();
+
+        return $this->attachBankAccountToMerchant($merchant, $newBankAccount);
+    }
+
+    protected function attachBankAccountToMerchant($merchant, $bankAccount)
+    {
+        s('asdfhklsj');
+        $bankAccountRepo = new BankAccount\Repository;
+
+        $code = $bankAccount->beneficiary_code;
 
         $count = $bankAccountRepo->getBeneficiaryCodeCountByPattern($code);
 
@@ -298,13 +314,13 @@ class Service extends Base\Service
 
         $code .= $count;
 
-        $ba->beneficiary_code = $code;
+        $bankAccount->beneficiary_code = $code;
 
-        $ba->merchant()->associate($merchant);
+        $bankAccount->merchant()->associate($merchant);
 
-        $bankAccountRepo->saveOrFail($ba);
+        $bankAccountRepo->saveOrFail($bankAccount);
 
-        return $ba->toArray();
+        return $bankAccount->toArray();
     }
 
     public function getBankAccount($id)
