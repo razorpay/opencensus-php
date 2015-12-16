@@ -215,7 +215,7 @@ class UniqueIdEntity extends Entity
     {
         $nanotime = $timestamp * 1000 * 1000 * 1000;
 
-        return self::generateUniqueIdFromNanoTime((string)$nanotime);
+        return self::generateUniqueIdFromNanoTime($nanotime);
     }
 
     public static function generateUniqueIdFromNanoTime($nanotime)

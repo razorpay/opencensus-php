@@ -135,7 +135,7 @@ class Entity extends Base\PublicEntity
 
     public function settlements()
     {
-        return $this->hasMany('Models\Settlements\Entity');
+        return $this->hasMany('Models\Settlement\Entity');
     }
 
     public function getBeneficiaryName()
