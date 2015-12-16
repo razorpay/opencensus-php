@@ -404,6 +404,54 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    // this is a refrence
+    public function postEditBankDetails($id, $input)
+    {
+        $error = array();
+
+        $validator = (new Validator)->validateInput('changeBankDetails', $input);
+
+        if($validator->fails())
+        {
+            return $validator->messages();
+        }
+
+        $this->setApiCredentials();
+
+        $merchant_details = MerchantDetails\Entity::findorfail($id);
+
+        $bankAccount = array(
+            'ifsc_code'             => $input['bank_branch_ifsc'],
+            'beneficiary_name'      => $input['bank_account_name'],
+            'account_number'        => $input['bank_account_number'],
+            'beneficiary_address1'  => $input['bank_beneficiary_address1'],
+            'beneficiary_address2'  => $input['bank_beneficiary_address2'],
+            'beneficiary_address3'  => $input['bank_beneficiary_address3'],
+            'beneficiary_address4'  => '',
+            'beneficiary_pin'       => $input['bank_beneficiary_pin'],
+            'beneficiary_city'      => $input['bank_beneficiary_city'],
+            'beneficiary_state'     => $input['bank_beneficiary_state'],
+            'beneficiary_country'   => 'IN',
+            'beneficiary_email'     => $merchant_details['contact_email'],
+            'beneficiary_mobile'    => $merchant_details['contact_mobile']
+        );
+
+        try
+        {
+            $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+
+            $merchant_details->fill($input);
+            $merchant_details->save();
+        }
+
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return $error;
+    }
+
     public function postEditMerchantComment($id, $comment)
     {
         $error = array();
