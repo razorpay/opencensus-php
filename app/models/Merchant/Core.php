@@ -28,6 +28,8 @@ class Core extends Base\Core
 
         $this->createBalance($merchant, Mode::TEST);
 
+        $this->createTestBankAccount($merchant);
+
         (new Methods\Core)->setDefaultMethods($merchant);
 
         return $merchant;
@@ -69,5 +71,31 @@ class Core extends Base\Core
         (new Merchant\Balance\Repository)->createBalance($merchantBalance);
 
         return $merchantBalance;
+    }
+
+    protected function createTestBankAccount($merchant)
+    {
+        $attributes = array(
+            'ifsc_code'             => 'RZPB0000000',
+            'beneficiary_name'      => $merchant->getAttribute('name'),
+            'beneficiary_email'     => $merchant->getAttribute('email'),
+            'account_number'        => random_integer(11),
+            'beneficiary_address1'  => random_alpha_string(14),
+            'beneficiary_city'      => 'Mumbai',
+            'beneficiary_state'     => 'MH',
+            'beneficiary_country'   => 'IN',
+            'beneficiary_pin'       => random_integer(6),
+            'beneficiary_mobile'    => random_integer(10),
+        );
+
+        $ba = (new BankAccount\Entity)->build($attributes);
+
+        $ba->setConnection(Mode::TEST);
+
+        $ba->beneficiary_code = strtoupper(random_alpha_string(4));
+
+        $ba->merchant()->associate($merchant);
+
+        $ba->save();
     }
 }
