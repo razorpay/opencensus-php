@@ -143,7 +143,8 @@ final class Route
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
-        'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ]
+        'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
+        'settlement_compute_tax'            => ['post',     'transactions/compute/setltax',             'TransactionController@postComputeSettlementServiceTax'         ],
     );
 
     public static $public = array(
@@ -253,6 +254,7 @@ final class Route
         'payment_capture_reminder',
         'payment_refund_authorized',
         'payment_compute_tax',
+        'settlement_compute_tax',
         'refund_netbanking_generate_excel',
         'transaction_monthly_report',
         'hdfc_mpr_reconcile',
