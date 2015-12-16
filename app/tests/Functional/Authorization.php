@@ -72,8 +72,17 @@ class Authorization
 
         if ($key === null)
         {
-            $this->key = $this->defaultKey;
-            $key = $this->defaultKey;
+            // $this->key = $this->defaultKey;
+            // $key = $this->defaultKey;
+            if ($this->key === null)
+            {
+                $this->key = $this->defaultKey;
+                $key = $this->defaultKey;
+            }
+            else
+            {
+                $key = $this->key;
+            }
         }
         else
         {

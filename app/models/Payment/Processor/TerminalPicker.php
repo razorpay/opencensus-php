@@ -143,9 +143,10 @@ class TerminalPicker
         // }
         if ($this->mode === Mode::TEST)
         {
-            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true))
+            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
             {
-                return $gatewayTerms[Payment\Gateway::SBIEPAY];
+                return $gatewayTerms[$gateway];
             }
 
             // In test mode paytm supports only cards
