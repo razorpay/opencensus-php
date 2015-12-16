@@ -52,4 +52,12 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
+
+    public function bankAccountsWhereIdNullOrBlank()
+    {
+        return $repo::where(Entity::ID, '=', "")
+                                ->orWhereNull(BankAccount\Entity::ID)
+                                ->take(500)
+                                ->get();
+    }
 }
