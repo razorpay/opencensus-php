@@ -60,6 +60,8 @@ Route::group(array('before' => 'auth.merchant'), function()
 
     Route::get('/apihost', 'MerchantController@getApihost');
 
+    Route::get('/{mode}/balance', 'MerchantController@getBalance');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/password', 'MerchantController@postPassword');

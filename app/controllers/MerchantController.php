@@ -212,4 +212,19 @@ class MerchantController extends BaseController
 
         return $response;
     }
+
+    /**
+     * Fetches Merchant Balance
+     * @return array array containing both balances
+     */
+    public function getBalance($mode)
+    {
+        $this->checkMode($mode);
+
+        $id = Auth::merchant()->id();
+
+        $data = (new Merchant\Service)->fetchMerchantBalance($id);
+
+        return AppResponse::jsonResponse([], $data[$mode]['balance']);
+    }
 }

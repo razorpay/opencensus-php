@@ -104,11 +104,11 @@ class Service extends Base\Service
             }
             $merchant->save();
         }
-        
+
         $merchantDetails = $merchant->merchantDetails;
         $merchantDetails->contact_email = $merchant->email;
         $merchantDetails->save();
-    
+
         return [$error, null];
     }
 
@@ -322,5 +322,23 @@ class Service extends Base\Service
         }
 
         return array($error, $key_data);
+    }
+
+    /**
+     * Fetches merchant balance
+     * @param  string $merchantId Merchant Id
+     * @return array contains both test and live balances
+     */
+public function fetchMerchantBalance($merchantId)
+    {
+        $this->setApiCredentials($merchantId, 'test');
+
+        $test = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+
+        $this->setApiCredentials($merchantId, 'live');
+
+        $live = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+
+        return compact('test', 'live');
     }
 }

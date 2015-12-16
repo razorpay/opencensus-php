@@ -16,4 +16,12 @@ class BaseController extends Controller
 		}
 	}
 
+    protected function checkMode($mode)
+    {
+        if ($mode !== 'live' and $mode !== 'test')
+        {
+            throw new \Exception('Invalid Mode');
+        }
+    }
+
 }

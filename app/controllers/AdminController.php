@@ -218,7 +218,7 @@ class AdminController extends BaseController
 
     public function getMerchantBalance($id)
     {
-        $data = (new Admin\Service)->fetchMerchantBalance($id);
+        $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
         return AppResponse::jsonResponse([], $data);
     }
