@@ -282,8 +282,7 @@ class Service extends Base\Service
                 return $ba->toArray();
             }
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
+            $ba->checkAndDelete();
         }
 
         $ba = (new BankAccount\Entity)->build($input);

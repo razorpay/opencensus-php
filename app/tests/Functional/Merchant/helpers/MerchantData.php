@@ -440,7 +440,7 @@ return [
                 'beneficiary_pin'       => '567890',
             ],
             'url' => '/merchants/10000000000000/bank_account',
-            'method' => 'PUT'
+            'method' => 'POST',
         ],
         'response' => [
             'content' => [
