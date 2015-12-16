@@ -292,15 +292,20 @@ class Service extends Base\Service
 
     protected function changeBankAccount($merchant, $oldBankAccont, $newBankAccount)
     {
-        s("here");
         $oldBankAccont->checkAndDelete();
 
-        return $this->attachBankAccountToMerchant($merchant, $newBankAccount);
+        $return = $this->attachBankAccountToMerchant($merchant, $newBankAccount);
+
+        $this->sendEmail(
+                        'emails.merchant.bankaccount_change',
+                        'Bank Account Change',
+                        $merchant->toArray());
+
+        return $return;
     }
 
     protected function attachBankAccountToMerchant($merchant, $bankAccount)
     {
-        s('asdfhklsj');
         $bankAccountRepo = new BankAccount\Repository;
 
         $code = $bankAccount->beneficiary_code;
