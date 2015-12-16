@@ -248,6 +248,15 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function putEditBankDetails($id)
+    {
+        $input = Input::all();
+
+        $error = (new Admin\Service)->postEditBankDetails($id, $input);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function postEditMerchantComment($id)
     {
         $comment = Input::get('comment');
