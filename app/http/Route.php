@@ -285,6 +285,7 @@ final class Route
         'card_fetch_by_id',
         'card_fetch_multiple',
         'payment_authorize_refund',
+        'merchant_fetch_balance',
     );
 
     public static $direct = array(
