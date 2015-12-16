@@ -225,6 +225,8 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::delete('/admin/users/{id}', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+
+        Route::put('/admin/merchant/{id}/bankdetails', 'AdminController@putEditBankDetails');
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
