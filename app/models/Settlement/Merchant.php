@@ -164,7 +164,7 @@ class Merchant
     {
         $mode = \BasicAuth::getMode();
 
-        if ($mode === Mode::TEST and $this->merchant->bankAccount === null)
+        if ($mode === Mode::TEST)
         {
             $ba = $this->attachTestBank($this->merchant);
         }
@@ -200,13 +200,11 @@ class Merchant
 
         $ba = (new BankAccount\Entity)->build($attributes, true);
 
-        $ba->beneficiary_code = random_alpha_string(4);
+        $ba->beneficiary_code = strtoupper(random_alpha_string(4));;
 
         $ba->merchant()->associate($merchant);
 
         $merchant->setRelation('bankAccount', $ba);
-
-        $ba->save();
 
         return $ba;
     }

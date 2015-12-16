@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $visible = array(
+        self::ID,
         self::MERCHANT_ID,
         self::BENEFICIARY_CODE,
         self::IFSC_CODE,
@@ -98,9 +99,8 @@ class Entity extends Base\PublicEntity
     protected static $generators = array(
         self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
+        self::ID,
     );
-
-    protected $genereateIdOnCreate = true;
 
     public function build(array $input = array())
     {
@@ -158,6 +158,7 @@ class Entity extends Base\PublicEntity
         $orig = $this->toArray();
 
         unset(
+            $orig[self::ID],
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
             $orig[self::BENEFICIARY_CODE],
@@ -167,6 +168,7 @@ class Entity extends Base\PublicEntity
         $copy = $baCopy->toArray();
 
         unset(
+            $orig[self::ID],
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],

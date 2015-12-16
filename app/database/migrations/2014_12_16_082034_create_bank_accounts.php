@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Merchant;
 use Models\Merchant\BankAccount\Entity as BankAccount;
+use Models\Settlement\Entity as Settlement;
 
 class CreateBankAccounts extends Migration
 {
@@ -18,10 +19,12 @@ class CreateBankAccounts extends Migration
     {
         Schema::create(Table::BANK_ACCOUNT, function(Blueprint $table)
         {
-            $table->char(BankAccount::ID, BankAccount::ID_LENGTH)
-                  ->primary();
 
-            $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
+            $table->char(BankAccount::ID, BankAccount::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH)
+                  ->primary();
 
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 
