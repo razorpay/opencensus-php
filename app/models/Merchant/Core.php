@@ -73,7 +73,7 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    protected function createTestBankAccount($merchant)
+    public function createTestBankAccount($merchant)
     {
         $attributes = array(
             'ifsc_code'             => 'RZPB0000000',

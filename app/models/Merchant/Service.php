@@ -367,6 +367,27 @@ class Service extends Base\Service
 
     }
 
+    public function generateTestBankAccounts()
+    {
+        $repo = $this->repo;
+
+        $merchants = $repo->fetchMerchantWhereTestBankIsNull();
+        $fetched = $merchants->count();
+
+        $core = new Merchant\Core;
+
+        $count = 0;
+
+        foreach ($merchants as $merc)
+        {
+            $core->createTestBankAccount($merc);
+            $count++;
+        }
+
+        return ['fetched' => $fetched, 'processed' => $count];
+
+    }
+
     public function getBanks($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
