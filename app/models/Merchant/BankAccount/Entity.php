@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     const IFSC_CODE_LENGTH = 11;
 
-    protected $primaryKey = self::ID;
+    protected $primaryKey = self::MERCHANT_ID;
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
 

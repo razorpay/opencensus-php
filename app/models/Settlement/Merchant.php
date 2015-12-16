@@ -132,7 +132,11 @@ class Merchant
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
-        $setl->bankAccount()->associate($this->bankAccount);
+
+        if ($this->bankAccount->getId() !== null)
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
 
         $this->setl = $setl;
 
