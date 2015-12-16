@@ -168,7 +168,7 @@ class Entity extends Base\PublicEntity
         $copy = $baCopy->toArray();
 
         unset(
-            $orig[self::ID],
+            $copy[self::ID],
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],

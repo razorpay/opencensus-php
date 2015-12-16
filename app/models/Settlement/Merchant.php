@@ -200,7 +200,7 @@ class Merchant
 
         $ba = (new BankAccount\Entity)->build($attributes, true);
 
-        $ba->beneficiary_code = strtoupper(random_alpha_string(4));;
+        $ba->beneficiary_code = strtoupper(random_alpha_string(4));
 
         $ba->merchant()->associate($merchant);
 
