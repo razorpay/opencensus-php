@@ -65,10 +65,16 @@
                 <span class="text-muted text-xs">Total Refunds</span>
               </div>
             </div>
-            <div class="col-xs-12 m-b-md">
-              <div href class="block panel padder-v bg-light dk item">
+            <div class="col-xs-6">
+              <div href class="block panel padder-v item">
                 <span class="text-primary-dk font-thin h1 block">{{aggregations.data.amount | currency:"₹"}}</span>
                 <span class="text-muted text-xs">Total Volume</span>
+              </div>
+            </div>
+            <div class="col-xs-6">
+              <div href class="block panel padder-v item">
+                <span class="font-thin h1 block">{{balance/100 | currency: '₹'}}</span>
+                <span class="text-muted text-xs">Current Balance</span>
               </div>
             </div>
           </div>
