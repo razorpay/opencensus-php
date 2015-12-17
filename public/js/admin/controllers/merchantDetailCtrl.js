@@ -308,7 +308,7 @@ app.controller('MerchantDetailCtrl', [
       });
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Merchant bank details chnaged successfully', true);
+          $scope.alerts.addAlert('success', 'Merchant bank details changed successfully', true);
           generateMerchant();
         } else {
           $scope.alerts.resetAlerts();
