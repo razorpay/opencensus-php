@@ -303,15 +303,19 @@ class Service extends Base\Service
         $bankAccountRepo = new BankAccount\Repository;
         $bankAccountRepo->delete($oldBankAccount);
 
+        $bankAccountRepo->saveOrFail($newBankAccount);
+
         if ($this->mode === Mode::LIVE)
         {
+            $subject = "Razorpay | Bank account change successful for ";
+            $subject .= ($merchant->getBillingLabel() === null)?
+                                        $merchant->name:
+                                        $merchant->getBillingLabel();
             $this->sendEmail(
-                        'emails.merchant.bankaccount_change',
-                        'Bank Account Change',
-                        $merchant->toArray());
+                'emails.merchant.bankaccount_change',
+                $subject,
+                array_merge($merchant->toArray(), $newBankAccount->toArray()));
         }
-
-        $bankAccountRepo->saveOrFail($newBankAccount);
 
         return $newBankAccount->toArray();
     }

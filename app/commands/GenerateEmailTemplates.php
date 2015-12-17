@@ -38,20 +38,21 @@ class GenerateEmailTemplates extends Command {
 	{
         // This is a map of templates and the rendered file names
 		$templates = [
-            'emails/payment/customer',
-            'emails/merchant/activation',
             'emails/partials/header',
             'emails/partials/footer',
             'emails/partials/header_image',
             'emails/partials/separator',
+            'emails/payment/customer',
+            'emails/payment/failed_to_authorized',
+			'emails/payment/merchant',
             'emails/merchant/daily_report',
+			'emails/merchant/activation',
             'emails/merchant/newsletter',
-            'emails/payment/merchant',
-            'emails/refund/common',
             'emails/merchant/daily_report_debug',
             'emails/merchant/welcome',
             'emails/merchant/authorized_reminder',
-            'emails/payment/failed_to_authorized',
+			'emails/merchant/bankaccount_change',
+            'emails/refund/common',
         ];
 
         $view_directory = app_path()."/views/";
