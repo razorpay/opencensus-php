@@ -309,7 +309,7 @@ app.controller('MerchantDetailCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Merchant bank details changed successfully', true);
-          generateMerchant();
+          $scope.merchant.details.merchant_details = data.data;
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -738,6 +738,7 @@ app.controller('MerchantDetailCtrl', [
   'current',
   function ($scope, $modalInstance, current) {
     $scope.current = current;
+
     $scope.ok = function (merchant_details) {
       $modalInstance.close(merchant_details);
     };

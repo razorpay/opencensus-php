@@ -449,7 +449,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return $error;
+        return [$error, $merchant_details->toArray()];
     }
 
     public function postEditMerchantComment($id, $comment)
