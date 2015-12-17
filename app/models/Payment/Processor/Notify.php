@@ -220,6 +220,14 @@ class Notify
             $action = 'Refund';
         }
 
+        /**
+         * The reason we have a fallback to the amount here is because
+         * not every merchant necessarily has a proper billing label (most do)
+         * Since the dba field was moved from the dashboard to the API after a
+         * while. All new merchants have this field for sure, though. We
+         * can do a survey later and remove this check from here and other
+         * places
+         */
         if (isset($this->template['merchant']['billing_label']))
         {
             $subject = "$action successful for {$this->template['merchant']['billing_label']}";
