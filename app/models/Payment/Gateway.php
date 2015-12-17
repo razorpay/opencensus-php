@@ -77,7 +77,8 @@ class Gateway
             Network::VISA,
             Network::MAES,
             Network::DICL,
-            Network::RUPAY),
+            Network::RUPAY,
+            Network::UNKNOWN),
         self::AXIS_MIGS => array(
             Network::MC,
             Network::VISA),
