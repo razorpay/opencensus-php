@@ -282,15 +282,33 @@ class Service extends Base\Service
                 return $bankAccount->toArray();
             }
 
-            $bankAccountRepo->delete($bankAccount);
-
-            if ($this->mode === Mode::LIVE)
+            return $bankAccountRepo->transaction(function()
+                                    use($merchant, $bankAccount, $newBankAccount)
             {
-                $this->sendEmail(
-                            'emails.merchant.bankaccount_change',
-                            'Bank Account Change',
-                            $merchant->toArray());
-            }
+                return $this->changeBankAccountTransaction(
+                                                $merchant,
+                                                $bankAccount,
+                                                $newBankAccount);
+
+            });
+        }
+
+        $bankAccountRepo->saveOrFail($newBankAccount);
+
+        return $newBankAccount->toArray();
+    }
+
+    public function changeBankAccountTransaction($merchant, $oldBankAccount, $newBankAccount)
+    {
+        $bankAccountRepo = new BankAccount\Repository;
+        $bankAccountRepo->delete($oldBankAccount);
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $this->sendEmail(
+                        'emails.merchant.bankaccount_change',
+                        'Bank Account Change',
+                        $merchant->toArray());
         }
 
         $bankAccountRepo->saveOrFail($newBankAccount);
