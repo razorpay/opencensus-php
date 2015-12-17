@@ -3,12 +3,13 @@
 namespace Models\User;
 
 use Uuid;
+use Session;
 use Models\Base;
 use Models\Merchant;
+use Illuminate\Auth\UserInterface;
 use RandomLib\Factory as RandomLibFactory;
 
-
-class Entity extends Base\Entity
+class Entity extends Base\Entity implements UserInterface
 {
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -94,6 +95,93 @@ class Entity extends Base\Entity
     }
 
     /**
+     * Join the merchant with the given ID and role.
+     *
+     * @param  int  $merchantId
+     * @return void
+     */
+    public function joinMerchantByIdWithRole($merchantId, $role)
+    {
+        $this->merchants()->attach([$merchantId], ['role' => $role]);
+
+        $this->currentMerchant();
+    }
+
+    /**
+     * Accessor for the currentMerchant method.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function getCurrentMerchantAttribute()
+    {
+        return $this->currentMerchant();
+    }
+
+    /**
+     * Get the merchant that user is currently viewing.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function currentMerchant()
+    {
+        if (is_null(Session::get('current_merchant_id')) && $this->hasMerchants()) 
+        {
+            $this->switchToMerchant($this->merchants->first());
+
+            return $this->currentMerchant();
+        } 
+        elseif (! is_null(Session::get('current_merchant_id'))) 
+        {
+            $currentMerchant = $this->merchants->find(Session::get('current_merchant_id'));
+
+            return $currentMerchant ?: $this->refreshCurrentMerchant();
+        }
+    }
+
+    /**
+     * Switch the current merchant for the user.
+     *
+     * @param  \Models\Merchant\Entity  $merchant
+     * @return void
+     */
+    public function switchToMerchant($merchant)
+    {
+        Session::put('current_merchant_id',$merchant->id);
+    }
+
+    /**
+     * Refresh the current merchant for the user.
+     *
+     * @return  \Models\Merchant\Entity
+     */
+    public function refreshCurrentMerchant()
+    {
+        Session::put('current_merchant_id', null);
+
+        return $this->currentMerchant();
+    }
+
+    /**
+     * Determine if the given merchant is owned by the user.
+     *
+     * @param  \Models\Merchant\Entity  $merchant
+     * @return bool
+     */
+    public function ownsMerchant($merchant)
+    {
+        $merchants = $this->merchants()->where('email',$email)
+                                       ->where('role','owner')
+                                       ->first();
+
+        return is_null($merchant) ? false : true;
+    }
+
+    public function changePassword($input)
+    {
+        return $this->edit($input, 'changePassword');
+    }
+
+    /**
      * Get the user's role on a given merchant.
      *
      * @param  \Models\Merchant\Entity  $merchant
@@ -127,5 +215,56 @@ class Entity extends Base\Entity
     protected function generateConfirmToken()
     {
         $this->setAttribute('confirm_token',$this->generateOneTimeUseToken(32));
+    }
+
+    /**
+     * Get the unique identifier for the user.
+     *
+     * @return mixed
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Get the password for the user.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->password;
+    }
+
+    /**
+     * Get the token value for the "remember me" session.
+     *
+     * @return string
+     */
+    public function getRememberToken()
+    {
+        return $this->getAttribute('remember_token');
+    }
+
+    /**
+     * Set the token value for the "remember me" session.
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setRememberToken($value)
+    {
+        $this->setAttribute('remember_token', $value);
+    }
+
+    /**
+     * Get the column name for the "remember me" token.
+     *
+     * @return string
+     */
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
     }
 }
