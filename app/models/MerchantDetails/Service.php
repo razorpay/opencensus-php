@@ -2,6 +2,7 @@
 
 namespace Models\MerchantDetails;
 
+use Auth;
 use AWS;
 use Mail;
 use Models\Base;
@@ -11,7 +12,8 @@ class Service extends Base\Service
 {
     public function __construct()
     {
-        $this->merchantDetails = \Auth::merchant()->user()->MerchantDetails;
+        $user = Auth::user()->user();
+        $this->merchantDetails = $user->currentMerchant->MerchantDetails;
     }
 
     public function fetchDetails()
