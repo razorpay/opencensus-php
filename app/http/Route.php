@@ -218,7 +218,6 @@ final class Route
         'merchant_get_banks',
         'merchant_set_banks',
         'merchant_set_all_banks',
-        'merchant_fetch_balance',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_post_beneficiary_file',
@@ -271,7 +270,7 @@ final class Route
         'send_newsletter',
     );
 
-    public static $proxy        = array(
+    public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'transaction_fetch_by_id',
@@ -285,6 +284,7 @@ final class Route
         'card_fetch_by_id',
         'card_fetch_multiple',
         'payment_authorize_refund',
+        'merchant_fetch_balance',
     );
 
     public static $direct = array(

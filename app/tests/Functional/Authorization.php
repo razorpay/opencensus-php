@@ -66,6 +66,16 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function proxyAuthTest()
+    {
+        $this->proxyAuth();
+    }
+
+    public function proxyAuthLive()
+    {
+        $this->proxyAuth('rzp_live_10000000000000');
+    }
+
     public function publicAuth($key = null)
     {
         $this->type = 'public';

@@ -48,10 +48,10 @@ class MerchantTest extends TestCase
     {
         // The merchant and balances have been created in
         // fixtures already
-        $this->ba->appAuthTest();
+        $this->ba->proxyAuthTest();
         $this->startTest();
 
-        $this->ba->appAuthLive();
+        $this->ba->proxyAuthLive();
         $this->testData[__FUNCTION__]['response']['content']['balance'] = 0;
         $this->startTest();
     }
@@ -171,12 +171,18 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
         $this->assertLessThanOrEqual($content['activated_at'], $activated_at);
 
+        // We check that the merchant balance is just zero in live mode
+        $this->ba->proxyAuthLive();
+
         $testData = $this->testData['testGetBalance'];
         $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
         $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
         $testData['response']['content']['balance'] = 0;
 
         $this->runRequestResponseFlow($testData);
+
+        // Because rest of the tests require appAuth, reset it back
+        $this->ba->appAuthLive();
     }
 
     public function testMerchantEnableLive()
