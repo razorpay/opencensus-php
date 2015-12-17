@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_FEE       = 'gateway_fee';
     const SETTLEMENT_COUNT  = 'settlement_count';
     const TRANSACTION_COUNT = 'transaction_count';
+    const SERVICE_TAX       = 'service_tax';
     const URLS              = 'urls';
     const INITIATED_AT      = 'initiated_at';
     const RECONCILED_AT     = 'reconciled_at';
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_FEE,
         self::SETTLEMENT_COUNT,
         self::TRANSACTION_COUNT,
+        self::SERVICE_TAX,
         self::URLS,
         self::INITIATED_AT,
         self::RECONCILED_AT,
@@ -119,6 +121,18 @@ class Entity extends Base\PublicEntity
         return $urls;
     }
 
+    public function setServiceTax($servicetax)
+    {
+        assert($servicetax >= 0);
+
+        $this->setAttribute(self::SERVICE_TAX, $servicetax);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
@@ -147,5 +161,10 @@ class Entity extends Base\PublicEntity
     public function getTransactionCountAttribute()
     {
         return (int) $this->attributes[self::TRANSACTION_COUNT];
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
     }
 }

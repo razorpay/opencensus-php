@@ -39,6 +39,10 @@ class CreateDailySettlements extends Migration
 
             $table->integer(DailySettlement::TRANSACTION_COUNT);
 
+            $table->integer(DailySettlement::SERVICE_TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->text(DailySettlement::URLS);
 
             $table->integer(DailySettlement::INITIATED_AT);
