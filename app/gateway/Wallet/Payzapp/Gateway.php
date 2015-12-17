@@ -431,7 +431,7 @@ class Gateway extends Base\Gateway
 
             $options = [];
 
-            if($this->mode === MODE::LIVE)
+            if($this->mode === Mode::LIVE)
             {
                 $options = array('proxy'   => true);
             }
