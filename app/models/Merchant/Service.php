@@ -439,6 +439,7 @@ class Service extends Base\Service
     {
         $filterDays = 1;
         $today = Carbon::today('Asia/Kolkata');
+        $filterDate = Carbon::today('Asia/Kolkata');
 
         $dayToday = $today->dayOfWeek;
         if ($dayToday === Carbon::MONDAY)
@@ -446,7 +447,7 @@ class Service extends Base\Service
             $filterDays = 3;
         }
 
-        $filterDate = $today->subDays($filterDays);
+        $filterDate = $filterDate->subDays($filterDays);
         $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
                                                         $filterDate->timestamp,
                                                         $today->timestamp);
