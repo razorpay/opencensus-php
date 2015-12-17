@@ -376,10 +376,10 @@ class BasicAuth
 
         if(array_key_exists($route, Route::$routeNameToFeatureMap) === true)
         {
-            $accessedFeature = $routeNameToFeatureMap[$route];
+            $accessedFeature = Route::$routeNameToFeatureMap[$route];
             $allowedFeatures = $this->merchant->getBetaFeatures();
 
-            if(!is_null($allowedFeatures) and $allowedFeatures !== '' and in_array($feature, $allowedFeatures))
+            if(!is_null($allowedFeatures) and $allowedFeatures !== '' and in_array($accessedFeature, $allowedFeatures))
             {
                 return;
             }
