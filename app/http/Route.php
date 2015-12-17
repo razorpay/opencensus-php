@@ -331,6 +331,10 @@ final class Route
         'merchant_methods',
     );
 
+    public static $routeNameToFeatureMap = array(
+        //'routeName' => 'featureName',
+        );
+
     protected static $router;
 
     public static function setRouter($router)
@@ -457,12 +461,12 @@ final class Route
             // then it will go into internal app auth and will not expose the route.
             // This must not happen though.
             //
-            self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
-            self::addFilterOnRouteGroups($router, 'auth.private', 'private');
-            self::addFilterOnRouteGroups($router, 'auth.public', 'public');
-            self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
-            self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
-            self::addFilterOnRouteGroups($router, 'auth.direct', 'direct');
+            self::addFilterOnRouteGroups($router, array('auth.app'), 'internal');
+            self::addFilterOnRouteGroups($router, array('auth.private', 'route.beta_feature'), 'private');
+            self::addFilterOnRouteGroups($router, array('auth.public', 'route.beta_feature'), 'public');
+            self::addFilterOnRouteGroups($router, array('auth.public_callback'), 'publicCallback');
+            self::addFilterOnRouteGroups($router, array('auth.proxy', 'route.beta_feature'), 'proxy');
+            self::addFilterOnRouteGroups($router, array('auth.direct'), 'direct');
         });
 
         $router->get('/', function()
