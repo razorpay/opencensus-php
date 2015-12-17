@@ -243,6 +243,10 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getPaymentVerifyRequestContentArray($verify);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$content]);
+
         $content = $this->postRequest($content);
 
         unset($content['Checksum']);
@@ -339,6 +343,10 @@ class Gateway extends Base\Gateway
         $this->response = $response;
 
         $content = $this->getContentAfterChecksumVerification($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$content]);
 
         return $content;
     }
