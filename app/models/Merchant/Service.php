@@ -269,63 +269,33 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $newBankAccount = (new BankAccount\Entity)->build($input);
+        $newBankAccount->merchant()->associate($merchant);
+
         $bankAccountRepo = new BankAccount\Repository;
-        $ba = $bankAccountRepo->getBankAccount($merchant);
+        $bankAccount = $bankAccountRepo->getBankAccount($merchant);
 
-        if ($ba !== null)
+        if ($bankAccount !== null)
         {
-            $baNew = (new BankAccount\Entity)->build($input);
-            $baNew->merchant()->associate($merchant);
-
-            if ($ba->equals($baNew))
+            if ($bankAccount->equals($newBankAccount))
             {
-                return $ba->toArray();
+                return $bankAccount->toArray();
             }
 
-            return $this->changeBankAccount($merchant, $ba, $baNew);
+            $bankAccountRepo->delete($bankAccount);
+
+            if ($this->mode === Mode::LIVE)
+            {
+                $this->sendEmail(
+                            'emails.merchant.bankaccount_change',
+                            'Bank Account Change',
+                            $merchant->toArray());
+            }
         }
 
-        $ba = (new BankAccount\Entity)->build($input);
+        $bankAccountRepo->saveOrFail($newBankAccount);
 
-        return $this->attachBankAccountToMerchant($merchant, $ba);
-    }
-
-    protected function changeBankAccount($merchant, $oldBankAccont, $newBankAccount)
-    {
-        $oldBankAccont->checkAndDelete();
-
-        $return = $this->attachBankAccountToMerchant($merchant, $newBankAccount);
-
-        $this->sendEmail(
-                        'emails.merchant.bankaccount_change',
-                        'Bank Account Change',
-                        $merchant->toArray());
-
-        return $return;
-    }
-
-    protected function attachBankAccountToMerchant($merchant, $bankAccount)
-    {
-        $bankAccountRepo = new BankAccount\Repository;
-
-        $code = $bankAccount->beneficiary_code;
-
-        $count = $bankAccountRepo->getBeneficiaryCodeCountByPattern($code);
-
-        if ($count === 0)
-            $count = '';
-        else
-            $count++;
-
-        $code .= $count;
-
-        $bankAccount->beneficiary_code = $code;
-
-        $bankAccount->merchant()->associate($merchant);
-
-        $bankAccountRepo->saveOrFail($bankAccount);
-
-        return $bankAccount->toArray();
+        return $newBankAccount->toArray();
     }
 
     public function getBankAccount($id)

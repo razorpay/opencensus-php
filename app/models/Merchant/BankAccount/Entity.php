@@ -122,6 +122,15 @@ class Entity extends Base\PublicEntity
         // Caps all then remove spaces then cut first 4.
         $code = substr(str_replace(' ', '', strtoupper($name)), 0, 4);
 
+        $count = (new Repository)->getBeneficiaryCodeCountByPattern($code);
+
+        if ($count === 0)
+            $count = '';
+        else
+            $count++;
+
+        $code .= $count;
+
         $this->setAttribute(self::BENEFICIARY_CODE, $code);
     }
 
