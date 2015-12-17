@@ -132,15 +132,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $this->hasOne('Models\MerchantDetails\Entity');
     }
 
-    /**
-     * Take care while calling this method
-     * @param array $input array with new email address
-     */
-    public function changeEmail($input)
-    {
-        return $this->edit($input, 'changeEmail');
-    }
-
     public static function getAggregations($data, $mode)
     {
         $data = \DB::table('aggregations')

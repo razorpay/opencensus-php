@@ -176,6 +176,15 @@ class Entity extends Base\Entity implements UserInterface
         return is_null($merchant) ? false : true;
     }
 
+    /**
+     * Take care while calling this method
+     * @param array $input array with new email address
+     */
+    public function changeEmail($input)
+    {
+        return $this->edit($input, 'changeEmail');
+    }
+
     public function changePassword($input)
     {
         return $this->edit($input, 'changePassword');
@@ -266,5 +275,15 @@ class Entity extends Base\Entity implements UserInterface
     public function getRememberTokenName()
     {
         return 'remember_token';
+    }
+
+    /**
+     * Hash the password before persisting in the database.
+     *
+     * @return string
+     */
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = \Hash::make($password);
     }
 }
