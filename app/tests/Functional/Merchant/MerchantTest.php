@@ -216,13 +216,6 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
-    public function testChangeBankAccount()
-    {
-        $this->testAddBankAccount();
-
-        $content = $this->startTest();
-    }
-
     public function testSetBanks()
     {
         $this->ba->appAuth();

@@ -26,7 +26,8 @@ class CreateSettlements extends Migration {
 
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
-            $table->char(Settlement::BANK_ACCOUNT_ID, Settlement::ID_LENGTH);
+            $table->char(Settlement::BANK_ACCOUNT_ID, Settlement::ID_LENGTH)
+                  ->nullable();
 
             $table->integer(Settlement::AMOUNT)
                   ->unsigned();
@@ -101,9 +102,6 @@ class CreateSettlements extends Migration {
 
             $table->dropForeign(
                 TABLE::SETTLEMENT.'_'.Settlement::MERCHANT_ID.'_foreign');
-
-            $table->dropForeign(
-                TABLE::SETTLEMENT.'_'.Settlement::BANK_ACCOUNT_ID.'_foreign');
         });
 
         Schema::drop(Table::SETTLEMENT);

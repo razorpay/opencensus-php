@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $visible = array(
+        self::ID,
         self::MERCHANT_ID,
         self::BENEFICIARY_CODE,
         self::IFSC_CODE,
@@ -99,9 +100,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
+        self::ID,
     );
-
-    protected $genereateIdOnCreate = true;
 
     public function build(array $input = array())
     {
@@ -136,7 +136,7 @@ class Entity extends Base\PublicEntity
 
     public function settlements()
     {
-        return $this->hasMany('Models\Settlements\Entity');
+        return $this->hasMany('Models\Settlement\Entity');
     }
 
     public function getBeneficiaryName()
@@ -159,6 +159,7 @@ class Entity extends Base\PublicEntity
         $orig = $this->toArray();
 
         unset(
+            $orig[self::ID],
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
             $orig[self::BENEFICIARY_CODE],
@@ -168,6 +169,7 @@ class Entity extends Base\PublicEntity
         $copy = $baCopy->toArray();
 
         unset(
+            $copy[self::ID],
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],
@@ -175,5 +177,13 @@ class Entity extends Base\PublicEntity
             $copy[self::BENEFICIARY_CODE]);
 
         return ($orig == $copy);
+    }
+
+    public function generateIdFromCreatedAt()
+    {
+        $createdAt = $this->getAttribute(self::CREATED_AT);
+        $this->setAttribute(
+            self::ID,
+            self::generateUniqueIdFromTimestamp($createdAt));
     }
 }

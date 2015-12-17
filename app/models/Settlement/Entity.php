@@ -3,6 +3,7 @@
 namespace Models\Settlement;
 
 use Models\Base;
+use Models\Merchant\BankAccount;
 use Models\Transaction;
 use EE\Exception;
 
@@ -63,7 +64,10 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo('Models\Merchant\BankAccount\Entity');
+        return $this->belongsTo(
+                                'Models\Merchant\BankAccount\Entity',
+                                self::BANK_ACCOUNT_ID,
+                                BankAccount\Entity::ID);
     }
 
     public function transaction()
