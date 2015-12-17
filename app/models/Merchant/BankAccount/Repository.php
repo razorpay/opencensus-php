@@ -62,4 +62,25 @@ class Repository extends Base\Repository
                                 ->take(500)
                                 ->get();
     }
+
+    /**
+     * This should be called when deleting a BankAccount Entity.
+     *
+     * This checks if the bankAccount has any settlements linked to it.
+     * If there are linked settlements then it is soft deleted.
+     * Else, it is hard deleted.
+     *
+     * @param  BankAccount\Entity $bankAccount The bank account to be deleted
+     */
+    public function delete($bankAccount)
+    {
+        if ($bankAccount->settlements->count() === 0)
+        {
+            return $bankAccount->forceDelete();
+        }
+        else
+        {
+            return $bankAccount->delete();
+        }
+    }
 }

@@ -189,16 +189,4 @@ class Entity extends Base\PublicEntity
             self::ID,
             self::generateUniqueIdFromTimestamp($createdAt));
     }
-
-    public function checkAndDelete()
-    {
-        if ($this->settlements->count() === 0)
-        {
-            return $this->forceDelete();
-        }
-        else
-        {
-            return $this->delete();
-        }
-    }
 }
