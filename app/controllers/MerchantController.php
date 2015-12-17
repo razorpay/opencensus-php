@@ -6,36 +6,6 @@ use Models\MerchantDetails;
 
 class MerchantController extends BaseController
 {
-    public function getIndex()
-    {
-        return View::make('merchant.tmpgetIndex');
-    }
-
-    public function getMerchant()
-    {
-       $merchant = (new Merchant\Service)->fetch(Auth::merchant()->id());
-
-       $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
-
-       $data = $merchant + $merchantDetails;
-
-       return AppResponse::jsonResponse([], $data);
-    }
-
-    public function getKeepAlive()
-    {
-        return AppResponse::jsonResponse([]);
-    }
-
-    public function postSignin()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->login($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function postRegister()
     {
         $input = Input::all();
@@ -52,22 +22,6 @@ class MerchantController extends BaseController
         list($error, $data) = (new Merchant\Service)->resendConfirmation($input);
 
         return AppResponse::jsonResponse($error);
-    }
-
-    public function postPassword()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->changePassword($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getLogout()
-    {
-        Auth::merchant()->logout();
-
-        return AppResponse::jsonResponse([]);
     }
 
     public function getCsv()
@@ -96,14 +50,18 @@ class MerchantController extends BaseController
 
     public function getKeys($mode)
     {
-        $keys = (new Merchant\Service)->fetchKeysFromApi(Auth::merchant()->id(), $mode);
+        $merchant = Auth::user()->user()->currentMerchant;
+
+        $keys = (new Merchant\Service)->fetchKeysFromApi($merchant->id(), $mode);
 
         return AppResponse::jsonResponse([], $keys);
     }
 
     public function postNewKey($mode)
     {
-        list($error, $data) = (new Merchant\Service)->createKey(Auth::merchant()->id(), $mode);
+        $merchant = Auth::user()->user()->currentMerchant;
+
+        list($error, $data) = (new Merchant\Service)->createKey($merchant->id(), $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -112,7 +70,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::merchant()->id();
+        $input['merchant_id'] = $merchant = Auth::user()->user()->currentMerchant->id;
 
         list($error, $data) = (new Merchant\Service)->rollKeys($input, $mode);
 
@@ -125,7 +83,6 @@ class MerchantController extends BaseController
 
         return AppResponse::jsonResponse($error);
     }
-
 
     public function getActivationDetails()
     {

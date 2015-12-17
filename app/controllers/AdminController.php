@@ -80,7 +80,7 @@ class AdminController extends BaseController
     {
         $merchant = (new Merchant\Service)->fetch($id);
 
-        Auth::merchant()->loginUsingId($merchant['id']);
+        Auth::user()->loginUsingId($merchant->primaryOwner()->id);
 
         return Redirect::to('/');
     }
