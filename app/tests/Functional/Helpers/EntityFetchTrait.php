@@ -76,6 +76,11 @@ trait EntityFetchTrait
         return $this->getLastEntity('transaction', $admin);
     }
 
+    protected function getLastPayment($admin = false)
+    {
+        return $this->getLastEntity('payment', $admin);
+    }
+
     protected function getPublicEntity($entity, array $input = array())
     {
         $this->ba->privateAuth();
