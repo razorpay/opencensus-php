@@ -84,8 +84,8 @@ class Core extends Base\Core
             'beneficiary_city'      => 'Mumbai',
             'beneficiary_state'     => 'MH',
             'beneficiary_country'   => 'IN',
-            'beneficiary_pin'       => random_integer(6),
-            'beneficiary_mobile'    => random_integer(10),
+            'beneficiary_pin'       => random_digits(6),
+            'beneficiary_mobile'    => random_digits(10),
         );
 
         $ba = (new BankAccount\Entity)->build($attributes);

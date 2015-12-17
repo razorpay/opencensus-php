@@ -135,11 +135,41 @@ if (! function_exists('ddd'))
 
 if (! function_exists('random_integer'))
 {
+    /**
+     * Generates random number of given number of digits.
+     * Note: Minimum is 0, i.e. number of digits limits the max only.
+     *
+     * For random number with at least n digits, use `random_digits`
+     * @param  integer $length Max number of digits
+     * @return integer         The random number
+     */
     function random_integer($length = 1)
     {
         $integer = '';
 
         for($i = 0; $i < $length; $i++)
+        {
+            $integer .= mt_rand(0, 9);
+        }
+
+        return (int) $integer;
+    }
+}
+
+if (! function_exists('random_digits'))
+{
+    /**
+     * Generates random number of given number of digits.
+     * Note: 10^n, i.e. number of digits limits the min and max both.
+     *
+     * @param  integer $length Number of digits
+     * @return integer         The random number
+     */
+    function random_digits($length = 1)
+    {
+        $integer = '' . mt_rand(1, 9);
+
+        for($i = 1; $i < $length; $i++)
         {
             $integer .= mt_rand(0, 9);
         }
