@@ -24,18 +24,7 @@ class Repository extends Base\Repository
 
     public function getBankAccount($merchant)
     {
-        $repo = $this->repo;
-
-        $ba = $repo::find($merchant->getId());
-
-        if ($ba !== null)
-        {
-            $ba->merchant()->associate($merchant);
-
-            $merchant->setRelation('bankAccount', $ba);
-        }
-
-        return $ba;
+        return $merchant->bankAccount;
     }
 
     public function getBankAccountByBeneficiaryCode($code)
@@ -63,5 +52,14 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
-}
 
+    public function bankAccountsWhereIdNullOrBlank()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::ID, '=', "")
+                                ->orWhereNull(BankAccount\Entity::ID)
+                                ->take(500)
+                                ->get();
+    }
+}

@@ -201,6 +201,13 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postGenerateBankAccountIds()
+    {
+        $data = (new Merchant\Service)->generateBankAccountIds();
+
+        return ApiResponse::json($data);
+    }
+
     public function getBanksPublic()
     {
         $data = (new Merchant\Service)->getEnabledBanks();

@@ -136,6 +136,11 @@ class Merchant
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
 
+        if ($this->bankAccount->getId() !== null)
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
+
         $this->setl = $setl;
 
         return $setl;
@@ -164,7 +169,7 @@ class Merchant
 
         if ($mode === Mode::TEST)
         {
-            $ba = $this->getDefaultBank($this->merchant);
+            $ba = $this->attachTestBank($this->merchant);
         }
         else
         {
@@ -177,19 +182,28 @@ class Merchant
             }
         }
 
+        $this->bankAccount = $ba;
         return $ba;
     }
 
-    protected function getDefaultBank($merchant)
+    protected function attachTestBank($merchant)
     {
         $attributes = array(
-            'merchant_id'       => $merchant->getId(),
-            'ifsc_code'         => 'RZPB0000000',
-            'beneficiary_name'  => $merchant['name'],
-            'beneficiary_code'  => strtoupper(random_alpha_string(4)),
-            'account_number'    => '10101030103');
+            'ifsc_code'             => 'RZPB0000000',
+            'beneficiary_name'      => random_integer(5),
+            'beneficiary_email'     => $merchant->getAttribute('email'),
+            'account_number'        => random_integer(11),
+            'beneficiary_address1'  => random_integer(14),
+            'beneficiary_city'      => 'Mumbai',
+            'beneficiary_state'     => 'MH',
+            'beneficiary_country'   => 'IN',
+            'beneficiary_pin'       => '400069',
+            'beneficiary_mobile'    => '9393993939',
+        );
 
-        $ba = (new BankAccount\Entity)->newInstance($attributes, true);
+        $ba = (new BankAccount\Entity)->build($attributes, true);
+
+        $ba->beneficiary_code = strtoupper(random_alpha_string(4));
 
         $ba->merchant()->associate($merchant);
 

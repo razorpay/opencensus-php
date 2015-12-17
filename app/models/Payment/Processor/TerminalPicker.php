@@ -52,7 +52,7 @@ class TerminalPicker
         $gatewayTerms = $this->getGatewayTerminals($terminals);
 
         $terminal = $this->pickOneTerminal($gatewayTerms, $payment);
-//$terminal = null;
+
         if ($terminal === null)
         {
             $terminal = $this->getSharedTerminal($payment);
@@ -124,7 +124,6 @@ class TerminalPicker
         $this->network = $network;
 
         $gatewayOrder = array(
-            Gateway::AMEX,
             Gateway::HDFC,
             Gateway::AXIS_MIGS,
             Gateway::KOTAK);
@@ -142,12 +141,12 @@ class TerminalPicker
         // {
         //     return $gatewayTerms[Gateway::AXIS_GENIUS];
         // }
-
         if ($this->mode === Mode::TEST)
         {
-            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true))
+            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
             {
-                return $gatewayTerms[Payment\Gateway::SBIEPAY];
+                return $gatewayTerms[$gateway];
             }
 
             // In test mode paytm supports only cards
@@ -265,20 +264,17 @@ class TerminalPicker
             return $terminal;
         }
 
-        if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
+        if ($this->mode === Mode::TEST)
         {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
-        {
-            if ($this->mode !== Mode::TEST)
+            if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
             {
-                throw new Exception\LogicException(
-                    'Sharp gateway terminal can only be selected in test mode');
+                return $this->terminal;
             }
 
-            return $this->terminal;
+            if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
         }
 
         return $terminal;
@@ -402,6 +398,7 @@ class TerminalPicker
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
         $networks = array(
+            Network::AMEX,
             Network::MAES,
             Network::RUPAY,
             Network::DICL);

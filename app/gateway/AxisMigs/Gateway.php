@@ -38,6 +38,16 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
+
+            // Payment fails since vpc_MerchTxnRef not set, throw exception
+            throw new Exception\GatewayErrorException(
+                        Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
         $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 

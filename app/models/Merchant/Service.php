@@ -317,6 +317,41 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+
+    public function generateBankAccountIds()
+    {
+        $bankAccountRepo = new BankAccount\Repository();
+
+        $bankAccounts = $bankAccountRepo->bankAccountsWhereIdNullOrBlank();
+
+        $fetched = $bankAccounts->count();
+
+        $bankAccountRepo->beginTransaction();
+
+        $count = 0;
+
+        try {
+            foreach ($bankAccounts as $bankAcc)
+            {
+                $bankAcc->generateIdFromCreatedAt();
+                $bankAccountRepo->save($bankAcc);
+                $count++;
+            }
+
+            $bankAccountRepo->commit();
+        }
+        catch (Exception $e)
+        {
+            $bankAccountRepo->rollback();
+            throw new Exception\RuntimeException(
+                        'Failed generating BankAccount id',
+                        $e->getTrace());
+        }
+
+        return ['fetched' => $fetched, 'processed' => $count];
+
+    }
+
     public function getBanks($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
@@ -404,6 +439,7 @@ class Service extends Base\Service
     {
         $filterDays = 1;
         $today = Carbon::today('Asia/Kolkata');
+        $filterDate = Carbon::today('Asia/Kolkata');
 
         $dayToday = $today->dayOfWeek;
         if ($dayToday === Carbon::MONDAY)
@@ -411,7 +447,7 @@ class Service extends Base\Service
             $filterDays = 3;
         }
 
-        $filterDate = $today->subDays($filterDays);
+        $filterDate = $filterDate->subDays($filterDays);
         $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
                                                         $filterDate->timestamp,
                                                         $today->timestamp);

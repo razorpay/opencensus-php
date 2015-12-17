@@ -3,10 +3,14 @@
 namespace Models\Merchant\BankAccount;
 
 use EE\Exception;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletingTrait;
+
+    const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BENEFICIARY_CODE      = 'beneficiary_code';
     const IFSC_CODE             = 'ifsc_code';
@@ -22,6 +26,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CITY      = 'beneficiary_city';
     const BENEFICIARY_STATE     = 'beneficiary_state';
     const BENEFICIARY_COUNTRY   = 'beneficiary_country';
+    const DELETED_AT            = 'deleted_at';
 
     const IFSC_CODE_LENGTH = 11;
 
@@ -48,6 +53,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $visible = array(
+        self::ID,
         self::MERCHANT_ID,
         self::BENEFICIARY_CODE,
         self::IFSC_CODE,
@@ -66,6 +72,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
         self::MERCHANT_ID,
         self::ENTITY,
         self::BENEFICIARY_CODE,
@@ -84,11 +91,16 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     );
 
+    protected $guarded = array(self::ID);
+
     protected static $generators = array(
+        self::ID,
         self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
+        self::ID,
     );
 
     public function build(array $input = array())
@@ -122,6 +134,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function settlements()
+    {
+        return $this->hasMany('Models\Settlement\Entity');
+    }
+
     public function getBeneficiaryName()
     {
         return $this->getAttribute(self::BENEFICIARY_NAME);
@@ -142,6 +159,7 @@ class Entity extends Base\PublicEntity
         $orig = $this->toArray();
 
         unset(
+            $orig[self::ID],
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
             $orig[self::BENEFICIARY_CODE],
@@ -151,6 +169,7 @@ class Entity extends Base\PublicEntity
         $copy = $baCopy->toArray();
 
         unset(
+            $copy[self::ID],
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],
@@ -158,5 +177,13 @@ class Entity extends Base\PublicEntity
             $copy[self::BENEFICIARY_CODE]);
 
         return ($orig == $copy);
+    }
+
+    public function generateIdFromCreatedAt()
+    {
+        $createdAt = $this->getAttribute(self::CREATED_AT);
+        $this->setAttribute(
+            self::ID,
+            self::generateUniqueIdFromTimestamp($createdAt));
     }
 }

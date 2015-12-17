@@ -20,7 +20,7 @@ class Gateway
     const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
-    const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_KOTAK  = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
 
     public static $channels = array(
@@ -77,7 +77,8 @@ class Gateway
             Network::VISA,
             Network::MAES,
             Network::DICL,
-            Network::RUPAY),
+            Network::RUPAY,
+            Network::UNKNOWN),
         self::AXIS_MIGS => array(
             Network::MC,
             Network::VISA),
