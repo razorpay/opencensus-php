@@ -8,7 +8,7 @@ class Service extends Base\Service
 {
     public function __construct()
     {
-        $this->merchantId = \Auth::merchant()->id();
+        $this->merchantId = Auth::user()->user()->currentMerchant->id();
     }
 
     public function fetchEntity($id, $mode, $entity)
