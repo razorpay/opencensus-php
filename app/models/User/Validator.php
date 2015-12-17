@@ -15,6 +15,10 @@ class Validator extends Base\Validator
         'password'
     );
 
+    protected static $changeEmailRules = array(
+        'email'         => 'required|email'
+    );
+
     protected static $changePasswordRules = array(
         'old_password'              => 'required',
         'password'                  => 'required|between:7,50|confirmed|numbers|letters',
