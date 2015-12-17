@@ -77,6 +77,22 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     }
 
     /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role','owner')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
+    }
+
+    /**
      * Get all of the users that belong to the merchant.
      */
     public function users()
@@ -123,11 +139,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function changeEmail($input)
     {
         return $this->edit($input, 'changeEmail');
-    }
-
-    public function changePassword($input)
-    {
-        return $this->edit($input, 'changePassword');
     }
 
     public static function getAggregations($data, $mode)
