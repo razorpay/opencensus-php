@@ -356,7 +356,7 @@ class Gateway extends Base\Gateway
         $content = array_combine($fields, $content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_CHECKSUM_VERIFY,
             [$content]);
 
         $this->verifySecureHash($content);
@@ -385,6 +385,10 @@ class Gateway extends Base\Gateway
 
         if ($generatedHash !== $hash)
         {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY,
+                [$content, $hash, $generatedHash]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
