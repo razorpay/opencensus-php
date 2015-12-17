@@ -342,6 +342,14 @@ class MerchantController extends BaseController
     public function getAllFeatues()
     {
         $data = Merchant\Entity::$allowed_beta_features;
+
         return ApiResponse::json($data);
+    }
+
+    public function getDummyFeatures()
+    {
+        $input = Input::all();
+
+        return ApiResponse::json($input);
     }
 }

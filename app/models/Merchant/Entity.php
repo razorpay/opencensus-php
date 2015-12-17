@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
      */
     const METHODS                   = 'methods';
     
-    public static $allowed_beta_features = array('webhooks');
+    public static $allowed_beta_features = array('dummy', 'webhooks');
 
     protected $table = \Constants\Table::MERCHANT;
 

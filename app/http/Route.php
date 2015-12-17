@@ -143,6 +143,7 @@ final class Route
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
         'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
         'get_features'                      => ['get',      'features',                                 'MerchantController@getAllFeatues'                              ],
+        'dummy_betafeature'                 => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                           ],
     );
 
     public static $public = array(
@@ -183,6 +184,7 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'dummy_betafeature',
     );
 
     public static $internal = array(
@@ -332,7 +334,7 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        //'routeName' => 'featureName',
+        'dummy_betafeature' =>  'dummy'
         );
 
     protected static $router;
