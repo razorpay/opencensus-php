@@ -6,6 +6,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\User;
 use Models\MerchantDetails;
+use Auth;
 use Mail;
 use Requests;
 
@@ -47,13 +48,13 @@ class Service extends Base\Service
         return [$error, $slackData];
     }
 
-    protected function queueConfirmationMail($merchant)
+    protected function queueConfirmationMail($user)
     {
-        $merchant = $merchant->generateEmailData();
+        $user = $user->generateEmailData();
 
-        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        Mail::send('emails.confirmation', compact('user'), function($m) use ($user)
         {
-            $m->to($merchant['email'], $merchant['name'])->subject('Razorpay | Confirm Your Email');
+            $m->to($user['email'], $user['name'])->subject('Razorpay | Confirm Your Email');
         });
     }
 
@@ -112,34 +113,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function changePassword(array $input)
-    {
-        $merchant = \Auth::merchant()->user();
-
-        if ($merchant->isTestAccount()) {
-            return [["Password change forbidden on this account"], null];
-        }
-
-        $email = $merchant->email;
-        $error = $merchant->changePassword($input);
-
-        if (empty($error))
-        {
-            if($merchant->hasUsers())
-            {
-                $user = $merchant->users()->where('email',$email)->first();
-                if($user)
-                {
-                    $user->password = $merchant->password;
-                    $user->save();
-                }
-            }
-            $merchant->save();
-        }
-
-        return [$error, null];
-    }
-
     public function confirm($token)
     {
         $merchant = Merchant\Entity::getMerchantForConfirmation($token);
@@ -179,36 +152,6 @@ class Service extends Base\Service
         return array();
     }
 
-    public function login(array $input)
-    {
-        $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [['Email or password is invalid.'], null];
-        }
-
-        $credentials = array(
-            'email'     => $input['email'],
-            'password'  => $input['password']
-        );
-
-        $merchant = \Auth::merchant();
-
-        if ($merchant->validate($credentials) === false)
-        {
-            // Checks credentials but doesn't login the merchant, throws error if invalid
-            $error = ['Email or password is invalid.'];
-        }
-        else if ($merchant->attempt($credentials + array('confirm_token' => null)) === false)
-        {
-            // Tries to login merchant if confirmed, throws error if merchant is not confirmed
-            $error = ['not activated'];
-        }
-
-        return [$error, null];
-    }
-
     public function resendConfirmation(array $input)
     {
         $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
@@ -220,32 +163,25 @@ class Service extends Base\Service
                 'password'  => $input['password']
             );
 
-            $merchant = \Auth::merchant();
+            $user = \Auth::user();
 
-            if ($merchant->once($credentials))
+            if ($user->once($credentials))
             {
-                $merchant = \Auth::merchant()->get();
+                $user = \Auth::user()->get();
 
-                if ($merchant->confirm_token === null)
+                if ($user->confirm_token === null)
                 {
                     return [['Merchant already confirmed. You can login ' .
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
-                $this->queueConfirmationMail($merchant);
+                $this->queueConfirmationMail($user);
 
                 return [[], []];
             }
         }
 
         return [['Email or password is invalid.'], []];
-    }
-
-    public function fetch($merchant_id)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchant_id)->toArray();
-
-        return $merchant;
     }
 
     public function fetchKeysFromApi($merchant_id, $mode)
@@ -286,7 +222,7 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
-        if (\Auth::merchant()->user()->isTestAccount()) {
+        if (Auth::user()->user()->currentMerchant->isTestAccount()) {
             return [["Roll key forbidden on this account"], null];
         }
 
