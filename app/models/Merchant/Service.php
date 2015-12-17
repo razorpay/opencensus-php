@@ -259,4 +259,11 @@ class Service extends Base\Service
 
         return array($error, $key_data);
     }
+
+    public function fetch($merchant_id)
+    {
+        $merchant = Entity::findOrFail($merchant_id)->toArray();
+
+        return $merchant;
+    }
 }
