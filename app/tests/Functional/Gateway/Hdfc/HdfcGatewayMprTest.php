@@ -164,11 +164,11 @@ class HdfcGatewayMprTest extends TestCase
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => 4414500,
-//                    'amount' => 4387640,
                     'api_fee' => 29000,
                     'gateway_fee' => 85500,
                     'settlement_count' => 2,
                     'transaction_count' => 11,
+                    'service_tax' => 14500
                 ],
             ]
         );
