@@ -264,20 +264,17 @@ class TerminalPicker
             return $terminal;
         }
 
-        if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
+        if ($this->mode === Mode::TEST)
         {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
-        {
-            if ($this->mode !== Mode::TEST)
+            if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
             {
-                throw new Exception\LogicException(
-                    'Sharp gateway terminal can only be selected in test mode');
+                return $this->terminal;
             }
 
-            return $this->terminal;
+            if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
         }
 
         return $terminal;
