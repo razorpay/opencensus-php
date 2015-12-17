@@ -224,6 +224,10 @@ class MerchantTest extends TestCase
         $this->testAddBankAccount();
 
         $content = $this->startTest();
+
+        $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
+
+        $this->assertEquals(1, $bankAccounts['count']);
     }
 
     public function testChangeBankAccountWithSettlement()
@@ -247,9 +251,6 @@ class MerchantTest extends TestCase
         $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
 
         $this->assertEquals(2, $bankAccounts['count']);
-
-        return;
-
     }
 
     public function testSetBanks()
