@@ -26,7 +26,7 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::merchant()->id();
+        $input['merchant_id'] = Auth::user()->user()->currentMerchant->id;
 
         $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
@@ -37,7 +37,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::merchant()->id();
+        $merchant_id = Auth::user()->user()->currentMerchant->id;
 
         $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
 
@@ -48,7 +48,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::merchant()->id();
+        $merchant_id = Auth::user()->user()->currentMerchant->id;
 
         $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
 
