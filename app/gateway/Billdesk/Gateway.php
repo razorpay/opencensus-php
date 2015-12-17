@@ -344,10 +344,6 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContentAfterChecksumVerification($response->body);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
-
         return $content;
     }
 
@@ -358,6 +354,10 @@ class Gateway extends Base\Gateway
         $content = explode('|', $msg);
 
         $content = array_combine($fields, $content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$content]);
 
         $this->verifySecureHash($content);
 
