@@ -6,6 +6,7 @@
 Thumbs.db
 /bootstrap/environment.php
 /public/test/config.php
+/public/fonts
 docs/
 app/config/dev
 app/config/**/dev/
