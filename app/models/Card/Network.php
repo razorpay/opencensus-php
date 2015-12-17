@@ -90,7 +90,7 @@ class Network
         {
             $cardNetwork = self::UNKNOWN;
         }
-sd($cardNetwork);
+
         return $cardNetwork;
     }
 
