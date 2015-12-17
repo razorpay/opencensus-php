@@ -2,12 +2,15 @@
 
 namespace Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Tests\Functional\Settlement\SettlementTrait;
 
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
+    use SettlementTrait;
 
     public function setUp()
     {
@@ -221,6 +224,32 @@ class MerchantTest extends TestCase
         $this->testAddBankAccount();
 
         $content = $this->startTest();
+    }
+
+    public function testChangeBankAccountWithSettlement()
+    {
+        $this->testAddBankAccount();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+
+        $capturedPayments = $this->fixtures->times(4)->create(
+            'payment:captured',
+            ['captured_at' => $capturedAt,
+             'created_at' => $createdAt,
+             'updated_at' => $createdAt + 10]);
+
+        $this->initiateSettlements();
+
+        $testData = $this->testData['testChangeBankAccount'];
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
+
+        $this->assertEquals(2, $bankAccounts['count']);
+
+        return;
+
     }
 
     public function testSetBanks()

@@ -13,8 +13,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'BankAccount';
 
+    const WITH_TRASHED = 'with_trashed';
+
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        self::WITH_TRASHED      => 'sometimes|boolean',
     );
 
     public function updateBankAccount($ba)
@@ -53,6 +56,11 @@ class Repository extends Base\Repository
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
+    }
+
+    protected function addQueryParamWithTrashed($query, $params)
+    {
+        $query->withTrashed();
     }
 
     public function bankAccountsWhereIdNullOrBlank()
