@@ -16,11 +16,11 @@
       <div class="row wrapper">
         <div class="list-group">
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount/100 | rupee:""}}</span>
             Amount
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount_refunded/100 | rupee:""}}</span>
             Amount Refunded
           </a>
           <a href class="list-group-item">
@@ -49,11 +49,11 @@
             Contact
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.fee/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
             Fee
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.service_tax/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.service_tax/100 | rupee:""}}</span>
             Service Tax
           </a>
           <a href class="list-group-item" ng-show="entity.error_code">

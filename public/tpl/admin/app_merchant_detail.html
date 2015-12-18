@@ -130,15 +130,15 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
+          <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
         </a>
         <a href class="list-group-item" ng-show="merchant.details.live == 1">
-          <span class="pull-right">{{merchant.balance.live/100 | currency:'INR ' }}</span>
+          <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </a>
         <a ng-show="merchant.credits.live >= 0" ng-click="openEditCredits(merchant.credits.live)" class="list-group-item">
-          <span class="pull-right">{{merchant.credits.live/100 | currency:'INR ' }}</span>
+          <span class="pull-right">{{merchant.credits.live/100 | rupee }}</span>
           Free Credits
         </a>
         <a href class="list-group-item">
@@ -294,7 +294,7 @@
                         <td>{{rule.payment_network || 'Any'}}</td>
                         <td>{{rule.payment_issuer || 'Any'}}</td>
                         <td>{{rule.percent_rate/100}} %</td>
-                        <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>
+                        <td>{{rule.fixed_rate/100 | rupee}}</td>
                   </tr>
                 </tbody>
                 </table>
@@ -857,7 +857,7 @@
           <input type="number" min="0" max="50000000"
             class="form-control m-b" ng-model="credits" step="1000000"
           >
-          {{credits/100|currency:'INR '}}
+          {{credits/100|rupee}}
         </div>
       </div>
     </form>
