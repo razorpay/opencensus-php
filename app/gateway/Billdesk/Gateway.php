@@ -432,6 +432,10 @@ class Gateway extends Base\Gateway
     {
         $msg = $this->getMessageStringWithHash($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            [$msg]);
+
         $request = array(
             'url' => $this->getUrl($this->action),
             'method' => 'post',
