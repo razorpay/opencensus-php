@@ -1460,7 +1460,7 @@ class Service extends Base\Service
         }
     }
 
-    public function featureMerchant($merchantId, $input)
+    public function syncMerchantFeatures($merchantId, $input)
     {
         //Send the input data to api for persistance
         $error = $response = array();
@@ -1481,7 +1481,7 @@ class Service extends Base\Service
             
             $response = $this->api->merchant->fetch($merchantId)->setFeatures($params)->toArray();
             
-            $features = $this->api->merchant->fetch($merchantId)->fetchFeatures()->toArray();
+            $features = $this->api->merchant->fetch($merchantId)->getFeatures()->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
