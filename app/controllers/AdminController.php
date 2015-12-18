@@ -529,12 +529,12 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postFeatureMerchant($merchantId)
+    public function syncMerchantFeatures($merchantId)
     {
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)
-            ->featureMerchant($merchantId, $input);
+            ->syncMerchantFeatures($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }
