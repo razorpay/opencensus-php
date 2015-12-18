@@ -129,6 +129,9 @@
         <a href class="list-group-item" id="btn-tagMerchant" ng-click="openTagMerchant()">
           Tag Merchant <i class="pull-right fa fa-tag"></i>
         </a>
+        <a href class="list-group-item" id="btn-featureMerchant" ng-click="openFeatureMerchant()">
+          Feature Merchant <i class="pull-right fa fa-tag"></i>
+        </a>
         <a href class="list-group-item" ng-click="openUploadScreenshot()">
           Upload screenshots <i class="pull-right fa fa-upload"></i>
         </a>
@@ -150,6 +153,10 @@
         <a class="list-group-item" ng-show="merchant.details.tags.length > 0 " ng-click="openTagMerchant()">
           <span class="pull-right">{{merchant.details.tags.join()}}</span>
           Tags
+        </a>
+        <a class="list-group-item" ng-show="merchant.details.beta_features.length > 0 " ng-click="openFeatureMerchant()">
+          <span class="pull-right">{{merchant.details.beta_features.join()}}</span>
+          Features
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
@@ -752,6 +759,27 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(tags)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="featureModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Feature Merchant</h3>
+  </div>
+  <div class="modal-body merchant-feature-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Features:</label>
+        <div class="col-lg-6">
+          <input type="text" class="form-control m-b"
+            ng-model="beta_features" name="merchant-features"
+          >
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(beta_features)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">
