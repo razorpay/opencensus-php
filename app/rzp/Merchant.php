@@ -135,7 +135,7 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function fetchFeatures()
+    public function getFeatures()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/features';
 
@@ -145,7 +145,7 @@ class Merchant extends Entity
     public function setFeatures($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/features';
-       
+
         return $this->request('POST', $relativeUrl, $params);
     }
 
