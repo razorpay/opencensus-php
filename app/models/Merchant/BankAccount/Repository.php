@@ -17,7 +17,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        self::WITH_TRASHED      => 'sometimes|boolean',
+        self::WITH_TRASHED      => 'sometimes|in:0,1',
     );
 
     public function updateBankAccount($ba)
@@ -60,7 +60,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamWithTrashed($query, $params)
     {
-        if ($params[self::WITH_TRASHED] === "1")
+        if ($params[self::WITH_TRASHED] === '1')
         {
             $query->withTrashed();
         }
@@ -70,7 +70,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::ID, '=', "")
+        return $repo::where(Entity::ID, '=', '')
                                 ->orWhereNull(BankAccount\Entity::ID)
                                 ->take(500)
                                 ->get();

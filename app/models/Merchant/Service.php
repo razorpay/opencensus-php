@@ -382,7 +382,6 @@ class Service extends Base\Service
         }
 
         return ['fetched' => $fetched, 'processed' => $count];
-
     }
 
     public function getBanks($id)
