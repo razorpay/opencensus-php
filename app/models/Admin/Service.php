@@ -1491,7 +1491,7 @@ class Service extends Base\Service
         if (empty($error))
         {
             $merchant = Merchant\Entity::findOrFail($merchantId);
-            $merchant->retag($features);
+            $merchant->retag(array_merge($features,$merchant->tags));
             $merchant['beta_features'] = $features;
             return [null, $merchant->toArray()];
         }
