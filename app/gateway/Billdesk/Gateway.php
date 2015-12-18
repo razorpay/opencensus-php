@@ -351,6 +351,10 @@ class Gateway extends Base\Gateway
     {
         $fields = $this->getFieldsForAction($this->action);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_CHECKSUM_VERIFY,
+            [$msg]);
+
         $content = explode('|', $msg);
 
         $content = array_combine($fields, $content);
