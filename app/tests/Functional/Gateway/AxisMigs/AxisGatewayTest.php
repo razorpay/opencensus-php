@@ -110,6 +110,8 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->resetMockServer();
+
         $this->authorizeFailedPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);

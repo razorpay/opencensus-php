@@ -263,8 +263,6 @@ final class Route
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
-        'admin_fetch_entity_multiple',
-        'admin_fetch_entity_by_id',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
