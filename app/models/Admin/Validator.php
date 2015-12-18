@@ -28,6 +28,10 @@ class Validator extends Base\Validator
         'tags'      =>      'required|max:255',
     ];
 
+    protected static $addFeaturesRules = [
+        'beta_features'    =>    'required|max:255',
+    ];
+
     protected static $addTagsValidators = [
         'addTags'
     ];
