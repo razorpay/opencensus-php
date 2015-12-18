@@ -32,4 +32,14 @@ class Repository extends Base\Repository
                     ->orWhereNull(Entity::FEES)
                     ->get();
     }
+
+
+    public function getSettlementWithServiceTaxNullOrZero()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::SERVICE_TAX, '=', '0')
+                    ->orWhereNull(Entity::SERVICE_TAX)
+                    ->get();
+    }
 }

@@ -117,4 +117,48 @@ class Service extends Base\Service
 
         return ['fees' => $totalFees, 'count' => $totalCount];
     }
+
+    public function calculatePrevousSettlementServiceTax()
+    {
+        $repo = new Repository;
+        $settlements = $repo->getSettlementWithServiceTaxNullOrZero();
+
+        $totalServiceTax = 0;
+        $totalCount = 0;
+
+        $repo->beginTransaction();
+
+        try
+        {
+            foreach ($settlements as $setl)
+            {
+                $txns = $setl->setlTransactions;
+                $tax = 0;
+
+                foreach ($txns as $txn)
+                {
+                    $tax += $txn->getServiceTax();
+                }
+
+                $setl->setServiceTax($tax);
+
+                $repo->save($setl);
+
+                $totalServiceTax += $tax;
+                $totalCount ++;
+            }
+
+            $repo->commit();
+       }
+       catch (Exception $e)
+       {
+            $repo->rollback();
+            throw new Exception\RuntimeException(
+                        'Failed generating Service Tax',
+                       $e->getTrace());
+       }
+
+        return ['tax' => $totalServiceTax, 'settlement_count' => $totalCount];
+
+    }
 }
