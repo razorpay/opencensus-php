@@ -219,7 +219,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
-    public function testChangeBankAccountWithoutSettlment()
+    public function testChangeBankAccount()
     {
         $this->testAddBankAccount();
 
