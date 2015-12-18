@@ -86,7 +86,7 @@ class Core extends Base\Core
             'beneficiary_state'     => 'KA',
             'beneficiary_country'   => 'IN',
             'beneficiary_pin'       => '560052',
-            'beneficiary_mobile'    => '1800270032',
+            'beneficiary_mobile'    => '18002700323',
         );
 
         $ba = (new BankAccount\Entity)->build($attributes);
