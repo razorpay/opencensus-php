@@ -116,4 +116,11 @@ class Repository extends Base\Repository
 
         return $repo::all(['name', 'email']);
     }
+
+    public function fetchAllLiveMerchants()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::LIVE, '=', 0);
+    }
 }

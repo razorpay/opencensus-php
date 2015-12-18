@@ -46,6 +46,7 @@ class GenerateEmailTemplates extends Command {
             'emails/partials/separator',
             'emails/merchant/daily_report',
             'emails/merchant/newsletter',
+            'emails/merchant/payzapp',
             'emails/payment/merchant',
             'emails/refund/common',
             'emails/merchant/daily_report_debug',
