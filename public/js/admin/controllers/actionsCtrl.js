@@ -85,6 +85,7 @@ app.controller('ActionsCtrl', [
       });
     };
     $scope.sendTestEmail = function (data) {
+      console.log(data);
       var request = $http({
         method: 'post',
         url: '/admin/newsletter/test',
@@ -96,9 +97,7 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('success', 'Test mail sent successfully to ' + data.data.email, true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          $scope.alerts.addAlert('danger', data.errors);
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
@@ -255,8 +254,9 @@ app.controller('ActionsCtrl', [
         size: 'lg'
       });
       modalInstance.result.then(function (data) {
+        console.debug(data);
         if (data.lists) {
-          // Confirm email bhena hain
+          // Send live email newsletter
           $scope.sendNewsletter(data);
         } else {
           $scope.sendTestEmail(data);
@@ -359,21 +359,24 @@ app.controller('ActionsCtrl', [
       mobikwik: 'Mobikwik enabled merchants'
     };
     $scope.message = 'Hi %recipient_name%,\n\nThanks for doing business with Razorpay.\n\n# section heading\n\ncontent\ncontent\n\nmore content\n\n---\n\nTeam Razorpay';
+    $scope.template = 'newsletter';
     $scope.lists = { all: true };
     admin.identity().then(function (admin) {
       $scope.adminEmail = admin.email;
     });
-    $scope.test = function (subject, msg) {
+    $scope.test = function (subject, msg, template) {
       $modalInstance.close({
         subject: subject,
-        msg: msg
+        msg: msg,
+        template: template
       });
     };
-    $scope.ok = function (lists, subject, msg) {
+    $scope.ok = function (lists, subject, msg, template) {
       $modalInstance.close({
         lists: Object.keys(lists).join(),
         subject: subject,
-        msg: msg
+        msg: msg,
+        template: template
       });
     };
     $scope.cancel = function () {
