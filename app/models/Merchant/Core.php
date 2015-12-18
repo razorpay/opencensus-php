@@ -80,13 +80,13 @@ class Core extends Base\Core
             'beneficiary_name'      => $merchant->getAttribute('name'),
             'beneficiary_email'     => $merchant->getAttribute('email'),
             'account_number'        => random_integer(11),
-            'beneficiary_address1'  => 'Sreye Apartments, 4A',
-            'beneficiary_address2'  => '1st Main Road, Koramangala',
+            'beneficiary_address1'  => 'Bengaluru Palace',
+            'beneficiary_address2'  => 'Palace Rd, Vasanth Nagar',
             'beneficiary_city'      => 'Banglore',
             'beneficiary_state'     => 'KA',
             'beneficiary_country'   => 'IN',
-            'beneficiary_pin'       => '560034',
-            'beneficiary_mobile'    => random_integer(10),
+            'beneficiary_pin'       => '560052',
+            'beneficiary_mobile'    => '1800270032',
         );
 
         $ba = (new BankAccount\Entity)->build($attributes);
