@@ -144,7 +144,7 @@ final class Route
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
         'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
-        'settlement_compute_tax'            => ['post',     'settlements/compute/tax',                'SettlementController@postComputeSettlementServiceTax'          ],
+        'settlement_compute_tax'            => ['post',     'settlements/compute/tax',                  'SettlementController@postComputeSettlementServiceTax'          ],
     );
 
     public static $public = array(
