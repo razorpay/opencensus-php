@@ -37,21 +37,26 @@ class GenerateEmailTemplates extends Command {
     public function fire()
     {
         // This is a map of templates and the rendered file names
+        // Keep this list sorted
         $templates = [
-            'emails/partials/header',
+            'emails/merchant/activation',
+            'emails/merchant/authorized_reminder',
+            'emails/merchant/bankaccount_change',
+            'emails/merchant/daily_report',
+            'emails/merchant/daily_report_debug',
+            'emails/merchant/newsletter',
+            'emails/merchant/payzapp',
+            'emails/merchant/welcome',
+
             'emails/partials/footer',
+            'emails/partials/header',
             'emails/partials/header_image',
             'emails/partials/separator',
+
             'emails/payment/customer',
             'emails/payment/failed_to_authorized',
             'emails/payment/merchant',
-            'emails/merchant/daily_report',
-            'emails/merchant/activation',
-            'emails/merchant/newsletter',
-            'emails/merchant/daily_report_debug',
-            'emails/merchant/welcome',
-            'emails/merchant/authorized_reminder',
-            'emails/merchant/bankaccount_change',
+
             'emails/refund/common',
         ];
 

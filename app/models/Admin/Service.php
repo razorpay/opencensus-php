@@ -102,8 +102,11 @@ class Service extends Base\Service
         {
             // Now we send the newsletter
             $mailer = new Newsletter($input['email'],
-                $input['subject'], $input['msg'],
-                true // Test Email to self
+                $input['subject'],
+                $input['msg'],
+                $input['template'],
+                // Test Email to self
+                true
             );
 
             return $mailer->send();
@@ -122,7 +125,10 @@ class Service extends Base\Service
         {
             $mailer = new Newsletter(
                 $input['lists'],
-                $input['subject'], $input['msg']);
+                $input['subject'],
+                $input['msg'],
+                $input['template']
+            );
 
             return $mailer->send();
         }
