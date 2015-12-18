@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Gateway\Paytm;
 
+use EE\Exception;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
@@ -72,32 +73,11 @@ class PaytmGatewayTest extends TestCase
             $this->testData['testPaytmWalletEntity'], $payment);
     }
 
-    public function testFailedPayment()
-    {
-        $this->markTestIncomplete();
-    }
-
     public function testPayment3dsecureFailed()
     {
         $payment = $this->getDefaultPaymentArray();
 
         $payment = $this->runTestForAuthPayment();
-    }
-
-    public function testVerifyPayment()
-    {
-        $this->setMockGatewayTrue();
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment['method'] = 'wallet';
-        $payment['wallet'] = 'paytm';
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $id = $payment['id'];
-
-        $data = $this->verifyPayment($id);
-
-        $this->assertEquals($data['payment']['verified'], true);
     }
 
     public function testRefundPayment()
@@ -137,5 +117,93 @@ class PaytmGatewayTest extends TestCase
         $content = $this->refundAuthorizedPayment($payment['id'], $input);
 
         $this->assertEquals('refund', $content['entity']);
+    }
+
+    public function testVerifyPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = 'paytm';
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $id = $payment['id'];
+
+        $data = $this->verifyPayment($id);
+
+        $this->assertEquals($data['payment']['verified'], true);
+    }
+
+    public function testFailedPayment()
+    {
+        $this->failAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->timeoutAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+        $id = substr($payment['id'], 4);
+        $this->fixtures->payment->failPayment($id);
+
+        $this->succeedPaymentVerify();
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $payment = $this->getLastEntity('paytm', true);
+    }
+
+    protected function failAuthorizePayment()
+    {
+        $server = $this->mockServerContentFunction(function (& $content)
+                        {
+                            $content['RESPCODE'] = '18';
+                            $content['RESPMSG'] = 'Transaction failed';
+                            $content['STATUS'] = 'TXN_FAILURE';
+
+                            return $content;
+                        });
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $content = $this->doAuthWalletPayment();
+            });
+    }
+
+    protected function timeoutAuthorizePayment()
+    {
+        $server = $this->mockServerContentFunction(function (& $content)
+                        {
+                            throw new Exception\GatewayTimeoutException('Timed out');
+                        });
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $content = $this->doAuthWalletPayment();
+            });
+    }
+
+    protected function succeedPaymentVerify()
+    {
+        $server = $this->mockServerContentFunction(function (& $content)
+                        {
+                            $content['RESPCODE'] = '0';
+                            $content['RESPMSG'] = 'Transaction succeeded';
+                            $content['STATUS'] = 'TXN_SUCCESS';
+
+                            return $content;
+                        });
     }
 }

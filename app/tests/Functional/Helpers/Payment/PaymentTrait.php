@@ -247,6 +247,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
+
+        return $this->doAuthPayment($payment);
+    }
+
     protected function doAuthPaymentViaCheckoutRoute($payment)
     {
         if ($payment === null)
@@ -1000,6 +1013,18 @@ trait PaymentTrait
         $this->assertTrue($this->isResponseInstanceType($type, $response));
     }
 
+    protected function mockServerContentFunction($closure)
+    {
+        $server = $this->mockServer()
+                       ->shouldReceive('content')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server);
+
+        return $server;
+    }
+
     protected function mockServer()
     {
         $class = $this->app['gateway']->getServerClass($this->gateway);
@@ -1010,5 +1035,10 @@ trait PaymentTrait
     protected function setMockServer($server)
     {
          return $this->app['gateway']->setServer($this->gateway, $server);
+    }
+
+    protected function resetMockServer()
+    {
+        return $this->app['gateway']->resetServer($this->gateway);
     }
 }

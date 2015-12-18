@@ -48,9 +48,8 @@ trait GatewayTrait
 
     protected function callGatewayRequestFunctionInternally($request)
     {
-        $ns = $this->getNamespace();
-        $class = $ns.'\Server';
-        $server = new $class;
+        $server = \App::getFacadeRoot()['gateway']->server($this->gateway);
+
         $input = [];
 
         $request['method'] = strtolower($request['method']);
