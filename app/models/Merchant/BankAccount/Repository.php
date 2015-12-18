@@ -60,7 +60,10 @@ class Repository extends Base\Repository
 
     protected function addQueryParamWithTrashed($query, $params)
     {
-        $query->withTrashed();
+        if ($params[self::WITH_TRASHED] === "1")
+        {
+            $query->withTrashed();
+        }
     }
 
     public function bankAccountsWhereIdNullOrBlank()
