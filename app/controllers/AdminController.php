@@ -529,6 +529,16 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postFeatureMerchant($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)
+            ->featureMerchant($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
     public function getMerchantTags($merchantId)
     {
         list($error, $response) = (new Admin\Service)
