@@ -6,6 +6,7 @@ use Models\Base;
 use Models\Gateway;
 use Models\Settlement;
 use Models\Settlement\Daily;
+use Models\Transaction;
 use Carbon\Carbon;
 
 class Service extends Base\Service
@@ -80,5 +81,63 @@ class Service extends Base\Service
         }
 
         return ['total_fees' => $totalFees, 'total_setl_count' => $totalSetlCount];
+    }
+
+    public function computeDailySettlementServiceTax()
+    {
+        $repo = new Daily\Repository;
+
+        return $repo->transaction(function () use($repo)
+        {
+            $dailySettlements = $repo->getIfServiceTaxIsNullOrZero();
+
+            $txnRepo = new Transaction\Repository;
+
+            $totalServiceTax = 0;
+            $totalSetlCount = 0;
+            $count = 0;
+
+            foreach ($dailySettlements as $daily)
+            {
+                $timestamp = $daily->getCreatedAt();
+
+                $date = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+
+                $date = $date->toDateString() . ' 00:00:00';
+
+                $date = Carbon::createFromFormat('Y-m-d H:i:s', $date, 'Asia/Kolkata');
+                $from = $date->timestamp;
+                $to = $date->addDay()->timestamp;
+
+                $setlTxns = $txnRepo->fetch(
+                    ['from' => $from, 'to' => $to, 'type' => 'settlement']);
+
+                $dailyServiceTax = 0;
+
+                assert($daily->getSettlementCountAttribute() === $setlTxns->count());
+
+                foreach ($setlTxns as $setlTxn)
+                {
+                    $dailyServiceTax += $setlTxn->getServiceTax();
+                }
+
+                $daily->setServiceTax($dailyServiceTax);
+
+                $repo->saveOrFail($daily);
+
+                $totalServiceTax += $dailyServiceTax;
+
+                $totalSetlCount += $setlTxns->count();
+
+                $count++;
+            }
+
+            return [
+                'total_service_tax' => $totalServiceTax,
+                'total_setl_count' => $totalSetlCount,
+                'total_daily_settlements' => $count
+            ];
+
+        });
     }
 }

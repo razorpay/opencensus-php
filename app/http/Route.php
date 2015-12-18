@@ -146,6 +146,7 @@ final class Route
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
         'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
         'settlement_compute_tax'            => ['post',     'transactions/compute/setltax',             'TransactionController@postComputeSettlementServiceTax'         ],
+        'daily_settlement_compute_tax'      => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'     ],
     );
 
     public static $public = array(
@@ -257,6 +258,7 @@ final class Route
         'payment_refund_authorized',
         'payment_compute_tax',
         'settlement_compute_tax',
+        'daily_settlement_compute_tax',
         'refund_netbanking_generate_excel',
         'transaction_monthly_report',
         'hdfc_mpr_reconcile',

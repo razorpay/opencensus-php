@@ -138,4 +138,11 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postComputeDailySettlementServiceTax()
+    {
+        $data = (new Settlement\Daily\Service)->computeDailySettlementServiceTax();
+
+        return ApiResponse::json($data);
+    }
 }
