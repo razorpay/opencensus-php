@@ -19,22 +19,21 @@ angular.module('app.filters', []).filter('fromNow', function () {
   };
 }).filter('rupee', function() {
   return function (input, symbol) {
-    if (typeof symbol === 'undefined') {
-      symbol = '₨';
+    if (!input) {
+      input = 0;
     };
-    if (!input)
-      return input;
-    input = input.toString();
+    // If passing an alternate symbol like INR suffix it with a space
+    if (typeof symbol === 'undefined') {
+      // This is Rupee symbol unicode code point
+      // https://codepoints.net/U+20B9
+      symbol = '\u20b9';
+    };
 
-    var afterPoint = '';
-    if(input.indexOf('.') > 0)
-       afterPoint = input.substring(input.indexOf('.'), input.length);
-    input = Math.floor(input).toString();
-    var lastThree = input.substring(input.length-3);
-    var otherNumbers = input.substring(0,input.length-3);
-    if(otherNumbers != '')
-        lastThree = ',' + lastThree;
-    otherNumbers = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
-    return symbol + otherNumbers + lastThree + afterPoint;
+    // Poke @pranav about the regex
+    var splits = input
+      .toFixed(2)
+      .toString()
+      .match(/-?([^-]{1,3}(\..+)?$|[^-]{1,2}(?=.([^\.]{2})+(\..+)?$))/g);
+    return symbol + splits.join(',');
   }
 });

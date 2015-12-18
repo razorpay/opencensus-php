@@ -95,7 +95,7 @@
           <div collapse="isRefundsCollapsed" class="panel-body">
             <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
               <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
-              {{refund.amount/100 | currency:refund.currency + " "}}
+              {{refund.amount/100 | rupee:refund.currency + " "}}
             </a>
           </div>
         </div>
