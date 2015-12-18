@@ -219,7 +219,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
-    public function testChangeBankAccount()
+    public function testChangeBankAccountWithoutSettlment()
     {
         $this->testAddBankAccount();
 
@@ -227,6 +227,8 @@ class MerchantTest extends TestCase
 
         $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
 
+        // The old account should get deleted(hard delete) as there are no settlements
+        // attached to it.
         $this->assertEquals(1, $bankAccounts['count']);
     }
 
@@ -250,6 +252,8 @@ class MerchantTest extends TestCase
 
         $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
 
+        // The old account should get SOFT deleted as there are settlements
+        // attached to it.
         $this->assertEquals(2, $bankAccounts['count']);
     }
 
