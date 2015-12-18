@@ -74,6 +74,32 @@ app.controller('MerchantDetailCtrl', [
       });
     }
 
+    $scope.featureMerchant = function(beta_features) {
+      // Tags will be a csv field
+      var request = $http({
+        url: '/admin/merchant/' + $scope.merchant.id + '/features',
+        method: 'POST',
+        transformRequest: transformRequestAsFormPost,
+        data: {
+          beta_features: beta_features
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Features has been added successfully.', true);
+          $scope.merchant.details.beta_features = data.data.beta_features;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.unlockForm = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unlock');
       request.success(function (data) {
@@ -414,6 +440,21 @@ app.controller('MerchantDetailCtrl', [
         $scope.tagMerchant(tags);
       }, $.noop);
     };
+    $scope.openFeatureMerchant = function () {
+      var beta_features = $scope.merchant.details.beta_features || [];
+      var modalInstance = $modal.open({
+        templateUrl: 'featureModalContent.html',
+        controller: 'featureModalCtrl',
+        resolve: {
+          current: function () {
+            return beta_features;
+          }
+        }
+      });
+      modalInstance.result.then(function (beta_features) {
+        $scope.featureMerchant(beta_features);
+      }, $.noop);
+    };
     $scope.openAssignTerminal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'assignTerminalModalContent.html',
@@ -726,6 +767,19 @@ app.controller('MerchantDetailCtrl', [
     $scope.tags = current.join();
     $scope.ok = function (tags) {
       $modalInstance.close(tags);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('featureModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    $scope.beta_features = current.join();
+    $scope.ok = function (beta_features) {
+      $modalInstance.close(beta_features);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
