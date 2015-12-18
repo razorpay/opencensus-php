@@ -13,8 +13,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'BankAccount';
 
+    const WITH_TRASHED = 'with_trashed';
+
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        self::WITH_TRASHED      => 'sometimes|in:0,1',
     );
 
     public function updateBankAccount($ba)
@@ -38,7 +41,9 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')->count();
+        return $repo::withTrashed()
+                    ->where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')
+                    ->count();
     }
 
     public function getAllOrderedByCreatedAt()
@@ -53,13 +58,42 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
 
+    protected function addQueryParamWithTrashed($query, $params)
+    {
+        if ($params[self::WITH_TRASHED] === '1')
+        {
+            $query->withTrashed();
+        }
+    }
+
     public function bankAccountsWhereIdNullOrBlank()
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::ID, '=', "")
+        return $repo::where(Entity::ID, '=', '')
                                 ->orWhereNull(BankAccount\Entity::ID)
                                 ->take(500)
                                 ->get();
+    }
+
+    /**
+     * This should be called when deleting a BankAccount Entity.
+     *
+     * This checks if the bankAccount has any settlements linked to it.
+     * If there are linked settlements then it is soft deleted.
+     * Else, it is hard deleted.
+     *
+     * @param  BankAccount\Entity $bankAccount The bank account to be deleted
+     */
+    public function delete($bankAccount)
+    {
+        if ($bankAccount->settlements->count() === 0)
+        {
+            return $bankAccount->forceDelete();
+        }
+        else
+        {
+            return $bankAccount->delete();
+        }
     }
 }

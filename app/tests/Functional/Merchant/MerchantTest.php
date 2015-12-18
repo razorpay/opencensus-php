@@ -2,12 +2,15 @@
 
 namespace Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Tests\Functional\Settlement\SettlementTrait;
 
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
+    use SettlementTrait;
 
     public function setUp()
     {
@@ -220,6 +223,44 @@ class MerchantTest extends TestCase
         $this->testAddBankAccount();
 
         $content = $this->startTest();
+    }
+
+    public function testChangeBankAccount()
+    {
+        $this->testAddBankAccount();
+
+        $content = $this->startTest();
+
+        $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
+
+        // The old account should get deleted(hard delete) as there are no settlements
+        // attached to it.
+        $this->assertEquals(1, $bankAccounts['count']);
+    }
+
+    public function testChangeBankAccountWithSettlement()
+    {
+        $this->testAddBankAccount();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+
+        $capturedPayments = $this->fixtures->times(4)->create(
+            'payment:captured',
+            ['captured_at' => $capturedAt,
+             'created_at' => $createdAt,
+             'updated_at' => $createdAt + 10]);
+
+        $this->initiateSettlements();
+
+        $testData = $this->testData['testChangeBankAccount'];
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccounts = $this->getEntities('bank_account', ['with_trashed'=> true], true);
+
+        // The old account should get SOFT deleted as there are settlements
+        // attached to it.
+        $this->assertEquals(2, $bankAccounts['count']);
     }
 
     public function testSetBanks()

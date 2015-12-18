@@ -2,6 +2,7 @@
 
 namespace Models\Merchant;
 
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
@@ -115,5 +116,13 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::all(['name', 'email']);
+    }
+
+    public function fetchMerchantWhereTestBankIsNull()
+    {
+        $repo = new $this->repo;
+        return $repo->setConnection(Mode::TEST)
+                    ->has('bankAccount', '<', 1)
+                    ->get();
     }
 }

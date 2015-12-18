@@ -269,43 +269,55 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $newBankAccount = (new BankAccount\Entity)->build($input);
+        $newBankAccount->merchant()->associate($merchant);
+
         $bankAccountRepo = new BankAccount\Repository;
-        $ba = $bankAccountRepo->getBankAccount($merchant);
+        $bankAccount = $bankAccountRepo->getBankAccount($merchant);
 
-        if ($ba !== null)
+        if ($bankAccount !== null)
         {
-            $baCopy = (new BankAccount\Entity)->build($input);
-            $baCopy->merchant()->associate($merchant);
-
-            if ($ba->equals($baCopy))
+            if ($bankAccount->equals($newBankAccount))
             {
-                return $ba->toArray();
+                return $bankAccount->toArray();
             }
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
+            return $bankAccountRepo->transaction(function()
+                        use($merchant, $bankAccount, $newBankAccount, $bankAccountRepo)
+            {
+                return $this->changeBankAccountTransaction(
+                                                $merchant,
+                                                $bankAccount,
+                                                $newBankAccount,
+                                                $bankAccountRepo);
+
+            });
         }
 
-        $ba = (new BankAccount\Entity)->build($input);
+        $bankAccountRepo->saveOrFail($newBankAccount);
 
-        $code = $ba->beneficiary_code;
+        return $newBankAccount->toArray();
+    }
 
-        $count = $bankAccountRepo->getBeneficiaryCodeCountByPattern($code);
+    public function changeBankAccountTransaction($merchant, $oldBankAccount, $newBankAccount, $bankAccountRepo)
+    {
+        $bankAccountRepo->delete($oldBankAccount);
 
-        if ($count === 0)
-            $count = '';
-        else
-            $count++;
+        $bankAccountRepo->saveOrFail($newBankAccount);
 
-        $code .= $count;
+        if ($this->mode === Mode::LIVE)
+        {
+            $subject = "Razorpay | Bank account change successful for ";
+            $subject .= ($merchant->getBillingLabel() === null)?
+                                        $merchant->name:
+                                        $merchant->getBillingLabel();
+            $this->sendEmail(
+                'emails.merchant.bankaccount_change',
+                $subject,
+                array_merge($merchant->toArray(), $newBankAccount->toArray()));
+        }
 
-        $ba->beneficiary_code = $code;
-
-        $ba->merchant()->associate($merchant);
-
-        $bankAccountRepo->saveOrFail($ba);
-
-        return $ba->toArray();
+        return $newBankAccount->toArray();
     }
 
     public function getBankAccount($id)
@@ -350,6 +362,26 @@ class Service extends Base\Service
 
         return ['fetched' => $fetched, 'processed' => $count];
 
+    }
+
+    public function generateTestBankAccounts()
+    {
+        $repo = $this->repo;
+
+        $merchants = $repo->fetchMerchantWhereTestBankIsNull();
+        $fetched = $merchants->count();
+
+        $core = new Merchant\Core;
+
+        $count = 0;
+
+        foreach ($merchants as $merc)
+        {
+            $core->createTestBankAccount($merc);
+            $count++;
+        }
+
+        return ['fetched' => $fetched, 'processed' => $count];
     }
 
     public function getBanks($id)
