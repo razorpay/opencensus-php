@@ -283,12 +283,13 @@ class Service extends Base\Service
             }
 
             return $bankAccountRepo->transaction(function()
-                                    use($merchant, $bankAccount, $newBankAccount)
+                        use($merchant, $bankAccount, $newBankAccount, $bankAccountRepo)
             {
                 return $this->changeBankAccountTransaction(
                                                 $merchant,
                                                 $bankAccount,
-                                                $newBankAccount);
+                                                $newBankAccount,
+                                                $bankAccountRepo);
 
             });
         }
@@ -298,9 +299,8 @@ class Service extends Base\Service
         return $newBankAccount->toArray();
     }
 
-    public function changeBankAccountTransaction($merchant, $oldBankAccount, $newBankAccount)
+    public function changeBankAccountTransaction($merchant, $oldBankAccount, $newBankAccount, $bankAccountRepo)
     {
-        $bankAccountRepo = new BankAccount\Repository;
         $bankAccountRepo->delete($oldBankAccount);
 
         $bankAccountRepo->saveOrFail($newBankAccount);
