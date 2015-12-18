@@ -142,7 +142,7 @@ class Service extends Base\Service
 
                 $setl->setServiceTax($tax);
 
-                $repo->save($setl);
+                $repo->saveOrFail($setl);
 
                 $totalServiceTax += $tax;
                 $totalCount ++;
