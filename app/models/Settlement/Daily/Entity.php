@@ -162,9 +162,4 @@ class Entity extends Base\PublicEntity
     {
         return (int) $this->attributes[self::TRANSACTION_COUNT];
     }
-
-    public function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
 }

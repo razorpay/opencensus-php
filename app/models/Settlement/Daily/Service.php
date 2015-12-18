@@ -6,7 +6,6 @@ use Models\Base;
 use Models\Gateway;
 use Models\Settlement;
 use Models\Settlement\Daily;
-use Models\Transaction;
 use Carbon\Carbon;
 
 class Service extends Base\Service
@@ -91,7 +90,7 @@ class Service extends Base\Service
         {
             $dailySettlements = $repo->getIfServiceTaxIsNullOrZero();
 
-            $txnRepo = new Transaction\Repository;
+            $setlRepo = new Settlement\Repository;
 
             $totalServiceTax = 0;
             $totalSetlCount = 0;
@@ -109,16 +108,16 @@ class Service extends Base\Service
                 $from = $date->timestamp;
                 $to = $date->addDay()->timestamp;
 
-                $setlTxns = $txnRepo->fetch(
-                    ['from' => $from, 'to' => $to, 'type' => 'settlement']);
+                $settlements = $setlRepo->fetch(
+                    ['from' => $from, 'to' => $to]);
 
                 $dailyServiceTax = 0;
 
-                assert($daily->getSettlementCountAttribute() === $setlTxns->count());
+                assert($daily->getSettlementCountAttribute() === $settlements->count());
 
-                foreach ($setlTxns as $setlTxn)
+                foreach ($settlements as $setl)
                 {
-                    $dailyServiceTax += $setlTxn->getServiceTax();
+                    $dailyServiceTax += $setl->getServiceTax();
                 }
 
                 $daily->setServiceTax($dailyServiceTax);
@@ -127,7 +126,7 @@ class Service extends Base\Service
 
                 $totalServiceTax += $dailyServiceTax;
 
-                $totalSetlCount += $setlTxns->count();
+                $totalSetlCount += $settlements->count();
 
                 $count++;
             }
