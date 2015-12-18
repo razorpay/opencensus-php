@@ -308,7 +308,7 @@ class Service extends Base\Service
     public function fetchMerchantDetails($id)
     {
         $merchant = Merchant\Entity::findorfail($id);
-
+       
         if ($merchant->confirm_token !== null)
         {
             return $merchant->toArray();
@@ -318,10 +318,9 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $data = $this->api->merchant->fetch($id)->toArray();
-
+        $data = $this->api->admin->fetchEntityById('merchant', $id)->toArray();
+        
         $data['merchant_details'] = $merchant_details->toArray();
-
 
         // @todo This is failing tests on wercker, fix
         // $merchant = Merchant\Entity::findorfail($id);
@@ -333,6 +332,7 @@ class Service extends Base\Service
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
             'tags'              => $merchant['tags']
+
         ) + $data;
 
         return $response;
@@ -1458,6 +1458,45 @@ class Service extends Base\Service
         {
             return [$error, null];
         }
+    }
+
+    public function featureMerchant($merchantId, $input)
+    {
+        //Send the input data to api for persistance
+        $error = $response = array();
+
+        $error = (new Admin\Validator)->validateInput('add_features', $input)
+            ->messages();
+
+        if (!empty($error))
+        {
+            return array($error, null);
+        }
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $params = array('beta_features' => $input['beta_features']);
+            
+            $response = $this->api->merchant->fetch($merchantId)->setFeatures($params)->toArray();
+            
+            $features = $this->api->merchant->fetch($merchantId)->fetchFeatures()->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if (empty($error))
+        {
+            $merchant = Merchant\Entity::findOrFail($merchantId);
+            $merchant->retag($features);
+            $merchant['beta_features'] = $features;
+            return [null, $merchant->toArray()];
+        }
+
+        return array($error, null);
     }
 
     public function getMerchantTags($merchantId)
