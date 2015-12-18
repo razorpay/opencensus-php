@@ -191,14 +191,4 @@ class Repository extends Base\Repository
         return $repo::where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
                     ->get();
     }
-
-    public function getSettlementWithServiceTaxNullOrZero()
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Transaction\Entity::TYPE, '=', Type::SETTLEMENT)
-                    ->where(Entity::SERVICE_TAX, '=', '0')
-                    ->orWhereNull(Entity::SERVICE_TAX)
-                    ->get();
-    }
 }

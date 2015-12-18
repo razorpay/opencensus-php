@@ -145,7 +145,7 @@ final class Route
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
         'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
-        'settlement_compute_tax'            => ['post',     'transactions/compute/setltax',             'TransactionController@postComputeSettlementServiceTax'         ],
+        'settlement_compute_tax'            => ['post',     'settlements/compute/tax',                  'SettlementController@postComputeSettlementServiceTax'          ],
         'daily_settlement_compute_tax'      => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'     ],
     );
 

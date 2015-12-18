@@ -30,11 +30,4 @@ class TransactionController extends BaseController
 
         return ApiResponse::json($data);
     }
-
-    public function postComputeSettlementServiceTax()
-    {
-        $data = (new Transaction\Service)->calculatePrevousSettlementServiceTax();
-
-        return ApiResponse::json($data);
-    }
 }

@@ -184,10 +184,6 @@ class HdfcGatewayMprTest extends TestCase
         $content = $this->getEntities('settlement', array(), true);
 
         $this->assertArraySelectiveEquals($this->testData['testUploadMprSettlementData'], $content);
-
-        $content = $this->getEntities('transaction', array('type' => 'settlement'), true);
-
-        $this->assertArraySelectiveEquals($this->testData['testUploadMprSetlTxnsData'], $content);
     }
 
     protected function mockSlack($times)
