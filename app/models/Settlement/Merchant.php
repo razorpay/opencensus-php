@@ -112,7 +112,6 @@ class Merchant
             Transaction\Entity::AMOUNT      => $this->amount,
             Transaction\Entity::TYPE        => Transaction\Type::SETTLEMENT,
             Transaction\Entity::CHANNEL     => $this->channel,
-            Transaction\Entity::SERVICE_TAX => $this->serviceTax,
         );
 
         $txn->fillAndGenerateId($values);
@@ -131,6 +130,7 @@ class Merchant
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
         $setl->setFees($this->fee);
+        $setl->setServiceTax($this->serviceTax);
         $setl->setChannel($this->channel);
 
         $setl->transaction()->associate($this->setlTransaction);

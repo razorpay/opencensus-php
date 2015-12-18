@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
     const FEES                  = 'fees';
+    const SERVICE_TAX           = 'service_tax';
     const STATUS                = 'status';
     const TRANSACTION_ID        = 'transaction_id';
     const CHANNEL               = 'channel';
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
 //        self::AMOUNT,
         self::FEES,
+        self::SERVICE_TAX,
         self::STATUS,
         self::MERCHANT_ID,
         self::TRANSACTION_ID);
@@ -37,6 +39,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::AMOUNT,
         self::FEES,
+        self::SERVICE_TAX,
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
@@ -50,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::FEES,
+        self::SERVICE_TAX,
         self::STATUS,
         self::CREATED_AT);
 
@@ -81,6 +85,11 @@ class Entity extends Base\PublicEntity
     public function getFees()
     {
         return $this->getAttribute(self::FEES);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
     }
 
     public function getAmountAttribute()
@@ -130,6 +139,11 @@ class Entity extends Base\PublicEntity
     public function setFees($fee)
     {
         $this->setAttribute(self::FEES, $fee);
+    }
+
+    public function setServiceTax($serviceTax)
+    {
+        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
     public function getTransactionId()
