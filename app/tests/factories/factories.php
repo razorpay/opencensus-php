@@ -1,5 +1,13 @@
 <?php
+
 $factory('Models\Merchant\Entity', [
+    'id'  =>  $faker->word,
+    'name'  =>  $faker->word,
+    'email'  =>  $faker->email,
+    'password'  =>  '123456'
+]);
+
+$factory('Models\User\Entity', [
     'id'  =>  $faker->word,
     'name'  =>  $faker->word,
     'email'  =>  $faker->email,
