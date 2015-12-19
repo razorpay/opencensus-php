@@ -3,6 +3,7 @@
 namespace Models\Admin;
 
 use AWS;
+use Auth;
 use Config;
 use Models\Base;
 use Models\Admin;
@@ -25,7 +26,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $verify = \Auth::admin()->attempt($input);
+            $verify = Auth::admin()->attempt($input);
 
             if ($verify)
             {
@@ -182,7 +183,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        if ($id === \Auth::admin()->id())
+        if ($id === Auth::admin()->id())
         {
             $error[] = 'You can not delete yourself.';
         }
@@ -1255,7 +1256,7 @@ class Service extends Base\Service
 
         try
         {
-            $input['email'] = \Auth::admin()->get()->email;
+            $input['email'] = Auth::admin()->get()->email;
 
             return [null, $this->api->admin->sendTestNewsletter($input)
                 ->toArray()];
@@ -1429,7 +1430,7 @@ class Service extends Base\Service
 
     public function logDataExport($entity, $params)
     {
-        $adminId = \Auth::admin()->get()->username;
+        $adminId = Auth::admin()->get()->username;
 
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
     }
