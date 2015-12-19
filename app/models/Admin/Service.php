@@ -63,6 +63,28 @@ class Service extends Base\Service
     }
 
     /**
+     * Logs the admin in to the user account of the primary owner
+     *
+     * @param  $merchantId ineteger
+     * @return  Status
+     */
+    public function loginUsingPrimaryOwner($merchant_id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findOrFail($merchant_id);
+        
+        $user = Auth::user()->loginUsingId($merchant->primaryOwner()->id);
+
+        if(!$user)
+        {
+            return array("Could not log you in to the primary owner's account");
+        }
+
+        return $error;
+    }
+
+    /**
      * Changes password oflogged in admin
      *
      * @param  $input input array

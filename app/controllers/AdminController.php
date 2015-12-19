@@ -78,9 +78,10 @@ class AdminController extends BaseController
 
     public function getMerchantLogin($id)
     {
-        $merchant = Merchant\Entity::findOrFail($id);
+        $error = (new Admin\Service)->loginUsingPrimaryOwner($id);
 
-        Auth::user()->loginUsingId($merchant->primaryOwner()->id);
+        if(empty($error) === false)
+            return AppResponse::jsonResponse($error);
 
         return Redirect::to('/');
     }
