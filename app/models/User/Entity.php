@@ -141,6 +141,17 @@ class Entity extends Base\Entity implements UserInterface
     }
 
     /**
+     * Get the id of the merchant that user is currently viewing.
+     *
+     * @param  void
+     * @return integer
+     */
+    public function getCurrentMerchantId()
+    {
+        return $this->currentMerchant->id;
+    }
+
+    /**
      * Switch the current merchant for the user.
      *
      * @param  \Models\Merchant\Entity  $merchant

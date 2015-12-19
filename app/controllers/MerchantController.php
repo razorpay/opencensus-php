@@ -70,7 +70,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = $merchant = Auth::user()->user()->currentMerchant->id;
+        $input['merchant_id'] = $merchant = Auth::user()->user()->getCurrentMerchantId();
 
         list($error, $data) = (new Merchant\Service)->rollKeys($input, $mode);
 
