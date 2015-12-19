@@ -3,6 +3,7 @@
 namespace Models\Settlement;
 
 use Models\Base;
+use Models\Merchant\BankAccount;
 use Models\Transaction;
 use EE\Exception;
 
@@ -10,6 +11,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
+    const BANK_ACCOUNT_ID       = 'bank_account_id';
     const AMOUNT                = 'amount';
     const FEES                  = 'fees';
     const SERVICE_TAX           = 'service_tax';
@@ -32,11 +34,13 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::MERCHANT_ID,
+        self::BANK_ACCOUNT_ID,
         self::TRANSACTION_ID);
 
     protected $visible = array(
         self::ID,
         self::MERCHANT_ID,
+        self::BANK_ACCOUNT_ID,
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
@@ -60,6 +64,14 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo(
+                                'Models\Merchant\BankAccount\Entity',
+                                self::BANK_ACCOUNT_ID,
+                                BankAccount\Entity::ID);
     }
 
     public function transaction()

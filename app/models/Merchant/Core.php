@@ -28,6 +28,8 @@ class Core extends Base\Core
 
         $this->createBalance($merchant, Mode::TEST);
 
+        (new Merchant\BankAccount\Core)->createTestBankAccount($merchant);
+
         (new Methods\Core)->setDefaultMethods($merchant);
 
         return $merchant;

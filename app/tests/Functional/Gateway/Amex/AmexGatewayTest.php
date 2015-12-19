@@ -26,6 +26,16 @@ class AmexGatewayTest extends TestCase
         $this->payment['card']['cvv'] = '8888';
     }
 
+    public function testAmexNotEnabledOnLive()
+    {
+        $this->ba->publicLiveAuth();
+        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->enableCard();
+
+        $this->setExpectedException('EE\Exception\BadRequestException');
+        $this->doAuthPayment($this->payment);
+    }
+
     public function testPayment()
     {
         $this->doAuthPayment($this->payment);

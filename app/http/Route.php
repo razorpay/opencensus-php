@@ -64,6 +64,8 @@ final class Route
         'merchant_get_pricing'              => ['get',      'merchants/{id}/pricing',                   'MerchantController@getPricingPlan'                             ],
         'merchant_add_bank_account'         => ['post',     'merchants/{id}/bank_account',              'MerchantController@postBankAccount'                            ],
         'merchant_fetch_bank_account'       => ['get',      'merchants/{id}/bank_account',              'MerchantController@getBankAccount'                             ],
+        'merchant_generate_bank_account_id' => ['post',     'merchants/bank_account/id',                'MerchantController@postGenerateBankAccountIds'                 ],
+        'merchant_generate_test_bank_acnt'  => ['post',     'merchants/bank_account/generate/test',     'MerchantController@postGenerateTestBankAccounts'               ],
         'merchant_create_terminal'          => ['post',     'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'                         ],
         'merchant_get_terminals'            => ['get',      'merchants/{id}/terminals',                 'MerchantController@getTerminals'                               ],
         'merchant_get_terminal'             => ['get',      'merchants/{mid}/terminals/{tid}',          'MerchantController@getTerminal'                                ],
@@ -206,6 +208,8 @@ final class Route
         'merchant_get_pricing',
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
+        'merchant_generate_bank_account_id',
+        'merchant_generate_test_bank_acnt',
         'merchant_create_terminal',
         'merchant_daily_report',
         'merchant_delete_terminal',
@@ -217,7 +221,6 @@ final class Route
         'merchant_get_banks',
         'merchant_set_banks',
         'merchant_set_all_banks',
-        'merchant_fetch_balance',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_post_beneficiary_file',
@@ -262,8 +265,6 @@ final class Route
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
-        'admin_fetch_entity_multiple',
-        'admin_fetch_entity_by_id',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
@@ -271,7 +272,7 @@ final class Route
         'send_newsletter',
     );
 
-    public static $proxy        = array(
+    public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'transaction_fetch_by_id',
@@ -285,6 +286,7 @@ final class Route
         'card_fetch_by_id',
         'card_fetch_multiple',
         'payment_authorize_refund',
+        'merchant_fetch_balance',
     );
 
     public static $direct = array(

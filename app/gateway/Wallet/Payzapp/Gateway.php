@@ -144,6 +144,7 @@ class Gateway extends Base\Gateway
                 'request' => $input['gateway'],
                 'gateway' => $this->gateway,
                 'payment_id' => $input['payment']['id'],
+                'pickedup_data' => $serverData,
             ]);
 
         $this->verifyPaymentCallbackResponse($input['gateway']);
@@ -428,7 +429,14 @@ class Gateway extends Base\Gateway
                 'content' => json_encode($content),
                 'headers' => ['Content-Type' => 'application/json']);
 
-            $response = $this->runRequestResponseFlow($request);
+            $options = [];
+
+            if($this->mode === Mode::LIVE)
+            {
+                $options = array('proxy'   => true);
+            }
+
+            $response = $this->runRequestResponseFlow($request, $options);
 
             $content = json_decode($response->body, true);
 
@@ -666,8 +674,13 @@ class Gateway extends Base\Gateway
         return $input['terminal']['gateway_terminal_id'];
     }
 
-    protected function runRequestResponseFlow(array $request)
+    protected function runRequestResponseFlow(array $request, array $options = [])
     {
+        if ((isset($options['proxy'])) && ($options['proxy'] === true))
+        {
+            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
         $request['options']['timeout'] = 30;
 
         try

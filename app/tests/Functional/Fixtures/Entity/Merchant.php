@@ -121,7 +121,7 @@ class Merchant extends Base
         $this->fixtures->create('methods', $attributes);
     }
 
-    public function activate($id)
+    public function activate($id = '10000000000000')
     {
         return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }

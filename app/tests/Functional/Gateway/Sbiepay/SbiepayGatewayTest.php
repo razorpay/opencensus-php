@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Gateway\Sbiepaypay;
+namespace Tests\Functional\Gateway\Sbiepay;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;

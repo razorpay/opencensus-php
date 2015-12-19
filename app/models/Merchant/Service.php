@@ -43,7 +43,10 @@ class Service extends Base\Service
         // The merchant is created on email confirmation on dashboard side
         // This is when we send the welcome email
 
-        $this->sendEmail('emails.merchant.welcome', 'Welcome to Razorpay', $merchant->toArray());
+        $this->sendEmail(
+            'emails.merchant.welcome',
+            'Welcome to Razorpay',
+            $merchant->toArray());
 
         return $merchant->toArrayPublic();
     }
@@ -86,6 +89,11 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
+        //
+        // For non-activated merchants in live mode, simply return 0.
+        // For these merchants, balance entity is not yet created so
+        // we need to create the exception here.
+        //
         if (($this->mode === Mode::LIVE) and
             ($merchant->getActivatedAttribute() === false) and
             (Account::isNodalAccount($merchantId) === false))
@@ -269,41 +277,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $bankAccountRepo = new BankAccount\Repository;
-        $ba = $bankAccountRepo->getBankAccount($merchant);
-
-        if ($ba !== null)
-        {
-            $baCopy = (new BankAccount\Entity)->build($input);
-            $baCopy->merchant()->associate($merchant);
-
-            if ($ba->equals($baCopy))
-            {
-                return $ba->toArray();
-            }
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
-        }
-
-        $ba = (new BankAccount\Entity)->build($input);
-
-        $code = $ba->beneficiary_code;
-
-        $count = $bankAccountRepo->getBeneficiaryCodeCountByPattern($code);
-
-        if ($count === 0)
-            $count = '';
-        else
-            $count++;
-
-        $code .= $count;
-
-        $ba->beneficiary_code = $code;
-
-        $ba->merchant()->associate($merchant);
-
-        $bankAccountRepo->saveOrFail($ba);
+        $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
         return $ba->toArray();
     }
@@ -315,6 +289,61 @@ class Service extends Base\Service
         $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
         return $ba->toArray();
+    }
+
+
+    public function generateBankAccountIds()
+    {
+        $bankAccountRepo = new BankAccount\Repository();
+
+        $bankAccounts = $bankAccountRepo->bankAccountsWhereIdNullOrBlank();
+
+        $fetched = $bankAccounts->count();
+
+        $bankAccountRepo->beginTransaction();
+
+        $count = 0;
+
+        try {
+            foreach ($bankAccounts as $bankAcc)
+            {
+                $bankAcc->generateIdFromCreatedAt();
+                $bankAccountRepo->save($bankAcc);
+                $count++;
+            }
+
+            $bankAccountRepo->commit();
+        }
+        catch (Exception $e)
+        {
+            $bankAccountRepo->rollback();
+            throw new Exception\RuntimeException(
+                        'Failed generating BankAccount id',
+                        $e->getTrace());
+        }
+
+        return ['fetched' => $fetched, 'processed' => $count];
+
+    }
+
+    public function generateTestBankAccounts()
+    {
+        $repo = $this->repo;
+
+        $merchants = $repo->fetchMerchantWhereTestBankIsNull();
+        $fetched = $merchants->count();
+
+        $core = new Merchant\Core;
+
+        $count = 0;
+
+        foreach ($merchants as $merc)
+        {
+            $core->createTestBankAccount($merc);
+            $count++;
+        }
+
+        return ['fetched' => $fetched, 'processed' => $count];
     }
 
     public function getBanks($id)
@@ -393,7 +422,6 @@ class Service extends Base\Service
         return $file;
     }
 
-
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since
@@ -404,6 +432,7 @@ class Service extends Base\Service
     {
         $filterDays = 1;
         $today = Carbon::today('Asia/Kolkata');
+        $filterDate = Carbon::today('Asia/Kolkata');
 
         $dayToday = $today->dayOfWeek;
         if ($dayToday === Carbon::MONDAY)
@@ -411,7 +440,7 @@ class Service extends Base\Service
             $filterDays = 3;
         }
 
-        $filterDate = $today->subDays($filterDays);
+        $filterDate = $filterDate->subDays($filterDays);
         $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
                                                         $filterDate->timestamp,
                                                         $today->timestamp);
@@ -429,36 +458,57 @@ class Service extends Base\Service
         return $merchantsActivatedSinceLastReport;
     }
 
+    /**
+     * Sends activation email to the merchant, cc's notifications
+     * Includes pricing details in the email (properly formatted)
+     * @param  Models\Merchant\Entity $merchant merchant entity
+     * @return null
+     */
     protected function sendActivationEmail($merchant)
     {
-
         $plan = $merchant->getPricingPlan();
+
+        $subjectName = $merchant->getBillingLabelElseName();
+
+        $subject = "Razorpay | Account activated for $subjectName";
 
         $data = [
             'merchant'  =>  $merchant->toArray(),
             'plan'      =>  $plan,
-            'rules'     => $this->formatPricingRules($plan['rules'])
+            'rules'     =>  $this->formatPricingRules($plan['rules']),
+            'subject'   =>  $subject,
         ];
 
         $config = $this->app->config->get('applications.mailgun');
-        $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
-        Mail::queue(
+        // Send the activation email
+        $this->app['mailer']->queue(
             [
                 'html' => 'emails.merchant.activation',
                 'text' => 'emails.merchant.activation_text'
             ],
             $data,
-            function ($message) use ($data, $config, $subject)
+            function ($message) use ($data, $config)
             {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
                 $message->cc('notifications@razorpay.com');
-                $message->subject($subject);
+                $message->subject($data['subject']);
             }
         );
     }
 
+    /**
+     * Returns formatted pricing rules with proper display text
+     * as an array with the display text as the key
+     * [
+     *   "2%" => ["Credit Cards", "Wallets"],
+     *   "1.8%" => ["Wallets"],
+     *   "2.1%" => ["Net Banking"]
+     * ]
+     * @param  array $rules Array of rules
+     * @return array Formatted rules with flipped keys
+     */
     protected function formatPricingRules($rules)
     {
         $newRules = [];
@@ -501,12 +551,15 @@ class Service extends Base\Service
 
     /**
      * sends daily reports for all merchants that are currently live
+     * Returns an array with the keys: `skipped`, and `sent`,
+     * each containing the number of merchants in each category
+     * @return array debug response
      */
     public function sendDailyReportForAllMerchants()
     {
         $filter = [];
 
-        //In test, none of the merchants are activated
+        // In test, none of the merchants are activated
         if ($this->mode === Mode::LIVE)
         {
             $filter = [Entity::ACTIVATED => 1];
@@ -544,6 +597,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * Send newsletter to a particular merchant
+     *
+     * @param  string $merchantId Merchant Id
+     * @param  [type] $input      [description]
+     * @return null
+     */
     public function sendNewsletter($merchantId, $input)
     {
         (new Merchant\Validator)->validateInput('send_email', $input);

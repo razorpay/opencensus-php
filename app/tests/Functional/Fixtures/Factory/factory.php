@@ -36,6 +36,7 @@ $factory('Models\Merchant\Balance\Entity', [
 ]);
 
 $factory('Models\Merchant\BankAccount\Entity', [
+    'id' => $faker->uniqueid,
     'merchant_id' => $faker->uniqueid,
     'ifsc_code' => 'RZPB0000000',
     'account_number' => 10010101011,

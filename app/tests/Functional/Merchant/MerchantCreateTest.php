@@ -65,11 +65,11 @@ class MerchantCreateTest extends TestCase
 
     protected function checkBalances()
     {
-        $this->ba->appAuthTest();
+        $this->ba->proxyAuth();
 
         $this->runRequestResponseFlow($this->testData['testBalanceInTestAfterCreatedMerchant']);
 
-        $this->ba->appAuthLive();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
