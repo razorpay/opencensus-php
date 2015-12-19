@@ -20,15 +20,6 @@ class Validator extends Base\Validator
         'captcha'
     );
 
-    protected static $loginRules = array(
-        'email'     =>      'required|email',
-        'password'  =>      'required|between:6,50',
-    );
-
-    protected static $unsetLoginInput = array(
-        'password'
-    );
-
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
         'gateway'                                   => '',
