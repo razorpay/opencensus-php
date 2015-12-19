@@ -20,7 +20,6 @@ class Core extends Base\Core
 
     public function create($input)
     {
-        s(\App::getFacadeRoot()['rzp.mode']);
         $merchant = (new Merchant\Entity)->build($input);
 
         $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
