@@ -276,14 +276,4 @@ class Entity extends Base\Entity implements UserInterface
     {
         return 'remember_token';
     }
-
-    /**
-     * Hash the password before persisting in the database.
-     *
-     * @return string
-     */
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = \Hash::make($password);
-    }
 }
