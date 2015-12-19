@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT_ID       = 'bank_account_id';
     const AMOUNT                = 'amount';
     const FEES                  = 'fees';
+    const SERVICE_TAX           = 'service_tax';
     const STATUS                = 'status';
     const TRANSACTION_ID        = 'transaction_id';
     const CHANNEL               = 'channel';
@@ -30,6 +31,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
 //        self::AMOUNT,
         self::FEES,
+        self::SERVICE_TAX,
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
@@ -41,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::BANK_ACCOUNT_ID,
         self::AMOUNT,
         self::FEES,
+        self::SERVICE_TAX,
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
@@ -54,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::FEES,
+        self::SERVICE_TAX,
         self::STATUS,
         self::CREATED_AT);
 
@@ -95,9 +99,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEES);
     }
 
-    public function getAmountAttribute()
+    public function getServiceTax()
     {
-        return (int) $this->attributes[self::AMOUNT];
+        return $this->getAttribute(self::SERVICE_TAX);
     }
 
     public function setAmount($amount)
@@ -144,9 +148,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEES, $fee);
     }
 
+    public function setServiceTax($serviceTax)
+    {
+        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
     }
 
     public function getFeesAttribute()
@@ -170,12 +189,12 @@ class Entity extends Base\PublicEntity
 
     protected function validateAmount()
     {
-        if ($this->getAmount() <= 0)
-        {
-            throw new Exception\LogicException(
-                'Something very wrong is happening! ' .
-                'Settlement amount should not be 0 or -ve',
-                $this->toArray());
-        }
+        // if ($this->getAmount() <= 0)
+        // {
+        //     throw new Exception\LogicException(
+        //         'Something very wrong is happening! ' .
+        //         'Settlement amount should not be 0 or -ve',
+        //         $this->toArray());
+        // }
     }
 }
