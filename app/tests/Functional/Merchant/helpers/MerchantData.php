@@ -447,7 +447,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020005304612497',
-                'beneficiary_code' => 'TEST2',
+                'beneficiary_code' => 'TEST',
                 'beneficiary_name' => 'Test R4zorpay',
                 'beneficiary_address1' => '4ddr3ss 1',
                 'beneficiary_address2' => '4ddr3ss 2',

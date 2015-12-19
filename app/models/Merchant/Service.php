@@ -43,7 +43,10 @@ class Service extends Base\Service
         // The merchant is created on email confirmation on dashboard side
         // This is when we send the welcome email
 
-        $this->sendEmail('emails.merchant.welcome', 'Welcome to Razorpay', $merchant->toArray());
+        $this->sendEmail(
+            'emails.merchant.welcome',
+            'Welcome to Razorpay',
+            $merchant->toArray());
 
         return $merchant->toArrayPublic();
     }
@@ -86,6 +89,11 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
+        //
+        // For non-activated merchants in live mode, simply return 0.
+        // For these merchants, balance entity is not yet created so
+        // we need to create the exception here.
+        //
         if (($this->mode === Mode::LIVE) and
             ($merchant->getActivatedAttribute() === false) and
             (Account::isNodalAccount($merchantId) === false))
@@ -269,55 +277,9 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $newBankAccount = (new BankAccount\Entity)->build($input);
-        $newBankAccount->merchant()->associate($merchant);
+        $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
-        $bankAccountRepo = new BankAccount\Repository;
-        $bankAccount = $bankAccountRepo->getBankAccount($merchant);
-
-        if ($bankAccount !== null)
-        {
-            if ($bankAccount->equals($newBankAccount))
-            {
-                return $bankAccount->toArray();
-            }
-
-            return $bankAccountRepo->transaction(function()
-                        use($merchant, $bankAccount, $newBankAccount, $bankAccountRepo)
-            {
-                return $this->changeBankAccountTransaction(
-                                                $merchant,
-                                                $bankAccount,
-                                                $newBankAccount,
-                                                $bankAccountRepo);
-
-            });
-        }
-
-        $bankAccountRepo->saveOrFail($newBankAccount);
-
-        return $newBankAccount->toArray();
-    }
-
-    public function changeBankAccountTransaction($merchant, $oldBankAccount, $newBankAccount, $bankAccountRepo)
-    {
-        $bankAccountRepo->delete($oldBankAccount);
-
-        $bankAccountRepo->saveOrFail($newBankAccount);
-
-        if ($this->mode === Mode::LIVE)
-        {
-            $subject = "Razorpay | Bank account change successful for ";
-            $subject .= ($merchant->getBillingLabel() === null)?
-                                        $merchant->name:
-                                        $merchant->getBillingLabel();
-            $this->sendEmail(
-                'emails.merchant.bankaccount_change',
-                $subject,
-                array_merge($merchant->toArray(), $newBankAccount->toArray()));
-        }
-
-        return $newBankAccount->toArray();
+        return $ba->toArray();
     }
 
     public function getBankAccount($id)
@@ -504,41 +466,34 @@ class Service extends Base\Service
      */
     protected function sendActivationEmail($merchant)
     {
-
         $plan = $merchant->getPricingPlan();
+
+        $subjectName = $merchant->getBillingLabelElseName();
+
+        $subject = "Razorpay | Account activated for $subjectName";
 
         $data = [
             'merchant'  =>  $merchant->toArray(),
             'plan'      =>  $plan,
-            'rules'     =>  $this->formatPricingRules($plan['rules'])
+            'rules'     =>  $this->formatPricingRules($plan['rules']),
+            'subject'   =>  $subject,
         ];
 
         $config = $this->app->config->get('applications.mailgun');
 
-        // Figure out the subject for the activation email
-        $subjectName = $data['merchant']['name'];
-
-        if ((isset($data['merchant']['billing_label'])) and
-            not (empty($data['merchant']['billing_label'])))
-        {
-            $subjectName = $data['merchant']['billing_label'];
-        }
-
-        $subject = "Razorpay | Account activated for $subjectName";
-
         // Send the activation email
-        Mail::queue(
+        $this->app['mailer']->queue(
             [
                 'html' => 'emails.merchant.activation',
                 'text' => 'emails.merchant.activation_text'
             ],
             $data,
-            function ($message) use ($data, $config, $subject)
+            function ($message) use ($data, $config)
             {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
                 $message->cc('notifications@razorpay.com');
-                $message->subject($subject);
+                $message->subject($data['subject']);
             }
         );
     }
@@ -604,7 +559,7 @@ class Service extends Base\Service
     {
         $filter = [];
 
-        //In test, none of the merchants are activated
+        // In test, none of the merchants are activated
         if ($this->mode === Mode::LIVE)
         {
             $filter = [Entity::ACTIVATED => 1];

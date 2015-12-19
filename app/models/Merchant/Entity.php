@@ -180,6 +180,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
+    public function getBillingLabelElseName()
+    {
+        $label = $this->getBillingLabel();
+
+        if (empty($label))
+        {
+            $label = $this->getName();
+        }
+
+        return $label;
+    }
+
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
@@ -238,6 +250,11 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->attributes[self::EMAIL];
+    }
+
+    public function getName()
+    {
+        return $this->attributes[self::NAME];
     }
 
     public function getCategory()
