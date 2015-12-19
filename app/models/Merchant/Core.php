@@ -20,6 +20,7 @@ class Core extends Base\Core
 
     public function create($input)
     {
+        s(\App::getFacadeRoot()['rzp.mode']);
         $merchant = (new Merchant\Entity)->build($input);
 
         $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
@@ -89,9 +90,11 @@ class Core extends Base\Core
             'beneficiary_mobile'    => '18002700323',
         );
 
-        $ba = (new BankAccount\Entity)->build($attributes);
+        $ba = new BankAccount\Entity;
 
         $ba->setConnection(Mode::TEST);
+
+        $ba = $ba->build($attributes);
 
         $ba->merchant()->associate($merchant);
 

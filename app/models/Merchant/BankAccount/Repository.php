@@ -37,11 +37,12 @@ class Repository extends Base\Repository
         return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, '=', $code)->first();
     }
 
-    public function getBeneficiaryCodeCountByPattern($code)
+    public function getBeneficiaryCodeCountByPattern($code, $mode)
     {
         $repo = $this->repo;
 
-        return $repo::withTrashed()
+        return $repo::on($mode)
+                    ->withTrashed()
                     ->where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')
                     ->count();
     }
