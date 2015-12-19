@@ -289,12 +289,14 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes);
 
+        $network = ucfirst(strtolower($input['card']['network']));
+
         $content = array(
             'vpc_Version'           => '1',
             'vpc_ReturnURL'         => $input['callbackUrl'],
             'vpc_Locale'            => 'en',
             'vpc_gateway'           => 'ssl',
-//            'vpc_Card'              => $input['card']['network'],
+            'vpc_Card'              => $network,
             'vpc_CardNum'           => $input['card']['number'],
             'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
             'vpc_CardSecurityCode'  => $input['card']['cvv'],
