@@ -50,6 +50,14 @@ class AxisGatewayTest extends TestCase
             $this->testData['testPaymentAxisMigsEntity'], $payment);
     }
 
+    public function testMasterCardPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testFailedPayment()
     {
         $this->failAuthorizePayment();
