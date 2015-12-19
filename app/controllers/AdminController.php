@@ -530,4 +530,15 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    /**
+     * Confirm a merchant account manually
+     */
+    public function postConfirmMerchant($merchantId)
+    {
+        list($error, $data) = $response = (new Admin\Service)
+            ->confirmMerchant($merchantId);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

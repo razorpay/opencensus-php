@@ -224,6 +224,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/users/{id}/superadmin', array('before'=>'csrf', 'uses'=> 'AdminController@postPromoteAdmin'));
 
+        Route::put('/admin/merchants/{id}/confirmed', array('before'=>'csrf', 'uses'=> 'AdminController@postConfirmMerchant'));
+
         Route::delete('/admin/users/{id}', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');

@@ -1459,4 +1459,21 @@ class Service extends Base\Service
 
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
     }
+
+    public function confirmMerchant($merchantId)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchantId);
+
+        try
+        {
+            $merchant->confirm();
+            $merchant->saveOrFail();
+        }
+        catch(\Exception $e)
+        {
+            return [$e->getMessage(), null];
+        }
+
+        return [null, 'Merchant Confirmed'];
+    }
 }
