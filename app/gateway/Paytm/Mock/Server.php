@@ -54,6 +54,8 @@ class Server extends Base\Mock\Server
         $code = $content['RESPCODE'];
         $content['RESPMSG'] = Paytm\ResponseCode::getResponseMessage($code);
 
+        $content = $this->content($content);
+
         $content['CHECKSUMHASH'] = $this->generateHash($content);
 
         $url = $input['CALLBACK_URL'];
@@ -97,6 +99,8 @@ class Server extends Base\Mock\Server
         {
             $content[strtoupper($field)] = $payment[$field];
         }
+
+        $content = $this->content($content);
 
         return $this->makeResponse(json_encode($content));
     }

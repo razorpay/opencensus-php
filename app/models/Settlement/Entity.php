@@ -104,11 +104,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
     public function setAmount($amount)
     {
         if (($amount <= 0) or
@@ -163,6 +158,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
+    }
+
     public function getFeesAttribute()
     {
         $fee = $this->attributes[self::FEES];
@@ -184,12 +189,12 @@ class Entity extends Base\PublicEntity
 
     protected function validateAmount()
     {
-        if ($this->getAmount() <= 0)
-        {
-            throw new Exception\LogicException(
-                'Something very wrong is happening! ' .
-                'Settlement amount should not be 0 or -ve',
-                $this->toArray());
-        }
+        // if ($this->getAmount() <= 0)
+        // {
+        //     throw new Exception\LogicException(
+        //         'Something very wrong is happening! ' .
+        //         'Settlement amount should not be 0 or -ve',
+        //         $this->toArray());
+        // }
     }
 }

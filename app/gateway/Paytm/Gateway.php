@@ -267,8 +267,7 @@ class Gateway extends Base\Gateway
             '334',
             '309');
 
-        if (($match === true) and
-            ($payment['received'] === false) and
+        if (($payment['received'] === false) and
             (in_array($content['RESPCODE'], $invalidOrderIdRespCode) === false))
         {
             $contentToStore = [];

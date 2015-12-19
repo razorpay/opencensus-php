@@ -2,6 +2,7 @@
 
 namespace Models\Merchant\BankAccount;
 
+use App;
 use EE\Exception;
 use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
@@ -30,7 +31,7 @@ class Entity extends Base\PublicEntity
 
     const IFSC_CODE_LENGTH = 11;
 
-    protected $primaryKey = self::MERCHANT_ID;
+    protected $primaryKey = self::ID;
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
 
@@ -98,10 +99,10 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = array(
         self::ID,
-        self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
-        self::ID,
     );
+
+    protected $genereateIdOnCreate = true;
 
     public function build(array $input = array())
     {
@@ -112,16 +113,6 @@ class Entity extends Base\PublicEntity
         $this->fill($input);
 
         return $this;
-    }
-
-    protected function generateBeneficiaryCode($input)
-    {
-        $name = $input[self::BENEFICIARY_NAME];
-
-        // Caps all then remove spaces then cut first 4.
-        $code = substr(str_replace(' ', '', strtoupper($name)), 0, 4);
-
-        $this->setAttribute(self::BENEFICIARY_CODE, $code);
     }
 
     protected function generateBeneficiaryCountry($input)
@@ -154,29 +145,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
-    public function equals($baCopy)
+    public function getBeneficiaryCode()
     {
-        $orig = $this->toArray();
+        return $this->getAttribute(self::BENEFICIARY_CODE);
+    }
 
-        unset(
-            $orig[self::ID],
-            $orig[self::CREATED_AT],
-            $orig[self::UPDATED_AT],
-            $orig[self::BENEFICIARY_CODE],
-            $orig[self::BENEFICIARY_ADDRESS3],
-            $orig[self::BENEFICIARY_ADDRESS4]);
-
-        $copy = $baCopy->toArray();
-
-        unset(
-            $copy[self::ID],
-            $copy[self::CREATED_AT],
-            $copy[self::UPDATED_AT],
-            $copy[self::BENEFICIARY_ADDRESS3],
-            $copy[self::BENEFICIARY_ADDRESS4],
-            $copy[self::BENEFICIARY_CODE]);
-
-        return ($orig == $copy);
+    public function setBeneficiaryCode($code)
+    {
+        return $this->setAttribute(self::BENEFICIARY_CODE, $code);
     }
 
     public function generateIdFromCreatedAt()

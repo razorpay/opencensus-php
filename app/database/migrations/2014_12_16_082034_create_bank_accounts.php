@@ -21,10 +21,9 @@ class CreateBankAccounts extends Migration
         {
 
             $table->char(BankAccount::ID, BankAccount::ID_LENGTH)
-                  ->nullable();
-
-            $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH)
                   ->primary();
+
+            $table->char(BankAccount::MERCHANT_ID, BankAccount::ID_LENGTH);
 
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 
@@ -53,7 +52,7 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
 
-            $table->char(BankAccount::BENEFICIARY_MOBILE, 10);
+            $table->char(BankAccount::BENEFICIARY_MOBILE, 11);
 
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);
@@ -63,6 +62,14 @@ class CreateBankAccounts extends Migration
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+        });
+
+        Schema::table(Table::SETTLEMENT, function($table)
+        {
+            $table->foreign(Settlement::BANK_ACCOUNT_ID)
+                  ->references(Merchant\BankAccount\Entity::ID)
+                  ->on(Table::BANK_ACCOUNT)
                   ->on_delete('restrict');
         });
     }
@@ -77,6 +84,12 @@ class CreateBankAccounts extends Migration
         Schema::table(Table::BANK_ACCOUNT, function($table)
         {
             $table->dropForeign(Table::BANK_ACCOUNT.'_'.BankAccount::MERCHANT_ID.'_foreign');
+        });
+
+        Schema::table(Table::SETTLEMENT, function($table)
+        {
+            $table->dropForeign(
+                TABLE::SETTLEMENT.'_'.Settlement::BANK_ACCOUNT_ID.'_foreign');
         });
 
         Schema::drop(Table::BANK_ACCOUNT);

@@ -185,4 +185,10 @@ class Payment extends Base
 
         return $payment;
     }
+
+    public function failPayment($id)
+    {
+        $this->edit(
+            $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
+    }
 }

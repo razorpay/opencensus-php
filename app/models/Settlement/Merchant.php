@@ -167,7 +167,8 @@ class Merchant
     {
         $mode = \BasicAuth::getMode();
 
-        if ($mode === Mode::TEST)
+        if (($mode === Mode::TEST) and
+            ($this->merchant->bankAccount === null))
         {
             $ba = $this->attachTestBank($this->merchant);
         }
@@ -190,7 +191,7 @@ class Merchant
     {
         $attributes = array(
             'ifsc_code'             => 'RZPB0000000',
-            'beneficiary_name'      => random_integer(5),
+            'beneficiary_name'      => random_alpha_string(5),
             'beneficiary_email'     => $merchant->getAttribute('email'),
             'account_number'        => random_integer(11),
             'beneficiary_address1'  => random_integer(14),
@@ -208,6 +209,8 @@ class Merchant
         $ba->merchant()->associate($merchant);
 
         $merchant->setRelation('bankAccount', $ba);
+
+        $ba->save();
 
         return $ba;
     }

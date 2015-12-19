@@ -137,9 +137,9 @@ if (! function_exists('random_integer'))
 {
     function random_integer($length = 1)
     {
-        $integer = '';
+        $integer = '' . mt_rand(1, 9);
 
-        for($i = 0; $i < $length; $i++)
+        for($i = 1; $i < $length; $i++)
         {
             $integer .= mt_rand(0, 9);
         }
