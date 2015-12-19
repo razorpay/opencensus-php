@@ -513,6 +513,8 @@ class Service extends Base\Service
     {
         $newRules = [];
 
+        $rules = $this->rearrangeRules($rules);
+
         foreach ($rules as $rule)
         {
             $rule['pricing_display'] = Pricing\Plan::formattedPricing($rule);
@@ -521,7 +523,7 @@ class Service extends Base\Service
             $display = Payment\Method::formatted($rule['payment_method']);
 
             // This now holds Credit/Debit/All
-            $method = $rule['payment_method_type'] ? : 'All';
+            $method = $rule['payment_method_type'] ? : 'Visa/MasterCard/Discover/Diners';
 
             // If we have a payment_network (such as AMEX/DICL)
             if ($rule['payment_network'] !== null)
@@ -531,7 +533,7 @@ class Service extends Base\Service
             }
             elseif ($method !== null and $rule['payment_method'] === 'card')
             {
-                // This is Credit/Debit/All Cards
+                // This is Credit/Debit/[ Visa/Master Card/Diners ] Cards
                 $display = ucfirst($method) . ' Cards';
             }
 
@@ -547,6 +549,60 @@ class Service extends Base\Service
         }
 
         return $newRules;
+    }
+
+    /**
+     * Rearrange $rules to display in emails in appropriate order
+     * Rules are arranged on basis of usage:
+     *  Basic Card Rules,
+     *  Basic Netbanking Rules,
+     *  Basic Wallet Rules,
+     *  Any Other Exceptional Cases,
+     * @param array $rules
+     * @return array
+     */
+    protected function rearrangeRules(array $rules)
+    {
+        $arrangedRules      = array();
+
+        $orderOfRules = array('card', 'netbanking', 'wallet', 'exceptional');
+
+        foreach ($rules as $rule)
+        {
+            switch ($rule['payment_method'])
+            {
+                case 'card':
+                    if ($rule['payment_network'] === null)
+                    {
+                        $cardRules[] = $rule;
+                    }
+                    else
+                    {
+                        $exceptionalRules[] = $rule;
+                    }
+
+                    break;
+
+                case 'netbanking':
+                    $netbankingRules[] = $rule;
+                    break;
+
+                case 'wallet':
+                    $walletRules[] = $rule;
+                    break;
+
+                default:
+                    $exceptionalRules[] = $rule;
+                    break;
+            }
+        }
+
+        foreach ($orderOfRules as $ruleType)
+        {
+            $arrangedRules = array_merge($arrangedRules, ${$ruleType.'Rules'});
+        }
+
+        return $arrangedRules;
     }
 
     /**
