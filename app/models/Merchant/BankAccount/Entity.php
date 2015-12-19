@@ -2,6 +2,7 @@
 
 namespace Models\Merchant\BankAccount;
 
+use App;
 use EE\Exception;
 use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
@@ -119,7 +120,12 @@ class Entity extends Base\PublicEntity
     {
         $name = $input[self::BENEFICIARY_NAME];
 
-        $code = (new Core)->generateBenificiaryCode($name);
+        $app = App::getFacadeRoot();
+
+        $mode = ($this->getConnectionName() !== null)?
+                $this->getConnectionName(): $app['rzp.mode'];
+
+        $code = (new Core)->generateBenificiaryCode($name, $mode);
 
         $this->setAttribute(self::BENEFICIARY_CODE, $code);
     }
