@@ -110,8 +110,16 @@ trait Support
             $status = Status::CAPTURED;
         }
 
-        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
-            $input['payment']['id'], $status);
+        if ($status === Status::CAPTURED)
+        {
+            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureError(
+                                            $input['payment']['id']);
+        }
+        else
+        {
+            $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+                                            $input['payment']['id'], $status);
+        }
 
         $this->id = $input['payment']['id'];
 

@@ -90,6 +90,12 @@ class HdfcGatewayTest extends TestCase
         $this->assertNull($txn);
     }
 
+    /**
+     * Tests that a capture succeeds on gateway but fails on our end.
+     * Then on next verify, it succeeds.
+     * Finally, when refunding, it should succeed.
+     * @return [type] [description]
+     */
     public function testForcedCapture()
     {
         $payment = $this->doAuthPayment();
@@ -99,5 +105,11 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
         $this->assertEquals($payment['status'], 'captured');
+
+        $this->resetGatewayDriver();
+        $this->resetMockServer();
+
+        $refund = $this->refundPayment($payment['id'], $payment['amount']);
+        $this->assertEquals($refund['entity'], 'refund');
     }
 }

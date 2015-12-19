@@ -260,6 +260,24 @@ class Repository extends Base\Repository
         return $repo::where('payment_id', '=', $id)->firstOrFail();
     }
 
+    public function retrieveCapturedOrAcceptedCaptureError($id)
+    {
+        $repo = $this->repo;
+
+        $payment = $repo::where('payment_id', '=', $id)
+                  ->where('status', '=', Payment\Status::CAPTURED)
+                  ->first();
+
+        if ($payment !== null)
+        {
+            return $payment;
+        }
+
+        return $repo::where('payment_id', '=', $id)
+                    ->where('error_code', '=', ErrorCode::GW00176)
+                    ->firstOrFail();
+    }
+
     public function retrieveByPaymentIdAndStatus($id, $status)
     {
         $repo = $this->repo;
@@ -314,6 +332,15 @@ class Repository extends Base\Repository
 
         return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
                     ->where('status', '=', $status)
+                    ->first();
+    }
+
+    public function findByGatewayTransactionIdAndErrorCode($gatewayTxnId, $error)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
+                    ->where('error_code', '=', $error)
                     ->first();
     }
 

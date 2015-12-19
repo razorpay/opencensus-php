@@ -157,6 +157,13 @@ class GatewayManager extends \Illuminate\Support\Manager
         $this->servers[$driver] = new $class;
     }
 
+    public function resetDriver($driver)
+    {
+        $mock = $this->isMock($driver);
+
+        $this->drivers[$driver] = $this->createGatewayDriver($driver, $mock);
+    }
+
     protected function getMockDrivers()
     {
         return $this->mocks;

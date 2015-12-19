@@ -1041,4 +1041,9 @@ trait PaymentTrait
     {
         return $this->app['gateway']->resetServer($this->gateway);
     }
+
+    protected function resetGatewayDriver()
+    {
+        return $this->app['gateway']->resetDriver($this->gateway);
+    }
 }
