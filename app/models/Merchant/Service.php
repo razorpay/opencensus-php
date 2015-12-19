@@ -23,7 +23,7 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        $merchant->password = Hash::make($merchant->password)
+        $merchant->password = Hash::make($merchant->password);
         $merchant->saveOrFail();
 
         $user = User\Entity::createFromMerchant($merchant);
