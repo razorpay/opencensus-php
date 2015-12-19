@@ -52,7 +52,7 @@ class MerchantController extends BaseController
     {
         $merchant = Auth::user()->user()->currentMerchant;
 
-        $keys = (new Merchant\Service)->fetchKeysFromApi($merchant->id(), $mode);
+        $keys = (new Merchant\Service)->fetchKeysFromApi($merchant->id, $mode);
 
         return AppResponse::jsonResponse([], $keys);
     }
@@ -61,7 +61,7 @@ class MerchantController extends BaseController
     {
         $merchant = Auth::user()->user()->currentMerchant;
 
-        list($error, $data) = (new Merchant\Service)->createKey($merchant->id(), $mode);
+        list($error, $data) = (new Merchant\Service)->createKey($merchant->id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
