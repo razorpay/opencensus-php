@@ -124,15 +124,17 @@ class Entity extends Base\Entity implements UserInterface
      */
     public function currentMerchant()
     {
-        if (is_null(Session::get('current_merchant_id')) && $this->hasMerchants()) 
+        $current_merchant_id = Session::get('current_merchant_id');
+        
+        if (is_null($current_merchant_id) && $this->hasMerchants()) 
         {
             $this->switchToMerchant($this->merchants->first());
 
             return $this->currentMerchant();
         } 
-        elseif (! is_null(Session::get('current_merchant_id'))) 
+        elseif (! is_null($current_merchant_id)) 
         {
-            $currentMerchant = $this->merchants->find(Session::get('current_merchant_id'));
+            $currentMerchant = $this->merchants->find($current_merchant_id);
 
             return $currentMerchant ?: $this->refreshCurrentMerchant();
         }
