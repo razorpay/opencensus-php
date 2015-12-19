@@ -38,13 +38,12 @@ class PasswordController extends BaseController
 		{
 			DB::transaction(function() use ($user, $password)
 			{
-				$email = $user->email;
 				$user->password = Hash::make($password);
 				$user->save();
 
 				if($user->hasMerchants())
 				{
-					$merchant = $user->merchants()->where('email',$email)->first();
+					$merchant = $user->merchants()->where('email',$user->email)->first();
 					if($merchant)
 					{
 						$merchant->password = $user->password;

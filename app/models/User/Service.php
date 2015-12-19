@@ -54,15 +54,15 @@ class Service extends Base\Service
         }
 
         $error = $user->changePassword($input);
-        $user->password = Hash::make($user->password);
         
-        DB::transaction(function()
+        DB::transaction(function() use ($user)
         {
+            $user->password = Hash::make($user->password);
             $user->save();
 
             if($user->hasMerchants())
             {
-                $merchant = $user->merchants()->where('email',$email)->first();
+                $merchant = $user->merchants()->where('email',$user->email)->first();
                 if($merchant)
                 {
                     $merchant->password = $user->password;
