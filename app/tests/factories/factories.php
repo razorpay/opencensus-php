@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate/Support/Facades/Hash;
-
 $password = Hash::make('123456');
 
 $factory('Models\Merchant\Entity', [
@@ -53,7 +51,7 @@ $factory('Models\MerchantDetails\Entity', [
     'company_pan_name'  => $faker->word,
     'business_model'    => $faker->text,
     'transaction_volume'    => 2,
-    'transaction_value' => $faker->word,
+    'transaction_value' => $faker->randomNumber(4),
     'promoter_pan'  => $faker->word,
     'promoter_pan_name' => $faker->word,
     'bank_name' => $faker->word,
