@@ -104,11 +104,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
-    public function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
     public function setAmount($amount)
     {
         if (($amount <= 0) or
@@ -161,6 +156,16 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
     }
 
     public function getFeesAttribute()
