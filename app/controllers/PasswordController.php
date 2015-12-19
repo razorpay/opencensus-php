@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate/Support/Facades/Hash;
+use Illuminate/Support/Facades/DB;
+
 class PasswordController extends BaseController
 {
 	/**
@@ -9,7 +12,7 @@ class PasswordController extends BaseController
 	 */
 	public function postRemind()
 	{	
-		$response = Password::merchant()->remind(Input::only('email'), function($message){
+		$response = Password::user()->remind(Input::only('email'), function($message){
 			$message->subject('Razorpay - Password Reset Request'); 
 		});
 
@@ -23,7 +26,6 @@ class PasswordController extends BaseController
 		}
 	}
 
-
 	/**
 	 * Handle a POST request to reset a user's password.
 	 *
@@ -35,21 +37,24 @@ class PasswordController extends BaseController
 			'email', 'password', 'password_confirmation', 'token'
 		);
 
-		$response = Password::merchant()->reset($credentials, function($merchant, $password)
+		$response = Password::user()->reset($credentials, function($user, $password)
 		{
-			$email = $merchant->email;
-			$merchant->password = $password;
-			$merchant->save();
-
-			if($merchant->hasUsers())
+			DB::transaction(function() use ($user, $password)
 			{
-				$user = $merchant->users()->where('email',$email)->first();
-				if($user)
+				$email = $user->email;
+				$user->password = Hash::make($password);
+				$user->save();
+
+				if($user->hasMerchants())
 				{
-					$user->password = $merchant->password;
-					$user->save();
+					$merchant = $user->merchants()->where('email',$email)->first();
+					if($merchant)
+					{
+						$merchant->password = $password;
+						$merchant->save();
+					}
 				}
-			}
+			});
 		});
 
 		switch ($response)
