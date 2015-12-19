@@ -318,9 +318,4 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         return ((int)$this->activated === 1);
     }
-
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = \Hash::make($password);
-    }
 }

@@ -8,6 +8,7 @@ use Models\User;
 use Models\MerchantDetails;
 use Auth;
 use Mail;
+use Hash;
 use Requests;
 
 class Service extends Base\Service
@@ -22,6 +23,7 @@ class Service extends Base\Service
             return [$error, null];
         }
 
+        $merchant->password = Hash::make($merchant->password)
         $merchant->saveOrFail();
 
         $user = User\Entity::createFromMerchant($merchant);

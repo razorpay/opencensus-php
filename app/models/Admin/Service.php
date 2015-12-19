@@ -4,6 +4,7 @@ namespace Models\Admin;
 
 use AWS;
 use Auth;
+use Hash;
 use Config;
 use Models\Base;
 use Models\Admin;
@@ -98,6 +99,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            $admin->password = Hash::make($admin->password);
             $admin->saveOrFail();
         }
 
@@ -206,10 +208,11 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            $admin->password = Hash::make($admin->password);
             $admin->saveOrFail();
         }
 
-        return [$error, $admin->toArray()];
+        return array($error, $admin->toArray());
     }
 
     /* Adds a new admin

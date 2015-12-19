@@ -2,7 +2,9 @@
 
 namespace Models\User;
 
+use DB;
 use Auth;
+use Hash;
 use Models\Base;
 use Models\Merchant;
 
@@ -52,7 +54,22 @@ class Service extends Base\Service
         }
 
         $error = $user->changePassword($input);
-        $user->save();
+        $user->password = Hash::make($user->password);
+        
+        DB::transaction(function()
+        {
+            $user->save();
+
+            if($user->hasMerchants())
+            {
+                $merchant = $user->merchants()->where('email',$email)->first();
+                if($merchant)
+                {
+                    $merchant->password = $user->password;
+                    $merchant->save();
+                }
+            }
+        });
         
         return [$error, null];
     }

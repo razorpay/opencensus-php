@@ -1,8 +1,5 @@
 <?php
 
-use Illuminate/Support/Facades/Hash;
-use Illuminate/Support/Facades/DB;
-
 class PasswordController extends BaseController
 {
 	/**
@@ -50,7 +47,7 @@ class PasswordController extends BaseController
 					$merchant = $user->merchants()->where('email',$email)->first();
 					if($merchant)
 					{
-						$merchant->password = $password;
+						$merchant->password = $user->password;
 						$merchant->save();
 					}
 				}

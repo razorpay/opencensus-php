@@ -1,23 +1,27 @@
 <?php
 
+use Illuminate/Support/Facades/Hash;
+
+$password = Hash::make('123456');
+
 $factory('Models\Merchant\Entity', [
     'id'  =>  $faker->word,
     'name'  =>  $faker->word,
     'email'  =>  $faker->email,
-    'password'  =>  '123456'
+    'password'  =>  $password
 ]);
 
 $factory('Models\User\Entity', [
     'id'  =>  $faker->word,
     'name'  =>  $faker->word,
     'email'  =>  $faker->email,
-    'password'  =>  '123456'
+    'password'  =>  $password
 ]);
 
 $factory('Models\Admin\Entity', [
     'name'  => $faker->word,
     'username'  => $faker->word,
-    'password'  => '123456',
+    'password'  => $password,
     'email' => $faker->email,
     'superadmin'    => '1'
 ]);
