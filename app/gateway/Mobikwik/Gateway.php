@@ -48,13 +48,8 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $content,
         );
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'request' => $request,
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['payment']['id'],
-            ]);
+
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }

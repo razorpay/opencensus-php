@@ -183,6 +183,17 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
+    protected function traceGatewayPaymentRequest($request, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));

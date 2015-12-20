@@ -79,13 +79,7 @@ class Gateway extends Base\Gateway
             'callback_url' => $input['callbackUrl'],
         );
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'request'       => $request,
-                'gateway'       => 'wallet_payzapp',
-                'payment_id'    => $input['payment']['id'],
-            ]);
+        $this->traceGatewayPaymentRequest($request, $input);
 
         $request['content'] = View::make('gateway.payzapp')
                                   ->with('request', $request)

@@ -31,7 +31,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
-        $this->tracePaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -365,17 +365,6 @@ class Gateway extends Base\Gateway
         }
 
         return $content;
-    }
-
-    protected function tracePaymentRequest($request, $input)
-    {
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'request' => $request,
-                'gateway' => 'billdesk',
-                'payment_id' => $input['payment']['id'],
-            ]);
     }
 
     protected function createGatewayPaymentEntity($attributes)
