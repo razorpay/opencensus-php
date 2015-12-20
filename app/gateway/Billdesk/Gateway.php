@@ -31,7 +31,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
-        $this->tracePaymentRequest($request);
+        $this->tracePaymentRequest($request, $input);
 
         return $request;
     }
@@ -363,9 +363,11 @@ class Gateway extends Base\Gateway
             $content['SecurityID'] = $this->getTestAccessCode();
             $content['TxnAmount'] = '5.00';
         }
+
+        return $content;
     }
 
-    protected function tracePaymentRequest($request)
+    protected function tracePaymentRequest($request, $input)
     {
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
