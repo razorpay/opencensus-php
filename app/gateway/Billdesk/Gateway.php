@@ -25,51 +25,13 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
-
-        $content = array(
-            'MerchantID'                => $input['terminal']['gateway_merchant_id'],
-            'CustomerID'                => $input['payment']['id'],
-            'Unknown1'                  => 'NA',
-            'TxnAmount'                 => $input['payment']['amount'] / 100,
-            'BankID'                    => $bankId,
-            'Unknown2'                  => 'NA',
-            'Unknown3'                  => 'NA',
-            'CurrencyType'              => 'INR',
-            'ItemCode'                  => 'DIRECT',
-            'TypeField1'                => 'R',
-            'SecurityID'                => $this->config['live_access_code'],
-            'Unknown4'                  => 'NA',
-            'Unknown5'                  => 'NA',
-            'TypeField2'                => 'F',
-            'AdditionalInfo1'           => $input['payment']['id'],
-            'Unknown6'                  => 'NA',
-            'Unknown7'                  => 'NA',
-            'Unknown8'                  => 'NA',
-            'Unknown9'                  => 'NA',
-            'Unknown10'                 => 'NA',
-            'Unknown11'                 => 'NA',
-            'RU'                        => $input['callbackUrl'],
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $content['MerchantID'] = $this->getTestMerchantId();
-            $content['SecurityID'] = $this->getTestAccessCode();
-            $content['TxnAmount'] = '5.00';
-        }
+        $content = $this->getAuthRequestContentArray($input);
 
         $payment = $this->createGatewayPaymentEntity($content);
 
         $request = $this->getRequestArray($content);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'request' => $request,
-                'gateway' => 'billdesk',
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $this->tracePaymentRequest($request);
 
         return $request;
     }
@@ -256,9 +218,7 @@ class Gateway extends Base\Gateway
             $content);
 
         $verify->verifyResponse = $this->response;
-
         $verify->verifyResponseBody = $this->response->body;
-
         $verify->verifyResponseContent = $content;
 
         return $content;
@@ -366,6 +326,54 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($content);
 
         return $content;
+    }
+
+    protected function getAuthRequestContentArray($input)
+    {
+        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+
+        $content = array(
+            'MerchantID'                => $input['terminal']['gateway_merchant_id'],
+            'CustomerID'                => $input['payment']['id'],
+            'Unknown1'                  => 'NA',
+            'TxnAmount'                 => $input['payment']['amount'] / 100,
+            'BankID'                    => $bankId,
+            'Unknown2'                  => 'NA',
+            'Unknown3'                  => 'NA',
+            'CurrencyType'              => 'INR',
+            'ItemCode'                  => 'DIRECT',
+            'TypeField1'                => 'R',
+            'SecurityID'                => $this->config['live_access_code'],
+            'Unknown4'                  => 'NA',
+            'Unknown5'                  => 'NA',
+            'TypeField2'                => 'F',
+            'AdditionalInfo1'           => $input['payment']['id'],
+            'Unknown6'                  => 'NA',
+            'Unknown7'                  => 'NA',
+            'Unknown8'                  => 'NA',
+            'Unknown9'                  => 'NA',
+            'Unknown10'                 => 'NA',
+            'Unknown11'                 => 'NA',
+            'RU'                        => $input['callbackUrl'],
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $content['MerchantID'] = $this->getTestMerchantId();
+            $content['SecurityID'] = $this->getTestAccessCode();
+            $content['TxnAmount'] = '5.00';
+        }
+    }
+
+    protected function tracePaymentRequest($request)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'billdesk',
+                'payment_id' => $input['payment']['id'],
+            ]);
     }
 
     protected function createGatewayPaymentEntity($attributes)
