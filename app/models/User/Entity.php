@@ -6,10 +6,11 @@ use Uuid;
 use Session;
 use Models\Base;
 use Models\Merchant;
-use Illuminate\Auth\UserInterface;
 use RandomLib\Factory as RandomLibFactory;
+use Illuminate\Auth\UserInterface;
+use Illuminate\Auth\Reminders\RemindableInterface;
 
-class Entity extends Base\Entity implements UserInterface
+class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -288,5 +289,15 @@ class Entity extends Base\Entity implements UserInterface
     public function getRememberTokenName()
     {
         return 'remember_token';
+    }
+
+    /**
+     * Get the e-mail address where password reminders are sent.
+     *
+     * @return string
+     */
+    public function getReminderEmail()
+    {
+        return $this->email;
     }
 }
