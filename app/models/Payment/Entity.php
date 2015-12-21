@@ -356,7 +356,9 @@ class Entity extends Base\PublicEntity
         $verified = $this->attributes[self::VERIFIED];
 
         if ($verified !== null)
+        {
             $verified = (int) $verified;
+        }
 
         return $verified;
     }

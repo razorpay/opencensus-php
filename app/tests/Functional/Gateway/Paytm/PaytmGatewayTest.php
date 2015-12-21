@@ -132,7 +132,7 @@ class PaytmGatewayTest extends TestCase
 
         $data = $this->verifyPayment($id);
 
-        $this->assertEquals($data['payment']['verified'], true);
+        $this->assertEquals($data['payment']['verified'], 0);
     }
 
     public function testFailedPayment()
