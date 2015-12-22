@@ -75,8 +75,8 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            ['old_features' => $merchant->getBetaFeatures()],
-            ['new_features' => $input[Entity::BETA_FEATURES]]);
+            array('old_features' => $merchant->getBetaFeatures(), 
+                  'new_features' => $input[Entity::BETA_FEATURES]));
 
         $merchant->edit($input);
 

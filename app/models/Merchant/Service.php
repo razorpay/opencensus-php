@@ -70,7 +70,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        foreach($input as $key => $value)
+        foreach ($input as $key => $value)
         {
             $input[$key] = strtolower($input[$key]);
         }

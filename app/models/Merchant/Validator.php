@@ -60,23 +60,7 @@ class Validator extends Base\Validator
 
     protected function validateBetaFeatures($input)
     {
-        if (isset($input[Entity::BETA_FEATURES]) === false or trim($input[Entity::BETA_FEATURES]) === '')
-            return;
-
-        $features = $input[Entity::BETA_FEATURES];
-        $features = explode(',', $features);
-
-        foreach ($features as $feature)
-        {
-            $feature = trim($feature); // Remove whitespace
-            if (in_array($feature, Entity::$allowed_beta_features) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "The provided beta feature is invalid: $feature",
-                    Entity::BETA_FEATURES
-                );
-            }
-        }
+        Features::validateFeatures($input);
     }
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
