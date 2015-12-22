@@ -2,48 +2,75 @@
 
 namespace Models\Merchant;
 
+use Auth;
+use Hash;
+use Mail;
+use Requests;
 use Models\Base;
 use Models\Merchant;
 use Models\User;
+use Models\Invitation;
 use Models\MerchantDetails;
-use Auth;
-use Mail;
-use Hash;
-use Requests;
+use Razorpay\Api\Errors\BadRequestError;
 
 class Service extends Base\Service
 {
     public function register(array $input)
     {
-        $merchant = new Merchant\Entity;
-        $error = $merchant->build($input);
+        $user = new User\Entity;
 
-        if (empty($error) === false)
+        $invitationToken = isset($input['invitation']) ? $input['invitation'] : null;
+
+        if($invitationToken)
         {
-            return [$error, null];
+            User\Validator::$createRules['email'] = 'email|unique:merchants';
+            
+            list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($invitationToken);
+
+            if($error)
+            {
+                return array($error, null);
+            }
+            
+            $input['email'] = $invitation->email;
         }
 
-        $merchant->password = Hash::make($merchant->password);
-        $merchant->saveOrFail();
+        $error = $user->build($input);
 
-        $user = User\Entity::createFromMerchant($merchant);
-        $user->saveOrFail();
-        $user->merchants()->attach($merchant, ['role' => 'owner']);
+        if (!empty($error))
+        {
+            return array($error, null);
+        }
 
-        $details = array(
-            'merchant_id' => $merchant->id,
-            'contact_email' => $merchant->email
-        );
+        $user->password = Hash::make($user->password);
+        $user->save();
 
-        MerchantDetails\Entity::createOrFail($details);
+        $businessName = isset($input['business_name']) ? $input['business_name'] : null;
 
-        $this->queueConfirmationMail($merchant);
+        if($businessName)
+        {
+            $merchant = Merchant\Entity::createFromUserWithBusinessName($user,$businessName);
+            $merchant->save();
+            
+            $user->merchants()->attach($merchant, ['role' => 'owner']);
+            
+            $details = array('merchant_id' => $merchant->id,'contact_email' => $merchant->email);
 
-        $slackData = [
+            MerchantDetails\Entity::createOrFail($details);
+        }
+
+        $this->queueConfirmationMail($user);
+
+        if($invitation) 
+        {
+            Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+        }
+        
+        $slackData = array(
             'id'    => $merchant->id,
             'name'  => $merchant->name,
             'email' => $merchant->email
-        ];
+        );
 
         $this->slackSignupPost($slackData);
 
@@ -102,52 +129,54 @@ class Service extends Base\Service
                 if($user)
                 {
                     $user->email = $merchant->email;
-                    $user->save();
+                    $user->saveOrFail();
                 }
             }
-            $merchant->save();
+            $merchant->saveOrFail();
         }
         
         $merchantDetails = $merchant->merchantDetails;
         $merchantDetails->contact_email = $merchant->email;
-        $merchantDetails->save();
+        $merchantDetails->saveOrFail();
     
         return [$error, null];
     }
 
     public function confirm($token)
     {
-        $merchant = Merchant\Entity::getMerchantForConfirmation($token);
+        $user = User\Entity::getUserFromConfirmationToken($token);
 
-        if ($merchant === null)
+        if (is_null($user))
         {
             return array('Invalid confirmation token or the merchant is already confirmed.');
         }
 
-        $merchant_api_data = $merchant->generateApiData();
-
-        $this->setApiCredentials();
-
-        try
+        if($merchant = $user->merchants()->where('role','owner')->first())
         {
-            $response = $this->api->merchant->create($merchant_api_data);
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return array($e->getMessage());
-        }
-
-        $merchant->confirm_token = null;
-        $email = $merchant->email;
-        $merchant->saveOrFail();
-
-        if($merchant->hasUsers())
-        {
-            $user = $merchant->users()->where('email',$email)->first();
-            if($user)
+            try
             {
-                $user->confirm_token = $merchant->confirm_token;
-                $user->save();
+                $merchant_api_data = $merchant->generateApiData();
+                $this->setApiCredentials();
+                
+                $response = $this->api->merchant->create($merchant_api_data);
+            }
+            catch(BadRequestError $e)
+            {
+                return array($e->getMessage());
+            }
+        }
+
+        $user->confirm_token = null;
+        $email = $user->email;
+        $user->saveOrFail();
+
+        if($user->hasMerchants())
+        {
+            $merchant = $user->merchants()->where('email',$email)->first();
+            if($merchant)
+            {
+                $merchant->confirm_token = $user->confirm_token;
+                $merchant->saveOrFail();
             }
         }
 
@@ -165,11 +194,11 @@ class Service extends Base\Service
                 'password'  => $input['password']
             );
 
-            $user = \Auth::user();
+            $user = Auth::user();
 
             if ($user->once($credentials))
             {
-                $user = \Auth::user()->get();
+                $user = Auth::user()->get();
 
                 if ($user->confirm_token === null)
                 {
@@ -214,7 +243,7 @@ class Service extends Base\Service
                                 ->create()
                                 ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -254,7 +283,7 @@ class Service extends Base\Service
                 'new'           => $response['new']
             );
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
