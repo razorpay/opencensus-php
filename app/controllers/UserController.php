@@ -3,6 +3,7 @@
 use Http\AppResponse;
 use Models\User;
 use Models\MerchantDetails;
+use Models\Merchant;
 
 class UserController extends BaseController
 {
@@ -18,11 +19,13 @@ class UserController extends BaseController
 
     public function getUser()
     {
-       $user = (new User\Service)->fetch(Auth::user()->id());
+       $user = Auth::user()->user();
+
+       $merchant = (new Merchant\Service)->fetch($user->currentMerchant->id);
 
        $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
 
-       $data = $user + $merchantDetails;
+       $data = $merchant + $merchantDetails;
 
        return AppResponse::jsonResponse([], $data);
     }
@@ -48,6 +51,23 @@ class UserController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new User\Service)->changePassword($input);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
+     * Switch the merchant the user is currently viewing.
+     *
+     * @param  string  $merchantId
+     * @return \Illuminate\Http\Response
+     */
+    public function switchCurrentMerchant($merchantId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user()->user();
+
+        $error = (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
 
         return AppResponse::jsonResponse($error);
     }
