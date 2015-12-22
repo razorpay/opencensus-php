@@ -6,6 +6,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\User;
 use Models\MerchantDetails;
+use Razorpay\Mailers\UserMailer;
 use Mail;
 use Requests;
 
@@ -34,7 +35,7 @@ class Service extends Base\Service
 
         MerchantDetails\Entity::createOrFail($details);
 
-        $this->queueConfirmationMail($merchant);
+        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
         $slackData = [
             'id'    => $merchant->id,
@@ -45,16 +46,6 @@ class Service extends Base\Service
         $this->slackSignupPost($slackData);
 
         return [$error, $slackData];
-    }
-
-    protected function queueConfirmationMail($merchant)
-    {
-        $merchant = $merchant->generateEmailData();
-
-        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
-        {
-            $m->to($merchant['email'], $merchant['name'])->subject('Razorpay | Confirm Your Email');
-        });
     }
 
     protected function slackSignupPost($slackData)
@@ -232,7 +223,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
-                $this->queueConfirmationMail($merchant);
+                (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
                 return [[], []];
             }
