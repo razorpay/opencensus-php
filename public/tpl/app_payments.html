@@ -74,8 +74,8 @@
             <td><a ui-sref="app.payments.detail({id:row.id})"><code>{{row.id}}</code></a></td>
             <td ng-show="hasOrderId()">{{orders[row.id]}}</td>
             <td data-hide="phone,tablet">{{row.currency}}</td>
-            <td>{{row.amount/100 | currency:""}}</td>
-            <td data-hide="phone,tablet">{{row.amount_refunded/100 | currency:""}}</td>
+            <td>{{row.amount/100 | rupee:""}}</td>
+            <td data-hide="phone,tablet">{{row.amount_refunded/100 | rupee:""}}</td>
             <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
             <td><span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>
           </tr>

@@ -219,7 +219,7 @@ class AdminController extends BaseController
 
     public function getMerchantBalance($id)
     {
-        $data = (new Admin\Service)->fetchMerchantBalance($id);
+        $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
         return AppResponse::jsonResponse([], $data);
     }
@@ -245,6 +245,15 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putEditBankDetails($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postEditBankDetails($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -519,6 +528,17 @@ class AdminController extends BaseController
 
         list($error, $response) = (new Admin\Service)
             ->editCredits($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    /**
+     * Confirm a merchant account manually
+     */
+    public function postConfirmMerchant($merchantId)
+    {
+        list($error, $data) = $response = (new Admin\Service)
+            ->confirmMerchant($merchantId);
 
         return AppResponse::jsonResponse($error, $response);
     }

@@ -7,6 +7,7 @@ use AWS;
 use Mail;
 use Models\Base;
 use Queue;
+use Razorpay\Mailers\UserMailer;
 
 class Service extends Base\Service
 {
@@ -203,27 +204,15 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $salesEmail = 'salesteam@razorpay.com';
+        $mailer = new UserMailer(\Auth::merchant()->user());
 
-        Mail::send('emails.submission', $customer, function($mail) use ($customer)
-        {
-            // This is the business name
-            $subject = 'Razorpay | Account pending approval for '
-                . $customer['business_name'];
+        $mailer->confirmActivationSubmission()->queueAndDeliver();
 
-            $mail->to($customer['email'], $customer['name'])
-                ->subject($subject);
-        });
-
-        Mail::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
-        {
-            $subject = "New activation form submitted for {$customer['business_name']}";
-            $mail->to($salesEmail, 'Razorpay Sales Team')
-                 ->subject($subject);
-        });
+        $mailer->notifyActivationSubmission()->queueAndDeliver();
 
         // Take screenshots as well
         $urls = $merchantDetails->getUrls();
+
         Queue::push('Models\Admin\Creevey', [
             $customer['id'],
             $urls,

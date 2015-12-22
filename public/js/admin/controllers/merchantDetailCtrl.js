@@ -32,6 +32,27 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.confirmAccount = function () {
+      var request = $http.put('/admin/merchants/' + $scope.merchant.id + '/confirmed');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.unconfirmed = false;
+          $scope.alerts.addAlert('success', 'Merchant confirmed', true);
+          $scope.merchant.confirm_token = null;
+          generateMerchant();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+
+    };
+
     $scope.captureScreenshot = function () {
       var request = $http.put('/admin/merchant/' + $scope.merchant.id + '/screenshot');
       request.success(function (data) {
@@ -47,6 +68,7 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
     $scope.unlockForm = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unlock');
       request.success(function (data) {
@@ -218,7 +240,7 @@ app.controller('MerchantDetailCtrl', [
     $scope.assignBanks = function (bankdata) {
       var data = { banks: [] };
       angular.forEach(bankdata, function (i, e) {
-        if (i == true) {
+        if (i === true) {
           data.banks.push(e);
         }
       });
@@ -290,6 +312,26 @@ app.controller('MerchantDetailCtrl', [
         if (data.success) {
           $scope.alerts.addAlert('success', 'Merchant email edited successfully', true);
           generateMerchant();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+    $scope.changeBankAccountDetails = function (merchant) {
+      var request = $http({
+        method: 'put',
+        url: '/admin/merchant/' + $scope.merchant.id + '/bankdetails',
+        data: angular.toJson(merchant)
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant bank details changed successfully', true);
+          $scope.merchant.details.merchant_details = data.data;
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -436,6 +478,20 @@ app.controller('MerchantDetailCtrl', [
         $scope.editMerchantEmail(email);
       }, $.noop);
     };
+    $scope.openChangeBankAccountDetails = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'changeBankAccountDetailsModalContent.html',
+        controller: 'changeBankAccountDetailsModalCtrl',
+        resolve: {
+          current: function () {
+            return $scope.merchant.details;
+          }
+        }
+      });
+      modalInstance.result.then(function (merchant_details) {
+        $scope.changeBankAccountDetails(merchant_details);
+      }, $.noop);
+    };
     $scope.openUploadScreenshot = function () {
       var currentId = $scope.merchant.id;
       var modalInstance = $modal.open({
@@ -526,6 +582,9 @@ app.controller('MerchantDetailCtrl', [
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
+            if (data.errors[0] === 'Merchant not confirmed') {
+              $scope.unconfirmed = true;
+            }
           });
         }
       }).error(function () {
@@ -693,6 +752,20 @@ app.controller('MerchantDetailCtrl', [
     $scope.current = current;
     $scope.ok = function (email) {
       $modalInstance.close(email);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('changeBankAccountDetailsModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    $scope.current = current;
+
+    $scope.ok = function (merchant_details) {
+      $modalInstance.close(merchant_details);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

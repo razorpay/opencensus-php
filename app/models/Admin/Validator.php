@@ -38,6 +38,21 @@ class Validator extends Base\Validator
         'password'                  => 'required|between:6,50|confirmed',
         'password_confirmation'     => 'required|between:6,50'
     );
+    
+    protected static $changeBankDetailsRules = array(
+        'bank_name'             => 'required|alpha_space|max:255',
+        'bank_account_number'   => 'required|numeric|digits_between:1,20',
+        'bank_account_name'     => 'required|alpha_space_num|max:40',
+        'bank_account_type'     => 'required|alpha_space|max:20',
+        'bank_branch'           => 'required|max:255',
+        'bank_branch_ifsc'      => 'required|alpha_num|max:11',
+        'bank_beneficiary_address1' => 'required|max:30',
+        'bank_beneficiary_address2' => 'max:30',
+        'bank_beneficiary_address3' => 'max:30',
+        'bank_beneficiary_city'      => 'required|max:30',
+        'bank_beneficiary_state'     => 'required|max:2',
+        'bank_beneficiary_pin'       => 'required|integer|digits:6'
+    );
 
     protected static $apiCallValidators = array('apiCall');
 

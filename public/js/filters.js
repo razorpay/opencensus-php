@@ -1,6 +1,6 @@
 'use strict';
 /* Filters */
-// need load the moment.js to use this filter. 
+// need load the moment.js to use this filter.
 angular.module('app.filters', []).filter('fromNow', function () {
   return function (date) {
     return moment(date).fromNow();
@@ -17,4 +17,23 @@ angular.module('app.filters', []).filter('fromNow', function () {
     }
     return words.join(' ');
   };
+}).filter('rupee', function() {
+  return function (input, symbol) {
+    if (!input) {
+      input = 0;
+    };
+    // If passing an alternate symbol like INR suffix it with a space
+    if (typeof symbol === 'undefined') {
+      // This is Rupee symbol unicode code point
+      // https://codepoints.net/U+20B9
+      symbol = '\u20b9';
+    };
+
+    // Poke @pranav about the regex
+    var splits = input
+      .toFixed(2)
+      .toString()
+      .match(/-?([^-]{1,3}(\..+)?$|[^-]{1,2}(?=.([^\.]{2})+(\..+)?$))/g);
+    return symbol + splits.join(',');
+  }
 });

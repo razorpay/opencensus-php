@@ -169,7 +169,8 @@ app.controller('EntitiesCtrl', [
           'all',
           'null',
           0,
-          1
+          1,
+          2,
         ],
         wallet: [
           'all',
