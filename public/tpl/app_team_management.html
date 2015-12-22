@@ -1,0 +1,33 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Manage Dashboard ({{mode + " Mode"| titlecase }})
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="TeamManagementCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Invite users to manage dashboard - {{mode | titlecase}} Mode
+    </div>
+    <div class="text-center m-t m-b">
+      <div class="text-center m-t" ng-show="alerts.getAlerts().length > 0">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="row">
+        <div class="m-b col-sm-8">
+          <input type="text" class="form-control" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
+        </div>
+        <div class="m-b col-sm-4">
+            <select name="year" ng-model="team.role" class="form-control" required>
+              <option value="owner">Owner</option>
+              <option value="manager">Manager</option>
+              <option value="operations">Operations</option>
+              <option value="finance">Finance</option>
+              <option value="developer">Developer</option>
+            </select>
+        </div>
+      </div>
+      <button  class="btn btn-primary btn-rounded" ng-click="sendInvitation()">Send Invitation</button>
+    </div>
+  </div>
+</div>
