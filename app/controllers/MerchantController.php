@@ -71,7 +71,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = $merchant = Auth::user()->user()->getCurrentMerchantId();
+        $input['merchant_id'] = Auth::user()->user()->getCurrentMerchantId();
 
         list($error, $data) = (new Merchant\Service)->rollKeys($input, $mode);
 
@@ -162,9 +162,11 @@ class MerchantController extends BaseController
     {
         $this->checkMode($mode);
 
-        $id = Auth::merchant()->id();
+        $user = Auth::user()->user();
 
-        $data = (new Merchant\Service)->fetchMerchantBalance($id);
+        $merchantId = $user->getCurrentMerchantId();
+
+        $data = (new Merchant\Service)->fetchMerchantBalance($merchantId);
 
         return AppResponse::jsonResponse([], $data[$mode]['balance']);
     }
