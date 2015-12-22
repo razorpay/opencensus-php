@@ -2,6 +2,7 @@
 
 namespace Razorpay\Mailers;
 
+use Models\User\Entity as UserEntity;
 use Razorpay\Exceptions\InvalidContactInformationException;
 
 class UserMailer extends Mailer
@@ -13,7 +14,7 @@ class UserMailer extends Mailer
      *
      * @param object $user
      */
-    public function __construct($user)
+    public function __construct(UserEntity $user)
     {
         if(!is_object($user))
         {
@@ -23,7 +24,8 @@ class UserMailer extends Mailer
         $this->to = $user->name;
         $this->email = $user->email;
         $this->data = $user->toArray();
-        $this->data['merchant_details'] = $user->merchantDetails->toArray();
+
+        $this->data['merchant_details'] = $user->currentMerchant->merchantDetails->toArray();
     }
 
     /**
@@ -35,39 +37,6 @@ class UserMailer extends Mailer
     {
         $this->subject = 'Razorpay | Confirm Your Email';
         $this->view = 'emails.confirmation';
-
-        return $this;
-    }
-
-    /**
-     * Responsible for sending out an activation form submission confirmation email to the user
-     *
-     * @return self
-     */
-    public function confirmActivationSubmission()
-    {
-        $this->subject = 'Razorpay | Account pending approval for '
-            . $this->data['merchant_details']['business_name'];
-
-        $this->to = $this->data['merchant_details']['contact_name'];
-        $this->email = $this->data['merchant_details']['contact_email'];
-        $this->view = 'emails.submission';
-
-        return $this;
-    }
-
-    /**
-     * Responsible for sending notification to sales team about activation form submission
-     *
-     * @return self
-     */
-    public function notifyActivationSubmission()
-    {
-        $this->subject = "New activation form submitted for {$this->data['merchant_details']['business_name']}";
-
-        $this->to = 'Razorpay Sales Team';
-        $this->email = $this->getEmailFor('sales');;
-        $this->view = 'emails.admin_notify';
 
         return $this;
     }
