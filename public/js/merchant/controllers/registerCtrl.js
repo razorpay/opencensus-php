@@ -5,10 +5,15 @@ app.controller('RegisterCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$analytics',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $analytics) {
+  '$location',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $analytics, $location) {
+    
+    $scope.data = {};
+    if($location.search().invitation)
+      $scope.data.invitation = $location.search().invitation;
+    
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
-    $scope.data = {};
     $scope.agree = false;
     $scope.submit = function ($valid) {
       if (!$valid) {
