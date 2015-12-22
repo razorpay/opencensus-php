@@ -7,7 +7,7 @@ use AWS;
 use Mail;
 use Models\Base;
 use Queue;
-use Razorpay\Mailers\UserMailer;
+use Razorpay\Mailers\MerchantMailer;
 
 class Service extends Base\Service
 {
@@ -204,7 +204,8 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $mailer = new UserMailer(\Auth::merchant()->user());
+        $user = Auth::user()->user();
+        $mailer = new MerchantMailer($user->currentMerchant);
 
         $mailer->confirmActivationSubmission()->queueAndDeliver();
 
