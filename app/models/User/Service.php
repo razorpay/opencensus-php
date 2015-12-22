@@ -73,4 +73,23 @@ class Service extends Base\Service
         
         return [$error, null];
     }
+
+    /**
+     * Switch the merchant the user is currently viewing.
+     *
+     * @param  string  $merchantId
+     * @return \Illuminate\Http\Response
+     */
+    public function switchCurrentMerchantForUser($merchantId, $user)
+    {
+        $merchant = $user->merchants()->find($merchantId);
+
+        if($merchant)
+        {
+            $user->switchToMerchant($merchant);
+            return array();
+        }
+
+        return array("Couldn't find the merchant you are looking for.");
+    }
 }
