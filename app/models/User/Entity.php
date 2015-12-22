@@ -56,26 +56,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     }
 
     /**
-     * Generate the user instance from the merchant instance
-     */
-    public static function createFromMerchant($merchant)
-    {
-        $user = new static();
-        $user->timestamps = false;
-
-        $user->id = Uuid::generate();
-        $user->name = $merchant->name;
-        $user->email = $merchant->email;
-        
-        $user->password = $merchant->password;
-        $user->confirm_token = $merchant->confirm_token;
-        $user->created_at = $merchant->created_at;
-        $user->updated_at = $merchant->updated_at;
-
-        return $user;
-    }
-
-    /**
      * Determine if the user is a member of any merchants.
      *
      * @return bool
