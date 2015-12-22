@@ -121,6 +121,11 @@ class Entity extends Base\PublicEntity
         return $urls;
     }
 
+    public function getSettlementCount()
+    {
+        return $this->getAttribute(self::SETTLEMENT_COUNT);
+    }
+
     public function setServiceTax($servicetax)
     {
         assert($servicetax >= 0);
@@ -141,6 +146,11 @@ class Entity extends Base\PublicEntity
     public function getFeesAttribute()
     {
         return (int) $this->attributes[self::FEES];
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
     }
 
     public function getApiFeeAttribute()
