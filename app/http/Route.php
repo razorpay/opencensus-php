@@ -142,7 +142,7 @@ final class Route
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
         'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
-        'get_features'                      => ['get',      'features',                                 'MerchantController@getAllFeatues'                              ],
+        'get_features'                      => ['get',      'features',                                 'MerchantController@getAllFeatures'                              ],
         'dummy_betafeature'                 => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                           ],
     );
 

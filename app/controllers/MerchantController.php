@@ -339,7 +339,7 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getAllFeatues()
+    public function getAllFeatures()
     {
         $data = Merchant\Features::$allowedBetaFeatures;
 
