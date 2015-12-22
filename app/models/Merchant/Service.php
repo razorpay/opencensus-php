@@ -60,7 +60,7 @@ class Service extends Base\Service
             MerchantDetails\Entity::createOrFail($details);
         }
 
-        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
+        (new UserMailer($user))->accountVerification()->queueAndDeliver();
 
         if($invitation) 
         {
