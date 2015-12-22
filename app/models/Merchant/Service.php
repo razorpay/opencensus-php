@@ -563,9 +563,11 @@ class Service extends Base\Service
      */
     protected function rearrangeRules(array $rules)
     {
-        $arrangedRules      = array();
+        $arrangedRules = array();
 
         $orderOfRules = array('card', 'netbanking', 'wallet', 'exceptional');
+
+        $exceptionalRules = $cardRules = $netbankingRules = $walletRules = [];
 
         foreach ($rules as $rule)
         {
