@@ -60,6 +60,14 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('/apihost', 'MerchantController@getApihost');
 
+    Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
+    
+    Route::post('settings/invitations/{invite}/accept', 'InvitationController@acceptMerchantInvitation');
+    
+    Route::delete('settings/invitations/{invite}', 'InvitationController@destroyMerchantInvitationForUser');
+   
+    Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant'); 
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/password', 'UserController@postPassword');
