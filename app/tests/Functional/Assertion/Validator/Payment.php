@@ -12,6 +12,7 @@ class Payment extends Validator
         Entity::AMOUNT              => 'required|integer',
         Entity::CURRENCY            => 'required|in:INR',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
+        Entity::METHOD              => 'required|in:card,netbanking,wallet',
         Entity::CAPTURED            => 'required|boolean',
         Entity::AMOUNT_REFUNDED     => 'sometimes|',
         Entity::REFUND_STATUS       => 'sometimes|',

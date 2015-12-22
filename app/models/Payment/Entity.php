@@ -113,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
         self::CAPTURED,
