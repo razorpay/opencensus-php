@@ -199,7 +199,7 @@ class Service extends Base\Service
 
                 (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
-                return array(array(),array())
+                return array(array(),array());
             }
         }
 
