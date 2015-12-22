@@ -49,6 +49,8 @@ trait Verify
         {
             $payment->setVerified(VerifyResult::ERROR);
 
+            $this->repo->saveOrFail($payment);
+
             throw $e;
         }
 
