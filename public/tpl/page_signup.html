@@ -6,10 +6,13 @@
         </div>
         <form name="signup" class="form-validation" ng-submit="submit(signup.$valid)" ng-controller="RegisterCtrl" novalidate>
           <div class="list-group list-group-sm">
-            <div class="list-group-item">
-              <input placeholder="business/Individual Name" name="name"  ng-model="data.name" class="form-control no-border" required>
+            <div class="list-group-item" ng-if="!data.invitation">
+              <input placeholder="Business Name" name="business_name"  ng-model="data.business_name" class="form-control no-border" required>
             </div>
             <div class="list-group-item">
+              <input placeholder="Individual Name" name="name"  ng-model="data.name" class="form-control no-border" required>
+            </div>
+            <div class="list-group-item" ng-if="!data.invitation">
               <input type="email" placeholder="Email" name="email" ng-model="data.email" class="form-control no-border" required>
             </div>
             <div class="list-group-item">
