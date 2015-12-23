@@ -104,6 +104,8 @@ class TraceCode
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
 
+    const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
         self::PAYMENT_CREATED                       => 'New payment created',

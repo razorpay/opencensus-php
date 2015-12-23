@@ -118,6 +118,20 @@ class ApiResponse
         return self::generateResponse($publicError, $httpStatusCode);
     }
 
+    public static function toStringExceptionError($exception, $debug)
+    {
+        list($publicError, $httpStatusCode) =
+            self::getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
+
+        if ($debug)
+        {
+            $publicError['error']['internal_error_code'] =
+                ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION;
+        }
+
+        return self::generateResponse($publicError, $httpStatusCode);
+    }
+
     public static function recoverableError($debug, $exception = null)
     {
         $error = $exception->getError();
