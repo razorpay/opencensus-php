@@ -184,4 +184,30 @@ class Service extends Base\Service
 
         return array("Couldn't find the merchant you are looking for.");
     }
+
+    /**
+     * Get all the merchants for the given user.
+     *
+     * @param  \Models\User\Entity  $user
+     * @return \Models\Merchant\Entity[]
+     */
+    public function getAllMerchantsForUser($user)
+    {
+        $error = array();
+
+        $merchants = $user->merchants()->get();
+
+        if($merchants->count() < 0)
+        {
+            $error = array('There are no merchants.');
+            return array($error, null);
+        }
+
+        foreach ($merchants as $merchant) 
+        {
+            $merchant->setVisible(['id','name','email']);
+        }
+
+        return array(null, $merchants);
+    }
 }
