@@ -288,6 +288,12 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+
         return $ba->toArray();
     }
 
