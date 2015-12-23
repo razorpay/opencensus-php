@@ -10,6 +10,7 @@ use Models\Merchant;
 use Models\MerchantDetails;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Session;
 
 class Service extends Base\Service
@@ -314,7 +315,8 @@ class Service extends Base\Service
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
-            'submitted_at'      => $merchant_details['submitted_at']
+            'submitted_at'      => $merchant_details['submitted_at'],
+            'activated_dashboard' => $merchant['activated']
         ) + $data;
 
         return $response;
@@ -803,7 +805,7 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function activateMerchant($id)
+    public function activateMerchant($id, $dashboardOnly = false)
     {
         $merchant = Merchant\Entity::findorfail($id);
 
@@ -813,6 +815,13 @@ class Service extends Base\Service
         {
             return array('Activation form has not been submitted by merchant yet.');
         }
+
+        // Double equals because its probably a string
+        if ($dashboardOnly == true)
+        {
+            return $this->activateMerchantOnDashboard($merchant);
+        }
+
 
         $this->setApiCredentials();
 
@@ -839,7 +848,7 @@ class Service extends Base\Service
             $ba = $this->api->merchant->fetch($id)->fetchBankAccount();
             $bankAccountApi = true;
         }
-        catch(ApiError $e)
+        catch(BadRequestError $e)
         {
             $bankAccountApi = false;
         }
@@ -860,10 +869,15 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
+        return $this->activateMerchantOnDashboard($merchant);
+    }
+
+    protected function activateMerchantOnDashboard($merchant)
+    {
         $merchant->activated = 1;
         $merchant->save();
 
-        $this->lockMerchant($id);
+        $this->lockMerchant($merchant->id);
 
         return array();
     }

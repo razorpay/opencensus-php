@@ -122,7 +122,8 @@ class AdminController extends BaseController
 
     public function getMerchantActivation($id)
     {
-        $error = (new Admin\Service)->activateMerchant($id);
+        $dashboardOnly = Input::get('dashboard', false);
+        $error = (new Admin\Service)->activateMerchant($id, $dashboardOnly);
 
         return AppResponse::jsonResponse($error);
     }
