@@ -61,6 +61,8 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('/apihost', 'MerchantController@getApihost');
 
     Route::get('settings/invitations', 'InvitationController@getPendingInvitationsForUser');
+
+    Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
     
     Route::post('settings/invitations/{invite}/accept', 'InvitationController@acceptMerchantInvitation');
     
