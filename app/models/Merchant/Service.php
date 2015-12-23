@@ -2,14 +2,15 @@
 
 namespace Models\Merchant;
 
+use Auth;
+use Hash;
+use Requests;
 use Models\Base;
 use Models\Merchant;
 use Models\User;
 use Models\MerchantDetails;
-use Auth;
-use Mail;
-use Hash;
-use Requests;
+use Razorpay\Mailers\UserMailer;
+
 
 class Service extends Base\Service
 {
@@ -37,7 +38,7 @@ class Service extends Base\Service
 
         MerchantDetails\Entity::createOrFail($details);
 
-        $this->queueConfirmationMail($merchant);
+        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
         $slackData = [
             'id'    => $merchant->id,
@@ -48,16 +49,6 @@ class Service extends Base\Service
         $this->slackSignupPost($slackData);
 
         return [$error, $slackData];
-    }
-
-    protected function queueConfirmationMail($user)
-    {
-        $user = $user->generateEmailData();
-
-        Mail::send('emails.confirmation', compact('user'), function($m) use ($user)
-        {
-            $m->to($user['email'], $user['name'])->subject('Razorpay | Confirm Your Email');
-        });
     }
 
     protected function slackSignupPost($slackData)
@@ -107,11 +98,11 @@ class Service extends Base\Service
             }
             $merchant->save();
         }
-        
+
         $merchantDetails = $merchant->merchantDetails;
         $merchantDetails->contact_email = $merchant->email;
         $merchantDetails->save();
-    
+
         return [$error, null];
     }
 
@@ -177,7 +168,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
-                $this->queueConfirmationMail($user);
+                (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
                 return [[], []];
             }
@@ -261,11 +252,29 @@ class Service extends Base\Service
 
         return array($error, $key_data);
     }
-
+    
     public function fetch($merchant_id)
     {
         $merchant = Entity::findOrFail($merchant_id)->toArray();
 
         return $merchant;
+    }
+
+    /**
+     * Fetches merchant balance
+     * @param  string $merchantId Merchant Id
+     * @return array contains both test and live balances
+     */
+    public function fetchMerchantBalance($merchantId)
+    {
+        $this->setApiCredentials($merchantId, 'test');
+
+        $test = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+
+        $this->setApiCredentials($merchantId, 'live');
+
+        $live = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+
+        return compact('test', 'live');
     }
 }

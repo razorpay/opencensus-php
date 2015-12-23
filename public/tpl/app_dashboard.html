@@ -65,10 +65,16 @@
                 <span class="text-muted text-xs">Total Refunds</span>
               </div>
             </div>
-            <div class="col-xs-12 m-b-md">
-              <div href class="block panel padder-v bg-light dk item">
-                <span class="text-primary-dk font-thin h1 block">{{aggregations.data.amount | currency:"₹"}}</span>
+            <div class="col-xs-6">
+              <div href class="block panel padder-v item">
+                <span class="text-primary-dk font-thin h1 block">{{aggregations.data.amount | rupee}}</span>
                 <span class="text-muted text-xs">Total Volume</span>
+              </div>
+            </div>
+            <div class="col-xs-6">
+              <div href class="block panel padder-v item">
+                <span class="font-thin h1 block">{{balance/100 | rupee}}</span>
+                <span class="text-muted text-xs">Current Balance</span>
               </div>
             </div>
           </div>
@@ -151,7 +157,7 @@
               <div class="m-b m-l row" ng-repeat="row in entity.items | limitTo: 5" ng-controller="PaymentListCtrl">
                 <a ui-sref="app.payments.detail({id:row.id})">
                   <div class="col-xs-4 col-md-3 label text-base" tooltip="{{row.status | titlecase}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
-                    {{row.amount/100 | currency:row.currency + " "}}
+                    {{row.amount/100 | rupee}}
                   </div>
                   <div class="col-xs-8 col-md-9">
                     <code class="hidden-xs">{{row.id}}</code>
@@ -170,7 +176,7 @@
               <div class="m-b m-l row" ng-repeat="row in entity.items | limitTo: 5">
                 <a ui-sref="app.refunds.detail({id:row.id})">
                   <div class="col-xs-4 col-md-3 label text-base bg-warning" tooltip="Refunded" tooltip-placement="right">
-                  {{row.amount/100 | currency:row.currency + " "}}
+                  {{row.amount/100 | rupee}}
                   </div>
                   <div class="col-xs-8 col-md-9">
                     <tt class="hidden-xs">{{row.id}}</tt>
@@ -188,7 +194,7 @@
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Settlements</h4>
             <div class="m-b m-b m-l row" style="text-overflow: hidden" ng-repeat="row in entity.items | limitTo: 5">
               <div class="col-xs-4 col-md-3 label text-base bg-success" tooltip="{{row.status | titlecase}}" tooltip-placement="right">
-                <a ui-sref="app.settlements.detail({id:row.id})">{{row.amount/100 | currency:"INR "}}</a>
+                <a ui-sref="app.settlements.detail({id:row.id})">{{row.amount/100 | rupee:'INR '}}</a>
               </div>
               <div class="col-xs-8 col-md-9">
                 <code class="hidden-xs">{{row.id}}</code>

@@ -14,6 +14,9 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
+        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will only mark the merchant as confirmed on the dashboard side. Use this if the merchant was already created on the API side, but confirmation failed for some reason.">
+          Confirm Merchant
+        </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
           See Activation Form Details
         </a>
@@ -29,6 +32,13 @@
         ng-click="activateMerchant()"
         >
           Activate Merchant <i class="pull-right fa fa-check-square"></i>
+        </a>
+        <a href class="list-group-item"
+          ng-show="merchant.details.activated_dashboard==0 && merchant.details.activated==1"
+          ng-confirm-click="This will activate the merchant only on the dashboard side. Use with caution"
+          ng-click="activateMerchant(true)"
+        >
+          Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
         <a href class="list-group-item"
         ng-show="merchant.details.hold_funds==0"
@@ -94,6 +104,9 @@
         <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
           Edit Merchant Email <i class="pull-right fa fa-envelope"></i>
         </a>
+         <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openChangeBankAccountDetails()">
+          Edit Bank Account Details <i class="pull-right fa fa-university"></i>
+        </a>
         <a href class="list-group-item" ng-click="openAutofillForms()">
           Autofill Activation Form <i class="pull-right fa fa-magic"></i>
         </a>
@@ -127,15 +140,15 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
+          <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
         </a>
         <a href class="list-group-item" ng-show="merchant.details.live == 1">
-          <span class="pull-right">{{merchant.balance.live/100 | currency:'INR ' }}</span>
+          <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </a>
         <a ng-show="merchant.credits.live >= 0" ng-click="openEditCredits(merchant.credits.live)" class="list-group-item">
-          <span class="pull-right">{{merchant.credits.live/100 | currency:'INR ' }}</span>
+          <span class="pull-right">{{merchant.credits.live/100 | rupee }}</span>
           Free Credits
         </a>
         <a href class="list-group-item">
@@ -291,7 +304,7 @@
                         <td>{{rule.payment_network || 'Any'}}</td>
                         <td>{{rule.payment_issuer || 'Any'}}</td>
                         <td>{{rule.percent_rate/100}} %</td>
-                        <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>
+                        <td>{{rule.fixed_rate/100 | rupee}}</td>
                   </tr>
                 </tbody>
                 </table>
@@ -636,6 +649,128 @@
   </div>
 </script>
 
+<script type="text/ng-template" id="changeBankAccountDetailsModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Change merchant bank account details</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal" ng-init="merchant_details={bank_name:current.merchant_details.bank_name, bank_account_number:current.merchant_details.bank_account_number, bank_account_name:current.merchant_details.bank_account_name, bank_beneficiary_address1:current.merchant_details.bank_beneficiary_address1, bank_beneficiary_address2: current.merchant_details.bank_beneficiary_address2, bank_beneficiary_address3: current.merchant_details.bank_beneficiary_address3, bank_beneficiary_city: current.merchant_details.bank_beneficiary_city, bank_beneficiary_state: current.merchant_details.bank_beneficiary_state, bank_beneficiary_pin:current.merchant_details.bank_beneficiary_pin, bank_account_type:current.merchant_details.bank_account_type, bank_branch:current.merchant_details.bank_branch, bank_branch_ifsc:current.merchant_details.bank_branch_ifsc}">
+      <div class="form-group">
+          <label for="bank_name" class="col-sm-3 control-label">Name of Bank</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_name" ng-model="merchant_details.bank_name" placeholder="Name of Bank" required="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_number" class="col-sm-3 control-label">Bank Account Number</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_account_number" ng-model="merchant_details.bank_account_number" placeholder="Bank Account Number" required="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_name" class="col-sm-3 control-label">Beneficiary Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_account_name" ng-model="merchant_details.bank_account_name" placeholder="Account Holder Name" required="">
+            <span class="help-block">Should be same as business/individual name</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_beneficiary_address1" class="col-sm-3 control-label">Beneficiary Address Line 1</label>
+          <div class="col-sm-8">
+            <textarea class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_beneficiary_address1" ng-model="merchant_details.bank_beneficiary_address1" placeholder="Beneficiary Address Line 1" required=""></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_beneficiary_address2" class="col-sm-3 control-label">Beneficiary Address Line 2</label>
+          <div class="col-sm-8">
+            <textarea class="form-control ng-pristine ng-valid" name="bank_beneficiary_address2" ng-model="merchant_details.bank_beneficiary_address2" placeholder="Beneficiary Address Line 2"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_beneficiary_address3" class="col-sm-3 control-label">Beneficiary Address Line 3</label>
+          <div class="col-sm-8">
+            <textarea class="form-control ng-pristine ng-valid" name="bank_beneficiary_address3" ng-model="merchant_details.bank_beneficiary_address3" placeholder="Beneficiary Address Line 3"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_beneficiary_city" class="col-sm-3 control-label">Beneficiary Address City</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_beneficiary_city" ng-model="merchant_details.bank_beneficiary_city" placeholder="Beneficiary Address City" required="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_beneficiary_state" class="col-sm-3 control-label">Beneficiary Address State</label>
+          <div class="col-sm-8">
+            <select name="bank_beneficiary_state" ng-model="merchant_details.bank_beneficiary_state" class="form-control ng-pristine ng-invalid ng-invalid-required" required=""><option value="? undefined:undefined ?"></option>
+              <option value="AN">Andaman And Nicobar</option>
+              <option value="AP">Andhra Pradesh</option>
+              <option value="AR">Arunachal Pradesh</option>
+              <option value="AS">Assam</option>
+              <option value="BI">Bihar</option>
+              <option value="CH">Chandigarh (UT)</option>
+              <option value="CT">Chattisgarh</option>
+              <option value="DN">Dadra And Nagar Haveli</option>
+              <option value="DD">Daman And Diu (UT)</option>
+              <option value="DL">Delhi</option>
+              <option value="GO">Goa</option>
+              <option value="GJ">Gujarat</option>
+              <option value="HA">Haryana</option>
+              <option value="HP">Himachal Pradesh</option>
+              <option value="JK">Jammu And Kashmir</option>
+              <option value="JH">Jharkhand</option>
+              <option value="KA">Karnataka</option>
+              <option value="KE">Kerala</option>
+              <option value="MP">Madhya Pradesh</option>
+              <option value="MH">Maharashtra</option>
+              <option value="MA">Manipur</option>
+              <option value="ME">Meghalaya</option>
+              <option value="MI">Mizoram</option>
+              <option value="NA">Nagaland</option>
+              <option value="OR">Orissa</option>
+              <option value="PO">Pondicherry(UT)</option>
+              <option value="PB">Punjab</option>
+              <option value="RJ">Rajasthan</option>
+              <option value="SK">Sikkim</option>
+              <option value="TN">Tamilnadu</option>
+              <option value="TR">Tripura</option>
+              <option value="UP">Uttar Pradesh</option>
+              <option value="UT">Uttranchal</option>
+              <option value="WB">West Bengal</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_beneficiary_pin" class="col-sm-3 control-label">Beneficiary Address Pincode</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_beneficiary_pin" ng-model="merchant_details.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_account_type" ng-model="merchant_details.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_branch_address" class="col-sm-3 control-label">Branch Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_branch_address" ng-model="merchant_details.bank_branch" placeholder="Branch Address" required=""></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_branch_ifsc" class="col-sm-3 control-label">Branch IFSC Code</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="bank_branch_ifsc" ng-model="merchant_details.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required="">
+          </div>
+        </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(merchant_details)">OK</button>
+  </div>
+</script>
+
 <script type="text/ng-template" id="uploadScreenshotModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Upload Screenshots</h3>
@@ -732,7 +867,7 @@
           <input type="number" min="0" max="50000000"
             class="form-control m-b" ng-model="credits" step="1000000"
           >
-          {{credits/100|currency:'INR '}}
+          {{credits/100|rupee}}
         </div>
       </div>
     </form>

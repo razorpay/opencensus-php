@@ -155,4 +155,11 @@ class Merchant extends Entity
 
         return $this->request('POST', $relativeUrl, $params);
     }
+
+    public function setId($id)
+    {
+        $this->attributes['id'] = $id;
+
+        return $this;
+    }
 }

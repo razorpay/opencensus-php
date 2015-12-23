@@ -12,6 +12,7 @@ use Models\Merchant;
 use Models\MerchantDetails;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Session;
 
 class Service extends Base\Service
@@ -340,7 +341,8 @@ class Service extends Base\Service
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
-            'submitted_at'      => $merchant_details['submitted_at']
+            'submitted_at'      => $merchant_details['submitted_at'],
+            'activated_dashboard' => $merchant['activated']
         ) + $data;
 
         return $response;
@@ -428,6 +430,54 @@ class Service extends Base\Service
         }
 
         return array($error, $data);
+    }
+
+    // this is a refrence
+    public function postEditBankDetails($id, $input)
+    {
+        $error = array();
+
+        $validator = (new Validator)->validateInput('changeBankDetails', $input);
+
+        if($validator->fails())
+        {
+            return $validator->messages();
+        }
+
+        $this->setApiCredentials();
+
+        $merchant_details = MerchantDetails\Entity::findorfail($id);
+
+        $bankAccount = array(
+            'ifsc_code'             => $input['bank_branch_ifsc'],
+            'beneficiary_name'      => $input['bank_account_name'],
+            'account_number'        => $input['bank_account_number'],
+            'beneficiary_address1'  => $input['bank_beneficiary_address1'],
+            'beneficiary_address2'  => $input['bank_beneficiary_address2'],
+            'beneficiary_address3'  => $input['bank_beneficiary_address3'],
+            'beneficiary_address4'  => '',
+            'beneficiary_pin'       => $input['bank_beneficiary_pin'],
+            'beneficiary_city'      => $input['bank_beneficiary_city'],
+            'beneficiary_state'     => $input['bank_beneficiary_state'],
+            'beneficiary_country'   => 'IN',
+            'beneficiary_email'     => $merchant_details['contact_email'],
+            'beneficiary_mobile'    => $merchant_details['contact_mobile']
+        );
+
+        try
+        {
+            $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+
+            $merchant_details->fill($input);
+            $merchant_details->save();
+        }
+
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $merchant_details->toArray()];
     }
 
     public function postEditMerchantComment($id, $comment)
@@ -781,7 +831,7 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function activateMerchant($id)
+    public function activateMerchant($id, $dashboardOnly = false)
     {
         $merchant = Merchant\Entity::findorfail($id);
 
@@ -791,6 +841,13 @@ class Service extends Base\Service
         {
             return array('Activation form has not been submitted by merchant yet.');
         }
+
+        // Double equals because its probably a string
+        if ($dashboardOnly == true)
+        {
+            return $this->activateMerchantOnDashboard($merchant);
+        }
+
 
         $this->setApiCredentials();
 
@@ -810,9 +867,26 @@ class Service extends Base\Service
             'beneficiary_mobile'    => $details['merchant_details']['contact_mobile']
         );
 
+        $bankAccountApi = false;
+        // Check if the merchant has a bank account
         try
         {
-            $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+            $ba = $this->api->merchant->fetch($id)->fetchBankAccount();
+            $bankAccountApi = true;
+        }
+        catch(BadRequestError $e)
+        {
+            $bankAccountApi = false;
+        }
+
+        try
+        {
+            // Only if the merchant doesn't have the Bank Account associated
+            // Do we add a bank account
+            if ($bankAccountApi === false)
+            {
+                $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+            }
 
             $this->api->merchant->fetch($id)->activate();
         }
@@ -821,10 +895,15 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
+        return $this->activateMerchantOnDashboard($merchant);
+    }
+
+    protected function activateMerchantOnDashboard($merchant)
+    {
         $merchant->activated = 1;
         $merchant->save();
 
-        $this->lockMerchant($id);
+        $this->lockMerchant($merchant->id);
 
         return array();
     }
@@ -1436,5 +1515,22 @@ class Service extends Base\Service
         $adminId = Auth::admin()->get()->username;
 
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
+    }
+
+    public function confirmMerchant($merchantId)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchantId);
+
+        try
+        {
+            $merchant->confirm();
+            $merchant->saveOrFail();
+        }
+        catch(\Exception $e)
+        {
+            return [$e->getMessage(), null];
+        }
+
+        return [null, 'Merchant Confirmed'];
     }
 }

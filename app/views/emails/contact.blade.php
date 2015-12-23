@@ -7,10 +7,10 @@
 		<h2>Contact Form Submission - Razorpay.com</h2>
 
 		<div>
-			Name: {{{$input['name']}}} <br/>
-			Email: {{{$input['email']}}} <br/>
+			Name: {{{$name}}} <br/>
+			Email: {{{$email}}} <br/>
 			Message: <br/>
-			{{{$input['message']}}}
+			{{{$content}}}
 		</div>
 	</body>
 </html>
