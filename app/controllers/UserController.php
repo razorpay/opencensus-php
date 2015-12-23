@@ -26,6 +26,11 @@ class UserController extends BaseController
         return AppResponse::jsonResponse([]);
     }
 
+    /**
+     * Handle the authentication request from the user.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function postSignin()
     {
         $input = Input::all();
@@ -35,6 +40,11 @@ class UserController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Log out the currently suthenticated user.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getLogout()
     {
         Auth::user()->logout();
@@ -42,6 +52,11 @@ class UserController extends BaseController
         return AppResponse::jsonResponse([]);
     }
 
+    /**
+     * Handle the request from user to change his current password.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function postPassword()
     {
         $input = Input::all();
