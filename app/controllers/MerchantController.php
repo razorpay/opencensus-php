@@ -7,15 +7,6 @@ use Razorpay\Mailers\CompanyMailer;
 
 class MerchantController extends BaseController
 {
-    public function postRegister()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->register($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postResendConfirmation()
     {
         $input = Input::all();
