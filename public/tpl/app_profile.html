@@ -4,7 +4,7 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md profile-wrapper">
+<div class="wrapper-md profile-wrapper" ng-init="getPendingInvitations()">
   <div class="panel panel-default col-sm-6 col-sm-offset-3">
     <div class="panel-heading m-t m-b">
       Merchant Id: <strong>{{user.id}}</strong>
@@ -36,16 +36,20 @@
         </a>
       </div>
     </div>
-    <div class="panel-heading m-t m-b">
-      Account Details
+    <div class="panel-heading m-t m-b" ng-show="invitations">
+      Pending Invitations
     </div>
-    <div class="row wrapper" ng-show="invitations">
+    <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item" ng-repeat="invite in invitations">
           <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
-          {{ invite.merchant.name }} - {{ invite.merchant.email }}
+          <span class="pull-right"><button class="btn btn-default" ng-click="rejectInvitation(invite)">Reject</button></span>
+          Invitation from {{ invite.merchant.name }} for the {{ invite.role | titlecase }} role
         </a>
       </div>
+    </div>
+    <div class="panel-heading m-t m-b">
+      Account Details
     </div>
     <div class="text-center m-b">
       <script type="text/ng-template" id="passwordModalContent.html">
