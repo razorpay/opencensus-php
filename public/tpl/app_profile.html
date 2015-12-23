@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md profile-wrapper">
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+  <div class="panel panel-default col-sm-6">
     <div class="panel-heading m-t m-b">
       Merchant Id: <strong>{{user.id}}</strong>
     </div>
@@ -33,6 +33,22 @@
         <a href class="list-group-item">
           <span class="pull-right">{{user.activation_progress}}%</span>
           Activation Form Progress
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default col-sm-6">
+    <div class="panel-heading m-t m-b">
+      Account Details
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a href class="list-group-item">
+          <span class="pull-right"><button class="btn btn-default" ng-click="accept()">Accept</button></span>
+          Merchant Name
         </a>
       </div>
     </div>
