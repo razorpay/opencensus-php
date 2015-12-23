@@ -832,9 +832,26 @@ class Service extends Base\Service
             'beneficiary_mobile'    => $details['merchant_details']['contact_mobile']
         );
 
+        $bankAccountApi = false;
+        // Check if the merchant has a bank account
         try
         {
-            $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+            $ba = $this->api->merchant->fetch($id)->fetchBankAccount();
+            $bankAccountApi = true;
+        }
+        catch(ApiError $e)
+        {
+            $bankAccountApi = false;
+        }
+
+        try
+        {
+            // Only if the merchant doesn't have the Bank Account associated
+            // Do we add a bank account
+            if ($bankAccountApi === false)
+            {
+                $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+            }
 
             $this->api->merchant->fetch($id)->activate();
         }
