@@ -95,4 +95,18 @@ class UserController extends BaseController
         
         return AppResponse::jsonResponse($error, $data);
     }
+
+    /**
+     * Get the current merchant for the authenticated user.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getOwnedMerchantForUser()
+    {
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new User\Service)->getOwnedMerchantForUser($user);
+        
+        return AppResponse::jsonResponse($error, $data);
+    }
 }
