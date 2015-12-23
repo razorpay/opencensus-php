@@ -27,7 +27,7 @@ class InvitationController extends BaseController
      */
     public function acceptMerchantInvitation($inviteId)
     {
-        list($error, $data) = (new Invitation\Service)->acceptInvitation($inviteId);
+        $error = (new Invitation\Service)->acceptInvitation($inviteId);
 
         return AppResponse::jsonResponse($error);
     }
