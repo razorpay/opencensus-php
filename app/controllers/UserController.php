@@ -30,6 +30,15 @@ class UserController extends BaseController
        return AppResponse::jsonResponse([], $data);
     }
 
+    public function postRegister()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->register($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postSignin()
     {
         $input = Input::all();
