@@ -37,18 +37,15 @@
       </div>
     </div>
   </div>
-  <div class="panel panel-default col-sm-6">
+  <div class="panel panel-default col-sm-6" ng-init="getPendingInvitations()">
     <div class="panel-heading m-t m-b">
       Account Details
     </div>
-    <div class="text-center m-t">
-      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-    </div>
-    <div class="row wrapper">
+    <div class="row wrapper" ng-if="invitations">
       <div class="list-group">
-        <a href class="list-group-item">
-          <span class="pull-right"><button class="btn btn-default" ng-click="accept()">Accept</button></span>
-          Merchant Name
+        <a href class="list-group-item" ng-repeat="invite in invitations">
+          <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
+          {{ invite.merchant.name }} - {{ invite.merchant.email }}
         </a>
       </div>
     </div>
