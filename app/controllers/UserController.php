@@ -80,4 +80,19 @@ class UserController extends BaseController
 
         return AppResponse::jsonResponse($error);
     }
+
+    /**
+     * Get all the merchants for the given user.
+     *
+     * @param  \Models\User\Entity  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function getAllMerchantsForUser()
+    {
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new User\Service)->getAllMerchantsForUser($user);
+        
+        return AppResponse::jsonResponse($error, $data);
+    }
 }
