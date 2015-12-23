@@ -51,13 +51,16 @@ class Service extends Base\Service
     {
         $user = Auth::user()->user();
 
-        $invitation = $user->invitations()->findOrFail($inviteId);
+        $invitation = $user->invitations()->find($inviteId);
+
+        if(!$invitation)
+        {
+            return array('The invitation is invalid.');
+        }
 
         $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
 
         $invitation->delete();
-
-        return Merchant\Entity::getAllMerchantsForUser($user);
     }
 
     /**
@@ -99,15 +102,12 @@ class Service extends Base\Service
      */
     public function getPendingInvitationsForUser($user)
     {
-        $invitations = $user->invitations()->with('merchant.owner')->get();
+        $invitations = $user->invitations()->with('merchant')->get();
 
         foreach ($invitations as $invite) 
         {
-            $invite->setVisible(['id', 'merchant']);
-
-            $invite->merchant->setVisible(['name', 'owner']);
-
-            $invite->merchant->primaryOwner()->setVisible(['name']);
+            $invite->setVisible(['id', 'merchant', 'role']);
+            $invite->merchant->setVisible(['id','name','email']);
         }
 
         return array(null, $invitations);
