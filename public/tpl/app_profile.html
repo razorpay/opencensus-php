@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md profile-wrapper">
-  <div class="panel panel-default col-sm-6">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3">
     <div class="panel-heading m-t m-b">
       Merchant Id: <strong>{{user.id}}</strong>
     </div>
@@ -37,11 +37,11 @@
       </div>
     </div>
   </div>
-  <div class="panel panel-default col-sm-6" ng-init="getPendingInvitations()">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" ng-init="getPendingInvitations()">
     <div class="panel-heading m-t m-b">
       Account Details
     </div>
-    <div class="row wrapper" ng-if="invitations">
+    <div class="row wrapper" ng-show="invitations">
       <div class="list-group">
         <a href class="list-group-item" ng-repeat="invite in invitations">
           <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
