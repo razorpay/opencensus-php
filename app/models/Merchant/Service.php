@@ -288,6 +288,11 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
+        if ($ba === null)
+        {
+            return null;
+        }
+
         return $ba->toArray();
     }
 

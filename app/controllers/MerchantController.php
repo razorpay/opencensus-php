@@ -198,6 +198,11 @@ class MerchantController extends BaseController
     {
         $data = (new Merchant\Service)->getBankAccount($id);
 
+        if ($data === null)
+        {
+            return ApiResponse::generateErrorResponse(404);
+        }
+
         return ApiResponse::json($data);
     }
 
