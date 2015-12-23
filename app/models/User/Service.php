@@ -213,4 +213,23 @@ class Service extends Base\Service
 
         return array(null, $merchants);
     }
+
+    /**
+     * Get the current merchant for the authenticated user.
+     *
+     * @param  \Models\User\Entity  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function getOwnedMerchantForUser($user)
+    {
+        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
+        
+        if(is_null($merchant))
+        {
+            $error = array("We couldn't find the merchant you are looking for.");
+            return array($error, null);
+        }
+
+        return array(null, $merchant);
+    }
 }
