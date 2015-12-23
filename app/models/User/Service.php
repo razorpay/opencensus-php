@@ -55,6 +55,7 @@ class Service extends Base\Service
 
         $error = $user->changePassword($input);
         
+        //Any chnages in user password to be also reflected in the merchants table for now
         DB::transaction(function() use ($user)
         {
             $user->password = Hash::make($user->password);
