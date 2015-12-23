@@ -16,85 +16,6 @@ use Razorpay\Api\Errors\BadRequestError;
 
 class Service extends Base\Service
 {
-    public function register(array $input)
-    {
-        $user = new User\Entity;
-
-        $invitationToken = isset($input['invitation']) ? $input['invitation'] : null;
-
-        if($invitationToken)
-        {
-            User\Validator::$createRules['email'] = 'email|unique:merchants';
-            
-            list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($invitationToken);
-
-            if($error)
-            {
-                return array($error, null);
-            }
-            
-            $input['email'] = $invitation->email;
-        }
-
-        $error = $user->build($input);
-
-        if (!empty($error))
-        {
-            return array($error, null);
-        }
-
-        $user->password = Hash::make($user->password);
-        $user->save();
-
-        $businessName = isset($input['business_name']) ? $input['business_name'] : null;
-
-        if($businessName)
-        {
-            $merchant = Merchant\Entity::createFromUserWithBusinessName($user,$businessName);
-            $merchant->save();
-            
-            $user->merchants()->attach($merchant, ['role' => 'owner']);
-            
-            $details = array('merchant_id' => $merchant->id,'contact_email' => $merchant->email);
-
-            MerchantDetails\Entity::createOrFail($details);
-        }
-
-        (new UserMailer($user))->accountVerification()->queueAndDeliver();
-
-        if($invitation) 
-        {
-            Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
-        }
-        
-        $slackData = array(
-            'id'    => $merchant->id,
-            'name'  => $merchant->name,
-            'email' => $merchant->email
-        );
-
-        $this->slackSignupPost($slackData);
-
-        return [$error, $slackData];
-    }
-
-    protected function slackSignupPost($slackData)
-    {
-        if($_ENV['SLACK_ENABLE'] === true)
-        {
-            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
-
-            $postData = [
-                'email'         => $slackData['email'],
-                'name'          => $slackData['name'],
-                // This is in slack formatting
-                'message'       => "[New Signup]($merchantLink)"
-            ];
-
-            Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
-        }
-    }
-
     /**
      * take care when calling this function
      * This is only called from the admin service
@@ -135,39 +56,36 @@ class Service extends Base\Service
 
     public function confirm($token)
     {
-        $user = User\Entity::getUserFromConfirmationToken($token);
+        $merchant = Merchant\Entity::getMerchantForConfirmation($token);
 
-        if (is_null($user))
+        if (is_null($merchant))
         {
             return array('Invalid confirmation token or the merchant is already confirmed.');
         }
 
-        if($merchant = $user->merchants()->where('role','owner')->first())
+        try
         {
-            try
-            {
-                $merchant_api_data = $merchant->generateApiData();
-                $this->setApiCredentials();
-                
-                $response = $this->api->merchant->create($merchant_api_data);
-            }
-            catch(BadRequestError $e)
-            {
-                return array($e->getMessage());
-            }
+            $merchant_api_data = $merchant->generateApiData();
+            $this->setApiCredentials();
+            
+            $response = $this->api->merchant->create($merchant_api_data);
+        }
+        catch(BadRequestError $e)
+        {
+            return array($e->getMessage());
         }
 
-        $user->confirm_token = null;
-        $email = $user->email;
-        $user->saveOrFail();
+        $merchant->confirm_token = null;
+        $email = $merchant->email;
+        $merchant->saveOrFail();
 
-        if($user->hasMerchants())
+        if($merchant->hasUsers())
         {
-            $merchant = $user->merchants()->where('email',$email)->first();
-            if($merchant)
+            $user = $merchant->users()->where('email',$email)->first();
+            if($user)
             {
-                $merchant->confirm_token = $user->confirm_token;
-                $merchant->saveOrFail();
+                $user->confirm_token = $merchant->confirm_token;
+                $user->saveOrFail();
             }
         }
 
