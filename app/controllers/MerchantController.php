@@ -6,6 +6,24 @@ use Models\MerchantDetails;
 
 class MerchantController extends BaseController
 {
+    /**
+     * Get the current merchant of the authenticated user.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getMerchant()
+    {
+       $user = Auth::user()->user();
+
+       $merchant = (new Merchant\Service)->fetch($user->currentMerchant->id);
+
+       $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
+
+       $data = $merchant + $merchantDetails;
+
+       return AppResponse::jsonResponse([], $data);
+    }
+
     public function postRegister()
     {
         $input = Input::all();

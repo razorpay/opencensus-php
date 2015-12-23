@@ -6,25 +6,24 @@ use Models\MerchantDetails;
 
 class UserController extends BaseController
 {
+    /**
+     * Returns the base template for angular.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getIndex()
     {
         return View::make('merchant.tmpgetIndex');
     }
 
+    /**
+     * Returns an empty success to keep the user session active..
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getKeepAlive()
     {
         return AppResponse::jsonResponse([]);
-    }
-
-    public function getUser()
-    {
-       $user = (new User\Service)->fetch(Auth::user()->id());
-
-       $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
-
-       $data = $user + $merchantDetails;
-
-       return AppResponse::jsonResponse([], $data);
     }
 
     public function postSignin()
