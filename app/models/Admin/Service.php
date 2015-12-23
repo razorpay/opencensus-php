@@ -80,7 +80,7 @@ class Service extends Base\Service
 
         if(!$user)
         {
-            return array("Could not log you in to the primary owner's account");
+            $error[] = "Could not log you in to the primary owner's account";
         }
 
         return $error;
