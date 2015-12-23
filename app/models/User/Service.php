@@ -203,9 +203,12 @@ class Service extends Base\Service
             return array($error, null);
         }
 
+        $currentMerchantId = $user->getCurrentMerchantId();
+
         foreach ($merchants as $merchant) 
         {
-            $merchant->setVisible(['id','name','email']);
+            $merchant->current = $merchant->id == $currentMerchantId;
+            $merchant->setVisible(['id','name','email','current']);
         }
 
         return array(null, $merchants);
