@@ -38,6 +38,18 @@
               </li>
             </ul>
           </li>
+          <li class="dropdown" ng-controller="switchMerchantCtrl" ng-show="merchants.length > 0">
+            <a href class="dropdown-toggle" data-toggle="dropdown">
+              Switch Merchant<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu animated fadeInRight w">
+              <li ng-repeat="merchant in merchants">
+                <a ng-click="switchMerchant(merchant)" class="dropdown-toggle" href>
+                <span ng-show="merchant.current" class="label bg-info pull-right">current</span>
+                {{merchant.name | titlecase}}</a>
+              </li>
+            </ul>
+          </li>
           <li>
             <a target="_blank" href="https://docs.razorpay.com">
               <span>Documentation</span>
