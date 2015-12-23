@@ -38,13 +38,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function fetch($user_id)
-    {
-        $user = Entity::findOrFail($user_id)->toArray();
-
-        return $user;
-    }
-
     public function changePassword(array $input)
     {
         $user = Auth::user()->user();
