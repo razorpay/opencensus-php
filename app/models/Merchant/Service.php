@@ -290,7 +290,8 @@ class Service extends Base\Service
 
         if ($ba === null)
         {
-            return null;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
         return $ba->toArray();
