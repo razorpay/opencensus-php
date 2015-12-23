@@ -67,6 +67,15 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     );
 
     /**
+     * Take care while calling this method
+     * @param array $input array with new email address
+     */
+    public function changeEmail($input)
+    {
+        return $this->edit($input, 'changeEmail');
+    }
+
+    /**
      * Determine if the merchant has any users.
      *
      * @return bool

@@ -20,6 +20,10 @@ class Validator extends Base\Validator
         'captcha'
     );
 
+    protected static $changeEmailRules = array(
+        'email'         => 'required|email'
+    );
+
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
         'gateway'                                   => '',
