@@ -12,23 +12,39 @@ app.controller('UserCtrl', [
   function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
-    var request = $http.get('/settings/invitations');
-    request.success(function (data) {
-      if (data.success) {
-        if (data.data.length > 0) {
+    
+    $scope.getPendingInvitations = function(){
+      var request = $http.get('/settings/invitations');
+      request.success(function (data) {
+        if (data.success) {
           $scope.invitations = data.data;
-        } 
-      } else {
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
-      }
-    }).error(function () {
-      $scope.alerts.addAlert('danger', null, true);
-    });
+      });
+    };
+
     $scope.acceptInvitation = function(invite) {
       var request = $http.post('settings/invitations/' + invite.id + '/accept');
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'You have accepted the invite.', true);
+          $scope.getPendingInvitations();
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+    $scope.rejectInvitation = function(invite) {
+      var request = $http.delete('settings/invitations/' + invite.id);
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'You have rejected the invite.', true);
+          $scope.getPendingInvitations();
         } else {
           $scope.alerts.addAlert('danger', null, true);
         }
