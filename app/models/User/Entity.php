@@ -6,6 +6,7 @@ use Uuid;
 use Session;
 use Models\Base;
 use Models\Merchant;
+use Models\Invitation;
 use RandomLib\Factory as RandomLibFactory;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
@@ -73,6 +74,14 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
                     ->withPivot(['role'])
                     ->orderBy('name', 'asc');
+    }
+
+    /**
+     * Get all of the pending invitations for the user.
+     */
+    public function invitations()
+    {
+        return $this->hasMany(Invitation\Entity::class);
     }
 
     /**
