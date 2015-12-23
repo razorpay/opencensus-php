@@ -8,10 +8,26 @@ app.controller('TeamManagementCtrl', [
   'transformRequestAsFormPost',
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
+
+    $scope.roles = ['owner','manager','operations','finance','developer'];
     
     $scope.team = {
       role: 'manager'
     };
+
+    $scope.getTeamMembers = function(){
+      var request = $http.get('/settings/merchants/owned');
+      request
+      .success(function (data) {
+        if (data.success) {
+          $scope.users = data.data.users;
+          $scope.invitations = data.data.invitations;
+        } 
+      })
+      .error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
 
     $scope.sendInvitation = function() {
       
