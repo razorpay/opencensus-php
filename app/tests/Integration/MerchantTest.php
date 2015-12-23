@@ -47,6 +47,7 @@ class MerchantTest extends TestCase
         $this->browser
             ->open(URL::to('/#/access/signup'))    // Visits the 'register page
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signup\"]').length > 0", 20000)
+            ->type(l::IdOrName('business_name'), 'Razorpay')
             ->type(l::IdOrName('name'), $this->merchant->name)      // Fill name
             ->type(l::IdOrName('email'), $this->merchant->email)   // Fill email
             ->type(l::IdOrName('password'), '123456xx')
@@ -319,7 +320,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 20000)
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
-        $this->assertBodyHasText($this->user->name);
+        $this->assertBodyHasText($this->merchant->name);
 
         $this->assertBodyHasText($this->merchant->id);
 
