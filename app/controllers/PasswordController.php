@@ -44,7 +44,7 @@ class PasswordController extends BaseController
 				if($user->hasMerchants())
 				{
 					$merchant = $user->merchants()->where('email',$user->email)->first();
-					if($merchant)
+					if ($merchant)
 					{
 						$merchant->password = $user->password;
 						$merchant->save();
