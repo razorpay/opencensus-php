@@ -2,7 +2,7 @@ Hi!
 
 <br><br>
 
-{{ $invitation->merchant->owners()->first()->name }} has invited you to join their team with roles as {{ $invitation->role }}!
+{{ $invitation->merchant->owners()->first()->name }} has invited you to join their team with role as {{ $invitation->role }}!
 
 <br><br>
 
