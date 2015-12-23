@@ -11,6 +11,32 @@ app.controller('UserCtrl', [
   'modeFactory',
   function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
     $scope.mode = modeFactory.getMode();
+    $scope.getPendingInvitations = function() {
+      var request = $http.get('/settings/invitations');
+      request.success(function (data) {
+        if (data.success) {
+          if (data.data.length > 0) {
+            $scope.invitations = data.data;
+          } 
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+    $scope.acceptInvitation = function(invite) {
+      var request = $http.post('settings/invitations/' + invite.id + '/accept');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'You have accepted the invite.', true);
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
     $scope.refreshUser = function (force) {
       user.identity(force).then(function (data) {
         $scope.user = data;
