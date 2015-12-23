@@ -60,13 +60,17 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('/apihost', 'MerchantController@getApihost');
 
-    Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
+    Route::get('settings/invitations', 'InvitationController@getPendingInvitationsForUser');
     
     Route::post('settings/invitations/{invite}/accept', 'InvitationController@acceptMerchantInvitation');
     
     Route::delete('settings/invitations/{invite}', 'InvitationController@destroyMerchantInvitationForUser');
    
+    Route::get('settings/invitations/pending', 'InvitationController@switchCurrentMerchant'); 
+
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant'); 
+
+    Route::delete('settings/merchants/{merchant}/membership', 'InvitationsController@leaveMerchant');
 
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
 
@@ -102,7 +106,7 @@ Route::group(array('before' => 'guest.user'), function()
     {
         Route::post('/user/signin', 'UserController@postSignin');
 
-        Route::post('/user/register', 'MerchantController@postRegister');
+        Route::post('/user/register', 'UserController@postRegister');
 
         Route::post('/user/resend', 'MerchantController@postResendConfirmation');
 
