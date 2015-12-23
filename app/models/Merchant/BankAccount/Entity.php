@@ -162,4 +162,27 @@ class Entity extends Base\PublicEntity
             self::ID,
             self::generateUniqueIdFromTimestamp($createdAt));
     }
+
+    public function equals($baCopy)
+    {
+        $orig = $this->toArray();
+        unset(
+            $orig[self::ID],
+            $orig[self::CREATED_AT],
+            $orig[self::UPDATED_AT],
+            $orig[self::DELETED_AT],
+            $orig[self::BENEFICIARY_CODE],
+            $orig[self::BENEFICIARY_ADDRESS3],
+            $orig[self::BENEFICIARY_ADDRESS4]);
+        $copy = $baCopy->toArray();
+        unset(
+            $copy[self::ID],
+            $copy[self::CREATED_AT],
+            $copy[self::UPDATED_AT],
+            $copy[self::DELETED_AT],
+            $copy[self::BENEFICIARY_ADDRESS3],
+            $copy[self::BENEFICIARY_ADDRESS4],
+            $copy[self::BENEFICIARY_CODE]);
+        return ($orig == $copy);
+    }
 }

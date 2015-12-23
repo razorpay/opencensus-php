@@ -5,6 +5,7 @@ namespace Models\Merchant\BankAccount;
 use Constants\Mode;
 use Models\Base;
 use Models\Merchant\BankAccount;
+use Mail;
 
 class Core extends Base\Core
 {
@@ -22,6 +23,13 @@ class Core extends Base\Core
         if ($bankAccount === null)
         {
             return $this->createBankAccount($input, $merchant, $this->mode);
+        }
+
+        $ba = $this->buildBankAccount($input, $merchant, $this->mode);
+
+        if ($ba->equals($bankAccount))
+        {
+            return $bankAccount;
         }
 
         return $this->changeBankAccount($input, $merchant, $bankAccount);
@@ -72,6 +80,17 @@ class Core extends Base\Core
      */
     protected function createBankAccount($input, $merchant, $mode)
     {
+        $ba = $this->buildBankAccount($input, $merchant, $mode);
+
+        $this->generateBeneficiaryCode($ba, $mode);
+
+        $this->repo->saveOrFail($ba);
+
+        return $ba;
+    }
+
+    protected function buildBankAccount($input, $merchant, $mode)
+    {
         $ba = new BankAccount\Entity;
 
         $ba->setConnection($mode);
@@ -79,10 +98,6 @@ class Core extends Base\Core
         $ba = $ba->build($input);
 
         $ba->merchant()->associate($merchant);
-
-        $this->generateBeneficiaryCode($ba, $mode);
-
-        $this->repo->saveOrFail($ba);
 
         return $ba;
     }
@@ -126,5 +141,14 @@ class Core extends Base\Core
         $code .= $count;
 
         $ba->setBeneficiaryCode($code);
+    }
+
+    protected function sendEmail($template, $subject, $data)
+    {
+        Mail::queue($template, $data, function($message) use ($data, $subject){
+
+            $message->to($data['email'], $data['name'])
+                ->subject($subject);
+        });
     }
 }
