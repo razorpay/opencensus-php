@@ -90,4 +90,26 @@ class Service extends Base\Service
         $error = array('The invitation is invalid.');
         return array($error, null);
     }
+
+    /**
+     * Get the pending invitations for the given user.
+     * 
+     * @param \Models\User\Entity $user 
+     * @return \Models\Invitation\Entity[]
+     */
+    public function getPendingInvitationsForUser($user)
+    {
+        $invitations = $user->invitations()->with('merchant.owner')->get();
+
+        foreach ($invitations as $invite) 
+        {
+            $invite->setVisible(['id', 'merchant']);
+
+            $invite->merchant->setVisible(['name', 'owner']);
+
+            $invite->merchant->primaryOwner()->setVisible(['name']);
+        }
+
+        return array(null, $invitations);
+    }
 }
