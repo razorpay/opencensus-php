@@ -74,6 +74,8 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::delete('settings/merchants/{merchant}/membership', 'InvitationsController@leaveMerchant');
 
+    Route::get('settings/merchants', 'UserController@getAllMerchantsForUser');
+    
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
 
     Route::group(array('before' => 'csrf'), function()
