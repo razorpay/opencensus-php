@@ -319,7 +319,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 20000)
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
-        $this->assertBodyHasText($this->user->name);
+        $this->assertBodyHasText($this->merchant->name);
 
         $this->assertBodyHasText($this->merchant->id);
 
