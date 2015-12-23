@@ -6,10 +6,102 @@ use DB;
 use Auth;
 use Hash;
 use Models\Base;
+use Models\User;
 use Models\Merchant;
+use Models\Invitation;
+use Models\MerchantDetails;
+use Razorpay\Mailers\UserMailer;
 
 class Service extends Base\Service
 {
+    public function register(array $input)
+    {
+        $user = new User\Entity;
+
+        $invitationToken = isset($input['invitation']) ? $input['invitation'] : null;
+
+        if($invitationToken)
+        {
+            User\Validator::$createRules['email'] = 'email|unique:merchants';
+            
+            list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($invitationToken);
+
+            if($error)
+            {
+                return array($error, null);
+            }
+            $email = $invitation->email;
+            $user = User\Entity::where('email',$email)->first();
+            if($user)
+            {
+                $error = array('You already have an account. Log in and accept the invite in you account settings page.');
+                return array($error, null);
+            }
+            $input['email'] = $email;
+        }
+
+        $error = $user->build($input);
+
+        if (!empty($error))
+        {
+            return array($error, null);
+        }
+
+        $user->password = Hash::make($user->password);
+        $user->save();
+
+        $businessName = isset($input['business_name']) ? $input['business_name'] : null;
+
+        if($businessName)
+        {
+            $merchant = Merchant\Entity::createFromUserWithBusinessName($user,$businessName);
+            $merchant->save();
+            
+            $user->merchants()->attach($merchant, ['role' => 'owner']);
+            
+            $details = array('merchant_id' => $merchant->id,'contact_email' => $merchant->email);
+
+            MerchantDetails\Entity::createOrFail($details);
+            
+            (new UserMailer($user))->accountVerification()->queueAndDeliver();
+        }
+
+        $data = array(
+            'id'    => $user->id,
+            'name'  => $user->name,
+            'email' => $user->email
+        );
+
+        $this->slackSignupPost($data);
+
+        if(isset($invitation)) 
+        {
+            Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+            Auth::user()->login($user);
+            $data['login'] = true;
+
+        }
+
+        return array($error, $data);
+    }
+
+    protected function slackSignupPost($slackData)
+    {
+        if($_ENV['SLACK_ENABLE'] === true)
+        {
+            $userLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+
+            $postData = [
+                'email'         => $slackData['email'],
+                'name'          => $slackData['name'],
+                // This is in slack formatting
+                'message'       => "[New Signup]($userLink)"
+            ];
+
+            Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
+        }
+    }
+
     public function login(array $input)
     {
         $error = (new Validator)->validateInput('login', $input)->messages();
