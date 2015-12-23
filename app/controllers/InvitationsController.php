@@ -44,4 +44,19 @@ class InvitationController extends BaseController
 
         return AppResponse::jsonResponse($error);
     }
+
+    /**
+     * Get all of the pending invitations for the user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function getPendingInvitationsForUser()
+    {
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new Invitation\Service)->getPendingInvitationsForUser($user);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }
