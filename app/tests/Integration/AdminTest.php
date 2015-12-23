@@ -41,10 +41,13 @@ class AdminTest extends TestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
-            $this->merchant = $this->createEntity('merchant', array('id'=> Uuid::generate(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
-            $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
-            $user = Models\User\Entity::createFromMerchant($this->merchant);
+            $user = $this->createEntity('user');
             $user->saveOrFail();
+            
+            $this->merchant = Models\Merchant\Entity::createFromUserWithBusinessName($user,'Razorpay');
+            $this->merchant->saveOrFail();
+            $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id' => $this->merchant->id));
+            
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
 
