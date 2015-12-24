@@ -12,7 +12,7 @@ use Trace\Trace;
 class VerifyResult
 {
     const UNKNOWN   = null;
-    const SUCCESS   = 0;
-    const FAILED    = 1;
+    const FAILED    = 0;
+    const SUCCESS   = 1;
     const ERROR     = 2;
 }
