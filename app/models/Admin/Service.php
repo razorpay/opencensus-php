@@ -76,7 +76,7 @@ class Service extends Base\Service
         $error = array();
 
         $merchant = Merchant\Entity::findOrFail($merchant_id);
-        
+
         $user = Auth::user()->loginUsingId($merchant->primaryOwner()->id);
 
         if(!$user)
