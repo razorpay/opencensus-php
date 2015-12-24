@@ -31,7 +31,7 @@ app.controller('UserCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'You have accepted the invite.', true);
-          $scope.getPendingInvitations();
+          location.reload();
         } else {
           $scope.alerts.addAlert('danger', null, true);
         }
