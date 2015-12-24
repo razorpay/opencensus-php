@@ -14,13 +14,13 @@
         <td>
           <table class="row">
             <tr>
-              <td class="wrapper offset-by-one">
-                <table class="ten columns">
+              <td class="wrapper">
+                <table class="twelve columns">
                   <tr>
                     <td class="center">
 <img style="max-width: 580px;margin-bottom: 10px;margin-top: 5px;"
-  alt="Introducing PayZapp newsletter"
-  src="https://cdn.razorpay.com/newsletter/payzapp.jpg">
+  alt="Razorpay wishes you Merry Christmas"
+  src="https://cdn.razorpay.com/newsletter/christmas.jpg">
                     </td>
                     <td class="expander"></td>
                   </tr>
