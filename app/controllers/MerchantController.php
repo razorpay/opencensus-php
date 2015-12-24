@@ -43,6 +43,23 @@ class MerchantController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Update a team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function updateTeamMember($userId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $user, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getCsv()
     {
         $input = Input::only('id', 'secret');
