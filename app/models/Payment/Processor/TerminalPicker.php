@@ -197,22 +197,11 @@ class TerminalPicker
 
         $wallet = $this->payment->getWallet();
 
-        if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-            ($wallet === Wallet::PAYTM))
-        {
-            return $gatewayTerms[Payment\Gateway::PAYTM];
-        }
+        $gateway = Payment\Gateway::getGatewayForWallet($wallet);
 
-        if ((isset($gatewayTerms[Payment\Gateway::MOBIKWIK]) === true) and
-            ($wallet === Wallet::MOBIKWIK))
+        if (isset($gatewayTerms[$gateway]) === true)
         {
-            return $gatewayTerms[Payment\Gateway::MOBIKWIK];
-        }
-
-        if ((isset($gatewayTerms[Payment\Gateway::WALLET_PAYZAPP]) === true) and
-            ($wallet === Wallet::PAYZAPP))
-        {
-            return $gatewayTerms[Payment\Gateway::WALLET_PAYZAPP];
+            return $gatewayTerms[$gateway];
         }
     }
 

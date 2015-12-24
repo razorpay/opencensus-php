@@ -5,6 +5,7 @@ namespace Models\Payment;
 use EE\Exception;
 use Models\Card\Network;
 use Models\Settlement;
+use Models\Payment\Processor\Wallet;
 
 class Gateway
 {
@@ -94,6 +95,12 @@ class Gateway
             Network::AMEX),
     );
 
+    public static $walletToGatewayMap = array(
+        Wallet::PAYTM       => Gateway::PAYTM,
+        Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
+        Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
+    );
+
     public static $verifyEnabled = array(
         self::AXIS_MIGS,
         self::BILLDESK,
@@ -109,6 +116,16 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__.'::'.strtoupper($gateway)));
+    }
+
+    public static function getWalletGateways()
+    {
+        return self::$method[Method::WALLET];
+    }
+
+    public static function getGatewayForWallet($wallet)
+    {
+        return self::$walletToGatewayMap[$wallet];
     }
 
     public static function validateGateway($gateway)
