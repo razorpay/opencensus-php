@@ -266,6 +266,50 @@ class Service extends Base\Service
         return $merchant;
     }
 
+
+     /**
+     * Update a team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function updateTeamMemberForOwner($userId, $user, $input)
+    {
+        $error = array();
+
+        $validator = (new Merchant\Entity)->validateInput('updateTeamMember',$input);
+
+        if($validator->fails())
+        {
+            $error = $validator->messages();
+            return array($error, null);
+        }
+        
+        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
+
+        if(is_null($merchant))
+        {
+            $error[] = "We couldn't find the merchant that you own.";
+            return array($error, null);
+        }
+        
+        $userToUpdate = $merchant->users->find($userId);
+
+        if (is_null($userToUpdate)) 
+        {
+            $error[] = "The team member you are looking for does'nt exist";
+            return array($error, null);
+        }
+
+        $userToUpdate->merchants()->updateExistingPivot(
+            $merchant->id, ['role' => $input['role']]
+        );
+        
+        list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($user);
+
+        return array($error, $merchant);
+    }
+
     /**
      * Fetches merchant balance
      * 
