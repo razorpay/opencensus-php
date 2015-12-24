@@ -57,6 +57,14 @@ Route::filter('auth.user', function()
     {
         $user = Auth::user()->user();
         ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
+
+        // Just in case an admin user is performing the action
+        $admin = Auth::admin()->user();
+        if ($admin)
+        {
+            $adminUsername = $admin->username;
+            ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
+        }
     }
 });
 
