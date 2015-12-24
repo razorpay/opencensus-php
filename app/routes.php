@@ -68,6 +68,10 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
     
+    Route::put('settings/invitations/{invite}/resend', 'InvitationController@resendMerchantInvitation');
+
+    Route::put('settings/invitations/{invite}', 'InvitationController@updateMerchantInvitation');
+
     Route::post('settings/invitations/{invite}/accept', 'InvitationController@acceptMerchantInvitation');
     
     Route::delete('settings/invitations/{invite}', 'InvitationController@destroyMerchantInvitationForUser');
