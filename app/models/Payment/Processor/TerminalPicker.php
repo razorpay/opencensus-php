@@ -112,12 +112,13 @@ class TerminalPicker
             }
         }
 
-        // if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-        // {
-        //     return $gatewayTerms[Gateway::AXIS_GENIUS];
-        // }
         if ($this->mode === Mode::TEST)
         {
+            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+            {
+                return $gatewayTerms[Gateway::AXIS_GENIUS];
+            }
+
             if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
                 (Gateway::isCardNetworkSupported($network, $gateway)))
             {
