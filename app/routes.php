@@ -68,7 +68,7 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
     
-    Route::put('settings/invitations/{invite}/resend', 'InvitationController@resendMerchantInvitation');
+    Route::get('settings/invitations/{invite}/resend', 'InvitationController@resendMerchantInvitation');
 
     Route::put('settings/invitations/{invite}', 'InvitationController@updateMerchantInvitation');
 
