@@ -62,6 +62,8 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('settings/merchants/owned', 'UserController@getOwnedMerchantForUser');
 
+    Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
+
     Route::get('settings/invitations', 'InvitationController@getPendingInvitationsForUser');
 
     Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
