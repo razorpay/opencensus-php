@@ -13,15 +13,15 @@ class Service extends Base\Service
     /**
      * Send an invitation for the given merchant.
      *
-     * @return \Illuminate\Http\Response
+     * @return array ($error, $data)
      */
     public function sendInvitation($input)
     {
-        $error = (new Validator)->validateInput('sendInvitation', $input)->messages();
+        $validation = (new Validator)->validateInput('sendInvitation', $input)->messages();
 
-        if (!empty($error))
+        if ($validation->fails())
         {
-            return array($error, array());
+            return array($validation->messages(), null);
         }
 
         $user = Auth::user()->user();
@@ -42,15 +42,34 @@ class Service extends Base\Service
     }
 
     /**
+     * Resend the invitation for the given merchant.
+     *
+     * @return array ($error, $data)
+     */
+    public function resendInvitation($input)
+    {
+        $invitation = $user->invitations()->find($inviteId);
+
+        if(!$invitation)
+        {
+            return array('The invitation is invalid.');
+        }
+
+        $invitation = $invitation->merchant
+                                ->inviteUserByEmailWithRole($invitation->email,$invitation->role);
+
+        return array(null, $invitation->toArray());
+    }
+
+    /**
      * Accept the given merchant invitation.
      *
      * @param  string  $inviteId
+     * @param  \Models\User\Entity  $user
      * @return \Illuminate\Http\Response
      */
-    public function acceptInvitation($inviteId)
+    public function acceptInvitationForUser($inviteId, $user)
     {
-        $user = Auth::user()->user();
-
         $invitation = $user->invitations()->find($inviteId);
 
         if(!$invitation)
@@ -61,6 +80,39 @@ class Service extends Base\Service
         $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
 
         $invitation->delete();
+
+        return array();
+    }
+
+    /**
+     * Accept the given merchant invitation.
+     *
+     * @param  string  $inviteId
+     * @param  \Models\User\Entity  $user
+     * @return array $error
+     */
+    public function updateInvitationForUser($inviteId, $user, $input)
+    {
+        $error = array();
+
+        $validation = (new Invitation\Validator)->validateInput('updateInvitation', $input);
+        
+        if($validation->fails())
+        {
+            return $validation->messages();
+        }
+
+        $invitation = $user->currentMerchant()->invitations()->find($inviteId);
+
+        if(!$invitation)
+        {
+            return array('The invitation is invalid.');
+        }
+
+        $invitation->role = $input['role'];
+        $invitation->save();
+
+        return $error;
     }
 
     /**
