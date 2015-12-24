@@ -69,6 +69,26 @@ app.controller('TeamManagementCtrl', [
       });
     };
 
+    $scope.resendInvitation = function(invite) {
+      
+      var request = $http.get('/settings/invitations/' + invite.id + '/resend');
+      
+      request
+      .success(function (data) {
+        if (data.success) {
+          $scope.alerts
+                .addAlert('success', 'Invitation has been successfully resent to ' + invite.email, true);
+          $scope.getTeamMembers();
+        } else {
+          $scope.alerts.addAlert('danger', "We couldn't send the invitation to the team member");
+        }
+      })
+      .error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+
+    };
+
     $scope.sendInvitation = function() {
       
       var request = $http({
