@@ -3,6 +3,7 @@
 namespace Models\Invitation;
 
 use Auth;
+use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\User;
@@ -46,19 +47,28 @@ class Service extends Base\Service
      *
      * @return array ($error, $data)
      */
-    public function resendInvitation($inviteId)
+    public function resendInvitationForUser($inviteId, $user)
     {
-        $invitation = $user->invitations()->find($inviteId);
+        $error = array();
+
+        $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
         if(!$invitation)
         {
-            return array('The invitation is invalid.');
+            $error = 'The invitation is invalid.';
+            return array($error, null);
         }
 
-        $invitation = $invitation->merchant
-                                 ->inviteUserByEmailWithRole($invitation->email,$invitation->role);
+        $view = $invitation->user_id
+                        ? 'emails.invitations.existing'
+                        : 'emails.invitations.new';
+        
+        Mail::send($view, compact('invitation'), function ($m) use ($invitation) 
+        {
+            $m->to($invitation->email)->subject('New Invitation!');
+        });
 
-        return array(null, $invitation->toArray());
+        return array($error, $invitation->toArray());
     }
 
     /**
