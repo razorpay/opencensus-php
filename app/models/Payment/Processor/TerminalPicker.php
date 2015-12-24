@@ -397,12 +397,6 @@ class TerminalPicker
 
         if ($wallet === Wallet::PAYZAPP)
         {
-            if ($this->mode === MODE::LIVE)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Wallet not supported');
-            }
-
             if ($this->terminalExists(Shared::PAYZAPP_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
