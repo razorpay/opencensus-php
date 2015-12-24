@@ -75,31 +75,6 @@ class TerminalPicker
         return $terminal;
     }
 
-    public function hasCardTerminal($merchant)
-    {
-        $this->merchant = $merchant;
-
-        $terminals = $this->getTerminals($merchant);
-
-        $this->validateCount($terminals, $merchant);
-
-        $gatewayTerms = $this->getGatewayTerminals($terminals);
-
-        $card = false;
-
-        foreach ($gatewayTerms as $gateway => $terminal)
-        {
-            $card = (Payment\Gateway::isMethodSupported('card', $gateway));
-
-            if ($card === true)
-            {
-                break;
-            }
-        }
-
-        return $card;
-    }
-
     protected function pickOneTerminal($gatewayTerms, $payment)
     {
         $terminal = null;
