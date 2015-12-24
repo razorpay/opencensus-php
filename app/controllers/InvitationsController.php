@@ -25,9 +25,11 @@ class InvitationController extends BaseController
      * @param  string  $inviteId
      * @return \Illuminate\Http\Response
      */
-    public function resendMerchantInvitation(inviteId)
+    public function resendMerchantInvitation($inviteId)
     {
-        list($error, $data) = (new Invitation\Service)->resendInvitation($inviteId);
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new Invitation\Service)->resendInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
