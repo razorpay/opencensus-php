@@ -38,7 +38,27 @@ app.controller('TeamManagementCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', "Team member's role has been chnaged successfully", true);
+          $scope.alerts.addAlert('success', "Team member's role has been changed successfully", true);
+          $scope.getTeamMembers();
+        } else {
+          $scope.alerts.resetAlerts();
+          $scope.alerts.addAlert('danger', "There was an error in changing the team member's role");
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.updateInvitation = function (invite){
+      var request = $http({
+        method: 'put',
+        url: '/settings/invitations/' + invite.id,
+        data: { role: invite.role }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', "Team member's role has been changed successfully", true);
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
