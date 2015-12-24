@@ -20,6 +20,21 @@ class InvitationController extends BaseController
     }
 
     /**
+     * Resend the invitation for the given merchant.
+     *
+     * @param  string  $inviteId
+     * @return \Illuminate\Http\Response
+     */
+    public function resendMerchantInvitation(inviteId)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Invitation\Service)->resendInvitation($inviteId);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
      * Accept the given merchant invitation.
      *
      * @param  string  $inviteId
@@ -27,7 +42,27 @@ class InvitationController extends BaseController
      */
     public function acceptMerchantInvitation($inviteId)
     {
-        $error = (new Invitation\Service)->acceptInvitation($inviteId);
+        $user = Auth::user()->user();
+
+        $error = (new Invitation\Service)->acceptInvitationForUser($inviteId, $user);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
+     * Update the given merchant invitation.
+     *
+     * @param  string  $inviteId
+     * @return \Illuminate\Http\Response
+     */
+    public function updateMerchantInvitation($inviteId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user()->user();
+
+        $error = (new Invitation\Service)
+                  ->updateInvitationForUser($inviteId, $user, $input);
 
         return AppResponse::jsonResponse($error);
     }
