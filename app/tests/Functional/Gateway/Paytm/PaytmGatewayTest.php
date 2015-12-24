@@ -98,9 +98,7 @@ class PaytmGatewayTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['method'] = 'wallet';
-        $payment['wallet'] = 'paytm';
+        $payment = $this->getDefaultWalletPaymentArray('paytm');
 
         $testData['request']['content'] = $payment;
 
@@ -123,16 +121,14 @@ class PaytmGatewayTest extends TestCase
     {
         $this->setMockGatewayTrue();
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['method'] = 'wallet';
-        $payment['wallet'] = 'paytm';
+        $payment = $this->getDefaultWalletPaymentArray('paytm');
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $id = $payment['id'];
 
         $data = $this->verifyPayment($id);
 
-        $this->assertEquals($data['payment']['verified'], 0);
+        $this->assertEquals($data['payment']['verified'], 1);
     }
 
     public function testFailedPayment()
@@ -149,8 +145,7 @@ class PaytmGatewayTest extends TestCase
         $this->timeoutAuthorizePayment();
 
         $payment = $this->getLastEntity('payment', true);
-        $id = substr($payment['id'], 4);
-        $this->fixtures->payment->failPayment($id);
+        $this->fixtures->payment->failPayment($payment['id']);
 
         $this->succeedPaymentVerify();
 
