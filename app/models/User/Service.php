@@ -16,8 +16,6 @@ class Service extends Base\Service
 {
     public function register(array $input)
     {
-        $user = new User\Entity;
-
         $invitationToken = isset($input['invitation']) ? $input['invitation'] : null;
 
         if($invitationToken)
@@ -40,6 +38,7 @@ class Service extends Base\Service
             $input['email'] = $email;
         }
 
+        $user = new User\Entity;
         $error = $user->build($input);
 
         if (!empty($error))
@@ -77,6 +76,10 @@ class Service extends Base\Service
         if(isset($invitation)) 
         {
             Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+            
+            $user->confirm_token = null;
+            $user->save();
+
             Auth::user()->login($user);
             $data['login'] = true;
 
