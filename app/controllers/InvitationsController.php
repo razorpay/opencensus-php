@@ -27,8 +27,6 @@ class InvitationController extends BaseController
      */
     public function resendMerchantInvitation(inviteId)
     {
-        $input = Input::all();
-
         list($error, $data) = (new Invitation\Service)->resendInvitation($inviteId);
 
         return AppResponse::jsonResponse($error);
