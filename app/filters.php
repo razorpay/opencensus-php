@@ -47,16 +47,16 @@ App::after(function($request, $response)
 |
 */
 
-Route::filter('auth.merchant', function()
+Route::filter('auth.user', function()
 {
-    if (Auth::merchant()->guest())
+    if (Auth::user()->guest())
     {
         return Response::json(array('success' => false, 'data' => array()));
     }
     else
     {
-        $merchant = Auth::merchant()->user();
-        ApiRequest::addHeader('X-Dashboard-Merchant', $merchant->email);
+        $user = Auth::user()->user();
+        ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
     }
 });
 
@@ -110,9 +110,9 @@ Route::filter('auth.cron', function() use ($app)
 |
 */
 
-Route::filter('guest.merchant', function()
+Route::filter('guest.user', function()
 {
-    if (Auth::merchant()->check())
+    if (Auth::user()->check())
     {
         return AppResponse::jsonResponse(
             array("You are already logged in, please refresh and try again"));

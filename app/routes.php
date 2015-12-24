@@ -12,7 +12,7 @@
 */
 
 
-Route::get('/', 'MerchantController@getIndex');
+Route::get('/', 'UserController@getIndex');
 
 Route::get('/admin', 'AdminController@getIndex');
 
@@ -20,13 +20,13 @@ Route::options('/contact', 'MerchantController@optionsContact');
 
 Route::post('/contact', 'MerchantController@postContact');
 
-Route::group(array('before' => 'auth.merchant'), function()
+Route::group(array('before' => 'auth.user'), function()
 {
     Route::get('/user', 'MerchantController@getMerchant');
 
-    Route::get('/user/keepalive', 'MerchantController@getKeepAlive');
+    Route::get('/user/keepalive', 'UserController@getKeepAlive');
 
-    Route::get('/user/logout', 'MerchantController@getLogout');
+    Route::get('/user/logout', 'UserController@getLogout');
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
@@ -64,7 +64,7 @@ Route::group(array('before' => 'auth.merchant'), function()
 
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::post('/password', 'MerchantController@postPassword');
+        Route::post('/password', 'UserController@postPassword');
 
         Route::post('/activation', 'MerchantController@postActivation');
 
@@ -86,13 +86,13 @@ Route::group(array('before' => 'auth.merchant'), function()
     });
 });
 
-Route::group(array('before' => 'guest.merchant'), function()
+Route::group(array('before' => 'guest.user'), function()
 {
     Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
 
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::post('/user/signin', 'MerchantController@postSignin');
+        Route::post('/user/signin', 'UserController@postSignin');
 
         Route::post('/user/register', 'MerchantController@postRegister');
 

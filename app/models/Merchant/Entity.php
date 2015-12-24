@@ -67,6 +67,15 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     );
 
     /**
+     * Take care while calling this method
+     * @param array $input array with new email address
+     */
+    public function changeEmail($input)
+    {
+        return $this->edit($input, 'changeEmail');
+    }
+
+    /**
      * Determine if the merchant has any users.
      *
      * @return bool
@@ -74,6 +83,22 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function hasUsers()
     {
         return count($this->users) > 0;
+    }
+
+    /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role','owner')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
     }
 
     /**
@@ -114,20 +139,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function merchantDetails()
     {
         return $this->hasOne('Models\MerchantDetails\Entity');
-    }
-
-    /**
-     * Take care while calling this method
-     * @param array $input array with new email address
-     */
-    public function changeEmail($input)
-    {
-        return $this->edit($input, 'changeEmail');
-    }
-
-    public function changePassword($input)
-    {
-        return $this->edit($input, 'changePassword');
     }
 
     public static function getAggregations($data, $mode)
@@ -315,10 +326,5 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function isActive()
     {
         return ((int)$this->activated === 1);
-    }
-
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = \Hash::make($password);
     }
 }

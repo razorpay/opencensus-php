@@ -2,6 +2,7 @@
 namespace Tests\Integration;
 
 use Selenium\Locator as l;
+use Laracasts\TestDummy\Factory;
 use Models;
 use URL;
 use Uuid;
@@ -17,6 +18,8 @@ class MerchantTest extends TestCase
     {
         parent::setUp();
 
+        Factory::$factoriesPath = __DIR__.'/../factories/';
+
         if (static::$migrated === false)
         {
             // Truncates all tables befor first test
@@ -28,6 +31,7 @@ class MerchantTest extends TestCase
         try
         {
             $this->merchant = Models\Merchant\Entity::firstorfail();
+            $this->user = Models\User\Entity::firstorfail();
         }
         catch(Exception $e)
         {
@@ -63,7 +67,7 @@ class MerchantTest extends TestCase
      */
     public function testUserConfirmation()
     {
-        $confirm_token = $this->merchant->confirm_token;
+        $confirm_token = $this->user->confirm_token;
 
         $this->browser
             ->open(URL::to('/admin'))
@@ -80,7 +84,7 @@ class MerchantTest extends TestCase
     {
         $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000)
-            ->type(l::IdOrName('email'), $this->merchant->email)   // Fill name
+            ->type(l::IdOrName('email'), $this->user->email)   // Fill name
             ->type(l::IdOrName('password'), '123456xx')   // Fill slug
             ->click(l::IdOrName('submit'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);                     // Wait for page to load

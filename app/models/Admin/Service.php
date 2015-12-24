@@ -3,6 +3,8 @@
 namespace Models\Admin;
 
 use AWS;
+use Auth;
+use Hash;
 use Config;
 use Models\Base;
 use Models\Admin;
@@ -26,7 +28,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $verify = \Auth::admin()->attempt($input);
+            $verify = Auth::admin()->attempt($input);
 
             if ($verify)
             {
@@ -64,6 +66,28 @@ class Service extends Base\Service
     }
 
     /**
+     * Logs the admin in to the user account of the primary owner
+     *
+     * @param  $merchantId ineteger
+     * @return  Status
+     */
+    public function loginUsingPrimaryOwner($merchant_id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findOrFail($merchant_id);
+
+        $user = Auth::user()->loginUsingId($merchant->primaryOwner()->id);
+
+        if(!$user)
+        {
+            $error[] = "Could not log you in to the primary owner's account";
+        }
+
+        return $error;
+    }
+
+    /**
      * Changes password oflogged in admin
      *
      * @param  $input input array
@@ -76,6 +100,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            $admin->password = Hash::make($admin->password);
             $admin->saveOrFail();
         }
 
@@ -161,7 +186,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        if ($id === \Auth::admin()->id())
+        if ($id === Auth::admin()->id())
         {
             $error[] = 'You can not delete yourself.';
         }
@@ -184,10 +209,11 @@ class Service extends Base\Service
 
         if (empty($error))
         {
+            $admin->password = Hash::make($admin->password);
             $admin->saveOrFail();
         }
 
-        return [$error, $admin->toArray()];
+        return array($error, $admin->toArray());
     }
 
     /* Adds a new admin
@@ -1312,7 +1338,7 @@ class Service extends Base\Service
 
         try
         {
-            $input['email'] = \Auth::admin()->get()->email;
+            $input['email'] = Auth::admin()->get()->email;
 
             return [null, $this->api->admin->sendTestNewsletter($input)
                 ->toArray()];
@@ -1486,7 +1512,7 @@ class Service extends Base\Service
 
     public function logDataExport($entity, $params)
     {
-        $adminId = \Auth::admin()->get()->username;
+        $adminId = Auth::admin()->get()->username;
 
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
     }

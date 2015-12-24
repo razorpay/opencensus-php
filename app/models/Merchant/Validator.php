@@ -20,26 +20,9 @@ class Validator extends Base\Validator
         'captcha'
     );
 
-    protected static $loginRules = array(
-        'email'     =>      'required|email',
-        'password'  =>      'required|between:6,50',
-    );
-
-    protected static $unsetLoginInput = array(
-        'password'
-    );
-
-    protected static $changePasswordRules = array(
-        'old_password'              => 'required',
-        'password'                  => 'required|between:7,50|confirmed|numbers|letters',
-        'password_confirmation'     => 'required|between:7,50'
-    );
-
     protected static $changeEmailRules = array(
         'email'         => 'required|email'
     );
-
-    protected static $changePasswordValidators = array('changePassword');
 
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
@@ -77,18 +60,6 @@ class Validator extends Base\Validator
         return array(
             'delay_roll'    =>  $old_key_data['delay_roll']
         );
-    }
-
-    protected function validateChangePassword($input)
-    {
-        $oldPassword = $input['old_password'];
-
-        $password = $this->entity->password;
-
-        if (\Hash::check($oldPassword, $password) === false)
-        {
-            $this->addError('old_password', 'Incorrect password');
-        }
     }
 
     public static function checkAPIMatch($merchant, $api_response)

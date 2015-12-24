@@ -37,13 +37,15 @@ class AdminTest extends TestCase
             $this->admin = Models\Admin\Entity::firstorfail();
             $this->merchant_details = Models\MerchantDetails\Entity::firstorfail();
             $this->merchant = $this->merchant_details->merchant;
-
         }
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
             $this->merchant = $this->createEntity('merchant', array('id'=> Uuid::generate(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24), 'name' => 'Test Merchant'));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
+            $user = Models\User\Entity::createFromMerchant($this->merchant);
+            $user->saveOrFail();
+            $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
 
             if (empty($error) === false)
@@ -56,15 +58,15 @@ class AdminTest extends TestCase
     /**
      * Tests admin login
      */
-    public function testLogin($pwd = '123456')
+    public function testLogin($password = '123456')
     {
         $this->browser
             ->open(URL::to('/admin#/access/signin'))    // Visits login page
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 3000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000)
             ->type(l::IdOrName('username'), $this->admin->username)   // Fill username
-            ->type(l::IdOrName('password'), $pwd)   // Fill password
+            ->type(l::IdOrName('password'), $password)   // Fill password
             ->click(l::IdOrName('submit'))                 // Click in the button
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 3000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);
         $this->assertBodyHasText("Pending Activations");
 
         return $this->browser;
