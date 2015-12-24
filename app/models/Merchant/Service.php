@@ -68,8 +68,7 @@ class Service extends Base\Service
             Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
         }
     }
-
->>>>>>> development
+    
     /**
      * take care when calling this function
      * This is only called from the admin service
