@@ -85,8 +85,16 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.activateMerchant = function () {
-      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/activate');
+    $scope.activateMerchant = function (dashboard) {
+      var query = {};
+
+      if (typeof dashboard!=="undefined"){
+        query.dashboard = true
+      };
+
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/activate', {
+        params: query
+      });
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Merchant Activated successfully', true);
@@ -578,6 +586,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
           fetchBalance();
+          console.log($scope.merchant);
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value, key) {

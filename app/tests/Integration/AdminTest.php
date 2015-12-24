@@ -41,6 +41,7 @@ class AdminTest extends TestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
+            
             $user = $this->createEntity('user');
             $user->saveOrFail();
             

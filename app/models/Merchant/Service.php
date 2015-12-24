@@ -4,7 +4,6 @@ namespace Models\Merchant;
 
 use Auth;
 use Hash;
-use Mail;
 use Requests;
 use Models\Base;
 use Models\Merchant;
@@ -16,6 +15,61 @@ use Razorpay\Api\Errors\BadRequestError;
 
 class Service extends Base\Service
 {
+    public function register(array $input)
+    {
+        $merchant = new Merchant\Entity;
+        $error = $merchant->build($input);
+
+        if (empty($error) === false)
+        {
+            return [$error, null];
+        }
+
+        $merchant->password = Hash::make($merchant->password);
+        $merchant->saveOrFail();
+
+        $user = User\Entity::createFromMerchant($merchant);
+        $user->saveOrFail();
+        $user->merchants()->attach($merchant, ['role' => 'owner']);
+
+        $details = array(
+            'merchant_id' => $merchant->id,
+            'contact_email' => $merchant->email
+        );
+
+        MerchantDetails\Entity::createOrFail($details);
+
+        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
+
+        $slackData = [
+            'id'    => $merchant->id,
+            'name'  => $merchant->name,
+            'email' => $merchant->email
+        ];
+
+        $this->slackSignupPost($slackData);
+
+        return [$error, $slackData];
+    }
+
+    protected function slackSignupPost($slackData)
+    {
+        if($_ENV['SLACK_ENABLE'] === true)
+        {
+            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+
+            $postData = [
+                'email'         => $slackData['email'],
+                'name'          => $slackData['name'],
+                // This is in slack formatting
+                'message'       => "[New Signup]($merchantLink)"
+            ];
+
+            Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
+        }
+    }
+
+>>>>>>> development
     /**
      * take care when calling this function
      * This is only called from the admin service

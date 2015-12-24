@@ -7,11 +7,21 @@ use Models\Merchant;
 
 class UserController extends BaseController
 {
+    /**
+     * Returns the base template for angular.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getIndex()
     {
         return View::make('merchant.tmpgetIndex');
     }
 
+    /**
+     * Returns an empty success to keep the user session active..
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getKeepAlive()
     {
         return AppResponse::jsonResponse([]);
@@ -39,6 +49,11 @@ class UserController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    /**
+     * Handle the authentication request from the user.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function postSignin()
     {
         $input = Input::all();
@@ -48,6 +63,11 @@ class UserController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Log out the currently suthenticated user.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getLogout()
     {
         Auth::user()->logout();
@@ -55,6 +75,11 @@ class UserController extends BaseController
         return AppResponse::jsonResponse([]);
     }
 
+    /**
+     * Handle the request from user to change his current password.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function postPassword()
     {
         $input = Input::all();

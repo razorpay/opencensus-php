@@ -34,6 +34,13 @@
           Activate Merchant <i class="pull-right fa fa-check-square"></i>
         </a>
         <a href class="list-group-item"
+          ng-show="merchant.details.activated_dashboard==0 && merchant.details.activated==1"
+          ng-confirm-click="This will activate the merchant only on the dashboard side. Use with caution"
+          ng-click="activateMerchant(true)"
+        >
+          Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
+        </a>
+        <a href class="list-group-item"
         ng-show="merchant.details.hold_funds==0"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"

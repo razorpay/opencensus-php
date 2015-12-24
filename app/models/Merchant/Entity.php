@@ -70,6 +70,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     /**
      * Generate the user instance from the merchant instance
+     * 
      * @param \Models\User\Entity $user
      * @return \Models\Merchant\Entity $merchant
      */
@@ -88,6 +89,16 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->updated_at = $user->updated_at;
 
         return $merchant;
+    }
+    
+    /**
+     * Take care while calling this method
+     * 
+     * @param array $input array with new email address
+     */
+    public function changeEmail($input)
+    {
+        return $this->edit($input, 'changeEmail');
     }
 
     /**

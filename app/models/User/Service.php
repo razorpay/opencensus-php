@@ -121,7 +121,7 @@ class Service extends Base\Service
             // Checks credentials but doesn't login the user, throws error if invalid
             $error = ['Email or password is invalid.'];
         }
-        else if (Auth::user()->attempt($credentials + array('confirm_token' => null)) === false)
+        else if (Auth::user()->attempt($credentials + ['confirm_token' => null]) === false)
         {
             // Tries to login user if confirmed, throws error if user is not confirmed
             $error = ['not activated'];
@@ -130,23 +130,19 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function fetch($user_id)
-    {
-        $user = Entity::findOrFail($user_id)->toArray();
-
-        return $user;
-    }
-
     public function changePassword(array $input)
     {
         $user = Auth::user()->user();
 
-        if ($user->currentMerchant->isTestAccount()) {
+        if ($user->currentMerchant->isTestAccount())
+        {
             return [["Password change forbidden on this account"], null];
         }
 
         $error = $user->changePassword($input);
-        
+
+        //Any changes in user password
+        //are also reflected in the merchants table for now
         DB::transaction(function() use ($user)
         {
             $user->password = Hash::make($user->password);
@@ -154,7 +150,8 @@ class Service extends Base\Service
 
             if($user->hasMerchants())
             {
-                $merchant = $user->merchants()->where('email',$user->email)->first();
+                $merchant = $user->merchants()
+                                 ->where('email',$user->email)->first();
                 if($merchant)
                 {
                     $merchant->password = $user->password;
@@ -162,7 +159,7 @@ class Service extends Base\Service
                 }
             }
         });
-        
+
         return [$error, null];
     }
 

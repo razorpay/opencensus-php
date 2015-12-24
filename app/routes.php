@@ -22,7 +22,7 @@ Route::post('/contact', 'MerchantController@postContact');
 
 Route::group(array('before' => 'auth.user'), function()
 {
-    Route::get('/user', 'UserController@getUser');
+    Route::get('/user', 'MerchantController@getMerchant');
 
     Route::get('/user/keepalive', 'UserController@getKeepAlive');
 
