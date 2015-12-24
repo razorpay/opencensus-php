@@ -24,6 +24,10 @@ class Validator extends Base\Validator
         'banks'                                      => 'required|array'
     );
 
+    protected static $updateTeamMemberRules = array(
+        'role'  => 'required|in:owner,manager,operations,finance,developer'
+    );
+
     protected static $api_dashboard_mappings = array(
             'id'        => 'id',
             'name'      => 'name',
