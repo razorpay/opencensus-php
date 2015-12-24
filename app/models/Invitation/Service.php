@@ -46,7 +46,7 @@ class Service extends Base\Service
      *
      * @return array ($error, $data)
      */
-    public function resendInvitation($input)
+    public function resendInvitation($inviteId)
     {
         $invitation = $user->invitations()->find($inviteId);
 
@@ -56,7 +56,7 @@ class Service extends Base\Service
         }
 
         $invitation = $invitation->merchant
-                                ->inviteUserByEmailWithRole($invitation->email,$invitation->role);
+                                 ->inviteUserByEmailWithRole($invitation->email,$invitation->role);
 
         return array(null, $invitation->toArray());
     }
