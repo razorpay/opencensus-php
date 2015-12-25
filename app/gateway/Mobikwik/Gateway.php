@@ -80,7 +80,6 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashForVerifyRequest(
             $content['mid'], $content['orderid']);
 
-
         $content = http_build_query($content);
 
         $request = $this->getStandardRequestArray($content);

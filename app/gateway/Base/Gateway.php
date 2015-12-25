@@ -381,7 +381,7 @@ class Gateway
         return $orderedData;
     }
 
-    protected function getStandardRequestArray(array $content = [], $method = 'post')
+    protected function getStandardRequestArray($content = [], $method = 'post')
     {
         $request = array(
             'url' => $this->getUrl(),

@@ -114,7 +114,8 @@ class TerminalPicker
 
         if ($this->mode === Mode::TEST)
         {
-            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+            if ((isset($gatewayTerms[Gateway::AXIS_GENIUS])) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
             {
                 return $gatewayTerms[Gateway::AXIS_GENIUS];
             }
@@ -127,7 +128,8 @@ class TerminalPicker
 
             // In test mode paytm supports only cards
             // but in live only netbanking.
-            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
             {
                 return $gatewayTerms[Payment\Gateway::PAYTM];
             }
