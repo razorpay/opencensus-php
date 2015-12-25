@@ -43,11 +43,7 @@ class Gateway extends Base\Gateway
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
 
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content,
-        );
+        $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -87,10 +83,7 @@ class Gateway extends Base\Gateway
 
         $content = http_build_query($content);
 
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
+        $request = $this->getStandardRequestArray($content);
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
@@ -203,11 +196,7 @@ class Gateway extends Base\Gateway
         $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
-
+        $request = $this->getStandardRequestArray($content);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
