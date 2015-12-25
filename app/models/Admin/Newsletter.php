@@ -136,20 +136,13 @@ class Newsletter
      */
     protected function createNewListOnMailgun()
     {
-        $timestamp = Carbon::now("Asia/Kolkata")->format('Y_m_d_H_i');
-        $listAddress = $timestamp.'@'.$this->config['url'];
-
-        $this->getMailgunInstance()->post('lists', [
-            'address'       => $listAddress,
-            'description'   => $this->data['subject'],
-            'name'          => "Newsletter at $timestamp"
-        ]);
+        $listAddress = 'newsletter@'.$this->config['url'];
 
         return $listAddress;
     }
 
     /**
-     * Creates a new mailing list for the given filters
+     * Uploads additional merchants to the mailing list
      * @param  string $lists list of applied filters in csv
      * @return null
      */

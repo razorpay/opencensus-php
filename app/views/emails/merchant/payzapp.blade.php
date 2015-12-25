@@ -16,6 +16,8 @@
                   <a href="https://razorpay.com/privacy/" style="color: #aaa !important; text-decoration: none; display: inline-block;">Privacy Policy</a>
                   |
                   <a href="https://razorpay.com/refund/" style="color: #aaa !important; text-decoration: none; display: inline-block;">Refund Policy</a>
+                  |
+                  <a href="%mailing_list_unsubscribe_url%" style="color: #aaa !important; text-decoration: none; display: inline-block;">Unsubscribe</a>
                 </center>
               </td>
               <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; visibility: hidden; width: 0px;"></td>
