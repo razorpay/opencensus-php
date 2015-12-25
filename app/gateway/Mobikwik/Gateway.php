@@ -97,27 +97,23 @@ class Gateway extends Base\Gateway
 
         $content = $this->xmlToArray($response->body);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content' => $content,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
         $this->verifySecureHashForQueryRequest($content);
 
         unset($content['checksum']);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $content);
 
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
 
         $verify->verifyResponseContent = $content;
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [
-                'request' => $verify->verifyResponseBody,
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['payment']['id'],
-            ]);
 
         return $content;
     }
