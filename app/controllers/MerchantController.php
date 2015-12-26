@@ -60,6 +60,23 @@ class MerchantController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    /**
+     * Remove the team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function removeTeamMember($userId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user()->user();
+
+        $error = (new Merchant\Service)->removeTeamMemberForOwner($userId, $user, $input);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function getCsv()
     {
         $input = Input::only('id', 'secret');
