@@ -49,6 +49,27 @@ app.controller('TeamManagementCtrl', [
       });
     };
 
+    $scope.removeTeamMember = function (user){
+      var request = $http({
+        method: 'delete',
+        url: '/settings/merchants/owned/members/' + user.id ,
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', "Team member has been removed successfully.", true);
+          $scope.getTeamMembers();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.updateInvitation = function (invite){
       var request = $http({
         method: 'put',
