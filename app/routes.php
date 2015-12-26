@@ -64,6 +64,8 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
 
+    Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
+
     Route::get('settings/invitations', 'InvitationController@getPendingInvitationsForUser');
 
     Route::post('settings/invitations', 'InvitationController@sendMerchantInvitation');
