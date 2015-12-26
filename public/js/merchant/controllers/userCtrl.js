@@ -40,7 +40,7 @@ app.controller('UserCtrl', [
       });
     }
     $scope.rejectInvitation = function(invite) {
-      var request = $http.delete('settings/invitations/' + invite.id);
+      var request = $http.delete('settings/invitations/' + invite.id + '/reject');
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'You have rejected the invite.', true);
