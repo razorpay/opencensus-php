@@ -42,7 +42,14 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger', "There was an error in changing the team member's role");
+          if(data.errors)
+          {
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+          else
+            $scope.alerts.addAlert('danger', "There was an error in changing the team member's role");
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
