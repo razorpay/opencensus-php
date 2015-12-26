@@ -90,6 +90,25 @@ app.controller('TeamManagementCtrl', [
       });
     };
 
+    $scope.removeInvitation = function (invite){
+      var request = $http({
+        method: 'delete',
+        url: '/settings/invitations/' + invite.id,
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', "Team member's invitation has been removed successfully", true);
+          $scope.getTeamMembers();
+        } else {
+          $scope.alerts.resetAlerts();
+          $scope.alerts.addAlert('danger', "There was an error in removing the team member's invitation");
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.resendInvitation = function(invite) {
       
       var request = $http.get('/settings/invitations/' + invite.id + '/resend');
