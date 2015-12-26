@@ -445,4 +445,24 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         return ((int)$this->activated === 1);
     }
+
+    public function confirm()
+    {
+        $this->confirm_token = null;
+        $email = $this->email;
+        $this->saveOrFail();
+
+        // This is only to make sure that the user and merchants are in sync
+        // for now. We will drop the method from Merchant\Entity and shift it
+        // to User\Entity going ahead.
+        if($this->hasUsers())
+        {
+            $user = $this->users()->where('email',$email)->first();
+            if($user)
+            {
+                $user->confirm_token = $this->confirm_token;
+                $user->save();
+            }
+        }
+    }
 }

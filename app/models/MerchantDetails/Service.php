@@ -14,6 +14,8 @@ class Service extends Base\Service
     public function __construct()
     {
         $user = Auth::user()->user();
+
+        $this->merchant = $user->currentMerchant;
         $this->merchantDetails = $user->currentMerchant->MerchantDetails;
     }
 
