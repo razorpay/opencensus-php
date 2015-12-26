@@ -75,7 +75,9 @@ class InvitationController extends BaseController
      */
     public function destroyMerchantInvitationForUser($inviteId)
     {
-        list($error, $data) = (new Invitation\Service)->removeInvitation($inviteId);
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new Invitation\Service)->removeInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
