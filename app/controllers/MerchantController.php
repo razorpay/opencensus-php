@@ -214,11 +214,9 @@ class MerchantController extends BaseController
     {
         $this->checkMode($mode);
 
-        $user = Auth::user()->user();
+        $id = Auth::user()->user()->getCurrentMerchantId();
 
-        $merchantId = $user->getCurrentMerchantId();
-
-        $data = (new Merchant\Service)->fetchMerchantBalance($merchantId);
+        $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
         return AppResponse::jsonResponse([], $data[$mode]['balance']);
     }
