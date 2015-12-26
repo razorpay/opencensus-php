@@ -72,6 +72,28 @@ class Service extends Base\Service
     }
 
     /**
+     * Resend the invitation for the given merchant.
+     *
+     * @return array ($error, $data)
+     */
+    public function removeInvitationForUser($inviteId, $user)
+    {
+        $error = array();
+
+        $invitation = $user->currentMerchant->invitations()->find($inviteId);
+
+        if(!$invitation)
+        {
+            $error = 'The invitation is invalid.';
+            return array($error, null);
+        }
+
+        $invitation->delete();
+
+        return array($error, $invitation->toArray());
+    }
+
+    /**
      * Accept the given merchant invitation.
      *
      * @param  string  $inviteId
@@ -132,7 +154,7 @@ class Service extends Base\Service
      * @param  \Models\User\Entity  $user
      * @return \Illuminate\Http\Response
      */
-    public function removeInvitationForUser($inviteId, $user)
+    public function rejectInvitationForUser($inviteId, $user)
     {
         $invitation = $user->invitations()->find($inviteId);
 
