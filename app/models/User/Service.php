@@ -128,15 +128,17 @@ class Service extends Base\Service
         {
             // Tries to login user if confirmed, throws error if user is not confirmed
             $error = ['not activated'];
+            return array($error, null);
         }
 
-        if(Auth::user()->user()->hasMerchants() == false)
+        $user = Auth::user()->user();
+        if($user && $user->hasMerchants() == false)
         {
             Auth::user()->logout();
             $error[] = "You don't have any associated merchants or a merchant account. Contact razorpay support.";
         }
 
-        return [$error, null];
+        return array($error, null);
     }
 
     public function changePassword(array $input)
