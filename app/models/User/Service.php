@@ -130,6 +130,12 @@ class Service extends Base\Service
             $error = ['not activated'];
         }
 
+        if(Auth::user()->user()->hasMerchants() == false)
+        {
+            Auth::user()->logout();
+            $error[] = "You don't have any associated merchants or a merchant account. Contact razorpay support.";
+        }
+
         return [$error, null];
     }
 
