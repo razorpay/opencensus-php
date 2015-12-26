@@ -6,8 +6,7 @@ Hi!
 
 <br><br>
 
-Since you already have an account, you may accept the invitation from your
-account settings screen.
+Since you already have an account, you may accept the invitation from your profile page.
 
 <br><br>
 
