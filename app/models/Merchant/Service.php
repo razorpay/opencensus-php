@@ -266,8 +266,35 @@ class Service extends Base\Service
         return $merchant;
     }
 
+    /**
+     * Remove the team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function removeTeamMemberForOwner($userId, $user, $input)
+    {
+        $error = array();
 
-     /**
+        if($userId == $user->id)
+        {
+            return array("You cannot remove yourself.");
+        }
+        
+        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
+
+        if(is_null($merchant))
+        {
+            return array("We couldn't find the merchant that you own.");
+        }
+        
+        $merchant->users()->detach($userId);
+        
+        return $error;
+    }
+
+
+    /**
      * Update a team member on the given merchant.
      *
      * @param  string  $userId
