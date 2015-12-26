@@ -304,6 +304,12 @@ class Service extends Base\Service
     {
         $error = array();
 
+        if($userId == $user->id)
+        {
+            $error[] = "You cannot change your role.";
+            return array($error, null);
+        }
+
         $validator = (new Merchant\Entity)->validateInput('updateTeamMember',$input);
 
         if($validator->fails())
