@@ -50,6 +50,36 @@ class InvitationController extends BaseController
     }
 
     /**
+     * Accept the given merchant invitation.
+     *
+     * @param  string  $inviteId
+     * @return \Illuminate\Http\Response
+     */
+    public function rejectMerchantInvitation($inviteId)
+    {
+        $user = Auth::user()->user();
+
+        $error = (new Invitation\Service)->rejectInvitationForUser($inviteId, $user);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
+     * Accept the given merchant invitation.
+     *
+     * @param  string  $inviteId
+     * @return \Illuminate\Http\Response
+     */
+    public function removeMerchantInvitation($inviteId)
+    {
+        $user = Auth::user()->user();
+
+        $error = (new Invitation\Service)->removeInvitationForUser($inviteId, $user);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
      * Update the given merchant invitation.
      *
      * @param  string  $inviteId
