@@ -18,7 +18,7 @@ class Service extends Base\Service
      */
     public function sendInvitation($input)
     {
-        $validation = (new Validator)->validateInput('sendInvitation', $input)->messages();
+        $validation = (new Validator)->validateInput('sendInvitation', $input);
 
         if ($validation->fails())
         {
