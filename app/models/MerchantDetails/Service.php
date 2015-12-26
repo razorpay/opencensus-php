@@ -204,7 +204,9 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $mailer = new UserMailer(\Auth::merchant()->user());
+        $merchant = Auth::user()->user()->currentMerchant;
+
+        $mailer = new UserMailer($merchant);
 
         $mailer->confirmActivationSubmission()->queueAndDeliver();
 

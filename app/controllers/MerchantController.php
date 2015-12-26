@@ -180,9 +180,7 @@ class MerchantController extends BaseController
     {
         $this->checkMode($mode);
 
-        $user = Auth::user()->user();
-
-        $id = $user->currentMerchant->id;
+        $id = Auth::user()->user()->getCurrentMerchantId();
 
         $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
