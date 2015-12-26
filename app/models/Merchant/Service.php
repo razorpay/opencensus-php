@@ -128,19 +128,8 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
-        $merchant->confirm_token = null;
-        $email = $merchant->email;
-        $merchant->saveOrFail();
-
-        if($merchant->hasUsers())
-        {
-            $user = $merchant->users()->where('email',$email)->first();
-            if($user)
-            {
-                $user->confirm_token = $merchant->confirm_token;
-                $user->save();
-            }
-        }
+        // Confirm the merchant and associated users (with same email)
+        $merchant->confirm();
 
         return array();
     }
@@ -252,7 +241,7 @@ class Service extends Base\Service
 
         return array($error, $key_data);
     }
-    
+
     public function fetch($merchant_id)
     {
         $merchant = Entity::findOrFail($merchant_id)->toArray();

@@ -1523,6 +1523,8 @@ class Service extends Base\Service
 
         try
         {
+            // This will also confirm the User Entities associated with the
+            // same merchant and same email id
             $merchant->confirm();
             $merchant->saveOrFail();
         }
