@@ -185,6 +185,9 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
+      pricing: {
+        plan_id: ['Plan Id']
+      },
       mobikwik: {
         payment_id: ['Payment Id'],
         received: booleanList

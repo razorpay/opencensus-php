@@ -2,6 +2,7 @@
 
 namespace Models\Base;
 
+use Razorpay\Api\Request as ApiRequest;
 use Config;
 use RZP\Api;
 use Slack;
@@ -10,6 +11,7 @@ class Service
 {
     public function setApiCredentials($merchant_id = null, $mode = 'live')
     {
+        ApiRequest::addHeader('X-Dashboard', 'true');
         $id = 'rzp_'.$mode;
 
         if ($merchant_id)

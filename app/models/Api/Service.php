@@ -2,13 +2,14 @@
 
 namespace Models\Api;
 
+use Auth;
 use Models\Base;
 
 class Service extends Base\Service
 {
     public function __construct()
     {
-        $this->merchantId = Auth::user()->user()->getCurrentMerchantId()();
+        $this->merchantId = Auth::user()->user()->getCurrentMerchantId();
     }
 
     public function fetchEntity($id, $mode, $entity)
@@ -21,7 +22,7 @@ class Service extends Base\Service
         }
 
         $collection = [];
-        
+
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
@@ -175,13 +176,13 @@ class Service extends Base\Service
                              ->transaction
                              ->generateReport($params)
                              ->toArray();
-                
+
                 // Sample endpoint for testing
                 // $response = \Requests::get('http://jsonplaceholder.typicode.com/posts');
                 // $data = json_decode($response->body, true);
 
                 $file = $this->generateTransactionReportAsExcelFromDataForMonth($data, $month, $year);
-                
+
                 return array($error, $file);
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
