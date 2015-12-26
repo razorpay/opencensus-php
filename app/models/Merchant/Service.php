@@ -259,9 +259,14 @@ class Service extends Base\Service
      * @param  string $merchantId
      * @return \Models\Merchant\Entity
      */
-    public function fetch($merchant_id)
+    public function fetchCurrentMerchantForUser($user)
     {
-        $merchant = Entity::findOrFail($merchant_id)->toArray();
+        $merchant = Entity::findOrFail($user->getCurrentMerchantId())->toArray();
+
+        if($user->currentMerchant->primaryOwner()->id == $user->id)
+            $merchant['primaryOwner'] = true;
+        else
+            $merchant['primaryOwner'] = false;
 
         return $merchant;
     }
