@@ -14,6 +14,8 @@ class Service extends Base\Service
     public function __construct()
     {
         $user = Auth::user()->user();
+
+        $this->merchant = $user->currentMerchant;
         $this->merchantDetails = $user->currentMerchant->MerchantDetails;
     }
 
@@ -204,9 +206,7 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $merchant = Auth::user()->user()->currentMerchant;
-
-        $mailer = new UserMailer($merchant);
+        $mailer = new UserMailer($this->merchant);
 
         $mailer->confirmActivationSubmission()->queueAndDeliver();
 
