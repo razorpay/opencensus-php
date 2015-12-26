@@ -129,11 +129,21 @@ class Service extends Base\Service
      * Destroy the given merchant invitation.
      *
      * @param  string  $inviteId
+     * @param  \Models\User\Entity  $user
      * @return \Illuminate\Http\Response
      */
-    public function removeInvitation($inviteId)
+    public function removeInvitationForUser($inviteId, $user)
     {
-        Auth::user()->user()->invitations()->findOrFail($inviteId)->delete();
+        $invitation = $user->invitations()->find($inviteId);
+
+        if(is_null($invitation))
+        {
+            return array('The invitation is invalid.');
+        }
+
+        $invitation->delete();
+        
+        return array();
     }
 
     /**
