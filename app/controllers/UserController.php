@@ -27,19 +27,6 @@ class UserController extends BaseController
         return AppResponse::jsonResponse([]);
     }
 
-    public function getUser()
-    {
-       $user = Auth::user()->user();
-
-       $merchant = (new Merchant\Service)->fetch($user->currentMerchant->id);
-
-       $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
-
-       $data = $merchant + $merchantDetails;
-
-       return AppResponse::jsonResponse([], $data);
-    }
-
     public function postRegister()
     {
         $input = Input::all();
