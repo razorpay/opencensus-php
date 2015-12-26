@@ -15,8 +15,13 @@ class MerchantController extends BaseController
     public function getMerchant()
     {
        $user = Auth::user()->user();
-       
+   
        $merchant = (new Merchant\Service)->fetch($user->getCurrentMerchantId());
+       
+       if($user->currentMerchant->primaryOwner()->id == $user->id)
+            $merchant['primaryOwner'] = true;
+        else
+            $merchant['primaryOwner'] = false;
 
        $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
 
