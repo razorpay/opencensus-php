@@ -309,9 +309,11 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getVerifyPayment($id)
+    public function getVerifyPayment($mode, $id)
     {
-        list($error, $data) = (new Admin\Service)->getVerifyPayment($id);
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Admin\Service)->getVerifyPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
