@@ -41,10 +41,26 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::on($mode)
+        $highest = $repo::on($mode)
                     ->withTrashed()
                     ->where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')
-                    ->count();
+                    ->orderBy(BankAccount\Entity::BENEFICIARY_CODE, 'desc')
+                    ->first();
+
+        if ($highest === null)
+        {
+            return 0;
+        }
+
+        $count = substr($highest->getBeneficiaryCode(), 4);
+
+        // The first entry doesn't have any count
+        if ($count === false)
+        {
+            $count = 1;
+        }
+
+        return $count;
     }
 
     public function getAllOrderedByCreatedAt()
