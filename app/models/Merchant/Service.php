@@ -447,6 +447,7 @@ class Service extends Base\Service
         }
 
         $filterDate = $filterDate->subDays($filterDays);
+
         $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
                                                         $filterDate->timestamp,
                                                         $today->timestamp);
@@ -454,6 +455,11 @@ class Service extends Base\Service
         if ($merchantsActivatedSinceLastReport > 0)
         {
             (new BankAccount\BeneficiaryFile)->generate();
+
+            $message = "Merchant Beneficiary file generated. Merchants activated since last".
+                    " report is ".$merchantsActivatedSinceLastReport;
+
+            $this->slackPost($message,[],['channel' => '#tech_logs']);
         }
 
         //Log response in trace
