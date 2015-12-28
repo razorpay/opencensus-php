@@ -66,7 +66,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function addOrUpdateMerchantBetaFeatures($id, array $input)
+    public function addOrUpdateMerchantFeatures($id, array $input)
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
@@ -75,16 +75,16 @@ class Service extends Base\Service
             $input[$key] = strtolower($input[$key]);
         }
 
-        $merchant = (new Merchant\Core)->addOrUpdateMerchantBetaFeatures($merchant, $input);
+        $merchant = (new Merchant\Core)->addOrUpdateMerchantFeatures($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
 
-    public function getMerchantBetaFeatures($id)
+    public function getMerchantFeatures($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $features = $merchant->getBetaFeatures();
+        $features = $merchant->getFeatures();
 
         return $features;
     }

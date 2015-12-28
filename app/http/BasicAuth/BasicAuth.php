@@ -357,9 +357,9 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
-    public function betaFeature()
+    public function feature()
     {
-        return $this->verifyBetaFeatureAccess();
+        return $this->verifyFeatureAccess();
     }
 
 // --------------------- Basic Auths Ends --------------------------------------
@@ -370,16 +370,16 @@ class BasicAuth
      * Checks if the accessed route is a beta feature route, if yes
      * checks if the merchant has access to the feature
      */
-    public function verifyBetaFeatureAccess()
+    public function verifyFeatureAccess()
     {
         $route = $this->getCurrentRouteName();
 
         if (array_key_exists($route, Route::$routeNameToFeatureMap) === true)
         {
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
-            $allowedFeatures = $this->merchant->getBetaFeatures();
+            $allowedFeatures = $this->merchant->getFeatures();
 
-            if (!is_null($allowedFeatures) and $allowedFeatures !== '' and 
+            if (!empty($allowedFeatures) and 
                 in_array($accessedFeature, $allowedFeatures))
             {
                 return;

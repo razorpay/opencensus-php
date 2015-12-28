@@ -4,24 +4,24 @@ namespace Models\Merchant;
 
 class Features
 {
-    public static $allowedBetaFeatures = array('dummy', 'webhooks');
+    public static $allowedFeatures = array('dummy', 'webhooks');
 
     public static function validateFeatures($input)
     {
-        if (isset($input[Entity::BETA_FEATURES]) === false or trim($input[Entity::BETA_FEATURES]) === '')
+        if (empty($input[Entity::FEATURES]))
             return;
 
-        $features = $input[Entity::BETA_FEATURES];
+        $features = $input[Entity::FEATURES];
         $features = explode(',', $features);
 
         foreach ($features as $feature)
         {
             $feature = trim($feature); // Remove whitespace
-            if (in_array($feature, Features::$allowedBetaFeatures) === false)
+            if (in_array($feature, Features::$allowedFeatures) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "The provided beta feature is invalid: $feature",
-                    Entity::BETA_FEATURES
+                    Entity::FEATURES
                 );
             }
         }

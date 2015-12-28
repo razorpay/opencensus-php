@@ -5,27 +5,28 @@ namespace Tests\Functional\Merchant;
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
-class BetaFeaturesTest extends TestCase
+class FeaturesTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/BetaFeaturesTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/FeaturesTestData.php';
 
         parent::setUp();
 
         $this->ba->appAuth();
     }
 
-    public function testAddBetaFeatureToMerchant()
+    public function testAddFeatureToMerchant()
     {
+        $this->ba->appAuth();
         $this->startTest();
     }
 
-    public function testGetBetaFeatureListForMerchant()
+    public function testGetFeatureListForMerchant()
     {
-        $this->testAddBetaFeatureToMerchant();
+        $this->testAddFeatureToMerchant();
         $this->startTest();
     }
 
@@ -34,15 +35,15 @@ class BetaFeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function testDummyBetaFeatureRouteWithoutAccess()
+    public function testDummyFeatureRouteWithoutAccess()
     {
         $this->ba->privateAuth();
         $this->startTest();
     }
 
-    public function testDummyBetaFeatureRouteWithAccess()
+    public function testDummyFeatureRouteWithAccess()
     {
-        $this->testAddBetaFeatureToMerchant();
+        $this->testAddFeatureToMerchant();
         $this->ba->privateAuth();
         $this->startTest();
     }

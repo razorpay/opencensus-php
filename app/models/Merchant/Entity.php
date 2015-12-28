@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
-    const BETA_FEATURES             = 'beta_features';
+    const FEATURES                  = 'features';
 
     /**
      * Refers to methods relation and not a property;
@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
-        self::BETA_FEATURES,
+        self::FEATURES,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -83,7 +83,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::BETA_FEATURES         => null,
+        self::FEATURES         => null,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -119,9 +119,9 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
-    public function isBetaEnabled()
+    public function isFeatureEnabled()
     {
-        return !is_null($this->getAttribute(self::BETA_FEATURES));
+        return !is_null($this->getAttribute(self::FEATURES));
     }
 
     public function activate()
@@ -257,9 +257,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
-    public function getBetaFeatures()
+    public function getFeatures()
     {
-        return $this->getAttribute(self::BETA_FEATURES);
+        return $this->getAttribute(self::FEATURES);
     }
 
     public function getTransactionReportEmailAttribute()
@@ -270,22 +270,22 @@ class Entity extends Base\PublicEntity
         return array_map('trim', $emails);
     }
 
-    public function getBetaFeaturesAttribute()
+    public function getFeaturesAttribute()
     {
-        $features = explode(',', $this->attributes[self::BETA_FEATURES]);
+        $features = explode(',', $this->attributes[self::FEATURES]);
         return array_map('trim', $features);
     }
 
-    public function setBetaFeaturesAttribute($features)
+    public function setFeaturesAttribute($features)
     {
         if (is_array($features))
         {
-            $this->attributes[self::BETA_FEATURES] =
+            $this->attributes[self::FEATURES] =
                 implode(',', $features);
         }
         else
         {
-            $this->attributes[self::BETA_FEATURES] = $features;
+            $this->attributes[self::FEATURES] = $features;
         }
     }
 

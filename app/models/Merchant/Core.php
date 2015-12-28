@@ -71,12 +71,12 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    public function addOrUpdateMerchantBetaFeatures($merchant, $input)
+    public function addOrUpdateMerchantFeatures($merchant, $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            array('old_features' => $merchant->getBetaFeatures(), 
-                  'new_features' => $input[Entity::BETA_FEATURES]));
+            array('old_features' => $merchant->getFeatures(), 
+                  'new_features' => $input[Entity::FEATURES]));
 
         $merchant->edit($input);
 

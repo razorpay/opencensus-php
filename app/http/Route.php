@@ -142,8 +142,8 @@ final class Route
         'transparent_redirect_get'          => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                        ],
         'transparent_redirect_post'         => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                       ],
         'payment_compute_tax'               => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                       ],
-        'get_features'                      => ['get',      'features',                                 'MerchantController@getAllFeatures'                              ],
-        'dummy_betafeature'                 => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                           ],
+        'get_features'                      => ['get',      'features',                                 'MerchantController@getAllFeatures'                             ],
+        'dummy_feature'                     => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                           ],
     );
 
     public static $public = array(
@@ -184,7 +184,7 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
-        'dummy_betafeature',
+        'dummy_feature',
     );
 
     public static $internal = array(
@@ -334,7 +334,7 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'dummy_betafeature' =>  'dummy'
+        'dummy_feature' =>  'dummy'
         );
 
     protected static $router;
@@ -464,10 +464,10 @@ final class Route
             // This must not happen though.
             //
             self::addFilterOnRouteGroups($router, array('auth.app'), 'internal');
-            self::addFilterOnRouteGroups($router, array('auth.private', 'route.beta_feature'), 'private');
-            self::addFilterOnRouteGroups($router, array('auth.public', 'route.beta_feature'), 'public');
+            self::addFilterOnRouteGroups($router, array('auth.private', 'route.feature'), 'private');
+            self::addFilterOnRouteGroups($router, array('auth.public', 'route.feature'), 'public');
             self::addFilterOnRouteGroups($router, array('auth.public_callback'), 'publicCallback');
-            self::addFilterOnRouteGroups($router, array('auth.proxy', 'route.beta_feature'), 'proxy');
+            self::addFilterOnRouteGroups($router, array('auth.proxy', 'route.feature'), 'proxy');
             self::addFilterOnRouteGroups($router, array('auth.direct'), 'direct');
         });
 

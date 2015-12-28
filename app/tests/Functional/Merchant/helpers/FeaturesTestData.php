@@ -6,10 +6,10 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
-    'testAddBetaFeatureToMerchant' => [
+    'testAddFeatureToMerchant' => [
         'request' => [
             'content' => [
-                'beta_features'    => 'dummy',
+                'features'    => 'dummy',
             ],
             'url' => '/merchants/10000000000000/features',
             'method' => 'POST'
@@ -17,11 +17,12 @@ return [
         'response' => [
             'content' => [
                 'id' => '10000000000000',
+                //'features' => 'dummy'
             ],
         ],
     ],
 
-    'testGetBetaFeatureListForMerchant' => [
+    'testGetFeatureListForMerchant' => [
         'request' => [
             'content' => [
             ],
@@ -49,7 +50,7 @@ return [
         ],
     ],
 
-    'testDummyBetaFeatureRouteWithoutAccess' => [
+    'testDummyFeatureRouteWithoutAccess' => [
         'request' => [
             'content' => [
             ],
@@ -67,7 +68,7 @@ return [
         ],
     ],
 
-    'testDummyBetaFeatureRouteWithAccess' => [
+    'testDummyFeatureRouteWithAccess' => [
         'request' => [
             'content' => [
             ],

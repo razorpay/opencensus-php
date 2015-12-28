@@ -73,9 +73,9 @@ Route::filter('auth.public_callback', function()
     return BasicAuth::directAuth();
 });
 
-Route::filter('route.beta_feature', function()
+Route::filter('route.feature', function()
 {
-    return BasicAuth::betaFeature();
+    return BasicAuth::feature();
 });
 
 /*
