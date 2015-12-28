@@ -80,6 +80,8 @@ final class Route
         'merchant_edit_free_credits'            => ['post',     'merchants/{id}/credits',                   'MerchantController@postFreeCredits',                               ],
         'merchant_beneficiary_file'             => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'        => ['post',     'merchants/beneficiary/file/bank',          'MerchantController@postMerchantBeneficiaryFile'                    ],
+        'merchant_add_features'                 => ['post',     'merchants/{id}/features',                  'MerchantController@postMerchantFeatures'                           ],
+        'merchant_get_features'                 => ['get',      'merchants/{id}/features',                  'MerchantController@getMerchantFeatures'                            ],
         'key_fetch_by_id'                       => ['get',      'keys/{id}',                                'KeyController@getKey'                                              ],
         'key_fetch_multiple'                    => ['get',      'keys',                                     'KeyController@getKeys'                                             ],
         'terminal_delete'                       => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
@@ -149,6 +151,8 @@ final class Route
         'payment_compute_tax'                   => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                           ],
         'settlement_compute_tax'                => ['post',     'settlements/compute/tax',                  'SettlementController@postComputeSettlementServiceTax'              ],
         'daily_settlement_compute_tax'          => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
+        'get_features'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
+        'dummy_feature'                         => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
     );
 
     public static $public = array(
@@ -192,6 +196,7 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'dummy_feature',
     );
 
     public static $internal = array(
@@ -274,6 +279,10 @@ final class Route
         'iin_add',
         'send_test_newsletter',
         'send_newsletter',
+        'payment_compute_tax',
+        'merchant_add_features',
+        'merchant_get_features',
+        'get_features',
     );
 
     public static $proxy = array(
@@ -339,6 +348,10 @@ final class Route
         'payment_create_jsonp',
         'merchant_public_get_banks',
         'merchant_methods',
+    );
+
+    public static $routeNameToFeatureMap = array(
+        'dummy_feature' =>  'dummy'
     );
 
     protected static $router;
@@ -467,12 +480,12 @@ final class Route
             // then it will go into internal app auth and will not expose the route.
             // This must not happen though.
             //
-            self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
-            self::addFilterOnRouteGroups($router, 'auth.private', 'private');
-            self::addFilterOnRouteGroups($router, 'auth.public', 'public');
-            self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
-            self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
-            self::addFilterOnRouteGroups($router, 'auth.direct', 'direct');
+            self::addFilterOnRouteGroups($router, array('auth.app'), 'internal');
+            self::addFilterOnRouteGroups($router, array('auth.private', 'route.feature'), 'private');
+            self::addFilterOnRouteGroups($router, array('auth.public', 'route.feature'), 'public');
+            self::addFilterOnRouteGroups($router, array('auth.public_callback'), 'publicCallback');
+            self::addFilterOnRouteGroups($router, array('auth.proxy', 'route.feature'), 'proxy');
+            self::addFilterOnRouteGroups($router, array('auth.direct'), 'direct');
         });
 
         $router->get('/', function ()

@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
+        Entity::FEATURES                    => 'sometimes|max:255',
     );
 
     protected static $editCreditsRules = [
@@ -34,7 +35,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        'csv_email'
+        'csv_email', 'features'
     ];
 
     protected function validateCsvEmail($input)
@@ -55,6 +56,11 @@ class Validator extends Base\Validator
                 );
             }
         }
+    }
+
+    protected function validateFeatures($input)
+    {
+        Features::validateFeatures($input);
     }
 
     public function validateBeforeActivate(Merchant\Entity $merchant)

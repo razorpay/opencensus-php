@@ -357,9 +357,37 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
+    public function feature()
+    {
+        return $this->verifyFeatureAccess();
+    }
+
 // --------------------- Basic Auths Ends --------------------------------------
 
 // --------------------- Verifiers ---------------------------------------------
+
+    /**
+     * Checks if the accessed route is a beta feature route, if yes
+     * checks if the merchant has access to the feature
+     */
+    public function verifyFeatureAccess()
+    {
+        $route = $this->getCurrentRouteName();
+
+        if (array_key_exists($route, Route::$routeNameToFeatureMap) === true)
+        {
+            $accessedFeature = Route::$routeNameToFeatureMap[$route];
+            $allowedFeatures = $this->merchant->getFeatures();
+
+            if (!empty($allowedFeatures) and 
+                in_array($accessedFeature, $allowedFeatures))
+            {
+                return;
+            }
+            return ApiResponse::routeNotFound();
+        }
+    }
+
 
     public function verifyHttps()
     {
