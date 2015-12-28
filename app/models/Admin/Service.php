@@ -575,12 +575,12 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function getVerifyPayment($id)
+    public function getVerifyPayment($mode, $id)
     {
         $data = [];
         $error = [];
 
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $mode);
 
         try
         {

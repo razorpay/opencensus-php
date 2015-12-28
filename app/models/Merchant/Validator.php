@@ -24,6 +24,11 @@ class Validator extends Base\Validator
         'email'         => 'required|email'
     );
 
+    protected static $loginRules = array(
+        'email'     =>      'required|email',
+        'password'  =>      'required|between:6,50',
+    );
+
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
         'gateway'                                   => '',

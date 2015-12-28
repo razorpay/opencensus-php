@@ -178,7 +178,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
 
-        Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
+        Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
 
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
 
