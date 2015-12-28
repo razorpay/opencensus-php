@@ -108,6 +108,7 @@ class Core extends Base\Core
         $methods->merchant()->associate($merchant);
 
         $methods->setMobikwik(true);
+        $methods->setPayzapp(true);
 
         $this->setAllPaymentBanks($methods);
 

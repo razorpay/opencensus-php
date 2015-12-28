@@ -165,6 +165,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PAYTM, $paytm);
     }
 
+    public function setPayzapp($value)
+    {
+        $this->setAttribute(self::PAYZAPP, $value);
+    }
+
     public function setCard($card)
     {
         $this->setAttribute(self::CARD, $card);
