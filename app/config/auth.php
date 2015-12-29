@@ -9,6 +9,12 @@ return array(
             'table' => 'merchants',
             'email' => 'emails.auth.reminder'
         ),
+        'user' => array(
+            'driver' => 'eloquent',
+            'model' => 'Models\User\Entity',
+            'table' => 'users',
+            'email' => 'emails.auth.reminder'
+        ),
         'admin' => array(
             'driver' => 'eloquent',
             'model' => 'Models\Admin\Entity',

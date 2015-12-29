@@ -78,9 +78,10 @@ class AdminController extends BaseController
 
     public function getMerchantLogin($id)
     {
-        $merchant = (new Merchant\Service)->fetch($id);
+        $error = (new Admin\Service)->loginUsingPrimaryOwner($id);
 
-        Auth::merchant()->loginUsingId($merchant['id']);
+        if(empty($error) === false)
+            return AppResponse::jsonResponse($error);
 
         return Redirect::to('/');
     }
@@ -92,6 +93,15 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+
+    public function getMerchantTerminal($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postMerchantTerminal($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 
     public function postMerchantTerminal($id)
     {
@@ -113,7 +123,8 @@ class AdminController extends BaseController
 
     public function getMerchantActivation($id)
     {
-        $error = (new Admin\Service)->activateMerchant($id);
+        $dashboardOnly = Input::get('dashboard', false);
+        $error = (new Admin\Service)->activateMerchant($id, $dashboardOnly);
 
         return AppResponse::jsonResponse($error);
     }
@@ -177,17 +188,11 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantMethodEnable($id, $method)
+    public function postEditMethods($id)
     {
+        $input = \Input::all();
 
-        $error = (new Admin\Service)->enableMerchantMethod($id, $method);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantMethodDisable($id, $method)
-    {
-        $error = (new Admin\Service)->disableMerchantMethod($id, $method);
+        $error = (new Admin\Service)->editMethods($id, $input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -215,7 +220,7 @@ class AdminController extends BaseController
 
     public function getMerchantBalance($id)
     {
-        $data = (new Admin\Service)->fetchMerchantBalance($id);
+        $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
         return AppResponse::jsonResponse([], $data);
     }
@@ -241,6 +246,15 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putEditBankDetails($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postEditBankDetails($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -295,9 +309,11 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getVerifyPayment($id)
+    public function getVerifyPayment($mode, $id)
     {
-        list($error, $data) = (new Admin\Service)->getVerifyPayment($id);
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Admin\Service)->getVerifyPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -543,6 +559,17 @@ class AdminController extends BaseController
     {
         list($error, $response) = (new Admin\Service)
             ->getMerchantTags($merchantId);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    /**
+     * Confirm a merchant account manually
+     */
+    public function postConfirmMerchant($merchantId)
+    {
+        list($error, $data) = $response = (new Admin\Service)
+            ->confirmMerchant($merchantId);
 
         return AppResponse::jsonResponse($error, $response);
     }

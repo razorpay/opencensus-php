@@ -2,8 +2,10 @@
 namespace Tests\Integration;
 
 use Selenium\Locator as l;
+use Laracasts\TestDummy\Factory;
 use Models;
 use URL;
+use Uuid;
 use Exception;
 
 class MerchantTest extends TestCase
@@ -16,6 +18,8 @@ class MerchantTest extends TestCase
     {
         parent::setUp();
 
+        Factory::$factoriesPath = __DIR__.'/../factories/';
+
         if (static::$migrated === false)
         {
             // Truncates all tables befor first test
@@ -27,10 +31,15 @@ class MerchantTest extends TestCase
         try
         {
             $this->merchant = Models\Merchant\Entity::firstorfail();
+            $this->user = Models\User\Entity::firstorfail();
         }
         catch(Exception $e)
         {
-            $this->merchant = $this->buildEntity('merchant', array('id'=>\Models\Merchant\Entity::generateUniqueId(),'email' =>static::generateMerchantEmail()));
+            $this->merchant = $this->buildEntity('merchant', array(
+                'id'    => Uuid::generate(),
+                'email' => static::generateMerchantEmail(),
+                'name'  => 'Test Merchant'
+            ));
         }
 
         // Make sure that the merchant has webhook tagged
@@ -69,8 +78,8 @@ class MerchantTest extends TestCase
      */
     public function testUserConfirmation()
     {
-        $confirm_token = $this->merchant->confirm_token;
-        $this->browser
+        $confirm_token = $this->user->confirm_token;
+       $this->browser
             ->open('/admin')
             ->open('/#/access/confirm/'.$confirm_token)    // Visits the 'register page
             //->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
@@ -94,7 +103,6 @@ class MerchantTest extends TestCase
             ->click(l::IdOrName('submit'))
             // Wait for page to load
             ->waitForPresent('.navbar');
-
 
         $this->assertBodyHasText("Welcome to Razorpay");
 

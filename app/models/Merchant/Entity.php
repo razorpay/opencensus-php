@@ -2,7 +2,9 @@
 
 namespace Models\Merchant;
 
+use Uuid;
 use Models\Base;
+use Models\User;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
@@ -67,11 +69,56 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     );
 
     /**
+     * Take care while calling this method
+     * @param array $input array with new email address
+     */
+    public function changeEmail($input)
+    {
+        return $this->edit($input, 'changeEmail');
+    }
+
+    /**
+     * Determine if the merchant has any users.
+     *
+     * @return bool
+     */
+    public function hasUsers()
+    {
+        return count($this->users) > 0;
+    }
+
+    /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role','owner')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
+    }
+
+    /**
+     * Get all of the users that belong to the merchant.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(
+            User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
+        )->withPivot('role');
+    }
+
+    /**
      * Generates UUid ID
      */
     public function generateId()
     {
-        $this->setAttribute('id', self::generateUniqueId());
+        $this->setAttribute('id', Uuid::generate());
     }
 
     /**
@@ -94,20 +141,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function merchantDetails()
     {
         return $this->hasOne('Models\MerchantDetails\Entity');
-    }
-
-    /**
-     * Take care while calling this method
-     * @param array $input array with new email address
-     */
-    public function changeEmail($input)
-    {
-        return $this->edit($input, 'changeEmail');
-    }
-
-    public function changePassword($input)
-    {
-        return $this->edit($input, 'changePassword');
     }
 
     public static function getAggregations($data, $mode)
@@ -200,14 +233,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public static function getMerchantForConfirmation($token)
     {
         return static::where('confirm_token', '=', $token)->first();
-    }
-
-    /**
-     * Confirms a merchant
-     */
-    public function confirm()
-    {
-        $this->confirm_token = null;
     }
 
     /**
@@ -305,62 +330,24 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return ((int)$this->activated === 1);
     }
 
-    public function setPasswordAttribute($password)
+    public function confirm()
     {
-        $this->attributes['password'] = \Hash::make($password);
-    }
+        $this->confirm_token = null;
+        $email = $this->email;
+        $this->saveOrFail();
 
-    public static function generateUniqueId()
-    {
-        // Timestmap of 1st Jan 2014!!
-        // 1388534400
-        $ts1stJan2014 = 1388534400;
-
-        // Get current nanotime from 1st Jan 1970
-        $nanotime = self::getNanotimeInteger();
-
-        // Subtract nanotime of 1st Jan 2014
-        $nanotime -= $ts1stJan2014*1000*1000*1000;
-
-        // Convert to base 62
-        $b62 = self::base62($nanotime);
-
-        // Generate 3 random bytes, convert to hex and then to dec
-        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
-
-        // Convert the random decimal generated to base 62
-        $rand = self::base62($dec);
-
-        // Only 4 base 62 digits are needed, so cutoff any more.
-        if (strlen($rand) > 4)
-            $rand = substr($rand, 0, 4);
-
-        // Combine the base 62 nanotime with 4 base 62 digits
-        // and create a unique identifier
-        $id = $b62 . $rand;
-
-        assert(strlen($id) === 14);
-
-        return $id;
-    }
-
-    protected static function getNanotimeInteger()
-    {
-        exec('date +%s%N', $nanotime, $status);
-        return $nanotime[0];
-    }
-
-    protected static function base62($num)
-    {
-        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
-        $res = '';
-        do {
-            $res = $index[$num % 62] . $res;
-            $num = intval($num / 62);
-        } while ($num);
-
-        return $res;
+        // This is only to make sure that the user and merchants are in sync
+        // for now. We will drop the method from Merchant\Entity and shift it
+        // to User\Entity going ahead.
+        if($this->hasUsers())
+        {
+            $user = $this->users()->where('email',$email)->first();
+            if($user)
+            {
+                $user->confirm_token = $this->confirm_token;
+                $user->save();
+            }
+        }
     }
 
     protected function getTagsAttribute()

@@ -35,3 +35,12 @@ file, and it will be automatically run on testing as well as production after th
 migrations.
 
 [lam]: https://github.com/marlek/laravel-automigrate
+
+# Docs
+
+To generate documentation for our PHP codebase, run the following:
+
+    curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.phar -o apigen && chmod +x apigen
+    ./apigen generate -d ./docs -s ./app
+
+The documentation will be generated in the docs directory.

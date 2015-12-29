@@ -1,15 +1,25 @@
 <?php
+
+$password = Hash::make('123456');
+
 $factory('Models\Merchant\Entity', [
     'id'  =>  $faker->word,
     'name'  =>  $faker->word,
     'email'  =>  $faker->email,
-    'password'  =>  '123456'
+    'password'  =>  $password
+]);
+
+$factory('Models\User\Entity', [
+    'id'  =>  $faker->word,
+    'name'  =>  $faker->word,
+    'email'  =>  $faker->email,
+    'password'  =>  $password
 ]);
 
 $factory('Models\Admin\Entity', [
     'name'  => $faker->word,
     'username'  => $faker->word,
-    'password'  => '123456',
+    'password'  => $password,
     'email' => $faker->email,
     'superadmin'    => '1'
 ]);
@@ -41,7 +51,7 @@ $factory('Models\MerchantDetails\Entity', [
     'company_pan_name'  => $faker->word,
     'business_model'    => $faker->text,
     'transaction_volume'    => 2,
-    'transaction_value' => $faker->word,
+    'transaction_value' => $faker->randomNumber(4),
     'promoter_pan'  => $faker->word,
     'promoter_pan_name' => $faker->word,
     'bank_name' => $faker->word,

@@ -2,11 +2,15 @@
 
 namespace Models\Merchant;
 
+use Auth;
+use Hash;
+use Requests;
 use Models\Base;
 use Models\Merchant;
+use Models\User;
 use Models\MerchantDetails;
-use Mail;
-use Requests;
+use Razorpay\Mailers\UserMailer;
+
 
 class Service extends Base\Service
 {
@@ -20,13 +24,21 @@ class Service extends Base\Service
             return [$error, null];
         }
 
+        $merchant->password = Hash::make($merchant->password);
         $merchant->saveOrFail();
 
-        $details = array('merchant_id' => $merchant->id);
+        $user = User\Entity::createFromMerchant($merchant);
+        $user->saveOrFail();
+        $user->merchants()->attach($merchant, ['role' => 'owner']);
+
+        $details = array(
+            'merchant_id' => $merchant->id,
+            'contact_email' => $merchant->email
+        );
 
         MerchantDetails\Entity::createOrFail($details);
 
-        $this->queueConfirmationMail($merchant);
+        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
         $slackData = [
             'id'    => $merchant->id,
@@ -37,16 +49,6 @@ class Service extends Base\Service
         $this->slackSignupPost($slackData);
 
         return [$error, $slackData];
-    }
-
-    protected function queueConfirmationMail($merchant)
-    {
-        $merchant = $merchant->generateEmailData();
-
-        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
-        {
-            $m->to($merchant['email'], $merchant['name'])->subject('Razorpay | Confirm Your Email');
-        });
     }
 
     protected function slackSignupPost($slackData)
@@ -80,30 +82,26 @@ class Service extends Base\Service
             return [["Email change forbidden on this account"], null];
         }
 
+        $originalEmail = $merchant->email;
         $error = $merchant->changeEmail($input);
 
         if (empty($error))
         {
+            if($merchant->hasUsers())
+            {
+                $user = $merchant->users()->where('email',$originalEmail)->first();
+                if($user)
+                {
+                    $user->email = $merchant->email;
+                    $user->save();
+                }
+            }
             $merchant->save();
         }
 
-        return [$error, null];
-    }
-
-    public function changePassword(array $input)
-    {
-        $merchant = \Auth::merchant()->user();
-
-        if ($merchant->isTestAccount()) {
-            return [["Password change forbidden on this account"], null];
-        }
-
-        $error = $merchant->changePassword($input);
-
-        if (empty($error))
-        {
-            $merchant->save();
-        }
+        $merchantDetails = $merchant->merchantDetails;
+        $merchantDetails->contact_email = $merchant->email;
+        $merchantDetails->save();
 
         return [$error, null];
     }
@@ -130,40 +128,10 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
+        // Confirm the merchant and associated users (with same email)
         $merchant->confirm();
-        $merchant->saveOrFail();
 
         return array();
-    }
-
-    public function login(array $input)
-    {
-        $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [['Email or password is invalid.'], null];
-        }
-
-        $credentials = array(
-            'email'     => $input['email'],
-            'password'  => $input['password']
-        );
-
-        $merchant = \Auth::merchant();
-
-        if ($merchant->validate($credentials) === false)
-        {
-            // Checks credentials but doesn't login the merchant, throws error if invalid
-            $error = ['Email or password is invalid.'];
-        }
-        else if ($merchant->attempt($credentials + array('confirm_token' => null)) === false)
-        {
-            // Tries to login merchant if confirmed, throws error if merchant is not confirmed
-            $error = ['not activated'];
-        }
-
-        return [$error, null];
     }
 
     public function resendConfirmation(array $input)
@@ -177,19 +145,21 @@ class Service extends Base\Service
                 'password'  => $input['password']
             );
 
-            $merchant = \Auth::merchant();
+            $user = \Auth::user();
 
-            if ($merchant->once($credentials))
+            if ($user->once($credentials))
             {
-                $merchant = \Auth::merchant()->get();
+                $user = \Auth::user()->get();
 
-                if ($merchant->confirm_token === null)
+                $merchant = $user->currentMerchant;
+
+                if ($user->confirm_token === null)
                 {
                     return [['Merchant already confirmed. You can login ' .
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
-                $this->queueConfirmationMail($merchant);
+                (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
                 return [[], []];
             }
@@ -245,7 +215,7 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
-        if (\Auth::merchant()->user()->isTestAccount()) {
+        if (Auth::user()->user()->currentMerchant->isTestAccount()) {
             return [["Roll key forbidden on this account"], null];
         }
 
@@ -347,5 +317,23 @@ class Service extends Base\Service
         }
 
         return [$errors, $data];
+    }
+
+    /**
+     * Fetches merchant balance
+     * @param  string $merchantId Merchant Id
+     * @return array contains both test and live balances
+     */
+    public function fetchMerchantBalance($merchantId)
+    {
+        $this->setApiCredentials($merchantId, 'test');
+
+        $test = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+
+        $this->setApiCredentials($merchantId, 'live');
+
+        $live = $this->api->merchant->setId($merchantId)->fetchBalance()->toArray();
+
+        return compact('test', 'live');
     }
 }

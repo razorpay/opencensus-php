@@ -72,9 +72,4 @@ class Entity extends Base\Entity implements UserInterface
         $this->superadmin = 1;
         $this->save();
     }
-
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = \Hash::make($password);
-    }
 }

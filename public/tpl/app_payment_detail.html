@@ -16,11 +16,11 @@
       <div class="row wrapper">
         <div class="list-group">
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount/100 | rupee:""}}</span>
             Amount
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount_refunded/100 | rupee:""}}</span>
             Amount Refunded
           </a>
           <a href class="list-group-item">
@@ -30,6 +30,10 @@
           <a href class="list-group-item">
             <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
             Status
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.method}}</span>
+            Method
           </a>
           <a href class="list-group-item">
             <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
@@ -49,11 +53,11 @@
             Contact
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.fee/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
             Fee
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.service_tax/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.service_tax/100 | rupee:""}}</span>
             Service Tax
           </a>
           <a href class="list-group-item" ng-show="entity.error_code">
@@ -95,7 +99,7 @@
           <div collapse="isRefundsCollapsed" class="panel-body">
             <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
               <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
-              {{refund.amount/100 | currency:refund.currency + " "}}
+              {{refund.amount/100 | rupee:refund.currency + " "}}
             </a>
           </div>
         </div>
@@ -116,7 +120,7 @@
                   <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
               </div>
             </script>
-            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
+            <button  class="btn btn-success btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
           </div>
           <div  ng-show="entity.status==='captured' && entity.refund_status !== 'full'">
             <script type="text/ng-template" id="refundModalContent.html">
