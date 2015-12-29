@@ -71,12 +71,14 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::SETTLED,
         self::CREATED_AT,
-        self::SETTLED_AT);
+        self::SETTLED_AT,
+        self::SETTLEMENT_ID);
 
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::ENTITY_ID);
+        self::ENTITY_ID,
+        self::SETTLEMENT_ID);
 
     protected $dates = array(
         self::SETTLED_AT,
@@ -326,6 +328,18 @@ class Entity extends Base\PublicEntity
         $sign = $entity::getIdPrefix();
 
         $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
+    }
+
+    public function setPublicSettlementIdAttribute(array & $array)
+    {
+        if ($array[self::SETTLED] !== true)
+        {
+            return;
+        }
+
+        $sign = Settlement\Entity::getIdPrefix();
+
+        $array[self::SETTLEMENT_ID] = $sign . $array[self::SETTLEMENT_ID];
     }
 
     public function setServiceTax($servicetax)

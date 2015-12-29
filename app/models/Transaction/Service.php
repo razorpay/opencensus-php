@@ -77,10 +77,12 @@ class Service extends Base\Service
         $reportTxn['settled_at'] = null;
         $reportTxn['description'] = null;
         $reportTxn['notes'] = null;
+        $reportTxn['payment_id'] = null;
 
         if ($txn['settled_at'] !== null)
         {
             $reportTxn['settled_at'] = date('d/m/y', $txn['settled_at']);
+            $reportTxn['settlement_id'] = $reportTxn['settlement_id'];
         }
 
         if ($txn->isTypePayment())
@@ -104,6 +106,8 @@ class Service extends Base\Service
             {
                 return;
             }
+
+            $reportTxn['payment_id'] = $payment->getPublicId();
         }
 
         return $reportTxn;
