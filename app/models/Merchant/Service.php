@@ -151,6 +151,8 @@ class Service extends Base\Service
             {
                 $user = \Auth::user()->get();
 
+                $merchant = $user->currentMerchant;
+
                 if ($user->confirm_token === null)
                 {
                     return [['Merchant already confirmed. You can login ' .
