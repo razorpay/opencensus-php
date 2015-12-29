@@ -154,8 +154,9 @@ app.controller('PaymentDetailCtrl', [
     $scope.verifyPayment = function () {
       var request = $http({
         method: 'get',
-        url: '/admin/payment/' + $scope.mode + '/'  + $scope.entity.id + '/verify'
+        url: '/admin/'  + $scope.mode + '/payment/' + $scope.entity.id + '/verify'
       });
+
       request.success(function (data) {
         if (data.success) {
           var payment = JSON.stringify(data.data.payment);
