@@ -60,6 +60,8 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('/apihost', 'MerchantController@getApihost');
 
+    Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
+
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
 
     Route::group(array('before' => 'csrf'), function()
@@ -82,7 +84,12 @@ Route::group(array('before' => 'auth.user'), function()
 
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
 
+        Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
+
+        Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
+
         Route::get('/{mode}/generatereport/{month}/{year}', 'TransactionController@getGenerateReport');
+
     });
 });
 
@@ -138,6 +145,9 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
+    // Might delete this route later if its not used
+    Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
@@ -155,6 +165,10 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
 
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
+
+        Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
+
+        Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
 
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
 

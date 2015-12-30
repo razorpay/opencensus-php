@@ -168,6 +168,15 @@ class Service extends Base\Service
         return [['Email or password is invalid.'], []];
     }
 
+    public function fetch($merchant_id)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchant_id);
+
+        $merchant['tags'] = $merchant->tags;
+
+        return $merchant->toArray();
+    }
+
     public function fetchKeysFromApi($merchant_id, $mode)
     {
         $this->setApiCredentials(null, $mode);
@@ -244,11 +253,70 @@ class Service extends Base\Service
         return array($error, $key_data);
     }
 
-    public function fetch($merchant_id)
+    public function getWebhooks($mode)
     {
-        $merchant = Entity::findOrFail($merchant_id)->toArray();
+        $merchantId = \Auth::merchant()->user()->id;
 
-        return $merchant;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = null;
+
+        try
+        {
+            $data = $this->api->webhook->all()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function editWebhook($mode, $webhookId, $input)
+    {
+        $merchantId = \Auth::merchant()->user()->id;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = null;
+
+        try
+        {
+            $data = $this->api->webhook
+                ->fetch($webhookId)
+                ->edit($input)
+                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function createWebhook($mode, $input)
+    {
+        $merchantId = \Auth::merchant()->user()->id;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = [];
+        $data = null;
+
+        try
+        {
+            // This is just semantics
+            // completely equivalent to all() for now
+            $data = $this->api->webhook->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors = $e->getMessage();
+        }
+
+        return [$errors, $data];
     }
 
     /**

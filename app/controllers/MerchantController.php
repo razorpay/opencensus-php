@@ -172,6 +172,32 @@ class MerchantController extends BaseController
         return $response;
     }
 
+    public function getWebhooks($mode)
+    {
+        list($error, $data) = (new Merchant\Service)->getWebhooks($mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postAddWebhook($mode)
+    {
+        $input = Input::all();
+
+        list($error, $data)  = (new Merchant\Service)->createWebhook($mode, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putEditWebhook($mode, $id)
+    {
+        $input = Input::all();
+
+        list($error, $data)  = (new Merchant\Service)
+            ->editWebhook($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     /**
      * Fetches Merchant Balance
      * @return array array containing both balances

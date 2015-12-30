@@ -122,6 +122,9 @@ var app = angular.module('app', [
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
+    }).state('app.webhooks', {
+      url: '/webhooks',
+      templateUrl: 'tpl/app_webhooks.html'
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/app_profile.html'

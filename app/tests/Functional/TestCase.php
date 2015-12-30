@@ -21,6 +21,8 @@ class TestCase extends ParentTestCase
 
         Artisan::call('migrate');
 
+        Artisan::call('automigrate');
+
         DB::beginTransaction();
     }
 

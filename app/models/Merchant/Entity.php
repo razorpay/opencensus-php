@@ -10,6 +10,8 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
+    use \Conner\Tagging\TaggableTrait;
+
     public $incrementing = false;
 
     protected $table = 'merchants';
@@ -346,5 +348,10 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
                 $user->save();
             }
         }
+    }
+
+    protected function getTagsAttribute()
+    {
+        return $this->tagNames();
     }
 }

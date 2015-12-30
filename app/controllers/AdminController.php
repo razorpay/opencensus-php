@@ -535,6 +535,34 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postTagMerchant($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)
+            ->tagMerchant($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function syncMerchantFeatures($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)
+            ->syncMerchantFeatures($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function getMerchantTags($merchantId)
+    {
+        list($error, $response) = (new Admin\Service)
+            ->getMerchantTags($merchantId);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
     /**
      * Confirm a merchant account manually
      */

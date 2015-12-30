@@ -126,6 +126,7 @@ return array(
         'Trace\TraceServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
+        'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
         'Razorpay\Providers\UuidServiceProvider',
 	),
 
