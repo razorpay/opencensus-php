@@ -7,7 +7,7 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'name'                  => 'required|alpha_space|max:200',
+        'name'                  => 'required|min:4|alpha_space|max:200',
         'email'                 => 'required|email|unique:merchants',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
