@@ -1112,6 +1112,28 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
+    public function deletePricingPlanRule($planId, $ruleId)
+    {
+        $error = array();
+
+        $response = array();
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->pricing
+                ->deleteRule($planId, $ruleId)
+                ->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $response);
+    }
+
     public function createPricingPlan($input)
     {
         $error = array();

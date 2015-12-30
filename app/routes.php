@@ -154,6 +154,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
 
+        Route::delete('/admin/pricing/{$planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
+
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
 
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
