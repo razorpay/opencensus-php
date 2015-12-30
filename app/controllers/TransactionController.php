@@ -26,7 +26,7 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::merchant()->id();
+        $input['merchant_id'] = Auth::user()->user()->getCurrentMerchantId();
 
         $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
@@ -37,7 +37,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::merchant()->id();
+        $merchant_id = Auth::user()->user()->getCurrentMerchantId();
 
         $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
 
@@ -48,7 +48,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::merchant()->id();
+        $merchant_id = Auth::user()->user()->getCurrentMerchantId();
 
         $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
 
@@ -117,6 +117,20 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    public function getGenerateReport($mode, $month, $year)
+    {
+        $this->checkMode($mode);
+
+        list($error, $file) = (new Api\Service)->generateReportForMonth($month, $year, $mode);
+
+        if (empty($error) === false)
+        {
+            return AppResponse::jsonResponse($error);
+        }
+
+        $file->download('xlsx');
+    }
+
     public function postCapturePayment($mode, $id = null)
     {
         $this->checkMode($mode);
@@ -177,13 +191,5 @@ class TransactionController extends BaseController
         list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'settlement');
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    protected function checkMode($mode)
-    {
-        if ($mode !== 'live' and $mode !== 'test')
-        {
-            throw new \Exception('Invalid Mode');
-        }
     }
 }

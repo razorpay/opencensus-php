@@ -58,6 +58,7 @@ app.controller('EntitiesCtrl', [
       'kotak',
       'paytm',
       'mobikwik',
+      'wallet_payzapp',
       'netbanking_hdfc',
       'sharp'
     ];
@@ -137,6 +138,7 @@ app.controller('EntitiesCtrl', [
         receipt_email_enabled: booleanList,
         paytm: booleanList2,
         mobikwik: booleanList2,
+        payzapp: booleanList2,
         card: booleanList2
       },
       netbanking: {
@@ -167,12 +169,14 @@ app.controller('EntitiesCtrl', [
           'all',
           'null',
           0,
-          1
+          1,
+          2,
         ],
         wallet: [
           'all',
           'paytm',
-          'mobikwik'
+          'mobikwik',
+          'payzapp'
         ],
         iin: ['Card IIN'],
         last4: ['Card Last 4']
@@ -180,6 +184,9 @@ app.controller('EntitiesCtrl', [
       paytm: {
         payment_id: ['Payment Id'],
         received: booleanList
+      },
+      pricing: {
+        plan_id: ['Plan Id']
       },
       mobikwik: {
         payment_id: ['Payment Id'],
@@ -363,6 +370,7 @@ app.controller('EntitiesCtrl', [
         var methods = {}, validMethods = [
             'paytm',
             'mobikwik',
+            'payzapp',
             'card'
           ];
         for (var i in validMethods) {

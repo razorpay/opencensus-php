@@ -2,17 +2,6 @@
 
 class PasswordController extends BaseController
 {
-
-	/**
-	 * Display the password reminder view.
-	 *
-	 * @return Response
-	 */
-	public function getRemind()
-	{
-		return View::make('password.remind');
-	}
-
 	/**
 	 * Handle a POST request to remind a user of their password.
 	 *
@@ -20,7 +9,7 @@ class PasswordController extends BaseController
 	 */
 	public function postRemind()
 	{	
-		$response = Password::merchant()->remind(Input::only('email'), function($message){
+		$response = Password::user()->remind(Input::only('email'), function($message){
 			$message->subject('Razorpay - Password Reset Request'); 
 		});
 
@@ -34,7 +23,6 @@ class PasswordController extends BaseController
 		}
 	}
 
-
 	/**
 	 * Handle a POST request to reset a user's password.
 	 *
@@ -46,11 +34,23 @@ class PasswordController extends BaseController
 			'email', 'password', 'password_confirmation', 'token'
 		);
 
-		$response = Password::merchant()->reset($credentials, function($user, $password)
+		$response = Password::user()->reset($credentials, function($user, $password)
 		{
-			$user->password = $password;
+			DB::transaction(function() use ($user, $password)
+			{
+				$user->password = Hash::make($password);
+				$user->save();
 
-			$user->save();
+				if($user->hasMerchants())
+				{
+					$merchant = $user->merchants()->where('email', $user->email)->first();
+					if ($merchant)
+					{
+						$merchant->password = $user->password;
+						$merchant->save();
+					}
+				}
+			});
 		});
 
 		switch ($response)

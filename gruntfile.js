@@ -68,7 +68,8 @@ module.exports = function(grunt){
             'public/js/angular/angular-busy.js',
             'public/js/libs/angular-file-upload.min.js',
             'public/js/libs/angulartics.min.js',
-            'public/js/libs/angulartics-segmentio.min.js'
+            'public/js/libs/angulartics-segmentio.min.js',
+            'public/js/libs/filesaver.min.js'
           ],
 
           'public/js/generated/merchant.js': [

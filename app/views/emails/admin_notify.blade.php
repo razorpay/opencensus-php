@@ -4,19 +4,19 @@
         <meta charset="utf-8">
     </head>
     <body>
-        <h2>New Activation Form submission - {{{$business_name}}}</h2>
+        <h2>New Activation Form submission - {{{$merchant_details['business_name']}}}</h2>
 
         <div>
-            <p>Activation form has been submitted by {{{$business_name}}}</p>
-            <p>The merchant id is {{{$id}}}</p>
+            <p>Activation form has been submitted by {{{$merchant_details['business_name']}}}</p>
+            <p>The merchant id is {{{$merchant_details['merchant_id']}}}</p>
 
-            <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$id.'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
+            <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$merchant_details['merchant_id'].'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
 
-            <p>The DBA for the merchant is: {{{$dba}}}.</p>
+            <p>The DBA for the merchant is: {{{$merchant_details['business_dba']}}}.</p>
 
-            <p>Contact name for merchant is: {{{$name}}}</p>
+            <p>Contact name for merchant is: {{{$merchant_details['business_name']}}}</p>
 
-            <p>The website link for the business is: <a href="{{$website}}" title="{{{$dba}}}">{{{$dba}}}</a>.
+            <p>The website link for the business is: <a href="{{$merchant_details['business_website']}}" title="{{{$merchant_details['business_dba']}}}">{{{$merchant_details['business_dba']}}}</a>.
 
         </div>
 

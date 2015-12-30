@@ -12,7 +12,7 @@
 */
 
 
-Route::get('/', 'MerchantController@getIndex');
+Route::get('/', 'UserController@getIndex');
 
 Route::get('/admin', 'AdminController@getIndex');
 
@@ -20,13 +20,13 @@ Route::options('/contact', 'MerchantController@optionsContact');
 
 Route::post('/contact', 'MerchantController@postContact');
 
-Route::group(array('before' => 'auth.merchant'), function()
+Route::group(array('before' => 'auth.user'), function()
 {
     Route::get('/user', 'MerchantController@getMerchant');
 
-    Route::get('/user/keepalive', 'MerchantController@getKeepAlive');
+    Route::get('/user/keepalive', 'UserController@getKeepAlive');
 
-    Route::get('/user/logout', 'MerchantController@getLogout');
+    Route::get('/user/logout', 'UserController@getLogout');
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
@@ -62,9 +62,11 @@ Route::group(array('before' => 'auth.merchant'), function()
 
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
 
+    Route::get('/{mode}/balance', 'MerchantController@getBalance');
+
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::post('/password', 'MerchantController@postPassword');
+        Route::post('/password', 'UserController@postPassword');
 
         Route::post('/activation', 'MerchantController@postActivation');
 
@@ -85,16 +87,19 @@ Route::group(array('before' => 'auth.merchant'), function()
         Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
 
         Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
+
+        Route::get('/{mode}/generatereport/{month}/{year}', 'TransactionController@getGenerateReport');
+
     });
 });
 
-Route::group(array('before' => 'guest.merchant'), function()
+Route::group(array('before' => 'guest.user'), function()
 {
     Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
 
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::post('/user/signin', 'MerchantController@postSignin');
+        Route::post('/user/signin', 'UserController@postSignin');
 
         Route::post('/user/register', 'MerchantController@postRegister');
 
@@ -163,6 +168,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
 
+        Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
+
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
 
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
@@ -179,15 +186,13 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
 
-        Route::get('/admin/merchant/{id}/methods/{method}/enable', 'AdminController@getMerchantMethodEnable');
-
-        Route::get('/admin/merchant/{id}/methods/{method}/disable', 'AdminController@getMerchantMethodDisable');
+        Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
 
         Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
 
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
 
-        Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
+        Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
 
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
 
@@ -233,9 +238,13 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/users/{id}/superadmin', array('before'=>'csrf', 'uses'=> 'AdminController@postPromoteAdmin'));
 
+        Route::put('/admin/merchants/{id}/confirmed', array('before'=>'csrf', 'uses'=> 'AdminController@postConfirmMerchant'));
+
         Route::delete('/admin/users/{id}', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+
+        Route::put('/admin/merchant/{id}/bankdetails', 'AdminController@putEditBankDetails');
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');

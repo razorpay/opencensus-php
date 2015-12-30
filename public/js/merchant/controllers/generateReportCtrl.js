@@ -1,0 +1,49 @@
+//Add Funds Controller
+app.controller('GenerateReportCtrl', [
+  '$scope',
+  '$http',
+  'alertsFactory',
+  'user',
+  'uiLoad',
+  'transformRequestAsFormPost',
+  function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
+    $scope.alerts = alertsFactory.getHandler();
+    var date = new Date();
+    $scope.report = {
+      month: date.getMonth() == 0 ? 12 : date.getMonth(),
+      year: date.getMonth() == 0 ? date.getFullYear() - 1 : date.getFullYear()  
+    };
+
+    $scope.generateReport = function () {
+      
+      var request = $http({
+        method: 'GET',
+        responseType: 'arraybuffer',
+        url: '/' + $scope.mode + '/generatereport/' + $scope.report.month + '/' + $scope.report.year,
+        transformRequest: transformRequestAsFormPost,
+        data: $scope.report,
+        headers: {
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      });
+      
+      request.success(function (data) {
+        if (data) {
+          $scope.alerts.addAlert('success', 'Your report will download shortly', true);
+          var blob = new Blob([data], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          });
+          saveAs(blob, 'transaction_report.xlsx');
+        } 
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+  }
+]);

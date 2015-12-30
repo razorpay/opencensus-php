@@ -39,9 +39,9 @@
         <tbody>
           <tr ng-repeat="row in entity.items">
             <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
-            <td>{{row.amount/100 | currency:"INR "}}</td>
+            <td>{{row.amount/100 | rupee:"INR "}}</td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>
-            <td>{{row.fees/100 | currency:"INR" }}</td>
+            <td>{{row.fees/100 | rupee:"INR" }}</td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">

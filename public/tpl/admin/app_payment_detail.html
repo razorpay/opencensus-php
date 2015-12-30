@@ -22,7 +22,7 @@
             Merchant Id
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount/100 | rupee}}</span>
             Amount
           </a>
           <a href class="list-group-item">
@@ -60,11 +60,11 @@
             Status
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount_authorized/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount_authorized/100 | rupee}}</span>
             Amount Authorized
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
+            <span class="pull-right">{{entity.amount_refunded/100 | rupee}}</span>
             Amount Refunded
           </a>
           <a href class="list-group-item">
@@ -183,7 +183,7 @@
           <div collapse="isRefundsCollapsed" class="panel-body">
             <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.entitiesdetail({id:refund.id, mode:mode, type: 'refund'})">
               <span class="pull-right">{{refund.created_at*1000 | date:'medium'}}</span>
-              {{refund.amount/100 | currency:refund.currency + " "}}
+              {{refund.amount/100 | rupee}}
               <code>{{refund.id}}</code>
             </a>
           </div>

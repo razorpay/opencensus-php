@@ -19,7 +19,8 @@
         "schuppo/password-strength": "~0.7",
         "league/csv": "7.1.2",
         "rtconner/laravel-tagging": "~0.5",
-        "marlek/laravel-automigrate": "dev-master"
+        "marlek/laravel-automigrate": "dev-master",
+        "ircmaxell/random-lib": "^1.1"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
@@ -45,7 +46,10 @@
             "app/rzp",
             "app/exception",
             "app/trace"
-        ]
+        ],
+        "psr-4":{
+            "Razorpay\\":"Razorpay"
+        }
     },
     "scripts": {
         "post-install-cmd": [

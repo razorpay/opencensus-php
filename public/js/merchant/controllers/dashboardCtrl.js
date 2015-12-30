@@ -13,6 +13,8 @@ app.controller('DashboardAggregationsCtrl', [
       settlements: 0,
       amount: 0
     };
+    $scope.balance = 0;
+
     var request = $http.get('/' + $scope.mode + '/analytics/aggregations');
     request.success(function (result) {
       if (result.data) {
@@ -24,6 +26,18 @@ app.controller('DashboardAggregationsCtrl', [
         $scope.aggregations.data.settlements = result.data.settlement ? result.data.settlement.txn_count : 0;
       }
     });
+
+    var fetchBalance = function() {
+      var request = $http.get('/' + $scope.mode + '/balance');
+      request.success(function (result) {
+        if(result.success) {
+          $scope.balance = result.data;
+        }
+      });
+    }
+
+    fetchBalance();
+
   }
 ])  //Payment methods aggregations
 .controller('DashboardPaymentAggregationsCtrl', [

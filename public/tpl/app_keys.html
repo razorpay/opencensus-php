@@ -30,13 +30,13 @@
             <td>
               <span ng-show="key.expired_at">None</span>
               <span ng-hide="key.expired_at">
-                <a href tooltip="Roll Key" class="roll_key" ng-click="openRollKey(key.id)"><i class="icon icon-refresh"></i></a>
+                <button
+                  tooltip="Regenerate API Key" ng-click="openRollKey(key.id)"
+                  class="btn btn-primary roll_key"
+                >
+                  Regenerate {{mode | titlecase}} Key
+                </button>
               </span>
-            </td>
-          </tr>
-          <tr ng-show="keys.count === 0">
-            <td colspan="4" class="text-center">
-              <a href id="generateKey" ng-click="generateKey()">Generate new {{mode | titlecase}} key</a>
             </td>
           </tr>
 
@@ -46,6 +46,21 @@
     <footer class="panel-footer">
       <div class="text-center m-t m-b">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 hidden-xs">
+        </div>
+        <div class="col-sm-4 text-center">
+          <button
+            id="generateKey" ng-click="generateKey()"
+            ng-show="keys.count === 0"
+            class="btn btn-primary"
+          >
+            Generate {{mode | titlecase}} Key
+          </button>
+        </div>
+        <div class="col-sm-4 text-right text-center-xs">
+        </div>
       </div>
       <div class="row">
         <div class="col-sm-4 hidden-xs">
