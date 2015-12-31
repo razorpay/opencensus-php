@@ -345,7 +345,7 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $data = $this->api->admin->fetchEntityById('merchant', $id)->toArray();
+        $data = $this->api->merchant->fetch($id)->toArray();
 
         $data['merchant_details'] = $merchant_details->toArray();
 
