@@ -474,6 +474,11 @@ app.controller('MerchantDetailCtrl', [
     };
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
+      // Switch the default plan to Promotional Pricing
+      if (currentPlan === '') {
+        currentPlan = '1In3Yh5Mluj605';
+      };
+
       var modalInstance = $modal.open({
         templateUrl: 'assignPricingModalContent.html',
         controller: 'assignPricingModalCtrl',
@@ -533,7 +538,7 @@ app.controller('MerchantDetailCtrl', [
         controller: 'editMerchantWalletsCtrl',
         resolve: {
           methods: function () {
-            return $scope.merchant.details.methods;
+            return $scope.merchant.details.methods || {};
           }
         }
       });
@@ -747,7 +752,11 @@ app.controller('MerchantDetailCtrl', [
     wallets.map(function (key) {
       // Assign a default of false and override if we have it
       $scope.methods[key] = false;
-      $scope.methods[key] = methods[key];
+
+      if (methods.hasOwnProperty(key)) {
+        $scope.methods[key] = methods[key];
+      };
+
     })
 
     $scope.ok = function () {
