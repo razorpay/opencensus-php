@@ -95,21 +95,21 @@ app.controller('MerchantDetailCtrl', [
       });
     }
 
-    $scope.featureMerchant = function(beta_features) {
+    $scope.featureMerchant = function(features) {
       // Tags will be a csv field
       var request = $http({
         url: '/admin/merchant/' + $scope.merchant.id + '/features',
         method: 'POST',
         transformRequest: transformRequestAsFormPost,
         data: {
-          beta_features: beta_features
+          features: features
         }
       });
 
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Features has been added successfully.', true);
-          $scope.merchant.details.beta_features = data.data.beta_features;
+          $scope.merchant.details.features = data.data.features;
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -509,18 +509,18 @@ app.controller('MerchantDetailCtrl', [
       }, $.noop);
     };
     $scope.openFeatureMerchant = function () {
-      var beta_features = $scope.merchant.details.beta_features || [];
+      var features = $scope.merchant.details.features || [];
       var modalInstance = $modal.open({
         templateUrl: 'featureModalContent.html',
         controller: 'featureModalCtrl',
         resolve: {
           current: function () {
-            return beta_features;
+            return features;
           }
         }
       });
-      modalInstance.result.then(function (beta_features) {
-        $scope.featureMerchant(beta_features);
+      modalInstance.result.then(function (features) {
+        $scope.featureMerchant(features);
       }, $.noop);
     };
     $scope.openAssignTerminal = function () {
@@ -917,9 +917,9 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   function ($scope, $modalInstance, current) {
-    $scope.beta_features = current.join();
-    $scope.ok = function (beta_features) {
-      $modalInstance.close(beta_features);
+    $scope.features = current.join();
+    $scope.ok = function (features) {
+      $modalInstance.close(features);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

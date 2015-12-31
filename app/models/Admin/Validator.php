@@ -29,7 +29,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $addFeaturesRules = [
-        'beta_features'    =>    'required|max:255',
+        'features'    =>    'required|max:255',
     ];
 
     protected static $addTagsValidators = [
@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         'password'                  => 'required|between:6,50|confirmed',
         'password_confirmation'     => 'required|between:6,50'
     );
-    
+
     protected static $changeBankDetailsRules = array(
         'bank_name'             => 'required|alpha_space|max:255',
         'bank_account_number'   => 'required|numeric|digits_between:1,20',

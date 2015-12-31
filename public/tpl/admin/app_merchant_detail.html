@@ -149,8 +149,8 @@
           <span class="pull-right">{{merchant.details.tags.join()}}</span>
           Tags
         </a>
-        <a class="list-group-item" ng-show="merchant.details.beta_features.length > 0 " ng-click="openFeatureMerchant()">
-          <span class="pull-right">{{merchant.details.beta_features.join()}}</span>
+        <a class="list-group-item" ng-show="merchant.details.features.length > 0 " ng-click="openFeatureMerchant()">
+          <span class="pull-right">{{merchant.details.features.join()}}</span>
           Features
         </a>
         <a href class="list-group-item">
@@ -922,7 +922,7 @@
         <label class="col-lg-4 control-label">Features:</label>
         <div class="col-lg-6">
           <input type="text" class="form-control m-b"
-            ng-model="beta_features" name="merchant-features"
+            ng-model="features" name="merchant-features"
           >
         </div>
       </div>
@@ -930,7 +930,7 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(beta_features)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(features)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">

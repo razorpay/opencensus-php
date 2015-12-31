@@ -1570,7 +1570,7 @@ class Service extends Base\Service
 
         try
         {
-            $params = array('beta_features' => $input['beta_features']);
+            $params = array('features' => $input['features']);
 
             $response = $this->api->merchant->fetch($merchantId)->setFeatures($params)->toArray();
 
@@ -1585,7 +1585,7 @@ class Service extends Base\Service
         {
             $merchant = Merchant\Entity::findOrFail($merchantId);
             $merchant->retag(array_merge($features,$merchant->tags));
-            $merchant['beta_features'] = $features;
+            $merchant['features'] = $features;
             return [null, $merchant->toArray()];
         }
 
