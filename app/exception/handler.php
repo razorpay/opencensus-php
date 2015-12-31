@@ -53,7 +53,6 @@ class Handler
             }
             else
             {
-                throw $exception;
                 sd($exception);
             }
         }
@@ -63,7 +62,7 @@ class Handler
     {
         $traceData = $this->getExceptionDetails($exception);
 
-        $this->app['trace']->critical(
+        Trace::critical(
            Trace\TraceCode::ERROR_EXCEPTION,
            $traceData);
     }
