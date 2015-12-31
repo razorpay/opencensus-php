@@ -188,6 +188,13 @@ class PaymentController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
+    {
+        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
+
+        return ApiResponse::json($data);
+    }
+
     public function postDummyReturnCallback()
     {
         $input = Input::all();

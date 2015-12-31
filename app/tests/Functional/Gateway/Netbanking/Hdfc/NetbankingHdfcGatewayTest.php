@@ -86,9 +86,8 @@ class NetbankingHdfcGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $id = substr($refund['id'], 5);
             $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
-            $this->fixtures->edit('refund', $id, ['created_at' => $createdAt]);
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();

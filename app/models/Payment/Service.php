@@ -337,6 +337,83 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
+    public function verifyPaymentsWithFailedVerifyResult()
+    {
+        $payments = (new Payment\Repository)->getPaymentsWithVerifyResultFailed();
+
+        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
+        $time = time();
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->merchant = $payment->merchant;
+
+                $res = $this->processor()->verify($payment);
+
+                $verified++;
+            }
+            catch (Exception\PaymentVerificationException $e)
+            {
+                $failed++;
+
+                // Attempt to authorize payments whose verification failed
+                $this->processor()->authorizeFailedPayment($payment);
+
+                $authorized++;
+
+                // Now Just continue
+            }
+            catch (Exception\GatewayTimeoutException $e)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    ['payment_id' => $payment->getId()]);
+
+                // Just continue
+                $timedOut++;
+            }
+            catch (\Exception $e)
+            {
+                // @note: If payment verification fails due to any reason
+                // other than expected ones, we should log it as an error
+                // exception.
+                //
+                // If for eg, exception is BadRequestException, then it won't
+                // get logged by global handler because it's not a critical
+                // exception but in this context it really shouldn't have
+                // occurred.
+
+                $this->app['exception.handler']->traceException($e);
+
+                // Just continue
+                $error++;
+            }
+        }
+
+        $time = time() - $time;
+
+        $results = array(
+            'verified'      => $verified,
+            'failed'        => $failed,
+            'authorized'    => $authorized,
+            'timed out'     => $timedOut,
+            'error'         => $error,
+            'total time'    => $time . ' secs');
+
+        $message = 'Payment verify result';
+
+        $total = $timedOut + $verified + $failed + $authorized + $error;
+
+        if ($total !== 0)
+        {
+            $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        }
+
+        return $results;
+    }
+
     public function verifyAllPayments()
     {
         $ts = time() - 30 * 60;
@@ -406,7 +483,12 @@ class Service extends Base\Service
 
         $message = 'Payment verify result';
 
-        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        $total = $timedOut + $verified + $failed + $authorized + $error;
+
+        if ($total !== 0)
+        {
+            $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+        }
 
         return $results;
     }
@@ -532,6 +614,7 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
+        s(ini_get('max_execution_time'));
         $repo = new Payment\Repository;
         $payments = $repo->getNonTaxComputedPayments();
 

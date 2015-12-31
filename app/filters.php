@@ -73,6 +73,11 @@ Route::filter('auth.public_callback', function()
     return BasicAuth::directAuth();
 });
 
+Route::filter('route.feature', function()
+{
+    return BasicAuth::feature();
+});
+
 /*
 |--------------------------------------------------------------------------
 | CSRF Protection Filter

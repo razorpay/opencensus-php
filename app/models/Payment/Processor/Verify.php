@@ -5,6 +5,7 @@ namespace Models\Payment\Processor;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Payment;
+use Models\Payment\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
 use Services\SlackPoster;
@@ -30,7 +31,7 @@ trait Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $payment->setVerified(false);
+            $payment->setVerified(VerifyResult::FAILED);
 
             $this->repo->saveOrFail($payment);
 
@@ -44,8 +45,16 @@ trait Verify
 
             throw $e;
         }
+        catch (\Exception $e)
+        {
+            $payment->setVerified(VerifyResult::ERROR);
 
-        $payment->setVerified(true);
+            $this->repo->saveOrFail($payment);
+
+            throw $e;
+        }
+
+        $payment->setVerified(VerifyResult::SUCCESS);
 
         $data['payment'] = $payment->toArrayAdmin();
 

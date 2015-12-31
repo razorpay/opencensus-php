@@ -43,6 +43,11 @@ class Base
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
     );
 
+    protected static $liveAndTest = array(
+        'merchant',
+        'pricing',
+        'methods');
+
     public function create(array $attributes = array())
     {
         $entity = snake_case(explode('\\', get_class($this))[4]);
@@ -71,9 +76,9 @@ class Base
 
     public function editEntity($entity, $id, array $attributes = array())
     {
-        if (($entity === 'merchant') or
-            ($entity === 'pricing') or
-            ($entity === 'methods'))
+        $this->stripSign($id);
+
+        if (in_array($entity, self::$liveAndTest))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
@@ -174,12 +179,23 @@ class Base
 
         return $db->transaction($callable);
     }
+
     protected function callInTransaction($callable, $args)
     {
         return $this->db->transaction(function ()
         {
             return call_user_func($callable);
         });
+    }
+
+    protected function stripSign(& $id)
+    {
+        $ix = strpos($id, '_');
+
+        if ($ix !== false)
+        {
+            $id = substr($id, $ix + 1);
+        }
     }
 
     protected function eloquentUnguard()

@@ -19,39 +19,13 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'axis_migs';
 
+    protected $authorize = false;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        $attributes = array(
-            'vpc_Command'               => Command::PAY,
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => $input['payment']['currency'],
-            'vpc_MerchTxnRef'           => $input['payment']['id'],
-        );
-
-        $this->createGatewayPaymentEntity($attributes);
-
-        $content = array(
-            'vpc_Version'           => '1',
-            'vpc_ReturnURL'         => $input['callbackUrl'],
-            'vpc_Locale'            => 'en',
-            'vpc_gateway'           => 'ssl',
-            'vpc_Card'              => $input['card']['network'],
-            'vpc_CardNum'           => $input['card']['number'],
-            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
-            'vpc_CardSecurityCode'  => $input['card']['cvv'],
-//            'vpc_OrderInfo'             => 'testinfo',
-        );
-
-        $content = array_merge($attributes, $content);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $this->addTestCardDetailsInTestMode($content);
-        }
-
-        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+        $content = $this->getPaymentAuthorizeRequestContent($input);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
@@ -63,6 +37,16 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
+
+            // Payment fails since vpc_MerchTxnRef not set, throw exception
+            throw new Exception\GatewayErrorException(
+                        Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
 
         $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
@@ -80,8 +64,53 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        return;
+        if ($this->authorize === true)
+        {
+            return $this->captureAuthorizedPayment($input);
+        }
+    }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentRefundRequestContent($input, $payment);
+
+        $toSaveContent = $content;
+        $toSaveContent['refund_id'] = $input['refund']['id'];
+
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
+
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $content['received'] = 1;
+        $refund->fill($content);
+        $refund->saveOrFail();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
+
+        $this->verifyAmaTransactionResponse($content, $input);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function captureAuthorizedPayment(array $input)
+    {
         $payment = $this->getRepo()->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
@@ -111,38 +140,6 @@ class Gateway extends Base\Gateway
         $payment->fill($content)->saveOrFail();
 
         $this->verifyAmaTransactionResponse($content, $input);
-    }
-
-    public function refund(array $input)
-    {
-        parent::refund($input);
-
-        $payment = $this->getRepo()->findByPaymentIdAndCommand(
-                                $input['payment']['id'], Command::PAY);
-
-        $content = $this->getPaymentRefundRequestContent($input, $payment);
-
-        $toSaveContent = $content;
-        $toSaveContent['refund_id'] = $input['refund']['id'];
-
-        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
-
-        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
-
-        $content['received'] = 1;
-        $refund->fill($content);
-        $refund->saveOrFail();
-
-        $this->verifyAmaTransactionResponse($content, $input);
-    }
-
-    public function verify(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Base\Verify($this->gateway, $input);
-
-        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -277,6 +274,43 @@ class Gateway extends Base\Gateway
     protected function parseQueryResponse($response)
     {
         parse_str($response->body, $content);
+
+        return $content;
+    }
+
+    protected function getPaymentAuthorizeRequestContent($input)
+    {
+        $attributes = array(
+            'vpc_Command'               => Command::PAY,
+            'vpc_Amount'                => $input['payment']['amount'],
+            'vpc_Currency'              => $input['payment']['currency'],
+            'vpc_MerchTxnRef'           => $input['payment']['id'],
+        );
+
+        $this->createGatewayPaymentEntity($attributes);
+
+        $network = ucfirst(strtolower($input['card']['network']));
+
+        $content = array(
+            'vpc_Version'           => '1',
+            'vpc_ReturnURL'         => $input['callbackUrl'],
+            'vpc_Locale'            => 'en',
+            'vpc_gateway'           => 'ssl',
+            'vpc_Card'              => $network,
+            'vpc_CardNum'           => $input['card']['number'],
+            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
+            'vpc_CardSecurityCode'  => $input['card']['cvv'],
+//            'vpc_OrderInfo'             => 'testinfo',
+        );
+
+        $content = array_merge($attributes, $content);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTestCardDetailsInTestMode($content);
+        }
+
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
         return $content;
     }
@@ -503,13 +537,6 @@ class Gateway extends Base\Gateway
     protected function verifyAmaTransactionResponse($content, $input)
     {
         $txnResponseCode = null;
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REFUND,
-            ['content' => $content,
-            'action' => $this->action,
-            'payment' => $input['payment'],
-            'refund' => $input['refund']]);
 
         if (isset($content['vpc_TxnResponseCode']))
         {

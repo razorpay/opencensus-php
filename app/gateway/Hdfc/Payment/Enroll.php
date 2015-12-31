@@ -47,6 +47,13 @@ trait Enroll
             TraceCode::GATEWAY_ENROLL_REQUEST,
             $this->enrollRequest);
 
+        $network = $input['card']['network_code'];
+        // Only required in case of Rupay
+        if ($network === Card\Network::RUPAY)
+        {
+            $this->enrollRequest['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
         //
         // Send enroll request and receive response.
         // This function also checks for and sets
@@ -140,20 +147,29 @@ trait Enroll
 
         $network = $input['card']['network_code'];
 
-        if ($network === Card\Network::MAES)
+        $data['action'] = Action::AUTHORIZE;
+
+        if (in_array($network, $this->purchase))
         {
             $data['action'] = Action::PURCHASE;
         }
-        else
+
+        $url = $input['callbackUrl'];
+
+        if ($this->env === 'dev')
         {
-            $data['action'] = Action::AUTHORIZE;
+            $parts = parse_url($url);
+            // $parts['host'] = 'https://dev.razorpay.com';
+            // $url = $parts['host'] . $parts['path'];
+            $parts['host'] = 'rzp.ngrok.com';
+            $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
         }
 
         // Only required in case of Rupay. Weird! But ... !
         if ($network === Card\Network::RUPAY)
         {
-            $data['merchantResponseUrl'] = $input['callbackUrl'];
-            $data['merchantErrorUrl'] = $input['callbackUrl'];
+            $data['merchantResponseUrl'] = $url;
+            $data['merchantErrorUrl'] = $url;
         }
     }
 

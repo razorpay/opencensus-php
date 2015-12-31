@@ -97,6 +97,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];

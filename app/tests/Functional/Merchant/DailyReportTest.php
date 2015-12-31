@@ -28,11 +28,8 @@ class DailyReportTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $id = substr($setl['id'], 5, 14);
-        $setl = (new \Models\Settlement\Repository)->findOrFail($id);
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
-        $setl['created_at'] = $createdAt + 100;
-        $setl->saveOrFail();
+        $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
 
         \Mail::shouldReceive('send')
               ->once()

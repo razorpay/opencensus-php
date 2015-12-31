@@ -55,11 +55,13 @@ class TraceCode
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
     const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
+    const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
     const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
+    const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
     const GATEWAY_REQUESTY_TIMEOUT                  = 'GATEWAY_REQUESTY_TIMEOUT';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
@@ -101,6 +103,8 @@ class TraceCode
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
+
+    const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

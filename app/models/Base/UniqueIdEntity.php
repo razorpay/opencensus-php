@@ -208,6 +208,18 @@ class UniqueIdEntity extends Entity
         // Get current nanotime from 1st Jan 1970
         $nanotime = self::getNanotimeInteger();
 
+        return self::generateUniqueIdFromNanoTime($nanotime);
+    }
+
+    public static function generateUniqueIdFromTimestamp($timestamp)
+    {
+        $nanotime = $timestamp * 1000 * 1000 * 1000;
+
+        return self::generateUniqueIdFromNanoTime($nanotime);
+    }
+
+    public static function generateUniqueIdFromNanoTime($nanotime)
+    {
         $b62 = self::nanotimeToBase62($nanotime);
 
         // Generate 3 random bytes, convert to hex and then to dec
@@ -248,6 +260,19 @@ class UniqueIdEntity extends Entity
         } while ($num);
 
         return $res;
+    }
+
+    protected static function uidToInteger($uid)
+    {
+        $nanotime = substr($uid, 0, 10);
+
+        $nanotimeInt = self::base10($nanotime);
+
+        $randInt = self::base10(substr($uid, 10));
+
+        $str = $nanotimeInt . $randInt;
+
+        return $str;
     }
 
     public static function uidToTimestamp($uid)

@@ -121,7 +121,7 @@ class Merchant extends Base
         $this->fixtures->create('methods', $attributes);
     }
 
-    public function activate($id)
+    public function activate($id = '10000000000000')
     {
         return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
@@ -129,6 +129,11 @@ class Merchant extends Base
     public function holdFunds($id, $hold = true)
     {
         return $this->edit($id, ['hold_funds' => $hold]);
+    }
+
+    public function enableWallet($id = '10000000000000', $wallet)
+    {
+        return $this->fixtures->edit('methods', $id, [$wallet => true]);
     }
 
     public function enablePaytm($id = '10000000000000')

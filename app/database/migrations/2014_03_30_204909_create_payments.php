@@ -96,7 +96,7 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::SIGNED)
                   ->default(0);
 
-            $table->boolean(Payment::VERIFIED)
+            $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
 
             $table->text(Payment::CALLBACK_URL)

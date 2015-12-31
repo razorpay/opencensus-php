@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
+    const FEATURES                  = 'features';
 
     /**
      * Refers to methods relation and not a property;
@@ -45,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::FEATURES,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -81,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
+        self::FEATURES         => null,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -114,6 +117,11 @@ class Entity extends Base\PublicEntity
             '8299');
 
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
+    }
+
+    public function isFeatureEnabled()
+    {
+        return !is_null($this->getAttribute(self::FEATURES));
     }
 
     public function activate()
@@ -186,6 +194,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
+    public function getBillingLabelElseName()
+    {
+        $label = $this->getBillingLabel();
+
+        if (empty($label))
+        {
+            $label = $this->getName();
+        }
+
+        return $label;
+    }
+
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
@@ -221,6 +241,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::HOLD_FUNDS];
     }
 
+    public function getCategoryAttribute()
+    {
+        return (int) $this->attributes[self::CATEGORY];
+    }
+
     public function getSettlementScheduleAttribute()
     {
         return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
@@ -241,6 +266,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::EMAIL];
     }
 
+    public function getName()
+    {
+        return $this->attributes[self::NAME];
+    }
+
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
@@ -255,6 +285,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
     }
 
+    public function getFeatures()
+    {
+        return $this->getAttribute(self::FEATURES);
+    }
+
     public function getTransactionReportEmailAttribute()
     {
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
@@ -263,12 +298,31 @@ class Entity extends Base\PublicEntity
         return array_map('trim', $emails);
     }
 
+    public function getFeaturesAttribute()
+    {
+        $features = explode(',', $this->attributes[self::FEATURES]);
+        return array_map('trim', $features);
+    }
+
+    public function setFeaturesAttribute($features)
+    {
+        if (is_array($features))
+        {
+            $this->attributes[self::FEATURES] =
+                implode(',', $features);
+        }
+        else
+        {
+            $this->attributes[self::FEATURES] = $features;
+        }
+    }
+
     public function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails))
         {
             $this->attributes[self::TRANSACTION_REPORT_EMAIL] =
-                implode(',', $emails);
+                strtolower(implode(',', $emails));
         }
         else
         {

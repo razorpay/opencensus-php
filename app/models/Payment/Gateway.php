@@ -5,9 +5,11 @@ namespace Models\Payment;
 use EE\Exception;
 use Models\Card\Network;
 use Models\Settlement;
+use Models\Payment\Processor\Wallet;
 
 class Gateway
 {
+    const AMEX              = 'amex';
     const ATOM              = 'atom';
     const AXIS_GENIUS       = 'axis_genius';
     const AXIS_MIGS         = 'axis_migs';
@@ -16,10 +18,14 @@ class Gateway
     const KOTAK             = 'kotak';
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
-    const NETBANKING_HDFC   = 'netbanking_hdfc';
+    const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';
+    const NETBANKING_HDFC   = 'netbanking_hdfc';
+    const NETBANKING_KOTAK  = 'netbanking_kotak';
+    const WALLET_PAYZAPP    = 'wallet_payzapp';
 
     public static $channels = array(
+        self::AMEX              => Settlement\Channel::KOTAK,
         self::ATOM              => Settlement\Channel::ATOM,
         self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
         self::AXIS_MIGS         => Settlement\Channel::KOTAK,
@@ -28,8 +34,11 @@ class Gateway
         self::KOTAK             => Settlement\Channel::KOTAK,
         self::MOBIKWIK          => Settlement\Channel::KOTAK,
         self::PAYTM             => Settlement\Channel::KOTAK,
-        self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
+        self::SBIEPAY           => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
+        self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
+        self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
+        self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
     );
 
     public static $methodMap = array(
@@ -40,22 +49,27 @@ class Gateway
             self::AXIS_GENIUS,
             self::KOTAK,
             self::PAYTM,
+            self::AMEX,
         ),
 
         Method::NETBANKING => array(
             self::PAYTM,
             self::BILLDESK,
             self::NETBANKING_HDFC,
+            self::NETBANKING_KOTAK,
+            self::SBIEPAY
         ),
 
         Method::WALLET => array(
             self::MOBIKWIK,
             self::PAYTM,
+            self::WALLET_PAYZAPP,
         ),
     );
 
     public static $authAndCapture = array(
-        self::HDFC
+        self::HDFC,
+        self::AMEX,
     );
 
     public static $cardNetworkMap = array(
@@ -64,7 +78,8 @@ class Gateway
             Network::VISA,
             Network::MAES,
             Network::DICL,
-            Network::RUPAY),
+            Network::RUPAY,
+            Network::UNKNOWN),
         self::AXIS_MIGS => array(
             Network::MC,
             Network::VISA),
@@ -76,6 +91,14 @@ class Gateway
             Network::VISA),
         self::KOTAK => array(
             Network::RUPAY),
+        self::AMEX => array(
+            Network::AMEX),
+    );
+
+    public static $walletToGatewayMap = array(
+        Wallet::PAYTM       => Gateway::PAYTM,
+        Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
+        Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
     );
 
     public static $verifyEnabled = array(
@@ -93,6 +116,16 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__.'::'.strtoupper($gateway)));
+    }
+
+    public static function getWalletGateways()
+    {
+        return self::$method[Method::WALLET];
+    }
+
+    public static function getGatewayForWallet($wallet)
+    {
+        return self::$walletToGatewayMap[$wallet];
     }
 
     public static function validateGateway($gateway)

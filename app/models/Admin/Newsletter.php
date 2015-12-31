@@ -17,7 +17,11 @@ class Newsletter
 {
     protected $email;
 
-    function __construct($recipient, $subject = "Razorpay Newsletter", $msg, $test = false)
+    function __construct($recipient,
+        $subject = "Razorpay Newsletter",
+        $msg,
+        $template = 'newsletter',
+        $test = false)
     {
         $this->config = Config::get('applications.mailgun');
 
@@ -33,6 +37,7 @@ class Newsletter
         }
 
         $this->data = $this->setupData($subject, $msg);
+        $this->template = $template;
     }
 
     protected function setupData($subject, $msg)
@@ -60,8 +65,8 @@ class Newsletter
                 break;
 
             case 'live':
-                $merchants = $repo->fetch([Merchant\Entity::LIVE => 1])
-                    ->toArray();
+                $merchants = $repo->fetchAllLiveMerchants()
+                    ->select(['email', 'name'])->get();
                 break;
 
             case 'recent':
@@ -131,20 +136,13 @@ class Newsletter
      */
     protected function createNewListOnMailgun()
     {
-        $timestamp = Carbon::now("Asia/Kolkata")->format('Y_m_d_H_i');
-        $listAddress = $timestamp.'@'.$this->config['url'];
-
-        $this->getMailgunInstance()->post('lists', [
-            'address'       => $listAddress,
-            'description'   => $this->data['subject'],
-            'name'          => "Newsletter at $timestamp"
-        ]);
+        $listAddress = 'newsletter@'.$this->config['url'];
 
         return $listAddress;
     }
 
     /**
-     * Creates a new mailing list for the given filters
+     * Uploads additional merchants to the mailing list
      * @param  string $lists list of applied filters in csv
      * @return null
      */
@@ -175,11 +173,13 @@ class Newsletter
 
     public function send()
     {
-        // No need to do anything if we are mocking
-        // if($this->config['mock'] === true)
-        // {
-        //     return ['Email is mocked'];
-        // }
+        //No need to do anything if we are mocking
+        if($this->config['mock'] === true)
+        {
+            return [
+                'email' =>  'nobody, mocked'
+            ];
+        }
 
         $data = $this->data;
         $config = $this->config;
@@ -195,9 +195,12 @@ class Newsletter
 
     public function sendEmail()
     {
-        $view = ['html' => 'emails.merchant.newsletter'];
+        $view = 'emails.merchant.' . $this->template;
+        $view = ['html' => $view];
+
         $config = $this->config;
         $data   = $this->data;
+
         $data['email'] = $this->email;
 
         Mail::send($view, $this->data, function($message) use ($config, $data)

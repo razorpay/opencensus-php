@@ -120,18 +120,48 @@ class GatewayManager extends \Illuminate\Support\Manager
         $server = $this->getGatewayNamespace($driver, true) . '\\Server';
 
         if ($driver === 'sharp')
+        {
             $server = 'Gateway\Sharp\Server';
+        }
 
         return $server;
     }
 
-    public function setServer($driver, Mock\Server $server)
+    /**
+     * During tests, if we want to set a mock server to manipulate gateway
+     * server function results, then use this function to set the mock
+     * object as the corresponding server instead of the default one.
+     *
+     * @param   $driver
+     * @param   $server Mocked server object
+     * @return  $server Mocked server object
+     */
+    public function setServer($driver, Mock\Server $server = null)
     {
         $this->servers[$driver] = $server;
 
         $server->setNamespace($this->getGatewayNamespace($driver, true));
 
         return $server;
+    }
+
+    /**
+     * Resets the mocked server for this driver to the default
+     * mock server availbale.
+     * @param  string $driver [description]
+     */
+    public function resetServer($driver)
+    {
+        $class = $this->getServerClass($driver);
+
+        $this->servers[$driver] = new $class;
+    }
+
+    public function resetDriver($driver)
+    {
+        $mock = $this->isMock($driver);
+
+        $this->drivers[$driver] = $this->createGatewayDriver($driver, $mock);
     }
 
     protected function getMockDrivers()
@@ -171,5 +201,12 @@ class GatewayManager extends \Illuminate\Support\Manager
             $namespace = $namespace .= '\\' . 'Mock';
 
         return $namespace;
+    }
+
+    protected function loadGatewayConfig($driver)
+    {
+        $configGatewayStr = 'gateway.'.$driver;
+
+        return $this->gatewayConfig[$configGatewayStr];
     }
 }

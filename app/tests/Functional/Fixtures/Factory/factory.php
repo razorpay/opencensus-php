@@ -20,6 +20,8 @@ $factory(Models\Terminal\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity,',
     'card' => 1,
+    'netbanking' => 0,
+    'shared' => 1,
     'gateway' => 'hdfc',
     'gateway_merchant_id' => $faker->word,
     'gateway_terminal_id' => $faker->word,
@@ -34,6 +36,7 @@ $factory(Models\Merchant\Balance\Entity::class, [
 ]);
 
 $factory(Models\Merchant\BankAccount\Entity::class, [
+    'id' => $faker->uniqueid,
     'merchant_id' => $faker->uniqueid,
     'ifsc_code' => 'RZPB0000000',
     'account_number' => 10010101011,

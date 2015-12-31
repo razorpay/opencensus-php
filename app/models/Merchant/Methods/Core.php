@@ -2,8 +2,10 @@
 
 namespace Models\Merchant\Methods;
 
-use Models\Base;
+use Constants\Mode;
 use EE\Exception;
+use Models\Bank\IFSC;
+use Models\Base;
 use Models\Payment;
 use Models\Merchant;
 use Models\Merchant\Methods;
@@ -45,7 +47,19 @@ class Core extends Base\Core
         //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
         // }
 
-        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+        $supportedBanks = null;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $supportedBanks = Netbanking::getSupportedBanksInTestMode();
+        }
+        else
+        {
+            $supportedBanks = Netbanking::getSupportedBanksInLiveMode();
+        }
+
+//        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+//        $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),Netbanking::getSbiepaySupportedBanks());
 
         $banks->setBanks($supportedBanks);
 
@@ -94,6 +108,7 @@ class Core extends Base\Core
         $methods->merchant()->associate($merchant);
 
         $methods->setMobikwik(true);
+        $methods->setPayzapp(true);
 
         $this->setAllPaymentBanks($methods);
 

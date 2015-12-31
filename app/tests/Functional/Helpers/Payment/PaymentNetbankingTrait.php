@@ -9,7 +9,7 @@ use Tests\Functional\TestCase;
 
 trait PaymentNetbankingTrait
 {
-    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null)
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
     {
         $mock = $this->isGatewayMocked();
 
@@ -17,13 +17,20 @@ trait PaymentNetbankingTrait
 
         if ($mock)
         {
-            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
         else
         {
             ;
         }
 
-        return $this->submitPaymentCallbackRedirect($url);
+        if (filter_var($data, FILTER_VALIDATE_URL))
+        {
+            return $this->submitPaymentCallbackRedirect($data);
+        }
+        else
+        {
+            return $this->submitPaymentCallbackRequest($data);
+        }
     }
 }

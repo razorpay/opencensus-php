@@ -8,6 +8,11 @@ class Verify
 
     public $payment;
 
+    /**
+     * Used If the transaction happens via a wallet.
+     * */
+    public $wallet;
+
     public $verifyRequest;
 
     public $verifyResponse;

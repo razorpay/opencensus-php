@@ -42,7 +42,12 @@ class Handler
     }
 
     public function genericExceptionHandler(\Exception $exception)
-    {// sd($exception->getTraceAsString());
+    {
+        if ($this->isToStringException($exception))
+        {
+            return ApiResponse::toStringExceptionError($exception, $this->isDebug());
+        }
+
         $this->traceException($exception);
 
         //
@@ -124,6 +129,24 @@ class Handler
             'previous'  => $previous);
 
         return $traceData;
+    }
+
+    protected function isToStringException($exception)
+    {
+        $message = $exception->getMessage();
+
+        $str = 'Swift_Message::__toString()';
+
+        if (strpos($message, $str) === false)
+        {
+            return false;
+        }
+
+        $this->app['trace']->warn(
+            Trace\TraceCode::MISC_TOSTRING_ERROR,
+            $this->getExceptionDetails($exception));
+
+        return true;
     }
 
     protected function isDebug()

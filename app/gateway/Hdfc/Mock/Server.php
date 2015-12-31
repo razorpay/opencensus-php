@@ -289,20 +289,14 @@ class Server extends Base\Mock\Server
     {
         $this->processInput('supportPayment');
 
-        $exists = $this->checkGatewayTxnIdAndStatusExist('authorized');
+        $payment = $this->getByGatewayTxnIdAndStatusExist('authorized');
 
-        if ($exists === false)
-        {
-            $res = $this->getTxnNotFoundError();
-        }
-        else
-        {
-            $res = $this->getDefaultPaymentSuccessArray();
-            $res['result'] = 'CAPTURED';
+        $res = $this->getDefaultPaymentSuccessArray();
+        $res['trackid'] = $payment['payment_id'];
+        $res['result'] = 'CAPTURED';
 
-            $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
-            $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
-        }
+        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
+        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
 
         $res = $this->content($res);
 
@@ -315,14 +309,16 @@ class Server extends Base\Mock\Server
     {
         $this->processInput('supportPayment');
 
-        $exists = $this->checkGatewayTxnIdAndStatusExist('captured');
+        $payment = $this->getByGatewayTxnIdAndStatusExist('captured');
 
-        if ($exists === false)
+        if ($payment === false)
         {
             $res = $this->getTxnNotFoundError();
         }
 
         $res = $this->getDefaultPaymentSuccessArray();
+
+        $res['trackid'] = $this->data['trackid'];
         $res['result'] = 'CAPTURED';
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
@@ -363,13 +359,21 @@ class Server extends Base\Mock\Server
         return $xml;
     }
 
-    protected function checkGatewayTxnIdAndStatusExist($status)
+    protected function getByGatewayTxnIdAndStatusExist($status)
     {
         $gatewayTxnId = $this->data['transid'];
 
-        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus($gatewayTxnId, $status);
+        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+                                        $gatewayTxnId, $status);
 
-        return ($txn !== null);
+        if (($txn === null) and
+            ($status === 'captured'))
+        {
+            $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndErrorCode(
+                                            $gatewayTxnId, Hdfc\ErrorCode::GW00176);
+        }
+
+        return $txn;
     }
 
     public function setInput($input)

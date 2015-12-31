@@ -37,7 +37,7 @@ class AtomTransactionTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $txn = $this->getLastTransaction();
+        $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterCapturingAtomPayment'];
         $testData['entity_id'] = $payment['id'];
@@ -50,7 +50,7 @@ class AtomTransactionTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray();
         $refund = $this->doAuthCaptureAndRefundPayment($payment);
 
-        $txn = $this->getLastTransaction();
+        $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterRefundingAtomPayment'];
         $testData['entity_id'] = $refund['id'];

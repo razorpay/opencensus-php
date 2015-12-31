@@ -88,7 +88,6 @@ trait PaymentHdfcTrait
                         ->shouldReceive('content')
                         ->andReturnUsing(function (& $content)
                         {
-                            $content['vpc_TxnResponseCode'] = '5';
                             $content = array(
                                 'error_code_tag' => 'GW00176',
                                 'error_text' =>   '',

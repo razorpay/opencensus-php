@@ -42,6 +42,7 @@ class Service extends Base\Service
             'daily_settlement'  => Models\Settlement\Daily::class,
             'atom'              => Gateway\Atom::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
+            'amex'              => Gateway\Amex::class,
             'kotak'             => Gateway\Kotak::class,
             'axis_migs'         => Gateway\AxisMigs::class,
             'axis_genius'       => Gateway\AxisGenius::class,
@@ -51,10 +52,12 @@ class Service extends Base\Service
             'billdesk'          => Gateway\Billdesk::class,
             'hdfc'              => Gateway\Hdfc::class,
             'bank_account'      => Models\Merchant\BankAccount::class,
+            'sbiepay'           => Gateway\Sbiepay::class,
             'balance'           => Models\Merchant\Balance::class,
             'methods'           => Models\Merchant\Methods::class,
             'webhook'           => Models\Merchant\Webhook::class,
             'pricing'           => Models\Pricing::class,
+            'wallet'            => Gateway\Wallet\Base::class,
         );
 
         if (array_key_exists($entity, $map))
@@ -62,7 +65,7 @@ class Service extends Base\Service
             return $map[$entity];
         }
 
-        return 'Models\\'.ucfirst($entity);
+        return 'Models\\' . ucfirst($entity);
     }
 
     protected function getEntityClass($entity)
@@ -95,14 +98,18 @@ class Service extends Base\Service
     {
         $errors = (new Validator)->validateInput('send_test_newsletter', $input);
 
-        if(empty($errors))
+        if (empty($errors))
         {
             //
             // Now we send the newsletter
-            // Test Email to self
             //
             $mailer = new Newsletter(
-                        $input['email'], $input['subject'], $input['msg'], true);
+                $input['email'],
+                $input['subject'],
+                $input['msg'],
+                $input['template'],
+                true // Test Email to self
+            );
 
             return $mailer->send();
         }
@@ -119,9 +126,10 @@ class Service extends Base\Service
         if (empty($errors))
         {
             $mailer = new Newsletter(
-                            $input['lists'],
-                            $input['subject'],
-                            $input['msg']);
+                $input['lists'],
+                $input['subject'],
+                $input['msg'],
+                $input['template']);
 
             return $mailer->send();
         }

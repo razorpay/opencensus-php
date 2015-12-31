@@ -150,6 +150,11 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        if ($payment->card !== null)
+        {
+            $input['card'] = $payment->card->toArray();
+        }
+
         $this->checkForRecentFailedPayment($payment);
 
         Payment\Validator::bankAcsCallbackValidate($payment, $input);
@@ -486,7 +491,8 @@ trait Authorize
             $network = $payment->card->getNetwork();
             $network = Card\Network::getCode($network);
 
-            if ($network === Card\Network::MAES)
+            if (($network === Card\Network::MAES) or
+                ($network === Card\Network::RUPAY))
             {
                 return false;
             }

@@ -80,4 +80,13 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
+    public function getIfServiceTaxIsNullOrZero()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::SERVICE_TAX, '=', '0')
+                    ->orWhereNull(Entity::SERVICE_TAX)
+                    ->get();
+    }
 }

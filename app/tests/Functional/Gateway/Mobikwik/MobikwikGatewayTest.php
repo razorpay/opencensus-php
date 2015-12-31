@@ -53,11 +53,10 @@ class MobikwikGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
-
         $this->payment = $this->doAuthAndCapturePayment($this->payment);
         $id = $this->payment['id'];
         $this->payment = $this->verifyPayment($id);
-        $this->assertEquals($this->payment['payment']['verified'], true);
+        $this->assertEquals($this->payment['payment']['verified'], 1);
     }
 
     public function testRefundPayment()

@@ -113,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
         self::CAPTURED,
@@ -120,6 +121,8 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::FEE,
+        self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
@@ -249,7 +252,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);            
+            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
         }
     }
 
@@ -354,7 +357,9 @@ class Entity extends Base\PublicEntity
         $verified = $this->attributes[self::VERIFIED];
 
         if ($verified !== null)
+        {
             $verified = (int) $verified;
+        }
 
         return $verified;
     }
@@ -498,6 +503,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTES);
     }
 
+    public function getNotesJson()
+    {
+        return $this->attributes[self::NOTES];
+    }
+
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
@@ -582,6 +592,11 @@ class Entity extends Base\PublicEntity
     public function getCreatedTimestamp()
     {
         return $this->getAttribute(self::CREATED_AT);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
     }
 
     public function getDaysSinceAuthorized()

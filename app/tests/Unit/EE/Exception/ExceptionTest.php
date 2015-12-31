@@ -56,6 +56,25 @@ class ExceptionTest extends TestCase
         $this->assertEquals($content['error']['description'], 'Dummy exception');
     }
 
+    public function testExceptionWithToStringError()
+    {
+        $exception = new \Symfony\Component\Debug\Exception\FatalErrorException(
+            '... Swift_Message::__toString() ...', 0, 0, 0, 0);
+
+        $handler = $this->app['exception.handler'];
+
+        $response = $handler->genericExceptionHandler($exception, $exception->getCode());
+
+        $content = $response->getContent();
+
+        $this->assertJson($content);
+
+        $content = json_decode($content, true);
+
+        $this->assertEquals($content['error']['code'], ErrorCode::SERVER_ERROR);
+        $this->assertEquals($content['error']['internal_error_code'], ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
+    }
+
     protected function assertJsonAndGetContent($content)
     {
         $this->assertJson($content);

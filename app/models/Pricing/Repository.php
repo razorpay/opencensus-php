@@ -15,6 +15,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'Pricing';
 
+    protected $appFetchParamRules = array(
+        Entity::PLAN_ID         => 'sometimes|string',
+    );
+
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
         $repo = $this->repo;

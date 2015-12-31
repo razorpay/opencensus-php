@@ -138,6 +138,17 @@ class MockGatewayController extends BaseController
         return $server->authorize($input);
     }
 
+    public function postAmexPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Amex\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
     public function getSharpPayment()
     {
         $input = Input::all();
@@ -176,9 +187,14 @@ class MockGatewayController extends BaseController
         $driver = 'netbanking_'.$bank;
         $server = $this->gateway->server($driver);
 
-        $url = $server->authorize($input);
+        $data = $server->authorize($input);
 
-        return Redirect::to($url);
+        if (filter_var($data, FILTER_VALIDATE_URL))
+        {
+            return Redirect::to($data);
+        }
+
+        return $data;
     }
 
     public function postMobikwikPayment()
@@ -190,5 +206,28 @@ class MockGatewayController extends BaseController
         $url = $server->authorize($input);
 
         return Redirect::to($url);
+    }
+
+    public function postSbiepayPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Sbiepay\Mock\Server;
+
+        return $server->authorize($input);
+    }
+
+    public function postWalletPayment($wallet)
+    {
+        $input = Input::all();
+
+        $server = null;
+
+        if ($wallet === 'payzapp')
+        {
+            $server = new Gateway\Wallet\Payzapp\Mock\Server;
+        }
+
+        return $server->authorize($input);
     }
 }

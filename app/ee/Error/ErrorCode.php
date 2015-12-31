@@ -204,4 +204,5 @@ class ErrorCode
     const SERVER_ERROR_SETTLEMENTS_FAILED                                           = 'SERVER_ERROR_SETTLEMENTS_FAILED';
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
+    const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
 }

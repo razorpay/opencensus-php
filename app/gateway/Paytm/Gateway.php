@@ -22,65 +22,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $method = $input['payment']['method'];
-
-        $type = RequestType::THEDEFAULT;
-
-        if ($method === 'card')
-        {
-            $type = RequestType::SEAMLESS;
-        }
-
-        $mobileNo = $this->getMobileNumber($input['payment']['contact']);
-        $email = $this->getFormattedEmail($input['payment']['email']);
-
-        $content = array(
-            'REQUEST_TYPE'              => $type,
-            'MID'                       => $input['terminal']['gateway_merchant_id'],
-            'ORDER_ID'                  => $input['payment']['id'],
-            'TXN_AMOUNT'                => $input['payment']['amount'] / 100,
-            'CUST_ID'                   => $input['payment']['email'],
-            'CHANNEL_ID'                => 'WEB',
-            'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
-            'WEBSITE'                   => $input['terminal']['gateway_access_code'],
-            'CALLBACK_URL'              => $input['callbackUrl'],
-            'MOBILE_NO'                 => $mobileNo,
-            'EMAIL'                     => $input['payment']['email'],
-        );
-
-        if ($method === 'card')
-        {
-            $card = $input['card'];
-            $expiryDate = $this->getFormattedCardExpiryDate($input);
-            $cardDetails = $card['number'] . '|' . $card['cvv'] .
-                '|' . $expiryDate;
-            $content['PAYMENT_DETAILS'] = $this->getHashOfString($cardDetails);
-            $content['AUTH_MODE'] = '3D';
-            $type = $input['card']['type'];
-
-            $cardType = Type::DC;
-
-            if ($type === 'credit')
-            {
-                $cardType = Type::CC;
-            }
-
-            $content['PAYMENT_TYPE_ID'] = $cardType;
-            $content['PAYMENT_MODE_ONLY'] = 'Yes';
-        }
-        else if ($method === 'netbanking')
-        {
-            $content['BANK_CODE'] = $this->getBankCode($input);
-            $content['PAYMENT_TYPE_ID'] = Type::NB;
-            $content['AUTH_MODE'] = 'USRPWD';
-            $content['PAYMENT_MODE_ONLY'] = 'Yes';
-        }
-        else if ($method === 'wallet')
-        {
-            ;
-        }
-
-        $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
+        $content = $this->getAuthRequestContentArray($input);
 
         $this->createGatewayPaymentEntity($content);
 
@@ -214,7 +156,7 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-        $status = VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
@@ -244,7 +186,7 @@ class Gateway extends Base\Gateway
                 // Check that refund amount matches.
                 if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
                 {
-                    $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
+                    $verify->status = VerifyResult::REFUND_AMOUNT_MISMATCH;
                 }
             }
             else if ($payment['statuscode'] !== Status::SUCCESS)
@@ -254,13 +196,11 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $verify->status = $status;
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $this->verifyContentSaveIfNeeded($verify->match, $payment, $content);
 
-        return $status;
+        return $verify->status;
     }
 
     protected function verifyContentSaveIfNeeded($match, $payment, $content)
@@ -269,8 +209,7 @@ class Gateway extends Base\Gateway
             '334',
             '309');
 
-        if (($match === true) and
-            ($payment['received'] === false) and
+        if (($payment['received'] === false) and
             (in_array($content['RESPCODE'], $invalidOrderIdRespCode) === false))
         {
             $contentToStore = [];
@@ -302,6 +241,80 @@ class Gateway extends Base\Gateway
         $content = json_decode($response->body, true);
 
         $this->response = $response;
+
+        return $content;
+    }
+
+    protected function getAuthRequestContentArray($input)
+    {
+        $content = $this->getAuthRequestDefaultContent($input);
+
+        $method = $input['payment']['method'];
+
+        if ($method === 'card')
+        {
+            $card = $input['card'];
+            $expiryDate = $this->getFormattedCardExpiryDate($input);
+            $cardDetails = $card['number'] . '|' . $card['cvv'] .
+                '|' . $expiryDate;
+            $content['PAYMENT_DETAILS'] = $this->getHashOfString($cardDetails);
+            $content['AUTH_MODE'] = '3D';
+            $type = $input['card']['type'];
+
+            $cardType = Type::DC;
+
+            if ($type === 'credit')
+            {
+                $cardType = Type::CC;
+            }
+
+            $content['PAYMENT_TYPE_ID'] = $cardType;
+            $content['PAYMENT_MODE_ONLY'] = 'Yes';
+        }
+        else if ($method === 'netbanking')
+        {
+            $content['BANK_CODE'] = $this->getBankCode($input);
+            $content['PAYMENT_TYPE_ID'] = Type::NB;
+            $content['AUTH_MODE'] = 'USRPWD';
+            $content['PAYMENT_MODE_ONLY'] = 'Yes';
+        }
+        else if ($method === 'wallet')
+        {
+            ;
+        }
+
+        $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
+
+        return $content;
+    }
+
+    protected function getAuthRequestDefaultContent($input)
+    {
+        $method = $input['payment']['method'];
+
+        $type = RequestType::THEDEFAULT;
+
+        if ($method === 'card')
+        {
+            $type = RequestType::SEAMLESS;
+        }
+
+        $mobileNo = $this->getMobileNumber($input['payment']['contact']);
+        $email = $this->getFormattedEmail($input['payment']['email']);
+
+        $content = array(
+            'REQUEST_TYPE'              => $type,
+            'MID'                       => $input['terminal']['gateway_merchant_id'],
+            'ORDER_ID'                  => $input['payment']['id'],
+            'TXN_AMOUNT'                => $input['payment']['amount'] / 100,
+            'CUST_ID'                   => $input['payment']['email'],
+            'CHANNEL_ID'                => 'WEB',
+            'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
+            'WEBSITE'                   => $input['terminal']['gateway_access_code'],
+            'CALLBACK_URL'              => $input['callbackUrl'],
+            'MOBILE_NO'                 => $mobileNo,
+            'EMAIL'                     => $input['payment']['email'],
+        );
 
         return $content;
     }
