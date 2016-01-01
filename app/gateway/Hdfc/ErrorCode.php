@@ -291,7 +291,7 @@ class ErrorCode
         Hdfc\ErrorCode::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
 
         Hdfc\ErrorCode::GV00100   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
-        Hdfc\ErrorCode::GV00103   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
+        Hdfc\ErrorCode::GV00103   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
 
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
