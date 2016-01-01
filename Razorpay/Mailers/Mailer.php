@@ -15,7 +15,7 @@ abstract class Mailer
     protected $fromEmail;
 
     /**
-     * From  name to be used
+     * From name to be used
      * @var string
      */
     protected $fromName;
@@ -93,17 +93,19 @@ abstract class Mailer
         $to = $this->to;
         $subject = $this->subject;
         $callback = $this->callback;
+        $fromEmail = $this->fromEmail;
+        $fromName = $this->fromName;
 
         return Mail::$method(
             $this->view,
             $this->data,
-            function($message) use($email, $to, $subject, $callback)
+            function($message) use($email, $to, $subject, $callback, $fromEmail, $fromName)
             {
                 $message->to($email, $to)->subject($subject);
 
-                if ($this->fromEmail !== null)
+                if ($fromEmail !== null)
                 {
-                    $message->from($this->fromEmail, $this->fromName);
+                    $message->from($fromEmail, $fromName);
                 }
 
                 if (is_callable($callback))
