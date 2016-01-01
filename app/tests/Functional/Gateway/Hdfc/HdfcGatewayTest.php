@@ -57,14 +57,6 @@ class HdfcGatewayTest extends TestCase
         $this->assertNotNull($payment['transaction_id']);
     }
 
-    public function testPaymentVerify()
-    {
-        $this->markTestSkipped();
-        $payment = $this->doAuthAndCapturePayment();
-
-        $this->verifyPayment($payment['id']);
-    }
-
     public function testHdfcEntityAfterPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -111,5 +103,12 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->refundPayment($payment['id'], $payment['amount']);
         $this->assertEquals($refund['entity'], 'refund');
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->verifyPayment($payment['razorpay_payment_id']);
     }
 }

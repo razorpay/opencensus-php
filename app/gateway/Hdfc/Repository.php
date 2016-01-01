@@ -5,6 +5,7 @@ namespace Gateway\Hdfc;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Gateway\Hdfc\Payment\Action;
 use Gateway\Base;
 
 class Repository extends Base\Repository
@@ -62,6 +63,15 @@ class Repository extends Base\Repository
         $this->repo = $oldRepo;
 
         return $model;
+    }
+
+    public function findByPaymentIdToVerify($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                    ->whereIn('action', [Action::AUTHORIZE, Action::PURCHASE])
+                    ->first();
     }
 
     public function persistAfterEnroll($request, $response)

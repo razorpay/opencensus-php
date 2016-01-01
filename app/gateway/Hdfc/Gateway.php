@@ -330,9 +330,11 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        $data = $this->inquire($input);
+        parent::verify($input);
 
-        return $data;
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     /**
