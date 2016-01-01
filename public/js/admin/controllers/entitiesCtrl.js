@@ -217,6 +217,9 @@ app.controller('EntitiesCtrl', [
       settlement: {
         transaction_id: ['Transaction Id'],
         merchant_id: ['Merchant Id']
+      },
+      webhook: {
+        merchant_id: ['Merchant Id'],
       }
     };
     // This loop initializes the filters object
