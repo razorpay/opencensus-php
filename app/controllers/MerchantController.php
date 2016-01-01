@@ -154,6 +154,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
+        // @todo: Shift this validation away from here
         if ((isset($input['email']) === false) or
             (isset($input['name']) === false) or
             (filter_var($input['email'], FILTER_VALIDATE_EMAIL) === false) or
@@ -164,7 +165,7 @@ class MerchantController extends BaseController
             return AppResponse::jsonResponse($error);
         }
 
-        (new CompanyMailer)->with($input)->contact()->queue()->deliver();
+        (new ContactFormMailer)->with($input)->contact()->queue()->deliver();
 
         $response = AppResponse::jsonResponse([]);
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');

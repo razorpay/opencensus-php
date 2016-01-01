@@ -4,7 +4,7 @@ namespace Razorpay\Mailers;
 
 use Models\Merchant\Entity as MerchantEntity;
 
-class CompanyMailer extends Mailer
+class ContactFormMailer extends Mailer
 {
     /**
      * Add the payload to the company mailer instance
@@ -30,6 +30,9 @@ class CompanyMailer extends Mailer
         $this->subject = 'New Contact form submission - '. $this->data['name'];
         $this->data['content'] = $this->data['message'];
         unset($this->data['message']);
+
+        $this->fromEmail = $this->data['email'];
+        $this->fromName = $this->data['name'];
 
         $this->to = 'Razorpay Contact';
         $this->email = $this->getEmailFor('contact');

@@ -8,6 +8,19 @@ use Config;
 abstract class Mailer
 {
     /**
+     * Email from which to send
+     *
+     * @var string
+     */
+    protected $fromEmail;
+
+    /**
+     * From  name to be used
+     * @var string
+     */
+    protected $fromName;
+
+    /**
      * The name of the person to send the email to
      *
      * @var string
@@ -81,12 +94,19 @@ abstract class Mailer
         $subject = $this->subject;
         $callback = $this->callback;
 
-        return Mail::$method($this->view, $this->data, function($message)
-            use($email, $to, $subject, $callback)
+        return Mail::$method(
+            $this->view,
+            $this->data,
+            function($message) use($email, $to, $subject, $callback)
             {
-                $message->to($email,$to)->subject($subject);
+                $message->to($email, $to)->subject($subject);
 
-                if(is_callable($callback))
+                if ($this->fromEmail !== null)
+                {
+                    $message->from($this->fromEmail, $this->fromName);
+                }
+
+                if (is_callable($callback))
                 {
                     call_user_func($callback, $message);
                 }
