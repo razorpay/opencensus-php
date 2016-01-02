@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::FEATURES                    => 'sometimes|max:255',
+        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
     );
 
     protected static $editCreditsRules = array(
