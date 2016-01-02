@@ -30,12 +30,24 @@
           </tr>
           <tr>
             <td colspan="4" class="text-center">
-              <a ng-show="webhooks.count === 0" href id="createWebook" ng-click="openCreateWebook()">
+              <button
+                ng-show="webhooks.count === 0"
+                href id="createWebook"
+                ng-click="openCreateWebook()"
+                tooltip="Setup your {{mode | titlecase}} webhook"
+                class="btn btn-primary"
+              >
                 Setup your {{mode | titlecase}} webhook
-              </a>
-              <a ng-show="webhooks.count != 0" href id="editWebook" ng-click="openEditWebhook(webhooks.items[0])">
+              </button>
+              <button
+                ng-show="webhooks.count != 0"
+                href id="editWebook"
+                ng-click="openEditWebhook(webhooks.items[0])"
+                tooltip="Edit your {{mode | titlecase}} webhook"
+                class="btn btn-primary"
+              >
                 Edit your {{mode | titlecase}} webhook
-              </a>
+              </button>
             </td>
           </tr>
         </tbody>
