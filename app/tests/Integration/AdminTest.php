@@ -41,8 +41,17 @@ class AdminTest extends TestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
-            $this->merchant = $this->createEntity('merchant', array('id'=> Uuid::generate(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24), 'name' => 'Test Merchant'));
-            $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
+            $this->merchant = $this->createEntity('merchant', array(
+                'id'=> Uuid::generate(),
+                'email' =>static::generateMerchantEmail(),
+                'confirm_token' => static::generateRandomString(24),
+                'name'  => 'Random Test Merchant'
+            ));
+
+            $this->merchant_details = $this->createEntity('merchant_details',
+                array('merchant_id'=>$this->merchant->id)
+            );
+
             $user = Models\User\Entity::createFromMerchant($this->merchant);
             $user->saveOrFail();
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);

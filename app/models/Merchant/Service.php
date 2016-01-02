@@ -255,7 +255,7 @@ class Service extends Base\Service
 
     public function getWebhooks($mode)
     {
-        $merchantId = \Auth::merchant()->user()->id;
+        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -267,7 +267,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors = $e->getMessage();
+            $errors[] = $e->getMessage();
         }
 
         return [$errors, $data];
@@ -275,7 +275,7 @@ class Service extends Base\Service
 
     public function editWebhook($mode, $webhookId, $input)
     {
-        $merchantId = \Auth::merchant()->user()->id;
+        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -290,7 +290,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors = $e->getMessage();
+            $errors[] = $e->getMessage();
         }
 
         return [$errors, $data];
@@ -298,7 +298,7 @@ class Service extends Base\Service
 
     public function createWebhook($mode, $input)
     {
-        $merchantId = \Auth::merchant()->user()->id;
+        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -313,7 +313,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors = $e->getMessage();
+            $errors[] = $e->getMessage();
         }
 
         return [$errors, $data];

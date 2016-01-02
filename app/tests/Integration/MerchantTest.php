@@ -38,7 +38,7 @@ class MerchantTest extends TestCase
             $this->merchant = $this->buildEntity('merchant', array(
                 'id'    => Uuid::generate(),
                 'email' => static::generateMerchantEmail(),
-                'name'  => 'Test Merchant'
+                'name'  => 'Random Test Merchant'
             ));
         }
 
@@ -67,7 +67,6 @@ class MerchantTest extends TestCase
             ->click(l::IdOrName('agree'))
             // Click in the button
             ->click(l::IdOrName('submit'))
-            //->waitForCondition("window.$('.alert-success').length > 0", 5000);
             ->waitForPresent('.alert-success');
 
         $this->assertBodyHasText("Please check your inbox for confirmation email from Razorpay");
@@ -113,8 +112,6 @@ class MerchantTest extends TestCase
 
     public function testWebhooks()
     {
-        // Skip these tests for now
-        $this->markTestSkipped();
         // Testing webhooks display
          $this->browser
             ->waitAndClickById('webhookNav')
