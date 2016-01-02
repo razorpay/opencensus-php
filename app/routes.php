@@ -244,6 +244,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
 
+        Route::put('/admin/merchant/{id}/name', 'AdminController@putEditMerchantName');
+
         Route::put('/admin/merchant/{id}/bankdetails', 'AdminController@putEditBankDetails');
     });
 

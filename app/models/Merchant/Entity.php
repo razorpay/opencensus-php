@@ -341,7 +341,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         // to User\Entity going ahead.
         if($this->hasUsers())
         {
-            $user = $this->users()->where('email',$email)->first();
+            $user = $this->users()->where('email', $email)->first();
             if($user)
             {
                 $user->confirm_token = $this->confirm_token;

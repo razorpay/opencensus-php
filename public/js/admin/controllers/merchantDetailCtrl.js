@@ -382,6 +382,29 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.editMerchantName = function (name) {
+      var request = $http({
+        method: 'put',
+        url: '/admin/merchant/' + $scope.merchant.id + '/name',
+        data: { name: name }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant name edited successfully', true);
+          generateMerchant();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.changeBankAccountDetails = function (merchant) {
       var request = $http({
         method: 'put',
@@ -574,6 +597,20 @@ app.controller('MerchantDetailCtrl', [
         $scope.editMerchantEmail(email);
       }, $.noop);
     };
+    $scope.openEditMerchantName = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'editMerchantNameModalContent.html',
+        controller: 'editMerchantNameModalCtrl',
+        resolve: {
+          current: function () {
+            return $scope.merchant.details;
+          }
+        }
+      });
+      modalInstance.result.then(function (name) {
+        $scope.editMerchantName(name);
+      }, $.noop);
+    };
     $scope.openChangeBankAccountDetails = function () {
       var modalInstance = $modal.open({
         templateUrl: 'changeBankAccountDetailsModalContent.html',
@@ -674,7 +711,6 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
           fetchBalance();
-          console.log($scope.merchant);
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value, key) {
@@ -853,6 +889,19 @@ app.controller('MerchantDetailCtrl', [
     $scope.current = current;
     $scope.ok = function (email) {
       $modalInstance.close(email);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editMerchantNameModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    $scope.current = current;
+    $scope.ok = function (name) {
+      $modalInstance.close(name);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

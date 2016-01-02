@@ -104,6 +104,9 @@
         <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
           Edit Merchant Email <i class="pull-right fa fa-envelope"></i>
         </a>
+        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantName()">
+          Edit Merchant Name <i class="pull-right fa fa-user"></i>
+        </a>
          <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openChangeBankAccountDetails()">
           Edit Bank Account Details <i class="pull-right fa fa-university"></i>
         </a>
@@ -660,6 +663,31 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(email)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="editMerchantNameModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Merchant Name</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <div class="text-danger">
+      <strong>
+        Warning: You need to be a superadmin in order to edit merchant name
+      </strong>
+    </div>
+    <form class="form-horizontal" ng-init="name=current.name">
+      <div class="form-group">
+        <label for="Name" class="col-lg-2 control-label">Name:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="name" ng-model="name">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(name)">OK</button>
   </div>
 </script>
 

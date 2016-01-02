@@ -236,6 +236,10 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
+        // This is to make sure that this route is not used to edit
+        // names, since that is superadmin only
+        assert(isset($input['name']) === false);
+
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
@@ -246,6 +250,15 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putEditMerchantName($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
