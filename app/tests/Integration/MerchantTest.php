@@ -113,8 +113,6 @@ class MerchantTest extends TestCase
 
     public function testWebhooks()
     {
-        // Skip these tests for now
-        $this->markTestSkipped();
         // Testing webhooks display
          $this->browser
             ->waitAndClickById('webhookNav')
