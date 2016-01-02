@@ -61,6 +61,18 @@ class Gateway
      */
     protected $testing;
 
+    /**
+     * Some gateways whitelist our IP and requests to them can only
+     * be sent from those IP.
+     *
+     * Proxy address specifies the proxy through which these requests
+     * are routed. The proxy simply sits at the public IP machine
+     * and mostly acts transparently.
+     *
+     * @var string
+     */
+    protected $proxy;
+
     protected $sortRequestContent = true;
 
     public function __construct()
@@ -329,6 +341,8 @@ class Gateway
 
         $app = \App::getFacadeRoot();
         $this->config = $app['config']->get($configGatewayStr);
+
+        $this->proxy = $app['config']->get('gateway.proxy_address');
     }
 
     protected function getFormValues($form, $url)
