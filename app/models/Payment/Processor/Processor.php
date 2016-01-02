@@ -75,6 +75,12 @@ class Processor
         {
             $input['method'] = Payment\Method::CARD;
         }
+        else if (empty($input['method']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide appropriate payment method',
+                Payment\Entity::METHOD);
+        }
 
         $payment = $this->createPaymentEntity($input);
 
