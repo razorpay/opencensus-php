@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const EVENTS            = 'events';
     const FAILURE_COUNT     = 'failure_count';
     const ACTIVE            = 'active';
+    const CREATED_AT        = 'created_at';
 
     protected $entity       = 'webhook';
 
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::MERCHANT_ID,
         self::FAILURE_COUNT,
+        self::CREATED_AT,
     );
 
     protected $public = array(
@@ -47,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::EVENTS,
         self::ACTIVE,
+        self::CREATED_AT,
     );
 
     public function edit(array $input = array(), $operation = 'edit')
