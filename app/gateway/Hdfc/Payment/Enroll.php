@@ -48,6 +48,7 @@ trait Enroll
             $this->enrollRequest);
 
         $network = $input['card']['network_code'];
+
         // Only required in case of Rupay
         if ($network === Card\Network::RUPAY)
         {

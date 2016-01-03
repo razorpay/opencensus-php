@@ -23,4 +23,9 @@ class Status
     const CAPTURE_FAILED            = 'capture_failed';
     const REFUND_FAILED             = 'refund_failed';
     const REFUNDED                  = 'refunded';
+
+    public static function getSuccessStatusArray()
+    {
+        return [self::AUTHORIZED, self::CAPTURED];
+    }
 }

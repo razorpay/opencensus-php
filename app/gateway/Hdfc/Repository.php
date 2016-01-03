@@ -91,26 +91,34 @@ class Repository extends Base\Repository
             $status = Payment\Status::INITIALIZED;
         }
 
+        //
+        // 'received' is marked as false because after this we will
+        // initiate auth request. And 'received' is marked as true
+        // only after that if we receive positive result.
+        //
+
         $attributes = array(
-            'payment_id'            => $request['trackid'],
-            'gateway_transaction_id'=> $response['paymentid'],
-            'action'                => $request['action'],
-            'amount'                => $request['amt'],
-            'enroll_result'         => $response['enroll_result'],
-            'status'                => $status,
-            'eci'                   => $response['eci']);
+            'received'                  => '0',
+            'payment_id'                => $request['trackid'],
+            'gateway_transaction_id'    => $response['paymentid'],
+            'action'                    => $request['action'],
+            'amount'                    => $request['amt'],
+            'enroll_result'             => $response['enroll_result'],
+            'status'                    => $status,
+            'eci'                       => $response['eci']);
 
         $repo = $this->repo;
 
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterEnrollError($id, array $error, $requestdata)
+    public function persistAfterEnrollError($id, array $error, $requestData)
     {
         $attributes = array(
+            'received'              => '1',
             'payment_id'            => $id,
-            'action'                => Payment\Action::AUTHORIZE,
-            'amount'                => $requestdata['amt'],
+            'action'                => $requestData['action'],
+            'amount'                => $requestData['amt'],
             'error_code'            => $error['code'],
             'error_text'            => $error['text'],
             'enroll_result'         => $error['enroll_result'],
@@ -123,10 +131,17 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthNotEnrolled($model, $data)
     {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+        {
+            $status = Payment\Status::CAPTURED;
+        }
+
         $attributes = array(
+            'received'      => '1',
             'payment_id'    => $data['trackid'],
-            'status'        => Payment\Status::AUTHORIZED,
-            'action'        => Payment\Action::AUTHORIZE,
+            'status'        => $status,
             'amount'        => $data['amt'],
             'result'        => $data['result'],
             'ref'           => $data['ref'],
@@ -147,9 +162,12 @@ class Repository extends Base\Repository
         $status = Payment\Status::AUTHORIZED;
 
         if ($data['result'] === Payment\Result::CAPTURED)
+        {
             $status = Payment\Status::CAPTURED;
+        }
 
         $attributes = array(
+            'received'      => '1',
             'payment_id'    => $data['trackid'],
             'status'        => $status,
             'result'        => $data['result'],
@@ -166,7 +184,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
-            'action'        => Payment\Action::AUTHORIZE,
+            'received'      => '1',
             'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
@@ -179,7 +197,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
-            'action'        => Payment\Action::AUTHORIZE,
+            'received'      => '1',
             'status'        => Payment\Status::AUTH_ENROLL_FAILED,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
@@ -213,17 +231,18 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'payment_id'             => $paymentId,
-            'refund_id'              => $refundId,
-            'gateway_transaction_id' => $responseData['tranid'],
-            'amount'                 => $responseData['amt'],
-            'action'                 => $requestData['action'],
-            'status'                 => $status,
-            'result'                 => $responseData['result'],
-            'ref'                    => $responseData['ref'],
-            'auth'                   => $responseData['auth'],
-            'avr'                    => $responseData['avr'],
-            'postdate'               => $responseData['postdate']);
+            'received'                  => '1',
+            'payment_id'                => $paymentId,
+            'refund_id'                 => $refundId,
+            'gateway_transaction_id'    => $responseData['tranid'],
+            'amount'                    => $responseData['amt'],
+            'action'                    => $requestData['action'],
+            'status'                    => $status,
+            'result'                    => $responseData['result'],
+            'ref'                       => $responseData['ref'],
+            'auth'                      => $responseData['auth'],
+            'avr'                       => $responseData['avr'],
+            'postdate'                  => $responseData['postdate']);
 
         return $this->createOrFail($attributes);
     }
@@ -237,7 +256,8 @@ class Repository extends Base\Repository
     {
         $action = '';
         $status = '';
-        switch($type)
+
+        switch ($type)
         {
             case 'refund':
                 $action = Payment\Action::REFUND;
@@ -251,6 +271,7 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
+            'received'                  => '1',
             'payment_id'                => $paymentId,
             'refund_id'                 => $refundId,
             'gateway_transaction_id'    => $requestdata['transid'],

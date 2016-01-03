@@ -8,10 +8,11 @@ class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
-        'gateway_transaction_id',
         'payment_id',
         'refund_id',
         'action',
+        'received',
+        'gateway_transaction_id',
         'amount',
         'enroll_result',
         'status',
@@ -39,5 +40,47 @@ class Entity extends Base\Entity
     public function payment()
     {
         return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute('status');
+    }
+
+    public function getResult()
+    {
+        return $this->getAttribute('result');
+    }
+
+    public function getEnrollResult()
+    {
+        return $this->getAttribute('enroll_result');
+    }
+
+    public function getReceived()
+    {
+        return $this->getAttribute('received');
+    }
+
+    public function getReceivedAttribute()
+    {
+        $received = $this->attributes['received'];
+
+        if ($received !== null)
+        {
+            $received = (bool) $received;
+        }
+
+        return $received;
+    }
+
+    public function setReceived($value)
+    {
+        $this->setAttribute('received', $value);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute('status', $status);
     }
 }

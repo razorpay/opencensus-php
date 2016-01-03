@@ -32,6 +32,11 @@ trait AuthorizeFailed
 
         $verify = $e->getVerifyObject();
 
+        return $this->authorizeFailedPayment($verify);
+    }
+
+    protected function authorizeFailedPayment($verify)
+    {
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true))
         {
