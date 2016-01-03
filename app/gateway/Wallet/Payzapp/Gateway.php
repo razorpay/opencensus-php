@@ -92,13 +92,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ((isset($input['gateway']['resCode'])) and
-            ($input['gateway']['resCode'] === '050'))
-        {
-            throw new Exception\RuntimeException(
-                'Payzapp payment callback, bad merchant id had been sent. Please resolve',
-                [$input['gateway']]);
-        }
+        $this->verifyPaymentCallbackResponse($input['gateway']);
 
         assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
@@ -140,8 +134,6 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
                 'pickedup_data' => $serverData,
             ]);
-
-        $this->verifyPaymentCallbackResponse($input['gateway']);
     }
 
     protected function getAuthContent($input)
@@ -300,6 +292,11 @@ class Gateway extends Base\Gateway
         {
             return;
         }
+
+        //trace input
+        $this->trace->error(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            [$input]));
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
@@ -469,7 +466,17 @@ class Gateway extends Base\Gateway
     {
         $generatedHash = $this->generateCallbackSecureHash($input, $payment);
 
-        $hash = $input['gateway']['msgHash'];
+        if (isset($input['gateway']['msgHash']))
+        {
+            $hash = $input['gateway']['msgHash'];
+        }
+        else
+        {
+            //Error description given by Wibmo
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED
+            );
+        }
 
         if ($generatedHash !== $hash)
         {
