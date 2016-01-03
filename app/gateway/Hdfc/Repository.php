@@ -19,52 +19,6 @@ class Repository extends Base\Repository
         parent::__construct();
     }
 
-    public function saveXml($id, $xml, $responseType)
-    {
-        $oldRepo = $this->repo;
-
-        $this->repo = ResponseXml::class;
-
-        $repo = $this->repo;
-
-        $attributes = array(
-            'payment_id' => $id,
-            $responseType => $xml);
-
-        $model = null;
-
-        switch($responseType)
-        {
-            case 'enroll':
-                $model = $this->createOrFail($attributes);
-                break;
-
-            case 'auth_enrolled':
-            case 'auth_not_enrolled':
-                $responseFieldXml = $responseType;
-                $model = $repo::where('payment_id','=',$id)->firstOrFail();
-                $model->$responseFieldXml = $xml;
-                $this->save($model);
-                break;
-
-            case 'refund':
-            case 'capture':
-                $model = $this->createOrFail($attributes);
-                break;
-
-            case 'inquiry':
-                break;
-
-            default:
-                throw new Exception\InvalidArgumentException(
-                                'Wrong responseType => '.$responseType);
-        }
-
-        $this->repo = $oldRepo;
-
-        return $model;
-    }
-
     public function findByPaymentIdToVerify($id)
     {
         $repo = $this->repo;
