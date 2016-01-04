@@ -2,6 +2,8 @@
 
 namespace Gateway\Wallet\Payzapp;
 
+use EE\ErrorCode;
+
 class ResponseCode
 {
     public static $statusCodes = array(
@@ -13,6 +15,17 @@ class ResponseCode
         50020 => 'Success',
         50021 => 'Failed',
         50097 => 'Test Transaction',
+    );
+
+    public static $wibmoStatusCodes = array(
+        '000' => 'Success',
+        '204' => 'User Abort',
+        '050' => 'Failure',
+        '051' => 'Internal error',
+        '052' => 'Maintenance',
+        '053' => 'Bad input',
+        '054' => 'Missing input',
+        '070' => 'Message hash failed',
     );
 
     public static $pgErrorCodes = array(
