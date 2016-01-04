@@ -122,7 +122,10 @@ trait Inquiry
                         'Not expecting this result code: ' . $content['result']);
                 }
 
+                $payment->setGatewayTransactionId($content['tranid']);
                 $payment->setStatus($status);
+
+                unset($content['tranid']);
                 $payment->fill($content);
             }
         }

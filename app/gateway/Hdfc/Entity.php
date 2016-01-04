@@ -83,4 +83,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute('status', $status);
     }
+
+    public function setGatewayTransactionId($txnId)
+    {
+        $this->setAttribute('gateway_transaction_id', $txnId);
+    }
 }
