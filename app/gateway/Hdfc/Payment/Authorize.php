@@ -168,8 +168,6 @@ trait Authorize
 
         //
         // Check enroll result code.
-        // 'enrollSuccess' variable tells us whether
-        // its a success code or failure.
         //
         switch ($result)
         {

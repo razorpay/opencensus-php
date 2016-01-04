@@ -419,8 +419,6 @@ class Gateway extends Base\Gateway
 
         $response['xml'] = $response['response']->body;
 
-        $this->repo->saveXml($this->id, $response['xml'], $response['type']);
-
         $this->checkResponseStatusCode($response);
 
         if ($this->error === false)
