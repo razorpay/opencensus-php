@@ -50,6 +50,7 @@ trait Inquiry
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
+        $error = $verify->verifyResponse['error'];
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -60,8 +61,9 @@ trait Inquiry
 
         $successStatusArray = Status::getSuccessStatusArray();
 
-        if (($content['result'] === Result::APPROVED) or
-            ($content['result'] === Result::CAPTURED))
+        if ((isset($content['result'])) and
+            (($content['result'] === Result::APPROVED) or
+             ($content['result'] === Result::CAPTURED)))
         {
             $verify->gatewaySuccess = true;
 
@@ -198,7 +200,7 @@ trait Inquiry
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             $content);
 
-        $verify->verifyResponse = $inquiryResponse['response'];
+        $verify->verifyResponse = $inquiryResponse;
         $verify->verifyResponseBody = $inquiryResponse['xml'];
         $verify->verifyResponseContent = $content;
 
