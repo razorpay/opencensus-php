@@ -296,7 +296,7 @@ class Gateway extends Base\Gateway
         //trace input
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
-            [$input]));
+            [$input]);
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
