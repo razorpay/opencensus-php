@@ -408,7 +408,9 @@ class Service extends Base\Service
 
         if ($total !== 0)
         {
-            $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+            // Drop all false values (NULL, 0, "")
+            $slackArray = array_filter($results);
+            $this->slackPost($message, $slackArray, ['channel' => '#tech_logs']);
         }
 
         return $results;
@@ -485,20 +487,11 @@ class Service extends Base\Service
 
         $total = $timedOut + $verified + $failed + $authorized + $error;
 
-        $slackLogs = array();
-
-        // Unset zero value based keys to prevent clutter in slack logs.
-        foreach ($results as $key => $value)
-        {
-            if ($value !== 0)
-            {
-                $slackLogs[$key] = $value;
-            }
-        }
-
         if ($total !== 0)
         {
-            $this->slackPost($message, $slackLogs, ['channel' => '#tech_logs']);
+            // Drop all false values (NULL, 0, "")
+            $slackArray = array_filter($results);
+            $this->slackPost($message, $slackArray, ['channel' => '#tech_logs']);
         }
 
         return $results;
