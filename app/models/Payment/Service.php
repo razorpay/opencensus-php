@@ -485,18 +485,20 @@ class Service extends Base\Service
 
         $total = $timedOut + $verified + $failed + $authorized + $error;
 
+        $slackLogs = array();
+
         // Unset zero value based keys to prevent clutter in slack logs.
         foreach ($results as $key => $value)
         {
-            if ($value === 0)
+            if ($value !== 0)
             {
-                unset($results[$key]);
+                $slackLogs[$key] = $value;
             }
         }
 
         if ($total !== 0)
         {
-            $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+            $this->slackPost($message, $slackLogs, ['channel' => '#tech_logs']);
         }
 
         return $results;
