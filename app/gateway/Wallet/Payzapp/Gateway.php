@@ -472,7 +472,11 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            //Error description given by Wibmo
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                ['request' => $input['gateway']]);
+
+            // Error description given by Wibmo
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED
             );
