@@ -241,6 +241,8 @@ class Service extends Base\Service
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
+        $merchant->enableReceiptEmails();
+
         $merchant->activate();
 
         $this->repo->saveOrFail($merchant);

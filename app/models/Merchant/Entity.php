@@ -347,7 +347,6 @@ class Entity extends Base\PublicEntity
         return $this->getReceiptEmailEnabledAttribute();
     }
 
-
     public function getRedactedAccountNumber()
     {
         $bankAccount = $this->bankAccount()->first();
@@ -374,5 +373,10 @@ class Entity extends Base\PublicEntity
         {
             return 'XXXX-XXXX-XXXX';
         }
+    }
+
+    public function enableReceiptEmails()
+    {
+        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
     }
 }
