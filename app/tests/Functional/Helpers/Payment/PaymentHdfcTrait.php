@@ -98,10 +98,5 @@ trait PaymentHdfcTrait
                         })->mock();
 
         $this->setMockServer($server);
-
-        $this->makeRequestAndCatchException(function ()
-        {
-            $content = $this->doAuthPayment();
-        });
     }
 }

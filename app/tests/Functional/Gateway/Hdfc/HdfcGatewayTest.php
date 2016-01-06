@@ -92,12 +92,15 @@ class HdfcGatewayTest extends TestCase
     public function testForcedCapture()
     {
         $payment = $this->doAuthPayment();
+        $payment = $this->getLastEntity('payment', true);
 
-        $this->captureErrorReturnGW00176();
-
+        $payment = $this->captureErrorReturnGW00176();
         $payment = $this->getLastEntity('payment', true);
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
         $this->assertEquals($payment['status'], 'captured');
+
+        $hdfcPayment = $this->getLastEntity('hdfc', true);
+        $this->assertEquals($hdfcPayment['error_code'], 'GW00176');
 
         $this->resetGatewayDriver();
         $this->resetMockServer();
