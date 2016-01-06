@@ -163,8 +163,7 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = false;
 
-            if (($payment['status'] !== Status::SUCCESS) or
-                ($input['status'] === 'failed'))
+            if ($payment['status'] !== Status::SUCCESS)
             {
                 $verify->apiSuccess = false;
             }
@@ -178,8 +177,13 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
 
-            // Gateway success, api success
-            if ($payment['status'] === Status::SUCCESS)
+            if (($payment['status'] !== Status::SUCCESS) or
+                ($input['payment']['status'] === 'failed'))
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+            }
+            else if ($payment['status'] === Status::SUCCESS)
             {
                 $verify->apiSuccess = true;
 
@@ -190,11 +194,6 @@ class Gateway extends Base\Gateway
                 {
                     $verify->status = VerifyResult::REFUND_AMOUNT_MISMATCH;
                 }
-            }
-            else if ($payment['statuscode'] !== Status::SUCCESS)
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
             }
         }
 
