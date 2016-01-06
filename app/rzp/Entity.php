@@ -20,7 +20,8 @@ class Entity extends Razorpay\Api\Entity
             'settlement',
             'terminal',
             'transaction',
-            'adjustment'
+            'adjustment',
+            'webhook',
         );
     }
 

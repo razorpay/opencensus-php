@@ -169,7 +169,8 @@ app.controller('EntityDetailCtrl', [
           'refund',
           'settlement',
           'terminal',
-          'transaction'
+          'transaction',
+          'webhook'
         ];
         // It needs to be suffixed with _id
         // and be a valid entity name for this to work

@@ -6,6 +6,29 @@ use Models\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $createRules = array(
+        'name'                  => 'required|min:4|alpha_space|max:200',
+        'email'                 => 'required|email|unique:merchants',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
+        'captcha'               => 'required'
+    );
+
+    protected static $createValidators = array('captcha');
+
+    protected static $unsetCreateInput = array(
+        'captcha'
+    );
+
+    protected static $changeEmailRules = array(
+        'email'         => 'required|email'
+    );
+
+    protected static $loginRules = array(
+        'email'     =>      'required|email',
+        'password'  =>      'required|between:6,50',
+    );
+
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
         'gateway'                                   => '',

@@ -68,7 +68,7 @@ class Service extends Base\Service
             Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
         }
     }
-    
+
     /**
      * take care when calling this function
      * This is only called from the admin service
@@ -103,8 +103,8 @@ class Service extends Base\Service
         $merchantDetails = $merchant->merchantDetails;
         $merchantDetails->contact_email = $merchant->email;
         $merchantDetails->save();
-        
-        return array($error, null);
+
+        return [$error, null];
     }
 
     public function confirm($token)
@@ -120,7 +120,7 @@ class Service extends Base\Service
         {
             $merchant_api_data = $merchant->generateApiData();
             $this->setApiCredentials();
-            
+
             $response = $this->api->merchant->create($merchant_api_data);
         }
         catch(BadRequestError $e)
@@ -151,6 +151,8 @@ class Service extends Base\Service
             {
                 $user = Auth::user()->get();
 
+                $merchant = $user->currentMerchant;
+
                 if ($user->confirm_token === null)
                 {
                     return [['Merchant already confirmed. You can login ' .
@@ -164,6 +166,15 @@ class Service extends Base\Service
         }
 
         return array(array('Email or password is invalid.'), array());
+    }
+
+    public function fetch($merchant_id)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchant_id);
+
+        $merchant['tags'] = $merchant->tags;
+
+        return $merchant->toArray();
     }
 
     public function fetchKeysFromApi($merchant_id, $mode)
@@ -242,9 +253,10 @@ class Service extends Base\Service
         return array($error, $key_data);
     }
 
+
     /**
      * Get the merchant entity from the gibven merchant id
-     * 
+     *
      * @param  string $merchantId
      * @return \Models\Merchant\Entity
      */
@@ -253,11 +265,85 @@ class Service extends Base\Service
         $merchant = Entity::findOrFail($user->getCurrentMerchantId())->toArray();
 
         if($user->currentMerchant->primaryOwner()->id == $user->id)
+        {
             $merchant['primaryOwner'] = true;
+        }
         else
+        {
             $merchant['primaryOwner'] = false;
+        }
 
         return $merchant;
+    }
+
+    /**
+     * Returns all the webhooks
+     * @param  string $mode live|test
+     */
+    public function getWebhooks($mode)
+    {
+        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = null;
+
+        try
+        {
+            $data = $this->api->webhook->all()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function editWebhook($mode, $webhookId, $input)
+    {
+        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = null;
+
+        try
+        {
+            $data = $this->api->webhook
+                ->fetch($webhookId)
+                ->edit($input)
+                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function createWebhook($mode, $input)
+    {
+        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = [];
+        $data = null;
+
+        try
+        {
+            // This is just semantics
+            // completely equivalent to all() for now
+            $data = $this->api->webhook->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
     }
 
     /**
@@ -274,16 +360,16 @@ class Service extends Base\Service
         {
             return array("You cannot remove yourself.");
         }
-        
+
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
 
         if(is_null($merchant))
         {
             return array("We couldn't find the merchant that you own.");
         }
-        
+
         $merchant->users()->detach($userId);
-        
+
         return $error;
     }
 
@@ -311,7 +397,7 @@ class Service extends Base\Service
             $error = $validator->messages();
             return array($error, null);
         }
-        
+
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
 
         if(is_null($merchant))
@@ -319,10 +405,10 @@ class Service extends Base\Service
             $error[] = "We couldn't find the merchant that you own.";
             return array($error, null);
         }
-        
+
         $userToUpdate = $merchant->users->find($userId);
 
-        if (is_null($userToUpdate)) 
+        if (is_null($userToUpdate))
         {
             $error[] = "The team member you are looking for does'nt exist";
             return array($error, null);
@@ -331,7 +417,7 @@ class Service extends Base\Service
         $userToUpdate->merchants()->updateExistingPivot(
             $merchant->id, ['role' => $input['role']]
         );
-        
+
         list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($user);
 
         return array($error, $merchant);
@@ -339,7 +425,7 @@ class Service extends Base\Service
 
     /**
      * Fetches merchant balance
-     * 
+     *
      * @param  string $merchantId Merchant Id
      * @return array contains both test and live balances
      */

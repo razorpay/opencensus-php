@@ -24,6 +24,18 @@ class Validator extends Base\Validator
         'method'    =>      'required|in:GET,POST,PUT,DELETE,PATCH'
     ];
 
+    protected static $addTagsRules = [
+        'tags'      =>      'required|max:255',
+    ];
+
+    protected static $addFeaturesRules = [
+        'features'    =>    'required|max:255',
+    ];
+
+    protected static $addTagsValidators = [
+        'addTags'
+    ];
+
     protected static $createRules = array(
         'name'                  => 'required|between:3,100|alpha_space',
         'username'              => 'required|between:3,50|alpha_dash|unique:admins',
@@ -38,7 +50,7 @@ class Validator extends Base\Validator
         'password'                  => 'required|between:6,50|confirmed',
         'password_confirmation'     => 'required|between:6,50'
     );
-    
+
     protected static $changeBankDetailsRules = array(
         'bank_name'             => 'required|alpha_space|max:255',
         'bank_account_number'   => 'required|numeric|digits_between:1,20',
@@ -74,6 +86,15 @@ class Validator extends Base\Validator
             default:
                 $this->addError('auth', 'Invalid Auth Method Specified');
                 break;
+        }
+    }
+
+    protected function validateAddTags($input)
+    {
+        $tags = explode(',', $input['tags']);
+        if (count($tags) < 1)
+        {
+            $this->addError('tags', 'Atleast one tag must be specified');
         }
     }
 

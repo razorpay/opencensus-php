@@ -236,6 +236,10 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
+        // This is to make sure that this route is not used to edit
+        // names, since that is superadmin only
+        assert(isset($input['name']) === false);
+
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
@@ -246,6 +250,15 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putEditMerchantName($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -309,9 +322,11 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getVerifyPayment($id)
+    public function getVerifyPayment($mode, $id)
     {
-        list($error, $data) = (new Admin\Service)->getVerifyPayment($id);
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Admin\Service)->getVerifyPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -529,6 +544,34 @@ class AdminController extends BaseController
 
         list($error, $response) = (new Admin\Service)
             ->editCredits($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function postTagMerchant($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)
+            ->tagMerchant($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function syncMerchantFeatures($merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)
+            ->syncMerchantFeatures($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function getMerchantTags($merchantId)
+    {
+        list($error, $response) = (new Admin\Service)
+            ->getMerchantTags($merchantId);
 
         return AppResponse::jsonResponse($error, $response);
     }

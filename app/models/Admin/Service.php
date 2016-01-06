@@ -110,7 +110,25 @@ class Service extends Base\Service
     public function listMerchants($input)
     {
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');
+            ->select([
+                'id',
+                'name',
+                'email',
+                'confirm_token',
+                'activated',
+                'steps_finished',
+                'merchants.created_at',
+                'merchant_details.updated_at',
+                'submitted_at',
+                'archived_at'
+        ])->with('tagged');
+
+
+        if (isset($input['tags']))
+        {
+            $data = $data->withAllTags($input['tags']);
+        }
+
 
         if (isset($input['archived']))
         {
@@ -331,7 +349,6 @@ class Service extends Base\Service
 
         $data['merchant_details'] = $merchant_details->toArray();
 
-
         // @todo This is failing tests on wercker, fix
         // $merchant = Merchant\Entity::findorfail($id);
         // Merchant\Validator::checkAPIMatch($merchant, $response);
@@ -341,6 +358,7 @@ class Service extends Base\Service
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
+            'tags'              => $merchant['tags'],
             'submitted_at'      => $merchant_details['submitted_at'],
             'activated_dashboard' => $merchant['activated']
         ) + $data;
@@ -575,12 +593,12 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function getVerifyPayment($id)
+    public function getVerifyPayment($mode, $id)
     {
         $data = [];
         $error = [];
 
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $mode);
 
         try
         {
@@ -1517,6 +1535,70 @@ class Service extends Base\Service
         $this->slackPost("Data export by $adminId ($entity)", $params, '#tech_logs');
     }
 
+    public function tagMerchant($merchantId, $input)
+    {
+        $error = (new Admin\Validator)->validateInput('add_tags', $input)
+            ->messages();
+
+        if (empty($error))
+        {
+            $merchant = Merchant\Entity::findOrFail($merchantId);
+            $merchant->retag(explode(',', $input['tags']));
+            $merchant['tags'] = $merchant->tags;
+            return [null, $merchant->toArray()];
+        }
+        else
+        {
+            return [$error, null];
+        }
+    }
+
+    public function syncMerchantFeatures($merchantId, $input)
+    {
+        //Send the input data to api for persistance
+        $error = $response = array();
+
+        $error = (new Admin\Validator)->validateInput('add_features', $input)
+            ->messages();
+
+        if (!empty($error))
+        {
+            return array($error, null);
+        }
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $params = array('features' => $input['features']);
+
+            $response = $this->api->merchant->fetch($merchantId)->setFeatures($params)->toArray();
+
+            $features = $this->api->merchant->fetch($merchantId)->getFeatures()->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if (empty($error))
+        {
+            $merchant = Merchant\Entity::findOrFail($merchantId);
+            $merchant->retag(array_merge($features,$merchant->tags));
+            $merchant['features'] = $features;
+            return [null, $merchant->toArray()];
+        }
+
+        return array($error, null);
+    }
+
+    public function getMerchantTags($merchantId)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchantId);
+
+        return [null, $merchant->tagNames()];
+    }
+
     public function confirmMerchant($merchantId)
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
@@ -1536,3 +1618,4 @@ class Service extends Base\Service
         return [null, 'Merchant Confirmed'];
     }
 }
+

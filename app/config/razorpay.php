@@ -14,7 +14,7 @@ return array(
 	'emails' => array(
 
 		'contact' => 'contact@razorpay.com',
-		
-		'sales' => 'sales@razorpay.com'
+
+		'sales' => 'salesteam@razorpay.com'
 	),
 );

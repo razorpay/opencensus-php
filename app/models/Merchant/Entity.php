@@ -12,6 +12,8 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
+    use \Conner\Tagging\TaggableTrait;
+
     public $incrementing = false;
 
     protected $table = 'merchants';
@@ -457,12 +459,17 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         // to User\Entity going ahead.
         if($this->hasUsers())
         {
-            $user = $this->users()->where('email',$email)->first();
+            $user = $this->users()->where('email', $email)->first();
             if($user)
             {
                 $user->confirm_token = $this->confirm_token;
                 $user->save();
             }
         }
+    }
+
+    protected function getTagsAttribute()
+    {
+        return $this->tagNames();
     }
 }

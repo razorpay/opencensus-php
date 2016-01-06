@@ -69,6 +69,58 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
+    $scope.tagMerchant = function(tags) {
+      // Tags will be a csv field
+      var request = $http({
+        url: '/admin/merchant/' + $scope.merchant.id + '/tags',
+        method: 'POST',
+        transformRequest: transformRequestAsFormPost,
+        data: {
+          tags: tags
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant tagged successfully.', true);
+          $scope.merchant.details.tags = data.data.tags;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
+    $scope.featureMerchant = function(features) {
+      // Tags will be a csv field
+      var request = $http({
+        url: '/admin/merchant/' + $scope.merchant.id + '/features',
+        method: 'POST',
+        transformRequest: transformRequestAsFormPost,
+        data: {
+          features: features
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Features has been added successfully.', true);
+          $scope.merchant.details.features = data.data.features;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.unlockForm = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unlock');
       request.success(function (data) {
@@ -330,6 +382,29 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.editMerchantName = function (name) {
+      var request = $http({
+        method: 'put',
+        url: '/admin/merchant/' + $scope.merchant.id + '/name',
+        data: { name: name }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant name edited successfully', true);
+          generateMerchant();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.changeBankAccountDetails = function (merchant) {
       var request = $http({
         method: 'put',
@@ -422,6 +497,11 @@ app.controller('MerchantDetailCtrl', [
     };
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
+      // Switch the default plan to Promotional Pricing
+      if (currentPlan === '') {
+        currentPlan = '1In3Yh5Mluj605';
+      };
+
       var modalInstance = $modal.open({
         templateUrl: 'assignPricingModalContent.html',
         controller: 'assignPricingModalCtrl',
@@ -433,6 +513,37 @@ app.controller('MerchantDetailCtrl', [
       });
       modalInstance.result.then(function (plan_id) {
         $scope.assignPricing(plan_id);
+      }, $.noop);
+    };
+
+    $scope.openTagMerchant = function () {
+      var tags = $scope.merchant.details.tags || [];
+      var modalInstance = $modal.open({
+        templateUrl: 'tagModalContent.html',
+        controller: 'tagModalCtrl',
+        resolve: {
+          current: function () {
+            return tags;
+          }
+        }
+      });
+      modalInstance.result.then(function (tags) {
+        $scope.tagMerchant(tags);
+      }, $.noop);
+    };
+    $scope.openFeatureMerchant = function () {
+      var features = $scope.merchant.details.features || [];
+      var modalInstance = $modal.open({
+        templateUrl: 'featureModalContent.html',
+        controller: 'featureModalCtrl',
+        resolve: {
+          current: function () {
+            return features;
+          }
+        }
+      });
+      modalInstance.result.then(function (features) {
+        $scope.featureMerchant(features);
       }, $.noop);
     };
     $scope.openAssignTerminal = function () {
@@ -450,7 +561,7 @@ app.controller('MerchantDetailCtrl', [
         controller: 'editMerchantWalletsCtrl',
         resolve: {
           methods: function () {
-            return $scope.merchant.details.methods;
+            return $scope.merchant.details.methods || {};
           }
         }
       });
@@ -484,6 +595,20 @@ app.controller('MerchantDetailCtrl', [
       });
       modalInstance.result.then(function (email) {
         $scope.editMerchantEmail(email);
+      }, $.noop);
+    };
+    $scope.openEditMerchantName = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'editMerchantNameModalContent.html',
+        controller: 'editMerchantNameModalCtrl',
+        resolve: {
+          current: function () {
+            return $scope.merchant.details;
+          }
+        }
+      });
+      modalInstance.result.then(function (name) {
+        $scope.editMerchantName(name);
       }, $.noop);
     };
     $scope.openChangeBankAccountDetails = function () {
@@ -586,7 +711,6 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
           fetchBalance();
-          console.log($scope.merchant);
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value, key) {
@@ -664,7 +788,11 @@ app.controller('MerchantDetailCtrl', [
     wallets.map(function (key) {
       // Assign a default of false and override if we have it
       $scope.methods[key] = false;
-      $scope.methods[key] = methods[key];
+
+      if (methods.hasOwnProperty(key)) {
+        $scope.methods[key] = methods[key];
+      };
+
     })
 
     $scope.ok = function () {
@@ -766,6 +894,19 @@ app.controller('MerchantDetailCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
+]).controller('editMerchantNameModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    $scope.current = current;
+    $scope.ok = function (name) {
+      $modalInstance.close(name);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
 ]).controller('changeBankAccountDetailsModalCtrl', [
   '$scope',
   '$modalInstance',
@@ -801,6 +942,33 @@ app.controller('MerchantDetailCtrl', [
     $scope.credits = credits;
     $scope.ok = function (credits) {
       $modalInstance.close(credits);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('tagModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    // We need to keep it to a csv field
+    $scope.tags = current.join();
+    $scope.ok = function (tags) {
+      $modalInstance.close(tags);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('featureModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    $scope.features = current.join();
+    $scope.ok = function (features) {
+      $modalInstance.close(features);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

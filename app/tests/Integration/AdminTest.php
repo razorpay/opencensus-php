@@ -41,14 +41,17 @@ class AdminTest extends TestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
-            
+
             $user = $this->createEntity('user');
             $user->saveOrFail();
-            
-            $this->merchant = Models\Merchant\Entity::createFromUserWithBusinessName($user,'Razorpay');
+
+            $this->merchant = Models\Merchant\Entity::createFromUserWithBusinessName($user, 'Razorpay');
             $this->merchant->saveOrFail();
-            $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id' => $this->merchant->id));
-            
+
+            $this->merchant_details = $this->createEntity('merchant_details',
+                array('merchant_id'=>$this->merchant->id)
+            );
+
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
 
@@ -310,6 +313,22 @@ class AdminTest extends TestCase
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
         $this->assertBodyHasText('Live transactions for merchant enabled successfully');
+    }
+
+    public function testMerchantTagging()
+    {
+        $this->browser
+            ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
+            ->waitForLoaded()
+            ->clickLinkWithText('Tag Merchant')
+            ->waitForPresent('.merchant-tag-modal')
+            // Fill tags
+            ->type(l::IdOrName('merchant-tags'), 'international,webhook,random_tag')
+            ->click(l::css('.modal-ok'))
+            ->waitForLoaded();
+
+        // It gets capitalized before being displayed
+        $this->assertBodyHasText('Random_Tag');
     }
 
     /**
