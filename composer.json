@@ -18,7 +18,7 @@
         "vipsoft/unzip": "^1.1",
         "schuppo/password-strength": "~0.7",
         "league/csv": "7.1.2",
-        "rtconner/laravel-tagging": "~0.5",
+        "rtconner/laravel-tagging": "dev-laravel4-php7",
         "marlek/laravel-automigrate": "dev-master",
         "ircmaxell/random-lib": "^1.1"
     },
@@ -32,6 +32,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/spine.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:captn3m0/laravel-tagging.git"
         }
     ],
     "autoload": {
