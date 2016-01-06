@@ -155,6 +155,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
+        $input = $verify->input;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -162,7 +163,8 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = false;
 
-            if ($payment['status'] !== Status::SUCCESS)
+            if (($payment['status'] !== Status::SUCCESS) or
+                ($input['status'] === 'failed'))
             {
                 $verify->apiSuccess = false;
             }
