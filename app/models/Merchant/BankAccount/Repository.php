@@ -44,7 +44,7 @@ class Repository extends Base\Repository
         $highest = $repo::on($mode)
                     ->withTrashed()
                     ->where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')
-                    ->orderBy(BankAccount\Entity::BENEFICIARY_CODE, 'desc')
+                    ->orderBy(BankAccount\Entity::CREATED_AT, 'desc')
                     ->first();
 
         if ($highest === null)
@@ -52,10 +52,10 @@ class Repository extends Base\Repository
             return 0;
         }
 
-        $count = substr($highest->getBeneficiaryCode(), 4);
+        $count = (int) substr($highest->getBeneficiaryCode(), 4);
 
         // The first entry doesn't have any count
-        if ($count === false)
+        if ($count === 0)
         {
             $count = 1;
         }
