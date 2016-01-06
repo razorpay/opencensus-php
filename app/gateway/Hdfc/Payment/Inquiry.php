@@ -51,6 +51,7 @@ trait Inquiry
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $error = $verify->verifyResponse['error'];
+        $input = $verify->input;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -67,7 +68,8 @@ trait Inquiry
         {
             $verify->gatewaySuccess = true;
 
-            if (in_array($payment['status'], $successStatusArray))
+            if ((in_array($payment['status'], $successStatusArray)) and
+                ($input['payment']['status'] !== 'failed'))
             {
                 $verify->apiSuccess = true;
             }
