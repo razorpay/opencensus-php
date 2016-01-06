@@ -110,6 +110,7 @@ trait Inquiry
 
             if ($verify->gatewaySuccess === true)
             {
+
                 if ($content['result'] === Result::APPROVED)
                 {
                     $status = Status::AUTHORIZED;
@@ -124,10 +125,8 @@ trait Inquiry
                         'Not expecting this result code: ' . $content['result']);
                 }
 
-                $payment->setGatewayTransactionId($content['tranid']);
                 $payment->setStatus($status);
 
-                unset($content['tranid']);
                 $payment->fill($content);
             }
         }

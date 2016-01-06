@@ -27,6 +27,25 @@ class Entity extends Base\Entity
         'created_at',
         'updated_at');
 
+    protected $fillable = array(
+        'payment_id',
+        'refund_id',
+        'gateway_transaction_id',
+        'action',
+        'received',
+        'amount',
+        'enroll_result',
+        'status',
+        'result',
+        'eci',
+        'auth',
+        'ref',
+        'avr',
+        'postdate',
+        'error_code',
+        'error_text',
+    );
+
     protected $table = 'hdfc';
 
     protected $primaryKey = 'id';

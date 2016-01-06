@@ -171,7 +171,12 @@ class Server
         $this->input = $input;
     }
 
-    public function content(& $content)
+    public function setAction($action)
+    {
+        $this->action = $action;
+    }
+
+    public function content(& $content, $action = '')
     {
         return $content;
     }

@@ -145,6 +145,8 @@ class PaytmGatewayTest extends TestCase
         $this->timeoutAuthorizePayment();
 
         $payment = $this->getLastEntity('payment', true);
+        // Payment should be in created state because it had timed out
+        $this->assertEquals('created', $payment['status']);
         $this->fixtures->payment->failPayment($payment['id']);
 
         $this->succeedPaymentVerify();

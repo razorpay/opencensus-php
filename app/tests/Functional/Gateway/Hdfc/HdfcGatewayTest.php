@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Gateway\Hdfc;
 
+use EE\Exception;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
@@ -110,5 +111,54 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->doAuthPayment();
 
         $this->verifyPayment($payment['razorpay_payment_id']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->timeoutHdfcAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->succeedPaymentVerify();
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $payment = $this->getLastEntity('hdfc', true);
+    }
+
+    protected function timeoutHdfcAuthorizePayment()
+    {
+        $server = $this->mockServerContentFunction(function (& $content, $action)
+                        {
+                            if ($action === 'authorize')
+                            {
+                                throw new Exception\GatewayTimeoutException('Timed out');
+                            }
+
+                            return $content;
+                        });
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $content = $this->doAuthPayment();
+            });
+    }
+
+    protected function succeedPaymentVerify()
+    {
+        $server = $this->mockServerContentFunction(function (& $content)
+                        {
+                            $content['RESPCODE'] = '0';
+                            $content['RESPMSG'] = 'Transaction succeeded';
+                            $content['STATUS'] = 'TXN_SUCCESS';
+
+                            return $content;
+                        });
     }
 }
