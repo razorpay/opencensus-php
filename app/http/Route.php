@@ -151,6 +151,7 @@ final class Route
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                  => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
+        'dummy_route'                           => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'              => ['get',      'redirect',                                 'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'             => ['post',     'redirect',                                 'AdminController@postTransparentRedirect'                           ],
         'payment_compute_tax'                   => ['post',     'payments/compute/tax',                     'PaymentController@postComputeServiceTax'                           ],
@@ -313,6 +314,7 @@ final class Route
     );
 
     public static $direct = array(
+        'dummy_route',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',

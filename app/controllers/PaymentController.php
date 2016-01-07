@@ -212,4 +212,13 @@ class PaymentController extends BaseController
         $data = $this->payment->computeServiceTax();
         return ApiResponse::json($data);
     }
+
+    public function postDummyRoute()
+    {
+        $input = Input::all();
+
+        $this->app['trace']->info(
+            \Trace\TraceCode::PAYMENT_WEBHOOK,
+            $input);
+    }
 }

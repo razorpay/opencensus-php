@@ -30,6 +30,7 @@ class TraceCode
     const PAYMENT_AUTHORIZE_FAILED                  = 'PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_NOTIFY_FAILED                     = 'PAYMENT_NOTIFY_FAILED';
     const PAYMENT_AUTHORIZE_REMINDER                = 'PAYMENT_AUTHORIZE_REMINDER';
+    const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
 
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
