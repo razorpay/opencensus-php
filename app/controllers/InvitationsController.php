@@ -10,7 +10,7 @@ class InvitationController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function sendMerchantInvitation()
+    public function postSendMerchantInvitation()
     {
         $input = Input::all();
 
@@ -25,11 +25,12 @@ class InvitationController extends BaseController
      * @param  string  $inviteId
      * @return \Illuminate\Http\Response
      */
-    public function resendMerchantInvitation($inviteId)
+    public function getResendMerchantInvitation($inviteId)
     {
         $user = Auth::user()->user();
 
-        list($error, $data) = (new Invitation\Service)->resendInvitationForUser($inviteId, $user);
+        list($error, $data) = (new Invitation\Service)
+            ->resendInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -40,11 +41,12 @@ class InvitationController extends BaseController
      * @param  string  $inviteId
      * @return \Illuminate\Http\Response
      */
-    public function acceptMerchantInvitation($inviteId)
+    public function postAcceptMerchantInvitation($inviteId)
     {
         $user = Auth::user()->user();
 
-        $error = (new Invitation\Service)->acceptInvitationForUser($inviteId, $user);
+        $error = (new Invitation\Service)
+            ->acceptInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -55,11 +57,12 @@ class InvitationController extends BaseController
      * @param  string  $inviteId
      * @return \Illuminate\Http\Response
      */
-    public function rejectMerchantInvitation($inviteId)
+    public function deleteRejectMerchantInvitation($inviteId)
     {
         $user = Auth::user()->user();
 
-        $error = (new Invitation\Service)->rejectInvitationForUser($inviteId, $user);
+        $error = (new Invitation\Service)
+            ->rejectInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -103,7 +106,7 @@ class InvitationController extends BaseController
      * @param  string  $inviteId
      * @return \Illuminate\Http\Response
      */
-    public function destroyMerchantInvitationForUser($inviteId)
+    public function deleteMerchantInvitationForUser($inviteId)
     {
         $user = Auth::user()->user();
 

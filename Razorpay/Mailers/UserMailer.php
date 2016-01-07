@@ -12,7 +12,7 @@ class UserMailer extends Mailer
     /**
      * Create a new abstract mailer instance.
      *
-     * @param object $user
+     * @param UserEntity $user
      */
     public function __construct(UserEntity $user)
     {
@@ -26,7 +26,10 @@ class UserMailer extends Mailer
         $this->data = $user->toArray();
 
         if($user->hasMerchants())
-            $this->data['merchant_details'] = $user->currentMerchant->merchantDetails->toArray();
+        {
+            $this->data['merchant_details'] =
+                $user->currentMerchant->merchantDetails->toArray();
+        }
     }
 
     /**
