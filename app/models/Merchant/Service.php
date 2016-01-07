@@ -258,11 +258,13 @@ class Service extends Base\Service
      * Get the merchant entity from the gibven merchant id
      *
      * @param  string $merchantId
-     * @return \Models\Merchant\Entity
+     * @return Array with merchant, merchant details
      */
     public function fetchCurrentMerchantForUser($user)
     {
-        $merchant = Entity::findOrFail($user->getCurrentMerchantId())->toArray();
+        $merchantId = $user->getCurrentMerchantId();
+
+        $merchant = $this->fetch($merchantId);
 
         if($user->currentMerchant->primaryOwner()->id == $user->id)
         {

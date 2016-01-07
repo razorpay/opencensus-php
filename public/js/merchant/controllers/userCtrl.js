@@ -12,7 +12,7 @@ app.controller('UserCtrl', [
   function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
-    
+
     $scope.getPendingInvitations = function(){
       var request = $http.get('/settings/invitations');
       request.success(function (data) {

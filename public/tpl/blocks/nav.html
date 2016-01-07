@@ -40,14 +40,14 @@
     </a>
   </li>
   <li>
-    <a id="addFundsNav" ui-sref="app.generatereport">
+    <a id="generateReportNav" ui-sref="app.generatereport">
       <i class="fa fa-file-excel-o icon text-danger-lter"></i>
       <b class="badge bg-success dk pull-right ng-binding">beta</b>
       <span>Reports</span>
     </a>
   </li>
-  <li ng-show="user.primaryOwner">
-    <a id="addFundsNav" ui-sref="app.teammanagement">
+  <li ng-show="user.primaryOwner && user.tags.indexOf('Team') != -1">
+    <a id="manageTeamNav" ui-sref="app.teammanagement">
       <i class="fa fa-users icon text-info-lter"></i>
       <b class="badge bg-success dk pull-right ng-binding">beta</b>
       <span>Team</span>
