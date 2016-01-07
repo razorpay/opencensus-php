@@ -136,7 +136,7 @@ app.controller('WebhooksCtrl', [
     $scope.webhook = {
       url: "",
       events: {
-        'payment.authorized': true
+        'payment.authorized': false
       }
     };
     $scope.ok = function (webhook) {
