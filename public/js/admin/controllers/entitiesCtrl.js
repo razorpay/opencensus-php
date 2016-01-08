@@ -241,7 +241,8 @@ app.controller('EntitiesCtrl', [
         }
       }
     }
-    $scope.$watch('mode + entity_type + count + from + to', function (x) {
+
+    $scope.$watch('mode + entity_type + from + to', function (x) {
       $state.go('app.entities', {
         mode: $scope.mode,
         type: $scope.entity_type
