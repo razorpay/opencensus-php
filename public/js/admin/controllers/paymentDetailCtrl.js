@@ -28,7 +28,7 @@ app.controller('PaymentDetailCtrl', [
       'description', 'error_code', 'error_description', 'email', 'contact',
       'notes', 'transaction_id', 'authorized_at', 'captured_at', 'created_at',
       'updated_at', 'authorized_at', 'terminal_id', 'signed', 'verified',
-      'internal_error_code', 'bank', 'wallet'
+      'internal_error_code', 'bank', 'wallet', 'refunds'
     ];
 
     /**
@@ -97,6 +97,7 @@ app.controller('PaymentDetailCtrl', [
         if (data.success) {
           var payment = JSON.stringify(data.data);
           $scope.alerts.addAlert('success', 'Payment Refunded Successfully: ' + payment, true);
+          window.location.reload();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -116,6 +117,7 @@ app.controller('PaymentDetailCtrl', [
         if (data.success) {
           var payment = JSON.stringify(data.data.payment);
           $scope.alerts.addAlert('success', 'Payment Authorized Successfully: ' + payment, true);
+          window.location.reload();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -161,6 +163,7 @@ app.controller('PaymentDetailCtrl', [
         if (data.success) {
           var payment = JSON.stringify(data.data.payment);
           $scope.alerts.addAlert('success', 'Payment Verified successfully: ' + payment, true);
+          window.location.reload();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -172,6 +175,7 @@ app.controller('PaymentDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
     $scope.capture = function (amount) {
       var captureAmount = parseInt(amount);
       if (!captureAmount) {
@@ -190,6 +194,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.alerts.addAlert('success', 'Payment Captured', true);
           $scope.entity.status = 'captured';
           $scope.entity.amount = captureAmount;
+          window.location.reload();
         } else {
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
@@ -221,6 +226,7 @@ app.controller('PaymentDetailCtrl', [
           else
             $scope.entity.refund_status = 'partial';
           $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + refundAmount;
+          window.location.reload();
         } else {
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
@@ -239,7 +245,6 @@ app.controller('PaymentDetailCtrl', [
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
-          console.debug(data);
           $scope.entity.refunds = data.data.items;
           $scope.isRefundsCollapsed = false;
         } else {
