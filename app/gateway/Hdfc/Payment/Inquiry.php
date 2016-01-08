@@ -159,6 +159,9 @@ trait Inquiry
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [$content]);
 
+        $inquiryRequest = &$this->inquiryRequest;
+        $inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
+
         $data = &$this->inquiryRequest['data'];
         $data = $content;
 

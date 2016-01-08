@@ -321,6 +321,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function verifyMultiplePayments($filter)
+    {
+        $request = array(
+            'url' => '/payments/verify/'.$filter,
+            'method' => 'GET');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function refundPayment($id, $amount = null)
     {
         $this->ba->privateAuth();
