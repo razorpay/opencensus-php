@@ -28,11 +28,11 @@ class Service extends Base\Service
         $user = Auth::user()->user();
 
         $merchant = $user->merchants()
-                         ->where('email',$user->email)
-                         ->where('role','owner')
+                         ->where('email', $user->email)
+                         ->where('role', 'owner')
                          ->first();
 
-        if ($merchant->invitations()->where('email', $input['email'])->exists()) 
+        if ($merchant->invitations()->where('email', $input['email'])->exists())
         {
             return array(array('An invitation has already been sent to the user.'),array());
         }
@@ -62,8 +62,8 @@ class Service extends Base\Service
         $view = $invitation->user_id
                         ? 'emails.invitations.existing'
                         : 'emails.invitations.new';
-        
-        Mail::send($view, compact('invitation'), function ($m) use ($invitation) 
+
+        Mail::send($view, compact('invitation'), function ($m) use ($invitation)
         {
             $m->to($invitation->email)->subject('New Invitation!');
         });
@@ -128,7 +128,7 @@ class Service extends Base\Service
         $error = array();
 
         $validation = (new Invitation\Validator)->validateInput('updateInvitation', $input);
-        
+
         if($validation->fails())
         {
             return $validation->messages();
@@ -164,14 +164,14 @@ class Service extends Base\Service
         }
 
         $invitation->delete();
-        
+
         return array();
     }
 
     /**
      * Get the invitation entity from the token
-     * 
-     * @param string $invitationToken 
+     *
+     * @param string $invitationToken
      * @return string $email
      */
     public function getInvitationFromToken($invitationToken)
@@ -190,15 +190,15 @@ class Service extends Base\Service
 
     /**
      * Get the pending invitations for the given user.
-     * 
-     * @param \Models\User\Entity $user 
+     *
+     * @param \Models\User\Entity $user
      * @return \Models\Invitation\Entity[]
      */
     public function getPendingInvitationsForUser($user)
     {
         $invitations = $user->invitations()->with('merchant')->get();
 
-        foreach ($invitations as $invite) 
+        foreach ($invitations as $invite)
         {
             $invite->setVisible(['id', 'merchant', 'role']);
             $invite->merchant->setVisible(['id','name','email']);
