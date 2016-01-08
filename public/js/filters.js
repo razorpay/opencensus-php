@@ -9,7 +9,7 @@ angular.module('app.filters', []).filter('fromNow', function () {
   return function (input) {
     if (!input)
       return input;
-    var words = input.split(' ');
+    var words = input.toString().split(' ');
     for (var i = 0; i < words.length; i++) {
       words[i] = words[i].toLowerCase();
       // lowercase everything
