@@ -103,6 +103,11 @@ class Handler
         if (method_exists($exception, 'getData'))
         {
             $data = $exception->getData();
+
+            if (is_array($data) === false)
+            {
+                $data = null;
+            }
         }
 
         $stack = explode("\n", $exception->getTraceAsString());
