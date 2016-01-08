@@ -8,6 +8,7 @@ use Services\SlackPoster;
 class Service
 {
     use SlackPoster;
+
     /**
      * The application instance.
      *

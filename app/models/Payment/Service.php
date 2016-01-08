@@ -337,164 +337,11 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyPaymentsWithFailedVerifyResult()
+    public function verifyMultiplePayments($filter)
     {
-        $payments = (new Payment\Repository)->getPaymentsWithVerifyResultFailed();
+        $verify = new Verify($this->mode, $this->trace, $this->app['exception.handler']);
 
-        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
-        $time = time();
-
-        foreach ($payments as $payment)
-        {
-            try
-            {
-                $this->merchant = $payment->merchant;
-
-                $res = $this->processor()->verify($payment);
-
-                $verified++;
-            }
-            catch (Exception\PaymentVerificationException $e)
-            {
-                $failed++;
-
-                // Attempt to authorize payments whose verification failed
-                $this->processor()->authorizeFailedPayment($payment);
-
-                $authorized++;
-
-                // Now Just continue
-            }
-            catch (Exception\GatewayTimeoutException $e)
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
-                    ['payment_id' => $payment->getId()]);
-
-                // Just continue
-                $timedOut++;
-            }
-            catch (\Exception $e)
-            {
-                // @note: If payment verification fails due to any reason
-                // other than expected ones, we should log it as an error
-                // exception.
-                //
-                // If for eg, exception is BadRequestException, then it won't
-                // get logged by global handler because it's not a critical
-                // exception but in this context it really shouldn't have
-                // occurred.
-
-                $this->app['exception.handler']->traceException($e);
-
-                // Just continue
-                $error++;
-            }
-        }
-
-        $time = time() - $time;
-
-        $results = array(
-            'verified'      => $verified,
-            'failed'        => $failed,
-            'authorized'    => $authorized,
-            'timed out'     => $timedOut,
-            'error'         => $error,
-            'total time'    => $time . ' secs');
-
-        $message = 'Payment verify result';
-
-        $total = $timedOut + $verified + $failed + $authorized + $error;
-
-        if ($total !== 0)
-        {
-            // Drop all false values (NULL, 0, "")
-            $slackArray = array_filter($results);
-            $this->slackPost($message, $slackArray, ['channel' => '#tech_logs']);
-        }
-
-        return $results;
-    }
-
-    public function verifyAllPayments()
-    {
-        $ts = time() - 30 * 60;
-
-        $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
-
-        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
-        $time = time();
-
-        foreach ($payments as $payment)
-        {
-            try
-            {
-                $this->merchant = $payment->merchant;
-
-                $res = $this->processor()->verify($payment);
-
-                $verified++;
-            }
-            catch (Exception\PaymentVerificationException $e)
-            {
-                $failed++;
-
-                // Attempt to authorize payments whose verification failed
-                $this->processor()->authorizeFailedPayment($payment);
-
-                $authorized++;
-
-                // Now Just continue
-            }
-            catch (Exception\GatewayTimeoutException $e)
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
-                    ['payment_id' => $payment->getId()]);
-
-                // Just continue
-                $timedOut++;
-            }
-            catch (\Exception $e)
-            {
-                // @note: If payment verification fails due to any reason
-                // other than expected ones, we should log it as an error
-                // exception.
-                //
-                // If for eg, exception is BadRequestException, then it won't
-                // get logged by global handler because it's not a critical
-                // exception but in this context it really shouldn't have
-                // occurred.
-
-                $this->app['exception.handler']->traceException($e);
-
-                // Just continue
-                $error++;
-            }
-        }
-
-        $time = time() - $time;
-
-        $results = array(
-            'verified'      => $verified,
-            'failed'        => $failed,
-            'authorized'    => $authorized,
-            'timed out'     => $timedOut,
-            'error'         => $error,
-            'total time'    => $time . ' secs');
-
-        $message = 'Payment verify result';
-
-        $total = $timedOut + $verified + $failed + $authorized + $error;
-
-        if ($total !== 0)
-        {
-            // Drop all false values (NULL, 0, "")
-            $slackArray = array_filter($results);
-            $this->slackPost($message, $slackArray, ['channel' => '#tech_logs']);
-        }
-
-        return $results;
+        return $verify->verifyPaymentsWithFilter($filter);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()
@@ -597,7 +444,9 @@ class Service extends Base\Service
 
     protected function processor($merchant = null)
     {
-        return Payment\Processor\Processor::create($this->getBindings($merchant));
+        $bindings = $this->getBindings($merchant);
+
+        return Processor\Processor::create($bindings);
     }
 
     protected function getBindings(Merchant\Entity $merchant = null)

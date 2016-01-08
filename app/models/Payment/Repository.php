@@ -111,6 +111,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function get50PaymentsWithVerifyResult($result)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::VERIFIED, '=', $result)
+                    ->take(50)
+                    ->get();
+    }
+
     public function getPaymentsWithVerifyResultFailed()
     {
         $repo = $this->repo;

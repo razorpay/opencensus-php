@@ -181,9 +181,9 @@ class PaymentController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments()
+    public function getVerifyPayments($filter)
     {
-        $data = $this->payment->verifyAllPayments();
+        $data = $this->payment->verifyMultiplePayments($filter);
 
         return ApiResponse::json($data);
     }
