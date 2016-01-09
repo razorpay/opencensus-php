@@ -50,6 +50,7 @@ app.controller('EntitiesCtrl', [
     };
     var gatewayList = [
       'all',
+      'amex',
       'atom',
       'axis_genius',
       'axis_migs',
@@ -85,6 +86,10 @@ app.controller('EntitiesCtrl', [
     // This list is alphabetically sorted, take care to maintain that
     $scope.availableFilters = {
       adjustment: { merchant_id: ['Merchant Id'] },
+      amex: {
+        payment_id: ['Payment Id'],
+        received: booleanList
+      },
       axis_genius: {
         payment_id: ['Payment Id'],
         received: booleanList
@@ -139,7 +144,8 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList2,
         mobikwik: booleanList2,
         payzapp: booleanList2,
-        card: booleanList2
+        card: booleanList2,
+        amex: booleanList2
       },
       netbanking: {
         payment_id: ['Payment Id'],
@@ -372,10 +378,11 @@ app.controller('EntitiesCtrl', [
       // We send the methods param in a JSON encoded format
       if (entity === 'merchant') {
         var methods = {}, validMethods = [
+            'amex',
+            'card',
             'paytm',
             'mobikwik',
-            'payzapp',
-            'card'
+            'payzapp'
           ];
         for (var i in validMethods) {
           var method = validMethods[i];

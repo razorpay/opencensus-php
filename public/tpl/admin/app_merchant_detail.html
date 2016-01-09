@@ -254,6 +254,10 @@
           Settlement Schedule <i class="fa fa-clock-o"></i>
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
+          Amex
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
           Paytm
         </a>
