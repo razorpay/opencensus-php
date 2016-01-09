@@ -147,11 +147,18 @@ class Pricing extends Base
     {
         $repo = new Models\Pricing\Repository;
 
-        foreach ($rows as $row)
-        {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
-        }
+        $modes = ['live', 'test'];
+
+        // foreach ($modes as $mode)
+        // {
+        //     $this->connection($mode);
+
+            foreach ($rows as $row)
+            {
+                $pricing = new Models\Pricing\Entity;
+                $pricing->fill($row);
+                $repo->saveOrFail($pricing);
+            }
+        // }
    }
 }

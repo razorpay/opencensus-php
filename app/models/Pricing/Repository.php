@@ -46,6 +46,13 @@ class Repository extends Base\Repository
         return $pricing;
     }
 
+    public function getMerchantPricingPlan($merchant)
+    {
+        $pricingPlanId = $merchant->getPricingPlanId();
+//sd($pricingPlanId);
+        return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
+    }
+
     public function getPricingPlanByIdOrFailPublic($id)
     {
         return $this->getPricingPlanById($id, true, true);

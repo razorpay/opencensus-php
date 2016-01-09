@@ -563,6 +563,19 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function setPaymentMethods($methods, $merchantId = '10000000000000')
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url' => '/merchants/'.$merchantId.'/methods',
+            'method' => 'put',
+            'methods' => json_encode($methods)
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultPaymentArray()
     {
         //

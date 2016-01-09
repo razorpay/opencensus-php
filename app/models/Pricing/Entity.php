@@ -123,6 +123,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getPaymentNetwork()
+    {
+        return $this->getAttribute(self::PAYMENT_NETWORK);
+    }
+
+    public function getPaymentMethod()
+    {
+        return $this->getAttribute(self::PAYMENT_METHOD);
+    }
+
     public function fillRule($input, $plan)
     {
         $rule = $plan->first();
