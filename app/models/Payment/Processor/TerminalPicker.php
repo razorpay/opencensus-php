@@ -295,7 +295,8 @@ class TerminalPicker
         $sharedCardTerminals = array(
             Shared::KOTAK_RAZORPAY_TERMINAL,
             Shared::HDFC_RAZORPAY_TERMINAL,
-            Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
+            Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
+            Shared::AMEX_RAZORPAY_TERMINAL);
 
         foreach ($sharedCardTerminals as $sharedTerminalId)
         {
@@ -307,11 +308,6 @@ class TerminalPicker
 
         if ($this->mode === Mode::TEST)
         {
-            if ($this->terminalExistsAndSupportsCardNetwork(Shared::AMEX_RAZORPAY_TERMINAL, $network))
-            {
-                return $this->terminal;
-            }
-
             if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
@@ -365,7 +361,6 @@ class TerminalPicker
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
         $networks = array(
-            Network::AMEX,
             Network::MAES,
             Network::RUPAY,
             Network::DICL);

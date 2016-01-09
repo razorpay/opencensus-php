@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
+    const AMEX              = 'amex';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::MERCHANT_ID,
         self::CARD,
+        self::AMEX,
         self::BANKS,
         self::PAYTM,
         self::PAYZAPP,
@@ -109,6 +111,11 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function getAmex()
+    {
+        return $this->getAttribute(self::AMEX);
+    }
+
     public function getBanks()
     {
         return $this->getAttribute(self::BANKS);
@@ -118,10 +125,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAYTM);
     }
+
     public function setMobikwik($mobikwik)
     {
         $this->setAttribute(self::MOBIKWIK, $mobikwik);
     }
+
     public function getMobikwik()
     {
         return $this->getAttribute(self::MOBIKWIK);
@@ -160,6 +169,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANKS, $banks);
     }
 
+    public function setAmex($amex)
+    {
+        $this->setAttribute(self::AMEX, $amex);
+    }
+
     public function setPaytm($paytm)
     {
         $this->setAttribute(self::PAYTM, $paytm);
@@ -173,6 +187,11 @@ class Entity extends Base\PublicEntity
     public function setCard($card)
     {
         $this->setAttribute(self::CARD, $card);
+    }
+
+    public function getAmexAttribute()
+    {
+        return (bool) $this->attributes[self::AMEX];
     }
 
     public function getPaytmAttribute()
