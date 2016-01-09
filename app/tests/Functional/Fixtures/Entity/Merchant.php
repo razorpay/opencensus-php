@@ -136,6 +136,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, [$method => true]);
     }
 
+    public function disableMethod($id = '10000000000000', $method)
+    {
+        return $this->fixtures->edit('methods', $id, [$method => false]);
+    }
+
     public function enableWallet($id = '10000000000000', $wallet)
     {
         return $this->fixtures->edit('methods', $id, [$wallet => true]);

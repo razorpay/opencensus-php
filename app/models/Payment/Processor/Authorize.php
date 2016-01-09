@@ -23,7 +23,7 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->verifyPaymentMethodEnabled($payment);
+        $this->verifyPaymentMethodEnabled($payment, $input);
 
         if ($payment->isMethod(Payment\Method::CARD))
         {
@@ -177,19 +177,17 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    protected function verifyPaymentMethodEnabled($payment)
+    protected function verifyPaymentMethodEnabled($payment, $input)
     {
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabledInLive($payment);
+            $this->verifyCardEnabledInLive($payment, $input);
         }
-
-        if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
             $this->verifyBankEnabled($payment);
         }
-
-        if ($payment->isMethod(Payment\Method::WALLET))
+        else if ($payment->isMethod(Payment\Method::WALLET))
         {
             $this->verifyWalletEnabled($payment);
         }
@@ -412,21 +410,47 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($payment)
+    protected function verifyCardEnabledInLive($payment, $input)
     {
+        $methods = $this->methods;
+
+        $this->checkAndValidateAmexIfNotEnabled($methods, $input['card']);
+
         if ($this->mode === Mode::TEST)
         {
             return;
         }
 
         // Only check enabled or not on live mode
-        $methods = $this->methods;
 
         if (($methods === null) or
             ($methods->isCardEnabled() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function checkAndValidateAmexIfNotEnabled($methods, $card)
+    {
+        if (isset($card['number']) === false)
+        {
+            return;
+        }
+
+        $amex = $methods->getAmex();
+
+        $num = $card['number'];
+
+        $prefix = substr($num, 0, 2);
+
+        if ((($prefix === '34') or
+             ($prefix === '37')) and
+            ($amex === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                'number');
         }
     }
 

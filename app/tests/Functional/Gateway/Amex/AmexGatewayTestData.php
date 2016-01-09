@@ -116,4 +116,20 @@ return [
         'entity' => 'amex',
         'admin' => true,
     ],
+
+    'testAmexCardWhenNotEnabled' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'number',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED
+        ],
+    ],
 ];
