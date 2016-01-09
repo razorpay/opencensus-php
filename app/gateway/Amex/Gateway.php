@@ -40,4 +40,9 @@ class Gateway extends AxisMigs\Gateway
             $content['vpc_CardSecurityCode'] = '0773';
         }
     }
+
+    protected function getVpcCardValue($network)
+    {
+        return 'Amex';
+    }
 }

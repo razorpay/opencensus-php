@@ -296,7 +296,7 @@ class Gateway extends Base\Gateway
             'vpc_ReturnURL'         => $input['callbackUrl'],
             'vpc_Locale'            => 'en',
             'vpc_gateway'           => 'ssl',
-            'vpc_Card'              => $network,
+            'vpc_Card'              => $this->getVpcCardValue($network),
             'vpc_CardNum'           => $input['card']['number'],
             'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
             'vpc_CardSecurityCode'  => $input['card']['cvv'],
@@ -596,6 +596,11 @@ class Gateway extends Base\Gateway
         $vpcAmount = (int) $content['vpc_RefundedAmount'];
 
         return ($amount === $vpcAmount);
+    }
+
+    protected function getVpcCardValue($network)
+    {
+        return $network;
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)
