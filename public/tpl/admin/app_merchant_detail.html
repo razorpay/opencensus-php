@@ -67,11 +67,9 @@
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
-        <a href class="list-group-item" ng-click="openEditWallets()">
-          Activate/Deactivate Wallets
-          <strong class="pull-right label label-success">
-          W
-          </strong>
+        <a href class="list-group-item" ng-click="openEditMethods()">
+          Edit Methods
+          <i class="pull-right fa fa-money"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
           Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
@@ -399,16 +397,19 @@
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
   </div>
 </script>
-<script type="text/ng-template" id="editMerchantWallets.html">
+<script type="text/ng-template" id="editMerchantMethods.html">
   <div class="modal-header">
-    <h3 class="modal-title">Activate/Deactivate Merchant Wallet Accounts</h3>
+    <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>
   </div>
-  <div class="modal-body wallets-modal">
+  <div class="modal-body methods-modal">
+  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp)">
+    Warning: You shouldn&apos;t enable both PayTM with any other wallet
+  </span>
   <form class="form-horizontal">
     <div class="form-group" >
-      <div class="row" ng-repeat="(wallet, value) in methods">
-        <label class="col-lg-6 control-label">{{ wallet | titlecase }}</label>
-        <input class="col-lg-6" name="{{wallet}}" ng-model="methods[wallet]" type="checkbox"/>
+      <div class="row" ng-repeat="(method, value) in methods">
+        <label class="col-lg-6 control-label">{{ method | titlecase }}</label>
+        <input class="col-lg-6" name="{{method}}" ng-model="methods[method]" type="checkbox"/>
       </div>
     </div>
 
