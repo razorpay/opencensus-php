@@ -36,7 +36,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS                                = 'Contact number can only contain digits and + symbol';
     const BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS                            = 'Contact number should be at least 10 digits';
     const BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS                         = 'Contact number should not be greater than 12 digits, including country code';
-    const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported curently';
+    const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';

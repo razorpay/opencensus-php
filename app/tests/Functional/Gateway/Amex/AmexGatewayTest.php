@@ -21,19 +21,11 @@ class AmexGatewayTest extends TestCase
 
         $this->gateway = 'amex';
 
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['card']['number'] = '341111111111111';
         $this->payment['card']['cvv'] = '8888';
-    }
-
-    public function testAmexNotEnabledOnLive()
-    {
-        $this->ba->publicLiveAuth();
-        $this->fixtures->merchant->activate();
-        $this->fixtures->merchant->enableCard();
-
-        $this->setExpectedException('EE\Exception\BadRequestException');
-        $this->doAuthPayment($this->payment);
     }
 
     public function testPayment()
@@ -90,5 +82,19 @@ class AmexGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->verifyPayment($payment['id']);
+    }
+
+    public function testAmexCardWhenNotEnabled()
+    {
+        $this->ba->publicLiveAuth();
+        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->enableCard();
+        $this->fixtures->merchant->disableMethod('10000000000000', 'amex');
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
     }
 }

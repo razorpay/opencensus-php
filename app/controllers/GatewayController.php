@@ -20,19 +20,25 @@ class GatewayController extends BaseController
     {
         $input_msg = Input::get('msg');
         $input = explode('|', $input_msg);
-        //check mode before search
+
+        // check mode before search
         $nb = (new \Gateway\Netbanking\Base\Repository)->findByTraceIdAndAction(
             $input[3], \Gateway\Base\Action::AUTHORIZE);
-        if(!$nb)
+
+        if ($nb === false)
         {
             return;
         }
-        $payment_id_public = 'pay_' . $nb->payment_id;
+
+        $publicPaymentId = 'pay_' . $nb->payment_id;
+
         $secret = \App::make('config')->get('app.key');
 
-        $hash = hash_hmac('sha1', $payment_id_public, $secret);
+        $hash = hash_hmac('sha1', $publicPaymentId, $secret);
 
-        $url = \Http\Route::getUrlWithPublicCallbackAuth(['id' => $payment_id_public, 'hash' => $hash]);
+        $url = \Http\Route::getUrlWithPublicCallbackAuth(
+                        ['id' => $publicPaymentId, 'hash' => $hash]);
+
         $url = $url . '?msg=' . $input_msg;
 
         return Redirect::to($url);

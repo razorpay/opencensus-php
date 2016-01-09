@@ -29,17 +29,18 @@ class Gateway extends AxisMigs\Gateway
             return;
         }
 
-
-        // 341111111111111, 345678000000007 works
-
-        // $content['vpc_Card'] = 'Amex';
-        // $content['vpc_CardNum'] = '341111111111111';
-        // $content['vpc_CardExp'] = '1705';
-        // $content['vpc_CardSecurityCode'] = '0773';
-
         $content['vpc_Card'] = 'Amex';
-        $content['vpc_CardNum'] = '376934431141023';
-        $content['vpc_CardExp'] = '1710';
-        $content['vpc_CardSecurityCode'] = '8114';
+
+        if ($this->mode === Mode::TEST)
+        {
+            // 341111111111111, 345678000000007 works
+
+            // $content['vpc_CardNum'] = '341111111111111';
+            // $content['vpc_CardExp'] = '1705';
+            // $content['vpc_CardSecurityCode'] = '0773';
+        }
+        // $content['vpc_CardNum'] = '376934431141023';
+        // $content['vpc_CardExp'] = '1710';
+        // $content['vpc_CardSecurityCode'] = '8114';
     }
 }
