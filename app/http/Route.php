@@ -337,11 +337,10 @@ final class Route
                 'merchant_daily_report',
                 'merchant_post_beneficiary_file',
                 'payment_auto_capture',
-                'payment_verify_all',
+                'payment_verify_multiple',
                 'refund_netbanking_generate_excel',
                 'payment_refund_authorized',
                 'payment_capture_reminder',
-                'payment_verify_all',
             ),
 
             'mailgun' => array(
