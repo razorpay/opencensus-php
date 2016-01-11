@@ -41,7 +41,9 @@ trait Verify
 
             $data['gateway'] = $e->getData();
 
-            $this->notifyInSlack($data);
+            $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
+
+            $this->notifyInSlack($slackData);
 
             throw $e;
         }
