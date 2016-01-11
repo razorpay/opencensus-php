@@ -142,6 +142,9 @@ app.controller('WebhooksCtrl', [
     $scope.ok = function (webhook) {
       $modalInstance.close(webhook);
     };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
   }
 ]).controller('editWebhookCtrl', [
   '$scope',
