@@ -41,6 +41,18 @@ class KeyTest extends TestCase
         $this->assertNotEquals($str1, $str2);
     }
 
+    public function testRegenerateKeyWhereMerchantIdIsDifferent()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+        $id = $merchant['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/merchants/'.$id.'/keys/rzp_test_TheTestAuthKey';
+
+        $this->ba->appAuth();
+        $content = $this->startTest();
+    }
+
     protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
