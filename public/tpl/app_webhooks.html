@@ -58,10 +58,13 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="row">
-        <div class="col-sm-4 hidden-xs">
-        </div>
+        <div class="col-sm-4 hidden-xs"></div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing 1-{{webhooks.count}}</small>
+          <small>
+            You can find your webhook documentation
+            <a target="_blank" href="https://docs.razorpay.com/v1/page/webhooks">here</a>
+          </small>
+          <br>
         </div>
         <div class="col-sm-4 text-right text-center-xs">
         </div>
