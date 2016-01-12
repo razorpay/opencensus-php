@@ -158,7 +158,9 @@ final class Route
         'daily_settlement_compute_tax'          => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
         'get_features'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
         'dummy_feature'                         => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
-    );
+        'add_emi_options'                       => ['post',     'emi',                                      'EmiController@addEmiOptions'                                       ],
+        'get_emi_options'                       => ['get',      'emi',                                      'EmiController@fetchAvailableEmiOptions'                            ],
+    ); 
 
     public static $public = array(
         'checkout',
@@ -187,6 +189,7 @@ final class Route
         'mock_wallet_payment',
         'dummy_return_callback',
         'dummy_critical_error',
+        'get_emi_options',
     );
 
     public static $publicCallback = array(
@@ -288,6 +291,7 @@ final class Route
         'merchant_add_features',
         'merchant_get_features',
         'get_features',
+        'add_emi_options'
     );
 
     public static $proxy = array(
