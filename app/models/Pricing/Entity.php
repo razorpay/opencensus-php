@@ -92,6 +92,11 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function payments()
+    {
+        return $this->hasMany('Models\Transaction\Entity', 'pricing_rule_id');
+    }
+
     protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());

@@ -57,6 +57,14 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function countPaymentsForPricingRuleId($pricingRuleId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::PRICING_RULE_ID, '=', $pricingRuleId)
+                    ->count();
+    }
+
     public function lockForUpdate($id)
     {
         $repo = $this->repo;
