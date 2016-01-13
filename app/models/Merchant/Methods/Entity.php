@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
     const PAYZAPP           = 'payzapp';
+    const EMI               = 'emi';
 
     const METHODS           = 'methods';
 
@@ -32,7 +33,9 @@ class Entity extends Base\PublicEntity
         self::BANKS,
         self::PAYTM,
         self::PAYZAPP,
-        self::MOBIKWIK);
+        self::MOBIKWIK,
+        self::EMI,
+    );
 
     protected $visible = array(
         self::MERCHANT_ID,
@@ -41,7 +44,9 @@ class Entity extends Base\PublicEntity
         self::BANKS,
         self::PAYTM,
         self::PAYZAPP,
-        self::MOBIKWIK);
+        self::MOBIKWIK,
+        self::EMI,
+    );
 
     protected $public = array(
         self::ENTITY,
@@ -54,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK  => false,
         self::PAYZAPP   => false,
         self::BANKS     => [],
+        self::EMI       => false,
     );
 
     protected $wallets = array(
@@ -114,6 +120,11 @@ class Entity extends Base\PublicEntity
         return $this->getMobikwikAttribute();
     }
 
+    public function isEmiEnabled()
+    {
+        return $this->getEmiAttribute();
+    }
+
     public function getEnabledWallets()
     {
         $data = array();
@@ -154,6 +165,11 @@ class Entity extends Base\PublicEntity
     public function getMobikwik()
     {
         return $this->getAttribute(self::MOBIKWIK);
+    }
+
+    public function getEMi()
+    {
+        return $this->getAttribute(self::EMI);
     }
 
     public function setWallets($wallets)
@@ -209,6 +225,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD, $card);
     }
 
+    public function setEmi($emi)
+    {
+        $this->setAttribute(self::EMI, $emi);
+    }
+
     public function getAmexAttribute()
     {
         return (bool) $this->attributes[self::AMEX];
@@ -237,6 +258,11 @@ class Entity extends Base\PublicEntity
     public function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
+    }
+
+    public function getEmiAttribute()
+    {
+        return (bool) $this->attributes[self::EMI];
     }
 
     public function setBanksAttribute(array $banks)

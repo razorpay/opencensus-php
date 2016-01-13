@@ -65,6 +65,12 @@ class Gateway
             self::PAYTM,
             self::WALLET_PAYZAPP,
         ),
+
+        Method::EMI => array(
+            self::HDFC,
+            self::KOTAK,
+            self::AXIS_MIGS,
+        ),
     );
 
     public static $authAndCapture = array(

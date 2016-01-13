@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|',
-        Entity::PAYMENT_METHOD      => 'required|alpha_space|in:card,netbanking,wallet',
+        Entity::PAYMENT_METHOD      => 'required|alpha_space|in:card,netbanking,wallet,emi',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
@@ -57,10 +57,11 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) or
+            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment network only needs to be passed when payment method is card');
+                'Payment network only needs to be passed when payment method is card or emi');
         }
     }
 

@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'amount'        =>  'required|integer|max:50000000',
         'currency'      =>  'required|size:3',
-        'method'        =>  'in:card,netbanking,wallet',
+        'method'        =>  'in:card,netbanking,wallet,emi',
         'card'          =>  'sometimes',
         'bank'          =>  'required_if:method,netbanking',
         'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp',
@@ -42,7 +42,8 @@ class Validator extends Base\Validator
 
     protected function validateCardKey($input)
     {
-        if ($input['method'] !== Payment\Method::CARD)
+        if (($input['method'] !== Payment\Method::CARD) or 
+            ($input['method'] !== Payment\Method::EMI))
         {
             return;
         }
