@@ -62,7 +62,11 @@ class GatewayManager extends \Illuminate\Support\Manager
             throw new Exception\LogicException($class . ' is not a valid class');
         }
 
-        return new $class;
+        $gateway = new $class;
+
+        $gateway->setMock($mock);
+
+        return $gateway;
     }
 
     protected function isMock($driver)
