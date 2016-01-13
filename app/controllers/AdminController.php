@@ -386,6 +386,14 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function deletePricingPlanRule($planId, $ruleId)
+    {
+        list($error, $data) = (new Admin\Service)
+            ->deletePricingPlanRule($planId, $ruleId);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postNewPricingPlan()
     {
         $input = Input::all();

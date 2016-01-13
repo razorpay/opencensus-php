@@ -39,6 +39,35 @@ app.controller('PricingsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.deletePricingPlanRule = function (ruleId)
+    {
+      var planId = $scope.show_plan.id;
+
+      var request = $http({
+        method: 'delete',
+        url: '/admin/pricing/'+planId+'/rules/' + ruleId
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Rule deleted successfully', true);
+          $scope.show_plan.rules =
+            $scope.show_plan.rules.filter(function(rule) {
+              return rule.id !== ruleId;
+            }
+          );
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.saveRule = function () {
       var data = $scope.new_rule;
       var plan_id = $scope.show_plan.id;
