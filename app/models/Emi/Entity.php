@@ -11,7 +11,8 @@ class Entity extends Base\PublicEntity
     
     const ID                    = 'id';
     const BANK                  = 'bank';
-    const EMI_RATES             = 'emi_rates';
+    const RATE                  = 'rate';
+    const DURATION              = 'duration';
     const METHODS               = 'methods';
     const MIN_AMOUNT            = 'min_amount';
     const CREATED_AT            = 'created_at';
@@ -29,21 +30,24 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::BANK,
-        self::EMI_RATES,
+        self::RATE,
+        self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT);
 
     protected $visible = array(
         self::ID,
         self::BANK,
-        self::EMI_RATES,
+        self::RATE,
+        self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT);
 
     protected $public = array(
         self::ID,
         self::BANK,
-        self::EMI_RATES,
+        self::RATE,
+        self::DURATION,
         self::METHODS,
         self::MIN_AMOUNT);
 
@@ -52,9 +56,14 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = array(self::ID);
 
-    public function getEmiRates()
+    public function getRate()
     {
-        return $this->getAttribute(self::EMI_RATES);
+        return $this->getAttribute(self::RATE);
+    }
+
+    public function getDuration()
+    {
+        return $this->getAttribute(self::DURATION);
     }
 
     public function getBank()
@@ -72,10 +81,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    public function getEmiRatesAttribute()
+    public function getRateAttribute()
     {
-        $emi_rates = $this->attribures[self::EMI_RATES];
-        return $emi_rates;
+        return (integer)$this->attribures[self::RATE];
+    }
+
+    public function getDurationAttribute()
+    {
+        return (integer)$this->attribures[self::DURATION];
     }
 
     public function getBankAttribute()
@@ -90,6 +103,6 @@ class Entity extends Base\PublicEntity
 
     public function getMinAmountAttribute()
     {
-        return $this->attribures[self::MIN_AMOUNT];
+        return (integer)$this->attribures[self::MIN_AMOUNT];
     }
 }
