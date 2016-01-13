@@ -49,7 +49,7 @@ class Pricing extends Entity
 
     public function deleteRule($planId, $ruleId)
     {
-        $relativeUrl = $this->getEntityUrl().$planId.'/rules/'.$ruleId;
+        $relativeUrl = $this->getEntityUrl().$planId.'/rule/'.$ruleId;
 
         return $this->request('DELETE', $relativeUrl);
     }
