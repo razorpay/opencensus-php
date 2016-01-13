@@ -28,12 +28,14 @@ class CreateEmiOptionsTable extends Migration {
 
             $table->char(Emi\Entity::BANK, 4);
 
-            $table->integer(Emi\Entity::EMI_PERIOD);
+            $table->integer(Emi\Entity::RATE);
 
-            $table->integer(Emi\Entity::EMI_INTEREST);
+            $table->integer(Emi\Entity::DURATION);
             
             $table->char(Emi\Entity::METHODS)
             	  ->nullable();
+
+            $table->integer(Emi\Entity::MIN_AMOUNT);
 
             $table->integer(Emi\Entity::CREATED_AT);
             $table->integer(Emi\Entity::UPDATED_AT);
