@@ -1,5 +1,8 @@
 <?php
 
+use Trace\Trace;
+use Trace\TraceCode;
+
 class GatewayController extends BaseController
 {
     public function callbackAxis()
@@ -22,6 +25,14 @@ class GatewayController extends BaseController
         $input = explode('|', $input_msg);
 
         // check mode before search
+        $this->trace->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'input_all' => Input::all(),
+                'input_msg' => Input::get('msg'),
+                'input_arr' => $input
+            ]);
+
         $nb = (new \Gateway\Netbanking\Base\Repository)->findByTraceIdAndAction(
             $input[3], \Gateway\Base\Action::AUTHORIZE);
 

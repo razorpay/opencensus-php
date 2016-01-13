@@ -38,6 +38,7 @@ class TraceCode
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
+    const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
     /*
      * Gateway component error messages
      */
