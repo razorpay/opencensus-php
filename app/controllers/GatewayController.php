@@ -2,6 +2,7 @@
 
 use Trace\Trace;
 use Trace\TraceCode;
+use Http\Route;
 
 class GatewayController extends BaseController
 {
@@ -21,8 +22,8 @@ class GatewayController extends BaseController
 
     public function callbackKotak()
     {
-        $input_msg = Input::get('msg');
-        $input = explode('|', $input_msg);
+        $inputMsg = Input::get('msg');
+        $input = explode('|', $inputMsg);
 
         // check mode before search
         $this->trace->info(
@@ -34,23 +35,23 @@ class GatewayController extends BaseController
             ]);
 
         $nb = (new \Gateway\Netbanking\Base\Repository)->findByTraceIdAndAction(
-            $input[3], \Gateway\Base\Action::AUTHORIZE);
+                                        $input[3], \Gateway\Base\Action::AUTHORIZE);
 
-        if ($nb === false)
+        if ($nb === null)
         {
             return;
         }
 
-        $publicPaymentId = 'pay_' . $nb->payment_id;
+        $publicPaymentId = $nb->getPublicPaymentId();
 
         $secret = \App::make('config')->get('app.key');
 
         $hash = hash_hmac('sha1', $publicPaymentId, $secret);
 
-        $url = \Http\Route::getUrlWithPublicCallbackAuth(
+        $url = Route::getUrlWithPublicCallbackAuth(
                         ['id' => $publicPaymentId, 'hash' => $hash]);
 
-        $url = $url . '?msg=' . $input_msg;
+        $url = $url . '?msg=' . $inputMsg;
 
         return Redirect::to($url);
     }

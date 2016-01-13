@@ -87,7 +87,7 @@ class Verify
                 $failed++;
 
                 // Attempt to authorize payments whose verification failed
-                $this->processor()->authorizeFailedPayment($payment);
+                $this->processor($merchant)->authorizeFailedPayment($payment);
 
                 $authorized++;
 

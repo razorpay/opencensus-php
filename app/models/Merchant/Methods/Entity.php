@@ -81,6 +81,24 @@ class Entity extends Base\PublicEntity
         return $this->{'is'.ucfirst($wallet).'Enabled'}();
     }
 
+    public function isAnyWalletEnabled()
+    {
+        foreach ($this->wallets as $wallet)
+        {
+            if ($this->isWalletEnabled($wallet) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isAmexEnabled()
+    {
+        return $this->getAmexAttribute();
+    }
+
     public function isPaytmEnabled()
     {
         return $this->getPaytmAttribute();

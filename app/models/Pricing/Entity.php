@@ -92,6 +92,11 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function payments()
+    {
+        return $this->hasMany('Models\Transaction\Entity', 'pricing_rule_id');
+    }
+
     protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
@@ -121,6 +126,16 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getPaymentNetwork()
+    {
+        return $this->getAttribute(self::PAYMENT_NETWORK);
+    }
+
+    public function getPaymentMethod()
+    {
+        return $this->getAttribute(self::PAYMENT_METHOD);
     }
 
     public function fillRule($input, $plan)

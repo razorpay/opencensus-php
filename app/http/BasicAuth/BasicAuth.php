@@ -284,6 +284,14 @@ class BasicAuth
         if (($this->isKeyBlank()) and
             ($this->verifyInternalApp()))
         {
+            // It's an internal auth. We check whether dashboard
+            // merchant header is set. In that case, it's coming
+            // from merchant dashboard and not admin dashboard
+            // which can potentially cause a security issue and
+            // hence needs to be actively checked against.
+
+            $this->checkForDashboardMerchantHeader();
+
             return;
         }
 
@@ -576,6 +584,17 @@ class BasicAuth
         $clientIpRegex = '/^10\.0\.[0-9]{1,3}\.[0-9]{1,3}$/';
 
         return preg_match($clientIpRegex, $clientIp);
+    }
+
+    protected function checkForDashboardMerchantHeader()
+    {
+        $dash = $this->request->headers->get('X-Dashboard-Merchant');
+
+        if (empty($dash) === false)
+        {
+            $this->trace->warning(
+                TraceCode::DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED);
+        }
     }
 
     protected function verifyInternalAppSecret()

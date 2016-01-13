@@ -4,10 +4,11 @@ namespace Tests\Functional\Merchant;
 
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PricingTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -122,6 +123,27 @@ class PricingTest extends TestCase
             array(
                 'id' => '1FcXNxsHt5dOPI',
                 'pricing_plan_id' => '1ycviEdCgurrFI'));
+
+        $this->startTest();
+    }
+
+    public function testDeletePricingPlanRule()
+    {
+        $content = $this->startTest();
+    }
+
+    public function testDeleteUsedPricingPlanRule()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $ruleId = $txn['pricing_rule_id'];
+
+        $pricing = $this->getEntityById('pricing', $ruleId, true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = 
+                '/pricing/'.$pricing['plan_id'].'/rule/'.$ruleId;
 
         $this->startTest();
     }

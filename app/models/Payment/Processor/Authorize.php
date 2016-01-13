@@ -109,9 +109,11 @@ trait Authorize
 
         $message = 'Payment failed earlier converted to authorized';
 
-        $data = $payment->toArrayAdmin();
+        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->slackPost($message, $data, ['color' => 'bad', 'channel' => '#tech_logs']);
+        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+
+        $data = $payment->toArrayAdmin();
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,

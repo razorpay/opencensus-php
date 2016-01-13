@@ -4,10 +4,12 @@ namespace Models\Merchant\Methods;
 
 use Constants\Mode;
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Bank\IFSC;
 use Models\Base;
 use Models\Payment;
 use Models\Merchant;
+use Models\Pricing;
 use Models\Merchant\Methods;
 use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
@@ -27,9 +29,30 @@ class Core extends Base\Core
 
         $methods->setMethods($input);
 
+        $this->checkPricing($merchant, $methods);
+
         $this->repo->saveOrFail($methods);
 
         return $methods->toArray();
+    }
+
+    protected function checkPricing($merchant, $methods)
+    {
+        $pricingCore = new Pricing\Core;
+
+        if (($methods->isAmexEnabled()) and
+            ($pricingCore->checkPricingForAmex($merchant) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT);
+        }
+
+        if (($methods->isAnyWalletEnabled()) and
+            ($pricingCore->hasWalletPricing($merchant) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Wallet pricing not present for merchant');
+        }
     }
 
     public function getMerchantBanks($merchant)

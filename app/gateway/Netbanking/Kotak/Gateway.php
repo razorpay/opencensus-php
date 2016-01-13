@@ -61,7 +61,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
-        if ($this->mode == Mode::TEST)
+        if ($this->mock === true)
         {
             $request['content']['msg'] = $request['content']['msg'] . '|' . $input['callbackUrl'];
         }

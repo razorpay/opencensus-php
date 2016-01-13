@@ -158,7 +158,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        return (new Key\Core)->rollKey($keyId, $input, $this->mode);
+        return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
     }
 
     public function fetchKeys($merchantId)

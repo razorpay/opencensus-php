@@ -97,4 +97,19 @@ class AmexGatewayTest extends TestCase
             $this->doAuthPayment($this->payment);
         });
     }
+
+    public function testAmexPricingCheckWhenEnablingAmex()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $methods = ['amex' => 1];
+
+            $content = $this->setPaymentMethods($methods);
+        });
+    }
 }

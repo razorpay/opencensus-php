@@ -34,8 +34,8 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where('int_payment_id', '=', $paymentId)
-            ->where('action', '=', $action)
-            ->first();
+                    ->where('action', '=', $action)
+                    ->first();
     }
 
     public function findRefunds($paymentId)

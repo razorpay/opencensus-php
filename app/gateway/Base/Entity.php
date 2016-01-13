@@ -29,6 +29,11 @@ class Entity extends \Models\Base\PublicEntity
         return $this->getAttribute('payment_id');
     }
 
+    public function getPublicPaymentId()
+    {
+        return 'pay_' . $this->getPaymentId();
+    }
+
     public function getRefundId()
     {
         return $this->getAttribute('refund_id');

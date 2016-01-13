@@ -98,6 +98,7 @@ final class Route
         'pricing_get_plan'                      => ['get',      'pricing/{id}',                             'PricingController@getPricingPlan'                                  ],
         'pricing_get_plan_rule'                 => ['get',      'pricing/{planId}/rule/{ruleId}',           'PricingController@getPricingPlanRule'                              ],
         'pricing_add_plan_rule'                 => ['post',     'pricing/{id}/rule',                        'PricingController@postAddPricingPlanRule'                          ],
+        'pricing_delete_plan_rule'              => ['delete',   'pricing/{planId}/rule/{ruleId}',           'PricingController@deletePricingPlanRule'                           ],
         'transaction_fetch_by_id'               => ['get',      'transactions/{id}',                        'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'            => ['get',      'transactions',                             'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'            => ['get',      'transactions/report',                      'TransactionController@getMonthlyReport'                            ],
@@ -249,6 +250,7 @@ final class Route
         'pricing_add_plan_rule',
         'pricing_get_plan',
         'pricing_get_plan_rule',
+        'pricing_delete_plan_rule',
         'setl_initiate',
         'setl_reconcile',
         'setl_reconcile_generate',
@@ -337,11 +339,10 @@ final class Route
                 'merchant_daily_report',
                 'merchant_post_beneficiary_file',
                 'payment_auto_capture',
-                'payment_verify_all',
+                'payment_verify_multiple',
                 'refund_netbanking_generate_excel',
                 'payment_refund_authorized',
                 'payment_capture_reminder',
-                'payment_verify_all',
             ),
 
             'mailgun' => array(
