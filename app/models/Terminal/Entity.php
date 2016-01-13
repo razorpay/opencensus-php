@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
+    const EMI                           = 'emi';
+    const EMI_DURATION                  = 'emi_duration';
 
     const SHARED                        = 'shared';
 
@@ -88,23 +90,18 @@ class Entity extends Base\PublicEntity
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
+        $methods = array(self::CARD, self::NETBANKING, self::EMI);
 
-        if (Payment\Gateway::isMethodSupported('card', $gateway))
+        foreach ($methods as $method) 
         {
-            $this->setAttribute(self::CARD, 1);
-        }
-        else
-        {
-            $this->setAttribute(self::CARD, 0);
-        }
-
-        if (Payment\Gateway::isMethodSupported('netbanking', $gateway))
-        {
-            $this->setAttribute(self::NETBANKING, 1);
-        }
-        else
-        {
-            $this->setAttribute(self::NETBANKING, 0);
+            if (Payment\Gateway::isMethodSupported($method, $gateway))
+            {
+                $this->setAttribute($method, 1);
+            }
+            else
+            {
+                $this->setAttribute($method, 0);
+            }
         }
     }
 
@@ -228,6 +225,16 @@ class Entity extends Base\PublicEntity
         return $category;
     }
 
+    public function getEmiDuartion()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getEmiDuartionAttribute()
+    {
+        return (integer)$this->attributes[self::EMI_DURATION];
+    }
+
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
@@ -250,6 +257,11 @@ class Entity extends Base\PublicEntity
     public function isNetbankingEnabled()
     {
         return (((int)$this->getAttribute(self::NETBANKING)) === 1);
+    }
+
+    public function isEmiEnabled()
+    {
+        return (((int)$this->getAttribute(self::EMI)) === 1);        
     }
 
     public function isGateway($gateway)

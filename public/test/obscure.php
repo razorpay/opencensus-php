@@ -36,6 +36,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="netbanking">Net Banking</option>
                 <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
+                <option value="emi">Emi</option>
             </select>
         </td>
     </tr>
