@@ -115,13 +115,18 @@ class Service extends Base\Service
             return array('Invalid confirmation token or the merchant is already confirmed.');
         }
 
-        $merchant_api_data = $merchant->generateApiData();
+        $merchantApiData = $merchant->generateApiData();
 
         $this->setApiCredentials();
 
         try
         {
-            $response = $this->api->merchant->create($merchant_api_data);
+            $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
+            // Only create the merchant if it doesn't exist on the API
+            if ($merchantOnApi === null)
+            {
+                $response = $this->api->merchant->create($merchantApiData);
+            }
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
