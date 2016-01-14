@@ -158,8 +158,9 @@ final class Route
         'daily_settlement_compute_tax'          => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
         'get_features'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
         'dummy_feature'                         => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
-        'add_emi_options'                       => ['post',     'emi',                                      'EmiController@addEmiOptions'                                       ],
+        'add_emi_options'                       => ['post',     'emi',                                      'EmiController@addEmiOption'                                        ],
         'get_emi_options'                       => ['get',      'emi',                                      'EmiController@fetchAvailableEmiOptions'                            ],
+        'get_emiplan_by_id'                     => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
     ); 
 
     public static $public = array(
@@ -190,6 +191,7 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_options',
+        'get_emiplan_by_id'
     );
 
     public static $publicCallback = array(
@@ -291,7 +293,7 @@ final class Route
         'merchant_add_features',
         'merchant_get_features',
         'get_features',
-        'add_emi_options'
+        'add_emi_options',
     );
 
     public static $proxy = array(

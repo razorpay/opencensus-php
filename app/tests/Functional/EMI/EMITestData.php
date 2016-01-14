@@ -9,32 +9,52 @@ return [
     'testAddEmiOptions' => [
         'request' => [
             'content' => [
-                'bank' => 'ICIC',
-                'emi_period' => 1,
-                'emi_interest' => '10.45'
-                'method' => 'credit'
+                'bank' => 'HDFC',
+                'duration' => 3,
+                'rate' => 1045,
+                'methods' => 'creditcard',
             ],
-            'url' => 'emi',
-            'method' => 'POST'
+            'method' => 'POST',
+            'url' => '/emi',
         ],
         'response' => [
             'content' => [
-                'bank' => 'ICIC',
-                'emi_period' => 1,
-                'emi_interest' => '10.45'
-                'method' => 'credit'
-            ]
-        ]
+                'bank' => 'HDFC',
+                'duration' => 3,
+                'rate' => 1045,
+                'methods' => 'creditcard',
+            ],  
+        ],
     ],
 
-    'testFetchEmiOptions' => [
+    'testFetchAllEmiOptions' => [
         'request' => [
             'content' => [
             ],
-            'url' => 'emi',
+            'url' => '/emi',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFetchEmiUsingPlanId' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/emi/{id}',
             'method' => 'get'
         ],
         'response' => [
+            'content' => [
+                'bank' => 'HDFC',
+                'rate' => 1045,
+                'duration' => 3,
+                'methods' => 'creditcard',
+                'min_amount' => 5000
+            ],
         ],
     ],
 ];
