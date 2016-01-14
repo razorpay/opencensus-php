@@ -20,6 +20,13 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Returns analytics data for a given time range and type
+     *
+     * If the fields are not present in the request, returns empty
+     * response
+     * @param  string $mode test|live
+     */
     public function getAnalytics($mode)
     {
         $this->checkMode($mode);
