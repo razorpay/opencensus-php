@@ -130,7 +130,9 @@ app.controller('EntitiesCtrl', [
       },
       hdfc: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
+        gateway_transaction_id: ['Gateway Transaction Id'],
+        ref: ['Reference']
       },
       merchant: {
         email: ['Email'],
