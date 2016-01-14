@@ -52,7 +52,8 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT);
 
     protected $defaults = array(
-        self::MIN_AMOUNT => 5000);
+        self::MIN_AMOUNT => 5000,
+    );
 
     protected $guarded = array(self::ID);
 
@@ -83,26 +84,26 @@ class Entity extends Base\PublicEntity
 
     public function getRateAttribute()
     {
-        return (integer)$this->attribures[self::RATE];
+        return (integer)$this->attributes[self::RATE];
     }
 
     public function getDurationAttribute()
     {
-        return (integer)$this->attribures[self::DURATION];
+        return (integer)$this->attributes[self::DURATION];
     }
 
     public function getBankAttribute()
     {
-       return $this->attribures[self::BANK];
+       return $this->attributes[self::BANK];
     }
 
     public function getMethodsAttribute()
     {
-       return $this->attribures[self::METHODS];
+       return $this->attributes[self::METHODS];
     }
 
     public function getMinAmountAttribute()
     {
-        return (integer)$this->attribures[self::MIN_AMOUNT];
+        return (integer)$this->attributes[self::MIN_AMOUNT];
     }
 }

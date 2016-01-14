@@ -8,9 +8,9 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'bank_id'             => 'required|alpha_num|size:5',
-        'emi_period'          => 'required|integer|min:1|max:12',
-        'emi_interest'        => 'required|numeric',
-        'method'              => 'sometimes|in:debit,credit,wallet,netbanking',
+        'bank'                  => 'required|size:4',
+        'duration'              => 'required|integer|min:1|max:12',
+        'rate'                  => 'required|integer',
+        'methods'                => 'sometimes|in:debitcard,creditcard,wallet,netbanking',
     );
 }

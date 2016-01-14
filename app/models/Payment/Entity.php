@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const BANK                  = 'bank';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
+    const EMI_PLAN_ID           = 'emi_plan_id';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
     const AUTHORIZED_AT         = 'authorized_at';
@@ -86,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::BANK,
         self::WALLET,
+        self::EMI_PLAN_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -143,7 +145,9 @@ class Entity extends Base\PublicEntity
         self::SIGNED            => 0,
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
-        self::AUTO_CAPTURED     => 0);
+        self::AUTO_CAPTURED     => 0,
+        self::EMI_PLAN_ID       => null,
+    );
 
 // --------------------- Generators --------------------------------------------
 
@@ -384,6 +388,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
+    public function getEmiPlanIdAttribute()
+    {
+        return $this->attributes[self::EMI_PLAN_ID];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
@@ -607,6 +616,11 @@ class Entity extends Base\PublicEntity
         $diff = $now - $at;
 
         return floor($diff / (60*24*24));
+    }
+
+    public function getEmiPlanId()
+    {
+        return $this->getAttribute(self::EMI_PLAN_ID);
     }
 
     /**

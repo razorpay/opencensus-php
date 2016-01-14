@@ -6,16 +6,32 @@ use Models\Base;
 
 class Service extends Base\Service
 {
-    public function fetch()
+    protected $repo;
+
+    public function __construct()
     {
-        $emiOptions = $this->repo->all();
+        parent::__construct();
+
+        $this->repo = new Repository;
+    }
+
+    public function all()
+    {
+        $emiOptions = $this->repo->getAllEmiOptions();
 
         return $emiOptions->toArrayPublic();
     }
 
-    public function addEmiOptions($input)
+    public function fetch($id)
     {
-        $emi = (new Emi\Core)->addEmiOption();
+        $emiOptions = $this->repo->findOrFail($id);
+
+        return $emiOptions->toArrayPublic();
+    }
+
+    public function addEmiOption(array $input)
+    {
+        $emi = (new Core)->addEmiOption($input);
 
         return $emi->toArrayPublic();
     }

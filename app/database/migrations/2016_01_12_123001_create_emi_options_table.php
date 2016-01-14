@@ -39,7 +39,8 @@ class CreateEmiOptionsTable extends Migration {
 
             $table->integer(Emi\Entity::CREATED_AT);
             $table->integer(Emi\Entity::UPDATED_AT);
-            $table->integer(Emi\Entity::DELETED_AT);
+            $table->integer(Emi\Entity::DELETED_AT)
+                  ->nullable();
         });
     }
 

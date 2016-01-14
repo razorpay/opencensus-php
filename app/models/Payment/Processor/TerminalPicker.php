@@ -180,6 +180,11 @@ class TerminalPicker
         return $this->getSharedTerminalForWallet($payment);
     }
 
+    protected function pickEmiTerminal($terminals, $payment)
+    {
+        return $this->getSharedTerminalForEmi($payment);
+    }
+
     protected function getSharedTerminalForCard($payment)
     {
         $terminal = $this->getSharedCategoryTerminalForCard($payment);
@@ -410,26 +415,16 @@ class TerminalPicker
     protected function getSharedTerminalForEmi($payment)
     {
         $bank = $this->payment->getBank();
+        
         $emiPlanId = $this->payment->getEmiPlanId();
+        
         $emiPlan = (new Emi\Repository)->getEmiPlan($emiPlanId);
+        
+        $emiDuration = $emiPlan->getEmiDuration();
 
-        return $this->getEmiTerminalForBank($bank, $emiPlan->getDuration());
-    }
-
-    protected function getEmiTerminalForBank($bank, $duration)
-    {
-        if ($bank === IFSC::HDFC)
-        {
-            $paddedDuration = str_pad((string)$duration, 2, "0", STR_PAD_LEFT);
-            $terminalId = '100'.$bank.'Emi'.$paddedDuration.'ST';
-        }
-        elseif ($bank === IFSC::UTIB)
-        {
-            $terminalId = '10000'.$bank.'EmiST'
-        }
-
-        $terminal = $this->repo->getByIdAndMerchantId('defaultmerchantid', $terminalId);
-        return $terminal;
+        $terminal = $this->repo->getEmiTerminal(Terminal\Entity::SHARED_TERMINAL_MERCHANT_ID, $gateway, $emiDuration);
+        
+        return $terminal;       
     }
 
     protected function validateCount($terminals, $merchant)
