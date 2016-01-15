@@ -74,7 +74,7 @@ return [
     ],
 
     'testPaymentPayzappEntity' => [
-        'id' => '1',
+        //'id' => '1',
 //        'payment_id' => '4W2hONlUrw0Pka',
         'action' => 'authorize',
         'amount' => 50000,

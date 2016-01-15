@@ -61,6 +61,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::WALLET, 8)
                   ->nullable();
 
+            $table->string(Payment::EMI_PLAN_ID)
+                  ->nullable();
+
             $table->string(Payment::ERROR_CODE, 100)
                   ->nullable();
 

@@ -57,8 +57,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) or
-            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI)
+        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) and
+            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment network only needs to be passed when payment method is card or emi');
