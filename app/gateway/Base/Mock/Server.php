@@ -57,6 +57,11 @@ class Server
         return $this->getGatewayInstance()->generateHash($content);
     }
 
+    protected function getSecret()
+    {
+        return $this->getGatewayInstance()->getSecret();
+    }
+
     protected function checkReferer()
     {
         $request = $this->request;
@@ -166,9 +171,24 @@ class Server
         $this->input = $input;
     }
 
-    public function content(& $content)
+    public function setAction($action)
+    {
+        $this->action = $action;
+    }
+
+    public function content(& $content, $action = '')
     {
         return $content;
+    }
+
+    protected function makeResponse($msg)
+    {
+        $response = \Response::make($msg);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     protected function makePostResponse($request)

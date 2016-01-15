@@ -9,9 +9,13 @@ class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
+    const AMEX              = 'amex';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
+    const PAYZAPP           = 'payzapp';
+
+    const METHODS           = 'methods';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -24,27 +28,38 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::MERCHANT_ID,
         self::CARD,
+        self::AMEX,
         self::BANKS,
         self::PAYTM,
+        self::PAYZAPP,
         self::MOBIKWIK);
 
     protected $visible = array(
         self::MERCHANT_ID,
         self::CARD,
+        self::AMEX,
         self::BANKS,
         self::PAYTM,
+        self::PAYZAPP,
         self::MOBIKWIK);
 
     protected $public = array(
         self::ENTITY,
-        'methods');
+        self::METHODS);
 
     protected $defaults = array(
         self::CARD      => false,
+        self::AMEX      => false,
         self::PAYTM     => false,
         self::MOBIKWIK  => false,
+        self::PAYZAPP   => false,
         self::BANKS     => [],
     );
+
+    protected $wallets = array(
+        self::PAYTM,
+        self::PAYZAPP,
+        self::MOBIKWIK);
 
     public function setMethods(array $input = array())
     {
@@ -66,9 +81,32 @@ class Entity extends Base\PublicEntity
         return $this->{'is'.ucfirst($wallet).'Enabled'}();
     }
 
+    public function isAnyWalletEnabled()
+    {
+        foreach ($this->wallets as $wallet)
+        {
+            if ($this->isWalletEnabled($wallet) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isAmexEnabled()
+    {
+        return $this->getAmexAttribute();
+    }
+
     public function isPaytmEnabled()
     {
         return $this->getPaytmAttribute();
+    }
+
+    public function isPayzappEnabled()
+    {
+        return $this->getPayzappAttribute();
     }
 
     public function isMobikwikEnabled()
@@ -76,9 +114,74 @@ class Entity extends Base\PublicEntity
         return $this->getMobikwikAttribute();
     }
 
+    public function getEnabledWallets()
+    {
+        $data = array();
+
+        foreach ($this->wallets as $wallet)
+        {
+            $func = 'is'.ucfirst($wallet).'Enabled';
+
+            if ($this->$func())
+            {
+                $data[$wallet] = true;
+            }
+        }
+
+        return $data;
+    }
+
+    public function getAmex()
+    {
+        return $this->getAttribute(self::AMEX);
+    }
+
     public function getBanks()
     {
         return $this->getAttribute(self::BANKS);
+    }
+
+    public function getPaytm()
+    {
+        return $this->getAttribute(self::PAYTM);
+    }
+
+    public function setMobikwik($mobikwik)
+    {
+        $this->setAttribute(self::MOBIKWIK, $mobikwik);
+    }
+
+    public function getMobikwik()
+    {
+        return $this->getAttribute(self::MOBIKWIK);
+    }
+
+    public function setWallets($wallets)
+    {
+        foreach ($wallets as $wallet) {
+            switch ($wallet) {
+                case self::MOBIKWIK:
+                case self::PAYTM:
+                case self::PAYZAPP:
+                    $this->setAttribute($wallet, true);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    public function getWallets()
+    {
+        $walletsStatus = array();
+
+        foreach ($this->wallets as $wallet)
+        {
+            $walletsStatus[$wallet] = $this->getAttribute($wallet);
+        }
+
+        return $walletsStatus;
     }
 
     public function setBanks(array $banks)
@@ -86,18 +189,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANKS, $banks);
     }
 
-    public function getPaytm()
+    public function setAmex($amex)
     {
-        return $this->getAttribute(self::PAYTM);
-    }
-    public function setMobikwik($mobikwik)
-    {
-        $this->setAttribute(self::MOBIKWIK, $mobikwik);
-    }
-    public function getMobikwik()
-    {
-//        return true;
-        return $this->getAttribute(self::MOBIKWIK);
+        $this->setAttribute(self::AMEX, $amex);
     }
 
     public function setPaytm($paytm)
@@ -105,9 +199,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PAYTM, $paytm);
     }
 
-    public function getPaytmAttribute()
+    public function setPayzapp($value)
     {
-        return (bool) $this->attributes[self::PAYTM];
+        $this->setAttribute(self::PAYZAPP, $value);
     }
 
     public function setCard($card)
@@ -115,9 +209,29 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD, $card);
     }
 
+    public function getAmexAttribute()
+    {
+        return (bool) $this->attributes[self::AMEX];
+    }
+
+    public function getPaytmAttribute()
+    {
+        return (bool) $this->attributes[self::PAYTM];
+    }
+
     public function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
+    }
+
+    public function getMobikwikAttribute()
+    {
+        return (bool) $this->attributes[self::MOBIKWIK];
+    }
+
+    public function getPayzappAttribute()
+    {
+        return (bool) $this->attributes[self::PAYZAPP];
     }
 
     public function getBanksAttribute()
@@ -141,11 +255,13 @@ class Entity extends Base\PublicEntity
 
     public function getWalletAttribute()
     {
-        return array('paytm' => $this->getPaytmAttribute());
-    }
+        $wallets = array();
 
-    public function getMobikwikAttribute()
-    {
-        return (bool) $this->attributes[self::MOBIKWIK];
+        foreach ($this->wallets as $wallet)
+        {
+            $wallets[$wallet] = $this->isWalletEnabled($wallet);
+        }
+
+        return $wallets;
     }
 }

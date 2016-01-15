@@ -149,16 +149,6 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($msg);
     }
 
-    protected function makeResponse($msg)
-    {
-        $response = \Response::make($msg);
-
-        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
-    }
-
     protected function getContentFromInput($input)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

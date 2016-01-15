@@ -12,6 +12,7 @@ class Payment extends Validator
         Entity::AMOUNT              => 'required|integer',
         Entity::CURRENCY            => 'required|in:INR',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
+        Entity::METHOD              => 'required|in:card,netbanking,wallet',
         Entity::CAPTURED            => 'required|boolean',
         Entity::AMOUNT_REFUNDED     => 'sometimes|',
         Entity::REFUND_STATUS       => 'sometimes|',
@@ -21,6 +22,8 @@ class Payment extends Validator
         Entity::NOTES               => 'sometimes|',
         Entity::ERROR_CODE          => 'sometimes|',
         Entity::ERROR_DESCRIPTION   => 'sometimes|',
+        Entity::FEE                 => 'required_if:status,captured,refunded|integer',
+        Entity::SERVICE_TAX         => 'required_with:fee|integer',
         Entity::CREATED_AT          => 'sometimes|',
     );
 }

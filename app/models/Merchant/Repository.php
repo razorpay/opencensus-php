@@ -2,6 +2,7 @@
 
 namespace Models\Merchant;
 
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
@@ -24,6 +25,7 @@ class Repository extends Base\Repository
         Entity::INTERNATIONAL           => 'sometimes|boolean',
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
+        Entity::PRICING_PLAN_ID         => 'sometimes|string',
     );
 
     public function getPricingPlanOrFailPublic($merchant)
@@ -66,6 +68,15 @@ class Repository extends Base\Repository
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
+    public function getCountOfMerchantsActivatedBetween($from, $to)
+    {
+
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Entity::ACTIVATED_AT, [$from, $to])->count();
+
+    }
+
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
@@ -93,5 +104,31 @@ class Repository extends Base\Repository
             });
 
         $query->select($query->getModel()->getTable().'.*');
+    }
+
+    /**
+     * Returns all the emails and names for all Merchants
+     * No limits
+     * @return [type] [description]
+     */
+    public function fetchAllMerchantContacts()
+    {
+        $repo = $this->repo;
+
+        return $repo::all(['name', 'email']);
+    }
+
+    public function fetchMerchantWhereTestBankIsNull()
+    {
+        $repo = new $this->repo;
+        return $repo->setConnection(Mode::TEST)
+                    ->has('bankAccount', '<', 1)
+                    ->get();
+    }
+    public function fetchAllLiveMerchants()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::LIVE, '=', 0);
     }
 }

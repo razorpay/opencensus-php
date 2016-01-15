@@ -238,7 +238,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00005   => 'Denied by risk. Response result code is "DENIED BY RISK"',
         Hdfc\ErrorCode::RP00006   => 'Authorization not approved. Response result code is "NOT APPROVED"',
         Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done. Response result code is "NOT CAPTURED"',
-        Hdfc\ErrorCode::RP00008   => 'Gateway error. Wrong response http status_code. Response status_code is greater than 500 signifying gateway server error',
+        Hdfc\ErrorCode::RP00008   => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
     );
 
@@ -291,6 +291,7 @@ class ErrorCode
         Hdfc\ErrorCode::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
 
         Hdfc\ErrorCode::GV00100   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
+        Hdfc\ErrorCode::GV00103   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
 
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,

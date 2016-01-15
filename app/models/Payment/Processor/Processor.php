@@ -75,6 +75,12 @@ class Processor
         {
             $input['method'] = Payment\Method::CARD;
         }
+        else if (empty($input['method']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide appropriate payment method',
+                Payment\Entity::METHOD);
+        }
 
         $payment = $this->createPaymentEntity($input);
 
@@ -95,7 +101,7 @@ class Processor
         if (isset($input['notes']['merchant_order_id']) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'merchant_roder_id field is required',
+                'merchant_order_id field is required',
                 'merchant_order_id');
         }
 

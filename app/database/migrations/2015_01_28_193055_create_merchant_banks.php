@@ -24,12 +24,18 @@ class CreateMerchantBanks extends Migration {
             $table->boolean(Methods::CARD)
                   ->default(1);
 
+            $table->boolean(Methods::AMEX)
+                  ->default(0);
+
             $table->text(Methods::BANKS);
 
             $table->boolean(Methods::PAYTM)
                   ->default(0);
 
             $table->boolean(Methods::MOBIKWIK)
+                  ->default(0);
+
+            $table->boolean(Methods::PAYZAPP)
                   ->default(0);
 
             $table->integer(Methods::CREATED_AT);

@@ -175,6 +175,7 @@ class ErrorCode
     const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS                            = 'BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS';
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT                              = 'BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT';
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                             = 'BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB';
+    const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                             = 'BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT';
 
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                    = 'BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                        = 'BAD_REQUEST_MERCHANT_NOT_ACTIVATED';
@@ -204,4 +205,5 @@ class ErrorCode
     const SERVER_ERROR_SETTLEMENTS_FAILED                                           = 'SERVER_ERROR_SETTLEMENTS_FAILED';
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
+    const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
 }

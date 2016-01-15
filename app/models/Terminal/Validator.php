@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::GATEWAY                     => 'required',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
@@ -45,6 +46,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alhpa_num|size:8',
     );
 
+    protected static $amexTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:amex',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+    );
+
     protected static $axisMigsTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:axis_migs',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
@@ -59,6 +69,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    );
+
+    protected static $walletPayzappTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_payzapp',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string|size:21',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
     );
 
     protected function validateGateway($input)

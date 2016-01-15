@@ -45,6 +45,15 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_VALIDATION_FAILURE');
     }
 
+    public function testPaymentWithUnderscoreArray()
+    {
+        $this->payment['_'] = array('1' => 2, '3' => 4);
+
+        $content = $this->doAuthPayment($this->payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+    }
+
     public function testCallbackOnAuthorizedPayment()
     {
         $this->markTestIncomplete();

@@ -341,5 +341,36 @@ return [
                 ),
             ],
         ]
-    ]
+    ],
+
+    'testDeletePricingPlanRule' => [
+        'request' => [
+            'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
+    'testDeleteUsedPricingPlanRule' => [
+        'request' => [
+            'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

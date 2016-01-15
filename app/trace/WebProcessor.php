@@ -64,6 +64,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'context'       => $this->context);
 
         $userData = array(
+            'dashboard'     => $this->request->headers->get('X-Dashboard'),
             'merchant'      => $this->request->headers->get('X-Dashboard-Merchant'),
             'admin_user'    => $this->request->headers->get('X-Dashboard-Username'),
         );

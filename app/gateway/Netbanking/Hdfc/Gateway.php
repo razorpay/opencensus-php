@@ -250,10 +250,6 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'For hdfc netbanking, the bank only stores payment data for 45 days. ' .
                 'The given payment for verification is ' . $days . ' days old');
-
-            // $verify->match = true;
-            // $verify->status = VerifyResult::STATUS_MATCH;
-            // return;
         }
 
         $status = VerifyResult::STATUS_MATCH;
@@ -289,9 +285,8 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $crawler = new Crawler($response->body, $request['url']);
-            $form = $crawler->filter('form')->form();
-            $values = $form->getValues();
+            $values = $this->getFormValues($response->body, $request['url']);
+
             $url = $values['REDIRECTURL'];
         }
         catch (\InvalidArgumentException $e)

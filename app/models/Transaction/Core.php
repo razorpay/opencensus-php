@@ -97,9 +97,9 @@ class Core extends Base\Core
         $payment->transaction()->associate($txn);
     }
 
-    protected function fillTxnFeesAndAmount(& $txn, $payment)
+    protected function fillTxnFeesAndAmount($txn, $payment)
     {
-        $credit = $fee = 0;
+        $credit = $fee = $serviceTax = 0;
         $pricingRuleId = null;
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
@@ -114,12 +114,13 @@ class Core extends Base\Core
 
             $credit = $amount;
             $fee = 0;
+            $serviceTax = 0;
 
             $txn->setGratis(true);
         }
         else
         {
-            list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
+            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
             $credit = $amount - $fee;
         }
 
@@ -128,8 +129,23 @@ class Core extends Base\Core
         $txn->setCredit($credit);
         $txn->setDebit(0);
         $txn->setFee($fee);
+        $txn->setServiceTax($serviceTax);
 
         return $txn;
+    }
+
+    public function fillServiceTax($txn, $payment)
+    {
+        if ($txn->isGratis())
+        {
+            $txn->setServiceTax(0);
+        }
+        else
+        {
+            $serviceTax = (new Pricing\Fee)->calculateServiceTax($txn, $payment);
+
+            $txn->setServiceTax($serviceTax);
+        }
     }
 
     protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
@@ -159,12 +175,13 @@ class Core extends Base\Core
         $settledAt = 1;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT      => $refund->getAmount(),
-            Transaction\Entity::TYPE        => Transaction\Type::REFUND,
-            Transaction\Entity::FEE         => 0,
-            Transaction\Entity::DEBIT       => $refund->getAmount(),
-            Transaction\Entity::CREDIT      => 0,
-            Transaction\Entity::CURRENCY    => 'INR');
+            Transaction\Entity::AMOUNT          => $refund->getAmount(),
+            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
+            Transaction\Entity::FEE             => 0,
+            Transaction\Entity::SERVICE_TAX     => 0,
+            Transaction\Entity::DEBIT           => $refund->getAmount(),
+            Transaction\Entity::CREDIT          => 0,
+            Transaction\Entity::CURRENCY        => 'INR');
 
         $gateway = $refund->getGateway();
 
@@ -232,6 +249,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED         => 0,
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
+            Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
@@ -383,15 +401,7 @@ class Core extends Base\Core
 
     protected function getSettlementSchedule($payment)
     {
-        $setlSchedule = $payment->merchant->getSettlementSchedule();
-
-        if (($setlSchedule < 3) and
-            ($method !== Method::CARD))
-        {
-            $setlSchedule = 3;
-        }
-
-        return $setlSchedule;
+        return $payment->merchant->getSettlementSchedule();
     }
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)

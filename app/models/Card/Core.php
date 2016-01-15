@@ -2,11 +2,12 @@
 
 namespace Models\Card;
 
+use Models\Base;
 use Models\Card;
 use EE\Error\ErrorCode;
 use EE\Exception;
 
-class Core
+class Core extends Base\Core
 {
     protected $card = null;
 

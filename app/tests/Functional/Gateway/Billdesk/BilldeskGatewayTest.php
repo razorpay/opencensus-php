@@ -91,6 +91,7 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentRefund'], $refund);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
     }
@@ -115,6 +116,6 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(57, $count);
+        $this->assertEquals(58, $count);
     }
 }

@@ -19,5 +19,24 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testRegenerateKeyWhereMerchantIdIsDifferent' => [
+        'request' => [
+            'url' => '',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
     ]
 ];

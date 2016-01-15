@@ -22,24 +22,31 @@ class Base
     }
 
     protected static $map = array(
+        'key'           => Models\Key\Entity::class,
         'atom'          => Gateway\Atom\Entity::class,
-        'adjustment'    => Models\Adjustment\Entity::class,
-        'balance'       => Models\Merchant\Balance\Entity::class,
-        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
-        'methods'       => Models\Merchant\Methods\Entity::class,
         'card'          => Models\Card\Entity::class,
         'hdfc'          => Gateway\Hdfc\Entity::class,
-        'card_detail'   => Models\Card\Detail::class,
-        'key'           => Models\Key\Entity::class,
-        'merchant'      => Models\Merchant\Entity::class,
+        'refund'        => Models\Payment\Refund\Entity::class,
+        'webhook'       => Models\Merchant\Webhook\Entity::class,
+        'methods'       => Models\Merchant\Methods\Entity::class,
+        'balance'       => Models\Merchant\Balance\Entity::class,
         'methods'       => Models\Merchant\Methods\Entity::class,
         'payment'       => Models\Payment\Entity::class,
         'pricing'       => Models\Pricing\Entity::class,
-        'refund'        => Models\Payment\Refund\Entity::class,
-        'settlement'    => Models\Settlement\Entity::class,
+        'webhook'       => Models\Merchant\Webhook\Entity::class,
+        'merchant'      => Models\Merchant\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
-        'transaction'   => Models\Transaction\Entit::class,
+        'adjustment'    => Models\Adjustment\Entity::class,
+        'settlement'    => Models\Settlement\Entity::class,
+        'card_detail'   => Models\Card\Detail::class,
+        'transaction'   => Models\Transaction\Entity::class,
+        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
     );
+
+    protected static $liveAndTest = array(
+        'merchant',
+        'pricing',
+        'methods');
 
     public function create(array $attributes = array())
     {
@@ -69,9 +76,9 @@ class Base
 
     public function editEntity($entity, $id, array $attributes = array())
     {
-        if (($entity === 'merchant') or
-            ($entity === 'pricing') or
-            ($entity === 'methods'))
+        $this->stripSign($id);
+
+        if (in_array($entity, self::$liveAndTest))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
@@ -172,12 +179,23 @@ class Base
 
         return $db->transaction($callable);
     }
+
     protected function callInTransaction($callable, $args)
     {
         return $this->db->transaction(function ()
         {
             return call_user_func($callable);
         });
+    }
+
+    protected function stripSign(& $id)
+    {
+        $ix = strpos($id, '_');
+
+        if ($ix !== false)
+        {
+            $id = substr($id, $ix + 1);
+        }
     }
 
     protected function eloquentUnguard()

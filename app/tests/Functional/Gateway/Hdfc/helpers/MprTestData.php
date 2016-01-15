@@ -31,6 +31,7 @@ return [
                 'fees' => 0,
                 'status' => 'failed',
                 'channel' => 'kotak',
+                'service_tax' => 0,
                 'entity' => 'settlement',
             ],
             [
@@ -39,9 +40,10 @@ return [
                 'fees' => 114500,
                 'status' => 'failed',
                 'channel' => 'kotak',
+                'service_tax' => 14500,
                 'failure_reason' => 'Remitt info: some random info',
                 'entity' => 'settlement',
             ],
         ]
-    ]
+    ],
 ];

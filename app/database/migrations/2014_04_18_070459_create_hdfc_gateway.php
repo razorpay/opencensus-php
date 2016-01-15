@@ -33,6 +33,8 @@ class CreateHdfcGateway extends Migration
 
             $table->string('action', 1);
 
+            $table->boolean('received')->nullable();
+
             $table->string('amount', 10);
 
             $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH)
@@ -61,7 +63,7 @@ class CreateHdfcGateway extends Migration
             $table->string('error_code', Hdfc\Constants::ERROR_CODE_LENGTH)
                   ->nullable();
 
-            $table->string('error_text', Hdfc\Constants::ERROR_TEXT_LENGTH)
+            $table->string('error_text')
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -75,6 +77,7 @@ class CreateHdfcGateway extends Migration
 
             $table->index('refund_id');
             $table->index('gateway_transaction_id');
+            $table->index('received');
         });
     }
 

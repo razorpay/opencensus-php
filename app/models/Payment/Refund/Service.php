@@ -84,14 +84,14 @@ class Service extends Base\Service
     {
         Refund\Entity::verifyIdAndStripSign($id);
 
-        $refund = (new Refund\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $refund = (new Refund\Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $refund->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
-        $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getKey());
+        $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
 
         return $refunds->toArrayPublic();
     }

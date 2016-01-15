@@ -96,10 +96,18 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::SIGNED)
                   ->default(0);
 
-            $table->boolean(Payment::VERIFIED)
+            $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
 
             $table->text(Payment::CALLBACK_URL)
+                  ->nullable();
+
+            $table->integer(Payment::FEE)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Payment::SERVICE_TAX)
+                  ->unsigned()
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

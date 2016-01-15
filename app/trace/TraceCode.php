@@ -20,6 +20,7 @@ class TraceCode
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
+    const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
     const PAYMENT_TIMED_OUT                         = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
@@ -29,6 +30,7 @@ class TraceCode
     const PAYMENT_AUTHORIZE_FAILED                  = 'PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_NOTIFY_FAILED                     = 'PAYMENT_NOTIFY_FAILED';
     const PAYMENT_AUTHORIZE_REMINDER                = 'PAYMENT_AUTHORIZE_REMINDER';
+    const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
 
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
@@ -54,11 +56,13 @@ class TraceCode
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
     const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
+    const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
     const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
+    const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
     const GATEWAY_REQUESTY_TIMEOUT                  = 'GATEWAY_REQUESTY_TIMEOUT';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
@@ -83,6 +87,8 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_DATA              = 'SETTLEMENT_DAILY_REPORT_DATA';
     const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
 
+    const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
+
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT             = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
@@ -93,11 +99,14 @@ class TraceCode
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
+    const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
+
+    const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

@@ -42,6 +42,7 @@ class SettlementTest extends TestCase
                 $this->assertEquals(2290, $txn->fee);
                 $this->assertEquals(7710, $txn->credit);
                 $this->assertEquals(0, $txn->debit);
+                $this->assertEquals(290, $txn->service_tax);
             }
 
             $this->assertEquals(15420, $merchant->balance->getBalance());

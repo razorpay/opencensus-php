@@ -201,6 +201,20 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postGenerateBankAccountIds()
+    {
+        $data = (new Merchant\Service)->generateBankAccountIds();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGenerateTestBankAccounts()
+    {
+        $data = (new Merchant\Service)->generateTestBankAccounts();
+
+        return ApiResponse::json($data);
+    }
+
     public function getBanksPublic()
     {
         $data = (new Merchant\Service)->getEnabledBanks();
@@ -270,6 +284,52 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getMerchantWebhooks($id)
+    {
+        $data = (new Merchant\Service)->getMerchantWebhooks($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postWebhook()
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->createWebhook($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putWebhook($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editWebhook($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWebhook($id)
+    {
+        $data = (new Merchant\Service)->getWebhook($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWebhooks()
+    {
+        $data = (new Merchant\Service)->getWebhooks();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postMerchantBeneficiaryFile()
+    {
+        $data = (new Merchant\Service)->postMerchantBeneficiaryFile();
+
+        return ApiResponse::json($data);
+    }
+
     public function getCheckout()
     {
         $methods = (new Merchant\Service)->getPaymentMethods();
@@ -304,5 +364,45 @@ class MerchantController extends BaseController
     {
         $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
+    }
+
+    /**
+    * Gets the list of beta fetures enabled for merchant
+    * @param  string $id merchant id
+    * @return array      array of feature names
+    */
+    public function getMerchantFeatures($id)
+    {
+        $data = (new Merchant\Service)->getMerchantFeatures($id);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Adds or updated the list of beta fetures for an merchant
+     * @param  string     $id     merchant id
+     * @return merchant           updated entity
+     */
+    public function postMerchantFeatures($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAllFeatures()
+    {
+        $data = Merchant\Features::$allowedFeatures;
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDummyFeatures()
+    {
+        $input = Input::all();
+
+        return ApiResponse::json($input);
     }
 }

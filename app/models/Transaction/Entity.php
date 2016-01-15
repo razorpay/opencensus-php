@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const CREDIT            = 'credit';
     const CURRENCY          = 'currency';
     const FEE               = 'fee';
+    const SERVICE_TAX       = 'service_tax';
     const PRICING_RULE_ID   = 'pricing_rule_id';
     const BALANCE           = 'balance';
     const GATEWAY_FEE       = 'gateway_fee';
@@ -47,40 +48,37 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::SERVICE_TAX,
         self::GRATIS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
         self::CHANNEL,
-        self::SETTLED_AT);
+        self::SETTLED_AT,
+        self::SERVICE_TAX);
 
     protected $public = array(
         self::ID,
         self::ENTITY,
         self::ENTITY_ID,
         self::TYPE,
-        self::MERCHANT_ID,
         self::DEBIT,
         self::CREDIT,
         self::AMOUNT,
         self::CURRENCY,
         self::FEE,
-        self::API_FEE,
-        self::GATEWAY_FEE,
-        self::GRATIS,
-        self::BALANCE,
-        self::ESCROW_BALANCE,
-        self::PRICING_RULE_ID,
-        self::RECONCILED_AT,
-        self::CHANNEL,
+        self::SERVICE_TAX,
         self::SETTLED,
-        self::SETTLED_AT);
+        self::CREATED_AT,
+        self::SETTLED_AT,
+        self::SETTLEMENT_ID);
 
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::ENTITY_ID);
+        self::ENTITY_ID,
+        self::SETTLEMENT_ID);
 
     protected $dates = array(
         self::SETTLED_AT,
@@ -110,6 +108,14 @@ class Entity extends Base\PublicEntity
         $class .= ucfirst($type).'\\'.'Entity';
 
         return $this->belongsTo($class, self::ENTITY_ID);
+    }
+
+    public function payment()
+    {
+        if ($this->isTypePayment())
+        {
+            return $this->belongsTo('Models\Payment\Entity', self::ENTITY_ID);
+        }
     }
 
     public function settlement()
@@ -209,6 +215,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::GRATIS];
     }
 
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
 
     public function getGateway()
@@ -241,6 +252,16 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getPricingRule()
+    {
+        return $this->getAttribute(self::PRICING_RULE_ID);
     }
 
     public function setReconciledAt($timestamp)
@@ -309,6 +330,25 @@ class Entity extends Base\PublicEntity
         $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
     }
 
+    public function setPublicSettlementIdAttribute(array & $array)
+    {
+        if ($array[self::SETTLED] !== true)
+        {
+            return;
+        }
+
+        $sign = Settlement\Entity::getIdPrefix();
+
+        $array[self::SETTLEMENT_ID] = $sign . $array[self::SETTLEMENT_ID];
+    }
+
+    public function setServiceTax($servicetax)
+    {
+        assert($servicetax >= 0);
+
+        $this->setAttribute(self::SERVICE_TAX, $servicetax);
+    }
+
     public function isReconciled()
     {
         return ($this->getAttribute(self::RECONCILED_AT) !== null);
@@ -322,5 +362,10 @@ class Entity extends Base\PublicEntity
     public function isTypeRefund()
     {
         return ($this->getType() === Type::REFUND);
+    }
+
+    public function isGratis()
+    {
+        return $this->getAttribute(self::GRATIS);
     }
 }

@@ -23,7 +23,7 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->verifyPaymentMethodEnabled($payment);
+        $this->verifyPaymentMethodEnabled($payment, $input);
 
         if ($payment->isMethod(Payment\Method::CARD))
         {
@@ -109,9 +109,11 @@ trait Authorize
 
         $message = 'Payment failed earlier converted to authorized';
 
-        $data = $payment->toArrayAdmin();
+        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->slackPost($message, $data, ['color' => 'bad', 'channel' => '#tech_logs']);
+        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+
+        $data = $payment->toArrayAdmin();
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
@@ -150,6 +152,11 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        if ($payment->card !== null)
+        {
+            $input['card'] = $payment->card->toArray();
+        }
+
         $this->checkForRecentFailedPayment($payment);
 
         Payment\Validator::bankAcsCallbackValidate($payment, $input);
@@ -172,19 +179,17 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    protected function verifyPaymentMethodEnabled($payment)
+    protected function verifyPaymentMethodEnabled($payment, $input)
     {
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabledInLive($payment);
+            $this->verifyCardEnabledInLive($payment, $input);
         }
-
-        if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
             $this->verifyBankEnabled($payment);
         }
-
-        if ($payment->isMethod(Payment\Method::WALLET))
+        else if ($payment->isMethod(Payment\Method::WALLET))
         {
             $this->verifyWalletEnabled($payment);
         }
@@ -230,6 +235,8 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
+        $this->eventPaymentAuthorized($payment);
+
         $this->notifyAuthorized($payment, $wasFailed);
     }
 
@@ -269,6 +276,11 @@ trait Authorize
         }
 
         $notifier->trigger($trigger);
+    }
+
+    protected function eventPaymentAuthorized($payment)
+    {
+        $this->app['events']->fire('api.payment.authorized', array($payment));
     }
 
     protected function checkForRecentFailedPayment($payment)
@@ -400,21 +412,47 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($payment)
+    protected function verifyCardEnabledInLive($payment, $input)
     {
+        $methods = $this->methods;
+
+        $this->checkAndValidateAmexIfNotEnabled($methods, $input['card']);
+
         if ($this->mode === Mode::TEST)
         {
             return;
         }
 
         // Only check enabled or not on live mode
-        $methods = $this->methods;
 
         if (($methods === null) or
             ($methods->isCardEnabled() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function checkAndValidateAmexIfNotEnabled($methods, $card)
+    {
+        if (isset($card['number']) === false)
+        {
+            return;
+        }
+
+        $amex = $methods->getAmex();
+
+        $num = $card['number'];
+
+        $prefix = substr($num, 0, 2);
+
+        if ((($prefix === '34') or
+             ($prefix === '37')) and
+            ($amex === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                'number');
         }
     }
 
@@ -479,7 +517,8 @@ trait Authorize
             $network = $payment->card->getNetwork();
             $network = Card\Network::getCode($network);
 
-            if ($network === Card\Network::MAES)
+            if (($network === Card\Network::MAES) or
+                ($network === Card\Network::RUPAY))
             {
                 return false;
             }

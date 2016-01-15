@@ -145,14 +145,14 @@ trait SettlementTrait
 
     protected function generateSetlReturnFile($setlData)
     {
-        $items = $setlData['items'];
+        $items = $setlData;
 
         $content = [];
 
         foreach ($items as $item)
         {
             $content[] = [
-                'id' => $item['id'],
+                'id' => 'setl_' . $item['id'],
                 'refer_utr' => '1'
             ];
         }

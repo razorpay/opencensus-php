@@ -17,7 +17,7 @@ trait ResponseFieldsTrait
     protected static $authorizeRequestFields = array(
         'MerchantID',
         'CustomerID',
-        'Unknown1',
+        'AccountNumber',
         'TxnAmount',
         'BankID',
         'Unknown2',

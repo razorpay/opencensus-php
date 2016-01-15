@@ -15,14 +15,15 @@ class Validator extends Base\Validator
         'method'        =>  'in:card,netbanking,wallet',
         'card'          =>  'sometimes',
         'bank'          =>  'required_if:method,netbanking',
-        'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik',
+        'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes',
-        'callback_url'  =>  'sometimes|url');
+        'callback_url'  =>  'sometimes|url',
+        '_'             =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',

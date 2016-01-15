@@ -10,6 +10,7 @@ use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\Payment;
+use Models\Transaction;
 
 use Trace\Trace;
 use Trace\TraceCode;
@@ -163,7 +164,9 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
-        $days = 6;
+        // Since we are taking 12 am of today, we only need to subtract 4 days from today
+        // to arrive at 5 days before.
+        $days = 4;
         $date = Carbon::today('Asia/Kolkata');
         $ts = $date->subDays($days)->timestamp;
 
@@ -334,78 +337,11 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyAllPayments()
+    public function verifyMultiplePayments($filter)
     {
-        $ts = time() - 30 * 60;
+        $verify = new Verify($this->mode, $this->trace, $this->app['exception.handler']);
 
-        $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
-
-        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
-        $time = time();
-
-        foreach ($payments as $payment)
-        {
-            try
-            {
-                $this->merchant = $payment->merchant;
-
-                $res = $this->processor()->verify($payment);
-
-                $verified++;
-            }
-            catch (Exception\PaymentVerificationException $e)
-            {
-                $failed++;
-
-                // Attempt to authorize payments whose verification failed
-                $this->processor()->authorizeFailedPayment($payment);
-
-                $authorized++;
-
-                // Now Just continue
-            }
-            catch (Exception\GatewayTimeoutException $e)
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
-                    ['payment_id' => $payment->getId()]);
-
-                // Just continue
-                $timedOut++;
-            }
-            catch (\Exception $e)
-            {
-                // @note: If payment verification fails due to any reason
-                // other than expected ones, we should log it as an error
-                // exception.
-                //
-                // If for eg, exception is BadRequestException, then it won't
-                // get logged by global handler because it's not a critical
-                // exception but in this context it really shouldn't have
-                // occurred.
-
-                $this->app['exception.handler']->traceException($e);
-
-                // Just continue
-                $error++;
-            }
-        }
-
-        $time = time() - $time;
-
-        $results = array(
-            'verified'      => $verified,
-            'failed'        => $failed,
-            'authorized'    => $authorized,
-            'timed out'     => $timedOut,
-            'error'         => $error,
-            'total time'    => $time . ' secs');
-
-        $message = 'Payment verify result';
-
-        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
-
-        return $results;
+        return $verify->verifyPaymentsWithFilter($filter);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()
@@ -498,7 +434,9 @@ class Service extends Base\Service
                     $message->to($email, $name);
                 }
 
+                $message->from('reports@razorpay.com');
                 $message->cc('notifications@razorpay.com');
+                $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
             });
@@ -506,7 +444,9 @@ class Service extends Base\Service
 
     protected function processor($merchant = null)
     {
-        return Payment\Processor\Processor::create($this->getBindings($merchant));
+        $bindings = $this->getBindings($merchant);
+
+        return Processor\Processor::create($bindings);
     }
 
     protected function getBindings(Merchant\Entity $merchant = null)
@@ -523,5 +463,43 @@ class Service extends Base\Service
             'mode'      => $this->mode);
 
         return $bindings;
+    }
+
+    public function computeServiceTax()
+    {
+        s(ini_get('max_execution_time'));
+        $repo = new Payment\Repository;
+        $payments = $repo->getNonTaxComputedPayments();
+
+        $totalRecords = 0;
+        $updatedRecords = 0;
+        $totalServiceTax = 0;
+
+        $repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
+        {
+            $totalRecords = $payments->count();
+            foreach ($payments as $payment)
+            {
+                $txn = $payment->transaction;
+                $this->merchant = $payment->merchant;
+                (new Transaction\Core)->fillServiceTax($txn, $payment);
+
+                $payment->setServiceTax($txn->getServiceTax());
+                $payment->setFee($txn->getFee());
+
+                $txn->saveOrFail();
+                $payment->saveOrFail();
+
+                $updatedRecords++;
+                $totalServiceTax += $txn -> getServiceTax();
+            }
+        });
+
+        $results = array(
+            'total'                 => $totalRecords,
+            'updated'               => $updatedRecords,
+            'total service tax'     => $totalServiceTax);
+
+        return $results;
     }
 }

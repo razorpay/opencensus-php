@@ -18,7 +18,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|string',
-        Entity::VERIFIED        => 'sometimes|in:null,0,1',
+        Entity::VERIFIED        => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS   => 'sometimes|in:null,partial,full',
         Entity::BANK            => 'sometimes',
         Entity::METHOD          => 'sometimes',
@@ -55,6 +55,14 @@ class Repository extends Base\Repository
             ->where(Entity::STATUS, '=', Status::CAPTURED)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->get();
+    }
+
+    public function countPaymentsForPricingRuleId($pricingRuleId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::PRICING_RULE_ID, '=', $pricingRuleId)
+                    ->count();
     }
 
     public function lockForUpdate($id)
@@ -111,6 +119,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function get50PaymentsWithVerifyResult($result)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::VERIFIED, '=', $result)
+                    ->take(50)
+                    ->get();
+    }
+
     public function getUnverifiedPayments($ts)
     {
         $repo = $this->repo;
@@ -121,6 +138,17 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
                     ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
+                    ->take(50)
+                    ->get();
+    }
+
+    public function getNonTaxComputedPayments()
+    {
+        $repo = $this->repo;
+
+        return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNull(Payment\Entity::SERVICE_TAX)
+                    ->take(500)
                     ->get();
     }
 
@@ -181,7 +209,9 @@ class Repository extends Base\Repository
 
     protected function joinQueryCard($query)
     {
-        $joins = $query->joins;
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ? $joins : [];
 
         $joined = false;
 
