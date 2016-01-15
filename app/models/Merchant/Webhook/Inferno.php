@@ -77,7 +77,7 @@ class Inferno
             'Content-Type' => 'application/json',
         ];
 
-        $request['options'] = ['timeout' => 15];
+        $request['options'] = ['timeout' => 5];
 
         return $request;
     }

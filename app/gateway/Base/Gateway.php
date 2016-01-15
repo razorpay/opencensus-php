@@ -129,6 +129,13 @@ class Gateway
         $this->mode = $mode;
     }
 
+    public function setMock($mock)
+    {
+        assert (is_bool($mock));
+
+        $this->mock = $mock;
+    }
+
     protected function sendGatewayRequest($request)
     {
         if (isset($request['options']) === false)

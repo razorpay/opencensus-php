@@ -173,7 +173,7 @@ trait RequestResponseFlowTrait
 
         $actualStatusCode = $response->getStatusCode();
 
-        $this->assertEquals($expectedHttpStatusCode, $actualStatusCode);
+        $this->assertEquals($expectedHttpStatusCode, $actualStatusCode, $response->getContent());
     }
 
     protected function getExpectedHttpStatusCode($data)

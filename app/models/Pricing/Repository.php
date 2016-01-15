@@ -142,10 +142,24 @@ class Repository extends Base\Repository
         return $rule;
     }
 
-    public function deletePlanRule($id)
+    public function deletePlanRule($planId, $ruleId)
     {
         $repo = $this->repo;
 
-        $repo::delete($id);
+        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFail();
+
+        $count = $rule->payments->count();
+
+        if ($count === 0)
+        {
+            return $rule->forceDelete();
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pricing rule cannot be deleted because it has been used more than once');
+        }
     }
 }
