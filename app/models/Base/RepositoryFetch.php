@@ -16,6 +16,8 @@ trait RepositoryFetch
 
 //    protected $proxyFetchParamRules = array();
 
+//    protected $defaultFetchParams = array();
+
     protected $params = array();
 
     protected $merchantIdRequiredForMultipleFetch = true;
@@ -198,6 +200,19 @@ trait RepositoryFetch
     }
 
     protected function addDefaultParams(array & $params)
+    {
+        $this->addDefaultParamCount($params);
+
+        if (isset($this->defaultFetchParams))
+        {
+            foreach ($this->defaultFetchParams as $key => $value)
+            {
+                $params[$key] = $value;
+            }
+        }
+    }
+
+    protected function addDefaultParamCount(array & $params)
     {
         $max = $count = null;
 
