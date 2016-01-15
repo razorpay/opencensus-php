@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         'currency'      =>  'required|size:3',
         'method'        =>  'in:card,netbanking,wallet,emi',
         'card'          =>  'sometimes',
-        'bank'          =>  'required_if:method,netbanking',
+        'bank'          =>  'required_if:method,netbanking,emi',
         'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp',
         'emi_plan_id'   =>  'required_if:method,emi',
         'description'   =>  'sometimes',
@@ -44,7 +44,7 @@ class Validator extends Base\Validator
 
     protected function validateCardKey($input)
     {
-        if (($input['method'] !== Payment\Method::CARD) or 
+        if (($input['method'] !== Payment\Method::CARD) and 
             ($input['method'] !== Payment\Method::EMI))
         {
             return;
@@ -76,7 +76,8 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if ($input['method'] !== Payment\Method::NETBANKING)
+        if ($input['method'] !== Payment\Method::NETBANKING and 
+            $input['method'] !== Payment\Method::EMI)
         {
             return;
         }
