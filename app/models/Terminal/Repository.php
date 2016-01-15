@@ -99,8 +99,10 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getEmiTerminals($mId, $gateway, $duration)
+    public function getEmiTerminal($mId, $gateway, $duration)
     {
+        sd($mId, $gateway, $duration);
+        
         $repo = $this->repo;
 
         return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $mId)

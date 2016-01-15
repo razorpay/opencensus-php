@@ -71,6 +71,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </td>
     </tr>
     <tr>
+        <td colspan='40'>EMI Plan Id:</td>
+        <td><input type="text" name="emi_plan_id" size="25" value="abcdefghijklmn"></td>
+    </tr>
+    <tr>
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->

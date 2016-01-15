@@ -8,6 +8,8 @@ use EE\Error\ErrorCode;
 use Models\Bank\IFSC;
 use Models\Card;
 use Models\Card\Network;
+use Models\Emi;
+use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Gateway;
 use Models\Terminal;
@@ -442,15 +444,17 @@ class TerminalPicker
     protected function getSharedTerminalForEmi($payment)
     {
         $bank = $this->payment->getBank();
-        
+
+        s($bank);
         $emiPlanId = $this->payment->getEmiPlanId();
         
-        $emiPlan = (new Emi\Repository)->getEmiPlan($emiPlanId);
-        
-        $emiDuration = $emiPlan->getEmiDuration();
+        $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
+                
+        $emiDuration = $emiPlan->getDuration();
 
-        $terminal = $this->repo->getEmiTerminal(Terminal\Entity::SHARED_TERMINAL_MERCHANT_ID, $gateway, $emiDuration);
+        $terminal = $this->repo->getEmiTerminal(Merchant\Account::SHARED_ACCOUNT, $gateway, $emiDuration);
         
+        sd($terminal);
         return $terminal;       
     }
 

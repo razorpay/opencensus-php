@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
+        self::EMI_PLAN_ID,
         self::BANK,
         self::WALLET,
         self::CURRENCY,
@@ -116,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::METHOD,
+        self::EMI_PLAN_ID,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
         self::CAPTURED,
@@ -146,7 +148,6 @@ class Entity extends Base\PublicEntity
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
-        self::EMI_PLAN_ID       => null,
     );
 
 // --------------------- Generators --------------------------------------------
