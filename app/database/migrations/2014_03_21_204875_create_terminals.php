@@ -54,6 +54,12 @@ class CreateTerminals extends Migration
             $table->boolean(Terminal::NETBANKING)
                   ->default(0);
 
+            $table->boolean(Terminal::EMI)
+                  ->default(0);
+
+            $table->boolean(Terminal::EMI_DURATION)
+                  ->nullable();
+
             $table->boolean(Terminal::SHARED)
                   ->default(0);
 
