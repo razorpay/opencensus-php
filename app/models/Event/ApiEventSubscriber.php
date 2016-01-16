@@ -82,6 +82,8 @@ class ApiEventSubscriber
                 ['webhook' => $webhook->toArray()]);
         }
 
+        return;
+
         if ($this->fireWebhookForEvent($webhook, $eventFired) === false)
         {
             return;
