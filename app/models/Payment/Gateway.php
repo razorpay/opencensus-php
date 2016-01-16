@@ -107,6 +107,7 @@ class Gateway
         self::MOBIKWIK,
         self::PAYTM,
         self::HDFC,
+        self::AMEX,
         self::NETBANKING_HDFC);
 
     public static function getChannel($gateway)
