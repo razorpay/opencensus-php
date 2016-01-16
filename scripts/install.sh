@@ -15,6 +15,9 @@ cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncign
 echo  "Fix permissions"
 cd /home/ubuntu/api/ && sudo chmod 777 -R app/storage
 
+echo "Listing vendor dir"
+ls vendor
+
 # DB Migrate
 echo  "DB Migrate"
 cd /home/ubuntu/api/ && php artisan migrate --force && php artisan migrate --database=test --force
