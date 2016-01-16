@@ -100,16 +100,14 @@ class Repository extends Base\Repository
     }
 
     public function getEmiTerminal($mId, $gateway, $duration)
-    {
-        sd($mId, $gateway, $duration);
-        
+    {        
         $repo = $this->repo;
 
         return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $mId)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
                     ->where(Terminal\Entity::SHARED, '=', '1')
                     ->where(Terminal\Entity::EMI, '=', '1')
-                    ->where(Terminal\Entity::DURATION, '=', $duration)
+                    ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
                     ->first();
     }
 

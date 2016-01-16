@@ -418,7 +418,14 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        s($bank);
+        if($bank === IFSC::KKBK)
+        {
+            // for kotak, process as normal card transaction and mail for emi
+            return getSharedTerminalForCard($payment);
+        }
+
+        $gateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
+
         $emiPlanId = $this->payment->getEmiPlanId();
         
         $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
@@ -427,7 +434,6 @@ class TerminalPicker
 
         $terminal = $this->repo->getEmiTerminal(Merchant\Account::SHARED_ACCOUNT, $gateway, $emiDuration);
         
-        sd($terminal);
         return $terminal;       
     }
 

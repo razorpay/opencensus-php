@@ -145,6 +145,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC);
 
+<<<<<<< 31dbf70d4b9220dfebb2b667a5aabc18d4f96883
     /**
      * Card gateways which support international payments
      *
@@ -265,10 +266,16 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM);
 
+    public static $emiBankToGatewayMap = array(
+        IFSC::HDFC      =>  Gateway::HDFC,
+        IFSC::UTIB      =>  Gateway::AXIS_MIGS
+    );
+
     public static function isNetbankingBankDirectlySupported($bank)
     {
         return in_array($bank, self::$directNetbankingBankList);
     }
+
 
     public static function getChannel($gateway)
     {

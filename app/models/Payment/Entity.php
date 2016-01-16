@@ -5,6 +5,8 @@ namespace Models\Payment;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
+use Models\Card\IIN;
+use Models\Emi;
 use Models\Payment;
 use Models\Payment\Refund;
 use Models\Payment\Processor\Netbanking;
@@ -135,7 +137,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
-    protected static $modifiers = array(self::CONTACT, self::BANK);
+    protected static $modifiers = array(self::CONTACT, self::BANK, self::EMI_PLAN_ID);
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
@@ -190,6 +192,28 @@ class Entity extends Base\PublicEntity
         {
             $input['bank'] = null;
         }
+
+        if((isset($input['method'])) and
+            ($input['method'] === Method::EMI))
+        {
+            $iin = substr($input['card']['number'], 0, 6);
+            
+            $bank = (new IIN\Iin)->getBankByIIN($iin);
+            
+            $input['bank'] = $bank;
+        }
+    }
+
+    protected function modifyEmiPlanId(& $input)
+    {
+        if ((isset($input['method'])) and
+            ($input['method'] === Method::EMI))
+        {
+            $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($input['bank'], $input['emi_duration']);
+            $input[self::EMI_PLAN_ID] = $emiPlan->getId();
+        }
+
+        unset($input['emi_duration']);
     }
 
     protected function modifyWallet(& $input)
