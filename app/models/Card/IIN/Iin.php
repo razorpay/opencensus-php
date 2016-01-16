@@ -8,7 +8,7 @@ use Models\Bank;
 class Iin extends Base\PublicEntity
 {
     public static $iinBankMap  = array(
-        [ '401200', '401300', Bank\IFSC::UTIB ],
+        [ '401200', '401300', Bank\IFSC::HDFC],
     );
 
     public function getBankByIIN($iin)
