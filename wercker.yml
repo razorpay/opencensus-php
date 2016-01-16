@@ -56,6 +56,9 @@ deploy:
       - script:
           name: List directory
           code: ls
+      - script:
+          name: check vendor dir exists
+          code: if [ ! -d vendor] then exit 1 fi
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
