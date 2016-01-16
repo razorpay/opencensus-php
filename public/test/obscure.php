@@ -71,9 +71,16 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </td>
     </tr>
     <tr>
-        <td colspan='40'>EMI Plan Id:</td>
-        <td><input type="text" name="emi_plan_id" size="25" value="abcdefghijklmn"></td>
-    </tr>
+        <td colspan="40">Select EMI Duration</td>
+        <td>
+            <select name="emi_duration">
+                <option value="3">3 Months @12%</option>
+                <option value="6">6 Months @12%</option>
+                <option value="9">9 Months @14%</option>
+                <option value="12">12 Months @14%</option>
+            </select>
+        </td>
+    </tr>    
     <tr>
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>

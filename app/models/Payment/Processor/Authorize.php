@@ -25,7 +25,8 @@ trait Authorize
 
         $this->verifyPaymentMethodEnabled($payment, $input);
 
-        if ($payment->isMethod(Payment\Method::CARD))
+        if (($payment->isMethod(Payment\Method::CARD)) or
+            ($payment->isMethod(Payment\Method::EMI)))
         {
             $gatewayInput['card'] = $this->createCardEntity($input);
         }

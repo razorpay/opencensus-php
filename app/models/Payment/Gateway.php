@@ -3,6 +3,7 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use Models\Bank;
 use Models\Card\Network;
 use Models\Settlement;
 use Models\Payment\Processor\Wallet;
@@ -114,6 +115,11 @@ class Gateway
         self::PAYTM,
         self::HDFC,
         self::NETBANKING_HDFC);
+
+    public static $emiBankToGatewayMap = array(
+        Bank\IFSC::HDFC      =>  Gateway::HDFC,
+        Bank\IFSC::UTIB      =>  Gateway::AXIS_MIGS
+    );
 
     public static function getChannel($gateway)
     {
