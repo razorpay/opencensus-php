@@ -297,56 +297,27 @@ class TerminalPicker
     {
         $wallet = $payment->getWallet();
 
-        if ($wallet === Wallet::PAYTM)
-        {
-            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
-
-        if ($wallet === Wallet::MOBIKWIK)
-        {
-            if ($this->terminalExists(Shared::MOBIKWIK_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
-
+        // Payzapp can have category specific terminals. So we need to
+        // first check for those.
         if ($wallet === Wallet::PAYZAPP)
         {
-            if ($this->terminalExists(Shared::PAYZAPP_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-
-            $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
-
             $category = $payment->merchant->getCategory();
 
-            $commonTerminal = null;
+            $terminal = $this->getSharedCategoryTerminalForPayzapp($category);
 
-            foreach ($terminals as $terminal)
+            if ($terminal !== null)
             {
-                $commonTerminal = null;
-
-                if ($terminal->getCategory() === $category)
-                {
-                    $this->terminal = $terminal;
-
-                    return $terminal;
-                }
-
-                if ($terminal->getCategory() === 1000)
-                {
-                    $commonTerminal = $terminal;
-                }
+                return $terminal;
             }
+        }
 
-            if ($commonTerminal !== null)
-            {
-                return $commonTerminal;
-            }
+        $gateway = Gateway::getGatewayForWallet($wallet);
+
+        $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+        if ($this->terminalExists($sharedTerminal))
+        {
+            return $this->terminal;
         }
     }
 
@@ -445,6 +416,21 @@ class TerminalPicker
             if ($this->terminalExists($sharedTerminal))
             {
                 return $this->terminal;
+            }
+        }
+    }
+
+    protected function getSharedCategoryTerminalForPayzapp($category)
+    {
+        $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
+
+        foreach ($terminals as $terminal)
+        {
+            if ($terminal->getCategory() === $category)
+            {
+                $this->terminal = $terminal;
+
+                return $terminal;
             }
         }
     }
