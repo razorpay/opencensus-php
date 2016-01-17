@@ -140,6 +140,34 @@ class Gateway
         Gateway::KOTAK,
         Gateway::PAYTM);
 
+    /**
+     * Banks with which we have direct netbanking tie-ups.
+     * @var array
+     */
+    public static $directNetbankingBankList = array(
+        IFSC::HDFC,
+        IFSC::KKBK);
+
+    /**
+     * For the banks we have direct tie-ups with,
+     * here we list down the mapping from bank to netbanking gateway name.
+     * There is no standardized bank gateway naming that we follow. IFSC
+     * code option was discarded because it's not readable in general in code.
+     *
+     * @var array
+     */
+    public static $netbankingToGatewayMap = array(
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK);
+
+    public static $directNetbankingGateways = array(
+        Gateway::BILLDESK);
+
+    public static $directNetbankingGatewaysInTest = array(
+        Gateway::SBIEPAY,
+        Gateway::PAYTM,
+        Gateway::ATOM);
+
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];

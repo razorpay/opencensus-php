@@ -119,24 +119,11 @@ class TerminalPicker
 
         $bank = $this->payment->getBank();
 
-        if ($bank === IFSC::HDFC)
+        $terminal = $this->selectDirectNetbankingBankTerminal($gatewayTerms, $bank);
+
+        if ($terminal !== null)
         {
-            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_HDFC]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::NETBANKING_HDFC];
-            }
-
-            return;
-        }
-
-        if ($bank === IFSC::KKBK)
-        {
-            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_KOTAK]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::NETBANKING_KOTAK];
-            }
-
-            return;
+            return $terminal;
         }
 
         if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
@@ -428,6 +415,21 @@ class TerminalPicker
             {
                 return $terminals[$gateway];
             }
+        }
+    }
+
+    protected function selectDirectNetbankingBankTerminal($termianls, $bank)
+    {
+        if (in_array($bank, Gateway::$directNetbankingBankList) === false)
+        {
+            return;
+        }
+
+        $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        if (isset($terminals[$gateway]))
+        {
+            return $terminals[$gateway];
         }
     }
 
