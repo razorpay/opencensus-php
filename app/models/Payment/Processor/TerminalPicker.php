@@ -77,10 +77,6 @@ class TerminalPicker
 
     protected function pickOneTerminal($gatewayTerms, $payment)
     {
-        $terminal = null;
-
-        $merchant = $payment->merchant;
-
         $method = $payment->getMethod();
 
         $func = 'pickTerminalFor'.ucfirst($method).'Method';
@@ -92,48 +88,20 @@ class TerminalPicker
     {
         $terminal = null;
 
-        $international = $payment->merchant->isInternational();
-
         $network = $payment->card->getNetworkCode();
 
         $this->network = $network;
 
-        $gatewayOrder = array(
-            Gateway::HDFC,
-            Gateway::AXIS_MIGS,
-            Gateway::AMEX,
-            Gateway::KOTAK);
+        $directCardGateways = Gateway::$directCardGateways;
 
-        foreach ($gatewayOrder as $gateway)
+        $terminal = $this->selectDirectCardGateway($directCardGateways, $gatewayTerms, $network);
+
+        if (($this->mode === Mode::TEST) and
+            ($terminal === null))
         {
-            if ((isset($gatewayTerms[$gateway])) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[$gateway];
-            }
-        }
+            $directCardGatewaysInTest = Gateway::$directCardGatewaysInTest;
 
-        if ($this->mode === Mode::TEST)
-        {
-            if ((isset($gatewayTerms[Gateway::AXIS_GENIUS])) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[Gateway::AXIS_GENIUS];
-            }
-
-            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[$gateway];
-            }
-
-            // In test mode paytm supports only cards
-            // but in live only netbanking.
-            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[Payment\Gateway::PAYTM];
-            }
+            $terminal = $this->selectDirectCardGateway($directCardGatewaysInTest, $gatewayTerms, $network);
         }
 
         return $terminal;
@@ -145,51 +113,17 @@ class TerminalPicker
 
         $bank = $this->payment->getBank();
 
-        if ($bank === IFSC::HDFC)
-        {
-            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_HDFC]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::NETBANKING_HDFC];
-            }
+        // First check if we have direct tie-up with this bank and fetch it's gateway.
+        $terminal = $this->selectDirectNetbankingBankTerminal($gatewayTerms, $bank);
 
-            return;
+        if ($terminal !== null)
+        {
+            return $terminal;
         }
 
-        if ($bank === IFSC::KKBK)
-        {
-            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_KOTAK]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::NETBANKING_KOTAK];
-            }
-
-            return;
-        }
-
-        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
-            (Netbanking::isBilldeskSupportedBank($bank)))
-        {
-            return $gatewayTerms[Payment\Gateway::BILLDESK];
-        }
-
-        if ($this->mode === Mode::TEST)
-        {
-            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
-                (Netbanking::isSbiepaySupportedBank($bank)))
-            {
-                return $gatewayTerms[Payment\Gateway::SBIEPAY];
-            }
-
-            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-                (Netbanking::isPaytmSupportedBank($bank)))
-            {
-                return $gatewayTerms[Payment\Gateway::PAYTM];
-            }
-
-            if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::ATOM];
-            }
-        }
+        // Select terminal from our aggregator tie-ups
+        // for netbanking like billdesk, etc.
+        $terminal = $this->selectDirectNetbankingGatewayTerminal($gatewayTerms, $bank);
 
         return $terminal;
     }
@@ -200,7 +134,7 @@ class TerminalPicker
 
         $wallet = $this->payment->getWallet();
 
-        $gateway = Payment\Gateway::getGatewayForWallet($wallet);
+        $gateway = Gateway::getGatewayForWallet($wallet);
 
         if (isset($gatewayTerms[$gateway]) === true)
         {
@@ -234,11 +168,6 @@ class TerminalPicker
 
         if ($this->mode === Mode::TEST)
         {
-            if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-
             if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
@@ -275,48 +204,32 @@ class TerminalPicker
 
     protected function getSharedGenericTerminalForCard($payment)
     {
-        $terminal = null;
-
-        $international = $payment->merchant->isInternational();
-
         $network = $payment->card->getNetworkCode();
 
         $this->network = $network;
 
         if ($payment->merchant->isInternational())
         {
-            $terminal = Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
+            $gateways = Gateway::$internationalCardGateways;
 
-            if ($this->sharedTerminalExistsAndCardNetworkSupported($terminal, $network))
+            if ($this->selectSharedCardTerminalFromGatewayList($gateways, $network))
             {
                 return $this->terminal;
             }
         }
 
-        $sharedCardTerminals = array(
-            Shared::KOTAK_RAZORPAY_TERMINAL,
-            Shared::HDFC_RAZORPAY_TERMINAL,
-            Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
-            Shared::AMEX_RAZORPAY_TERMINAL);
+        $gateways = Gateway::$domesticCardGateways;
 
-        foreach ($sharedCardTerminals as $sharedTerminalId)
+        if ($this->selectSharedCardTerminalFromGatewayList($gateways, $network))
         {
-            if ($this->terminalExistsAndSupportsCardNetwork($sharedTerminalId, $network))
-            {
-                return $this->terminal;
-            }
+            return $this->terminal;
         }
 
         if ($this->mode === Mode::TEST)
         {
-            if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
+            $gateways = Gateway::$domesticCardGatewaysInTest;
 
-            // In test mode paytm supports only cards
-            // but in live only netbanking.
-            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+            if ($this->selectSharedCardTerminalFromGatewayList($gateways, $network))
             {
                 return $this->terminal;
             }
@@ -327,44 +240,21 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        if ($bank === IFSC::HDFC)
+        $terminal = $this->selectSharedDirectNetbankingBankTerminal($bank);
+
+        if ($terminal !== null)
         {
-            if ($this->terminalExists(Shared::NETBANKING_HDFC_TERMINAL))
-            {
-                return $this->terminal;
-            }
+            return $terminal;
         }
 
-        if ($bank === IFSC::KKBK)
-        {
-            if ($this->terminalExists(Shared::NETBANKING_KOTAK_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
+        $terminal = $this->selectSharedGatewayNetbankingTerminal();
 
-        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::SBIEPAY_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
+        return $terminal;
     }
 
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
-        $networks = array(
-            Network::MAES,
-            Network::RUPAY,
-            Network::DICL);
+        $networks = Gateway::$partiallySupportedCardNetworks;
 
         if (in_array($network, $networks))
         {
@@ -377,56 +267,27 @@ class TerminalPicker
     {
         $wallet = $payment->getWallet();
 
-        if ($wallet === Wallet::PAYTM)
-        {
-            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
-
-        if ($wallet === Wallet::MOBIKWIK)
-        {
-            if ($this->terminalExists(Shared::MOBIKWIK_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
-
+        // Payzapp can have category specific terminals. So we need to
+        // first check for those.
         if ($wallet === Wallet::PAYZAPP)
         {
-            if ($this->terminalExists(Shared::PAYZAPP_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-
-            $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
-
             $category = $payment->merchant->getCategory();
 
-            $commonTerminal = null;
+            $terminal = $this->getSharedCategoryTerminalForPayzapp($category);
 
-            foreach ($terminals as $terminal)
+            if ($terminal !== null)
             {
-                $commonTerminal = null;
-
-                if ($terminal->getCategory() === $category)
-                {
-                    $this->terminal = $terminal;
-
-                    return $terminal;
-                }
-
-                if ($terminal->getCategory() === 1000)
-                {
-                    $commonTerminal = $terminal;
-                }
+                return $terminal;
             }
+        }
 
-            if ($commonTerminal !== null)
-            {
-                return $commonTerminal;
-            }
+        $gateway = Gateway::getGatewayForWallet($wallet);
+
+        $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+        if ($this->terminalExists($sharedTerminal))
+        {
+            return $this->terminal;
         }
     }
 
@@ -437,12 +298,111 @@ class TerminalPicker
         foreach ($terminals->all() as $term)
         {
             $gateway = $term->getGateway();
-            Payment\Gateway::validateGateway($gateway);
+            Gateway::validateGateway($gateway);
 
             $gatewayTerms[$gateway] = $term;
         }
 
         return $gatewayTerms;
+    }
+
+    protected function selectDirectCardGateway($cardGateways, $terminals, $network)
+    {
+        foreach ($cardGateways as $gateway)
+        {
+            if ((isset($terminals[$gateway])) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $terminals[$gateway];
+            }
+        }
+    }
+
+    protected function selectDirectNetbankingBankTerminal($termianls, $bank)
+    {
+        if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
+        {
+            return;
+        }
+
+        $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        if (isset($terminals[$gateway]))
+        {
+            return $terminals[$gateway];
+        }
+    }
+
+    protected function selectDirectNetbankingGatewayTerminal($terminals, $bank)
+    {
+        $gateway = Gateway::BILLDESK;
+
+        if ((isset($terminals[$gateway]) === true) and
+            (Netbanking::isBankSupportedByGateway($gateway, $bank)))
+        {
+            return $terminals[$gateway];
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $directNetbankingGatewaysInTest = Gateway::$directNetbankingGatewaysInTest;
+
+            foreach ($directNetbankingGatewaysInTest as $gateway)
+            {
+                if ((isset($terminals[$gateway]) === true) and
+                    (Netbanking::isBankSupportedByGateway($bank, $gateway)))
+                {
+                    return $terminals[$gateway];
+                }
+            }
+        }
+    }
+
+    protected function selectSharedDirectNetbankingBankTerminal($bank)
+    {
+        if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
+        {
+            return;
+        }
+
+        $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+        if ($this->terminalExists($sharedTerminal))
+        {
+            return $this->terminal;
+        }
+    }
+
+    protected function selectSharedGatewayNetbankingTerminal()
+    {
+        $gateways = Gateway::$netbankingGateways;
+
+        foreach ($gateways as $gateway)
+        {
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+            if ($this->terminalExists($sharedTerminal))
+            {
+                return $this->terminal;
+            }
+        }
+    }
+
+    protected function getSharedCategoryTerminalForPayzapp($category)
+    {
+        $terminals = $this->repo->getSharedTerminalForGateway(Gateway::WALLET_PAYZAPP);
+
+        foreach ($terminals as $terminal)
+        {
+            if ($terminal->getCategory() === $category)
+            {
+                $this->terminal = $terminal;
+
+                return $terminal;
+            }
+        }
     }
 
     protected function validateCount($terminals, $merchant)
@@ -462,24 +422,19 @@ class TerminalPicker
         return $this->repo->fetch(['count' => 100], $merchant->getId());
     }
 
-    protected function filterTerminalsByMethod($terminals, $method)
+    protected function selectSharedCardTerminalFromGatewayList($gateways, $network)
     {
-        $terminals->filter(function($item) use($method)
+        foreach ($gateways as $gateway)
         {
-            return ($item[$method] === '1');
-        });
-    }
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
 
-    protected function terminalExistsAndSupportsCardNetwork($sharedTerminalId, $network)
-    {
-        $gateway = Shared::getGatewayForTerminal($sharedTerminalId);
+            $terminal = $this->terminalExists($sharedTerminal);
 
-        $terminal = $this->terminalExists($sharedTerminalId);
-
-        if (($terminal !== null) and
-            (Gateway::isCardNetworkSupported($network, $gateway)))
-        {
-            return $this->terminal;
+            if (($terminal !== null) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $terminal;
+            }
         }
     }
 
@@ -488,13 +443,5 @@ class TerminalPicker
         $this->terminal = $this->repo->find($terminal);
 
         return $this->terminal;
-    }
-
-    protected function sharedTerminalExistsAndCardNetworkSupported($terminal, $network)
-    {
-        $gateway = Shared::getGatewayForTerminal($terminal);
-
-        return (($this->terminalExists($terminal)) and
-                (Gateway::isCardNetworkSupported($network, $gateway)));
     }
 }
