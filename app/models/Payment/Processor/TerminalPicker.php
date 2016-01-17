@@ -126,31 +126,7 @@ class TerminalPicker
             return $terminal;
         }
 
-        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
-            (Netbanking::isBilldeskSupportedBank($bank)))
-        {
-            return $gatewayTerms[Payment\Gateway::BILLDESK];
-        }
-
-        if ($this->mode === Mode::TEST)
-        {
-            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
-                (Netbanking::isSbiepaySupportedBank($bank)))
-            {
-                return $gatewayTerms[Payment\Gateway::SBIEPAY];
-            }
-
-            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-                (Netbanking::isPaytmSupportedBank($bank)))
-            {
-                return $gatewayTerms[Payment\Gateway::PAYTM];
-            }
-
-            if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::ATOM];
-            }
-        }
+        $terminal = $this->selectDirectNetbankingGatewayTerminal($gatewayTerms, $bank);
 
         return $terminal;
     }
@@ -430,6 +406,31 @@ class TerminalPicker
         if (isset($terminals[$gateway]))
         {
             return $terminals[$gateway];
+        }
+    }
+
+    protected function selectDirectNetbankingGatewayTerminal($terminals, $bank)
+    {
+        $gateway = Gateway::BILLDESK;
+
+        if ((isset($terminals[$gateway]) === true) and
+            (Netbanking::isBankSupportedByGateway($gateway, $bank)))
+        {
+            return $terminals[$gateway];
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $directNetbankingGatewaysInTest = Gateway::$directNetbankingGatewaysInTest;
+
+            foreach ($directNetbankingGatewaysInTest as $gateway)
+            {
+                if ((isset($terminals[$gateway]) === true) and
+                    (Netbanking::isBankSupportedByGateway($bank, $gateway)))
+                {
+                    return $terminals[$gateway];
+                }
+            }
         }
     }
 
