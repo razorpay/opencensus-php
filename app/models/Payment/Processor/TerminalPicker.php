@@ -9,6 +9,7 @@ use Models\Bank\IFSC;
 use Models\Card;
 use Models\Card\Network;
 use Models\Payment;
+use Models\Payment\Method;
 use Models\Payment\Gateway;
 use Models\Terminal;
 use Models\Terminal\Shared;
@@ -45,24 +46,16 @@ class TerminalPicker
         $this->merchant = $payment->merchant;
         $this->mode = $mode;
 
-        $terminals = $this->getTerminals($payment->merchant);
+        $merchantTerminals = $this->getTerminals($payment->merchant);
 
-        $this->validateCount($terminals, $payment->merchant);
+        $this->validateCount($merchantTerminals, $payment->merchant);
 
-        $gatewayTerms = $this->getGatewayTerminals($terminals);
+        $terminals = $this->getTerminalsKeyedByGateway($merchantTerminals);
 
-        $terminal = $this->pickOneTerminal($gatewayTerms, $payment);
-
-        if ($terminal === null)
-        {
-            $terminal = $this->getSharedTerminal($payment);
-        }
+        $terminal = $this->pickTerminal($terminals, $payment);
 
         if ($terminal === null)
         {
-            $this->checkForPartiallySupportedCardNetworks(
-                    $gatewayTerms, $this->network);
-
             throw new Exception\RuntimeException(
                 'Terminal should not be null',
                 ['payment' => $payment->toArrayAdmin()]);
@@ -75,46 +68,83 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function pickOneTerminal($gatewayTerms, $payment)
+    protected function pickTerminal($terminals, $payment)
     {
         $method = $payment->getMethod();
 
-        $func = 'pickTerminalFor'.ucfirst($method).'Method';
+        switch ($method)
+        {
+            case Method::CARD:
+                $terminal = $this->pickCardTerminal($terminals, $payment);
+                break;
 
-        return $this->$func($gatewayTerms, $payment);
+            case Method::NETBANKING:
+                $terminal = $this->pickNetbankingTerminal($terminals, $payment);
+                break;
+
+            case Method::WALLET:
+                $terminal = $this->pickWalletTerminal($terminals, $payment);
+                break;
+
+            default:
+                throw new Exception\LogicException(
+                    'Not a valid method: ' . $method);
+        }
+
+        if (($terminal === null) and
+            ($this->mode === Mode::TEST))
+        {
+            if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
+            {
+                $terminal = $this->terminal;
+            }
+        }
+
+        return $terminal;
     }
 
-    protected function pickTerminalForCardMethod($gatewayTerms, $payment)
+    protected function pickCardTerminal($terminals, $payment)
     {
         $terminal = null;
 
         $network = $payment->card->getNetworkCode();
 
-        $this->network = $network;
-
         $directCardGateways = Gateway::$directCardGateways;
 
-        $terminal = $this->selectDirectCardGateway($directCardGateways, $gatewayTerms, $network);
+        $terminal = $this->selectDirectCardGateway($directCardGateways, $terminals, $network);
 
         if (($this->mode === Mode::TEST) and
             ($terminal === null))
         {
             $directCardGatewaysInTest = Gateway::$directCardGatewaysInTest;
 
-            $terminal = $this->selectDirectCardGateway($directCardGatewaysInTest, $gatewayTerms, $network);
+            $terminal = $this->selectDirectCardGateway($directCardGatewaysInTest, $terminals, $network);
+        }
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $terminal = $this->getSharedTerminalForCard($payment);
+
+        if ($terminal === null)
+        {
+            $this->checkForPartiallySupportedCardNetworks(
+                    $terminals, $network);
         }
 
         return $terminal;
     }
 
-    protected function pickTerminalForNetbankingMethod($gatewayTerms, $payment)
+    protected function pickNetbankingTerminal($terminals, $payment)
     {
         $terminal = null;
 
         $bank = $this->payment->getBank();
 
         // First check if we have direct tie-up with this bank and fetch it's gateway.
-        $terminal = $this->selectDirectNetbankingBankTerminal($gatewayTerms, $bank);
+        $terminal = $this->selectDirectNetbankingBankTerminal($terminals, $bank);
 
         if ($terminal !== null)
         {
@@ -123,12 +153,18 @@ class TerminalPicker
 
         // Select terminal from our aggregator tie-ups
         // for netbanking like billdesk, etc.
-        $terminal = $this->selectDirectNetbankingGatewayTerminal($gatewayTerms, $bank);
+        $terminal = $this->selectDirectNetbankingGatewayTerminal($terminals, $bank);
 
-        return $terminal;
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        return $this->getSharedTerminalForNetbanking($payment);
+
     }
 
-    protected function pickTerminalForWalletMethod($gatewayTerms)
+    protected function pickWalletTerminal($terminals, $payment)
     {
         $terminal = null;
 
@@ -136,45 +172,12 @@ class TerminalPicker
 
         $gateway = Gateway::getGatewayForWallet($wallet);
 
-        if (isset($gatewayTerms[$gateway]) === true)
+        if (isset($terminals[$gateway]) === true)
         {
-            return $gatewayTerms[$gateway];
-        }
-    }
-
-    protected function getSharedTerminal($payment)
-    {
-        $terminal = null;
-
-        $method = $payment->getMethod();
-
-        if ($method === Payment\Method::CARD)
-        {
-            $terminal = $this->getSharedTerminalForCard($payment);
-        }
-        else if ($method === Payment\Method::NETBANKING)
-        {
-            $terminal = $this->getSharedTerminalForNetbanking($payment);
-        }
-        else if ($method === Payment\Method::WALLET)
-        {
-            $terminal = $this->getSharedTerminalForWallet($payment);
+            return $terminals[$gateway];
         }
 
-        if ($terminal !== null)
-        {
-            return $terminal;
-        }
-
-        if ($this->mode === Mode::TEST)
-        {
-            if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
-
-        return $terminal;
+        return $this->getSharedTerminalForWallet($payment);
     }
 
     protected function getSharedTerminalForCard($payment)
@@ -205,8 +208,6 @@ class TerminalPicker
     protected function getSharedGenericTerminalForCard($payment)
     {
         $network = $payment->card->getNetworkCode();
-
-        $this->network = $network;
 
         if ($payment->merchant->isInternational())
         {
@@ -252,7 +253,7 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
+    protected function checkForPartiallySupportedCardNetworks($terminals, $network)
     {
         $networks = Gateway::$partiallySupportedCardNetworks;
 
@@ -291,19 +292,20 @@ class TerminalPicker
         }
     }
 
-    protected function getGatewayTerminals($terminals)
+    protected function getTerminalsKeyedByGateway($merchantTerminals)
     {
-        $gatewayTerms = [];
+        $terminals = [];
 
-        foreach ($terminals->all() as $term)
+        foreach ($merchantTerminals->all() as $term)
         {
             $gateway = $term->getGateway();
+
             Gateway::validateGateway($gateway);
 
-            $gatewayTerms[$gateway] = $term;
+            $terminals[$gateway] = $term;
         }
 
-        return $gatewayTerms;
+        return $terminals;
     }
 
     protected function selectDirectCardGateway($cardGateways, $terminals, $network)
