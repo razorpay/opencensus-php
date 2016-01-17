@@ -174,11 +174,6 @@ class TerminalPicker
 
         if ($this->mode === Mode::TEST)
         {
-            if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
-            {
-                return $this->terminal;
-            }
-
             if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
@@ -237,7 +232,8 @@ class TerminalPicker
             Shared::KOTAK_RAZORPAY_TERMINAL,
             Shared::HDFC_RAZORPAY_TERMINAL,
             Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
-            Shared::AMEX_RAZORPAY_TERMINAL);
+            Shared::AMEX_RAZORPAY_TERMINAL,
+            Shared::ATOM_RAZORPAY_TERMINAL);
 
         foreach ($sharedCardTerminals as $sharedTerminalId)
         {
