@@ -119,6 +119,7 @@ class TerminalPicker
 
         $bank = $this->payment->getBank();
 
+        // First check if we have direct tie-up with this bank and fetch it's gateway.
         $terminal = $this->selectDirectNetbankingBankTerminal($gatewayTerms, $bank);
 
         if ($terminal !== null)
@@ -126,6 +127,8 @@ class TerminalPicker
             return $terminal;
         }
 
+        // Select terminal from our aggregator tie-ups
+        // for netbanking like billdesk, etc.
         $terminal = $this->selectDirectNetbankingGatewayTerminal($gatewayTerms, $bank);
 
         return $terminal;
@@ -264,36 +267,16 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        if ($bank === IFSC::HDFC)
+        $terminal = $this->selectSharedDirectNetbankingBankTerminal($bank);
+
+        if ($terminal !== null)
         {
-            if ($this->terminalExists(Shared::NETBANKING_HDFC_TERMINAL))
-            {
-                return $this->terminal;
-            }
+            return $terminal;
         }
 
-        if ($bank === IFSC::KKBK)
-        {
-            if ($this->terminalExists(Shared::NETBANKING_KOTAK_TERMINAL))
-            {
-                return $this->terminal;
-            }
-        }
+        $terminal = $this->selectSharedGatewayNetbankingTerminal();
 
-        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::SBIEPAY_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
-        if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
+        return $terminal;
     }
 
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
@@ -396,7 +379,7 @@ class TerminalPicker
 
     protected function selectDirectNetbankingBankTerminal($termianls, $bank)
     {
-        if (in_array($bank, Gateway::$directNetbankingBankList) === false)
+        if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
         {
             return;
         }
@@ -430,6 +413,38 @@ class TerminalPicker
                 {
                     return $terminals[$gateway];
                 }
+            }
+        }
+    }
+
+    protected function selectSharedDirectNetbankingBankTerminal($bank)
+    {
+        if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
+        {
+            return;
+        }
+
+        $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+        if ($this->terminalExists($sharedTerminal))
+        {
+            return $this->terminal;
+        }
+    }
+
+    protected function selectSharedGatewayNetbankingTerminal()
+    {
+        $gateways = Gateway::$netbankingGateways;
+
+        foreach ($gateways as $gateway)
+        {
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+            if ($this->terminalExists($sharedTerminal))
+            {
+                return $this->terminal;
             }
         }
     }

@@ -160,6 +160,12 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK);
 
+    public static $netbankingGateways = array(
+        Gateway::BILLDESK,
+        Gateway::SBIEPAY,
+        Gateway::PAYTM,
+        Gateway::ATOM);
+
     public static $directNetbankingGateways = array(
         Gateway::BILLDESK);
 
@@ -167,6 +173,11 @@ class Gateway
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
+
+    public static function isNetbankingBankDirectlySupported($bank)
+    {
+        return in_array($bank, self::$directNetbankingBankList);
+    }
 
     public static function getChannel($gateway)
     {
