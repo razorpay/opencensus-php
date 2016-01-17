@@ -254,10 +254,7 @@ class TerminalPicker
 
     protected function checkForPartiallySupportedCardNetworks($gatewayTerms, $network)
     {
-        $networks = array(
-            Network::MAES,
-            Network::RUPAY,
-            Network::DICL);
+        $networks = Gateway::$partiallySupportedCardNetworks;
 
         if (in_array($network, $networks))
         {

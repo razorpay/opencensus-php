@@ -199,6 +199,16 @@ class Gateway
         Gateway::PAYTM);
 
     /**
+     * Some card networks are only supported partiall for one or two gateway.
+     *
+     * @var array
+     */
+    public static $partiallySupportedCardNetworks = array(
+        Network::MAES,
+        Network::RUPAY,
+        Network::DICL);
+
+    /**
      * Banks with which we have direct netbanking tie-ups.
      * @var array
      */
