@@ -77,10 +77,6 @@ class TerminalPicker
 
     protected function pickOneTerminal($gatewayTerms, $payment)
     {
-        $terminal = null;
-
-        $merchant = $payment->merchant;
-
         $method = $payment->getMethod();
 
         $func = 'pickTerminalFor'.ucfirst($method).'Method';
@@ -91,8 +87,6 @@ class TerminalPicker
     protected function pickTerminalForCardMethod($gatewayTerms, $payment)
     {
         $terminal = null;
-
-        $international = $payment->merchant->isInternational();
 
         $network = $payment->card->getNetworkCode();
 
@@ -210,10 +204,6 @@ class TerminalPicker
 
     protected function getSharedGenericTerminalForCard($payment)
     {
-        $terminal = null;
-
-        $international = $payment->merchant->isInternational();
-
         $network = $payment->card->getNetworkCode();
 
         $this->network = $network;

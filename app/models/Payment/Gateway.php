@@ -42,6 +42,12 @@ class Gateway
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
     );
 
+    /**
+     * Mapping of method to gateways supporting that method
+     * either in live or test mode.
+     *
+     * @var array
+     */
     public static $methodMap = array(
         Method::CARD => array(
             self::HDFC,
@@ -68,11 +74,24 @@ class Gateway
         ),
     );
 
+    /**
+     * Card gateways which support auth and capture mechanism for at
+     * least one card network.
+     *
+     * @var array
+     */
     public static $authAndCapture = array(
         self::HDFC,
         self::AMEX,
     );
 
+    /**
+     * Each card gateway only support specific card networks.
+     * This maintains a map of gateway to card network which
+     * is used in gateway and terminal selection logic
+     *
+     * @var array
+     */
     public static $cardNetworkMap = array(
         self::HDFC => array(
             Network::MC,
@@ -105,6 +124,12 @@ class Gateway
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
     );
 
+    /**
+     * List of gateways for which we run verification checks for all
+     * failed payments on a continuous basis.
+     *
+     * @var array
+     */
     public static $verifyEnabled = array(
         self::AXIS_MIGS,
         self::BILLDESK,
@@ -114,15 +139,30 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC);
 
+    /**
+     * Card gateways which support international payments
+     *
+     * @var array
+     */
     public static $internationalCardGateways = array(
         Gateway::AXIS_MIGS,
         Gateway::AMEX);
 
+    /**
+     * Card gateways which support domestic payments in live mode.
+     *
+     * @var array
+     */
     public static $domesticCardGateways = array(
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX);
 
+    /**
+     * Card gateways which support domestic payments in test mode.
+     *
+     * @var array
+     */
     public static $domesticCardGatewaysInTest = array(
         Gateway::KOTAK,
         Gateway::ATOM,
@@ -178,15 +218,32 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK);
 
+    /**
+     * List of gateways which support netbanking, either in test or live mode.
+     *
+     * @var array
+     */
     public static $netbankingGateways = array(
         Gateway::BILLDESK,
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
 
+    /**
+     * Gateways which support netbanking in live mode
+     *
+     * @var array
+     */
     public static $directNetbankingGateways = array(
         Gateway::BILLDESK);
 
+    /**
+     * Gateways which support netbanking in test mode
+     * Paytm can support live mode as well but we do not want to use
+     * it in live for netbanking.
+     *
+     * @var array
+     */
     public static $directNetbankingGatewaysInTest = array(
         Gateway::SBIEPAY,
         Gateway::PAYTM,
