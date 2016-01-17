@@ -94,6 +94,9 @@ class Gateway
             Network::RUPAY),
         self::AMEX => array(
             Network::AMEX),
+        self::PAYTM => array(
+            Network::MC,
+            Network::VISA),
     );
 
     public static $walletToGatewayMap = array(
@@ -110,6 +113,21 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC);
+
+    public static $internationalCardGateways = array(
+        Gateway::AXIS_MIGS,
+        Gateway::AMEX);
+
+    public static $domesticCardGateways = array(
+        Gateway::HDFC,
+        Gateway::AXIS_MIGS,
+        Gateway::AMEX);
+
+    public static $domesticCardGatewaysInTest = array(
+        Gateway::KOTAK,
+        Gateway::ATOM,
+        Gateway::PAYTM,
+        Gateway::AXIS_GENIUS);
 
     /**
      * These card gateways can be used live and can have direct
