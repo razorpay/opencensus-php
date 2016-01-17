@@ -98,42 +98,16 @@ class TerminalPicker
 
         $this->network = $network;
 
-        $gatewayOrder = array(
-            Gateway::HDFC,
-            Gateway::AXIS_MIGS,
-            Gateway::AMEX,
-            Gateway::KOTAK);
+        $directCardGateways = Gateway::$directCardGateways;
 
-        foreach ($gatewayOrder as $gateway)
+        $terminal = $this->selectDirectCardGateway($directCardGateways, $gatewayTerms, $network);
+
+        if (($this->mode === Mode::TEST) and
+            ($terminal === null))
         {
-            if ((isset($gatewayTerms[$gateway])) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[$gateway];
-            }
-        }
+            $directCardGatewaysInTest = Gateway::$directCardGatewaysInTest;
 
-        if ($this->mode === Mode::TEST)
-        {
-            if ((isset($gatewayTerms[Gateway::AXIS_GENIUS])) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[Gateway::AXIS_GENIUS];
-            }
-
-            if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[$gateway];
-            }
-
-            // In test mode paytm supports only cards
-            // but in live only netbanking.
-            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-                (Gateway::isCardNetworkSupported($network, $gateway)))
-            {
-                return $gatewayTerms[Payment\Gateway::PAYTM];
-            }
+            $terminal = $this->selectDirectCardGateway($directCardGatewaysInTest, $gatewayTerms, $network);
         }
 
         return $terminal;
@@ -443,6 +417,18 @@ class TerminalPicker
         }
 
         return $gatewayTerms;
+    }
+
+    protected function selectDirectCardGateway($cardGateways, $terminals, $network)
+    {
+        foreach ($cardGateways as $gateway)
+        {
+            if ((isset($terminals[$gateway])) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $terminals[$gateway];
+            }
+        }
     }
 
     protected function validateCount($terminals, $merchant)

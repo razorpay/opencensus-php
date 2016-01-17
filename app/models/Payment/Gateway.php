@@ -3,6 +3,7 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use Models\Bank\IFSC;
 use Models\Card\Network;
 use Models\Settlement;
 use Models\Payment\Processor\Wallet;
@@ -109,6 +110,35 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC);
+
+    /**
+     * These card gateways can be used live and can have direct
+     * terminal assignments for the merchant.
+     *
+     * The order in which we specify them is important because
+     * that denotes their preference in our system currently.
+     *
+     * @var array
+     */
+    public static $directCardGateways = array(
+        Gateway::HDFC,
+        Gateway::AXIS_MIGS,
+        Gateway::AMEX);
+
+    /**
+     * These gateways are only used in test and may or may not graduate to live
+     * someday. Although, axis genius was live, we removed it from there
+     * because of downtimes and really low success rates.
+     * Paytm supports only cards in test mode. Although we are live on paytm
+     * on netbanking, but it doesn't support that in test mode.
+     *
+     * @var array
+     */
+    public static $directCardGatewaysInTest = array(
+        Gateway::AXIS_GENIUS,
+        Gateway::SBIEPAY,
+        Gateway::KOTAK,
+        Gateway::PAYTM);
 
     public static function getChannel($gateway)
     {
