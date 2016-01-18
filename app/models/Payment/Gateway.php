@@ -145,7 +145,6 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC);
 
-<<<<<<< 31dbf70d4b9220dfebb2b667a5aabc18d4f96883
     /**
      * Card gateways which support international payments
      *
