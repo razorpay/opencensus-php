@@ -88,6 +88,10 @@ class TerminalPicker
                 $terminal = $this->pickWalletTerminal($terminals, $payment);
                 break;
 
+            case Method::EMI:
+                $terminal = $this->pickEmiTerminal($terminals, $payment);
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Not a valid method: ' . $method);
@@ -184,6 +188,14 @@ class TerminalPicker
 
     protected function pickEmiTerminal($terminals, $payment)
     {
+        $bank = $this->payment->getBank();
+
+        if($bank === IFSC::KKBK)
+        {
+            // for kotak, process as normal card transaction and mail for emi
+            return pickCardTerminal($terminals, $payment);
+        }
+
         return $this->getSharedTerminalForEmi($payment);
     }
 
@@ -417,13 +429,7 @@ class TerminalPicker
     protected function getSharedTerminalForEmi($payment)
     {
         $bank = $this->payment->getBank();
-
-        if($bank === IFSC::KKBK)
-        {
-            // for kotak, process as normal card transaction and mail for emi
-            return getSharedTerminalForCard($payment);
-        }
-
+        
         $gateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
 
         $emiPlanId = $this->payment->getEmiPlanId();
