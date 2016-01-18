@@ -15,6 +15,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE => 'sometimes|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
+        Entity::IS_INTERNATIONAL    => 'sometimes|alpha|in:null,true',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
@@ -137,7 +138,8 @@ class Validator extends Base\Validator
             if (($rule[Entity::PAYMENT_METHOD] === $input[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $input[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $input[Entity::PAYMENT_NETWORK]) and
-                ($rule[Entity::PAYMENT_ISSUER] === $input[Entity::PAYMENT_ISSUER]))
+                ($rule[Entity::PAYMENT_ISSUER] === $input[Entity::PAYMENT_ISSUER]) and
+                ($rule[Entity::IS_INTERNATIONAL] === $input[Entity::IS_INTERNATIONAL]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);

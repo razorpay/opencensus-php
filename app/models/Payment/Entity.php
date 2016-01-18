@@ -456,6 +456,11 @@ class Entity extends Base\PublicEntity
         return ((bool)$this->getAttribute(self::SIGNED) === true);
     }
 
+    public function isInternational()
+    {
+        return $this->card->isInternational();
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getMerchantId()

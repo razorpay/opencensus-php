@@ -90,6 +90,7 @@ return [
                 'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
+                'is_international' => null,
             ],
         ],
         'response' => [
@@ -122,6 +123,7 @@ return [
                         'payment_issuer' => 'AXIS',
                         'percent_rate' => 0,
                         'fixed_rate' => 3000,
+                        'is_international' => null,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -131,6 +133,7 @@ return [
                         'payment_issuer' => 'PUNB',
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
+                        'is_international' => null,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -140,6 +143,7 @@ return [
                         'payment_issuer' => 'ICIC',
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
+                        'is_international' => null,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -150,6 +154,7 @@ return [
                         'payment_issuer' => 'SBIN',
                         'percent_rate' => 275,
                         'fixed_rate' => 0,
+                        'is_international' => null,
                     ),
                 )
             ]
@@ -180,6 +185,7 @@ return [
                                 'payment_issuer' => 'AXIS',
                                 'percent_rate' => 0,
                                 'fixed_rate' => 3000,
+                                'is_international' => null,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -189,6 +195,7 @@ return [
                                 'payment_issuer' => 'PUNB',
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
+                                'is_international' => null,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -198,6 +205,7 @@ return [
                                 'payment_issuer' => 'ICIC',
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
+                                'is_international' => null,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -207,6 +215,7 @@ return [
                                 'payment_issuer' => 'SBIN',
                                 'percent_rate' => 275,
                                 'fixed_rate' => 0,
+                                'is_international' => null,
                             ),
                         )
                     ),
@@ -257,7 +266,8 @@ return [
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000
+                        'percent_rate' => 1000,
+                        'is_international' => null,
                     ),
                 ),
             ],
@@ -280,7 +290,8 @@ return [
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000
+                        'percent_rate' => 1000,
+                        'is_international' => null,
                     ),
                 ),
             ],
@@ -336,7 +347,8 @@ return [
                         'payment_network' => 'VISA',
                         'payment_issuer' => 'ICIC',
                         'percent_rate' => 1000,
-                        'fixed_rate' => 10000
+                        'fixed_rate' => 10000,
+                        'is_international' => null,
                     ),
                 ),
             ],

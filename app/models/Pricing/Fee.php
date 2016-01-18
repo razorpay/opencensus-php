@@ -179,9 +179,17 @@ class Fee
     {
         $card = $payment->card;
 
-        $network = $card->getNetwork();
+        $network = Card\Network::getCode($card->getNetwork());
 
-        $pricing = $this->repo->getPricingRulesForGivenCardNetwork($pricingPlanId, $network);
+        $isInternational = $payment->isInternational();
+
+        if (!$isInternational)
+        {
+            $isInternational = null;
+        }
+
+        $pricing = $this->repo->
+            getPricingRulesForGivenCardNetwork($pricingPlanId, $network, $isInternational);
 
         $rule = null;
         $rules = $pricing->all();
@@ -194,7 +202,7 @@ class Fee
         {
             foreach ($pricing->all() as $item)
             {
-                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $card->getNetwork())
+                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
                 {
                     $rule = $item;
                     break;

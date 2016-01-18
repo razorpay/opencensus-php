@@ -48,6 +48,9 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->string(Pricing::IS_INTERNATIONAL)
+                  ->nullable();
+
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
 

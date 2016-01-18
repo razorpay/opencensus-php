@@ -142,7 +142,7 @@ class PricingTest extends TestCase
 
         $pricing = $this->getEntityById('pricing', $ruleId, true);
 
-        $this->testData[__FUNCTION__]['request']['url'] = 
+        $this->testData[__FUNCTION__]['request']['url'] =
                 '/pricing/'.$pricing['plan_id'].'/rule/'.$ruleId;
 
         $this->startTest();
@@ -180,7 +180,8 @@ class PricingTest extends TestCase
             'payment_method_type'  => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'HDFC',
-            'percent_rate' => 1000);
+            'percent_rate' => 1000,
+            'is_international' => null);
 
         $request = array(
             'method' => 'POST',
@@ -203,7 +204,8 @@ class PricingTest extends TestCase
             'payment_method_type' => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'SBIN',
-            'percent_rate' => '275');
+            'percent_rate' => '275',
+            'is_international' => null);
 
         $pricingData =
             array(
@@ -212,19 +214,22 @@ class PricingTest extends TestCase
                     'payment_method_type' => 'credit',
                     'payment_network' => 'DICL',
                     'payment_issuer' => 'ICIC',
-                    'percent_rate' => 250),
+                    'percent_rate' => 250,
+                    'is_international' => null),
                 array(
                     'payment_method' => 'card',
                     'payment_method_type' => 'debit',
                     'payment_network' => 'MAES',
                     'payment_issuer' => 'PUNB',
-                    'percent_rate' => 250),
+                    'percent_rate' => 250,
+                    'is_international' => null),
                 array(
                     'payment_method' => 'card',
                     'payment_method_type' => 'credit',
                     'payment_network' => 'MC',
                     'payment_issuer' => 'AXIS',
-                    'fixed_rate' => 3000)
+                    'fixed_rate' => 3000,
+                    'is_international' => null)
                 );
 
         $request = array(
