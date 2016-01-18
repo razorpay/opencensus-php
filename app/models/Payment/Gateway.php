@@ -275,7 +275,6 @@ class Gateway
         return in_array($bank, self::$directNetbankingBankList);
     }
 
-
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
