@@ -194,9 +194,6 @@ class TerminalPicker
 
     protected function getSharedCategoryTerminalForCard($payment)
     {
-        $international = $payment->merchant->isInternational();
-
-        $network = $payment->card->getNetworkCode();
         $category = $payment->merchant->getCategory();
 
         $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
