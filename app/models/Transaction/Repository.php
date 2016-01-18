@@ -16,7 +16,7 @@ class Repository extends Base\Repository
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
-        Entity::ENTITY_ID       => 'sometimes|alpha_num',
+        Entity::ENTITY_ID       => 'sometimes|string|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     );
 
@@ -190,5 +190,14 @@ class Repository extends Base\Repository
 
         return $repo::where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
                     ->get();
+    }
+
+    protected function addQueryParamEntityId($query, $params)
+    {
+        $entityId = $params[Entity::ENTITY_ID];
+
+        Entity::stripSignWithoutValidation($entityId);
+
+        $query->where(Entity::ENTITY_ID, '=', $entityId);
     }
 }
