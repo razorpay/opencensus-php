@@ -19,7 +19,7 @@ class Table
     const TERMINAL          = 'terminals';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlements';
-    const EMI_OPTIONS       = 'emi_options';
+    const EMI_PLANS         = 'emi_plans';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
     const DAILY_SETTLEMENT  = 'daily_settlements';

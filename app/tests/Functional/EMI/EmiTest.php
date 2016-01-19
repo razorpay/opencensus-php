@@ -18,29 +18,29 @@ class EmiTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testAddEmiOptions()
+    public function testAddEmiPlans()
     {
-        $emiOption = $this->startTest();
+        $emiPlan = $this->startTest();
         
-        return $emiOption;
+        return $emiPlan;
     }
 
-    public function testFetchAllEmiOptions()
+    public function testFetchAllEmiPlans()
     {
-        $this->testAddEmiOptions();
+        $this->testAddEmiPlans();
 
         $this->ba->publicAuth();
 
-        $options = $this->startTest();
+        $plans = $this->startTest();
 
-        $this->assertEquals($options['entity'], 'collection');
+        $this->assertEquals($plans['entity'], 'collection');
     } 
 
-    public function testFetchEmiUsingPlanId()
+    public function testFetchEmiPlanUsingPlanId()
     {
-        $emi = $this->testAddEmiOptions();
+        $emi = $this->testAddEmiPlans();
 
-        $request = &$this->testData['testFetchEmiUsingPlanId']['request'];
+        $request = &$this->testData['testFetchEmiPlanUsingPlanId']['request'];
         $request['url'] = '/emi/'.$emi['id'];
 
         $this->ba->publicAuth();

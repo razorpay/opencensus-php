@@ -5,8 +5,6 @@ namespace Models\Payment;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
-use Models\Card\IIN;
-use Models\Emi;
 use Models\Payment;
 use Models\Payment\Refund;
 use Models\Payment\Processor\Netbanking;
@@ -35,6 +33,7 @@ class Entity extends Base\PublicEntity
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
+    const EMI_DURATION          = 'emi_duration';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
     const AUTHORIZED_AT         = 'authorized_at';
@@ -137,7 +136,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
-    protected static $modifiers = array(self::CONTACT, self::BANK, self::EMI_PLAN_ID);
+    protected static $modifiers = array(self::CONTACT, self::BANK);
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
@@ -192,28 +191,6 @@ class Entity extends Base\PublicEntity
         {
             $input['bank'] = null;
         }
-
-        if((isset($input['method'])) and
-            ($input['method'] === Method::EMI))
-        {
-            $iin = substr($input['card']['number'], 0, 6);
-            
-            $iinEntity = (new IIN\Repository)->findOrFail($iin);
-            
-            $input['bank'] = $iinEntity->getIssuer();
-        }
-    }
-
-    protected function modifyEmiPlanId(& $input)
-    {
-        if ((isset($input['method'])) and
-            ($input['method'] === Method::EMI))
-        {
-            $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($input['bank'], $input['emi_duration']);
-            $input[self::EMI_PLAN_ID] = $emiPlan->getId();
-        }
-
-        unset($input['emi_duration']);
     }
 
     protected function modifyWallet(& $input)
@@ -320,6 +297,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ERROR_CODE, null);
         $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
+    }
+
+    public function setEmiPlanId($planId)
+    {
+        $this->setAttribute(self::EMI_PLAN_ID, $planId);
     }
 
 // ----------------------- Setters Ends-----------------------------------------

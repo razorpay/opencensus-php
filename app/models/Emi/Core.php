@@ -13,12 +13,12 @@ class Core extends Base\Core
         $this->repo = new Repository;
     }
 
-    public function addEmiOption($input)
+    public function addEmiPlan($input)
     {
-        $emi = (new Entity)->build($input);
+        $emiPlan = (new Entity)->build($input);
                 
-        $this->repo->saveOrFail($emi);
+        $this->repo->saveOrFail($emiPlan);
 
-        return $emi;
+        return $emiPlan;
     }
 }

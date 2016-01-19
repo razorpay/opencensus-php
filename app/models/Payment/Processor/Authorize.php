@@ -9,6 +9,8 @@ use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant\Methods;
 use Models\Card;
+use Models\Card\IIN;
+use Models\Emi;
 use Models\Payment;
 use Models\Transaction;
 use Trace\Trace;
@@ -29,6 +31,11 @@ trait Authorize
             ($payment->isMethod(Payment\Method::EMI)))
         {
             $gatewayInput['card'] = $this->createCardEntity($input);
+        }
+
+        if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $this->setBankAndEmiPlanDetails($payment, $input);
         }
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
@@ -194,6 +201,26 @@ trait Authorize
         {
             $this->verifyWalletEnabled($payment);
         }
+        else if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $this->verifyEmiEnabled($payment);
+        }
+    }
+
+    protected function setBankAndEmiPlanDetails(& $payment, $input)
+    {
+        //set the bank 
+        $iin = substr($input['card']['number'], 0, 6);
+            
+        $iinEntity = (new IIN\Repository)->findOrFail($iin);
+        
+        $payment->setBank($iinEntity->getIssuer());
+
+        //set emi plan id
+        $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($iinEntity->getIssuer(), $input['emi_duration']);
+        
+        $payment->setEmiPlanId($emiPlan->getId());
+
     }
 
     protected function getReturnRequestDataForMerchant($payment)
@@ -410,6 +437,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyEmiEnabled($payment)
+    {
+        $methods = $this->methods;
+
+        if (($methods === null) or
+            ($methods->isEmiEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
         }
     }
 

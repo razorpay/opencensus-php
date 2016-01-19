@@ -195,7 +195,7 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
-            DB::table(Table::EMI_OPTIONS)->insert(
+            DB::table(Table::EMI_PLANS)->insert(
                 array(
                     'id'            => 'abcdefghijklmn',
                     'bank'          => 'KKBK',

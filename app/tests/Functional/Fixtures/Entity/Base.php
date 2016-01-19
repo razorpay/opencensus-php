@@ -41,7 +41,7 @@ class Base
         'card_detail'   => Models\Card\Detail::class,
         'transaction'   => Models\Transaction\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
-        'emi_options'   => Models\Emi\Entity::class,
+        'emi_plans'     => Models\Emi\Entity::class,
         'iins'          => Models\Card\IIN\Entity::class,
     );
 

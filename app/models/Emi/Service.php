@@ -17,22 +17,22 @@ class Service extends Base\Service
 
     public function all()
     {
-        $emiOptions = $this->repo->getAllEmiOptions();
+        $emiPlans = $this->repo->getAllEmiPlans();
 
-        return $emiOptions->toArrayPublic();
+        return $emiPlans->toArrayPublic();
     }
 
     public function fetch($id)
     {
-        $emiOptions = $this->repo->findOrFail($id);
+        $emiPlans = $this->repo->findOrFail($id);
 
-        return $emiOptions->toArrayPublic();
+        return $emiPlans->toArrayPublic();
     }
 
-    public function addEmiOption(array $input)
+    public function addEmiPlan(array $input)
     {
-        $emi = (new Core)->addEmiOption($input);
+        $emiPlan = (new Core)->addEmiPlan($input);
 
-        return $emi->toArrayPublic();
+        return $emiPlan->toArrayPublic();
     }
 }

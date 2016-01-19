@@ -210,7 +210,6 @@ $factory(Models\Merchant\Webhook\Entity::class, [
     'active' => true,
 ]);
 
-
 $factory(Models\Emi\Entity::class, [
     'id' => 10101010101010,
     'duration' => 9,

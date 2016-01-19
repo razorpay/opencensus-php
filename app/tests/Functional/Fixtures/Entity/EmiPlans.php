@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Fixtures\Entity;
 
-class EmiOptions extends Base
+class EmiPlans extends Base
 {
     protected $items = array(
         array(
@@ -23,16 +23,16 @@ class EmiOptions extends Base
         ),
     );
 
-    public function createDefaultEmiOptions()
+    public function createDefaultEmiPlans()
     {
         $items = $this->items;
 
-        $emiOptions = [];
+        $emiPlans = [];
         foreach ($items as $attributes)
         {
-            $emiOptions[] = $this->fixtures->create('emi_options', $attributes);
+            $emiPlans[] = $this->fixtures->create('emi_plans', $attributes);
         }
 
-        return $emiOptions;
+        return $emiPlans;
     }
 }

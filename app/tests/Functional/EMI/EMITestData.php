@@ -6,7 +6,7 @@ use EE\Error\PublicErrorDescription;
 use Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
 return [
-    'testAddEmiOptions' => [
+    'testAddEmiPlans' => [
         'request' => [
             'content' => [
                 'bank' => 'HDFC',
@@ -27,7 +27,7 @@ return [
         ],
     ],
 
-    'testFetchAllEmiOptions' => [
+    'testFetchAllEmiPlans' => [
         'request' => [
             'content' => [
             ],
@@ -40,7 +40,7 @@ return [
         ],
     ],
 
-    'testFetchEmiUsingPlanId' => [
+    'testFetchEmiPlanUsingPlanId' => [
         'request' => [
             'content' => [
             ],

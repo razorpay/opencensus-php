@@ -148,7 +148,7 @@ class CreatePayments  extends Migration
 
             $table->foreign(Payment::EMI_PLAN_ID)
                   ->references(Emi\Entity::ID)
-                  ->on(Table::EMI_OPTIONS)
+                  ->on(Table::EMI_PLANS)
                   ->on_delete('restrict');
         });
     }

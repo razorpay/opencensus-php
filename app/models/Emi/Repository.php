@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'emi';
 
-    public function getAllEmiOptions()
+    public function getAllEmiPlans()
     {
         $repo = $this->repo;
 

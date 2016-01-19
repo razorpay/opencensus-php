@@ -5,7 +5,7 @@ use Models\Emi;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateEmiOptionsTable extends Migration {
+class CreateEmiPlansTable extends Migration {
 
 	/**
 	 * Run the migrations.
@@ -19,7 +19,7 @@ class CreateEmiOptionsTable extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::EMI_OPTIONS, function(Blueprint $table)
+        Schema::create(Table::EMI_PLANS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -51,6 +51,6 @@ class CreateEmiOptionsTable extends Migration {
      */
     public function down()
     {
-        Schema::drop(Table::EMI_OPTIONS);
+        Schema::drop(Table::EMI_PLANS);
     }
 }

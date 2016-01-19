@@ -24,8 +24,8 @@ class EmiPaymentTest extends TestCase
 
     public function testEmiPaymentCreate()
     {
-        $this->fixtures->create('emi_options:default_emi_options');
-
+        $this->fixtures->create('emi_plans:default_emi_plans');
+        $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
@@ -35,5 +35,6 @@ class EmiPaymentTest extends TestCase
         $content = $this->doAuthPaymentViaCheckoutRoute($this->payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $this->fixtures->merchant->enableEmi();
     }
 }

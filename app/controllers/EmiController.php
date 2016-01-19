@@ -6,18 +6,18 @@ use Models\Emi;
 
 class EmiController extends BaseController
 {
-    public function fetchAvailableEmiOptions()
+    public function fetchAvailableEmiPlans()
     {
         $data = (new Emi\Service)->all();
 
         return ApiResponse::json($data);
     }
 
-    public function addEmiOption()
+    public function addEmiPlan()
     {
         $input = Input::all();
 
-        $data = (new Emi\Service)->addEmiOption($input);
+        $data = (new Emi\Service)->addEmiPlan($input);
 
         return ApiResponse::json($data);
     }
