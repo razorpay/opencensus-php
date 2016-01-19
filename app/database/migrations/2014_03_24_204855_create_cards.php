@@ -61,6 +61,7 @@ class CreateCards extends Migration
 
             $table->index(Card::IIN);
             $table->index(Card::NETWORK);
+            $table->index(Card::LAST4);
 
             $table->foreign(Card::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

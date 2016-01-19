@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Payment;
 
+use EE;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -65,6 +66,18 @@ class PaymentValidationTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment);
     }
 
+    public function testCardCvvLengthNot3()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['cvv'] = '4111';
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
     public function testDescriptionMissing()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -103,8 +116,7 @@ class PaymentValidationTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $request = ['method' => 'GET', 'url' => '/payments/'.$payment['id'].'/verify'];
-        $content = $this->makeRequestAndGetContent($request);
+        $this->verifyPayment($payment['id']);
     }
 
     public function startTest()

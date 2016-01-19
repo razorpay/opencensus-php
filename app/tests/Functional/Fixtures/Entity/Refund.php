@@ -6,6 +6,8 @@ use Models\Merchant\Account;
 
 class Refund extends Base
 {
+    use TransactionTrait;
+
     public function createFromPayment($attributes)
     {
         $payment = $attributes['payment'];
@@ -22,11 +24,11 @@ class Refund extends Base
 
         $hdfcRefund = $this->fixtures->create('hdfc:from_refund', ['refund' => $refund]);
 
-        $txn = (new \Models\Transaction\Core)->createFromRefund($refund);
-        $txn->save();
+        $txn = $this->createTransactionOnRefund($refund);
+        $txn->saveOrFail();
 
         $refund->transaction()->associate($txn);
-        $refund->save();
+        $refund->saveOrFail();
 
         return $refund;
     }

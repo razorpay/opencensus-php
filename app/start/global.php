@@ -44,7 +44,7 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 |
 */
 
-new EE\Exception\Handler();
+$app['exception.handler']->registerExceptionHandlers();
 
 /*
 |--------------------------------------------------------------------------
@@ -88,3 +88,5 @@ Queue::failing(function($connection, $job, $data)
 {
     Trace::error(Trace\TraceCode::QUEUE_JOB_FAILURE);
 });
+
+Event::subscribe(Models\Event\ApiEventSubscriber::class);

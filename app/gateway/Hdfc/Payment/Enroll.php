@@ -47,6 +47,14 @@ trait Enroll
             TraceCode::GATEWAY_ENROLL_REQUEST,
             $this->enrollRequest);
 
+        $network = $input['card']['network_code'];
+
+        // Only required in case of Rupay
+        if ($network === Card\Network::RUPAY)
+        {
+            $this->enrollRequest['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+        }
+
         //
         // Send enroll request and receive response.
         // This function also checks for and sets
@@ -112,15 +120,15 @@ trait Enroll
         $data['amt'] = $payment['amount']/100;
 
         // Collect udf fields
-        $data['udf1'] = 'junk';
+        $data['udf1'] = 'test';
 
         $data['udf2'] = $payment['email'];
 
         $data['udf3'] = $payment['contact'];
 
-        $data['udf4'] = 'junk';
+        $data['udf4'] = 'test';
 
-        $data['udf5'] = 'junk';
+        $data['udf5'] = 'test';
 
         $this->udfCheckAndMeetHdfcRequirements($data);
 
@@ -138,7 +146,32 @@ trait Enroll
         //
         $data['currencycode'] = self::INR_CODE;
 
+        $network = $input['card']['network_code'];
+
         $data['action'] = Action::AUTHORIZE;
+
+        if (in_array($network, $this->purchase))
+        {
+            $data['action'] = Action::PURCHASE;
+        }
+
+        $url = $input['callbackUrl'];
+
+        if ($this->env === 'dev')
+        {
+            $parts = parse_url($url);
+            // $parts['host'] = 'https://dev.razorpay.com';
+            // $url = $parts['host'] . $parts['path'];
+            $parts['host'] = 'rzp.ngrok.com';
+            $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+        }
+
+        // Only required in case of Rupay. Weird! But ... !
+        if ($network === Card\Network::RUPAY)
+        {
+            $data['merchantResponseUrl'] = $url;
+            $data['merchantErrorUrl'] = $url;
+        }
     }
 
     /**
@@ -221,28 +254,28 @@ trait Enroll
     {
         if ($this->error)
         {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_ENROLL_ERROR,
+                $this->enrollResponse);
+
             $this->model = $this->repo->persistAfterEnrollError(
                             $this->id,
                             $this->enrollResponse['error'],
                             $this->enrollRequest['data']);
 
             $this->id = $this->model->id;
-
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_ENROLL_ERROR,
-                $this->enrollResponse);
         }
         else
         {
-            $this->model = $this->repo->persistAfterEnroll(
-                    $this->enrollRequest['data'],
-                    $this->enrollResponse['data']);
-
             $this->trace(
                 Trace::INFO,
                 TraceCode::GATEWAY_ENROLL_RESPONSE,
                 $this->enrollResponse);
+
+            $this->model = $this->repo->persistAfterEnroll(
+                    $this->enrollRequest['data'],
+                    $this->enrollResponse['data']);
         }
     }
 

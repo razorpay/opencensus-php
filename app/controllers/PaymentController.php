@@ -33,69 +33,6 @@ class PaymentController extends BaseController
         return ApiResponse::json($payments);
     }
 
-    /**
-     * Create a new payment
-     */
-    public function postCreatePayment()
-    {
-        $input = Input::all();
-
-        if (isset($input['callback_url']))
-        {
-            $app = App::getFacadeRoot();
-            $app['rzp.merchant_callback_url'] = $input['callback_url'];
-        }
-
-        $data = $this->payment->process($input);
-
-        //
-        // Check for call from API
-        //
-        if (isset($data['request']))
-        {
-            if ($data['type'] === 'first')
-            {
-                if ($data['request']['method'] === 'post')
-                {
-                    return View::make('gateway.gatewayPostForm')
-                               ->with('data', $data);
-                }
-                else if ($data['request']['method'] === 'get')
-                {
-                    $response = Redirect::away($data['request']['url']);
-                    $response->headers->set('X-gateway', $data['gateway']);
-                    return $response;
-                }
-            }
-            else if ($data['type'] === 'return')
-            {
-                return View::make('gateway.callbackReturnUrl')
-                           ->with('data', $data);
-            }
-        }
-        else
-        {
-            return ApiResponse::json($data);
-        }
-    }
-
-    /**
-     * Creates a new payment on a JSONP Request
-     */
-    public function getJSONP()
-    {
-        $input = Input::all();
-
-        unset($input['callback']);
-        // jQuery inserts underscore var with timestamp
-        // when cache is set to false. See jQuery docs for details
-        unset($input['_']);
-
-        $data = $this->payment->process($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getVerify($id)
     {
         $data = $this->payment->verify($id);
@@ -113,6 +50,31 @@ class PaymentController extends BaseController
         $payment = $this->payment->refund($id, $input);
 
         return ApiResponse::json($payment);
+    }
+
+    public function postRefundAuthorized($id)
+    {
+        $input = Input::all();
+
+        $payment = $this->payment->refundAuthorized($id, $input);
+
+        return ApiResponse::json($payment);
+    }
+
+    public function postRefundOldAUthorizedPayments()
+    {
+        $input = Input::all();
+
+        $data = $this->payment->refundOldAuthorizedPayments($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAuthorizeFailedPayment($id)
+    {
+        $data = $this->payment->authorizeFailed($id);
+
+        return ApiResponse::json($data);
     }
 
     /**
@@ -141,29 +103,6 @@ class PaymentController extends BaseController
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
 
         return ApiResponse::json($data);
-    }
-
-    public function postCallback($id, $hash)
-    {
-        $input = Input::all();
-
-        $data = null;
-
-        $data = $this->payment->callback($id, $hash, $input);
-
-        if (isset($data['type']))
-        {
-            $type = $data['type'];
-
-            if ($type === 'return')
-            {
-                return View::make('gateway.callbackReturnUrl')->with('data', $data);
-            }
-        }
-
-        assert ($data !== null);
-
-        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function getRefundsForPayment($paymentId)
@@ -196,11 +135,13 @@ class PaymentController extends BaseController
         return ApiResponse::json($refunds);
     }
 
-    public function postAuthExpire()
+    public function generateNetbankingRefunds()
     {
-        $data = $this->payment->expireAuthorizations();
+        $input = Input::all();
 
-        return ApiResponse::json($data);
+        $refundExcel = (new Payment\Refund\Service)->getNetbankingRefundsFile($input);
+
+        return ApiResponse::json($refundExcel);
     }
 
     public function postTimeout()
@@ -240,9 +181,16 @@ class PaymentController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments()
+    public function getVerifyPayments($filter)
     {
-        $data = $this->payment->verifyAllPayments();
+        $data = $this->payment->verifyMultiplePayments($filter);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
+    {
+        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
 
         return ApiResponse::json($data);
     }
@@ -252,5 +200,25 @@ class PaymentController extends BaseController
         $input = Input::all();
 
         return ApiResponse::json($input);
+    }
+
+    public function sendReminderMailForAuthorizedPayments()
+    {
+        return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
+    }
+
+    public function postComputeServiceTax()
+    {
+        $data = $this->payment->computeServiceTax();
+        return ApiResponse::json($data);
+    }
+
+    public function postDummyRoute()
+    {
+        $input = Input::all();
+
+        $this->app['trace']->info(
+            \Trace\TraceCode::PAYMENT_WEBHOOK,
+            $input);
     }
 }

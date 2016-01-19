@@ -2,9 +2,12 @@
 
 namespace Models\Card;
 
+use Models\Base;
 use Models\Card;
+use EE\Error\ErrorCode;
+use EE\Exception;
 
-class Core
+class Core extends Base\Core
 {
     protected $card = null;
 
@@ -85,6 +88,28 @@ class Core
             $card->setType(Type::UNKNOWN);
         }
 
+        $this->checkCvvLength($card, $input);
+
         $card->saveOrFail();
+    }
+
+    protected function checkCvvLength($card, $input)
+    {
+        $cvvLength = strlen($input['cvv']);
+
+        if ($card->getNetworkCode() === Card\Network::AMEX)
+        {
+            if ($cvvLength !== 4)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR);
+            }
+        }
+        else if ($cvvLength !== 3)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE,
+                'cvv');
+        }
     }
 }

@@ -17,6 +17,8 @@ class Merchant
 
     protected $amount;
 
+    protected $apiFee;
+
     protected $setl;
 
     protected $setlTransaction;
@@ -37,10 +39,13 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function settle($txns, $amount, $apiFee, $gatewayFee)
+    public function settle($txns, $amount, $fee, $apiFee, $gatewayFee, $serviceTax)
     {
         $this->amount = $amount;
+        $this->apiFee = $apiFee;
+        $this->fee = $fee;
         $this->txns = $txns;
+        $this->serviceTax = $serviceTax;
 
         $setl = $this->createSetlEntityAndTxn();
 
@@ -55,7 +60,9 @@ class Merchant
     public function collectApiFees($apiFee)
     {
         $this->amount = $apiFee;
+        $this->fee = 0;
         $this->txns = new Base\PublicCollection;
+        $this->serviceTax = 0;
 
         $adjInput = array(
             'description' => 'Settlement for ' . time(),
@@ -104,7 +111,7 @@ class Merchant
             Transaction\Entity::FEE         => 0,
             Transaction\Entity::AMOUNT      => $this->amount,
             Transaction\Entity::TYPE        => Transaction\Type::SETTLEMENT,
-            Transaction\Entity::CHANNEL     => $this->channel
+            Transaction\Entity::CHANNEL     => $this->channel,
         );
 
         $txn->fillAndGenerateId($values);
@@ -122,10 +129,17 @@ class Merchant
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
+        $setl->setFees($this->fee);
+        $setl->setServiceTax($this->serviceTax);
         $setl->setChannel($this->channel);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
+
+        if ($this->bankAccount->getId() !== null)
+        {
+            $setl->bankAccount()->associate($this->bankAccount);
+        }
 
         $this->setl = $setl;
 
@@ -153,9 +167,10 @@ class Merchant
     {
         $mode = \BasicAuth::getMode();
 
-        if ($mode === Mode::TEST)
+        if (($mode === Mode::TEST) and
+            ($this->merchant->bankAccount === null))
         {
-            $ba = $this->getDefaultBank($this->merchant);
+            $ba = $this->attachTestBank($this->merchant);
         }
         else
         {
@@ -168,23 +183,34 @@ class Merchant
             }
         }
 
+        $this->bankAccount = $ba;
         return $ba;
     }
 
-    protected function getDefaultBank($merchant)
+    protected function attachTestBank($merchant)
     {
         $attributes = array(
-            'merchant_id'       => $merchant->getId(),
-            'ifsc_code'         => 'RZPB0000000',
-            'beneficiary_name'  => $merchant['name'],
-            'beneficiary_code'  => strtoupper(random_alpha_string(4)),
-            'account_number'    => '10101030103');
+            'ifsc_code'             => 'RZPB0000000',
+            'beneficiary_name'      => random_alpha_string(5),
+            'beneficiary_email'     => $merchant->getAttribute('email'),
+            'account_number'        => random_integer(11),
+            'beneficiary_address1'  => random_integer(14),
+            'beneficiary_city'      => 'Mumbai',
+            'beneficiary_state'     => 'MH',
+            'beneficiary_country'   => 'IN',
+            'beneficiary_pin'       => '400069',
+            'beneficiary_mobile'    => '9393993939',
+        );
 
-        $ba = (new BankAccount\Entity)->newInstance($attributes, true);
+        $ba = (new BankAccount\Entity)->build($attributes, true);
+
+        $ba->beneficiary_code = strtoupper(random_alpha_string(4));
 
         $ba->merchant()->associate($merchant);
 
         $merchant->setRelation('bankAccount', $ba);
+
+        $ba->save();
 
         return $ba;
     }

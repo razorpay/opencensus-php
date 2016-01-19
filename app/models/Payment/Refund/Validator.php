@@ -26,7 +26,8 @@ class Validator extends Base\Validator
 
     protected function validatePaymentStatus($input)
     {
-        if ($this->payment->isCaptured() === false)
+        if (($this->payment->isCaptured() === false) and
+            ($this->payment->isAuthorized() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);

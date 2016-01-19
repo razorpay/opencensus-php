@@ -55,8 +55,6 @@ class Mailgun
         {
             $res = $this->getMailgunInstance()->sendMessage($domain, $mailData);
 
-            sd($res);
-
             if ((isset($res['message']) === false) or
                 (isset($res['id']) === false))
             {

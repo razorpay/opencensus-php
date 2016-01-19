@@ -42,6 +42,7 @@ class ErrorCode
     const GW00170   = 'GW00170';
     const GW00171   = 'GW00171';
 
+    const GW00176   = 'GW00176';
     const GW00177   = 'GW00177';
 
     const GW00181   = 'GW00181';
@@ -181,6 +182,7 @@ class ErrorCode
 
         Hdfc\ErrorCode::GW00170   => 'Terminal ID Mismatch',
 
+        Hdfc\ErrorCode::GW00176   => 'Failed Previous Captures check.',
         Hdfc\ErrorCode::GW00177   => 'Failed Capture Greater Than Auth check',
 
         Hdfc\ErrorCode::GW00181   => 'Failed Credit Greater Than Debit check',
@@ -236,7 +238,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00005   => 'Denied by risk. Response result code is "DENIED BY RISK"',
         Hdfc\ErrorCode::RP00006   => 'Authorization not approved. Response result code is "NOT APPROVED"',
         Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done. Response result code is "NOT CAPTURED"',
-        Hdfc\ErrorCode::RP00008   => 'Gateway error. Wrong response http status_code. Response status_code is greater than 500 signifying gateway server error',
+        Hdfc\ErrorCode::RP00008   => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
     );
 
@@ -265,6 +267,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00166   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
         Hdfc\ErrorCode::GW00167   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
         Hdfc\ErrorCode::GW00170   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        Hdfc\ErrorCode::GW00176   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,
         Hdfc\ErrorCode::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
         Hdfc\ErrorCode::GW00181   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         Hdfc\ErrorCode::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
@@ -288,6 +291,7 @@ class ErrorCode
         Hdfc\ErrorCode::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
 
         Hdfc\ErrorCode::GV00100   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
+        Hdfc\ErrorCode::GV00103   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
 
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,

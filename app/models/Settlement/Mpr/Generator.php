@@ -62,7 +62,7 @@ class Generator
         {
             $this->queueMprGenerationFailureMail($e);
 
-            (new SlackNotification)->queueOperationFailure('mpr_generation', $e);
+            (new SlackNotification)->failure('mpr_generation', $e);
 
             throw $e;
         }
@@ -73,9 +73,9 @@ class Generator
         $this->queueMprGenerationMail($data);
 
         $slackData = [
-            'payemnts_count' => $data['count']];
+            'payments.count' => $data['count']];
 
-        (new SlackNotification)->queueOperationSuccess('mpr_generation', $slackData);
+        (new SlackNotification)->success('mpr_generation', $slackData);
 
         return $data['file'];
     }

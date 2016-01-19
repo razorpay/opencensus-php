@@ -4,6 +4,8 @@ namespace Tests\Functional\Fixtures\Entity;
 
 use Config;
 use Eloquent;
+use Models;
+use Gateway;
 use Tests\TestDummy\Factory;
 use Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
@@ -20,23 +22,31 @@ class Base
     }
 
     protected static $map = array(
-        'atom'          => 'Gateway\Atom\Entity',
-        'adjustment'    => 'Models\Adjustment\Entity',
-        'balance'       => 'Models\Merchant\Balance',
-        'bank_account'  => 'Models\Merchant\BankAccount\Entity',
-        'card'          => 'Models\Card\Entity',
-        'hdfc'          => 'Gateway\Hdfc\Entity',
-        'card_detail'   => 'Models\Card\Detail',
-        'key'           => 'Models\Key\Entity',
-        'merchant'      => 'Models\Merchant\Entity',
-        'merchant_banks'=> 'Models\Merchant\Banks\Entity',
-        'payment'       => 'Models\Payment\Entity',
-        'pricing'       => 'Models\Pricing\Entity',
-        'refund'        => 'Models\Payment\Refund\Entity',
-        'settlement'    => 'Models\Settlement\Entity',
-        'terminal'      => 'Models\Terminal\Entity',
-        'transaction'   => 'Models\Transaction\Entity'
+        'key'           => Models\Key\Entity::class,
+        'atom'          => Gateway\Atom\Entity::class,
+        'card'          => Models\Card\Entity::class,
+        'hdfc'          => Gateway\Hdfc\Entity::class,
+        'refund'        => Models\Payment\Refund\Entity::class,
+        'webhook'       => Models\Merchant\Webhook\Entity::class,
+        'methods'       => Models\Merchant\Methods\Entity::class,
+        'balance'       => Models\Merchant\Balance\Entity::class,
+        'methods'       => Models\Merchant\Methods\Entity::class,
+        'payment'       => Models\Payment\Entity::class,
+        'pricing'       => Models\Pricing\Entity::class,
+        'webhook'       => Models\Merchant\Webhook\Entity::class,
+        'merchant'      => Models\Merchant\Entity::class,
+        'terminal'      => Models\Terminal\Entity::class,
+        'adjustment'    => Models\Adjustment\Entity::class,
+        'settlement'    => Models\Settlement\Entity::class,
+        'card_detail'   => Models\Card\Detail::class,
+        'transaction'   => Models\Transaction\Entity::class,
+        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
     );
+
+    protected static $liveAndTest = array(
+        'merchant',
+        'pricing',
+        'methods');
 
     public function create(array $attributes = array())
     {
@@ -49,7 +59,7 @@ class Base
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing') or
-            ($entity === 'merchant_banks'))
+            ($entity === 'methods'))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -61,26 +71,27 @@ class Base
     {
         $entity = snake_case(explode('\\', get_class($this))[4]);
 
-        return $this->editEntity($entity, $attributes);
+        return $this->editEntity($entity, $id, $attributes);
     }
 
     public function editEntity($entity, $id, array $attributes = array())
     {
-        if (($entity === 'merchant') or
-            ($entity === 'pricing') or
-            ($entity === 'merchant_banks'))
+        $this->stripSign($id);
+
+        if (in_array($entity, self::$liveAndTest))
         {
-            return $this->editEntityInTestAndLive($entity, $attributes);
+            return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
+        $entity = self::$map[$entity];
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
         {
-            $entity[$attribute] = $value;
+            $entity[$key] = $value;
         }
 
-        $entity->saveOrFail($merchant);
+        $entity->saveOrFail();
 
         return $entity;
     }
@@ -96,8 +107,8 @@ class Base
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
 
         $entity->exists = true;
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
@@ -109,7 +120,7 @@ class Base
         return $entity;
     }
 
-    public function editEntityInTestAndLive($entity, $attributes = array())
+    public function editEntityInTestAndLive($entity, $id, $attributes = array())
     {
         $this->eloquentUnguard();
 
@@ -118,14 +129,14 @@ class Base
 
         foreach ($attributes as $key => $value)
         {
-            $entity[$attribute] = $value;
+            $entity[$key] = $value;
         }
 
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
 
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 
@@ -160,6 +171,31 @@ class Base
         $this->eloquentReguard();
 
         return $entity;
+    }
+
+    protected function transaction(callable $callable)
+    {
+        $db = \DB::getFacadeRoot();
+
+        return $db->transaction($callable);
+    }
+
+    protected function callInTransaction($callable, $args)
+    {
+        return $this->db->transaction(function ()
+        {
+            return call_user_func($callable);
+        });
+    }
+
+    protected function stripSign(& $id)
+    {
+        $ix = strpos($id, '_');
+
+        if ($ix !== false)
+        {
+            $id = substr($id, $ix + 1);
+        }
     }
 
     protected function eloquentUnguard()

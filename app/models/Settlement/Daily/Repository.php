@@ -39,6 +39,13 @@ class Repository extends Base\Repository
         $this->validateDate($params);
     }
 
+    public function getIfFeesIsNull()
+    {
+        $repo = $this->repo;
+
+        return $repo::whereNull(Daily\Entity::FEES)->get();
+    }
+
     protected function validateDate($params)
     {
         if (isset($params['date']) === false)
@@ -72,5 +79,14 @@ class Repository extends Base\Repository
         }
 
         return $query;
+    }
+
+    public function getIfServiceTaxIsNullOrZero()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::SERVICE_TAX, '=', '0')
+                    ->orWhereNull(Entity::SERVICE_TAX)
+                    ->get();
     }
 }

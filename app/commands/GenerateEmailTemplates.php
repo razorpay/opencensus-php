@@ -29,17 +29,35 @@ class GenerateEmailTemplates extends Command {
 		parent::__construct();
 	}
 
-	/**
-	 * Execute the console command.
-	 *
-	 * @return mixed
-	 */
-	public function fire()
-	{
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function fire()
+    {
         // This is a map of templates and the rendered file names
-		$templates = [
-            'emails/payment/customer', 'emails/merchant/activation', 'emails/partials/header', 'emails/partials/footer', 'emails/partials/header_image',
-            'emails/partials/separator', 'emails/merchant/daily_report'
+        // Keep this list sorted
+        $templates = [
+            'emails/merchant/activation',
+            'emails/merchant/authorized_reminder',
+            'emails/merchant/bankaccount_change',
+            'emails/merchant/daily_report',
+            'emails/merchant/daily_report_debug',
+            'emails/merchant/newsletter',
+            'emails/merchant/payzapp',
+            'emails/merchant/welcome',
+
+            'emails/partials/footer',
+            'emails/partials/header',
+            'emails/partials/header_image',
+            'emails/partials/separator',
+
+            'emails/payment/customer',
+            'emails/payment/failed_to_authorized',
+            'emails/payment/merchant',
+
+            'emails/refund/common',
         ];
 
         $view_directory = app_path()."/views/";
@@ -71,7 +89,7 @@ class GenerateEmailTemplates extends Command {
             $renderFile = "$view_directory$template.blade.php";
             file_put_contents($renderFile, $output);
             $this->info("Rendered $template into $renderFile");
+            }
         }
-	}
 
-}
+    }

@@ -8,6 +8,9 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
+    protected $appFetchParamRules = array(
+        Entity::PAYMENT_ID          => 'sometimes|string|size:14');
+
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
         $repo = $this->repo;
@@ -22,6 +25,15 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where('payment_id', '=', $paymentId)
+                    ->where('action', '=', $action)
+                    ->first();
+    }
+
+    public function findByTraceIdAndAction($paymentId, $action)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('int_payment_id', '=', $paymentId)
                     ->where('action', '=', $action)
                     ->first();
     }

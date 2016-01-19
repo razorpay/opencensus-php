@@ -5,7 +5,6 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 use Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
-//contain array of test cards
 return [
     'testShortCardNumber' => [
         'request' => [
@@ -167,6 +166,22 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
+        ],
+    ],
+
+    'testCardCvvLengthNot3' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'cvv',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => EE\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE
         ],
     ],
 ];

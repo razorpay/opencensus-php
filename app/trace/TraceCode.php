@@ -15,14 +15,26 @@ class TraceCode
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
+    const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
     const PAYMENT_TIMED_OUT                         = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
+    const PAYMENT_FAILED_TO_AUTHORIZED              = 'PAYMENT_FAILED_TO_AUTHORIZED';
+    const PAYMENT_CALLBACK_FAILURE                  = 'PAYMENT_CALLBACK_FAILURE';
+    const PAYMENT_AUTHORIZE_FAILED                  = 'PAYMENT_AUTHORIZE_FAILED';
+    const PAYMENT_NOTIFY_FAILED                     = 'PAYMENT_NOTIFY_FAILED';
+    const PAYMENT_AUTHORIZE_REMINDER                = 'PAYMENT_AUTHORIZE_REMINDER';
+    const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
+
+    const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
+    const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
@@ -44,6 +56,14 @@ class TraceCode
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
     const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
+    const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
+    const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
+    const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
+    const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
+    const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
+    const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
+    const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
+    const GATEWAY_REQUESTY_TIMEOUT                  = 'GATEWAY_REQUESTY_TIMEOUT';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -64,16 +84,31 @@ class TraceCode
     const SETTLEMENT_ATOM_INITIATED_RECONCILED      = 'SETTLEMENT_ATOM_INITIATED_RECONCILED';
     const SETTLEMENT_MERCHANT_SETL_FAILED           = 'SETTLEMENT_MERCHANT_SETL_FAILED';
     const SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED = 'SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED';
+    const SETTLEMENT_DAILY_REPORT_DATA              = 'SETTLEMENT_DAILY_REPORT_DATA';
+    const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
+
+    const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
+
+    const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
+    const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
+    const PRICING_PLAN_RULE_ADD_ATTEMPT             = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
+    const PRICING_PLAN_RULE_ADD_SUCCESS             = 'PRICING_PLAN_RULE_ADD_SUCCESS';
+
+    const WEBHOOK_FIRING                            = 'WEBHOOK_FIRING';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
+    const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
 
+    const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
+
+    const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
@@ -88,6 +123,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS               => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
+        self::PAYMENT_FAILED_TO_AUTHORIZED          => 'Payment failed but which succeded on gateway, converting it to authorized',
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 
@@ -106,6 +142,7 @@ class TraceCode
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
+        self::RECOVERABLE_EXCEPTION                 => 'Recoverable exception occurred',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code');
 
     /**
@@ -127,10 +164,10 @@ class TraceCode
 
     public static function checkCode($code)
     {
-        if (! defined(__NAMESPACE__."\TraceCode::$code"))
+        if (defined(TraceCode::class.'::'.$code) === false)
         {
             throw new InvalidArgumentException(
-                __NAMESPACE__.'\TraceCode::'.$code.'not defined');
+                TraceCode::class.'::'.$code.' not defined');
         }
     }
 }

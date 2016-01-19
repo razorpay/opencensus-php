@@ -76,4 +76,21 @@ class Entity extends EloquentEx
             return class_basename($this);
         }
     }
+
+    public function getCreatedAt()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->getAttribute(self::UPDATED_AT);
+    }
+
+    public function setId($id)
+    {
+        UniqueIdEntity::verifyUniqueId($id, true);
+
+        return $this->setAttribute('id', $id);
+    }
 }

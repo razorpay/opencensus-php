@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
+        self::MERCHANT_ID,
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
@@ -94,6 +95,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
     }
 
     public function getAmountAttribute()

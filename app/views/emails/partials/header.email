@@ -11,8 +11,8 @@
         </tr>
       </table>
     </td>
-    <td class="wrapper offset-by-six last">
-      <table class="three columns" style="margin-top:6px;">
+    <td class="wrapper offset-by-five last">
+      <table class="four columns" style="margin-top:6px;">
         <tr>
           <td class="lighttext right-text-pad">
             {{\Carbon\Carbon::now("Asia/Kolkata")->format('j<\s\up>S F Y')}}

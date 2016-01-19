@@ -8,7 +8,6 @@
 namespace Tests\Functional;
 
 use Artisan;
-use DB;
 use Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase
@@ -18,8 +17,6 @@ class TestCase extends ParentTestCase
     protected $fixtures;
 
     protected $ba;
-
-    protected static $initialSetupDone = false;
 
     /**
      * To denote whether to simulate unit tests with
@@ -32,6 +29,8 @@ class TestCase extends ParentTestCase
     public function setUp()
     {
         parent::setUp();
+
+//        $this->markTestSkipped();
 
         $this->db = new Database($this->app);
 
@@ -49,36 +48,9 @@ class TestCase extends ParentTestCase
 
     public function initialSetup()
     {
-        if ((self::$initialSetupDone === true) and
-            ($this->isTestRunningOnWercker()))
-        {
-            // Setup database
-            $this->db->setUp();
+        $this->db->setUp();
 
-            return;
-        }
-
-        // Run migrations
-        $this->db->migrate();
-
-        // // Truncate tables
-        // $this->db->truncate();
-
-        if ($this->isTestRunningOnWercker() === false)
-        {
-            $this->db->setUp();
-        }
-
-        // Seed database
-        $this->fixtures->setUp();
-
-        if ($this->isTestRunningOnWercker() === true)
-        {
-            // Setup database
-            $this->db->setUp();
-        }
-
-        self::$initialSetupDone = true;
+        $this->db->runFixtures($this->fixtures);
     }
 
     public function tearDown()
@@ -103,5 +75,10 @@ class TestCase extends ParentTestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function changeEnvToNonTest()
+    {
+        $this->app['env'] = 'production';
     }
 }

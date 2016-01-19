@@ -3,8 +3,10 @@
 namespace Gateway\Hdfc\Payment;
 
 use EE\Exception;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -22,7 +24,34 @@ trait Support
      */
     protected function supportPayment($input, $type)
     {
+        if ($this->isRefundingAuthorizedPayment($input, $type))
+        {
+            return;
+        }
+
         $this->retrievePreviousGatewayTransaction($input, $type);
+
+        $result = $this->model['result'];
+
+        //
+        // If the result is captured, and support type is capture request,
+        // then we need to check whether it was a purchase txn or auth.
+        // For purchase txn, simply return back from here.
+        //
+        if (($result === Result::CAPTURED) and
+            ($type === 'capture'))
+        {
+            if (in_array($input['card']['network_code'], $this->purchase))
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Illogical place reached',
+                    ['input' => $input, 'model' => $this->model, 'type' => $type]);
+            }
+        }
 
         //
         // Mark the type of support payment.
@@ -53,6 +82,11 @@ trait Support
 
         if ($this->error)
         {
+            if ($this->isAnAcceptedError() === true)
+            {
+                return;
+            }
+
             $this->throwException($this->supportPaymentResponse['error']);
         }
     }
@@ -64,14 +98,28 @@ trait Support
         if ($type === 'capture')
         {
             $status = Status::AUTHORIZED;
+
+            // For purchase transactions, status will be captured.
+            if (in_array($input['card']['network_code'], $this->purchase))
+            {
+                $status = Status::CAPTURED;
+            }
         }
         else if ($type === 'refund')
         {
             $status = Status::CAPTURED;
         }
 
-        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
-            $input['payment']['id'], $status);
+        if ($status === Status::CAPTURED)
+        {
+            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureError(
+                                            $input['payment']['id']);
+        }
+        else
+        {
+            $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+                                            $input['payment']['id'], $status);
+        }
 
         $this->id = $input['payment']['id'];
 
@@ -132,6 +180,34 @@ trait Support
         return ! ($this->error);
     }
 
+    protected function isAnAcceptedError()
+    {
+        assert ($this->error === true);
+
+        $response = $this->supportPaymentResponse;
+
+        $error = $response['error'];
+        $input = $this->input;
+
+        $payment = $this->model;
+
+        if (($this->action === Base\Action::CAPTURE) and
+            ($error['code'] === Hdfc\ErrorCode::GW00176) and
+            ($input['payment']['status'] === 'authorized') and
+            ($input['payment']['amount_authorized'] === (int) $input['amount']))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_FORCED,
+                $this->supportPaymentResponse);
+
+            $this->error = null;
+
+            return true;
+        }
+
+        return false;
+    }
+
     protected function setSupportPaymentType($type)
     {
         Assert(($type === 'capture') or
@@ -159,7 +235,7 @@ trait Support
 
         $type = $this->supportPaymentRequest['type'];
 
-        $action = constant(__NAMESPACE__.'\Action::'.strtoupper($type));
+        $action = constant(Action::class.'::'.strtoupper($type));
 
         $data['action'] = $action;
 
@@ -220,6 +296,16 @@ trait Support
 
         if ($this->error)
         {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_SUPPORT_ERROR,
+                $this->supportPaymentResponse);
+
+            // If it's a timeout, then just return without saving.
+            if ($this->supportPaymentResponse['error']['code'] === Hdfc\ErrorCode::RP00003)
+            {
+                return;
+            }
 
             $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->supportPaymentRequest['data'],
@@ -227,24 +313,25 @@ trait Support
                                 $type,
                                 $paymentId,
                                 $refundId);
-
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_SUPPORT_ERROR,
-                $this->supportPaymentResponse);
         }
         else
         {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_SUPPORT_RESPONSE,
+                $this->supportPaymentResponse);
+
             $this->model = $this->repo->persistAfterSupportPayment(
                     $this->supportPaymentRequest['data'],
                     $this->supportPaymentResponse['data'],
                     $paymentId,
                     $refundId);
-
-            $this->trace(
-                Trace::INFO,
-                TraceCode::GATEWAY_SUPPORT_RESPONSE,
-                $this->supportPaymentResponse);
         }
+    }
+
+    protected function isRefundingAuthorizedPayment($input, $type)
+    {
+        return (($type === 'refund') and
+                ($input['payment']['status'] === 'authorized'));
     }
 }

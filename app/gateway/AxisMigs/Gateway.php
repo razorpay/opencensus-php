@@ -6,6 +6,8 @@ use Constants\Mode;
 use EE\Error;
 use EE\Exception;
 use Gateway\Base;
+use Gateway\Base\Action;
+use Gateway\Base\VerifyResult;
 use Gateway\AxisMigs;
 use Requests;
 use Trace\Trace;
@@ -13,41 +15,17 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = 'axis_migs';
+
+    protected $authorize = false;
 
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        $attributes = array(
-            'vpc_Command'               => Command::PAY,
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => $input['payment']['currency'],
-            'vpc_MerchTxnRef'           => $input['payment']['id'],
-        );
-
-        $this->createGatewayPaymentEntity($attributes);
-
-        $content = array(
-            'vpc_Version'           => '1',
-            'vpc_ReturnURL'         => $input['callbackUrl'],
-            'vpc_Locale'            => 'en',
-            'vpc_gateway'           => 'ssl',
-            'vpc_Card'              => $input['card']['network'],
-            'vpc_CardNum'           => $input['card']['number'],
-            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
-            'vpc_CardSecurityCode'  => $input['card']['cvv'],
-//            'vpc_OrderInfo'             => 'testinfo',
-        );
-
-        $content = array_merge($attributes, $content);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $this->addTestCardDetailsInTestMode($content);
-        }
-
-        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+        $content = $this->getPaymentAuthorizeRequestContent($input);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
@@ -60,11 +38,22 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
+
+            // Payment fails since vpc_MerchTxnRef not set, throw exception
+            throw new Exception\GatewayErrorException(
+                        Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
         $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecureHash($input['gateway']);
 
+        $input['gateway']['received'] = 1;
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
@@ -75,35 +64,10 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndCommand(
-            $input['payment']['id'], Command::PAY);
-
-        $content = $this->getPaymentCaptureRequestContent($input, $payment);
-
-        $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
-
-        $response = $this->postAmaTransactionRequest($content, $input);
-
-        $content = $this->getAmaTxnResponseContent($response, $input);
-
-        if (isset($content['vpc_TxnResponseCode']) === false)
+        if ($this->authorize === true)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_CAPTURE_FAILURE,
-                [
-                    'payment_id' => $input['payment']['id'],
-                    'gateway' => $this->gateway,
-                    'vpc_TxnResponseCode' => null,
-                ]
-            );
-
-            $content['vpc_TxnResponseCode'] = '?';
-            $content['vpc_MerchTxnRef'] = $input['payment']['id'];
+            return $this->captureAuthorizedPayment($input);
         }
-
-        $payment->fill($content)->saveOrFail();
-
-        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function refund(array $input)
@@ -120,12 +84,18 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
 
-        $response = $this->postAmaTransactionRequest($content, $input);
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
-        $content = $this->getAmaTxnResponseContent($response, $input);
-
+        $content['received'] = 1;
         $refund->fill($content);
         $refund->saveOrFail();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
 
         $this->verifyAmaTransactionResponse($content, $input);
     }
@@ -134,54 +104,213 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $payment = $this->getRepo()->findByMerchantTxnRef($input['payment']['id']);
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function captureAuthorizedPayment(array $input)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+            $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentCaptureRequestContent($input, $payment);
+
+        $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
+
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        if (isset($content['vpc_TxnResponseCode']) === false)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_FAILURE,
+                [
+                    'payment_id' => $input['payment']['id'],
+                    'gateway' => $this->gateway,
+                    'vpc_TxnResponseCode' => null,
+                    'content' => $content,
+                ]
+            );
+
+            $content['vpc_TxnResponseCode'] = '?';
+            $content['vpc_MerchTxnRef'] = $input['payment']['id'];
+        }
+
+        $content['received'] = 1;
+        $payment->fill($content)->saveOrFail();
+
+        $this->verifyAmaTransactionResponse($content, $input);
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+        $payment = $verify->payment;
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content, $input);
-
-        $content = $this->parseQueryResponse($response);
-
-        $key = 'vpc_TxnResponseCode';
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
         if (isset($content['vpc_SecureHash']))
         {
             $this->verifySecureHash($content);
+            unset($content['vpc_SecureHash']);
         }
 
-        $match = ($payment[$key] === $content[$key]);
+        $verify->verifyResponse = $this->response;
 
-        if ($match === true)
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+        $input = $verify->input;
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            ['payment_id' => $input['payment']['id'],
+             'content' => $content]);
+
+        if ((isset($content['vpc_DRExists']) === false) and
+            ($content['vpc_TxnResponseCode'] === '7'))
         {
-            $status = $input['payment']['status'];
-            $razorpayPaymentStatus =
-                (($status === 'authorized') or ($status === 'captured'));
-
-            $migsPaymentStatus = ($content[$key] === '0');
-
-            $match = ($razorpayPaymentStatus === $migsPaymentStatus);
+            // Most probably means AMA credentials are not correct.
+            // However, not sure. Read the error message provided.
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                $content['vpc_TxnResponseCode'],
+                $content['vpc_Message']);
         }
 
-        if ($match === false)
+        if ($content['vpc_DRExists'] !== 'Y')
         {
-            $res['match'] = false;
-            $res['payment'] = [$payment->toArray()];
-            $res['payment_id'] = $input['payment']['id'];
-            $res['gateway'] = $input['payment']['gateway'];
-            $res['razorpay_payment'] = $input['payment'];
-
-            if ($res['match'] === false)
+            // Could be the case where the transaction didn't even hit migs
+            if (($payment['received'] === false) and
+                (($payment['vpc_TxnResponseCode'] === null) or
+                 ($payment['vpc_TxnResponseCode'] === '0')))
             {
-                throw new Exception\PaymentVerificationException($res);
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
             }
-
-            throw new Exception\PaymentVerificationException($res);
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
+            }
         }
+        else
+        {
+            assert ($content['vpc_DRExists'] === 'Y');
+
+            if ($payment['vpc_TxnResponseCode'] === '0')
+            {
+                $verify->apiSuccess = true;
+
+                if ($content['vpc_TxnResponseCode'] === '0')
+                {
+                    $verify->gatewaySuccess = true;
+                }
+                else
+                {
+                    $verify->gatewaySuccess = false;
+                    $status = VerifyResult::STATUS_MISMATCH;
+                }
+            }
+            else
+            {
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
+
+                //
+                // If payment is not marked as success then it shouldn't be success
+                // on migs end as well.
+                //
+
+                if ($content['vpc_TxnResponseCode'] === '0')
+                {
+                    // It's marked as success, in this case, if it's totally refunded,
+                    // then that means billdesk refunded the payment on it's own end
+                    // and we don't need to worry.
+
+                    $verify->gatewaySuccess = true;
+                    $status = VerifyResult::STATUS_MISMATCH;
+                }
+            }
+        }
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if ($payment['received'] === false)
+        {
+            unset($content['vpc_Command']);
+
+            $payment->fill($content);
+            $payment->saveOrFail();
+        }
+
+        return $status;
+    }
+
+    protected function postAmaTransactionRequestAndGetContent(array & $content, $input)
+    {
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        $content = $this->getAmaTxnResponseContent($response);
+
+        return $content;
     }
 
     protected function parseQueryResponse($response)
     {
         parse_str($response->body, $content);
+
+        return $content;
+    }
+
+    protected function getPaymentAuthorizeRequestContent($input)
+    {
+        $attributes = array(
+            'vpc_Command'               => Command::PAY,
+            'vpc_Amount'                => $input['payment']['amount'],
+            'vpc_Currency'              => $input['payment']['currency'],
+            'vpc_MerchTxnRef'           => $input['payment']['id'],
+        );
+
+        $this->createGatewayPaymentEntity($attributes);
+
+        $network = ucfirst(strtolower($input['card']['network']));
+
+        $content = array(
+            'vpc_Version'           => '1',
+            'vpc_ReturnURL'         => $input['callbackUrl'],
+            'vpc_Locale'            => 'en',
+            'vpc_gateway'           => 'ssl',
+            'vpc_Card'              => $this->getVpcCardValue($network),
+            'vpc_CardNum'           => $input['card']['number'],
+            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
+            'vpc_CardSecurityCode'  => $input['card']['cvv'],
+//            'vpc_OrderInfo'             => 'testinfo',
+        );
+
+        $content = array_merge($attributes, $content);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTestCardDetailsInTestMode($content);
+        }
+
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
         return $content;
     }
@@ -201,10 +330,9 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = array(
-            'vpc_Command'       => AxisMigs\Command::QUERY,
+            'vpc_Command'       => AxisMigs\Command::QUERYDR,
             'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
-            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
 
         return $content;
@@ -274,6 +402,11 @@ class Gateway extends Base\Gateway
         $this->addAmaTransactionFields($content, $input);
 
         $request = $this->getAmaRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_REQUEST,
+            ['action' => 'Support action request array',
+            'content' => $content]);
 
         // send the request and get response
         $response = $this->postRequest($request);
@@ -430,6 +563,10 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Base\Action::REFUND)
         {
+            // Refund request failed. Just check if refund amount due to
+            // previous requests matches the expected amount.
+            // In that case, we will mark it as success.
+
             $ret = $this->returnIfRefundAmountMatches($content, $input);
 
             if ($ret === true)
@@ -444,16 +581,26 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
                     $code,
                     $txnResponseCode,
-                    $input['gateway']['vpc_Message']);
+                    $msg);
     }
 
     protected function returnIfRefundAmountMatches($content, $input)
     {
+        if (isset($content['vpc_RefundedAmount']) === false)
+        {
+            return false;
+        }
+
         $amount = $input['payment']['amount_refunded'] + $input['refund']['amount'];
 
         $vpcAmount = (int) $content['vpc_RefundedAmount'];
 
         return ($amount === $vpcAmount);
+    }
+
+    protected function getVpcCardValue($network)
+    {
+        return $network;
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)

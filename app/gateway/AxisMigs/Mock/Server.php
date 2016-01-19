@@ -21,6 +21,8 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        parent::authorize($input);
+
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
@@ -60,6 +62,7 @@ class Server extends Base\Mock\Server
 
         $this->addMessageAndResponseCode($content, $input);
 
+        $this->content($content);
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
@@ -68,8 +71,10 @@ class Server extends Base\Mock\Server
         return $url;
     }
 
-    public function capture(array $input)
+    public function capture($input)
     {
+        parent::capture($input);
+
         $payment = $this->getGatewayPaymentEntity($input);
 
         $content = array(
@@ -97,6 +102,8 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
+        parent::refund($input);
+
         $payment = $this->getGatewayPaymentEntity($input);
 
         $content = array(
@@ -122,6 +129,33 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($content);
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $payment = $this->getGatewayPaymentEntity($input);
+
+        $content = array(
+            'vpc_AcqResponseCode'   => '00',
+            'vpc_Amount'            => $input['vpc_Amount'],
+            'vpc_BatchNo'           => $payment['vpc_BatchNo'],
+            'vpc_Card'              => 'MC',
+            'vpc_Command'           => 'queryDR',
+            'vpc_Locale'            => 'en_US',
+            'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
+            'vpc_Merchant'          => $input['vpc_Merchant'],
+            'vpc_Message'           => 'Approved',
+            'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
+            'vpc_TransactionNo'     => $payment['vpc_TransactionNo'],
+            'vpc_TxnResponseCode'   => '0',
+            'vpc_Version'           => '1',
+            'vpc_DRExists'          => 'Y',
+            'vpc_FoundMultipleDRs'  => 'N',
+        );
+
+        return $this->prepareResponse($content);
+    }
+
     protected function getGatewayPaymentEntity($input)
     {
         return $this->repo->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
@@ -141,6 +175,7 @@ class Server extends Base\Mock\Server
 
     protected function prepareResponse($content)
     {
+        $content = $this->content($content);
         $body = http_build_query($content);
         $response = \Response::make($body);
 

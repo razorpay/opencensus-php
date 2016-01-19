@@ -23,6 +23,7 @@ class CreateBilldesk extends Migration {
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action');
+            $table->boolean('received')->default(0);
             $table->string('MerchantID');
             $table->string('CustomerID');
             $table->string('TxnAmount');
@@ -60,6 +61,8 @@ class CreateBilldesk extends Migration {
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
+
+            $table->index('received');
         });
     }
 

@@ -30,6 +30,7 @@ use EE\Exception;
 use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Models\Card;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -85,7 +86,7 @@ class Gateway extends Base\Gateway
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
                           'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
-        'header' => array('Content-Type'=>'text/xml'),
+        'headers' => array('Content-Type'=>'text/xml'),
         'data' => array());
 
     /**
@@ -113,7 +114,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
         'fields' => array('paymentid', 'PaRes'),
-        'header' => array('Content-Type:text/xml'),
+        'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 
@@ -136,7 +137,7 @@ class Gateway extends Base\Gateway
         'type' => 'auth_not_enrolled',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
                           'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'header' => array('Content-Type:text/xml'),
+        'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 
@@ -162,7 +163,7 @@ class Gateway extends Base\Gateway
         'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => '',
         'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
-        'header' => array('Content-Type:text/xml'),
+        'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 
@@ -232,6 +233,18 @@ class Gateway extends Base\Gateway
      */
     protected $response;
 
+    /**
+     * Whether the gateway supports authorizing payments.
+     * @var boolean
+     */
+    protected $authorize = true;
+
+    protected $purchase = array(
+        Card\Network::MAES,
+        Card\Network::RUPAY,
+        Card\Network::DICL,
+    );
+
     public function __construct()
     {
         parent::__construct();
@@ -287,9 +300,17 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
+        \Log::info($input['gateway']);
         parent::callback($input);
 
-        validate($this->bankAcsResponseRules, $input['gateway']);
+        if ($input['card']['network'] === 'RuPay')
+        {
+            echo "Gateway returned following fields in response: <br />" . PHP_EOL;
+            var_dump($input['gateway']);
+            die();
+        }
+
+        validate($this->bankAcsResponseRules, $input['gateway'], false);
 
         $this->id = $input['payment']['id'];
 
@@ -309,9 +330,11 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        $data = $this->inquire($input);
+        parent::verify($input);
 
-        return $data;
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     /**
@@ -395,8 +418,6 @@ class Gateway extends Base\Gateway
         }
 
         $response['xml'] = $response['response']->body;
-
-        $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
         $this->checkResponseStatusCode($response);
 

@@ -15,14 +15,15 @@ class Validator extends Base\Validator
         'method'        =>  'in:card,netbanking,wallet',
         'card'          =>  'sometimes',
         'bank'          =>  'required_if:method,netbanking',
-        'wallet'        =>  'required_if:method,wallet|in:paytm',
+        'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes',
-        'callback_url'  =>  'sometimes|url');
+        'callback_url'  =>  'sometimes|url',
+        '_'             =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',
@@ -244,6 +245,23 @@ class Validator extends Base\Validator
         }
     }
 
+    public static function validateStatus($status)
+    {
+        if (Status::isStatusValid($status) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
+        }
+    }
+
+    public static function validateStatusArray(array $status)
+    {
+        foreach ($status as $value)
+        {
+            self::validateStatus($value);
+        }
+    }
+
     public static function bankAcsCallbackValidate($payment, $input)
     {
         if ($payment->isCreated() === false)
@@ -295,7 +313,7 @@ class Validator extends Base\Validator
         //
         // Don't continue if already captured
         //
-        if ($payment->isCaptured())
+        if ($payment->hasBeenCaptured())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);

@@ -34,6 +34,7 @@ return [
         'action' => 'authorize',
         'amount' => 500,
         'bank' => 'HDFC',
+        'received' => true,
         'client_code' => 'abcom',
         'merchant_code' => 'RAZORPAY',
 //        'bank_payment_id' => null,

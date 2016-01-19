@@ -24,11 +24,12 @@ class CreateAxisGateway extends Migration
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action', 10);
-
+            $table->boolean('received')->default(0);
             $table->boolean('genius')->default(0);
+            $table->boolean('amex')->default(0);
 
             $table->integer('vpc_Amount');
-            $table->string('vpc_AcqResponseCode', 3)->nullable();
+            $table->string('vpc_AcqResponseCode', 4)->nullable();
             $table->integer('vpc_AuthorisedAmount')->nullable();
             $table->integer('vpc_CapturedAmount')->nullable();
             $table->char('vpc_Command', 7);
@@ -61,6 +62,8 @@ class CreateAxisGateway extends Migration
             $table->integer('updated_at');
 
             $table->index('genius');
+            $table->index('received');
+            $table->index('amex');
 
             $table->foreign('payment_id')
                   ->references('id')

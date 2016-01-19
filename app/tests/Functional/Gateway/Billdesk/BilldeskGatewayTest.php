@@ -27,7 +27,20 @@ class BilldeskGatewayTest extends TestCase
     public function testPayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -37,6 +50,25 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentBilldeskEntity'], $payment);
+    }
+
+    public function testPaymentOnDirectBilldeskTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:billdesk_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($terminal['id'], $payment['terminal_id']);
+    }
+
+    public function testPaymentFailed()
+    {
+        $this->markTestIncomplete();
+
+        $this->failPaymentOnBankPage = true;
     }
 
     public function testPaymentVerify()
@@ -58,11 +90,29 @@ class BilldeskGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
+    public function testAuthorizedPaymentRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $input['force'] = '1';
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
+
+        $refund = $this->getLastEntity('billdesk', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentRefund'], $refund);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
+    }
+
     public function testGetPaymentMethodsRoute()
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',
@@ -78,6 +128,6 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(48, $count);
+        $this->assertEquals(58, $count);
     }
 }

@@ -39,12 +39,13 @@ class SettlementTest extends TestCase
             {
                 $txn = $payment->transaction;
 
-                $this->assertEquals(2280, $txn->fee);
-                $this->assertEquals(7720, $txn->credit);
+                $this->assertEquals(2290, $txn->fee);
+                $this->assertEquals(7710, $txn->credit);
                 $this->assertEquals(0, $txn->debit);
+                $this->assertEquals(290, $txn->service_tax);
             }
 
-            $this->assertEquals(15440, $merchant->balance->getBalance());
+            $this->assertEquals(15420, $merchant->balance->getBalance());
 
             $merchantPayments[] = $payments;
         }
@@ -55,8 +56,8 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(10000, $refund->transaction->debit);
 
-        $this->assertEquals(5440, $merchants[0]->balance->reload()->getBalance());
-        $this->assertEquals(5440, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(5420, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(5420, $merchants[0]->balance->reload()->getBalance());
     }
 
     /**
@@ -90,7 +91,7 @@ class SettlementTest extends TestCase
 
     public function testHoldFundsDuringSettlement()
     {
-        $this->fixtures->links['merchant']->holdFunds('10000000000000');
+        $this->fixtures->merchant->holdFunds('10000000000000');
 
         // Create payments and refunds with timestamps two days back
         $payments = $this->createPaymentEntities();

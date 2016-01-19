@@ -83,6 +83,15 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals($id, $payment['items'][0]['id']);
     }
 
+    public function testRetrievePaymentWithCardIIN()
+    {
+        $this->ba->appAuth();
+
+        $payments = $this->getEntities('payment', ['iin' => '111111'], true);
+
+        $this->assertEquals($payments['count'], 0);
+    }
+
     /**
      * @group testRetrievePaymentWithCreateAt
      */
@@ -146,5 +155,21 @@ class PaymentRetrieveTest extends TestCase
         );
 
         $this->startTest($testData);
+    }
+
+    public function testMoreThan100InPrivateAuth()
+    {
+        $e = null;
+
+        try
+        {
+            $content = $this->getEntities('payment', ['count' => 1000]);
+        }
+        catch (\Exception $e)
+        {
+            ;
+        }
+
+        $this->assertEquals('EE\Exception\BadRequestValidationFailureException', get_class($e));
     }
 }

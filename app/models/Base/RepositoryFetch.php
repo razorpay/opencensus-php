@@ -9,10 +9,14 @@ trait RepositoryFetch
     protected $fetchParamRules = array(
         'from'          => 'integer',
         'to'            => 'integer',
-        'count'         => 'integer|max:100|min:1',
+        'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
 //    protected $appFetchParamRules = array();
+
+//    protected $proxyFetchParamRules = array();
+
+//    protected $defaultFetchParams = array();
 
     protected $params = array();
 
@@ -66,7 +70,14 @@ trait RepositoryFetch
         {
             $func = 'addQueryParam'.studly_case($key);
 
-            $this->$func($query, $params);
+            if (method_exists($this, $func))
+            {
+                $this->$func($query, $params);
+            }
+            else
+            {
+                $this->addQueryParamDefault($query, $params, $key);
+            }
         }
 
         $this->addQueryOrder($query);
@@ -81,13 +92,15 @@ trait RepositoryFetch
         return;
     }
 
-    protected function addQueryOrder($query)
-    {
-        $query->orderBy(Common::ID, 'desc');
-    }
-
     protected function validateFetchParams(array $params)
     {
+        if (($this->auth->isProxyAuth()) and
+            (isset($this->proxyAuthFetchParamRules)))
+        {
+            $this->fetchParamRules = array_merge(
+                    $this->fetchParamRules, $this->proxyAuthFetchParamRules);
+        }
+
         if (($this->auth->isAppAuth()) and
             (isset($this->appFetchParamRules)))
         {
@@ -137,19 +150,43 @@ trait RepositoryFetch
     {
         $repo = $this->repo;
 
-        $query = $repo::where(Common::MERCHANT_ID, $merchantId);
+        $mechantIdWithTable = $repo::getAttributeWithTableName(Common::MERCHANT_ID);
+        $query = $repo::where($mechantIdWithTable, '=', $merchantId);
 
         return $query->findOrFailPublic($id);
     }
 
+    protected function addQueryParamDefault($query, $params, $key)
+    {
+        if ($params[$key] === 'null')
+        {
+            $query->whereNull($key);
+        }
+        else
+        {
+            $query = $query->where($key, '=', $params[$key]);
+        }
+    }
+
     protected function addQueryParamFrom($query, $params)
     {
-        $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
+        $repo = $this->repo;
+
+        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $query = $query->where($createdAt, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
+        $repo = $this->repo;
+
+        $createdAt = $repo::getAttributeWithTableName(Common::CREATED_AT);
+        $query = $query->where($createdAt, '<=', $params['to']);
+    }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Common::ID, 'desc');
     }
 
     protected function addQueryParamCount($query, $params)
@@ -164,9 +201,37 @@ trait RepositoryFetch
 
     protected function addDefaultParams(array & $params)
     {
+        $this->addDefaultParamCount($params);
+
+        if (isset($this->defaultFetchParams))
+        {
+            foreach ($this->defaultFetchParams as $key => $value)
+            {
+                $params[$key] = $value;
+            }
+        }
+    }
+
+    protected function addDefaultParamCount(array & $params)
+    {
+        $max = $count = null;
+
+        if ($this->auth->isPrivilegeAuth() === false)
+        {
+            $max = 100;
+            $count = 10;
+        }
+        else
+        {
+            $max = 1000;
+            $count = 1000;
+        }
+
+        $this->fetchParamRules['count'] .= '|max:'.$max;
+
         if (isset($params['count']) === false)
         {
-            $params['count'] = 10;
+            $params['count'] = $count;
         }
     }
 }

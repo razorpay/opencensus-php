@@ -25,6 +25,19 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    /**
+     *  This updates the merchant email
+     *  Don't use lightly
+     */
+    public function putMerchantEmail($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editEmail($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
@@ -117,11 +130,36 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function deleteTerminal2($id)
+    {
+        $data = (new Terminal\Service)->deleteTerminal2($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function putTerminal($mid, $tid)
     {
         $input = Input::all();
 
         $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putTerminal2($tid)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->editTerminal($tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function restoreTerminal($tid)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->restoreTerminal($tid);
 
         return ApiResponse::json($data);
     }
@@ -159,6 +197,20 @@ class MerchantController extends BaseController
     public function getBankAccount($id)
     {
         $data = (new Merchant\Service)->getBankAccount($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGenerateBankAccountIds()
+    {
+        $data = (new Merchant\Service)->generateBankAccountIds();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGenerateTestBankAccounts()
+    {
+        $data = (new Merchant\Service)->generateTestBankAccounts();
 
         return ApiResponse::json($data);
     }
@@ -209,6 +261,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postFreeCredits($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editFreeCredits($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPaymentMethods()
     {
         $data = (new Merchant\Service)->getPaymentMethods();
@@ -223,6 +284,52 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getMerchantWebhooks($id)
+    {
+        $data = (new Merchant\Service)->getMerchantWebhooks($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postWebhook()
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->createWebhook($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putWebhook($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editWebhook($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWebhook($id)
+    {
+        $data = (new Merchant\Service)->getWebhook($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWebhooks()
+    {
+        $data = (new Merchant\Service)->getWebhooks();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postMerchantBeneficiaryFile()
+    {
+        $data = (new Merchant\Service)->postMerchantBeneficiaryFile();
+
+        return ApiResponse::json($data);
+    }
+
     public function getCheckout()
     {
         $methods = (new Merchant\Service)->getPaymentMethods();
@@ -231,19 +338,22 @@ class MerchantController extends BaseController
 
         $context = $app['config']->get('app.context');
 
-        if ($context === 'production')
-            $url = 'https://checkout.razorpay.com';
-        else if ($context === 'beta')
-            $url = 'https://betacheckout.razorpay.com';
-        else
-            $url = $app['config']->get('app.checkout');
+        $url = $app['config']->get('app.checkout');
+
+        $urlMap = array(
+            'production'    => 'https://checkout.razorpay.com',
+            'beta'          => 'https://betacheckout.razorpay.com');
+
+        if (in_array($context, array_keys($urlMap)))
+        {
+            $url = $urlMap[$context];
+        }
 
         $data['checkout'] = $url;
 
         $data['methods'] = json_encode($methods);
 
-        return View::make('checkout.checkout')
-                   ->with($data);
+        return ApiResponse::generateResponse($data);
     }
 
     /**
@@ -254,5 +364,45 @@ class MerchantController extends BaseController
     {
         $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
+    }
+
+    /**
+    * Gets the list of beta fetures enabled for merchant
+    * @param  string $id merchant id
+    * @return array      array of feature names
+    */
+    public function getMerchantFeatures($id)
+    {
+        $data = (new Merchant\Service)->getMerchantFeatures($id);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Adds or updated the list of beta fetures for an merchant
+     * @param  string     $id     merchant id
+     * @return merchant           updated entity
+     */
+    public function postMerchantFeatures($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAllFeatures()
+    {
+        $data = Merchant\Features::$allowedFeatures;
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDummyFeatures()
+    {
+        $input = Input::all();
+
+        return ApiResponse::json($input);
     }
 }

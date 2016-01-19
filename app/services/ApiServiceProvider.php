@@ -3,6 +3,7 @@
 namespace Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Gateway\GatewayManager;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -20,11 +21,6 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->bindShared('slack', function($app)
-        {
-            return new Slack($app);
-        });
-
         $this->app->bindShared('mailgun', function($app)
         {
             return new Mailgun($app);
@@ -33,6 +29,21 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->bindShared('instance', function($app)
         {
             return new AwsInstance($app);
+        });
+
+        $this->app->bindShared('exception.handler', function($app)
+        {
+            return new \EE\Exception\Handler($app);
+        });
+
+        $this->app->bindShared('gateway', function($app)
+        {
+            return new GatewayManager($app);
+        });
+
+        $this->app->bindShared('webhook.inferno', function($app)
+        {
+            return new \Models\Merchant\Webhook\Inferno;
         });
     }
 
@@ -43,6 +54,11 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('slack', 'mailgun', 'instance');
+        return array(
+            'mailgun',
+            'instance',
+            'exception.handler',
+            'gateway',
+            'webhook.inferno');
     }
 }

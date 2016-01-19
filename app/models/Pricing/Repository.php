@@ -10,9 +10,14 @@ use EE\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'Pricing';
+
+    protected $appFetchParamRules = array(
+        Entity::PLAN_ID         => 'sometimes|string',
+    );
 
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
@@ -39,6 +44,13 @@ class Repository extends Base\Repository
         }
 
         return $pricing;
+    }
+
+    public function getMerchantPricingPlan($merchant)
+    {
+        $pricingPlanId = $merchant->getPricingPlanId();
+//sd($pricingPlanId);
+        return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     public function getPricingPlanByIdOrFailPublic($id)
@@ -80,11 +92,20 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getZeroPricingPlanRuleForMethod($method)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', Pricing\Entity::ZERO_PRICING)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->firstOrFail();
+    }
+
     public function getPricingPlans()
     {
         $repo = $this->repo;
 
-        return $repo::orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+        return $repo::orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getMerchantPricingPlans()
@@ -93,7 +114,7 @@ class Repository extends Base\Repository
 
         // For merchant pricing plans, gateway will not be specified
         return $repo::whereNull(Pricing\Entity::GATEWAY)
-                    ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+                    ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getGatewayPricingPlans()
@@ -101,7 +122,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::whereNotNull(Pricing\Entity::GATEWAY)
-                    ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
+                    ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
     public function getPricingPlanByName($name)
@@ -116,14 +137,29 @@ class Repository extends Base\Repository
     public function getPricingPlanRule($id)
     {
         $repo = $this->repo;
+        $rule = $repo::findOrFailPublic($id);
 
-        $repo::findOrFailPublic($id);
+        return $rule;
     }
 
-    public function deletePlanRule($id)
+    public function deletePlanRule($planId, $ruleId)
     {
         $repo = $this->repo;
 
-        $repo::delete($id);
+        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFail();
+
+        $count = $rule->payments->count();
+
+        if ($count === 0)
+        {
+            return $rule->forceDelete();
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pricing rule cannot be deleted because it has been used more than once');
+        }
     }
 }

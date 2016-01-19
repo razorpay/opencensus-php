@@ -4,7 +4,9 @@ namespace Models\Payment;
 
 use EE\Exception;
 use Models\Base;
+use Models\Merchant\Methods;
 use Models\Payment;
+use Models\Card;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorDescription;
 
@@ -15,10 +17,18 @@ class Repository extends Base\Repository
     protected $entity = 'Payment';
 
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed',
-        Entity::VERIFIED        => 'sometimes|boolean',
-        Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
+        Entity::STATUS          => 'sometimes|string',
+        Entity::VERIFIED        => 'sometimes|in:null,0,1,2',
+        Entity::REFUND_STATUS   => 'sometimes|in:null,partial,full',
         Entity::BANK            => 'sometimes',
+        Entity::METHOD          => 'sometimes',
+        Entity::GATEWAY         => 'sometimes',
+        Entity::EMAIL           => 'sometimes',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
+        Entity::CAPTURED        => 'sometimes|in:0,1',
+        Card\Entity::IIN        => 'sometimes|integer|digits:6',
+        Card\Entity::LAST4      => 'sometimes|integer|digits:4',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -47,20 +57,19 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function countPaymentsForPricingRuleId($pricingRuleId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::PRICING_RULE_ID, '=', $pricingRuleId)
+                    ->count();
+    }
+
     public function lockForUpdate($id)
     {
         $repo = $this->repo;
 
         $repo::lockForUpdate()->findOrFail($id);
-    }
-
-    public function expireAuthorizedPayments($timestamp)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::CREATED_AT, '<', $timestamp)
-                    ->update(array(Payment\Entity::STATUS => 'authorization_expired'));
     }
 
     public function timeoutOldPayments($timestamp)
@@ -83,6 +92,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->orderBy(Payment\Entity::MERCHANT_ID)
                     ->get();
     }
 
@@ -109,34 +119,42 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function get50PaymentsWithVerifyResult($result)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::VERIFIED, '=', $result)
+                    ->take(50)
+                    ->get();
+    }
+
     public function getUnverifiedPayments($ts)
     {
         $repo = $this->repo;
 
+        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
+                    ->take(50)
                     ->get();
     }
 
-    protected function addQueryParamStatus($query, $params)
+    public function getNonTaxComputedPayments()
     {
-        $query = $query->where(Entity::STATUS, '=', $params[Entity::STATUS]);
-    }
+        $repo = $this->repo;
 
-    protected function addQueryParamVerified($query, $params)
-    {
-        $query = $query->where(Entity::VERIFIED, '=', $params[Entity::VERIFIED]);
-    }
-
-    protected function addQueryParamRefundStatus($query, $params)
-    {
-        $query = $query->where(Entity::REFUND_STATUS, '=', $params[Entity::REFUND_STATUS]);
+        return $repo::whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNull(Payment\Entity::SERVICE_TAX)
+                    ->take(500)
+                    ->get();
     }
 
     protected function addQueryParamBank($query, $params)
     {
-        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
+        if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
@@ -144,5 +162,70 @@ class Repository extends Base\Repository
         }
 
         $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
+    }
+
+    protected function addQueryParamStatus($query, $params)
+    {
+        $status = $params[Entity::STATUS];
+
+        $status = explode(',', $status);
+
+        Payment\Validator::validateStatusArray($status);
+
+        $query->whereIn(Entity::STATUS, $status);
+    }
+
+    protected function addQueryParamIin($query, $params)
+    {
+        $this->joinQueryCard($query);
+
+        $query->where(Card\Entity::IIN, '=', $params[Card\Entity::IIN]);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamLast4($query, $params)
+    {
+        $this->joinQueryCard($query);
+
+        $query->where(Card\Entity::LAST4, '=', $params[Card\Entity::LAST4]);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryCaptured($query, $params)
+    {
+        $captured = $params[Entity::CAPTURED];
+
+        if ($captured === '0')
+        {
+            $query->whereNull(Entity::CAPTURED_AT);
+        }
+        else
+        {
+            $quere->whereNotNull(Entity::CAPTURED_AT);
+        }
+    }
+
+    protected function joinQueryCard($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ? $joins : [];
+
+        $joined = false;
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === Card\Entity::getTableName())
+            {
+                return;
+            }
+        }
+
+        $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+
+        $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
     }
 }

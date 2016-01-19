@@ -27,19 +27,23 @@ return [
         'items' => [
             [
                 'merchant_id' => '1ApiFeeAccount',
-                'amount' => 28500,
+                'amount' => 29000,
+                'fees' => 0,
                 'status' => 'failed',
                 'channel' => 'kotak',
+                'service_tax' => 0,
                 'entity' => 'settlement',
             ],
             [
                 'merchant_id' => '10000000000000',
-                'amount' => 4386000,
+                'amount' => 4385500,
+                'fees' => 114500,
                 'status' => 'failed',
                 'channel' => 'kotak',
+                'service_tax' => 14500,
                 'failure_reason' => 'Remitt info: some random info',
                 'entity' => 'settlement',
             ],
         ]
-    ]
+    ],
 ];

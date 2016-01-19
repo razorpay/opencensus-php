@@ -14,8 +14,10 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const USED_COUNT                    = 'used_count';
+    const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
+    const GATEWAY_MERCHANT_ID2          = 'gateway_merchant_id2';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
@@ -28,13 +30,15 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 9;
+    const MAX_TERMINALS_COUNT           = 15;
 
     protected $fillable = array(
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
+        self::CATEGORY,
         self::GATEWAY_MERCHANT_ID,
+        self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
@@ -46,7 +50,9 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
+        self::CATEGORY,
         self::GATEWAY_MERCHANT_ID,
+        self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::USED_COUNT,
         self::CREATED_AT,
@@ -67,11 +73,12 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected static $generators = array(
-        'method',
-        'thedefaults');
+    protected static $generators = array('method');
+
+    protected static $modifiers = array('inputRemoveBlanks');
 
     protected $defaults = array(
+        self::CATEGORY                  => null,
         self::GATEWAY_MERCHANT_ID       => null,
         self::GATEWAY_TERMINAL_ID       => null,
         self::GATEWAY_TERMINAL_PASSWORD => null,
@@ -101,22 +108,32 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function generateThedefaults($input)
+    public function edit(array $input = array(), $operation = 'edit')
     {
-        if (empty($input[self::GATEWAY_MERCHANT_ID]))
+        if ($this->getUsedCount() === 0)
         {
-            $this->setAttribute(self::GATEWAY_MERCHANT_ID, null);
-        }
+            // Essentially we ask for all the input anew and fill it in.
+            // Put the values which are not changing like gateway and merchant_id
+            // by ourselves.
 
-        if (empty($input[self::GATEWAY_ACCESS_CODE]))
-        {
-            $this->setAttribute(self::GATEWAY_ACCESS_CODE, null);
-        }
+            $input[Entity::GATEWAY] = $this->getGateway();
+            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
 
-        if (empty($input[self::GATEWAY_TERMINAL_ID]))
-        {
-            $this->setAttribute(self::GATEWAY_TERMINAL_ID, null);
+            return parent::edit($input, 'create');
         }
+        else
+        {
+            $this->editUsedTerminal($input);
+        }
+    }
+
+    protected function editUsedTerminal($input)
+    {
+        assert ($this->getUsedCount() !== 0);
+
+        $this->getValidator()->usedTerminalValidator($this, $input);
+
+        $this->fill($input);
     }
 
     public function incrementUsedCount()
@@ -189,9 +206,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USED_COUNT);
     }
 
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
+    }
+
     public function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
+    }
+
+    public function getCategoryAttribute()
+    {
+        $category = $this->attributes[self::CATEGORY];
+
+        if ($category !== null)
+        {
+            $category = (int) $category;
+        }
+
+        return $category;
     }
 
     public function merchant()
@@ -221,5 +255,10 @@ class Entity extends Base\PublicEntity
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
+    }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
     }
 }

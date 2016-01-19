@@ -1,0 +1,101 @@
+h1{
+	color: #444333;
+	font-size: 32px;
+	line-height: 24px;
+	font-weight: lighter;
+}
+.newsletter {
+	max-width: 580px;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: lighter;
+	color: #444444;
+}
+
+.newsletter p{
+	max-width: inherit;
+	width: inherit;
+	text-align: justify;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: lighter;
+	color: #444444;
+	margin-bottom: 20px;
+}
+
+.newsletter li{
+	max-width: inherit;
+	width: inherit;
+	text-align: left;
+	font-size: 16px;
+	line-height: 24px;
+	color: #444444;
+	font-weight: lighter;
+}
+
+.newsletter ul {
+	color: #444444;
+	margin-left: -20px;
+	clear:both;
+}
+.newsletter h2 {
+	text-align: left;
+	font-weight: lighter;
+	font-size: 28px;
+	line-height: 28px;
+	/** We need a total of 40px
+	 * but the preceding <p> provides
+	 * a bottom margin of 20 already
+	 */
+	margin-top: 40px;
+	color: #444444;
+	margin-bottom: 20px;
+}
+.newsletter h3{
+	text-align: left;
+	font-weight: lighter;
+	font-size: 24px;
+	line-height: 24px;
+	color: #1aace5;
+	/** We need a total of 40px
+	 * but the preceding <p> provides
+	 * a bottom margin of 20 already
+	 */
+	margin-top: 40px;
+	margin-bottom: 20px;
+}
+
+.newsletter h4 {
+	text-align: left;
+	font-weight: lighter;
+	font-size: 20px;
+	line-height: 20px;
+}
+
+.footer td{
+	color:#aaa;
+	font-size:12px;
+	line-height: 18px;
+}
+.footer a, footer a:visited, footer a:hover{
+	display: inline-block;
+	color:#aaa !important;
+	text-decoration: none;
+}
+
+.logo{
+	height:22px;
+	width:22px;
+	display:inline;
+	float: left !important;
+	padding:0px 5px 0px 5px;
+}
+.logo img{
+	float: none;
+}
+
+.newsletter img{
+	max-width: 580px;
+	margin-bottom: 10px;
+	margin-top: 5px;
+}

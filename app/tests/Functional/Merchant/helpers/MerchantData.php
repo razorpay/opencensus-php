@@ -183,6 +183,9 @@ return [
                 'international' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ]
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
@@ -192,8 +195,74 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'international' => true,
-                'category' => '1111',
+                'category' => 1111,
                 'website' => 'http://abc.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ]
+            ]
+        ]
+    ],
+
+    'testEditTransactionEmailWithCsv' => [
+        'request' => [
+            'content' => [
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2@razorpay.com'
+                ]
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2@razorpay.com'
+                ]
+            ]
+        ]
+    ],
+
+    'testEditTransactionEmailWithError' => [
+        'request' => [
+            'content' => [
+                'transaction_report_email'  => [
+                    'test@razorpay.com',
+                    'test2razorpay.com'
+                ]
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The provided transaction report email is invalid: test2razorpay.com',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantEmail' => [
+        'request' => [
+            'content' => [
+                'email' => 'shake@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'shake@razorpay.com'
             ]
         ]
     ],
@@ -202,6 +271,11 @@ return [
         'request' => [
             'content' => [
                 'amount' => '500',
+                'currency' => 'INR',
+                'email' => 'a@b.com',
+                'contact' => '8383883838',
+                'method' => 'netbanking',
+                'bank' => 'HDFC',
             ],
             'url' => '/payments',
             'method' => 'post',
@@ -348,6 +422,46 @@ return [
         ]
     ],
 
+    'testChangeBankAccount' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020005304612497',
+                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_address1'  => '4ddr3ss 1',
+                'beneficiary_address2'  => '4ddr3ss 2',
+                'beneficiary_address3'  => '4ddr3ss 3',
+                'beneficiary_address4'  => '4ddr3ss 4',
+                'beneficiary_email'     => 'r4nd0m@email.com',
+                'beneficiary_mobile'    => '9876543210',
+                'beneficiary_city'      => 'Mumbai',
+                'beneficiary_state'     => 'MH',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '567890',
+            ],
+            'url' => '/merchants/10000000000000/bank_account',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020005304612497',
+                'beneficiary_code' => 'TEST',
+                'beneficiary_name' => 'Test R4zorpay',
+                'beneficiary_address1' => '4ddr3ss 1',
+                'beneficiary_address2' => '4ddr3ss 2',
+                'beneficiary_address3' => '4ddr3ss 3',
+                'beneficiary_city' => 'Mumbai',
+                'beneficiary_state' => 'MH',
+                'beneficiary_country' => 'IN',
+                'beneficiary_pin' => '567890',
+                'beneficiary_email' => 'r4nd0m@email.com',
+                'beneficiary_mobile' => '9876543210',
+            ]
+        ]
+    ],
+
     'testSetBanks' => [
         'request' => [
             'url' => '/merchants/10000000000000/banks',
@@ -441,7 +555,7 @@ return [
                     'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
-                    'paytm' => false,
+                    'paytm' => true,
                 ],
             ],
         ],
@@ -476,5 +590,20 @@ return [
                 'secret' => 'TheKeySecretForTests'
             ]
         ]
+    ],
+
+    'testEditCreditsWrongFormat' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 ];

@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         'beneficiary_pin'       => 'required|integer|digits:6',
         'beneficiary_country'   => 'sometimes|in:IN',
         'beneficiary_email'     => 'required|email',
-        'beneficiary_mobile'    => 'required|numeric|digits:10',
+        'beneficiary_mobile'    => 'required|numeric|digits_between:10,11',
     );
 
     protected static $addBankAccountValidators = array(

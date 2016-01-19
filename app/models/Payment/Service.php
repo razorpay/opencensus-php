@@ -5,9 +5,12 @@ namespace Models\Payment;
 use Carbon\Carbon;
 use EE\Exception;
 
+use Mail;
+
 use Models\Base;
 use Models\Merchant;
 use Models\Payment;
+use Models\Transaction;
 
 use Trace\Trace;
 use Trace\TraceCode;
@@ -40,7 +43,21 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $refund = $this->processor()->refund($id, $input);
+        $refund = $this->processor()->refundCapturedPayment($id, $input);
+
+        return $refund->toArrayPublic();
+    }
+
+    /**
+     * Refunds a payment
+     *
+     * @param  string   $id
+     *
+     * @return Payment\Entity
+     */
+    public function refundAuthorized($id, $input)
+    {
+        $refund = $this->processor()->refundAuthorizedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -51,11 +68,11 @@ class Service extends Base\Service
 
         $merchantId = $payment->getMerchantId();
 
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $payment = $this->processor()->verify($id);
+        $data = $this->processor($merchant)->verify($payment);
 
-        return $payment->toArrayAdmin();
+        return $data;
     }
 
     public function cancel($id)
@@ -63,6 +80,19 @@ class Service extends Base\Service
         $this->processor()->cancel($id);
 
         return ['success' => true];
+    }
+
+    public function authorizeFailed($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        $merchantId = $payment->getMerchantId();
+
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor($merchant)->authorizeFailedPayment($payment);
+
+        return $data;
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -132,13 +162,83 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
-    public function expireAuthorizations()
+    public function refundOldAuthorizedPayments()
     {
-        $timestamp = time() - 24 * 60 * 60;
+        // Since we are taking 12 am of today, we only need to subtract 4 days from today
+        // to arrive at 5 days before.
+        $days = 4;
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays($days)->timestamp;
 
-        $count = (new Payment\Repository)->expireAuthorizedPayments($timestamp);
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp($ts);
 
-        return array('count' => $count);
+        $authorized = $payments->count();
+        $refunded = 0;
+
+        $timedOut = 0; $failed = 0; $error = 0;
+        $time = time();
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                assert ($payment->isAuthorized() === true);
+
+                $merchant = $payment->merchant;
+
+                $refund = $this->processor($merchant)
+                               ->refundAuthorizedPayment(
+                                    $payment->getPublicId(), []);
+
+                $refunded++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                // Now Just continue
+            }
+            catch (Exception\GatewayTimeoutException $e)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    ['payment_id' => $payment->getId()]);
+
+                // Just continue
+                $timedOut++;
+            }
+            catch (\Exception $e)
+            {
+                // @note: If payment refund fails due to any reason
+                // other than expected ones, we should log it as an error
+                // exception.
+                //
+                // If for eg, exception is BadRequestException, then it won't
+                // get logged by global handler because it's not a critical
+                // exception but in this context it really shouldn't have
+                // occurred.
+
+                $this->app['exception.handler']->traceException($e);
+
+                // Just continue
+                $error++;
+            }
+        }
+
+        $time = time() - $time;
+
+        $results = array(
+            'authorized'    => $authorized,
+            'refunded'      => $refunded,
+            'error'         => $error,
+            'failed'        => $failed,
+            'timed out'     => $timedOut,
+            'total time'    => $time . ' secs');
+
+        $message = 'Authorized payments refunded: ' . $refunded;
+        $this->slackPost($message, $results, ['channel' => '#tech_logs']);
+
+        return $results;
     }
 
     public function notifyAuthorizedPayments()
@@ -153,21 +253,12 @@ class Service extends Base\Service
 
         if ($count !== 0)
         {
-            $paymentIds = $payments->getIds();
-
-            $channel = '#transactions';
-            $username = 'transactions';
-
             $date->subDay(1);
 
-            $message = '@harshil @shk Payment authorizations till ' . $date->format('d-m-y');
+            $message = 'Payment authorizations till ' .
+                        $date->format('d-m-y') . ': ' . $count;
 
-            foreach ($payments as $payment)
-            {
-                $message .= ' \n ' . $payment->getPublicId();
-            }
-
-            $this->app['slack']->send($message, $channel, $username);
+            $this->slackPost($message, [], ['channel' => '#tech_logs']);
         }
 
         return ['count' => $count];
@@ -246,47 +337,169 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
-    public function verifyAllPayments()
+    public function verifyMultiplePayments($filter)
     {
-        $ts = time() - 60 * 60;
+        $verify = new Verify($this->mode, $this->trace, $this->app['exception.handler']);
 
-        $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
+        return $verify->verifyPaymentsWithFilter($filter);
+    }
 
-        $success = 0; $failed = 0;
+    public function sendReminderMerchantMailForAuthorizedPayments()
+    {
+        $result = [
+            'initial'   =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(2, false),
+            'final'     =>  $this->sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay(4, true)
+        ];
 
-        foreach ($payments as $payment)
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZE_REMINDER, $result);
+
+        return $result;
+    }
+
+    public function sendReminderMerchantMailForAuthorizedPaymentsForSpecificDay($day, $final = false)
+    {
+        $result = [
+            // This holds the counts
+            'counts'=>[]
+        ];
+
+        // This is the start of the day 00:00, $day ago
+        $start = Carbon::today('Asia/Kolkata')->subDays($day);
+        $end   = Carbon::today('Asia/Kolkata')->subDays($day)->addDays(1);
+
+        $to = $end->timestamp;
+        $from = $start->timestamp;
+
+        $result['from'] = (string) $start;
+        $result['to']   = (string) $end;
+
+        $authorizedPayments = (new Payment\Repository)
+            ->getAuthorizedPaymentsBetweenTimestamps($from, $to);
+
+        $grouped = $authorizedPayments->groupBy(Payment\Entity::MERCHANT_ID);
+
+        // Put the counts in for debug purposes
+        $result['counts']['payments'] = count($authorizedPayments);
+        $result['counts']['merchants'] = count($grouped);
+
+        foreach ($grouped as $merchantId => $payments)
         {
-            try
+            // Send mail only if we have some payments
+            if (count($payments) > 0)
             {
-                $this->merchant = $payment->merchant;
+                $this->sendAuthorizedPaymentsReminderMail(
+                    $merchantId, $payments, $final);
 
-                $res = $this->processor()->verify($payment->getPublicId());
-
-                $success++;
-            }
-            catch (Exception\PaymentVerificationException $e)
-            {
-                $failed++;
-                // just continue
+                $result['counts'][$merchantId] = count($payments);
             }
         }
 
-        return ['success' => $success, 'failed' => $failed];
+        return $result;
     }
 
-    protected function processor()
+    /**
+     * Sends the authorized payments reminder email
+     * @param  string $merchantId [description]
+     * @param  array $payments   [description]
+     * @param  string $subject Subject for the email
+     * @param  boolean $final Whether this is the final payment reminder
+     * @return null
+     */
+    protected function sendAuthorizedPaymentsReminderMail($merchantId, array $payments, $final)
     {
-        return Payment\Processor\Processor::create($this->getBindings());
+        // date format = 6th July 2015
+        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        $subject = "Razorpay | Authorized Payments Reminder for $date";
+
+        if ($final)
+        {
+            $subject = "Razorpay | Final Authorized Payments Reminder for $date";
+        }
+
+        $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
+
+        $data = compact('merchant', 'payments', 'final');
+
+        $emails = $merchant[Merchant\Entity::TRANSACTION_REPORT_EMAIL];
+        $name = $merchant['name'];
+
+        Mail::send(
+            'emails.merchant.authorized_reminder',
+            $data,
+            function ($message) use ($subject, $emails, $name)
+            {
+
+                foreach ($emails as $email)
+                {
+                    $message->to($email, $name);
+                }
+
+                $message->from('reports@razorpay.com');
+                $message->cc('notifications@razorpay.com');
+                $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+                $message->subject($subject);
+            });
     }
 
-    protected function getBindings()
+    protected function processor($merchant = null)
     {
+        $bindings = $this->getBindings($merchant);
+
+        return Processor\Processor::create($bindings);
+    }
+
+    protected function getBindings(Merchant\Entity $merchant = null)
+    {
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
         $bindings = array(
-            'merchant'  => $this->merchant,
+            'merchant'  => $merchant,
             'core'      => $this->core,
             'trace'     => $this->trace,
             'mode'      => $this->mode);
 
         return $bindings;
+    }
+
+    public function computeServiceTax()
+    {
+        s(ini_get('max_execution_time'));
+        $repo = new Payment\Repository;
+        $payments = $repo->getNonTaxComputedPayments();
+
+        $totalRecords = 0;
+        $updatedRecords = 0;
+        $totalServiceTax = 0;
+
+        $repo->transaction(function() use ($payments, &$totalRecords, &$updatedRecords, &$totalServiceTax)
+        {
+            $totalRecords = $payments->count();
+            foreach ($payments as $payment)
+            {
+                $txn = $payment->transaction;
+                $this->merchant = $payment->merchant;
+                (new Transaction\Core)->fillServiceTax($txn, $payment);
+
+                $payment->setServiceTax($txn->getServiceTax());
+                $payment->setFee($txn->getFee());
+
+                $txn->saveOrFail();
+                $payment->saveOrFail();
+
+                $updatedRecords++;
+                $totalServiceTax += $txn -> getServiceTax();
+            }
+        });
+
+        $results = array(
+            'total'                 => $totalRecords,
+            'updated'               => $updatedRecords,
+            'total service tax'     => $totalServiceTax);
+
+        return $results;
     }
 }

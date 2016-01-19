@@ -13,11 +13,9 @@ class Handler
 {
     protected $app;
 
-    public function __construct()
+    public function __construct($app)
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->registerExceptionHandlers();
+        $this->app = $app;
     }
 
     public function registerExceptionHandlers()
@@ -44,7 +42,12 @@ class Handler
     }
 
     public function genericExceptionHandler(\Exception $exception)
-    {// sd($exception->getTraceAsString());
+    {
+        if ($this->isToStringException($exception))
+        {
+            return ApiResponse::toStringExceptionError($exception, $this->isDebug());
+        }
+
         $this->traceException($exception);
 
         //
@@ -68,10 +71,14 @@ class Handler
         if ($exception instanceof ServerErrorException)
             return;
 
+        $this->app['trace']->info(
+            Trace\TraceCode::RECOVERABLE_EXCEPTION,
+            $this->getExceptionDetails($exception));
+
         return ApiResponse::recoverableError($this->isDebug(), $exception);
     }
 
-    protected function traceException(\Exception $exception)
+    public function traceException(\Exception $exception)
     {
         $traceData = $this->getExceptionDetails($exception);
 
@@ -80,17 +87,34 @@ class Handler
            $traceData);
     }
 
-    protected function getExceptionDetails(\Exception $exception)
+    protected function getExceptionDetails(\Exception $exception, $level = 0)
     {
         $previousException = $exception->getPrevious();
 
-        $previous = ($previousException !== null) ? $this->getExceptionDetails($previousException) : null;
+        $previous = null;
+
+        if ($previousException !== null)
+        {
+            $previous = $this->getExceptionDetails($previousException, $level + 1);
+        }
 
         $data = null;
 
         if (method_exists($exception, 'getData'))
         {
             $data = $exception->getData();
+
+            if (is_array($data) === false)
+            {
+                $data = null;
+            }
+        }
+
+        $stack = explode("\n", $exception->getTraceAsString());
+
+        if ($level > 0)
+        {
+            $stack = array_slice($stack, 0, 5);
         }
 
         //
@@ -106,10 +130,28 @@ class Handler
             'code'      => $exception->getCode(),
             'message'   => $exception->getMessage(),
             'data'      => $data,
-            'stack'     => $exception->getTraceAsString(),
+            'stack'     => $stack,
             'previous'  => $previous);
 
         return $traceData;
+    }
+
+    protected function isToStringException($exception)
+    {
+        $message = $exception->getMessage();
+
+        $str = 'Swift_Message::__toString()';
+
+        if (strpos($message, $str) === false)
+        {
+            return false;
+        }
+
+        $this->app['trace']->warn(
+            Trace\TraceCode::MISC_TOSTRING_ERROR,
+            $this->getExceptionDetails($exception));
+
+        return true;
     }
 
     protected function isDebug()

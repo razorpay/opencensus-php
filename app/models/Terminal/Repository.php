@@ -4,12 +4,32 @@ namespace Models\Terminal;
 
 use Models\Base;
 use Models\Terminal;
+use Models\Payment;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
     protected $entity = 'Terminal';
+
+    protected $appFetchParamRules = array(
+        Entity::GATEWAY         => 'sometimes',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::GATEWAY         => 'sometimes',
+        Entity::CARD            => 'sometimes|boolean',
+        Entity::NETBANKING      => 'sometimes|boolean',
+        Entity::SHARED          => 'sometimes|boolean',
+        Entity::CATEGORY        => 'sometimes|integer|digits:4',
+        'deleted'               => 'sometimes|boolean',
+    );
+
+    public function addQueryParamDeleted($query, $params)
+    {
+        if ($params['deleted'] === '1')
+        {
+            $query->withTrashed();
+        }
+    }
 
     public function getByParams($params)
     {
@@ -23,6 +43,14 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getById($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::withTrashed()
+                    ->findOrFailPublic($id);
     }
 
     public function getByMerchantId($mid)
@@ -52,17 +80,34 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getByGatewayTerminalId($gatewayTerminalId)
+    public function getSharedTerminalForGateway($gateway)
     {
         $repo = $this->repo;
 
-        return $repo::where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
-                    ->findOrFail();
+        return $repo::where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->get();
+    }
+
+    public function getSharedTerminalForGatewayWithCategory($gateway, $category)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->where(Terminal\Entity::CATEGORY, '=', $category)
+                    ->first();
     }
 
     public function deleteOrFail($entity)
     {
-        if ($entity->getUsedCount() === 0)
+        $repo = $this->repo;
+
+        $successCount = $entity->getUsedCount();
+        $count = $this->getTotalUsedCount($entity);
+
+        if (($count === 0) and
+            ($successCount === 0))
         {
             $entity->forceDelete();
 
@@ -88,5 +133,12 @@ class Repository extends Base\Repository
             'restore',
             'terminal',
             $terminal->getAttributes());
+    }
+
+    public function getTotalUsedCount($terminal)
+    {
+        return (new Payment\Entity)->newQuery()
+                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminal->getId())
+                    ->count();
     }
 }

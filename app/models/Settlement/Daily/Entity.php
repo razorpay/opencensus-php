@@ -11,10 +11,12 @@ class Entity extends Base\PublicEntity
     const DATE              = 'date';
     const CHANNEL           = 'channel';
     const AMOUNT            = 'amount';
+    const FEES              = 'fees';
     const API_FEE           = 'api_fee';
     const GATEWAY_FEE       = 'gateway_fee';
     const SETTLEMENT_COUNT  = 'settlement_count';
     const TRANSACTION_COUNT = 'transaction_count';
+    const SERVICE_TAX       = 'service_tax';
     const URLS              = 'urls';
     const INITIATED_AT      = 'initiated_at';
     const RECONCILED_AT     = 'reconciled_at';
@@ -34,10 +36,12 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
+        self::FEES,
         self::API_FEE,
         self::GATEWAY_FEE,
         self::SETTLEMENT_COUNT,
         self::TRANSACTION_COUNT,
+        self::SERVICE_TAX,
         self::URLS,
         self::INITIATED_AT,
         self::RECONCILED_AT,
@@ -67,6 +71,12 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::DATE] = self::getTodayTimestamp();
     }
+
+    public function setFees($fees)
+    {
+        $this->setAttribute(self::FEES, $fees);
+    }
+
 
     public static function getTodayTimestamp()
     {
@@ -111,9 +121,36 @@ class Entity extends Base\PublicEntity
         return $urls;
     }
 
+    public function getSettlementCount()
+    {
+        return $this->getAttribute(self::SETTLEMENT_COUNT);
+    }
+
+    public function setServiceTax($servicetax)
+    {
+        assert($servicetax >= 0);
+
+        $this->setAttribute(self::SERVICE_TAX, $servicetax);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getFeesAttribute()
+    {
+        return (int) $this->attributes[self::FEES];
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
     }
 
     public function getApiFeeAttribute()

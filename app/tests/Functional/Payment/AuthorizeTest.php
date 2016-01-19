@@ -5,13 +5,6 @@ namespace Tests\Functional\Payment;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
-/**
- * Tests that support payments (capture/refund) are working fine.
- * creates a hold payment using card 13 and then attempts to capture it followed by refund it
- * Is successful if captured successfully folowed by successful refund.
- * All test cases follow, GIVEN, WHEN, THEN structure
- */
-
 class AuthorizeTest extends TestCase
 {
     use PaymentTrait;
@@ -114,6 +107,26 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentWithBlankMethod()
+    {
+        $payment = [
+            'amount'            =>  '50000',
+            'currency'          => 'INR',
+            'description'       => 'random description',
+            'method'            => '',
+            'bank'              => '',
+            'email'             => 'adsf@gmail.com',
+            'contact'           => '8383893939',
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testDescriptionAsArray()
     {
         $testData = & $this->testData[__FUNCTION__];
@@ -185,10 +198,7 @@ class AuthorizeTest extends TestCase
     {
         $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);
 
-        $this->ba->appAuth();
-
-        $request = array('url' => '/payments/timeout');
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->timeoutOldPayment();
 
         $this->assertEquals($content['count'], 1);
 
@@ -204,10 +214,7 @@ class AuthorizeTest extends TestCase
             'payment',
             ['created_at' => time() - 60*100, 'status' => 'authorized', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
-        $this->ba->appAuth();
-
-        $request = array('url' => '/payments/timeout');
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->timeoutOldPayment();
 
         $this->assertEquals($content['count'], 0);
 
@@ -227,6 +234,16 @@ class AuthorizeTest extends TestCase
 
         $contentType = 'application/json';
         $this->assertContentTypeForResponse($contentType, $this->response);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->markTestIncomplete();
+
+        $payment = $this->fixtures->create(
+            'payment:failed');
+
+        $this->authorizeFailedPayment($payment['public_id']);
     }
 
     public function testContentTypeHtmlOnPaymentCreateRoute()

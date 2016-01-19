@@ -17,17 +17,14 @@ trait PaymentBilldeskTrait
 
         if ($mock)
         {
-            $request = compact('url', 'method', 'content');
-            $response = $this->makeRequestParent($request);
-
-            list($url, $method, $content) = $this->getFormDataFromResponse(
-                                    $response->getContent(), 'https://localhost');
+            $request = $this->makeFirstGatewayPaymentMockRequest(
+                                                    $url, $method, $content);
         }
         else
         {
             ;
         }
 
-        return $this->submitPaymentCallbackData($url, $method, $content);
+        return $this->submitPaymentCallbackRequest($request);
     }
 }

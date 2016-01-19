@@ -6,13 +6,19 @@ use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Netbanking\Base;
 use Gateway\Base\Action;
+use Gateway\Base\AuthorizeFailed;
+use Gateway\Base\Verify;
+use Gateway\Base\VerifyResult;
+use Gateway\Netbanking\Base;
+use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'netbanking_hdfc';
 
     protected $bank = 'hdfc';
@@ -38,6 +44,7 @@ class Gateway extends Base\Gateway
         'Message'       => 'error_message',
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
+        'Date'          => 'date',
     );
 
     /**
@@ -50,7 +57,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $this->createGatewayPaymentEntity($content);
+        $payment = $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -75,7 +82,15 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->verifyCallbackChecksum($input);
+        $this->validateCallbackChecksum($input);
+        unset($input['gateway']['CheckSum']);
+
+        // Unset date because format of date returned is different than what we sent
+        unset($input['gateway']['Date']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -84,6 +99,7 @@ class Gateway extends Base\Gateway
         $message = $input['gateway']['Message'];
 
         $attrs = $this->getMappedAttributes($input['gateway']);
+        $attrs['received'] = true;
 
         $payment->fill($attrs);
         $payment->saveOrFail();
@@ -103,50 +119,25 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $verify = new Verify($this->gateway, $input);
 
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
-                      ->format('d/m/Y H:m:s');
-
-        $content = array(
-            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
-            'Date'                  => $date,
-            'MerchantRefNo'         => $payment['payment_id'],
-            'TransactionId'         => 'XTXTV01',
-            'FigVerify'             => 'Y',
-            'ClientCode'            => $payment['client_code'],
-            'SuccessStaticFlag'     => 'N',
-            'FailureStaticFlag'     => 'N',
-            'TxnAmount'             => $payment['amount'],
-        );
-
-        $url = $this->getUrl();
-
-        $request['url'] = $url . '?' . $this->buildQueryString($content);
-        $request['method'] = 'get';
-        $request['content'] = [];
-
-        $response = $this->sendGatewayRequest($request);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$response->body]);
-
-        $data = [];
-        parse_str($response->body, $data);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$data]);
-
-        $status = $data['flgSuccess'];
-        $bankRefNo = $data['BankRefNo'];
-
-        // @todo: verify and match params
+        return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function verifyCallbackChecksum($input)
+    public function generateRefundsExcel($input)
+    {
+        foreach ($input as & $row)
+        {
+            $payment = $this->getRepo()->findByPaymentIdAndAction(
+                                $row['payment']['id'], Action::AUTHORIZE);
+
+            $row['gateway'] = $payment->toArray();
+        }
+
+        return (new RefundExcel)->generate($input);
+    }
+
+    protected function validateCallbackChecksum($input)
     {
         $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
 
@@ -154,7 +145,8 @@ class Gateway extends Base\Gateway
 
         if ($checksum !== $expectedChecksum)
         {
-            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
         }
     }
 
@@ -186,6 +178,135 @@ class Gateway extends Base\Gateway
         $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
+                      ->format('d/m/Y H:m:s');
+
+        if (empty($payment['date']) === false)
+        {
+            // First verify all hdfc netbanking transactions here and
+            // then remove this in future.
+            // $date = $payment['date'];
+        }
+
+        $clientCode = $payment['client_code'];
+
+        if ($clientCode === 'client_code')
+        {
+            $clientCode = $input['payment']['email'];
+        }
+
+        $content = array(
+            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
+            'Date'                  => $date,
+            'MerchantRefNo'         => $payment['payment_id'],
+            'TransactionId'         => 'XTXTV01',
+            'FlgVerify'             => 'Y',
+            'ClientCode'            => $clientCode,
+            'SuccessStaticFlag'     => 'N',
+            'FailureStaticFlag'     => 'N',
+            'TxnAmount'             => $input['payment']['amount'] / 100,
+        );
+
+        $url = $this->getUrl();
+
+        $request['url'] = $url . '?' . $this->buildQueryString($content);
+        $request['method'] = 'get';
+        $request['content'] = [];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->processContentFromPaymentVerifyResponse($response, $request);
+
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+        $input = $verify->input;
+
+        $days = (time() - $input['payment']['created_at']) / (24*60*60);
+
+        // In HDFC netbnaking, the bank only stores the payment data for
+        // 45 days!
+        if ($days > 45)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'For hdfc netbanking, the bank only stores payment data for 45 days. ' .
+                'The given payment for verification is ' . $days . ' days old');
+        }
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = (($input['payment']['status'] === 'authorized') or
+                               ($input['payment']['status'] === 'captured'));
+
+        $verify->gatewaySuccess = ($content['flgSuccess'] === 'S');
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if ($payment['received'] === false)
+        {
+            $attrs = $this->getMappedAttributes($content);
+            $payment->fill($attrs);
+            $payment->saveOrFail();
+        }
+
+        return $status;
+    }
+
+    protected function processContentFromPaymentVerifyResponse($response, $request)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$response->body]);
+
+        try
+        {
+            $values = $this->getFormValues($response->body, $request['url']);
+
+            $url = $values['REDIRECTURL'];
+        }
+        catch (\InvalidArgumentException $e)
+        {
+            $msg = $e->getMessage();
+
+            if ($msg === 'The current node list is empty')
+            {
+                // This happens because hdfc nb gateway is down.
+                // We will need to verify the request later.
+                throw new Exception\GatewayTimeoutException(
+                    'Payment verify request to Hdfc nb gateway timed out');
+            }
+        }
+
+        $content = [];
+        $parts = parse_url($url);
+        parse_str($parts['query'], $content);
+
+        return $content;
     }
 
     protected function getCallbackChecksum($input)
@@ -231,6 +352,23 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getHashOfString($str);
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        $response = parent::sendGatewayRequest($request);
+
+        $body = $response->body;
+
+        $msg = 'Unable to reach destination.';
+
+        if (strpos($body, $msg) !== false)
+        {
+            throw new Exception\GatewayTimeoutException(
+                'Hdfc netbanking gateway could not be reached');
+        }
+
+        return $response;
     }
 
     protected function getHashOfString($str)

@@ -5,14 +5,18 @@ namespace Models\Payment\Processor;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Payment;
+use Models\Payment\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
+use Services\SlackPoster;
 
 trait Verify
 {
-    public function verify($id)
+    use SlackPoster;
+
+    public function verify($payment)
     {
-        $payment = $this->retrieve($id);
+        $this->setPayment($payment);
 
         $refunds = $payment->refunds;
 
@@ -23,11 +27,11 @@ trait Verify
 
         try
         {
-            $data = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+            $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $payment->setVerified(false);
+            $payment->setVerified(VerifyResult::FAILED);
 
             $this->repo->saveOrFail($payment);
 
@@ -35,28 +39,52 @@ trait Verify
                 TraceCode::PAYMENT_VERIFY_FAILED,
                 $e->getData());
 
-            $this->notifyInSlack($payment);
+            $data['gateway'] = $e->getData();
+
+            $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
+
+            $this->notifyInSlack($slackData);
+
+            throw $e;
+        }
+        catch (\Exception $e)
+        {
+            $payment->setVerified(VerifyResult::ERROR);
+
+            $this->repo->saveOrFail($payment);
 
             throw $e;
         }
 
-        $payment->setVerified(true);
+        $payment->setVerified(VerifyResult::SUCCESS);
+
+        $data['payment'] = $payment->toArrayAdmin();
 
         $this->repo->saveOrFail($payment);
 
-        return $payment;
+        return $data;
     }
 
-    protected function notifyInSlack($payment)
+    protected function notifyInSlack($data)
     {
-        $channel = '#transactions';
-        $username = 'transactions';
+        // Use the message from $data if it has one
+        if (isset($data['message']))
+        {
+            $message = $data['message'];
+            unset($data['message']);
+        }
+        else
+        {
+            $message = 'Payment verification failed.';
+        }
 
-        $message = '@harhsil @shk Payment verification failed for ' .
-                    'payment id - ' . $payment->getPublicId() . ', ' .
-                    'amount - ' . $payment->getAmount();
-
-        $app = \App::getFacadeRoot();
-        $app['slack']->send($message, $channel, $username);
+        $this->slackPost(
+            $message,
+            $data,
+            [
+                'color' => 'bad',
+                'icon' => ':boom:',
+                'channel' => '#tech_logs'
+            ]);
     }
 }

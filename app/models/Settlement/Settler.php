@@ -33,13 +33,19 @@ class Settler
 
     public function __construct()
     {
-        $this->initRepos();
+        $app = \App::getFacadeRoot();
 
-        $this->trace = \Trace::getFacadeRoot();
+        $this->mode = $app['rzp.mode'];
+        $this->env = $app['env'];
+        $this->trace = $app['trace'];
+
+        $this->initRepos();
     }
 
     public function settle($input = array(), $channel = null)
     {
+        $this->checkTime();
+
         $this->input = $input;
 
         $txns = $this->fetchTransactionsToSettle($input);
@@ -47,6 +53,11 @@ class Settler
         $channels = $this->getArrayedChannels($channel);
 
         $data = [];
+
+        if (Holidays::isTodayHoliday($this->mode))
+        {
+            return ['message' => 'Today is a holiday! Happy holidays :)'];
+        }
 
         foreach ($channels as $channel)
         {
@@ -103,7 +114,7 @@ class Settler
             $this->setlRepo->commit();
         }
         catch (\Exception $e)
-        {
+        {throw $e;
             $this->setlRepo->rollback();
 
             $this->settlementFailure('kotak', $e);
@@ -157,14 +168,14 @@ class Settler
     {
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
+        (new SlackNotification)->success('setl_initiate', $data);
 
         Dashboard::send('settlement', $settlements);
     }
 
     protected function failureNotification($exception)
     {
-        (new SlackNotification)->queueOperationFailure('setl_initiate', $exception);
+        (new SlackNotification)->failure('setl_initiate', $exception);
     }
 
     protected function process($txns, $channel)
@@ -188,11 +199,15 @@ class Settler
         $totalSetlAmount = 0;
         $totalSetlGatewayFee = 0;
         $totalSetlApiFee = 0;
+        $totalSetlFee = 0;
+        $totalServiceTax = 0;
 
         while ($i < $count)
         {
             // Settlement amount
             $setlAmount = $setlGatewayFee = $setlApiFee = 0;
+            $setlFee = $serviceTax = 0;
+
             $setlTxns = new Base\PublicCollection;
 
             // Get merchant
@@ -210,9 +225,29 @@ class Settler
                     continue;
                 }
 
+                if (($txn->getBalance() === 0) and
+                    ($txn->isTypeRefund()))
+                {
+                    $payment = $txn->entity->payment;
+
+                    if ($payment->hasBeenCaptured() === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::TRANSACTION_REFUND_TRACE,
+                            ['id' => $txn->getId()]);
+
+                        $txn[Transaction\Entity::SETTLED_AT] = null;
+                        $txn->saveOrFail();
+                        $i++;
+                        continue;
+                    }
+                }
+
                 $setlAmount += $txn->getCredit() - $txn->getDebit();
                 $setlGatewayFee += $txn->getGatewayFee();
                 $setlApiFee += $txn->getApiFee();
+                $setlFee += $txn->getFee();
+                $serviceTax += $txn->getServiceTax();
 
                 $setlTxns->push($txn);
                 $i++;
@@ -225,14 +260,21 @@ class Settler
             }
 
             $setl = (new Settlement\Merchant($merchant, $channel))->settle(
-                                        $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
+                                        $setlTxns,
+                                        $setlAmount,
+                                        $setlFee,
+                                        $setlApiFee,
+                                        $setlGatewayFee,
+                                        $serviceTax);
 
             $settlements->push($setl);
             $txnsSettled = $txnsSettled->merge($setlTxns);
 
             $totalSetlAmount += $setlAmount;
             $totalSetlApiFee += $setlApiFee;
+            $totalSetlFee += $setlFee;
             $totalSetlGatewayFee += $setlGatewayFee;
+            $totalServiceTax += $serviceTax;
         }
 
         if (($totalSetlApiFee !== 0) and
@@ -250,11 +292,15 @@ class Settler
         $this->dailySettlement->amount = $totalSetlAmount;
         $this->dailySettlement->api_fee = $totalSetlApiFee;
         $this->dailySettlement->gateway_fee = $totalSetlGatewayFee;
+        $this->dailySettlement->fees = $totalSetlFee;
+        $this->dailySettlement->service_tax = $totalServiceTax;
 
         $amounts = array(
-            'amount' => $totalSetlAmount,
-            'api_fee' => $totalSetlApiFee,
-            'gateway_fee' => $totalSetlGatewayFee,
+            'amount'        => $totalSetlAmount,
+            'fees'          => $totalSetlApiFee,
+            'service_tax'   => $totalServiceTax,
+            'api_fee'       => $totalSetlApiFee,
+            'gateway_fee'   => $totalSetlGatewayFee,
         );
 
         return [$settlements, $txnsSettled, $amounts];
@@ -426,5 +472,35 @@ class Settler
         }
 
         return $channels;
+    }
+
+    /**
+     * Settlement should happen before 6 pm otherwise not
+     */
+    protected function checkTime()
+    {
+        $mode = $this->mode;
+        $env = $this->env;
+
+        $sixPm = Carbon::today('Asia/Kolkata')->hour(18)->timestamp;
+
+        $boundary = $sixPm - (5*60); // Subtract 5 mintues
+
+        $now = time();
+
+        $crossed = false;
+
+        if ($now > $boundary)
+        {
+            $crossed = true;
+        }
+
+        if (($env === 'production') and
+            ($mode === 'live') and
+            ($crossed === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please settlements before 6 pm everyday');
+        }
     }
 }

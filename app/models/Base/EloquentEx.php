@@ -69,4 +69,14 @@ class EloquentEx extends \Razorpay\Spine\Entity
     {
         return time();
     }
+
+    public static function getTableName()
+    {
+        return (new static)->getTable();
+    }
+
+    public static function getAttributeWithTableName($col)
+    {
+        return static::getTableName() . '.' . $col;
+    }
 }

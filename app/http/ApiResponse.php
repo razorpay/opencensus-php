@@ -21,7 +21,7 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateErrorResponse(
+        $response = self::generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
@@ -81,6 +81,13 @@ class ApiResponse
         return self::generateResponse($publicError, $httpStatusCode);
     }
 
+    public static function generateJsonErrorResponse($code)
+    {
+        list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
+
+        return self::json($publicError, $httpStatusCode);
+    }
+
     public static function getErrorResponseFields($code)
     {
         $error = new Error($code);
@@ -106,6 +113,20 @@ class ApiResponse
             {
                 $publicError['data'] = $exception->getData();
             }
+        }
+
+        return self::generateResponse($publicError, $httpStatusCode);
+    }
+
+    public static function toStringExceptionError($exception, $debug)
+    {
+        list($publicError, $httpStatusCode) =
+            self::getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
+
+        if ($debug)
+        {
+            $publicError['error']['internal_error_code'] =
+                ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION;
         }
 
         return self::generateResponse($publicError, $httpStatusCode);
@@ -151,7 +172,7 @@ class ApiResponse
         return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
     }
 
-    protected static function generateResponse($data = array(), $status = 200)
+    public static function generateResponse($data = array(), $status = 200)
     {
         $app = \App::getFacadeRoot();
 
@@ -186,6 +207,11 @@ class ApiResponse
             $data['http_status_code'] = $status;
 
             return \View::make('gateway.callback')->with('data', $data);
+        }
+        else if (self::isCheckoutRoute($route))
+        {
+            return \View::make('checkout.checkout')
+                        ->with($data);
         }
 
         return self::json($data, $status);
@@ -245,6 +271,7 @@ class ApiResponse
     protected static function isCallbackRoute($route)
     {
         $callbackRoutes = array(
+            'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
         );
@@ -252,10 +279,17 @@ class ApiResponse
         return (in_array($route, $callbackRoutes));
     }
 
+    protected static function isCheckoutRoute($route)
+    {
+        $checkoutRoute = array(
+            'checkout');
+
+        return (in_array($route, $checkoutRoute));
+    }
+
     protected static function isJsonpRoute($route)
     {
         $jsonpRoutes = array(
-            'checkout',
             'merchant_methods',
             'merchant_public_get_banks',
             'payment_cancel',
@@ -267,8 +301,7 @@ class ApiResponse
 
     protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
     {
-        $routes = array(
-            'payment_create');
+        $routes = array('payment_create');
 
         if (in_array($route, $routes))
         {

@@ -65,7 +65,9 @@ class Server extends Base\Mock\Server
             'Message'           => $payment['error_message'],
         );
 
-        return $this->prepareResponse($content);
+        $html = $this->prepareVerifyResponseHtml($content);
+
+        return $this->prepareResponse($html);
     }
 
     protected function getCallbackChecksum($input)
@@ -112,12 +114,25 @@ class Server extends Base\Mock\Server
         return $this->generateHash($data);
     }
 
+    protected function prepareVerifyResponseHtml($content)
+    {
+        $content = http_build_query($content);
+        $redirectUrl = 'api.razorpay.com' . '?' . $content;
+
+        ob_start();
+
+        require ('VerifyResponseHtml.php');
+
+        $html = ob_get_clean();
+
+        return $html;
+    }
+
     protected function prepareResponse($content)
     {
-        $body = http_build_query($content);
-        $response = \Response::make($body);
+        $response = \Response::make($content);
 
-        $response->headers->set('Content-Type', 'text/plain;charset=iso-8859-1');
+        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
         $response->headers->set('Pragma', 'no-cache');
 

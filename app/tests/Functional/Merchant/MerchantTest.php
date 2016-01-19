@@ -2,12 +2,15 @@
 
 namespace Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Tests\Functional\Settlement\SettlementTrait;
 
 class MerchantTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
+    use SettlementTrait;
 
     public function setUp()
     {
@@ -48,10 +51,10 @@ class MerchantTest extends TestCase
     {
         // The merchant and balances have been created in
         // fixtures already
-        $this->ba->appAuthTest();
+        $this->ba->proxyAuthTest();
         $this->startTest();
 
-        $this->ba->appAuthLive();
+        $this->ba->proxyAuthLive();
         $this->testData[__FUNCTION__]['response']['content']['balance'] = 0;
         $this->startTest();
     }
@@ -59,6 +62,14 @@ class MerchantTest extends TestCase
     public function testMerchantFetchKeys()
     {
         $this->startTest();
+    }
+
+    public function testMerchantFetchCardEnabled()
+    {
+        $merchants = $this->getEntities(
+                'merchant', ['methods' => '{"card":true}'], true);
+
+        $this->assertEquals($merchants['entity'], 'collection');
     }
 
     /**
@@ -120,6 +131,27 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditTransactionEmailWithCsv()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditTransactionEmailWithError()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantEmail()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testActivateMerhantWithoutBankAccount()
     {
         $this->ba->appAuthLive();
@@ -142,12 +174,18 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
         $this->assertLessThanOrEqual($content['activated_at'], $activated_at);
 
+        // We check that the merchant balance is just zero in live mode
+        $this->ba->proxyAuthLive();
+
         $testData = $this->testData['testGetBalance'];
         $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
         $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
         $testData['response']['content']['balance'] = 0;
 
         $this->runRequestResponseFlow($testData);
+
+        // Because rest of the tests require appAuth, reset it back
+        $this->ba->appAuthLive();
     }
 
     public function testMerchantEnableLive()
@@ -187,6 +225,47 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testChangeBankAccount()
+    {
+        $this->testAddBankAccount();
+
+        $content = $this->startTest();
+
+        $bankAccounts = $this->getEntities(
+                            'bank_account', ['with_trashed' => true], true);
+
+        // The old account should get deleted (hard delete) as there are
+        // no settlements attached to it.
+        $this->assertEquals(1, $bankAccounts['count']);
+    }
+
+    public function testChangeBankAccountWithSettlement()
+    {
+        $this->testAddBankAccount();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+
+        $capturedPayments = $this->fixtures->times(4)->create(
+            'payment:captured',
+            ['captured_at' => $capturedAt,
+             'created_at' => $createdAt,
+             'updated_at' => $createdAt + 10]);
+
+        $this->initiateSettlements();
+
+        $testData = & $this->testData['testChangeBankAccount'];
+        $testData['response']['content']['beneficiary_code'] = 'TEST2';
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccounts = $this->getEntities(
+                            'bank_account', ['with_trashed' => true], true);
+
+        // The old account should get SOFT deleted as there are settlements
+        // attached to it.
+        $this->assertEquals(2, $bankAccounts['count']);
+    }
+
     public function testSetBanks()
     {
         $this->ba->appAuth();
@@ -209,7 +288,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $this->ba->publicLiveAuth();
 
@@ -229,7 +308,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',
@@ -240,6 +319,8 @@ class MerchantTest extends TestCase
             'gateway_terminal_password' => 'razorpay_password',
         );
 
+        $this->fixtures->merchant->enablePaytm();
+
         $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
 
         $content = $this->startTest();
@@ -249,7 +330,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $request = array(
             'url' => '/checkout',
@@ -267,7 +348,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicLiveAuth('random');
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $request = array(
             'url' => '/checkout',
@@ -283,6 +364,10 @@ class MerchantTest extends TestCase
 
     public function testPutPaytmMethod()
     {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
         $this->ba->appAuth();
 
         $content = $this->startTest();
@@ -308,6 +393,44 @@ class MerchantTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('url', $content);
+    }
+
+    public function testEditCredits()
+    {
+        $this->merchantEditCredits('10000000000000', '10000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(10000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(10000, $nodalBalance['credits']);
+
+        $merchant = $this->fixtures->create('merchant:with_balance');
+        $id = $merchant->getId();
+        $this->merchantEditCredits($id, '20000');
+        $balance = $this->getEntityById('balance', $id, true);
+        $this->assertEquals(20000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(30000, $nodalBalance['credits']);
+
+        $this->merchantEditCredits('10000000000000', '5000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(5000, $balance['credits']);
+
+        $nodalBalance = $this->getNodalAccountBalance();
+        $this->assertEquals(25000, $nodalBalance['credits']);
+    }
+
+    public function testEditCreditsWrongFormat()
+    {
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function ()
+            {
+               $this->merchantEditCredits('10000000000000', 'abcde');
+            });
     }
 
     protected function startTest()

@@ -26,8 +26,18 @@ class CreateSettlements extends Migration {
 
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
+            $table->char(Settlement::BANK_ACCOUNT_ID, Settlement::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Settlement::AMOUNT)
                   ->unsigned();
+
+            $table->integer(Settlement::FEES)
+                  ->unsigned();
+
+            $table->integer(Settlement::SERVICE_TAX)
+                  ->unsigned()
+                  ->nullable();
 
             $table->string(Settlement::STATUS);
 

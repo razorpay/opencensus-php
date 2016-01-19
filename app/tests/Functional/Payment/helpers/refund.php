@@ -27,7 +27,7 @@ return [
                 'amount' => 50000,
                 'amount_refunded' => 50000,
                 'refund_status' => 'full',
-                'status' => 'captured',
+                'status' => 'refunded',
                 'currency' => 'INR',
             ],
         ],
@@ -81,7 +81,7 @@ return [
         ],
     ],
 
-    'testRefundOnAuthorizedPayment' => [
+    'testRefundByMerchantOnAuthorizedPayment' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -96,6 +96,14 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED
         ],
     ],
+
+    // 'testRefundByAdminOnAuthorizedPayment' => [
+    //     'response' => [
+    //         'content' => [
+    //             'entity' => 'refund',
+    //         ],
+    //     ],
+    // ],
 
     'testRefundWithNegativeAmount' => [
         'response' => [
@@ -130,6 +138,22 @@ return [
     ],
 
     'testRefundWithSpacedAmount' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'amount'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testRefundWithBlankAmount' => [
         'response' => [
             'content' => [
                 'error' => [

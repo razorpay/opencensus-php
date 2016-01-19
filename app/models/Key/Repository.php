@@ -10,6 +10,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'Key';
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    );
+
     public function getKeysForMerchant($merchantId, $expired = false)
     {
         $repo = $this->repo;
@@ -26,5 +30,14 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::notExpired()->find($keyId);
+    }
+
+    public function findByMerchantIdAndKeyId($merchantId, $keyId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::ID, '=', $keyId)
+                    ->first();
     }
 }

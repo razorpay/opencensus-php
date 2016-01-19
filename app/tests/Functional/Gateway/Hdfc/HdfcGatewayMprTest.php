@@ -26,7 +26,7 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
-        $this->mockSlack(5);
+        //$this->mockSlack(5);
 
         $this->mockDashboardRequest(2);
 
@@ -153,14 +153,7 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function fetchAndMatchDailySettlement()
     {
-        $this->ba->appAuth();
-
-        $request = array(
-            'url' => '/dailysettlements',
-            'method' => 'GET',
-        );
-
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->getEntities('daily_settlement', [], true);
 
         $data = array(
             'entity' => 'collection',
@@ -171,8 +164,9 @@ class HdfcGatewayMprTest extends TestCase
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => 4414500,
-//                    'amount' => 4387640,
-                    'api_fee' => 28500,
+                    'fees' => 114500,
+                    'service_tax' => 14500,
+                    'api_fee' => 29000,
                     'gateway_fee' => 85500,
                     'settlement_count' => 2,
                     'transaction_count' => 11,

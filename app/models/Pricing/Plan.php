@@ -2,6 +2,8 @@
 
 namespace Models\Pricing;
 
+use Models\Payment\Method;
+use Models\Card\Network;
 use Models\Base\PublicCollection;
 
 class Plan extends PublicCollection
@@ -27,7 +29,20 @@ class Plan extends PublicCollection
 
         foreach ($this->items as $item)
         {
-            array_push($rules, $item->toArray());
+            $rule = $item->toArray();
+
+            // We need to send the human version of the payment network name
+            // as well, so DICL becomes Diners Club and
+            // AMEX becomes American Express
+            if (($rule[Entity::PAYMENT_METHOD] === Method::CARD) and
+                ($rule[Entity::PAYMENT_NETWORK] !== null))
+            {
+                $network = $rule[Entity::PAYMENT_NETWORK];
+                $rule[Entity::PAYMENT_NETWORK_NAME] =
+                    Network::getFullName($network);
+            }
+
+            array_push($rules, $rule);
         }
 
         $this->setPlanAttributes(
@@ -37,6 +52,36 @@ class Plan extends PublicCollection
             count($this->items));
 
         return $plan;
+    }
+
+    /**
+     * Returns a string version of the rule's
+     * Pricing
+     * @param  array  $rule array containing the PERCENT_RATE
+     * and the FIXED_RATE
+     * @return string String representation of the rates
+     */
+    public static function formattedPricing(array $rule)
+    {
+        $res = "";
+        $percent = false;
+
+        if ($rule[Entity::PERCENT_RATE] !== 0)
+        {
+            $res .= $rule[Entity::PERCENT_RATE]/100 . "% TDR";
+            $percent = true;
+        }
+
+        if ($rule[Entity::FIXED_RATE] !== 0)
+        {
+            if ($percent === true)
+            {
+                $res .= " + ";
+            }
+            $res .= "INR " . $rule[Entity::FIXED_RATE]/100 . " Fixed Charge";
+        }
+
+        return $res;
     }
 
     protected function getDefaultPlanCollectionValues()
@@ -50,7 +95,7 @@ class Plan extends PublicCollection
     /**
      * Returns an array containing multiple plans
      * Has the normal attributes 'entity', 'collection',
-     * 'count' etc. with pricing plans and thie rrules
+     * 'count' etc. with pricing plans and their rules
      * The function assumes that the plan rules in the
      * collection are already sorted descending by
      * plan_id and id. Actually, this should be ensured
@@ -73,6 +118,14 @@ class Plan extends PublicCollection
         $plan = array(self::ID => null);
         $rules = null;
 
+        //
+        // $this->items contain the pricing rules.
+        // We assume that rules are sorted by plan id.
+        // Now, we create a plan collection by pushing the plan rules inside
+        // plan array.
+        // The collection of plans array is multiple plans.
+        //
+
         foreach ($this->items as $item)
         {
             if ($plan[self::ID] === $item->getPlanId())
@@ -85,21 +138,18 @@ class Plan extends PublicCollection
                 if ($first === true)
                 {
                     $first = false;
-                    $this->setPlanAttributes($plan, $item);
-                    $plan[self::COUNT] = 1;
-                    $rules = & $plan[self::RULES];
-                    array_push($rules, $item->toArray());
-                    continue;
                 }
-
-                array_push($data, $plan);
-                $plans[self::COUNT]++;
+                else
+                {
+                    array_push($data, $plan);
+                    $plans[self::COUNT]++;
+                }
 
                 $plan = array();
                 $this->setPlanAttributes($plan, $item);
                 $plan[self::COUNT] = 1;
-                $rules = & $plan[self::RULES];
 
+                $rules = & $plan[self::RULES];
                 array_push($rules, $item->toArray());
             }
         }
@@ -120,5 +170,31 @@ class Plan extends PublicCollection
             self::RULES     => $rules);
 
         return $plan;
+    }
+
+    public function hasNetworkAmex()
+    {
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getPaymentNetwork() === 'AMEX')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasMethodWallet()
+    {
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getPaymentMethod() === 'wallet')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

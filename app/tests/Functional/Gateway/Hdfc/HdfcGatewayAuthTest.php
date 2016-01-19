@@ -77,6 +77,20 @@ class HdfcGatewayAuthTest extends TestCase
         }
     }
 
+    public function testMaestroCard()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5081597022059105';
+        $this->doAuthAndCapturePayment($payment);
+        $paymentRes = $this->getLastPayment(true);
+        $this->assertEquals($paymentRes['gateway'], 'hdfc');
+
+        $payment['card']['number'] = '5049730032100035510';
+        $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastPayment(true);
+        $this->assertEquals($payment['gateway'], 'hdfc');
+    }
+
     public function testMockOnLiveMode()
     {
         $this->app['config']->set('gateway.mock_hdfc', true);

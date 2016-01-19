@@ -109,16 +109,18 @@ trait Capture
 
             $this->updatePaymentCaptured();
 
-            $txn = (new Transaction\Core)->createFromPayment($this->payment);
+            $this->createTransactionFromCapturedPayment($this->payment);
 
-            $txn->save();
-            $this->payment->save();
+            $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
         //
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
+
+        $notifier = new Notify($this->payment);
+        $notifier->trigger(Notify::CAPTURED);
     }
 
     protected function updatePaymentCaptured()
@@ -126,7 +128,28 @@ trait Capture
         $this->payment->setStatus(Payment\Status::CAPTURED);
 
         $this->payment->setCaptureTimestamp();
+    }
 
-        $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    protected function createTransactionFromCapturedPayment($payment)
+    {
+        $txnCore = new Transaction\Core;
+
+        $auth = ($payment->transaction === null);
+
+        if ($auth === true)
+        {
+            $txn = $txnCore->createFromPaymentCaptured($payment);
+        }
+        else
+        {
+            $txn = $txnCore->updateOnCapture($payment);
+        }
+
+        //set the service tax and fee values from txn
+        $payment->setServiceTax($txn->getServiceTax());
+        $payment->setFee($txn->getFee());
+
+        $txn->saveOrFail();
+        $payment->saveOrFail();
     }
 }

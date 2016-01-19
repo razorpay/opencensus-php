@@ -68,18 +68,9 @@ class Pricing extends Base
                     ),
                 );
 
-        $repo = new Models\Pricing\Repository;
+        $this->addPricingRulesToDb($rows);
 
-        foreach ($rows as $row)
-        {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
-        }
-
-        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
-
-        return $pricing;
+        // $pricing = $this->repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
     public function createStandardPlan()
@@ -113,17 +104,61 @@ class Pricing extends Base
                     ),
                 );
 
+        $this->addPricingRulesToDb($rows);
+
+//        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
+    }
+
+    public function createZeroPricingplan()
+    {
+        $pricingPlanId = '10ZeroPricingP';
+
+        $rows = array(
+                    array(
+                        'id' => '1ZeroPricingR1',
+                        'plan_id' => '10ZeroPricingP',
+                        'plan_name' => 'ZeroPricingPlan',
+                        'payment_method' => 'card',
+                        'percent_rate' => 0,
+                        'fixed_rate' => 0,
+                    ),
+                    array(
+                        'id' => '1ZeroPricingR2',
+                        'plan_id' => '10ZeroPricingP',
+                        'plan_name' => 'ZeroPricingPlan',
+                        'payment_method' => 'netbanking',
+                        'percent_rate' => 0,
+                        'fixed_rate' => 0,
+                    ),
+                    array(
+                        'id' => '1ZeroPricingR3',
+                        'plan_id' => '10ZeroPricingP',
+                        'plan_name' => 'ZeroPricingPlan',
+                        'payment_method' => 'wallet',
+                        'percent_rate' => 0,
+                        'fixed_rate' => 0,
+                    ),
+                );
+
+        $this->addPricingRulesToDb($rows);
+    }
+
+    protected function addPricingRulesToDb($rows)
+    {
         $repo = new Models\Pricing\Repository;
 
-        foreach ($rows as $row)
-        {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
-        }
+        $modes = ['live', 'test'];
 
-        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
+        // foreach ($modes as $mode)
+        // {
+        //     $this->connection($mode);
 
-        return $pricing;
-    }
+            foreach ($rows as $row)
+            {
+                $pricing = new Models\Pricing\Entity;
+                $pricing->fill($row);
+                $repo->saveOrFail($pricing);
+            }
+        // }
+   }
 }

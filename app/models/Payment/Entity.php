@@ -7,47 +7,52 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const AMOUNT            = 'amount';
-    const AMOUNT_AUTHORIZED = 'amount_authorized';
-    const AMOUNT_REFUNDED   = 'amount_refunded';
-    const STATUS            = 'status';
-    const METHOD            = 'method';
-    const REFUND_STATUS     = 'refund_status';
-    const CURRENCY          = 'currency';
-    const DESCRIPTION       = 'description';
-    const ERROR_CODE        = 'error_code';
-    const ERROR_DESCRIPTION = 'error_description';
-    const EMAIL             = 'email';
-    const CONTACT           = 'contact';
-    const NOTES             = 'notes';
-    const BANK              = 'bank';
-    const CARD_ID           = 'card_id';
-    const WALLET            = 'wallet';
-    const TRANSACTION_ID    = 'transaction_id';
-    const AUTO_CAPTURED     = 'auto_captured';
-    const AUTHORIZED_AT     = 'authorized_at';
-    const CAPTURED_AT       = 'captured_at';
-    const GATEWAY           = 'gateway';
-    const TERMINAL_ID       = 'terminal_id';
-    const SIGNED            = 'signed';
-    const VERIFIED          = 'verified';
-    const CALLBACK_URL      = 'callback_url';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const AMOUNT                = 'amount';
+    const AMOUNT_AUTHORIZED     = 'amount_authorized';
+    const AMOUNT_REFUNDED       = 'amount_refunded';
+    const STATUS                = 'status';
+    const METHOD                = 'method';
+    const REFUND_STATUS         = 'refund_status';
+    const CAPTURED              = 'captured';
+    const CURRENCY              = 'currency';
+    const DESCRIPTION           = 'description';
+    const ERROR_CODE            = 'error_code';
+    const INTERNAL_ERROR_CODE   = 'internal_error_code';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const EMAIL                 = 'email';
+    const CONTACT               = 'contact';
+    const NOTES                 = 'notes';
+    const BANK                  = 'bank';
+    const CARD_ID               = 'card_id';
+    const WALLET                = 'wallet';
+    const TRANSACTION_ID        = 'transaction_id';
+    const AUTO_CAPTURED         = 'auto_captured';
+    const AUTHORIZED_AT         = 'authorized_at';
+    const CAPTURED_AT           = 'captured_at';
+    const GATEWAY               = 'gateway';
+    const TERMINAL_ID           = 'terminal_id';
+    const SIGNED                = 'signed';
+    const VERIFIED              = 'verified';
+    const CALLBACK_URL          = 'callback_url';
+    const SERVICE_TAX           = 'service_tax';
+    const FEE                   = 'fee';
 
-    const CURRENCY_LENGTH   = 3;
+    const CURRENCY_LENGTH       = 3;
 
-    const MIN_PAYMENT_AMOUNT = 100;
+    const MIN_PAYMENT_AMOUNT    = 100;
 
-    protected $table = \Constants\Table::PAYMENT;
+    protected static $sign      = 'pay';
 
-    protected static $sign = 'pay';
+    protected $entity           = 'payment';
 
-    protected $entity = 'payment';
+    protected $table            = \Constants\Table::PAYMENT;
 
     protected $genereateIdOnCreate = true;
 
@@ -63,7 +68,9 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
-        self::CALLBACK_URL);
+        self::CALLBACK_URL,
+        self::FEE,
+        self::SERVICE_TAX);
 
     protected $visible = array(
         self::ID,
@@ -75,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::REFUND_STATUS,
+        self::CAPTURED,
         self::DESCRIPTION,
         self::BANK,
         self::WALLET,
@@ -82,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::NOTES,
         self::ERROR_CODE,
+        self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
@@ -93,6 +102,8 @@ class Entity extends Base\PublicEntity
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
+        self::FEE,
+        self::SERVICE_TAX,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -102,19 +113,23 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::METHOD,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
+        self::CAPTURED,
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::FEE,
+        self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
 
     protected $guarded = array(self::ID);
 
-    protected $appends = array(self::PUBLIC_ID);
+    protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
     protected static $modifiers = array(self::CONTACT, self::BANK);
 
@@ -127,6 +142,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED   => 0,
         self::SIGNED            => 0,
         self::VERIFIED          => null,
+        self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0);
 
 // --------------------- Generators --------------------------------------------
@@ -153,7 +169,8 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         // Remove the 0 at the start
-        if ($contact[0] === '0')
+        if ((strlen($contact) > 1) and
+            ($contact[0] === '0'))
         {
             $contact = substr($contact, 1);
         }
@@ -215,10 +232,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY, $gateway);
     }
 
-    public function setError($code, $desc)
+    public function setError($errorCode, $errorDesc, $internalErrorCode)
     {
-        $this->setAttribute(self::ERROR_CODE, $code);
-        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
     public function setCaptureTimestamp()
@@ -226,9 +244,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp()
+    public function setAuthorizeTimestamp($authTimestamp = NULL)
     {
-        $this->setAttribute(self::AUTHORIZED_AT, time());
+        if(is_null($authTimestamp))
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, time());
+        }
+        else
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
+        }
     }
 
     public function setBank($bank)
@@ -249,6 +274,23 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setServiceTax($serviceTax)
+    {
+        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setFee($fee)
+    {
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -310,6 +352,38 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SIGNED];
     }
 
+    public function getVerifiedAttribute()
+    {
+        $verified = $this->attributes[self::VERIFIED];
+
+        if ($verified !== null)
+        {
+            $verified = (int) $verified;
+        }
+
+        return $verified;
+    }
+
+    public function getCapturedAttribute()
+    {
+        return ($this->attributes[self::CAPTURED_AT] !== null);
+    }
+
+    public function getCreatedAttribute()
+    {
+        return ($this->attributes[self::CREATED_AT] !== null);
+    }
+
+        public function getFeeAttribute()
+    {
+        return (int) $this->attributes[self::FEE];
+    }
+
+    public function getServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
@@ -350,6 +424,11 @@ class Entity extends Base\PublicEntity
     protected function isStatus($status)
     {
         return ($this->getAttribute(self::STATUS) === $status);
+    }
+
+    public function hasBeenCaptured()
+    {
+        return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
     public function isNetbanking()
@@ -424,6 +503,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTES);
     }
 
+    public function getNotesJson()
+    {
+        return $this->attributes[self::NOTES];
+    }
+
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
@@ -452,7 +536,7 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return BankNames::getName($bankId);
+        return Netbanking::getName($bankId);
     }
 
     public function getWallet()
@@ -475,26 +559,99 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
+    public function getServiceTax()
+    {
+        return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getCreatedTimestamp()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getDaysSinceAuthorized()
+    {
+        $now = time();
+
+        $at = $this->getAuthorizeTimestamp();
+        $diff = $now - $at;
+
+        return floor($diff / (60*24*24));
+    }
+
+    /**
+     * This function returns the current payment method
+     * and a detail string for that particular method
+     * as a 2 length array. The array is numeric, instead
+     * of associative because the detail key would be dependent
+     * on the method itself otherwise (card.number, wallet.name, bank.name)
+     * for eg.
+     *
+     * As such, we send a numeric array with the following details:
+     *
+     * ['card', $formattedCardNumber] (Just last 4 digits)
+     * ['netbanking', $bankName] (Readable name for the bank)
+     * ['wallet', $walletName] (Readable wallet name like PayTM)
+     * @return array Payment Method Details
+     */
     public function getMethodWithDetail()
     {
+        $method = Method::formatted($this->getMethod());
         $walletNames = [
-            'paytm' =>  'PayTM'
+            'paytm' =>  'PayTM',
+            'mobikwik' =>  'Mobikwik'
         ];
-
-        $methodName = Method::formatted($this->getMethod());
 
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$methodName, $this->getFormattedCard()];
+                return [$method, $this->getFormattedCard()];
                 break;
             case Method::NETBANKING:
-                return [$methodName, $this->getBankName()];
+                return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
-                return [$methodName, $walletNames[$this->getWallet()]];
+                return [$method, ucfirst($this->getWallet())];
                 break;
         }
+    }
+
+    public function getErrorDetails()
+    {
+        return [
+            self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
+        ];
     }
 
     /**
@@ -509,6 +666,12 @@ class Entity extends Base\PublicEntity
     public function getOrderId()
     {
         $notes = $this->getNotes();
+
+        // Shortcut for direct order_id being set
+        if (isset($notes['order_id']))
+        {
+            return $notes['order_id'];
+        }
 
         foreach ($notes as $key => $value)
         {
@@ -575,7 +738,7 @@ class Entity extends Base\PublicEntity
 
     public function terminal()
     {
-        return $this->belongsTo('Models\Terminal\Entity');
+        return $this->belongsTo('Models\Terminal\Entity')->withTrashed();
     }
 
     public function refunds()
@@ -599,7 +762,8 @@ class Entity extends Base\PublicEntity
     {
         if (is_int($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('amount should be an integer ' . $amount);
+            throw new Exception\InvalidArgumentException(
+                'amount should be an integer ' . $amount);
         }
 
         $amount = (int) $amount;
@@ -613,6 +777,8 @@ class Entity extends Base\PublicEntity
         else if ($amount === $amountUnrefunded)
         {
             $this->setRefundStatus(Refund\Status::FULL);
+
+            $this->setStatus(Payment\Status::REFUNDED);
         }
         else
         {

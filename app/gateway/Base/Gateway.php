@@ -5,15 +5,34 @@ namespace Gateway\Base;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
-use Trace;
+use Symfony\Component\DomCrawler\Crawler;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Gateway
 {
+    /**
+     * Trace instance for tracing
+     * @var Trace\Trace
+     */
     protected $trace;
 
+    /**
+     * @var array
+     */
     protected $input;
 
+    /**
+     * Action being taken currently
+     * @var string
+     */
     protected $action;
+
+    /**
+     * Whether the gateway supports authorizing payments.
+     * @var boolean
+     */
+    protected $authorize = false;
 
     /**
      * The state in which the api is operating
@@ -28,11 +47,44 @@ class Gateway
      */
     protected $mock;
 
+    /**
+     * Namespacing for URL's
+     * used in case where multiple
+     * domains need to be supported
+     * @var string
+     */
+    protected $domainType;
+
+    /**
+     * Denotes if running in testing env
+     * @var boolean
+     */
+    protected $testing;
+
+    /**
+     * Some gateways whitelist our IP and requests to them can only
+     * be sent from those IP.
+     *
+     * Proxy address specifies the proxy through which these requests
+     * are routed. The proxy simply sits at the public IP machine
+     * and mostly acts transparently.
+     *
+     * @var string
+     */
+    protected $proxy;
+
     protected $sortRequestContent = true;
 
     public function __construct()
     {
-        $this->trace = Trace::getFacadeRoot();
+        $this->trace = \Trace::getFacadeRoot();
+
+        $this->env = \App::getFacadeRoot()['env'];
+
+        if ($this->env === 'testing')
+        {
+            $this->testing = true;
+        }
 
         $this->loadGatewayConfig();
     }
@@ -77,6 +129,13 @@ class Gateway
         $this->mode = $mode;
     }
 
+    public function setMock($mock)
+    {
+        assert (is_bool($mock));
+
+        $this->mock = $mock;
+    }
+
     protected function sendGatewayRequest($request)
     {
         if (isset($request['options']) === false)
@@ -84,9 +143,9 @@ class Gateway
             $request['options']  = array();
         }
 
-        if (isset($request['header']) === false)
+        if (isset($request['headers']) === false)
         {
-            $request['header'] = array();
+            $request['headers'] = array();
         }
 
         $method = 'post';
@@ -103,7 +162,7 @@ class Gateway
 
         $response = Requests::$method(
                     $request['url'],
-                    $request['header'],
+                    $request['headers'],
                     $request['content'],
                     $request['options']);
 
@@ -111,6 +170,47 @@ class Gateway
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
+    }
+
+    protected function runPaymentVerifyFlow($verify)
+    {
+        $payment = $this->getPaymentToVerify($verify->input, $verify);
+
+        if (($payment === null) and
+            ($verify->input['payment']['status'] === 'failed'))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                ['payment_id' => $verify->input['payment']['id'],
+                 'message' => 'payment id not found in the gateway database',
+                 'gateway' => $this->gateway]);
+            return;
+        }
+
+        $content = $this->sendPaymentVerifyRequest($verify);
+
+        $status = $this->verifyPayment($verify);
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+
+        return $verify->getDataToTrace();
+    }
+
+    protected function traceGatewayPaymentRequest($request, $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
     }
 
     protected function getNamespace()
@@ -154,7 +254,7 @@ class Gateway
         return $this->getHashOfString($hashString);
     }
 
-    protected function getSecret()
+    public function getSecret()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -206,11 +306,16 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $live = constant($urlClass . '::LIVE_DOMAIN');
+        $domainConstantName = strtoupper($this->mode)."_DOMAIN";
 
-        $test = constant($urlClass . '::TEST_DOMAIN');
+        if ($this->domainType !== null)
+        {
+            $domainType = strtoupper($this->domainType);
 
-        return ($this->mode === Mode::LIVE) ? $live : $test;
+            $domainConstantName = $domainType.'_'.$domainConstantName;
+        }
+
+        return constant($urlClass . '::' .$domainConstantName);
     }
 
     protected function getRelativeUrl($type)
@@ -222,6 +327,7 @@ class Gateway
 
     protected function getUrl($type = null)
     {
+
         $url = $this->getUrlDomain();
 
         if ($type === null)
@@ -242,6 +348,19 @@ class Gateway
 
         $app = \App::getFacadeRoot();
         $this->config = $app['config']->get($configGatewayStr);
+
+        $this->proxy = $app['config']->get('gateway.proxy_address');
+    }
+
+    protected function getFormValues($form, $url)
+    {
+        $crawler = new Crawler($form, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        $content = $form->getValues();
+
+        return $content;
     }
 
     protected function getTestAccessCode()
@@ -266,5 +385,31 @@ class Gateway
         }
 
         return $code;
+    }
+
+    protected function getDataWithFieldsInOrder($content, $orderedFields)
+    {
+        $orderedData = [];
+
+        foreach ($orderedFields as $key)
+        {
+            if (isset($content[$key]))
+            {
+                $orderedData[$key] = $content[$key];
+            }
+        }
+
+        return $orderedData;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post')
+    {
+        $request = array(
+            'url' => $this->getUrl(),
+            'method' => $method,
+            'content' => $content,
+        );
+
+        return $request;
     }
 }

@@ -10,8 +10,8 @@ Website:    {{$merchant['billing_label']}}
 Link:       {{$merchant['website']}}
 @endif
 
-Payment Id:         {{$payment['id']}}
-Amount:             {{$payment['amount']}} Rupees
+Payment Id:         {{$payment['public_id']}}
+Amount:             {{$payment['amount']}}
 Payment Method:     {{ucwords($payment['method'][0])}}
 Payment Details:    {{$payment['method'][1]}}
 

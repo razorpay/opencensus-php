@@ -189,18 +189,4 @@ class BasicAuthTest extends TestCase
 
         return $this->runRequestResponseFlow($testData);
     }
-
-    protected function fetchPaymentSuccess()
-    {
-        $payment = $this->fixtures->create('payment', ['merchant_id' => '10000000000000']);
-
-        $request = array(
-            'method' => 'GET',
-            'url' => '/payments');
-
-        $payment = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('entity', $payment);
-        $this->assertEquals($payment['entity'], 'payment');
-    }
 }

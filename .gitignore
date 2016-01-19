@@ -8,4 +8,5 @@ Thumbs.db
 /public/test/config.php
 docs/
 app/config/dev
+app/config/**/dev/
 _*

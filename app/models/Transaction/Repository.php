@@ -2,6 +2,7 @@
 
 namespace Models\Transaction;
 
+use Carbon\Carbon;
 use Models\Base;
 use Models\Transaction;
 
@@ -10,6 +11,14 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'Transaction';
+
+    protected $appFetchParamRules = array(
+        Entity::SETTLED         => 'sometimes|in:0,1',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
+        Entity::ENTITY_ID       => 'sometimes|string|min:14',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    );
 
     public function fetchTxnsExpectedToSettle($timestamp)
     {
@@ -35,6 +44,69 @@ class Repository extends Base\Repository
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
                     ->get();
+    }
+
+    public function fetchTransactionByMonthAndMerchantId($merchantId, $month, $year)
+    {
+        assert($month > 0);
+        assert($month <= 12);
+
+        $startOfMonth = Carbon::today('Asia/Kolkata')
+                              ->month($month)
+                              ->startOfMonth()
+                              ->year($year)
+                              ->timestamp;
+
+        $endMonth = $month + 1;
+
+        if ($endMonth === 13)
+        {
+            $endMonth = 1;
+            $year++;
+        }
+
+        $endOfMonth = Carbon::today('Asia/Kolkata')
+                            ->month($endMonth)
+                            ->startOfMonth()
+                            ->year($year)
+                            ->timestamp;
+
+        $repo = $this->repo;
+
+        return $repo::where(Transaction\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Transaction\Entity::CREATED_AT, '>=', $startOfMonth)
+                    ->where(Transaction\Entity::CREATED_AT, '<=', $endOfMonth)
+                    ->get();
+    }
+
+    public function fetchTransactionsForAuthorizedRefundedPayments()
+    {
+        $repo = $this->repo;
+
+        $txns = $repo::where(Transaction\Entity::TYPE, '=', Type::REFUND)
+                     ->where(Transaction\Entity::SETTLED, '=', 1)
+                     ->whereNull(Transaction\Entity::BALANCE)
+                     ->get();
+
+        //
+        // Transactions with only refunded authorized payments
+        // The previous txns can contain those refunds where balance went to 0
+        // after the refund.
+        //
+        $txns2 = new Base\PublicCollection;
+
+        foreach ($txns as $txn)
+        {
+            $refund = $txn->entity;
+            $payment = $refund->payment;
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                $txns2->push($txn);
+            }
+        }
+
+        return $txns2;
     }
 
     public function settled($txns, $settledAt)
@@ -118,5 +190,14 @@ class Repository extends Base\Repository
 
         return $repo::where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
                     ->get();
+    }
+
+    protected function addQueryParamEntityId($query, $params)
+    {
+        $entityId = $params[Entity::ENTITY_ID];
+
+        Entity::stripSignWithoutValidation($entityId);
+
+        $query->where(Entity::ENTITY_ID, '=', $entityId);
     }
 }

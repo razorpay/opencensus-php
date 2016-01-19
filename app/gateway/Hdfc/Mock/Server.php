@@ -4,12 +4,13 @@ namespace Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment\Action;
 use Gateway\Hdfc\Mock;
 use Models\Card;
 
-class Server
+class Server extends Base\Mock\Server
 {
     protected $request;
 
@@ -56,19 +57,27 @@ class Server
 
         switch ($action)
         {
+            case Action::PURCHASE:
+                $this->action = 'purchase';
+                $xml = $this->authNotEnrolledOnGateway();
+                break;
             case Action::AUTHORIZE:
+                $this->action = 'authorize';
                 $xml = $this->authNotEnrolledOnGateway();
                 break;
 
             case Action::CAPTURE:
+                $this->action = 'capture';
                 $xml = $this->capturePaymentOnGateway();
                 break;
 
             case Action::REFUND:
+                $this->action = 'refund';
                 $xml = $this->refundPaymentOnGateway();
                 break;
 
             case Action::INQUIRY:
+                $this->action = 'verify';
                 $xml = $this->inquirePaymentOnGateway();
                 break;
 
@@ -83,6 +92,7 @@ class Server
     public function enroll()
     {
         $this->processInput('enroll');
+        $this->setAction('enroll');
 
         $cardNumber = $this->data['card'];
 
@@ -102,6 +112,8 @@ class Server
 
         $this->copyUdfValues($res);
 
+        $res = $this->content($res, $this->action);
+
         $xml = Hdfc\Utility::createXml($res);
 
         return $this->makeResponse($xml);
@@ -110,10 +122,12 @@ class Server
     public function authEnrolled()
     {
         $this->processInput('authEnrolled');
+        $this->setAction('authorize');
 
         $txnId = $this->data['paymentid'];
 
         $gatewayTransaction = (new Hdfc\Repository)->findByGatewayTransactionIdOrFail($txnId);
+        $card = $gatewayTransaction->payment->card;
 
         if ($gatewayTransaction === null)
         {
@@ -131,7 +145,12 @@ class Server
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
+        if ($card['network'] === 'Maestro')
+            $res['result'] = 'CAPTURED';
+
 //        $this->copyUdfValues($res);
+
+        $res = $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -144,6 +163,8 @@ class Server
 
         $cardNumber = $this->data['card'];
 
+        $network = Card\Network::detectNetwork($cardNumber);
+
         if ($this->isSpecialCardNumber($cardNumber))
         {
             $res = $this->handleSpecialCardNumber($cardNumber);
@@ -153,8 +174,13 @@ class Server
             $res = $this->getDefaultPaymentSuccessArray();
             $res['result'] = 'APPROVED';
 
+            if ($network === 'MAES')
+                $res['result'] = 'CAPTURED';
+
             $this->copyUdfValues($res);
         }
+
+        $res = $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -235,6 +261,10 @@ class Server
         {
             return 'debit';
         }
+        else if (Card\Network::detectNetwork($cardNumber) === Card\Network::MAES)
+        {
+            return 'debit';
+        }
 
         $cardDetails = (new Card\Repository)->retrieveIinDetails($iin);
         if ($cardDetails === null)
@@ -272,20 +302,16 @@ class Server
     {
         $this->processInput('supportPayment');
 
-        $exists = $this->checkGatewayTxnIdAndStatusExist('authorized');
+        $payment = $this->getByGatewayTxnIdAndStatusExist('authorized');
 
-        if ($exists === false)
-        {
-            $res = $this->getTxnNotFoundError();
-        }
-        else
-        {
-            $res = $this->getDefaultPaymentSuccessArray();
-            $res['result'] = 'CAPTURED';
+        $res = $this->getDefaultPaymentSuccessArray();
+        $res['trackid'] = $payment['payment_id'];
+        $res['result'] = 'CAPTURED';
 
-            $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
-            $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
-        }
+        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
+        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+
+        $res = $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -296,18 +322,22 @@ class Server
     {
         $this->processInput('supportPayment');
 
-        $exists = $this->checkGatewayTxnIdAndStatusExist('captured');
+        $payment = $this->getByGatewayTxnIdAndStatusExist('captured');
 
-        if ($exists === false)
+        if ($payment === false)
         {
             $res = $this->getTxnNotFoundError();
         }
 
         $res = $this->getDefaultPaymentSuccessArray();
+
+        $res['trackid'] = $this->data['trackid'];
         $res['result'] = 'CAPTURED';
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
         $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+
+        $res = $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 
@@ -339,29 +369,35 @@ class Server
             'payid'     => '-1',
             'amt'       => $txn['amount'] / 100);
 
+        $res = $this->content($res, $this->action);
+
         $xml = Hdfc\Utility::createXml($res);
 
         return $xml;
     }
 
-    protected function checkGatewayTxnIdAndStatusExist($status)
+    protected function getByGatewayTxnIdAndStatusExist($status)
     {
         $gatewayTxnId = $this->data['transid'];
 
-        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus($gatewayTxnId, $status);
+        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+                                        $gatewayTxnId, $status);
 
-        return ($txn !== null);
-    }
+        if (($txn === null) and
+            ($status === 'captured'))
+        {
+            $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndErrorCode(
+                                            $gatewayTxnId, Hdfc\ErrorCode::GW00176);
+        }
 
-    public function setInput($input)
-    {
-        $this->input = $input;
+        return $txn;
     }
 
     protected function processInput($name)
     {
         $input = $this->input;
 
+        $this->gateway = new Gateway;
         $fields = $this->gateway->getRequestFields($name);
 
         Hdfc\Utility::getFieldsFromXML(

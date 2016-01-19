@@ -13,6 +13,12 @@ class Server
 
     protected $validator;
 
+    /**
+     * Namespace of the current gateway server
+     * @var string
+     */
+    protected $ns;
+
     public function __construct()
     {
         $this->request = Request::getFacadeRoot();
@@ -21,6 +27,13 @@ class Server
     protected function authorize($input)
     {
         $this->action = 'authorize';
+
+        $this->input = $input;
+    }
+
+    protected function capture($input)
+    {
+        $this->action = 'capture';
 
         $this->input = $input;
     }
@@ -42,6 +55,11 @@ class Server
     protected function generateHash($content)
     {
         return $this->getGatewayInstance()->generateHash($content);
+    }
+
+    protected function getSecret()
+    {
+        return $this->getGatewayInstance()->getSecret();
     }
 
     protected function checkReferer()
@@ -74,14 +92,13 @@ class Server
             return;
         }
 
-        throw new Exception\LogicException(
-            'Unexpected referer value. Referer: ' . $referer);
+        // throw new Exception\LogicException(
+        //     'Unexpected referer value. Referer: ' . $referer);
     }
 
     protected function getGatewayInstance()
     {
-        $class = get_class($this);
-        $class = substr($class, 0, strpos($class, '\Mock')) . '\Gateway';
+        $class = $this->getGatewayNamespace() . '\Gateway';
 
         $gateway = new $class;
         $gateway->setMode(Mode::TEST);
@@ -91,14 +108,26 @@ class Server
 
     protected function getGatewayNamespace()
     {
-        $class = get_called_class();
+        $namespace = $this->getNamespace();
 
-        return substr($class, 0, strpos($class, 'Mock\Server') - 1 );
+        return substr($namespace, 0, strpos($namespace, 'Mock') - 1 );
     }
 
     protected function getNamespace()
     {
-        return substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+        $ns = & $this->ns;
+
+        if ($ns !== null)
+            return $ns;
+
+        $ns = substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+
+        return $ns;
+    }
+
+    protected function setNamespace($ns)
+    {
+        $this->ns = $ns;
     }
 
     protected function getValidator()
@@ -140,6 +169,26 @@ class Server
     public function setInput($input)
     {
         $this->input = $input;
+    }
+
+    public function setAction($action)
+    {
+        $this->action = $action;
+    }
+
+    public function content(& $content, $action = '')
+    {
+        return $content;
+    }
+
+    protected function makeResponse($msg)
+    {
+        $response = \Response::make($msg);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     protected function makePostResponse($request)

@@ -12,6 +12,8 @@ class Database
 
     protected $dbTransactionInProgress = false;
 
+    protected static $fixturesDone = false;
+
     public function __construct($app)
     {
         $this->db = $app['db'];
@@ -40,6 +42,64 @@ class Database
 
     public function setUp()
     {
+        $this->config->set('database.default', 'test');
+
+        // Truncate tables
+        $this->truncateTestingDatabaseIfRequired();
+    }
+
+    public function runFixtures($fixtures)
+    {
+        if ($this->shouldRunFixtures() === false)
+        {
+            return $this->beginTransaction();
+        }
+
+        if ($this->shouldRunFixturesOnce() === true)
+        {
+            $this->runFixturesOnce($fixtures);
+        }
+        else
+        {
+            $this->runFixturesAgain($fixtures);
+        }
+    }
+
+    protected function runFixturesAgain($fixtures)
+    {
+        // Run migrations
+        $this->migrate();
+
+        // Begin transaction
+        $this->beginTransaction();
+
+        // Seed database
+        $fixtures->setUp();
+    }
+
+    protected function runFixturesOnce($fixtures)
+    {
+        if (self::$fixturesDone)
+        {
+            // Alread run, just begin transaction
+            $this->beginTransaction();
+
+            return;
+        }
+
+        // Run migrations
+        $this->migrate();
+
+        // Seed database
+        $fixtures->setUp();
+
+        $this->beginTransaction();
+
+        self::$fixturesDone = true;
+    }
+
+    public function beginTransaction()
+    {
         //
         // Start DB transaction so as
         // to rollback once test is finished
@@ -62,7 +122,17 @@ class Database
         $this->artisan->call('migrate', array('--database' => 'test'));
     }
 
-    public function truncate()
+    protected function truncateTestingDatabaseIfRequired()
+    {
+        if ((isset($_ENV['TRUNCATE_DATABASE'])) and
+            ($_ENV['TRUNCATE_DATABASE'] === true) and
+            (self::$fixturesDone === false))
+        {
+            $this->truncate();
+        }
+    }
+
+    protected function truncate()
     {
         $this->config->set('database.default', 'live');
 
@@ -141,6 +211,18 @@ class Database
         {
             return 'DELETE FROM ' . $table;
         }
+    }
+
+    protected function shouldRunFixturesOnce()
+    {
+        return ((isset($_ENV['RUN_FIXTURES_ONCE'])) and
+                ($_ENV['RUN_FIXTURES_ONCE'] === true));
+    }
+
+    protected function shouldRunFixtures()
+    {
+        return ! ((isset($_ENV['RUN_FIXTURES'])) and
+                  ($_ENV['RUN_FIXTURES'] === false));
     }
 }
 

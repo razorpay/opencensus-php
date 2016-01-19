@@ -3,6 +3,7 @@
 namespace Gateway\Atom;
 
 use Models\Bank\IFSC;
+use Models\Payment\Processor\Netbanking;
 
 class Bank
 {
@@ -44,11 +45,6 @@ class Bank
         IFSC::UBIN => 1039,     // Union Bank
         IFSC::VIJB => 1005,     // Vijaya Bank
         IFSC::YESB => 1005,     // Yes Bank
-
-// Custom
-        IFSC::BARB => 2000,
-        IFSC::PUNB => 2001,
-        IFSC::VYSA => 2002,
     );
 
     public static function getAtomBankCode($ifsc)

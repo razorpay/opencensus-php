@@ -20,7 +20,7 @@ class Gateway
     protected static function getGatewayInstance($gateway)
     {
         $app = \App::getFacadeRoot();
-        $gatewayManager = new GatewayManager($app);
-        return $gatewayManager->gateway($gateway);
+
+        return $app['gateway']->gateway($gateway);
     }
 }

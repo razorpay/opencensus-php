@@ -2,10 +2,12 @@
 
 namespace Models\Merchant;
 
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Merchant;
+use Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -15,45 +17,16 @@ class Repository extends Base\Repository
     protected $entity = 'Merchant';
 
     protected $appFetchParamRules = array(
-        Entity::ACTIVATED       => 'sometimes|boolean',
+        Entity::ACTIVATED               => 'sometimes|boolean',
+        Entity::HOLD_FUNDS              => 'sometimes|boolean',
+        Entity::LIVE                    => 'sometimes|boolean',
+        Entity::EMAIL                   => 'sometimes|string|max:255',
+        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::INTERNATIONAL           => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
+        Entity::METHODS                 => 'sometimes|string',
+        Entity::PRICING_PLAN_ID         => 'sometimes|string',
     );
-
-    public function getBalanceLockForUpdate($id)
-    {
-        return Merchant\Balance::lockForUpdate()->findOrFail($id);
-    }
-
-    public function getMerchantBalanceLockForUpdate($merchant)
-    {
-        return $this->getBalanceLockForUpdate($merchant->getKey());
-    }
-
-    public function getMerchantBalance($merchant)
-    {
-        return Merchant\Balance::findOrFailPublic($merchant->getId());
-    }
-
-    public function updateBalance($balance)
-    {
-        $balance->saveOrFail();
-    }
-
-    public function getEscrowBalanceLockForUpdate($channel)
-    {
-        $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';
-
-        return $this->$func();
-    }
-
-    public function getKotakBalanceLockForUpdate()
-    {
-        return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
-    }
-
-    public function getAtomBalanceLockForUpdate()
-    {
-        return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
-    }
 
     public function getPricingPlanOrFailPublic($merchant)
     {
@@ -83,8 +56,79 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function addQueryParamActivated($query, $params)
+    public function fetchRecentMerchants()
     {
-        $query->where(Entity::ACTIVATED, '=', $params[Entity::ACTIVATED]);
+        $repo = $this->repo;
+
+        // 00:00 Today
+        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
+
+        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+
+        return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
+    }
+
+    public function getCountOfMerchantsActivatedBetween($from, $to)
+    {
+
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Entity::ACTIVATED_AT, [$from, $to])->count();
+
+    }
+
+    public function addQueryParamMethods($query, $params)
+    {
+        $query->join(
+            Methods\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+
+                $methods = json_decode($params[Entity::METHODS], true);
+
+                $join->on($methodsMerchantId, '=', $merchantId);
+
+                foreach ($methods as $method => $value)
+                {
+                    $queryValue = null;
+
+                    if ($value === 'true')
+                        $queryValue = '1';
+                    else if ($value === 'false')
+                        $queryValue = '0';
+
+                    $join->where($method, '=', $queryValue);
+                }
+            });
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    /**
+     * Returns all the emails and names for all Merchants
+     * No limits
+     * @return [type] [description]
+     */
+    public function fetchAllMerchantContacts()
+    {
+        $repo = $this->repo;
+
+        return $repo::all(['name', 'email']);
+    }
+
+    public function fetchMerchantWhereTestBankIsNull()
+    {
+        $repo = new $this->repo;
+        return $repo->setConnection(Mode::TEST)
+                    ->has('bankAccount', '<', 1)
+                    ->get();
+    }
+    public function fetchAllLiveMerchants()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::LIVE, '=', 0);
     }
 }

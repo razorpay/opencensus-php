@@ -38,6 +38,10 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::FEE)
                   ->unsigned();
 
+            $table->integer(Transaction::SERVICE_TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->char(Transaction::PRICING_RULE_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
@@ -60,7 +64,10 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::API_FEE)
                   ->nullable();
 
-            $table->integer(Transaction::ESCROW_BALANCE)
+            $table->boolean(Transaction::GRATIS)
+                  ->default(0);
+
+            $table->bigInteger(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
             $table->string(Transaction::CHANNEL, 8);
@@ -94,6 +101,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::RECONCILED_AT);
 
             $table->index(Transaction::CHANNEL);
+
+            $table->index(Transaction::GRATIS);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

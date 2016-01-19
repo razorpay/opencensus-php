@@ -4,6 +4,7 @@ namespace Models\Payment\Refund;
 
 use EE\Exception;
 use Models\Base;
+use Models\Payment;
 use Models\Payment\Refund;
 
 class Repository extends Base\Repository
@@ -11,6 +12,12 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'Refund';
+
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::PAYMENT_ID      => 'sometimes|alpha_num',
+        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
+    );
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
@@ -43,14 +50,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchBetweenTimestampsForMerchant($from, $to, $merchantId)
-    {
-        $repo = $this->repo;
-        return $repo::whereBetween(Refund\Entity::CREATED_AT, [$from, $to])
-                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
-    }
-
     public function findBetweenTimesampsForGateway($from, $to, $gateway)
     {
         $repo = $this->repo;
@@ -70,5 +69,40 @@ class Repository extends Base\Repository
         return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->findOrFailPublic($id);
+    }
+
+    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to)
+    {
+        $repo = $this->repo;
+
+        $payment = (new Payment\Entity);
+
+        $ptable = $payment->getTable();
+
+        $entity = (new $this->repo);
+
+        $query = $entity->newQuery();
+
+        $refunds = $query->join(
+            $ptable,
+            function ($join) use ($from, $to, $bank)
+            {
+                $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
+
+                $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
+                $pbank = Payment\Entity::getAttributeWithTableName(Payment\Entity::BANK);
+                $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+                $join->on($rPaymentId, '=', $pid)
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->where($pbank, '=', $bank)
+                     ->where($pgateway, '=', Payment\Gateway::NETBANKING_HDFC);
+            })
+            ->with('payment')
+            ->get();
+
+        return $refunds;
     }
 }

@@ -5,98 +5,79 @@ namespace Gateway\Hdfc;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
-use Models\Base;
+use Gateway\Hdfc\Payment\Action;
+use Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Hdfc';
+
+    protected $appFetchParamRules = array(
+        Entity::PAYMENT_ID              => 'sometimes|string|size:14',
+        'gateway_transaction_id'        => 'sometimes|numeric|digits:16',
+        'ref'                           => 'sometimes|numeric|digits:12');
 
     public function __construct()
     {
-        $this->repo = __NAMESPACE__.'\Entity';
+        $this->repo = Entity::class;
 
         parent::__construct();
     }
 
-    public function saveXml($id, $xml, $responseType)
+    public function findByPaymentIdToVerify($id)
     {
-        $oldRepo = $this->repo;
-
-        $this->repo = __NAMESPACE__.'\ResponseXml';
-
         $repo = $this->repo;
 
-        $attributes = array(
-            'payment_id' => $id,
-            $responseType => $xml);
-
-        $model = null;
-
-        switch($responseType)
-        {
-            case 'enroll':
-                $model = $this->createOrFail($attributes);
-                break;
-
-            case 'auth_enrolled':
-            case 'auth_not_enrolled':
-                $responseFieldXml = $responseType;
-                $model = $repo::where('payment_id','=',$id)->firstOrFail();
-                $model->$responseFieldXml = $xml;
-                $this->save($model);
-                break;
-
-            case 'refund':
-            case 'capture':
-                $model = $this->createOrFail($attributes);
-                break;
-
-            case 'inquiry':
-                break;
-
-            default:
-                throw new Exception\InvalidArgumentException(
-                                'Wrong responseType => '.$responseType);
-        }
-
-        $this->repo = $oldRepo;
-
-        return $model;
+        return $repo::where('payment_id', '=', $id)
+                    ->whereIn('action', [Action::AUTHORIZE, Action::PURCHASE])
+                    ->first();
     }
 
     public function persistAfterEnroll($request, $response)
     {
-        if ($response['enroll_result'] === Payment\Result::ENROLLED)
+        $result = $response['enroll_result'];
+
+        if ($result === Payment\Result::ENROLLED)
         {
             $status = Payment\Status::ENROLLED;
         }
-        else if ($response['enroll_result'] === Payment\Result::NOT_ENROLLED)
+        else if ($result === Payment\Result::NOT_ENROLLED)
         {
             $status = Payment\Status::NOT_ENROLLED;
         }
+        else if ($result === Payment\Result::INITIALIZED)
+        {
+            $status = Payment\Status::INITIALIZED;
+        }
+
+        //
+        // 'received' is marked as false because after this we will
+        // initiate auth request. And 'received' is marked as true
+        // only after that if we receive positive result.
+        //
 
         $attributes = array(
-            'payment_id'            => $request['trackid'],
-            'gateway_transaction_id'=> $response['paymentid'],
-            'action'                => $request['action'],
-            'amount'                => $request['amt'],
-            'enroll_result'         => $response['enroll_result'],
-            'status'                => $status,
-            'eci'                   => $response['eci']);
+            'received'                  => '0',
+            'payment_id'                => $request['trackid'],
+            'gateway_transaction_id'    => $response['paymentid'],
+            'action'                    => $request['action'],
+            'amount'                    => $request['amt'],
+            'enroll_result'             => $response['enroll_result'],
+            'status'                    => $status,
+            'eci'                       => $response['eci']);
 
         $repo = $this->repo;
 
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterEnrollError($id, array $error, $requestdata)
+    public function persistAfterEnrollError($id, array $error, $requestData)
     {
         $attributes = array(
+            'received'              => '1',
             'payment_id'            => $id,
-            'action'                => Payment\Action::AUTHORIZE,
-            'amount'                => $requestdata['amt'],
+            'action'                => $requestData['action'],
+            'amount'                => $requestData['amt'],
             'error_code'            => $error['code'],
             'error_text'            => $error['text'],
             'enroll_result'         => $error['enroll_result'],
@@ -109,10 +90,17 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthNotEnrolled($model, $data)
     {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+        {
+            $status = Payment\Status::CAPTURED;
+        }
+
         $attributes = array(
+            'received'      => '1',
             'payment_id'    => $data['trackid'],
-            'status'        => Payment\Status::AUTHORIZED,
-            'action'        => Payment\Action::AUTHORIZE,
+            'status'        => $status,
             'amount'        => $data['amt'],
             'result'        => $data['result'],
             'ref'           => $data['ref'],
@@ -130,9 +118,17 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthEnrolled($model, $data)
     {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+        {
+            $status = Payment\Status::CAPTURED;
+        }
+
         $attributes = array(
+            'received'      => '1',
             'payment_id'    => $data['trackid'],
-            'status'        => Payment\Status::AUTHORIZED,
+            'status'        => $status,
             'result'        => $data['result'],
             'ref'           => $data['ref'],
             'auth'          => $data['auth'],
@@ -147,7 +143,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
-            'action'        => Payment\Action::AUTHORIZE,
+            'received'      => '1',
             'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
@@ -160,7 +156,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
-            'action'        => Payment\Action::AUTHORIZE,
+            'received'      => '1',
             'status'        => Payment\Status::AUTH_ENROLL_FAILED,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
@@ -194,17 +190,18 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'payment_id'             => $paymentId,
-            'refund_id'              => $refundId,
-            'gateway_transaction_id' => $responseData['tranid'],
-            'amount'                 => $responseData['amt'],
-            'action'                 => $requestData['action'],
-            'status'                 => $status,
-            'result'                 => $responseData['result'],
-            'ref'                    => $responseData['ref'],
-            'auth'                   => $responseData['auth'],
-            'avr'                    => $responseData['avr'],
-            'postdate'               => $responseData['postdate']);
+            'received'                  => '1',
+            'payment_id'                => $paymentId,
+            'refund_id'                 => $refundId,
+            'gateway_transaction_id'    => $responseData['tranid'],
+            'amount'                    => $responseData['amt'],
+            'action'                    => $requestData['action'],
+            'status'                    => $status,
+            'result'                    => $responseData['result'],
+            'ref'                       => $responseData['ref'],
+            'auth'                      => $responseData['auth'],
+            'avr'                       => $responseData['avr'],
+            'postdate'                  => $responseData['postdate']);
 
         return $this->createOrFail($attributes);
     }
@@ -218,7 +215,8 @@ class Repository extends Base\Repository
     {
         $action = '';
         $status = '';
-        switch($type)
+
+        switch ($type)
         {
             case 'refund':
                 $action = Payment\Action::REFUND;
@@ -232,6 +230,7 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
+            'received'                  => '1',
             'payment_id'                => $paymentId,
             'refund_id'                 => $refundId,
             'gateway_transaction_id'    => $requestdata['transid'],
@@ -249,6 +248,24 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where('payment_id', '=', $id)->firstOrFail();
+    }
+
+    public function retrieveCapturedOrAcceptedCaptureError($id)
+    {
+        $repo = $this->repo;
+
+        $payment = $repo::where('payment_id', '=', $id)
+                  ->where('status', '=', Payment\Status::CAPTURED)
+                  ->first();
+
+        if ($payment !== null)
+        {
+            return $payment;
+        }
+
+        return $repo::where('payment_id', '=', $id)
+                    ->where('error_code', '=', ErrorCode::GW00176)
+                    ->firstOrFail();
     }
 
     public function retrieveByPaymentIdAndStatus($id, $status)
@@ -305,6 +322,15 @@ class Repository extends Base\Repository
 
         return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
                     ->where('status', '=', $status)
+                    ->first();
+    }
+
+    public function findByGatewayTransactionIdAndErrorCode($gatewayTxnId, $error)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
+                    ->where('error_code', '=', $error)
                     ->first();
     }
 

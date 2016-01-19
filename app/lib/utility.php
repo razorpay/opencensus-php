@@ -137,9 +137,9 @@ if (! function_exists('random_integer'))
 {
     function random_integer($length = 1)
     {
-        $integer = '';
+        $integer = '' . mt_rand(1, 9);
 
-        for($i = 0; $i < $length; $i++)
+        for($i = 1; $i < $length; $i++)
         {
             $integer .= mt_rand(0, 9);
         }
@@ -153,6 +153,16 @@ if (! function_exists('random_alpha_string'))
     function random_alpha_string($length = 1)
     {
         $chars = 'abcdefghijklmnopqrstuvwxyz';
+
+        return substr(str_shuffle($chars), 0, $length);
+    }
+}
+
+if (! function_exists('random_alphanum_string'))
+{
+    function random_alphanum_string($length = 1)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
 
         return substr(str_shuffle($chars), 0, $length);
     }

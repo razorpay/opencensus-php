@@ -8,6 +8,7 @@ use EE\Exception;
 use Mail;
 use Models\Payment;
 use Models\Settlement;
+use Trace\TraceCode;
 
 class DailyReport
 {
@@ -29,20 +30,23 @@ class DailyReport
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
         $this->data = $this->fetchDailyDetails();
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
      * Sends the daily report
-     * @return boolean Whether the daily report was sent or not
+     * @return array of summary data
+     * array is empty if mail wasn't sent
      */
     public function send()
     {
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return true;
+            return $this->data;
         }
-        return false;
+        return [];
     }
 
     /**
@@ -52,21 +56,39 @@ class DailyReport
      */
     protected function sendDailyReport()
     {
-        $config = Config::get('applications.mailgun');
-
         $view = ['html'=>'emails.merchant.daily_report'];
 
         $data = $this->data;
 
-        Mail::send($view, $this->data, function($message) use ($config, $data)
-        {
-            $message->to($data['merchant']['transaction_report_email']);
+        // This is a debug view only for raising proper errors
+        \View::make('emails.merchant.daily_report_debug', $data)->render();
 
-            $message->from($config['from_email'], $config['from_name']);
+        Mail::send($view, $data, function($message) use ($data)
+        {
+            $to = $data['merchant']['email'];
+
+            // to might be an array
+            if (is_array($to))
+            {
+                foreach ($to as $email)
+                {
+                    $message->to($email);
+                }
+            }
+            else
+            {
+                // This should not be getting called
+                // But just for fallback
+                $message->to($to);
+            }
+
+            $message->from('reports@razorpay.com');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
             $message->cc('notifications@razorpay.com');
 
-            $message->subject('Daily Transaction Report for ' . $data['date']);
+            $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
         });
     }
 
@@ -195,6 +217,9 @@ class DailyReport
             'date'           => $this->date,
         ];
 
+        // toArray is not reliable
+        $data['merchant']['email'] = $merchant->getTransactionReportEmail();
+
         return $data;
     }
 
@@ -202,9 +227,9 @@ class DailyReport
     {
         $data = $this->data;
 
-        return (($data['captured']['sum'] === 0) and
-                ($data['authorized']['sum'] === 0) and
-                ($data['refunds']['sum'] === 0) and
+        return (($data['captured']['payments']['count'] === 0) and
+                ($data['authorized']['payments']['count'] === 0) and
+                ($data['refunds']['refunds']['count'] === 0) and
                 ($data['settlement'] === null));
     }
 }

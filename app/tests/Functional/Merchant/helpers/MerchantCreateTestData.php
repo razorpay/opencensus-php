@@ -27,7 +27,9 @@ return [
                 'hold_funds' => false,
                 'activated_at' => null,
                 'receipt_email_enabled' => true,
-                'transaction_report_email' => 'test@localhost.com',
+                'transaction_report_email' => [
+                    'test@localhost.com'
+                ]
             ],
         ],
     ],
@@ -81,17 +83,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
-                ],
-            ],
-            'status_code' => 400,
+                'id' => '1X4hRFHFx4UiXt',
+                'balance' => 0
+            ]
         ],
-        'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
-        ]
     ],
 
     'testGetBankAccountsAfterCreatedMerchant' => [

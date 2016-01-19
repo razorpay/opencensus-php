@@ -28,11 +28,8 @@ class DailyReportTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $id = substr($setl['id'], 5, 14);
-        $setl = (new \Models\Settlement\Repository)->findOrFail($id);
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
-        $setl['created_at'] = $createdAt + 100;
-        $setl->saveOrFail();
+        $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
 
         \Mail::shouldReceive('send')
               ->once()
@@ -44,7 +41,7 @@ class DailyReportTest extends TestCase
                                 'captured' => ['payments' => ['count' => 4], 'sum' => 4000000],
                                 'authorized' => ['payments' => ['count' => 4], 'sum' => 4000000],
                                 'refunds' => ['refunds' => ['count' => 2], 'sum' => 200000],
-                                'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508800],
+                                'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508400],
                                 'merchant' => ['id' => '10000000000000', 'activated' => true],
                             );
                             $this->assertArraySelectiveEquals($testData, $data);
@@ -105,7 +102,7 @@ class DailyReportTest extends TestCase
             ['created_at' => $createdAt,
              'updated_at' => $createdAt + 10]);
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
         $this->fixtures->create('merchant:bank_account', ['merchant_id' => '10000000000000']);
     }
 }

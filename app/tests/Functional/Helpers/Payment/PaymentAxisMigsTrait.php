@@ -27,6 +27,23 @@ trait PaymentAxisMigsTrait
         return $this->submitPaymentCallbackRedirect($url);
     }
 
+    protected function failAuthorizePayment()
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $content['vpc_TxnResponseCode'] = '5';
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $content = $this->doAuthPayment();
+        });
+    }
+
     protected function runAxisMigsGatewayAutomation($url, $method, $values)
     {
             $options = ['follow_redirects' => false];

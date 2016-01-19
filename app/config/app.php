@@ -120,6 +120,7 @@ return array(
         'Trace\TraceServiceProvider',
         'Dashboard\DashboardServiceProvider',
         'Services\ApiServiceProvider',
+        'Maknz\Slack\SlackServiceProvider'
 	),
 
 	/*
@@ -188,6 +189,7 @@ return array(
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
         'BasicAuth'       => 'Http\BasicAuth\Facade',
         'Trace'           => 'Trace\Facade',
+        'Slack'           => 'Maknz\Slack\Facades\Slack'
 	),
 
     'context' => $_ENV['CONTEXT'],

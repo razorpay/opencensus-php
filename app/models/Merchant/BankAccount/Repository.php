@@ -13,6 +13,13 @@ class Repository extends Base\Repository
 
     protected $entity = 'BankAccount';
 
+    const WITH_TRASHED = 'with_trashed';
+
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        self::WITH_TRASHED      => 'sometimes|in:0,1',
+    );
+
     public function updateBankAccount($ba)
     {
         $ba->saveOrFail();
@@ -20,18 +27,7 @@ class Repository extends Base\Repository
 
     public function getBankAccount($merchant)
     {
-        $repo = $this->repo;
-
-        $ba = $repo::find($merchant->getId());
-
-        if ($ba !== null)
-        {
-            $ba->merchant()->associate($merchant);
-
-            $merchant->setRelation('bankAccount', $ba);
-        }
-
-        return $ba;
+        return $merchant->bankAccount;
     }
 
     public function getBankAccountByBeneficiaryCode($code)
@@ -41,11 +37,30 @@ class Repository extends Base\Repository
         return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, '=', $code)->first();
     }
 
-    public function getBeneficiaryCodeCountByPattern($code)
+    public function getBeneficiaryCodeCountByPattern($code, $mode)
     {
         $repo = $this->repo;
 
-        return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')->count();
+        $highest = $repo::on($mode)
+                    ->withTrashed()
+                    ->where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')
+                    ->orderBy(BankAccount\Entity::CREATED_AT, 'desc')
+                    ->first();
+
+        if ($highest === null)
+        {
+            return 0;
+        }
+
+        $count = (int) substr($highest->getBeneficiaryCode(), 4);
+
+        // The first entry doesn't have any count
+        if ($count === 0)
+        {
+            $count = 1;
+        }
+
+        return $count;
     }
 
     public function getAllOrderedByCreatedAt()
@@ -59,5 +74,43 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
-}
 
+    protected function addQueryParamWithTrashed($query, $params)
+    {
+        if ($params[self::WITH_TRASHED] === '1')
+        {
+            $query->withTrashed();
+        }
+    }
+
+    public function bankAccountsWhereIdNullOrBlank()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::ID, '=', '')
+                                ->orWhereNull(BankAccount\Entity::ID)
+                                ->take(500)
+                                ->get();
+    }
+
+    /**
+     * This should be called when deleting a BankAccount Entity.
+     *
+     * This checks if the bankAccount has any settlements linked to it.
+     * If there are linked settlements then it is soft deleted.
+     * Else, it is hard deleted.
+     *
+     * @param  BankAccount\Entity $bankAccount The bank account to be deleted
+     */
+    public function delete($bankAccount)
+    {
+        if ($bankAccount->settlements->count() === 0)
+        {
+            return $bankAccount->forceDelete();
+        }
+        else
+        {
+            return $bankAccount->delete();
+        }
+    }
+}

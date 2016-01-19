@@ -2,6 +2,7 @@
 
 namespace Models\Payment\Processor;
 
+use App;
 use Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
@@ -50,10 +51,13 @@ class Processor
         $this->core = $core;
         $this->trace = $trace;
         $this->mode = $mode;
+        $this->app  = App::getFacadeRoot();
 
         $this->checkMerchantPermissions();
 
         $this->repo = new Payment\Repository;
+
+        $this->app = App::getFacadeRoot();
     }
 
     public static function create($bindings)
@@ -70,6 +74,12 @@ class Processor
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
+        }
+        else if (empty($input['method']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide appropriate payment method',
+                Payment\Entity::METHOD);
         }
 
         $payment = $this->createPaymentEntity($input);
@@ -91,7 +101,7 @@ class Processor
         if (isset($input['notes']['merchant_order_id']) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'merchant_roder_id field is required',
+                'merchant_order_id field is required',
                 'merchant_order_id');
         }
 
@@ -166,25 +176,17 @@ class Processor
             throw new Exception\LogicException(
                 'A non-activated merchant is making live request. Blasphemy!');
         }
+    }
 
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => true]);
-
+    protected function verifyMerchantIsLiveForLiveRequest()
+    {
         // On live request, ensure that merchant isn't blocked temporarily
-        if ($merchant->isLive() === false)
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isLive() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => false]);
     }
 
     /**
@@ -227,13 +229,15 @@ class Processor
 
         $desc = $error->getDescription();
 
+        $internalCode = $error->getInternalErrorCode();
+
         $payment = $this->payment;
 
         $payment->setStatus(Payment\Status::FAILED);
 
-        $payment->setError($code, $desc);
+        $payment->setError($code, $desc, $internalCode);
 
-        $payment->save();
+        $payment->saveOrFail();
 
         $this->tracePaymentFailed($error, $traceCode);
     }
@@ -250,6 +254,13 @@ class Processor
     protected function callGatewayFunction($action, array $input)
     {
         $terminal = $this->payment->terminal;
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                ['payment_id' => $payment->getId()]);
+        }
 
         $gateway = $this->payment->getGateway();
 
@@ -303,6 +314,13 @@ class Processor
 
         $card = $this->payment->card()->first();
         return $this->payment;
+    }
+
+    protected function setPayment($payment)
+    {
+        $this->payment = $payment;
+
+        $card = $this->payment->card()->first();
     }
 
     protected function tracePaymentNewRequest($input)

@@ -29,6 +29,12 @@ class CreateDailySettlements extends Migration
 
             $table->integer(DailySettlement::AMOUNT);
 
+            $table->integer(DailySettlement::FEES);
+
+            $table->integer(DailySettlement::SERVICE_TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(DailySettlement::API_FEE);
 
             $table->integer(DailySettlement::GATEWAY_FEE);

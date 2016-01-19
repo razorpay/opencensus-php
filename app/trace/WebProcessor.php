@@ -24,6 +24,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
 
+        $this->console = App::runningInConsole();
+
         $serverData = $this->getServerData();
 
         parent::__construct($serverData);
@@ -58,7 +60,16 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $this->request->headers->get('referer'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
+            'console'       => $this->console,
             'context'       => $this->context);
+
+        $userData = array(
+            'dashboard'     => $this->request->headers->get('X-Dashboard'),
+            'merchant'      => $this->request->headers->get('X-Dashboard-Merchant'),
+            'admin_user'    => $this->request->headers->get('X-Dashboard-Username'),
+        );
+
+        $serverData = array_merge($serverData, $userData);
 
         $this->unsetUrlForSensitiveUrls($serverData);
 

@@ -3,9 +3,11 @@
 namespace Models\Payment\Processor;
 
 use BasicAuth;
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Http\Route;
+use Mail;
 use Models\Card;
 use Models\Merchant;
 use Models\Payment;
@@ -18,26 +20,34 @@ trait Refund
 {
     /**
      * Refunds a payment
-     * @param  string   $id  Payment Id
+     * @param  string   $id     Payment Id
+     * @param  array    $input  Refund input params
      *
-     * @return Payment\Entity
+     * @return Payment\Refund\Entity
      */
-    public function refund($id, $input)
+    protected function refund($id, $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            ['id' => $id, 'input' => $input]);
+
         $payment = $this->retrieve($id);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
         $refund->merchant()->associate($this->merchant);
 
-        $this->validateMerchantBalance($refund);
+        if ($this->payment->isCaptured())
+        {
+            $this->validateMerchantBalance($refund);
+        }
 
         $this->refund = $refund;
 
         $data = array(
-                    'payment' => $payment->toArray(),
-                    'refund' => $refund->toArray(),
-                    'amount' => $refund->getAmount());
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount());
 
         $method = $refund->payment->getMethod();
 
@@ -46,16 +56,101 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
+        $gateway = $payment->getGateway();
+
+        if (($payment->getTransactionId() !== null) or
+            ($payment->isAuthorized() === false))
+        {
+            $this->callGatewayForRefund($data);
+        }
+
+        $this->recordRefund();
+
+        $this->sendRefundNotification($payment, $refund);
+
+        return $refund;
+    }
+
+    /**
+     * Sends out refund related notifications
+     * To 3 places in total:
+     *
+     * - Dashboard (for analytics)
+     * - Slack (for us to see)
+     * - EMails (to both customer and merchant)
+     * @param  Payment\Entity        $payment Payment Entity
+     * @param  Payment\Refund\Entity $refund  Refund Entity
+     * @return null
+     */
+    protected function sendRefundNotification(
+        Payment\Entity $payment,
+        Payment\Refund\Entity $refund)
+    {
+        //
+        // Analytics is on dashboard side for now
+        //
+        $notifier = new Notify($payment);
+        $notifier->addRefund($refund);
+        $notifier->trigger(Notify::REFUNDED);
+
+        $this->notifyDashboard('refund', $this->refund);
+    }
+
+    public function refundAuthorizedPayment($id, $input)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($this->payment->isAuthorized() === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Can only refund authorized payments here but ' .
+                'the status is ' . $payment->getStatus());
+        }
+
+        // For now allow refunding authorized payments immediately.
+        // $days = 5;
+
+        // if ($this->payment->getDaysSinceAuthorized() <= $days)
+        // {
+            if ((isset($input['force'])) and
+                ($input['force'] === '1'))
+            {
+                unset($input['force']);
+            }
+        //     else
+        //     {
+        //         throw new Exception\BadRequestValidationFailureException(
+        //             'The authorized payment is not older than: ' . $days . ' days');
+        //     }
+        // }
+
+        return $this->refund($id, $input);
+    }
+
+    public function refundCapturedPayment($id, $input)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($payment->isFullyRefunded())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
+        }
+
+        if ($payment->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        return $this->refund($id, $input);
+    }
+
+    protected function callGatewayForRefund($data)
+    {
         try
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
-
-            $this->recordRefund();
-
-            //
-            // Analytics
-            //
-            $this->notifyDashboard('refund', $this->refund);
         }
         catch(BaseException $e)
         {
@@ -65,23 +160,22 @@ trait Refund
 
             throw $e;
         }
-
-        return $refund;
     }
 
     protected function recordRefund()
     {
         $this->repo->transaction(function()
         {
-            $this->repo->lockForUpdate($this->payment->getKey());
+            $payment = $this->payment;
+
+            $this->repo->lockForUpdate($payment->getKey());
+
+            $this->createTransactionForRefund($this->refund, $payment);
 
             $this->updatePaymentRefunded();
 
-            $txn = (new Transaction\Core)->createFromRefund($this->refund);
-
-            $txn->save();
-            $this->payment->save();
-            $this->refund->save();
+            $this->payment->saveOrFail();
+            $this->refund->saveOrFail();
         });
     }
 
@@ -96,12 +190,27 @@ trait Refund
     {
         $merchant = $refund->merchant;
 
-        $balance = (new Merchant\Repository)->getMerchantBalance($merchant);
+        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
         if ($balance->getBalance() < $refund->getAmount())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
+        }
+    }
+
+    protected function createTransactionForRefund($refund, $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+            ($payment->getCaptureTimestamp() !== null))
+        {
+            $txn = (new Transaction\Core)->createFromRefund($refund);
+
+            $txn->saveOrFail();
+
+            return $txn;
         }
     }
 }

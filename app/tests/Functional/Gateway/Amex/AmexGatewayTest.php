@@ -1,0 +1,115 @@
+<?php
+
+namespace Tests\Functional\Gateway\Amex;
+
+use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Tests\Functional\TestCase;
+
+class AmexGatewayTest extends TestCase
+{
+    use PaymentTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/AmexGatewayTestData.php';
+
+        parent::setUp();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'amex';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
+        $this->payment = $this->getDefaultPaymentArray();
+        $this->payment['card']['number'] = '341111111111111';
+        $this->payment['card']['cvv'] = '8888';
+    }
+
+    public function testPayment()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('amex', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentAmexEntity'], $payment);
+    }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('amex', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $amount = (int) ($payment['amount'] / 3);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $refund = $this->getLastEntity('amex', true);
+
+        $this->assertEquals($amount, $refund['vpc_amount']);
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->verifyPayment($payment['id']);
+    }
+
+    public function testAmexCardWhenNotEnabled()
+    {
+        $this->ba->publicLiveAuth();
+        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->enableCard();
+        $this->fixtures->merchant->disableMethod('10000000000000', 'amex');
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testAmexPricingCheckWhenEnablingAmex()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $methods = ['amex' => 1];
+
+            $content = $this->setPaymentMethods($methods);
+        });
+    }
+}

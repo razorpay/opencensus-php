@@ -13,10 +13,12 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::GATEWAY                     => 'required',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::SHARED                      => 'sometimes|boolean',
@@ -29,7 +31,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|integer|digits:8'
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15'
     );
 
     protected static $billdeskTerminalRules = array(
@@ -44,6 +46,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alhpa_num|size:8',
     );
 
+    protected static $amexTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:amex',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+    );
+
     protected static $axisMigsTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:axis_migs',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
@@ -51,6 +62,23 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+    );
+
+    protected static $axisMigsEditTerminalRules = array(
+        Entity::GATEWAY                     => 'sometimes|in:axis_migs',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::CARD                        => 'sometimes|boolean|in:1',
+    );
+
+    protected static $walletPayzappTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:wallet_payzapp',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string|size:21',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
     );
 
     protected function validateGateway($input)
@@ -66,7 +94,8 @@ class Validator extends Base\Validator
             $input['card'],
             $input['shared'],
             $input['netbanking'],
-            $input['merchant_id']);
+            $input['merchant_id'],
+            $input['category']);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -86,7 +115,7 @@ class Validator extends Base\Validator
         if ($count > Entity::MAX_TERMINALS_COUNT)
         {
             throw new Exception\LogicException(
-                'Terminal count should not exceed 4');
+                'Terminal count should not exceed max count');
         }
         else if ($count === Entity::MAX_TERMINALS_COUNT)
         {
@@ -105,10 +134,24 @@ class Validator extends Base\Validator
     protected function matchGatewayForNewTerminal($new, $existing)
     {
         // If 1 exists, then another should not be added for the same gateway
-        if ($new->getGateway() === $existing->getGateway())
+        if (($new->getGateway() === $existing->getGateway()) and
+            ($new->getId() !== $existing->getId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
+        }
+    }
+
+    public function usedTerminalValidator($terminal, $input)
+    {
+        if ($terminal->getGateway() === Payment\Gateway::AXIS_MIGS)
+        {
+            $this->validateInput('axis_migs_edit_terminal', $input);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
         }
     }
 }

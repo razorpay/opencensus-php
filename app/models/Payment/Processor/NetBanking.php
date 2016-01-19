@@ -11,8 +11,8 @@ class Netbanking
     const BARB_R = 'BARB_R';
     const PUNB_C = 'PUNB_C';
     const PUNB_R = 'PUNB_R';
-    const LAVB_C = 'PUNB_C';
-    const LAVB_R = 'PUNB_R';
+    const LAVB_C = 'LAVB_C';
+    const LAVB_R = 'LAVB_R';
 
     protected static $names = array(
         self::BARB_C => 'Bank of Baroda - Corporate Banking',
@@ -22,6 +22,16 @@ class Netbanking
         self::LAVB_C => 'Lakshmi Vilas Bank - Corporate Banking',
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
     );
+
+    protected static $self = array(
+        IFSC::HDFC);
+
+    /**
+     * Additional net-banking banks that we are in the process of integrating
+     * @var array
+     */
+    protected static $selfInTest = array(
+        IFSC::KKBK);
 
     protected static $paytm = array(
         IFSC::CITI,
@@ -54,6 +64,7 @@ class Netbanking
         IFSC::CBIN,
         IFSC::CIUB,
         IFSC::CNRB,
+        IFSC::CORP,
         IFSC::COSB,
         IFSC::CSBK,
         IFSC::DCBL,
@@ -70,6 +81,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::JSBP,
         IFSC::KARB,
+        IFSC::KKBK,
         IFSC::KVBL,
         IFSC::MAHB,
         IFSC::NKGS,
@@ -77,6 +89,12 @@ class Netbanking
         IFSC::PMCB,
         IFSC::PSIB,
         IFSC::RATN,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
         IFSC::SIBL,
         IFSC::SRCB,
         IFSC::SVCB,
@@ -98,6 +116,89 @@ class Netbanking
         Netbanking::LAVB_R,
     );
 
+    protected static $sbiepay = array(
+        IFSC::SBTR,
+        IFSC::CSBK,
+        IFSC::JAKA,
+        IFSC::MAHB,
+        IFSC::DEUT,
+        IFSC::VIJB,
+        IFSC::PSIB,
+        IFSC::SIBL,
+        IFSC::BKID,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::UTBI,
+        IFSC::IDIB,
+        IFSC::CIUB,
+        IFSC::DLXB,
+        IFSC::ICIC,
+        IFSC::YESB,
+        IFSC::KVBL,
+        IFSC::FDRL,
+        IFSC::ORBC,
+        IFSC::CORP,
+        IFSC::INDB,
+        IFSC::HDFC,
+        IFSC::BBKM,
+        IFSC::KARB,
+        IFSC::ANDB,
+        IFSC::CNRB,
+        IFSC::RATN,
+        IFSC::UBIN,
+        IFSC::CBIN,
+        IFSC::PUNB,
+        IFSC::IOBA,
+        IFSC::SBIN,
+        IFSC::VYSA,
+        IFSC::IBKL,
+        IFSC::BKDN,
+        IFSC::DCBL,
+        IFSC::TMBL,
+        IFSC::SYNB,
+        IFSC::CITI,
+        IFSC::LAVB);
+
+    protected static $atom = array(
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::MAHB,
+        IFSC::CNRB,
+        IFSC::CSBK,
+        IFSC::CBIN,
+        IFSC::CITI,
+        IFSC::CIUB,
+        IFSC::CORP,
+        IFSC::DCBL,
+        IFSC::DEUT,
+        IFSC::DLXB,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IBKL,
+        IFSC::IDIB,
+        IFSC::IOBA,
+        IFSC::INDB,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KVBL,
+        IFSC::KKBK,
+        IFSC::LAVB,
+        IFSC::SIBL,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
+        IFSC::UCBA,
+        IFSC::UBIN,
+        IFSC::VIJB,
+        IFSC::YESB,
+    );
+
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks()));
@@ -114,7 +215,8 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk));
+        return array_unique(array_merge(self::$paytm, self::$billdesk,[IFSC::KKBK]));
+//        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$sbiepay));
     }
 
     public static function getDisabledBanks($banks)
@@ -131,11 +233,25 @@ class Netbanking
     {
         $names = Name::getNames($codes);
 
-        $names = array_merge($names, array_intersect_key(self::$names, array_flip($codes)));
+        $names = array_merge(
+                    $names,
+                    array_intersect_key(
+                        self::$names,
+                        array_flip($codes)));
 
         asort($names);
 
         return $names;
+    }
+
+    public static function getName($code)
+    {
+        if (defined(__CLASS__ . '::' . $code))
+        {
+            return self::$names[$code];
+        }
+
+        return Name::getName($code);
     }
 
     public static function getPaytmSupportedBanks()
@@ -148,6 +264,31 @@ class Netbanking
         return self::$billdesk;
     }
 
+    public static function getSupportedBanksInTestMode()
+    {
+        $banks = self::getSupportedBanksInLiveMode();
+
+        $banks = array_merge($banks, self::$selfInTest);
+        $banks = array_merge($banks, self::$sbiepay);
+
+        return array_unique($banks);
+    }
+
+    public static function getSupportedBanksInLiveMode()
+    {
+        return array_unique(array_merge(self::$billdesk, self::$self));
+    }
+
+    public static function getSbiepaySupportedBanks()
+    {
+        return self::$sbiepay;
+    }
+
+    public static function isBankSupportedByGateway($bank, $gateway)
+    {
+        return in_array($bank, self::$$gateway);
+    }
+
     public static function isPaytmSupportedBank($bank)
     {
         return in_array($bank, self::$paytm);
@@ -156,5 +297,10 @@ class Netbanking
     public static function isBilldeskSupportedBank($bank)
     {
         return in_array($bank, self::$billdesk);
+    }
+
+    public static function isSbiepaySupportedBank($bank)
+    {
+        return in_array($bank, self::$sbiepay);
     }
 }
