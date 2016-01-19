@@ -337,7 +337,7 @@ class TerminalPicker
         $gateway = Gateway::BILLDESK;
 
         if ((isset($terminals[$gateway]) === true) and
-            (Netbanking::isBankSupportedByGateway($gateway, $bank)))
+            (Netbanking::isBankSupportedByGateway($bank, $gateway)))
         {
             return $terminals[$gateway];
         }
