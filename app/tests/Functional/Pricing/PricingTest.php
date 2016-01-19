@@ -147,6 +147,24 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddInternationalPricingPlanRuleForNonCardMethod()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddInternationalPricingPlanRuleWithExtraFields()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
     public function testDeletePricingPlanRule()
     {
         $content = $this->startTest();

@@ -90,6 +90,7 @@ class Validator extends Base\Validator
         $attrs = array(
             Entity::PAYMENT_NETWORK,
             Entity::PAYMENT_ISSUER,
+            Entity::PAYMENT_METHOD_TYPE,
         );
 
         foreach ($attrs as $attr)

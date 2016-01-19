@@ -441,4 +441,58 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
+
+    'testAddInternationalPricingPlanRuleForNonCardMethod' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'netbanking',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Internatioanl pricing rule is only allowed for card method',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddInternationalPricingPlanRuleWithExtraFields' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'For international pricing rule, attribute payment_method_type should not be set',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
