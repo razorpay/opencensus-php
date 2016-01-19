@@ -40,6 +40,9 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_ISSUER)
                   ->nullable();
 
+            $table->boolean(Pricing::INTERNATIONAL)
+                  ->default(0);
+
             $table->integer(Pricing::PERCENT_RATE)
                   ->unsigned()
                   ->default(0);
@@ -48,14 +51,14 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->default(0);
 
-            $table->boolean(Pricing::INTERNATIONAL)
-                  ->default(0);
-
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
 
             $table->integer(Pricing::EXPIRED_AT)
                   ->nullable();
+
+            $table->index(Pricing::PLAN_ID);
+            $table->index(Pricing::INTERNATIONAL);
         });
     }
 
