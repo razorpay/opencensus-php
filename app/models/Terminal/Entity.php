@@ -261,7 +261,7 @@ class Entity extends Base\PublicEntity
 
     public function isEmiEnabled()
     {
-        return (((int)$this->getAttribute(self::EMI)) === 1);        
+        return (boolean)$this->getAttribute(self::EMI);        
     }
 
     public function isGateway($gateway)

@@ -190,7 +190,7 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        if($bank === IFSC::KKBK)
+        if ($bank === IFSC::KKBK)
         {
             // for kotak, process as normal card transaction and mail for emi
             return $this->pickCardTerminal($terminals, $payment);
