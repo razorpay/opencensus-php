@@ -13,7 +13,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_METHOD        = 'payment_method';
     const PAYMENT_METHOD_TYPE   = 'payment_method_type';
     const PAYMENT_NETWORK       = 'payment_network';
-    const IS_INTERNATIONAL      = 'is_international';
+    const INTERNATIONAL         = 'international';
 
     // Humanized name of the payment network
     const PAYMENT_NETWORK_NAME  = 'payment_network_name';
@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ISSUER,
         self::PERCENT_RATE,
         self::FIXED_RATE,
-        self::IS_INTERNATIONAL);
+        self::INTERNATIONAL);
 
     protected $table = \Constants\Table::PRICING;
 
@@ -94,6 +94,11 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function isInternational()
+    {
+        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+    }
+
     public function payments()
     {
         return $this->hasMany('Models\Transaction\Entity', 'pricing_rule_id');
@@ -138,6 +143,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentMethod()
     {
         return $this->getAttribute(self::PAYMENT_METHOD);
+    }
+
+    public function getInternationalAttribute()
+    {
+        return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
     public function fillRule($input, $plan)

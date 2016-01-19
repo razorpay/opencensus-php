@@ -183,11 +183,6 @@ class Fee
 
         $isInternational = $payment->isInternational();
 
-        if (!$isInternational)
-        {
-            $isInternational = null;
-        }
-
         $pricing = $this->repo->
             getPricingRulesForGivenCardNetwork($pricingPlanId, $network, $isInternational);
 
