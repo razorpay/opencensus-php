@@ -165,6 +165,13 @@ class PricingTest extends TestCase
         return $this->startTest($testData);
     }
 
+    public function testAddDuplicateWalletPricingRule()
+    {
+        $testData['request']['url'] = '/pricing/'. '1hDYlICobzOCYt' . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testDeletePricingPlanRule()
     {
         $content = $this->startTest();
