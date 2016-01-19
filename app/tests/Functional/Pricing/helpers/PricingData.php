@@ -390,4 +390,55 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testAddInternationalPricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1100,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1100,
+                'international' => true,
+            ],
+        ],
+    ],
+
+    'testAddDuplicateInternationalPricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
 ];
