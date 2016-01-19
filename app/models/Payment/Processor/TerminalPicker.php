@@ -317,7 +317,7 @@ class TerminalPicker
         }
     }
 
-    protected function selectDirectNetbankingBankTerminal($termianls, $bank)
+    protected function selectDirectNetbankingBankTerminal($terminals, $bank)
     {
         if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
         {
