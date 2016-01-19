@@ -32,13 +32,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 607500,
-                'category'  => 'STANDARD',
-                'network'   => 'RuPay',
-                'type'      => 'debit',
-                'country'   => 'IN',
-                'issuer'    => 'PUNJAB NATIONAL BANK',
-                'trivia'    => 'random trivia'
+                'iin'           => 607500,
+                'category'      => 'STANDARD',
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'country'       => 'IN',
+                'issuer_name'   => 'PUNJAB NATIONAL BANK',
+                'trivia'        => 'random trivia'
             ]
         ],
     ],
@@ -51,7 +51,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 6,
+                'count' => 7,
                 'items' => [
                     [
                     ]

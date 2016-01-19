@@ -12,7 +12,7 @@ return [
                 'bank' => 'HDFC',
                 'duration' => 3,
                 'rate' => 1045,
-                'methods' => 'creditcard',
+                'methods' => 'card',
             ],
             'method' => 'POST',
             'url' => '/emi',
@@ -22,7 +22,7 @@ return [
                 'bank' => 'HDFC',
                 'duration' => 3,
                 'rate' => 1045,
-                'methods' => 'creditcard',
+                'methods' => 'card',
             ],  
         ],
     ],
@@ -52,8 +52,8 @@ return [
                 'bank' => 'HDFC',
                 'rate' => 1045,
                 'duration' => 3,
-                'methods' => 'creditcard',
-                'min_amount' => 5000
+                'methods' => 'card',
+                'min_amount' => 300000
             ],
         ],
     ],

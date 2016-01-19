@@ -193,7 +193,7 @@ class TerminalPicker
         if($bank === IFSC::KKBK)
         {
             // for kotak, process as normal card transaction and mail for emi
-            return pickCardTerminal($terminals, $payment);
+            return $this->pickCardTerminal($terminals, $payment);
         }
 
         return $this->getSharedTerminalForEmi($payment);

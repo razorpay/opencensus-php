@@ -198,11 +198,11 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::EMI_OPTIONS)->insert(
                 array(
                     'id'            => 'abcdefghijklmn',
-                    'bank'          => 'HDFC',
+                    'bank'          => 'KKBK',
                     'duration'      => 9,
                     'rate'          => 1400,
                     'min_amount'    => 300000,
-                    'methods'       => 'creditcard',
+                    'methods'       => 'card',
                     'created_at'    => time(),
                     'updated_at'    => time(), 
                 )
@@ -400,7 +400,7 @@ class DatabaseSeeder extends Seeder
                 'merchant_id'           => Account::SHARED_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
                 'emi'                   => '1',
-                'shared'                => '1'
+                'shared'                => '1',
                 'emi_duration'          => 9,
                 'gateway_merchant_id'   => 'test_merchant_emi',
                 'gateway_terminal_id'   => 'shared_terminal_hdfc',

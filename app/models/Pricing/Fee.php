@@ -161,6 +161,18 @@ class Fee
 
             $rule = $pricing->first();
         }
+        else if($payment->isEmi())
+        {
+            $pricing = $this->repo->getPricingRulesForEmi($pricingPlanId);
+
+            if (count($pricing) > 1)
+            {
+                throw new Exception\LogicException(
+                    'Currently only 1 emi pricing rule allowed. Found: ' . count($pricing));
+            }
+
+            $rule = $pricing->first();
+        }
         else
         {
             throw new Exception\InvalidArgumentException('Argument - Method: ' . $payment->getMethod());

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Payment;
+namespace Tests\Functional\EMI;
 
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;

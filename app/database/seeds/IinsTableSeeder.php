@@ -1,6 +1,6 @@
 <?php
 
-use Models\Card;
+use Models\Card\IIN;
 use Constants\Table;
 
 class IinsTableSeeder extends Seeder
@@ -14,12 +14,15 @@ class IinsTableSeeder extends Seeder
         $records = self::getIinRecordsFromFile(storage_path().'/iins/iins.csv');
 
         $columns = array(
-            Card\Detail::IIN,
-            Card\Detail::CATEGORY,
-            Card\Detail::NETWORK,
-            Card\Detail::TYPE,
-            Card\Detail::COUNTRY,
-            Card\Detail::ISSUER);
+            IIN\Entity::IIN,
+            IIN\Entity::CATEGORY,
+            IIN\Entity::NETWORK,
+            IIN\Entity::TYPE,
+            IIN\Entity::COUNTRY,
+            IIN\Entity::ISSUER_NAME,
+            IIN\Entity::ISSUER,
+            IIN\Entity::EMI
+        );
 
         $assocRecords = array();
 

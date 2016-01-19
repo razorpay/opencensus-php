@@ -18,6 +18,8 @@ class Validator extends Base\Validator
         Entity::CATEGORY      => 'sometimes',
         Entity::ISSUER        => 'sometimes',
         Entity::TRIVIA        => 'sometimes',
+        Entity::ISSUER_NAME   => 'sometimes',
+        Entity::EMI           => 'sometimes|integer|in:0,1',
     );
 
     protected static $createValidators = array(

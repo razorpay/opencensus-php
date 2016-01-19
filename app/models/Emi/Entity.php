@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT);
 
     protected $defaults = array(
-        self::MIN_AMOUNT => 5000,
+        self::MIN_AMOUNT => 300000,
     );
 
     protected $guarded = array(self::ID);

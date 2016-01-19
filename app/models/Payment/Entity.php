@@ -198,9 +198,9 @@ class Entity extends Base\PublicEntity
         {
             $iin = substr($input['card']['number'], 0, 6);
             
-            $bank = (new IIN\Iin)->getBankByIIN($iin);
+            $iinEntity = (new IIN\Repository)->findOrFail($iin);
             
-            $input['bank'] = $bank;
+            $input['bank'] = $iinEntity->getIssuer();
         }
     }
 
@@ -473,6 +473,11 @@ class Entity extends Base\PublicEntity
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
+    }
+
+    public function isEmi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
     public function isGateway($gateway)

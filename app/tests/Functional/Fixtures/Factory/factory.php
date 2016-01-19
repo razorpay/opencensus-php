@@ -209,3 +209,13 @@ $factory(Models\Merchant\Webhook\Entity::class, [
     ],
     'active' => true,
 ]);
+
+
+$factory(Models\Emi\Entity::class, [
+    'id' => 10101010101010,
+    'duration' => 9,
+    'rate' => 1200,
+    'bank' => 'HDFC',
+    'methods' => 'card',
+    'min_amount' => 500000,
+]);

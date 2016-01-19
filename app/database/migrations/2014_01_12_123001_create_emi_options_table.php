@@ -32,7 +32,7 @@ class CreateEmiOptionsTable extends Migration {
 
             $table->integer(Emi\Entity::DURATION);
             
-            $table->char(Emi\Entity::METHODS)
+            $table->string(Emi\Entity::METHODS)
             	  ->nullable();
 
             $table->integer(Emi\Entity::MIN_AMOUNT);
