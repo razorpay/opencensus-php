@@ -22,7 +22,8 @@ class Validator extends Base\Validator
     protected static $addPlanRuleValidators = array(
         'addPlanRuleRate',
         'addPlanRuleNB',
-        'addPlanRulePaymentNetwork');
+        'addPlanRulePaymentNetwork',
+        'addPlanRuleInternational');
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
@@ -75,6 +76,36 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_RATE_NOT_DEFINED);
+        }
+    }
+
+    protected function validateAddPlanRuleInternational($input)
+    {
+        if ((isset($input[Entity::INTERNATIONAL]) === false) or
+            ($input[Entity::INTERNATIONAL] === '0'))
+        {
+            return;
+        }
+
+        $attrs = array(
+            Entity::PAYMENT_NETWORK,
+            Entity::PAYMENT_ISSUER,
+        );
+
+        foreach ($attrs as $attr)
+        {
+            if ((isset($input[$attr])) and
+                ($input[$attr] !== null))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "For international pricing rule, attribute $attr should not be set");
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Internatioanl pricing rule is only allowed for card method');
         }
     }
 
