@@ -1,8 +1,8 @@
 Hi,
 
-Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You can now start accepting payments from your customers. You have opted for the {{{$plan['name']}}} plan.
+Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You can now start accepting payments from your customers.
 
-The pricing details associated with the plan are::
+The pricing details associated with your account are:
 
 @foreach ($rules as $pricing => $methodDisplay)
 - {{implode(',', $methodDisplay)}} - {{$pricing}}
