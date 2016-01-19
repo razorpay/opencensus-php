@@ -141,6 +141,8 @@ class WebhookTest extends TestCase
 
     public function testWebhookHittingTheDefinedRoute()
     {
+        $this->markTestSkipped();
+
         $webhook = $this->createWebhook();
 
         $this->doAuthPayment();
