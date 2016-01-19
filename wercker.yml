@@ -36,8 +36,8 @@ build:
           name: Run unit tests
           code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
-          name: Copy to output dir
-          code: cp -rf ./* $WERCKER_OUTPUT_DIR
+          name: List directory
+          code: ls -lah
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -51,11 +51,8 @@ deploy:
           name: Change to production mode
           code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
       - script:
-          name: List wercker output dir
-          code: ls $WERCKER_OUTPUT_DIR
-      - script:
           name: List directory
-          code: ls
+          code: ls -lah
       - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
