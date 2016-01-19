@@ -106,9 +106,6 @@ class Validator extends Base\Validator
 
         // The input and pricing rule (any) gateway should match
         $this->matchGateway($rule, $input);
-
-        // The input should not match any existing rule
-        $this->matchPaymentRules($plan, $input);
     }
 
     protected function matchGateway($planRule, $input)
@@ -129,19 +126,19 @@ class Validator extends Base\Validator
     /**
      * Check whether this new rule already exists
      */
-    public function matchPaymentRules($plan, $input)
+    public function matchPaymentRules($plan)
     {
         $rules = $plan->toArray();
 
-        $inputEntity = new Entity($input);
+        $newRule = $this->entity;
 
         foreach ($rules as $rule)
         {
-            if (($rule[Entity::PAYMENT_METHOD] === $inputEntity[Entity::PAYMENT_METHOD]) and
-                ($rule[Entity::PAYMENT_METHOD_TYPE] === $inputEntity[Entity::PAYMENT_METHOD_TYPE]) and
-                ($rule[Entity::PAYMENT_NETWORK] === $inputEntity[Entity::PAYMENT_NETWORK]) and
-                ($rule[Entity::PAYMENT_ISSUER] === $inputEntity[Entity::PAYMENT_ISSUER]) and
-                ($rule[Entity::INTERNATIONAL] === $inputEntity[Entity::INTERNATIONAL]))
+            if (($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+                ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
+                ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
+                ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
+                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
