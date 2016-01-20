@@ -128,8 +128,17 @@ app.controller('ActionsCtrl', [
     };
     $scope.apiRequest = function (data) {
       var url = '/api/' + data.url;
-      delete data.url;
-      var req = $http.post(url, data, { transformRequest: transformRequestAsFormPost });
+
+      data = data.form;
+
+      var req = $http.post(url, data, {
+        transformRequest: angular.identity,
+        // We set this to undefined to let angular auto-detect this
+        // And convert to a multipart file upload
+        headers: {
+          'Content-Type': undefined
+        }
+      });
       req.success(function (data) {
         if (data.success) {
           $scope.response = data;
@@ -400,54 +409,8 @@ app.controller('ActionsCtrl', [
   '$modalInstance',
   function ($scope, $modalInstance) {
 
-    var FormData = function () {
-        this._parts = {};
-    };
-
-    FormData.prototype.append = function (name, part) {
-        this._parts[name] = part;
-    };
-
-    FormData.prototype.generate = function () {
-      var boundary = Date.now();
-      var bodyParts = [];
-
-      for (var fieldName in this._parts) {
-        var part = this._parts[fieldName];
-        bodyParts.push(
-          '--' + boundary,
-          'Content-Disposition: form-data; name="' + fieldName + '"; filename="' + file.name + '"',
-          'Content-Type: ' + part.type,
-          'Content-Transfer-Encoding: base64',
-          '',
-          file.data
-        );
-      }
-
-      bodyParts.push('--' + boundary + '--', '');
-
-      return {
-        body: bodyParts.join('\r\n'),
-        boundary: boundary
-      };
-    };
-
-    $scope.$watch('data.file+data.file_name', function() {
-      if ( !$scope.data.file) {
-        return;
-      };
-      var form = new FormData;
-      form.append($scope.data.file, $scope.data.file_name);
-
-      var formdata = form.generate();
-
-      $scope.data.body = formdata.body;
-      $scope.data.boundary  = formdata.boundary;
-      $scope.data.content_type = 'multipart/form-data';
-    });
-
+    $scope.url = '';
     $scope.data = {
-      url: '',
       mode: 'test',
       method: 'GET',
       auth: 'admin',
@@ -455,22 +418,32 @@ app.controller('ActionsCtrl', [
       content_type: 'application/x-www-form-urlencoded',
       body: '',
       file: false,
-      file_name: 'file',
-      boundary: false
+      file_name: 'file'
     };
 
-    $scope.ok = function (data) {
-      if ($scope.data.boundary) {
-        $scope.data.content_type = 'multipart/form-data; boundary=' + $scope.data.boundary;
+    $scope.ok = function (url, data) {
+
+      console.log(data.file);
+      console.debug($scope.data);
+      var fd = new FormData();
+
+      for (var field in data) {
+        var value = data[field];
+        fd.append(field, value);
       }
-      $modalInstance.close(data);
+
+      // We pass an instance of FormData
+      // And the URL separately because extracting and deleting
+      // items from formdata is not supported most browsers
+      // including chrome
+      $modalInstance.close({
+        form: fd,
+        url: url
+      });
     };
+
     $scope.cancel = function () {
-      if ($scope.data.boundary) {
-        $scope.data.content_type = 'multipart/form-data; boundary=' + $scope.data.boundary;
-      }
       $modalInstance.dismiss('cancel');
-      console.log($scope.data);
     };
   }
 ]).controller('generateRefundModalCtrl', [
