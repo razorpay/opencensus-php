@@ -2,12 +2,14 @@
 
 namespace Models\Admin;
 
+use Config;
 use Input;
 
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Client as Guzzle;
 // This is the default class we use for making requests
+use RZP\Api as Api;
 use Razorpay\Api\Request as ApiRequest;
-
 
 class RawApiRequest
 {
@@ -28,18 +30,20 @@ class RawApiRequest
      */
     function __construct($input, $path)
     {
+        // Create the guzzle client
         $this->client = new Guzzle([
-            'base_url' => ApiRequest::$baseUrl,
-            'defaults' => [
-                // We already have a few headers initialized for this class
-                // including the X-Dashboard and Razorpay-API Header
-                'headers'   =>  ApiRequest::$headers
+            'base_uri' => Config::get('api.url'),
+            // We already have a few headers initialized for this class
+            // including the X-Dashboard and Razorpay-API Header
+            'headers'   =>  ApiRequest::getHeaders() + [
+                'X-Dashboard' => 'true',
+                'User-Agent'  => 'Razorpay-PHP/guzzle6'
             ]
         ]);
 
         $this->setupCredentials($input);
         $this->input = $input;
-        $this->path = path;
+        $this->path = $path;
     }
 
     protected function setupCredentials($input)
@@ -52,14 +56,24 @@ class RawApiRequest
                 break;
 
             case 'admin':
-                $this->setApiCredentials(null, $input['mode']);
+                $this->setApiCredentials('', $input['mode']);
                 break;
         }
     }
 
-    protected function setApiCredentials($user, $password)
+    protected function setApiCredentials($merchantId, $mode)
     {
-        $this->params['auth'] = [$user, $password];
+        $id = 'rzp_'.$mode;
+
+        // id becomes rzp_{test|live}_merchant_id
+        if ($merchantId)
+        {
+            $id = $id.'_'.$merchant_id;
+        }
+
+        $secret = Config::get('api.auth_pass');
+
+        $this->params['auth'] = [$id, $secret];
     }
 
     /**
@@ -71,7 +85,7 @@ class RawApiRequest
     {
         // The content type header might be missing and in those cases
         // We let guzzle figure it out.
-        $this->params['header']['Content-Type'] = Input::get('content_type', $default);
+        $this->params['headers']['Content-Type'] = Input::get('content_type', $default);
     }
 
     /**
@@ -82,11 +96,11 @@ class RawApiRequest
     protected function prepareRequest()
     {
         // If we need to add the file to the body
-        if ($input['file'] instanceof \SplFileInfo)
+        if ($this->input['file'] instanceof \SplFileInfo)
         {
             // @note: The second parameter is crucial and a huge
             // security risk if not added
-            mb_parse_str($input['body'], $postArray);
+            mb_parse_str($this->input['body'], $postArray);
             $this->params['multipart'] = [];
 
             foreach ($postArray as $key => $value)
@@ -127,15 +141,20 @@ class RawApiRequest
 
         try
         {
-            $request = $client->createRequest($this->input['method'], $this->path, $this->params);
-            \Trace::info('TRACE_RAW_API_REQUEST', $this->params);
-            $response = $request->send()->json();
+            $request = new GuzzleRequest($this->input['method'], $this->path);
+            $response = $this->client->send($request, $this->params);
+            $response = json_decode($response->getBody());
+
         }
         // This captures all the errors that might happen for now
+        catch(\GuzzleHttp\Exception\ConnectException $e)
+        {
+            $errors = ["Error in connecting to API"];
+        }
         catch(\GuzzleHttp\Exception\GuzzleException $e)
         {
-            $json = json_decode($e->response);
-            $errors = [$json['error']['description'], "Status Code: {$e->response->getStatusCode()}"];
+            $json = json_decode($e->getResponse()->getBody());
+            $errors = [$json->error->description, "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
         finally
         {
