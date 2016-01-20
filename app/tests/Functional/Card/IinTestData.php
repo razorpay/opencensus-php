@@ -25,6 +25,31 @@ return [
         ],
     ],
 
+    'testEditIin' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'post',
+            'content' => [
+                'country' => 'IN',
+                'issuer' => 'HDFC',
+                'issuer_name' => 'HDFC',
+                'emi' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin' => 112333,
+                'network' => 'RuPay',
+                'type' => 'debit',
+                'country' => 'IN',
+                'issuer' => 'HDFC',
+                'issuer_name' => 'HDFC',
+                'emi' => '0'
+            ],
+        ],
+    ],
+
+
     'testGetIin' => [
         'request' => [
             'url' => '/iins/607500',
