@@ -174,6 +174,11 @@ trait FileHandlerTrait
         return $this->getFileToReadNameWithoutExt().'.txt';
     }
 
+    protected function getExcelFileToReadName()
+    {
+        return $this->getFileToReadNameWithoutExt().'.xlsx';
+    }
+
     protected function getFileToReadNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
@@ -236,12 +241,24 @@ trait FileHandlerTrait
         {
             // Ending row may be just empty.
             if ($row === '')
+            {
                 continue;
+            }
 
             $values = explode('~', $row);
+
             $values = array_combine($headings, $values);
             $data[] = $values;
         }
+
+        return $data;
+    }
+
+    protected function parseExcelFile($file)
+    {
+        $data = Excel::load($filePath)
+                      ->formatDates(false)
+                      ->toArray();
 
         return $data;
     }

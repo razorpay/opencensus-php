@@ -12,6 +12,15 @@ class Inferno
 
         $webhook = $repo->find($data['webhook_id']);
 
+        if ($webhook === null)
+        {
+            $this->trace->info(
+                TraceCode::WEBHOOK_FIRING,
+                ['data' => $data]);
+
+            $job->delete();
+        }
+
         if ($webhook->isActive() === false)
         {
             $job->delete();

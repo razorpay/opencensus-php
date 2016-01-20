@@ -9,7 +9,7 @@ class Validator extends Base\Validator
     protected static $authRules = array(
         'MerchantID'        => 'required|alpha_num',
         'CustomerID'        => 'required|alpha_num',
-        'Unknown1'          => 'required|in:NA',
+        'AccountNumber'     => 'required|in:NA',
         'TxnAmount'         => 'required|numeric',
         'BankID'            => 'required|',
         'Unknown2'          => 'required|in:NA',

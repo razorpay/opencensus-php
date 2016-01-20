@@ -30,6 +30,8 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
+//        $this->markTestSkipped();
+
         $this->db = new Database($this->app);
 
         // Instantiate fixture class

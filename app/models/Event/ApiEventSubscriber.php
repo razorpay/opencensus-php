@@ -6,6 +6,7 @@ use Constants;
 use Models\Event;
 use Models\Payment;
 use Webhook\Fire;
+use Trace\TraceCode;
 
 class ApiEventSubscriber
 {
@@ -28,6 +29,8 @@ class ApiEventSubscriber
         $this->event = $app['events'];
 
         $this->queue = $app['queue'];
+
+        $this->trace = $app['trace'];
     }
 
     public function onEvent($params)

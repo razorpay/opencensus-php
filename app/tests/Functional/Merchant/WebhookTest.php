@@ -139,6 +139,16 @@ class WebhookTest extends TestCase
         $this->assertEquals(true, $webhook['active']);
     }
 
+    public function testWebhookHittingTheDefinedRoute()
+    {
+        $this->markTestSkipped();
+
+        $webhook = $this->createWebhook();
+
+        $this->doAuthPayment();
+    }
+
+
     protected function mockInfernoWithResponseStatusCode($statusCode)
     {
         $inferno = $this->mockInferno();
