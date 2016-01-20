@@ -23,9 +23,9 @@ class Entity extends Base\PublicEntity
     const CREATED_AT            =>      'created_at';
     const UPDATED_AT            =>      'updated_at';
 
-    protected $table = \Constants\Table::SETTLEMENT_DETAILS;
+    protected $table = \Constants\Table::SETTLEMENT_DETAIL;
 
-    protected $entity = 'settlement';
+    protected $entity = 'settlement_detail';
 
     protected $entity = 'merchant';
 

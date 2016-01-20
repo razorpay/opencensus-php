@@ -22,7 +22,7 @@ class Table
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const DAILY_SETTLEMENT      = 'daily_settlements';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const SETTLEMENT_DETAIL     = 'settlement_details';
 
     // Gateway related
     const ATOM                  = 'atom';

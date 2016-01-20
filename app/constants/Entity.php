@@ -28,7 +28,6 @@ class Entity
     //
     // Gateway entities
     //
-
     const ATOM              = 'atom';
     const HDFC              = 'hdfc';
     const AMEX              = 'amex';
