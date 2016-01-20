@@ -399,6 +399,53 @@ app.controller('ActionsCtrl', [
   '$scope',
   '$modalInstance',
   function ($scope, $modalInstance) {
+
+    var FormData = function () {
+        this._parts = {};
+    };
+
+    FormData.prototype.append = function (name, part) {
+        this._parts[name] = part;
+    };
+
+    FormData.prototype.generate = function () {
+      var boundary = Date.now();
+      var bodyParts = [];
+
+      for (var fieldName in this._parts) {
+        var part = this._parts[fieldName];
+        bodyParts.push(
+          '--' + boundary,
+          'Content-Disposition: form-data; name="' + fieldName + '"; filename="' + file.name + '"',
+          'Content-Type: ' + part.type,
+          'Content-Transfer-Encoding: base64',
+          '',
+          file.data
+        );
+      }
+
+      bodyParts.push('--' + boundary + '--', '');
+
+      return {
+        body: bodyParts.join('\r\n'),
+        boundary: boundary
+      };
+    };
+
+    $scope.$watch('data.file+data.file_name', function() {
+      if ( !$scope.data.file) {
+        return;
+      };
+      var form = new FormData;
+      form.append($scope.data.file, $scope.data.file_name);
+
+      var formdata = form.generate();
+
+      $scope.data.body = formdata.body;
+      $scope.data.boundary  = formdata.boundary;
+      $scope.data.content_type = 'multipart/form-data';
+    });
+
     $scope.data = {
       url: '',
       mode: 'test',
@@ -406,13 +453,24 @@ app.controller('ActionsCtrl', [
       auth: 'admin',
       merchant_id: '',
       content_type: 'application/x-www-form-urlencoded',
-      body: ''
+      body: '',
+      file: false,
+      file_name: 'file',
+      boundary: false
     };
+
     $scope.ok = function (data) {
+      if ($scope.data.boundary) {
+        $scope.data.content_type = 'multipart/form-data; boundary=' + $scope.data.boundary;
+      }
       $modalInstance.close(data);
     };
     $scope.cancel = function () {
+      if ($scope.data.boundary) {
+        $scope.data.content_type = 'multipart/form-data; boundary=' + $scope.data.boundary;
+      }
       $modalInstance.dismiss('cancel');
+      console.log($scope.data);
     };
   }
 ]).controller('generateRefundModalCtrl', [
