@@ -71,17 +71,6 @@ class ApiEventSubscriber
 
         $eventFired = $this->event;
 
-        $this->trace->info(
-            TraceCode::WEBHOOK_FIRING,
-            ['merchant' => $payment->merchant->toArray()]);
-
-        if ($webhook !== null)
-        {
-            $this->trace->info(
-                TraceCode::WEBHOOK_FIRING,
-                ['webhook' => $webhook->toArray()]);
-        }
-
         if ($this->fireWebhookForEvent($webhook, $eventFired) === false)
         {
             return;
