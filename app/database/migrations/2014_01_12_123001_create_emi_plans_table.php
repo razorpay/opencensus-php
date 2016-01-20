@@ -30,7 +30,7 @@ class CreateEmiPlansTable extends Migration {
 
             $table->integer(Emi\Entity::RATE);
 
-            $table->integer(Emi\Entity::DURATION);
+            $table->tinyInteger(Emi\Entity::DURATION);
             
             $table->string(Emi\Entity::METHODS)
             	  ->nullable();
