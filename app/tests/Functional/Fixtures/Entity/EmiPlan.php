@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Fixtures\Entity;
 
-class EmiPlans extends Base
+class EmiPlan extends Base
 {
     protected $items = array(
         array(
@@ -30,7 +30,7 @@ class EmiPlans extends Base
         $emiPlans = [];
         foreach ($items as $attributes)
         {
-            $emiPlans[] = $this->fixtures->create('emi_plans', $attributes);
+            $emiPlans[] = $this->fixtures->create('emi_plan', $attributes);
         }
 
         return $emiPlans;

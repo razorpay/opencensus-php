@@ -465,7 +465,7 @@ trait PaymentTrait
     protected function createWebhook(array $input = array())
     {
         $defaultInput = array(
-            'url' => 'http://random.com',
+            'url' => 'http://localhost/v1/dummy/route',
             'events' => [
                 'payment.authorized' => '1',
             ]);

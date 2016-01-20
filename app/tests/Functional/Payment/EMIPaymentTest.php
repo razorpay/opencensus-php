@@ -24,7 +24,7 @@ class EmiPaymentTest extends TestCase
 
     public function testEmiPaymentCreate()
     {
-        $this->fixtures->create('emi_plans:default_emi_plans');
+        $this->fixtures->create('emi_plan:default_emi_plans');
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;

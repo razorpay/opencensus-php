@@ -174,6 +174,22 @@ class PublicEntity extends UniqueIdEntity
         return true;
     }
 
+    public static function stripSignWithoutValidation(& $id)
+    {
+        $delimiter = static::getDelimiter();
+
+        $ix = strpos($id, $delimiter);
+
+        if ($ix === false)
+        {
+            return false;
+        }
+
+        $id = substr($id, $ix + 1);
+
+        return $id;
+    }
+
     public static function getSign()
     {
         return static::$sign;

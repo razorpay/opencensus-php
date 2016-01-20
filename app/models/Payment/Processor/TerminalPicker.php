@@ -213,9 +213,6 @@ class TerminalPicker
 
     protected function getSharedCategoryTerminalForCard($payment)
     {
-        $international = $payment->merchant->isInternational();
-
-        $network = $payment->card->getNetworkCode();
         $category = $payment->merchant->getCategory();
 
         $terminal = $this->repo->getSharedTerminalForGatewayWithCategory(
@@ -339,7 +336,7 @@ class TerminalPicker
         }
     }
 
-    protected function selectDirectNetbankingBankTerminal($termianls, $bank)
+    protected function selectDirectNetbankingBankTerminal($terminals, $bank)
     {
         if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
         {
@@ -359,7 +356,7 @@ class TerminalPicker
         $gateway = Gateway::BILLDESK;
 
         if ((isset($terminals[$gateway]) === true) and
-            (Netbanking::isBankSupportedByGateway($gateway, $bank)))
+            (Netbanking::isBankSupportedByGateway($bank, $gateway)))
         {
             return $terminals[$gateway];
         }

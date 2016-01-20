@@ -38,6 +38,7 @@ class TraceCode
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
+    const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
     /*
      * Gateway component error messages
      */
@@ -95,6 +96,8 @@ class TraceCode
     const PRICING_PLAN_RULE_ADD_SUCCESS             = 'PRICING_PLAN_RULE_ADD_SUCCESS';
 
     const WEBHOOK_FIRING                            = 'WEBHOOK_FIRING';
+    const WEBHOOK_DEACTIVATE                        = 'WEBHOOK_DEACTIVATE';
+    const WEBHOOK_RESPONSE_FAILURE                  = 'WEBHOOK_RESPONSE_FAILURE';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';

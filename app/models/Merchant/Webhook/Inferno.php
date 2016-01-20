@@ -3,14 +3,33 @@
 namespace Models\Merchant\Webhook;
 
 use Requests;
+use Trace\TraceCode;
 
 class Inferno
 {
+    protected $trace;
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     public function fire($job, $data)
     {
         $repo = new Repository;
 
         $webhook = $repo->find($data['webhook_id']);
+
+        if ($webhook === null)
+        {
+            $this->trace->info(
+                TraceCode::WEBHOOK_FIRING,
+                ['data' => $data]);
+
+            $job->delete();
+        }
 
         if ($webhook->isActive() === false)
         {
@@ -19,18 +38,36 @@ class Inferno
             return;
         }
 
+        $this->trace->info(
+            TraceCode::WEBHOOK_FIRING,
+            [$data]);
+
         $request = $this->getRequestArray($data, $webhook);
 
         $response = $this->makeRequest($request);
 
         if ($response->success === false)
         {
+            $this->trace->info(
+                TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                [
+                    'webhook' => $webhook->getId(),
+                    'response_code' => $response->status_code
+                ]);
+
             // It's a failure, increment failure count.
             $repo->bumpFailureCount($webhook);
 
             if (($webhook->isActive() === false) or
                 ($job->attempts() >= 3))
             {
+                $this->trace->info(
+                    TraceCode::WEBHOOK_DEACTIVATE,
+                    [
+                        'webhook' => $webhook->toArray(),
+                        'response_code' => $response->status_code
+                    ]);
+
                 // Webhook is now inactive
                 // So let's just delete the job
                 $job->delete();
