@@ -417,20 +417,28 @@ app.controller('ActionsCtrl', [
       merchant_id: '',
       content_type: 'application/x-www-form-urlencoded',
       body: '',
-      file: false,
-      file_name: 'file'
+      file: null,
+      file_name: null
     };
 
     $scope.ok = function (url, data) {
-
-      console.log(data.file);
-      console.debug($scope.data);
       var fd = new FormData();
 
+      // If we are sending a file
+      // We don't add the content type header
+      // because this needs to be auto-generated
+      if (data.file) {
+        delete data.content_type;
+      };
+
+      // We push all data fields
+      // into the formdata object
       for (var field in data) {
         var value = data[field];
         fd.append(field, value);
       }
+
+
 
       // We pass an instance of FormData
       // And the URL separately because extracting and deleting

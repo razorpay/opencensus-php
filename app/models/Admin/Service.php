@@ -1514,40 +1514,8 @@ class Service extends Base\Service
             return [$error, []];
         }
 
-        // Setup credentials based on auth
-        switch ($input['auth'])
-        {
-            case 'proxy':
-                $this->setApiCredentials($input['merchant_id'], $input['mode']);
-                break;
-
-            case 'admin':
-                $this->setApiCredentials(null, $input['mode']);
-                break;
-        }
-
-        // Prepare the request
-        $contentType = \Input::get('content_type', 'application/x-www-form-urlencoded');
-
-        $body = \Input::get('body', '');
-
-        ApiRequest::addHeader('Content-Type', $contentType);
-
-        // Fire the request
-        $request = new ApiRequest();
-
-        try
-        {
-            $response = $request->request($input['method'], $path, $body);
-        }
-        catch (ApiError $e)
-        {
-            $error = [$e->getMessage(), "Status Code: {$e->getHttpStatusCode()}"];
-
-            $response = null;
-        }
-
-        return [$error, $response];
+        $request = new RawApiRequest($input, $path);
+        return $request->send();
     }
 
     public function logDataExport($entity, $params)
