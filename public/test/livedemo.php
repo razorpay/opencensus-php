@@ -47,7 +47,7 @@ require('vars.php');
             <h3>Fine Tshirt</h3>
               <div class="rating"><img src="images/rating.png"></div>
               <p class="review">5 Reviews</p>
-            <div class="price">₹5</div>
+            <div class="price">₹1</div>
 
             <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc fermentum tincidunt libero nec imperdiet. Etiam sed malesuada dolor. Integer id ante ut urna pretium aliquet et et quam. Fusce tempor ultricies velit non finibus. Nullam lacus nulla, vehicula vitae pharetra nec, vestibulum id odio. Nunc quis sapien vestibulum, vulputate ipsum nec, consequat erat. Nunc interdum pharetra commodo. Nullam blandit id neque id ultrices. Proin quis efficitur mauris.</p>
             <p class="wishlist"><img src="images/wishlist.png"></p>
@@ -58,7 +58,7 @@ require('vars.php');
                 key: 'rzp_live_ILgsfZCZoFIKMb',
                 protocol: 'https',
                 hostname: 'api.razorpay.com',
-                amount: '500',
+                amount: '100',
                 name: 'Merchant Name',
                 description: 'Fine tshirt',
                 image: 'https://i.imgur.com/3g7nmJC.png',
