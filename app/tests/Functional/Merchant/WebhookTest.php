@@ -176,7 +176,7 @@ class WebhookTest extends TestCase
     {
         $class = \Models\Merchant\Webhook\Inferno::class;
 
-        $inferno = Mockery::mock($class)->makePartial();
+        $inferno = Mockery::mock($class, [])->makePartial();
 
         $this->app->instance('webhook.inferno', $inferno);
 
