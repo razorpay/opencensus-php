@@ -19,7 +19,7 @@ class CreateEmiPlansTable extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::EMI_PLANS, function(Blueprint $table)
+        Schema::create(Table::EMI_PLAN, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -51,6 +51,6 @@ class CreateEmiPlansTable extends Migration {
      */
     public function down()
     {
-        Schema::drop(Table::EMI_PLANS);
+        Schema::drop(Table::EMI_PLAN);
     }
 }
