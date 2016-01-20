@@ -116,7 +116,7 @@ class RawApiRequest
             // Now that we have added all POST params, we add the file itself
             $this->params['multipart'][] = [
                 'name'      =>  $this->input['file_name'],
-                'contents'  =>  $file,
+                'contents'  =>  fopen($file, 'r'),
                 'filename'  =>  $file->getClientOriginalName(),
             ];
         }
