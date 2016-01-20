@@ -115,8 +115,17 @@ class Service extends Base\Service
             return array('Invalid confirmation token or the merchant is already confirmed.');
         }
 
+        return $this->confirmMerchantById($merchant->id);
+    }
+
+    public function confirmMerchantById($merchantId)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchantId);
+
         $merchantApiData = $merchant->generateApiData();
 
+        // This is internal auth as of now
+        // We need to shift this to some other auth
         $this->setApiCredentials();
 
         try

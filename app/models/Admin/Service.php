@@ -1623,19 +1623,7 @@ class Service extends Base\Service
 
     public function confirmMerchant($merchantId)
     {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        try
-        {
-            // This will also confirm the User Entities associated with the
-            // same merchant and same email id
-            $merchant->confirm();
-            $merchant->saveOrFail();
-        }
-        catch(\Exception $e)
-        {
-            return [$e->getMessage(), null];
-        }
+        (new Merchant\Service)->confirmMerchantById($merchantId);
 
         return [null, 'Merchant Confirmed'];
     }
