@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
 use Models\Card;
+use Models\Card\IIN;
 
 class CreateIins extends Migration {
 
@@ -17,24 +18,24 @@ class CreateIins extends Migration {
     {
         Schema::create(Table::IIN, function(Blueprint $table)
         {
-            $table->integer(Card\Detail::IIN)->primary();
+            $table->integer(IIN\Entity::IIN)->primary();
 
-            $table->string(Card\Detail::CATEGORY)
+            $table->string(IIN\Entity::CATEGORY)
                   ->nullable();
 
-            $table->string(Card\Detail::NETWORK)
+            $table->string(IIN\Entity::NETWORK)
                   ->nullable();
 
-            $table->string(Card\Detail::TYPE)
+            $table->string(IIN\Entity::TYPE)
                   ->nullable();
 
-            $table->char(Card\Detail::COUNTRY, Card\Entity::COUNTRY_LENGTH)
+            $table->char(IIN\Entity::COUNTRY, Card\Entity::COUNTRY_LENGTH)
                   ->nullable();
 
-            $table->string(Card\Detail::ISSUER)
+            $table->string(IIN\Entity::ISSUER)
                   ->nullable();
 
-            $table->string(Card\Detail::TRIVIA)
+            $table->string(IIN\Entity::TRIVIA)
                   ->nullable();
         });
     }
@@ -48,5 +49,4 @@ class CreateIins extends Migration {
     {
         Schema::drop(Table::IIN);
     }
-
 }

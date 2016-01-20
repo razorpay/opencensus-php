@@ -23,6 +23,7 @@ class Base
 
     protected static $map = array(
         'key'           => Models\Key\Entity::class,
+        'iin'           => Models\Card\IIN\Entity::class,
         'atom'          => Gateway\Atom\Entity::class,
         'card'          => Models\Card\Entity::class,
         'hdfc'          => Gateway\Hdfc\Entity::class,
@@ -38,7 +39,6 @@ class Base
         'terminal'      => Models\Terminal\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,
         'settlement'    => Models\Settlement\Entity::class,
-        'card_detail'   => Models\Card\Detail::class,
         'transaction'   => Models\Transaction\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
     );

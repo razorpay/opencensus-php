@@ -94,6 +94,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
+        // s(Merchant\Entity::all()->toArray());s($id);
         $merchant = $this->repo->findOrFailPublic($id);
 
         $methods = $merchant->methods;

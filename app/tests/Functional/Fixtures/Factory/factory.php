@@ -184,7 +184,7 @@ $factory('Gateway\Atom\Entity', [
     'bank_transaction_id' => $faker->randomNumber(6),
 ]);
 
-$factory(Models\Card\Detail::class, [
+$factory(Models\Card\IIN\Entity::class, [
     'iin' => 411111,
     'category' => null,
     'network' => 'visa',

@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Fixtures\Entity;
 
-class CardDetail extends Base
+class Iin extends Base
 {
     protected $items = array(
         array(
@@ -68,7 +68,7 @@ class CardDetail extends Base
         $iins = [];
         foreach ($items as $attributes)
         {
-            $iins[] = $this->fixtures->create('card_detail', $attributes);
+            $iins[] = $this->fixtures->create('iin', $attributes);
         }
 
         return $iins;
