@@ -1,5 +1,6 @@
 <?php
 $fonts = 'https://cdn.razorpay.com/lato2';
+$checkout = 'https://checkout.razorpay.com';
 ?>
 <!DOCTYPE html>
 <html dir="ltr">
