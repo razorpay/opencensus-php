@@ -458,7 +458,14 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        return $this->input['terminal']['gateway_secure_secret'];
+        $secret = parent::getLiveSecret();
+
+        if($this->domainType !== null)
+        {
+            return $this->input['terminal']['gateway_terminal_password'];
+        }
+
+        return $secret;
     }
 
 
