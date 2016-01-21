@@ -69,6 +69,7 @@ class Merchant
         $this->amount = $apiFee;
         $this->fee = 0;
         $this->txns = new Base\PublicCollection;
+        $this->setlDetails = new Base\PublicCollection;
         $this->serviceTax = 0;
 
         $adjInput = array(
@@ -108,7 +109,7 @@ class Merchant
         {
             $totalAmount = 0;
             $entityTxns = $this->txns->filter(function($txn) 
-                use ($entityType, $totalFee, $totalServiceTax, $totalAmount)
+                use ($entityType, & $totalFee, & $totalServiceTax, & $totalAmount)
             {
                 if ($txn->getType() === $entityType) {
                     $totalServiceTax    += $txn->getServiceTax();
@@ -128,7 +129,7 @@ class Merchant
         $this->setlDetails->push($this->getSettlementDetailsEntity('fee', 0, $totalFee));
     }
 
-    protected function getSettlementDetailsEntity($type, $amount, $count)
+    protected function getSettlementDetailsEntity($type, $count, $amount)
     {
         $input = array(
             Settlement\Details\Entity::MERCHANT_ID       => $this->merchant->getId(),
@@ -213,7 +214,11 @@ class Merchant
         // Saves to db
         $this->txnRepo->saveOrFail($this->setlTransaction);
         $this->setlRepo->saveOrFail($this->setl);
-        $this->setlDetailsRepo->createMultipleEntities($this->setlDetails);
+
+        foreach ($this->setlDetails->all() as $setlDetailsEntity) 
+        {
+            $this->setlDetailsRepo->saveOrFail($setlDetailsEntity);
+        }
 
         $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
     }
