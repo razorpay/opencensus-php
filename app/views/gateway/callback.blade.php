@@ -59,17 +59,13 @@ onerror = function(message){
   xhr.setRequestHeader('Content-Type', 'application/json')
   xhr.send(message)
 }
-
 if(!window.CheckoutBridge){
   if(window.opener) {
     try{opener.onComplete(data)&&close()}catch(e){onerror(e.message)}
     opener.postMessage(data,'*')
-  } else {
-    onerror('Orphan popup');
-    if(/CriOS/.test(navigator.userAgent)){
-      setTimeout(close, 3500);
-    }
   }
+  if(/\(iP.+(Cr|Fx)iOS/.test(navigator.userAgent))
+    setTimeout(close, 1000);
 }
 
 </script></body></html>
