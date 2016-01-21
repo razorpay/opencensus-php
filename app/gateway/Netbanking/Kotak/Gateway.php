@@ -150,7 +150,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentRequestData($input)
     {
         // Kotak asks for date in GMT
-        $date = Carbon::now('GMT')->format('dmYhis');
+        $date = Carbon::now('GMT')->format('dmYHis');
 
         $data = array(
             'MessageCode'            => MessageCodes::AUTHORIZE,
