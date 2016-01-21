@@ -17,7 +17,7 @@
     'DB_MYSQL_PASSWORD'  => '',
 
     /**
-     * API Details
+     * API Details. Make sure it includes a trailing slash
      */
     'API_URL'           => 'http://api.razorpay.com/v1/',
     'API_AUTH_PASS'     => 'secret',

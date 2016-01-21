@@ -287,13 +287,13 @@
     <h3 class="modal-title">Make a raw API call</h3>
   </div>
   <div class="modal-body terminal-modal">
-    <form class="form-horizontal">
+    <form class="form-horizontal" id="frm-raw-api-call">
       <div class="form-group">
         <label for="url" class="col-lg-2 control-label">Url</label>
         <div class="col-lg-10" >
           <div class="input-group">
             <div class="input-group-addon">https://api.razorpay.com/v1/</div>
-            <input type="text" class="form-control m-b" name="url" ng-model="data.url" placeholder="relative/url">
+            <input type="text" class="form-control m-b" name="url" ng-model="url" placeholder="relative/url">
           </div>
         </div>
       </div>
@@ -345,15 +345,34 @@
       </div>
       <div class="form-group" ng-show="data.method!='GET' && data.method!=='DELETE'">
         <label for="body" class="col-lg-3">Request Body</label>
+        <small>Use url encoding for additional data in case of file uploads</small>
         <div class="col-lg-12 col-sm-12">
-          <textarea rows="10" ng-model="data.body" class="form-control" name="body" id="body"></textarea>
+          <textarea rows="10" ng-model="data.body" class="form-control" name="body" id="body">
+          </textarea>
         </div>
       </div>
+
+      <!-- File uploads-->
+      <div class="form-group" ng-show="data.method!='GET' && data.method!=='DELETE'">
+        <label for="body" class="col-lg-3">Attach File</label>
+        <div class="col-lg-12 col-sm-12">
+          <input file-model="data.file" class="form-control" name="file" id="file" type="file">
+        </div>
+      </div>
+
+      <!-- File upload name-->
+      <div class="form-group" ng-show="data.file!==null && (data.method!='GET' && data.method!=='DELETE')">
+        <label for="body" class="col-lg-3">File Name</label>
+        <div class="col-lg-12 col-sm-12">
+          <input ng-model="data.file_name" class="form-control" name="file_name" id="file_name">
+        </div>
+      </div>
+
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(data)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(url, data)">OK</button>
   </div>
 </script>
 

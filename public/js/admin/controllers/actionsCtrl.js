@@ -128,8 +128,17 @@ app.controller('ActionsCtrl', [
     };
     $scope.apiRequest = function (data) {
       var url = '/api/' + data.url;
-      delete data.url;
-      var req = $http.post(url, data, { transformRequest: transformRequestAsFormPost });
+
+      data = data.form;
+
+      var req = $http.post(url, data, {
+        transformRequest: angular.identity,
+        // We set this to undefined to let angular auto-detect this
+        // And convert to a multipart file upload
+        headers: {
+          'Content-Type': undefined
+        }
+      });
       req.success(function (data) {
         if (data.success) {
           $scope.response = data;
@@ -399,18 +408,48 @@ app.controller('ActionsCtrl', [
   '$scope',
   '$modalInstance',
   function ($scope, $modalInstance) {
+
+    $scope.url = '';
     $scope.data = {
-      url: '',
       mode: 'test',
       method: 'GET',
       auth: 'admin',
       merchant_id: '',
       content_type: 'application/x-www-form-urlencoded',
-      body: ''
+      body: '',
+      file: null,
+      file_name: null
     };
-    $scope.ok = function (data) {
-      $modalInstance.close(data);
+
+    $scope.ok = function (url, data) {
+      var fd = new FormData();
+
+      // If we are sending a file
+      // We don't add the content type header
+      // because this needs to be auto-generated
+      if (data.file) {
+        delete data.content_type;
+      };
+
+      // We push all data fields
+      // into the formdata object
+      for (var field in data) {
+        var value = data[field];
+        fd.append(field, value);
+      }
+
+
+
+      // We pass an instance of FormData
+      // And the URL separately because extracting and deleting
+      // items from formdata is not supported most browsers
+      // including chrome
+      $modalInstance.close({
+        form: fd,
+        url: url
+      });
     };
+
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
