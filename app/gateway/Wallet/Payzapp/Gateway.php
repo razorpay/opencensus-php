@@ -229,7 +229,7 @@ class Gateway extends Base\Gateway
         {
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content]);
+                [$content, $responseContent]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
