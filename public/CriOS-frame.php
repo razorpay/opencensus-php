@@ -25,12 +25,15 @@ header('Pragma: no-cache');
       var msg = readCookie('onComplete')
       if(msg){
         msg = JSON.parse(msg);
+        var id = msg.id;
+        delete msg.id;
         msg = {
           source: 'frame',
           event: 'razorpay_payment_id' in msg ? 'success' : 'failure',
-          data: msg
+          data: msg,
+          id: id
         }
-        parent.postMessage(msg, '*')
+        parent.postMessage(JSON.stringify(msg), '*');
         document.cookie = 'onComplete=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/'
       }
     }, 150)
