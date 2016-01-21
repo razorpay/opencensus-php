@@ -25,8 +25,11 @@ class GatewayController extends BaseController
         $inputMsg = Input::get('msg');
         $input = explode('|', $inputMsg);
 
+        $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
+
         // check mode before search
-        $this->trace->info(
+        $trace->info(
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
             [
                 'input_all' => Input::all(),
