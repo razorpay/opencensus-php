@@ -5,11 +5,13 @@ namespace Models\Admin;
 use Config;
 use Input;
 
-use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Client as Guzzle;
+use GuzzleHttp\Post\PostFile;
+
+use Razorpay\Api\Request as ApiRequest;
+
 // This is the default class we use for making requests
 use RZP\Api as Api;
-use Razorpay\Api\Request as ApiRequest;
 
 class RawApiRequest
 {
@@ -32,7 +34,7 @@ class RawApiRequest
     {
         // Create the guzzle client
         $this->client = new Guzzle([
-            'base_uri' => Config::get('api.url'),
+            'base_url' => Config::get('api.url'),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'headers'   =>  ApiRequest::getHeaders() + [
@@ -101,24 +103,20 @@ class RawApiRequest
             // @note: The second parameter is crucial and a huge
             // security risk if not added
             mb_parse_str($this->input['body'], $postArray);
-            $this->params['multipart'] = [];
+            $this->params['body'] = [];
 
             foreach ($postArray as $key => $value)
             {
-                $this->params['multipart'][] = [
-                    'name'      =>  $key,
-                    'contents'  =>  $value
-                ];
+                $this->params['body'][$key] = $value;
             }
 
             $file = Input::file('file');
 
             // Now that we have added all POST params, we add the file itself
-            $this->params['multipart'][] = [
-                'name'      =>  $this->input['file_name'],
-                'contents'  =>  fopen($file, 'r'),
-                'filename'  =>  $file->getClientOriginalName(),
-            ];
+            $fileFieldName = $this->input['file_name'];
+            $postFile = new PostFile($file->getClientOriginalName(), fopen($file, 'r'));
+            $this->params['body'][$fileFieldName] = $postFile;
+
         }
         // We just pass the body as it is
         else
@@ -135,15 +133,14 @@ class RawApiRequest
      */
     public function send()
     {
-        $this->prepareRequest();
         $errors = [];
         $response = null;
 
         try
         {
-            $request = new GuzzleRequest($this->input['method'], $this->path);
-            $response = $this->client->send($request, $this->params);
-            $response = json_decode($response->getBody());
+            $this->prepareRequest();
+            $method = $this->input['method'];
+            $response = $this->client->$method($this->path, $this->params)->json();
 
         }
         // This captures all the errors that might happen for now
@@ -153,7 +150,7 @@ class RawApiRequest
         }
         catch(\GuzzleHttp\Exception\GuzzleException $e)
         {
-            $json = json_decode($e->getResponse()->getBody());
+            $json = $e->getResponse()->json();
             $errors = [$json->error->description, "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
         finally
