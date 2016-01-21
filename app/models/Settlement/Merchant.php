@@ -10,6 +10,7 @@ use Models\Adjustment;
 use Models\Merchant\BankAccount;
 use Models\Transaction;
 use Models\Settlement;
+use Models\Settlement\Details;
 
 class Merchant
 {
@@ -25,6 +26,8 @@ class Merchant
 
     protected $txns;
 
+    protected $setlDetails;
+
     public function __construct($merchant, $channel)
     {
         $this->merchant = $merchant;
@@ -34,6 +37,7 @@ class Merchant
         $this->merchantRepo = new Models\Merchant\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->setlRepo = new Settlement\Repository;
+        $this->setlDetailsRepo = new Settlement\Details\Repository;
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
@@ -48,6 +52,9 @@ class Merchant
         $this->serviceTax = $serviceTax;
 
         $setl = $this->createSetlEntityAndTxn();
+
+        // Create Settlement Details entity
+        $this->createSettlementDetailsEntities();
 
         // Updates merchant and api balance
         $this->updateBalances();
@@ -81,6 +88,61 @@ class Merchant
         $this->saveChangesToDb();
 
         return [$setl, $adj->transaction];
+    }
+
+    protected function createSettlementDetailsEntities()
+    {
+        $this->setlDetails = new Base\PublicCollection;
+
+        $totalServiceTax = 0;
+        $totalFee = 0;
+        $totalAmount = 0;
+
+        $entityTypes = array(
+            Transaction\Type::PAYMENT, 
+                Transaction\Type::REFUND, 
+                Transaction\Type::ADJUSTMENT
+            );
+
+        foreach ($entityTypes as $entityType) 
+        {
+            $totalAmount = 0;
+            $entityTxns = $this->txns->filter(function($txn) 
+                use ($entityType, $totalFee, $totalServiceTax, $totalAmount)
+            {
+                if ($txn->getType() === $entityType) {
+                    $totalServiceTax    += $txn->getServiceTax();
+                    $totalFee           += ($txn->getFee() - $txn->getServiceTax());
+                    $totalAmount        += $txn->getAmount();
+                    
+                    return true;
+                }
+            });
+
+            $setlDetailEntity = $this->getSettlementDetailsEntity($entityType, $entityTxns->count(), $totalAmount);
+
+            $this->setlDetails->push($setlDetailEntity);
+        }
+
+        $this->setlDetails->push($this->getSettlementDetailsEntity('service_tax', 0, $totalServiceTax));
+        $this->setlDetails->push($this->getSettlementDetailsEntity('fee', 0, $totalFee));
+    }
+
+    protected function getSettlementDetailsEntity($type, $amount, $count)
+    {
+        $input = array(
+            Settlement\Details\Entity::MERCHANT_ID       => $this->merchant->getId(),
+            Settlement\Details\Entity::SETTLEMENT_ID     => $this->setl->getId(),
+            Settlement\Details\Entity::TYPE              => $type,
+            Settlement\Details\Entity::AMOUNT            => $amount,
+            Settlement\Details\Entity::COUNT             => $count
+        );
+
+        $setlDetailEntity = new Settlement\Details\Entity;
+        $setlDetailEntity->fillAndGenerateId($input);
+
+        return $setlDetailEntity;
+
     }
 
     protected function createSetlEntityAndTxn()
@@ -151,6 +213,7 @@ class Merchant
         // Saves to db
         $this->txnRepo->saveOrFail($this->setlTransaction);
         $this->setlRepo->saveOrFail($this->setl);
+        $this->setlDetailsRepo->createMultipleEntities($this->setlDetails);
 
         $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
     }

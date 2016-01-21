@@ -2,7 +2,11 @@
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Models\Settlement\Detail;
+
+use Constants\Table;
+use Models\Merchant;
+use Models\Settlement;
+use Models\Settlement\Details\Entity;
 
 class CreateSettlementDetailsTable extends Migration {
 
@@ -22,42 +26,28 @@ class CreateSettlementDetailsTable extends Migration {
 
             $table->char(Entity::MERCHANT_ID, 14);
 
-	        $table->integer(Entity::PAYMENT_COUNT)
+            $table->char(Entity::SETTLEMENT_ID, 14);
+
+            $table->string(Entity::TYPE);
+
+	        $table->integer(Entity::COUNT)
 	     		  ->default(0);
 
-	        $table->integer(Entity::PAYMENT_AMOUNT)
+	        $table->integer(Entity::AMOUNT)
 	     		  ->default(0);
 
-	        $table->integer(Entity::REFUND_COUNT)
-	     		  ->default(0);
+            $table->integer(Entity::CREATED_AT);
 
-	        $table->integer(Entity::REFUND_AMOUNT)
-	     		  ->default(0);
-
-	        $table->integer(Entity::ADJUSTMENT_COUNT)
-	     		  ->default(0);
-
-	        $table->integer(Entity::ADJUSTMENT_AMOUNT)
-	     		  ->default(0);
-
-	        $table->integer(Entity::TOTAL_AMOUNT)
-	     		  ->default(0);
-
-	        $table->integer(Entity::PLAN_FEE)
-	     		  ->default(0);
-
-	        $table->integer(Entity::SERVICE_TAX)
-	     		  ->default(0);
-
-	        $table->integer(Entity::TOTAL_FEE)
-	     		  ->default(0);
-
-	        $table->integer(Entity::SETTLEMENT_AMOUNT)
-	     		  ->default(0);
+            $table->integer(Entity::UPDATED_AT);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::SETTLEMENT_ID)
+                  ->references(Settlement\Entity::ID)
+                  ->on(Table::SETTLEMENT)
                   ->on_delete('restrict');
         });
     }
@@ -73,6 +63,9 @@ class CreateSettlementDetailsTable extends Migration {
         {
             $table->dropForeign(
                 Table::SETTLEMENT_DETAIL.'_'.Entity::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::SETTLEMENT_DETAIL.'_',Entity::SETTLEMENT_ID.'_foreign');
         });
 
         Schema::drop(Table::SETTLEMENT_DETAIL);

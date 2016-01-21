@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Settlement\Detail;
+namespace Models\Settlement\Details;
 
 use Models\Base;
 use Trace\TraceCode;
