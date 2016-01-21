@@ -184,7 +184,7 @@ class Gateway extends Base\Gateway
 
         $content =  array(
             'pg_instance_id'                    => $this->config['live_pg_instance_id'],
-            'merchant_id'                       => $input['terminal']['gateway_merchant_id'],
+            'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
             'perform'                           => $perform,
             'orginal_transaction_id'            => $originalTransactionId,
             'original_merchant_reference_no'    => $input['payment']['id'],
@@ -202,7 +202,7 @@ class Gateway extends Base\Gateway
             'email'                 =>    $payment['email'],
             'received'              =>    0,
             'contact'               =>    $payment['contact'],
-            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id'],
+            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
             'refund_id'             =>    $input['refund']['id'],
         );
 
