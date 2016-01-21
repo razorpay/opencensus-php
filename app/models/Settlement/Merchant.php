@@ -142,6 +142,9 @@ class Merchant
         $setlDetailEntity = new Settlement\Details\Entity;
         $setlDetailEntity->fillAndGenerateId($input);
 
+        $setlDetailEntity->merchant()->associate($this->merchant);
+        $setlDetailEntity->settlement()->associate($this->setl);
+        
         return $setlDetailEntity;
 
     }

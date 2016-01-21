@@ -152,4 +152,11 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getSettlementDetails($id)
+    {
+        $data = (new Settlement\Details\Service)->getSettlementDetails($id);
+
+        return ApiResponse::json($data);
+    }
 }

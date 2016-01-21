@@ -14,4 +14,13 @@ class Service extends Base\Service
 
         $this->repo = new Repository;
     }
+
+    public function getSettlementDetails($id)
+    {
+        $merchant = $this->merchant;
+
+        $setlDetails = $this->repo->getSettlementDetails($id, $merchant);
+
+        return $setlDetails->toArrayPublic();
+    }
 }
