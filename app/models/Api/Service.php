@@ -4,6 +4,7 @@ namespace Models\Api;
 
 use Auth;
 use Models\Base;
+use Trace;
 
 class Service extends Base\Service
 {
@@ -172,6 +173,19 @@ class Service extends Base\Service
                          ->transaction
                          ->generateReport($params)
                          ->toArray();
+
+            $traceData = [
+                'count' => count($data),
+                'params'=> $params
+            ];
+
+            // Put the first row in trace as well
+            if (count($data) >= 1)
+            {
+                $traceData['first_row'] = $data[0];
+            }
+
+            Trace::debug('MISC_TRACE_CODE', $traceData);
 
             $file = $this->generateTransactionReportAsExcel($data);
 
