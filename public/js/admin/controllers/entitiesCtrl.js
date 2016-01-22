@@ -111,6 +111,10 @@ app.controller('EntitiesCtrl', [
         received: booleanList,
         payment_id: ['Payment Id']
       },
+      bank_account: {
+        merchant_id: ['Merchant Id'],
+        deleted: booleanList
+      },
       card: {
         merchant_id: ['Merchant Id'],
         iin: ['IIN'],
