@@ -55,7 +55,8 @@ app.controller('GenerateReportCtrl', [
 
       var data = {
         'month': $scope.report.month,
-        'year' : $scope.report.year
+        'year' : $scope.report.year,
+        'type' : $scope.report.type
       };
       if ($scope.report.type=='daily') {
         data.date = $scope.report.date;

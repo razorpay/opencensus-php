@@ -157,7 +157,7 @@ class Service extends Base\Service
 
     public function generateReport($mode, $input)
     {
-        $data = array();
+        $data = $error = [];
 
         try
         {
@@ -173,7 +173,7 @@ class Service extends Base\Service
                          ->generateReport($params)
                          ->toArray();
 
-            $file = $this->generateTransactionReportAsExcelFromDataForMonth($data);
+            $file = $this->generateTransactionReportAsExcel($data);
 
             return array($error, $file);
         }
@@ -186,7 +186,7 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    protected function generateTransactionReportAsExcelFromDataForMonth($data)
+    protected function generateTransactionReportAsExcel($data)
     {
         $file = \Excel::create('transaction_report', function($excel) use ($data)
         {
@@ -200,7 +200,7 @@ class Service extends Base\Service
             $excel->setDescription("Transaction Report Razorpay");
 
             // Our first sheet
-            $excel->sheet($month, function($sheet) use ($data)
+            $excel->sheet('Export', function($sheet) use ($data)
             {
                 $sheet->fromArray($data);
             });
