@@ -58,7 +58,7 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingRulesForGivenCardNetwork($id, $network, $isInternational = false)
+    public function getPricingRulesForCard($id, $isInternational = false, $network = null, $methodType = null)
     {
         $repo = $this->repo;
 
@@ -66,6 +66,11 @@ class Repository extends Base\Repository
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
                     ->where(Pricing\Entity::INTERNATIONAL, '=', $isInternational)
+                    ->where(function($query) use ($methodType)
+                    {
+                        $query->where(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', null)
+                              ->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
+                    })
                     ->where(function($query) use ($network)
                     {
                         $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)

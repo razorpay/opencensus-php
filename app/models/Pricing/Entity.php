@@ -18,6 +18,13 @@ class Entity extends Base\PublicEntity
     // Humanized name of the payment network
     const PAYMENT_NETWORK_NAME  = 'payment_network_name';
     const PAYMENT_ISSUER        = 'payment_issuer';
+
+    // Amount Range Rule
+    const AMOUNT_RANGE_ACTIVE   = 'amount_range_active';
+    const AMOUNT_RANGE_MIN      = 'amount_range_min';
+    const AMOUNT_RANGE_MAX      = 'amount_range_max';
+
+
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
     const EXPIRED_AT            = 'expired_at';
@@ -31,9 +38,12 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_METHOD_TYPE,
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
+        self::INTERNATIONAL,
+        self::AMOUNT_RANGE_ACTIVE,
+        self::AMOUNT_RANGE_MIN,
+        self::AMOUNT_RANGE_MAX,
         self::PERCENT_RATE,
-        self::FIXED_RATE,
-        self::INTERNATIONAL);
+        self::FIXED_RATE);
 
     protected $table = \Constants\Table::PRICING;
 
@@ -99,6 +109,11 @@ class Entity extends Base\PublicEntity
         return (boolean) $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isAmountRangeActive()
+    {
+        return (boolean) $this->getAttribute(self::AMOUNT_RANGE_ACTIVE);
+    }
+
     public function payments()
     {
         return $this->hasMany('Models\Transaction\Entity', 'pricing_rule_id');
@@ -148,6 +163,21 @@ class Entity extends Base\PublicEntity
     public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
+    public function getAmountRangeActiveAttribute()
+    {
+        return (bool) $this->attributes[self::AMOUNT_RANGE_ACTIVE];
+    }
+
+    public function getAmountRangeMinAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT_RANGE_MIN];
+    }
+
+    public function getAmountRangeMaxAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT_RANGE_MAX];
     }
 
     public function fillRule($input, $plan)

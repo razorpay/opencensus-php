@@ -16,6 +16,9 @@ class Validator extends Base\Validator
         Entity::PAYMENT_NETWORK     => 'sometimes_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_MIN    => 'sometimes|integer',
+        Entity::AMOUNT_RANGE_MAX    => 'sometimes|integer',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
@@ -23,7 +26,8 @@ class Validator extends Base\Validator
         'addPlanRuleRate',
         'addPlanRuleNB',
         'addPlanRulePaymentNetwork',
-        'addPlanRuleInternational');
+        'addPlanRuleInternational',
+        'addPlanRuleAmountRange');
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
@@ -110,6 +114,42 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAddPlanRuleAmountRange($input)
+    {
+        if ((isset($input[Entity::AMOUNT_RANGE_ACTIVE]) === false) or
+            ($input[Entity::AMOUNT_RANGE_ACTIVE] === '0'))
+        {
+            return;
+        }
+
+        if ((!isset($input[Entity::AMOUNT_RANGE_MIN])) or
+            (!isset($input[Entity::AMOUNT_RANGE_MAX])))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules require both min and max end of ranges');
+        }
+
+        if ($input[Entity::AMOUNT_RANGE_MIN] < Payment\Entity::MIN_PAYMENT_AMOUNT)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules min end of range has to be atleast '.
+                Payment\Entity::MIN_PAYMENT_AMOUNT);
+        }
+
+        if ($input[Entity::AMOUNT_RANGE_MIN] > $input[Entity::AMOUNT_RANGE_MAX])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules require max end of ranges to be greater than'.
+                'min end of range');
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules are only allowed for card method');
+        }
+    }
+
     public function createPlanValidate($input)
     {
         // If no plan name, then set it to null
@@ -170,12 +210,17 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
-                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]))
+                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
+                ($rule[Entity::AMOUNT_RANGE_ACTIVE] === $newRule[Entity::AMOUNT_RANGE_ACTIVE]) and
+                ($rule[Entity::AMOUNT_RANGE_MIN] === $newRule[Entity::AMOUNT_RANGE_MIN]) and
+                ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
         }
+
+
     }
 
     public static function validatePlanCountZero($plan)

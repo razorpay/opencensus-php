@@ -7,9 +7,12 @@ use EE\Exception;
 use Models\Card;
 use Models\Payment;
 use Models\Pricing;
+use Services\SlackPoster;
 
 class Fee
 {
+    use SlackPoster;
+
     const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
@@ -177,29 +180,73 @@ class Fee
 
     protected function getRelevantPricingRuleForCard($pricingPlanId, $payment)
     {
-        $card = $payment->card;
+        // Fee based on the method type
+        $feeType = $payment->card->getType();
 
-        $network = Card\Network::getCode($card->getNetwork());
+        if ($feeType === Card\Type::UNKNOWN)
+        {
+            $slackArray = $payment->card->toArrayPublic();
+
+            $this->slackPost("Unknown card type found", $slackArray, ['channel' => '#tech_logs']);
+
+            $feeType = Card\Type::CREDIT;
+        }
 
         $isInternational = $payment->isInternational();
 
+        $network = Card\Network::getCode($payment->card->getNetwork());
+
         $pricing = $this->repo->
-            getPricingRulesForGivenCardNetwork($pricingPlanId, $network, $isInternational);
+            getPricingRulesForCard($pricingPlanId, $isInternational, $network, $feeType);
 
         $rule = null;
+
+        $amount = $payment->getAmount();
+
         $rules = $pricing->all();
+
+        //flag to check amount rule
+        $amountRulePresent = false;
 
         if (count($rules) === 1)
         {
             $rule = $pricing->first();
         }
-        else if (count($rules) === 2)
+        else if (count($rules) > 1)
         {
             foreach ($pricing->all() as $item)
             {
                 if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
                 {
                     $rule = $item;
+                    break;
+                }
+
+                if ($item->isAmountRangeActive())
+                {
+                    $amountRulePresent = true;
+                }
+            }
+
+            foreach ($pricing->all() as $item)
+            {
+                if ($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $feeType)
+                {
+                    $rule = $item;
+
+                    if($amountRulePresent)
+                    {
+                        if(($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount)
+                            and ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) > $amount))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
                     break;
                 }
             }
