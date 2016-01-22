@@ -275,7 +275,6 @@ final class Route
         'settlement_compute_tax',
         'daily_settlement_compute_tax',
         'refund_netbanking_generate_excel',
-        'transaction_monthly_report',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -295,6 +294,7 @@ final class Route
     public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
+        'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
         'setl_fetch_by_id',

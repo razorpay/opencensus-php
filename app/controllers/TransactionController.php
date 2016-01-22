@@ -26,7 +26,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Transaction\Service)->getMonthlyReport($input);
+        $data = (new Transaction\Service)->getReport($input);
 
         return ApiResponse::json($data);
     }

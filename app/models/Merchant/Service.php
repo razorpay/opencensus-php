@@ -415,8 +415,6 @@ class Service extends Base\Service
 
     public function getPaymentMethods()
     {
-        $picker = new Payment\Processor\TerminalPicker;
-
         $data = array(
             'entity'        => 'methods',
             'card'          => true,

@@ -387,7 +387,7 @@ class BasicAuth
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
             $allowedFeatures = $this->merchant->getFeatures();
 
-            if (!empty($allowedFeatures) and 
+            if (!empty($allowedFeatures) and
                 in_array($accessedFeature, $allowedFeatures))
             {
                 return;

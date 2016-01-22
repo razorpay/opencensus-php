@@ -34,17 +34,62 @@ class Service extends Base\Service
         });
     }
 
-    public function getMonthlyReport($input)
+    public function getReport($input)
     {
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
         $merchantId = $input['merchant_id'];
-        $month = (int) $input['month'];
+
         $year = (int) $input['year'];
 
-        $txns = (new Transaction\Repository)->fetchTransactionByMonthAndMerchantId(
-                                                $merchantId, $month, $year);
+        if (isset($input['day']))
+        {
+            $day = (int) $input['day'];
+            $month = (int) $input['month'];
+
+            $date = Carbon::today('Asia/Kolkata')
+                          ->day($day)
+                          ->month($month)
+                          ->year($year)
+                          ->startOfDay();
+
+            $from = $date->timestamp;
+            $to = $date->addDay()->timestamp - 1;
+        }
+        else if (isset($input['month']))
+        {
+            $month = (int) $input['month'];
+
+            assert($month > 0);
+            assert($month <= 12);
+
+            $startOfMonth = Carbon::today('Asia/Kolkata')
+                                  ->month($month)
+                                  ->startOfMonth()
+                                  ->year($year)
+                                  ->timestamp;
+
+            $endMonth = $month + 1;
+
+            if ($endMonth === 13)
+            {
+                $endMonth = 1;
+                $year++;
+            }
+
+            $endOfMonth = Carbon::today('Asia/Kolkata')
+                                ->month($endMonth)
+                                ->startOfMonth()
+                                ->year($year)
+                                ->timestamp;
+
+            $from = $startOfMonth;
+            $to = $endOfMonth;
+        }
+
+        $txns = (new Transaction\Repository)->fetchTransactionsForTransactionReport(
+                                                $merchantId, $from, $to);
 
         $reportTxns = array();
 
