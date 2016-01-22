@@ -162,16 +162,11 @@ class Service extends Base\Service
 
         try
         {
-            $params = $input + [
-                'merchant_id' => $this->merchantId,
-            ];
+            $this->setApiCredentials($this->merchantId, $mode);
 
-            // @note: Dangerous. Uses Internal Auth instead
-            // of Proxy Auth, while initiated by the merchant
-            $this->setApiCredentials(null, $mode);
             $data = $this->api
                          ->transaction
-                         ->generateReport($params)
+                         ->generateReport($input)
                          ->toArray();
 
             $traceData = [
@@ -194,6 +189,7 @@ class Service extends Base\Service
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
+
             return array($error, null);
         }
 
