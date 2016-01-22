@@ -52,7 +52,8 @@ class Merchant
         $this->serviceTax = $serviceTax;
 
         $setl = $this->createSetlEntityAndTxn();
-
+        $this->setlDetails = new Base\PublicCollection;
+        
         // Create Settlement Details entity
         $this->createSettlementDetailsEntities();
 
@@ -91,10 +92,20 @@ class Merchant
         return [$setl, $adj->transaction];
     }
 
-    protected function createSettlementDetailsEntities()
-    {
+    public function createSettlementDetails($setl)
+    {        
+        $this->setl = $setl;
+        $this->txns = $setl->setlTransactions;
+        
         $this->setlDetails = new Base\PublicCollection;
 
+        $this->createSettlementDetailsEntities();
+
+        $this->saveSetlEntitiesToDb();
+    }
+
+    protected function createSettlementDetailsEntities()
+    {
         $totalServiceTax = 0;
         $totalFee = 0;
         $totalAmount = 0;
@@ -103,7 +114,7 @@ class Merchant
             Transaction\Type::PAYMENT, 
                 Transaction\Type::REFUND, 
                 Transaction\Type::ADJUSTMENT
-            );
+                );
 
         foreach ($entityTypes as $entityType) 
         {
@@ -146,7 +157,6 @@ class Merchant
         $setlDetailEntity->settlement()->associate($this->setl);
         
         return $setlDetailEntity;
-
     }
 
     protected function createSetlEntityAndTxn()
@@ -218,12 +228,17 @@ class Merchant
         $this->txnRepo->saveOrFail($this->setlTransaction);
         $this->setlRepo->saveOrFail($this->setl);
 
+        $this->saveSetlEntitiesToDb();
+
+        $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
+    }
+
+    protected function saveSetlEntitiesToDb()
+    {
         foreach ($this->setlDetails->all() as $setlDetailsEntity) 
         {
             $this->setlDetailsRepo->saveOrFail($setlDetailsEntity);
         }
-
-        $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
     }
 
     protected function updateBalances()

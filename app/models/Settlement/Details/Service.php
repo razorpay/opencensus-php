@@ -23,4 +23,11 @@ class Service extends Base\Service
 
         return $setlDetails->toArrayPublic();
     }
+
+    public function postSettlementDetailsForOldTxns($input)
+    {
+        $data = (new Core)->postSettlementDetailsForOldTxns($input);
+        
+        return $data;
+    }
 }

@@ -3,6 +3,7 @@
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
 use Models\Settlement;
+use Models\Settlement\Details;
 use Models\Transaction;
 
 class SettlementController extends BaseController
@@ -156,6 +157,15 @@ class SettlementController extends BaseController
     public function getSettlementDetails($id)
     {
         $data = (new Settlement\Details\Service)->getSettlementDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementDetailsForOldTxns()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Details\Service)->postSettlementDetailsForOldTxns($input);
 
         return ApiResponse::json($data);
     }
