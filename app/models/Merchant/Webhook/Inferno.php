@@ -20,7 +20,9 @@ class Inferno
     {
         $repo = new Repository;
 
-        $webhook = $repo->find($data['webhook_id']);
+        $mode = $data['mode'];
+
+        $webhook = $repo->connection($mode)->find($data['webhook_id']);
 
         if ($webhook === null)
         {
