@@ -171,7 +171,7 @@ class Service extends Base\Service
 
             $traceData = [
                 'count' => count($data),
-                'params'=> $params
+                'params'=> $input
             ];
 
             // Put the first row in trace as well
