@@ -160,11 +160,32 @@ class Gateway
         // \Log::info( 'Url: ' . $request['url'] . PHP_EOL);
         // \Log::info( json_encode($request['content'], JSON_PRETTY_PRINT) . PHP_EOL . PHP_EOL);
 
-        $response = Requests::$method(
-                    $request['url'],
-                    $request['headers'],
-                    $request['content'],
-                    $request['options']);
+        try
+        {
+            $response = Requests::$method(
+                $request['url'],
+                $request['headers'],
+                $request['content'],
+                $request['options']);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $this->exception = $e;
+
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
