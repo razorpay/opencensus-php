@@ -106,6 +106,30 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    /**
+     * take care when calling this function
+     * This is only called from the admin service
+     * @param  string $id    Merchant Id
+     * @param  array $input  Array with new Merchant Name
+     */
+    public function changeName($id, $input)
+    {
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if ($merchant->isTestAccount()) {
+            return [["Name change forbidden on this account"], null];
+        }
+
+        $error = $merchant->changeName($input);
+
+        if (empty($error))
+        {
+            $merchant->save();
+        }
+
+        return [$error, null];
+    }
+
     public function confirm($token)
     {
         $merchant = Merchant\Entity::getMerchantForConfirmation($token);
