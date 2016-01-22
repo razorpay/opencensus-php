@@ -37,6 +37,7 @@ class Service extends Base\Service
     public function getMonthlyReport($input)
     {
         ini_set('memory_limit', '1024M');
+        set_time_limit(300);
 
         $merchantId = $input['merchant_id'];
         $month = (int) $input['month'];
