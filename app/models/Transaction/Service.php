@@ -39,7 +39,7 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
-        $merchantId = $input['merchant_id'];
+        $merchantId = $this->merchant;
 
         $year = (int) $input['year'];
 
