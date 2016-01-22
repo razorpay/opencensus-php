@@ -96,6 +96,7 @@ class TraceCode
     const PRICING_PLAN_RULE_ADD_SUCCESS             = 'PRICING_PLAN_RULE_ADD_SUCCESS';
 
     const WEBHOOK_FIRING                            = 'WEBHOOK_FIRING';
+    const WEBHOOK_FIRED                             = 'WEBHOOK_FIRED';
     const WEBHOOK_DEACTIVATE                        = 'WEBHOOK_DEACTIVATE';
     const WEBHOOK_RESPONSE_FAILURE                  = 'WEBHOOK_RESPONSE_FAILURE';
 

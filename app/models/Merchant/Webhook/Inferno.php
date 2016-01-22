@@ -66,7 +66,7 @@ class Inferno
                 $this->trace->info(
                     TraceCode::WEBHOOK_DEACTIVATE,
                     [
-                        'webhook' => $webhook->toArray(),
+                        'webhook' => $webhook->getId(),
                         'response_code' => $response->status_code
                     ]);
 
@@ -86,6 +86,13 @@ class Inferno
             {
                 $repo->resetFailureCount($webhook);
             }
+
+            $this->trace->info(
+                TraceCode::WEBHOOK_FIRED,
+                [
+                    'webhook' => $webhook->getId(),
+                    'response_code' => $response->status_code,
+                ]);
 
             $job->delete();
         }
