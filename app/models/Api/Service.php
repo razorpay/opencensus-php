@@ -155,58 +155,49 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function generateReportForMonth($month, $year, $mode)
+    public function generateReport($mode, $input)
     {
         $data = array();
-        $error = (new Validator)->validateInput('generateReport', compact('month','year'), '')
-                                ->messages();
 
-        if (empty($error))
+        try
         {
-            try
-            {
-                $params = array(
-                    'merchant_id' => $this->merchantId,
-                    'month' => (int)$month,
-                    'year' => (int)$year
-                );
+            $params = $input + [
+                'merchant_id' => $this->merchantId,
+            ];
 
-                $this->setApiCredentials(null, $mode);
-                $data = $this->api
-                             ->transaction
-                             ->generateReport($params)
-                             ->toArray();
+            // @note: Dangerous. Uses Internal Auth instead
+            // of Proxy Auth, while initiated by the merchant
+            $this->setApiCredentials(null, $mode);
+            $data = $this->api
+                         ->transaction
+                         ->generateReport($params)
+                         ->toArray();
 
-                // Sample endpoint for testing
-                // $response = \Requests::get('http://jsonplaceholder.typicode.com/posts');
-                // $data = json_decode($response->body, true);
+            $file = $this->generateTransactionReportAsExcelFromDataForMonth($data);
 
-                $file = $this->generateTransactionReportAsExcelFromDataForMonth($data, $month, $year);
-
-                return array($error, $file);
-            }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-                return array($error, null);
-            }
+            return array($error, $file);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+            return array($error, null);
         }
 
         return array($error, null);
     }
 
-    protected function generateTransactionReportAsExcelFromDataForMonth($data, $month, $year)
+    protected function generateTransactionReportAsExcelFromDataForMonth($data)
     {
-        $file = \Excel::create('transaction_report', function($excel) use ($data, $month, $year)
+        $file = \Excel::create('transaction_report', function($excel) use ($data)
         {
             // Set the title
-            $excel->setTitle("Transaction Report - $month/$year");
+            $excel->setTitle("Transaction Report");
 
             // Chain the setters
             $excel->setCreator('Razorpay')->setCompany('Razorpay');
 
             // Call them separately
-            $excel->setDescription("Transaction report for $month/$year");
+            $excel->setDescription("Transaction Report Razorpay");
 
             // Our first sheet
             $excel->sheet($month, function($sheet) use ($data)

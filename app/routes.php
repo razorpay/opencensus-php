@@ -88,7 +88,7 @@ Route::group(array('before' => 'auth.user'), function()
 
         Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
 
-        Route::get('/{mode}/generatereport/{month}/{year}', 'TransactionController@getGenerateReport');
+        Route::get('/{mode}/reports', 'TransactionController@getGenerateReport');
 
     });
 });

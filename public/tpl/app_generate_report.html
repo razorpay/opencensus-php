@@ -11,7 +11,19 @@
     </div>
     <div class="text-center m-t m-b">
       <div class="row">
-        <div class="m-b col-sm-8">
+        <div class="m-b col-sm-3">
+          <select name="type" ng-model="report.type" class="form-control" required>
+            <option value="daily">Daily</option>
+            <!-- <option value="weekly">Weekly</option> -->
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="m-b col-sm-2"  ng-show="report.type == 'daily'">
+          <select name="date" ng-model="report.date" class="form-control" required>
+            <option ng-repeat="date in days" value="{{date}}">{{date}}</option>
+          </select>
+        </div>
+        <div class="m-b col-sm-4" ng-show="report.type == 'monthly' || report.type== 'daily'">
           <select name="month" ng-model="report.month" class="form-control" required>
             <option value="1">January</option>
             <option value="2">February</option>
@@ -27,7 +39,13 @@
             <option value="12">December</option>
           </select>
         </div>
-        <div class="m-b col-sm-4">
+        <div class="m-b col-sm-4"  ng-show="report.type == 'weekly'">
+          <select name="month" ng-model="report.month" class="form-control" required>
+            <option ng-repeat="week in weeks" value="{{week}}">{{week}}</option>
+          </select>
+        </div>
+
+        <div class="m-b col-sm-2">
             <select name="year" ng-model="report.year" class="form-control" required>
               <option value="2015">2015</option>
               <option value="2016">2016</option>
