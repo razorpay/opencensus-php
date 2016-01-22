@@ -3,6 +3,7 @@
 namespace Models\Settlement\Details;
 
 use Models\Base;
+use Models\Settlement;
 
 class Service extends Base\Service
 {
@@ -17,6 +18,8 @@ class Service extends Base\Service
 
     public function getSettlementDetails($id)
     {
+        Settlement\Entity::verifyIdAndStripSign($id);
+
         $merchant = $this->merchant;
 
         $setlDetails = $this->repo->getSettlementDetails($id, $merchant);

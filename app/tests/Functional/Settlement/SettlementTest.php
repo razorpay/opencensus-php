@@ -117,6 +117,51 @@ class SettlementTest extends TestCase
         return $payments;
     }
 
+    public function testMerchantSettlement()
+    {
+        $this->ba->appAuth();
+
+        $payments = $this->createPaymentEntities();        
+
+        foreach ($payments as $payment) 
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $input = array('count' => 10);
+        $txns = $this->getEntities('transaction', $input, true);
+
+        $request = array(
+            'url' => '/settlements/initiate/kotak',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $this->ba->proxyAuth();        
+
+        $request = array(
+            'url' => '/settlements/'.$setl['id'].'/details',
+            'method' => 'GET'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('entity', $content);
+        $this->assertSame('collection', $content['entity']);
+        $this->assertSame($content['count'], 5);
+
+        //payment - refund - servicetax - fee(not including service tax)
+        $totalAmount = (int)$content['items'][0]['amount'] - ((int)$content['items'][1]['amount'] + (int)$content['items'][3]['amount'] + (int)$content['items'][4]['amount']);
+
+        $this->assertSame($totalAmount, $setl['amount']);
+    }
+
     protected function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -128,4 +173,6 @@ class SettlementTest extends TestCase
 
         return $this->runRequestResponseFlow($testData);
     }
+
+
 }
