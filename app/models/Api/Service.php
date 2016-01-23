@@ -156,10 +156,18 @@ class Service extends Base\Service
         return $error;
     }
 
+    /**
+     * Generates a excel report for the given parameters
+     * @param  string $mode  live|test
+     * @param  array  $input query parameters to be passed to API
+     */
     public function generateReport($mode, $input = [])
     {
         $data = $error = [];
         $file = null;
+
+        // Increase the time limit for the excel generation
+        set_time_limit(60);
 
         try
         {
@@ -195,6 +203,16 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
 
             return array($error, null);
+        }
+        catch(\Exception $exception)
+        {
+            $error[] = "Could not generate report. Please try again later";
+
+            Trace::critical('ERROR_EXCEPTION', [
+                'message'=>$e->getMessage(),
+                'code'      => $exception->getCode(),
+                'stack'     => $exception->getTraceAsString(),
+            ]);
         }
 
         return array($error, null);
