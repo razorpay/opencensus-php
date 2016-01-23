@@ -133,7 +133,7 @@ class TransactionController extends BaseController
 
         if (empty($error) === false)
         {
-            return AppResponse::jsonResponse($error);
+            return AppResponse::notFoundResponse($error);
         }
 
         $file->download('xlsx');

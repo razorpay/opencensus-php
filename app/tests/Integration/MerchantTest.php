@@ -38,7 +38,7 @@ class MerchantTest extends TestCase
             $this->merchant = $this->buildEntity('merchant', array(
                 'id'    => Uuid::generate(),
                 'email' => static::generateMerchantEmail(),
-                'name'  => 'Random Test Merchant'
+                'name'  => 'XOXO Test Merchant'
             ));
         }
 

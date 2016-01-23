@@ -27,6 +27,15 @@ class AppResponse
         return Response::json($response);
     }
 
+    public static function notFoundResponse($error)
+    {
+        $response = [
+            'success'   => false,
+            'data'      => $error
+        ];
+        return Response::json($response, 404);
+    }
+
     /**
      * Flattens an array recursively
      * Concatenating keys using periods
