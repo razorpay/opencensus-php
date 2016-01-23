@@ -41,7 +41,7 @@ app.controller('GenerateReportCtrl', [
     };
 
     $scope.report = {
-      date: date.getDate(),
+      day: date.getDate(),
       month: date.getMonth() == 0 ? 12 : date.getMonth(),
       year: date.getMonth() == 0 ? date.getFullYear() - 1 : date.getFullYear(),
       week: date.getWeekNumber(),
@@ -59,7 +59,7 @@ app.controller('GenerateReportCtrl', [
         'type' : $scope.report.type
       };
       if ($scope.report.type=='daily') {
-        data.date = $scope.report.date;
+        data.day = $scope.report.day;
       };
 
       var request = $http({
@@ -80,14 +80,9 @@ app.controller('GenerateReportCtrl', [
           });
           saveAs(blob, 'transaction_report.xlsx');
         }
-        else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (data) {
+        $scope.alerts.resetAlerts();
+        $scope.alerts.addAlert('danger', 'No data found for given time range');
       });
     };
   }

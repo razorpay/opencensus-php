@@ -156,14 +156,14 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function generateReport($mode, $input)
+    public function generateReport($mode, $input = [])
     {
         $data = $error = [];
+        $file = null;
 
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
-
             $data = $this->api
                          ->transaction
                          ->generateReport($input)
@@ -178,11 +178,15 @@ class Service extends Base\Service
             if (count($data) >= 1)
             {
                 $traceData['first_row'] = $data[0];
+                $file = $this->generateTransactionReportAsExcel($data);
+            }
+            else
+            {
+                $traceData['empty'] = true;
+                $error = ['No data found for given range'];
             }
 
             Trace::debug('MISC_TRACE_CODE', $traceData);
-
-            $file = $this->generateTransactionReportAsExcel($data);
 
             return array($error, $file);
         }

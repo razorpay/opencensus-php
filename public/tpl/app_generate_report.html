@@ -19,8 +19,8 @@
           </select>
         </div>
         <div class="m-b col-sm-2"  ng-show="report.type == 'daily'">
-          <select name="date" ng-model="report.date" class="form-control" required>
-            <option ng-repeat="date in days" value="{{date}}">{{date}}</option>
+          <select name="day" ng-model="report.day" class="form-control" required>
+            <option ng-repeat="day in days" value="{{day}}">{{day}}</option>
           </select>
         </div>
         <div class="m-b col-sm-4" ng-show="report.type == 'monthly' || report.type== 'daily'">
@@ -54,5 +54,10 @@
       </div>
       <button  class="btn btn-primary btn-rounded" ng-click="generateReport()">Download Report</button>
     </div>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+    </footer>
   </div>
 </div>
