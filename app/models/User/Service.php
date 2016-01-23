@@ -5,6 +5,7 @@ namespace Models\User;
 use DB;
 use Auth;
 use Hash;
+use Input;
 use Models\Base;
 use Models\User;
 use Models\Merchant;
@@ -14,14 +15,19 @@ use Razorpay\Mailers\UserMailer;
 
 class Service extends Base\Service
 {
+    /**
+     * TODO: This function is horribly long. Break it down
+     * @param  array  $input [description]
+     * @return [type]        [description]
+     */
     public function register(array $input)
     {
-        $invitationToken = isset($input['invitation']) ? $input['invitation'] : null;
+        $invitationToken = Input::get('invitation', null);
 
         if($invitationToken)
         {
             User\Validator::$createRules['email'] = 'email|unique:merchants';
-            
+
             list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($invitationToken);
 
             if($error)
@@ -32,8 +38,8 @@ class Service extends Base\Service
             $user = User\Entity::where('email',$email)->first();
             if($user)
             {
-                $error = array('You already have an account. Log in and accept the invite in you account settings page.');
-                return array($error, null);
+                $error = ['You already have an account. Log in and accept the invite in you account settings page.'];
+                return [$error, null];
             }
             $input['email'] = $email;
         }
@@ -51,17 +57,17 @@ class Service extends Base\Service
 
         $businessName = isset($input['business_name']) ? $input['business_name'] : null;
 
-        if($businessName)
+        if ($businessName)
         {
             $merchant = Merchant\Entity::createFromUserWithBusinessName($user,$businessName);
             $merchant->save();
-            
+
             $user->merchants()->attach($merchant, ['role' => 'owner']);
-            
+
             $details = array('merchant_id' => $merchant->id,'contact_email' => $merchant->email);
 
             MerchantDetails\Entity::createOrFail($details);
-            
+
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 
@@ -73,10 +79,10 @@ class Service extends Base\Service
 
         $this->slackSignupPost($data);
 
-        if(isset($invitation)) 
+        if(isset($invitation))
         {
             Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
-            
+
             $user->confirm_token = null;
             $user->save();
 
@@ -119,7 +125,7 @@ class Service extends Base\Service
             'password'  => $input['password']
         );
 
-        if(Auth::user()->validate($credentials) === false)
+        if (Auth::user()->validate($credentials) === false)
         {
             // Checks credentials but doesn't login the user, throws error if invalid
             $error = ['Email or password is invalid.'];
@@ -213,7 +219,7 @@ class Service extends Base\Service
 
         $currentMerchantId = $user->getCurrentMerchantId();
 
-        foreach ($merchants as $merchant) 
+        foreach ($merchants as $merchant)
         {
             $merchant->current = $merchant->id == $currentMerchantId;
             $merchant->setVisible(['id','name','email','current']);
@@ -231,11 +237,11 @@ class Service extends Base\Service
     public function getOwnedMerchantForUser($user)
     {
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
-        
-        if(is_null($merchant))
+
+        if (is_null($merchant))
         {
-            $error = array("We couldn't find the merchant you are looking for.");
-            return array($error, null);
+            $error = ["We couldn't find the merchant you are looking for."];
+            return [$error, null];
         }
 
         return array(null, $merchant);
