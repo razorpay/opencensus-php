@@ -10,13 +10,6 @@ app.controller('GenerateReportCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     var date = new Date();
 
-    Date.prototype.getWeekNumber = function(){
-      var d = new Date(+this);
-      d.setHours(0,0,0);
-      d.setDate(d.getDate()+4-(d.getDay()||7));
-      return Math.ceil((((d-new Date(d.getFullYear(),0,1))/8.64e7)+1)/7);
-    };
-
     function range(start, stop, step) {
       if (typeof stop == 'undefined') {
         // one param defined
@@ -40,12 +33,13 @@ app.controller('GenerateReportCtrl', [
       return result;
     };
 
+    var yesterday = moment().add(-1, 'days').toDate();
+
     $scope.report = {
-      day: date.getDate(),
-      month: date.getMonth() == 0 ? 12 : date.getMonth(),
-      year: date.getMonth() == 0 ? date.getFullYear() - 1 : date.getFullYear(),
-      week: date.getWeekNumber(),
-      type: 'monthly'
+      day: yesterday.getDate(),
+      month: yesterday.getMonth() + 1,
+      year: yesterday.getFullYear(),
+      type: 'daily'
     };
 
     $scope.days = range(1,31);
@@ -58,6 +52,7 @@ app.controller('GenerateReportCtrl', [
         'year' : $scope.report.year,
         'type' : $scope.report.type
       };
+
       if ($scope.report.type=='daily') {
         data.day = $scope.report.day;
       };
