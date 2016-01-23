@@ -209,7 +209,7 @@ class Service extends Base\Service
             $error[] = "Could not generate report. Please try again later";
 
             Trace::critical('ERROR_EXCEPTION', [
-                'message'=>$e->getMessage(),
+                'message'   => $exception->getMessage(),
                 'code'      => $exception->getCode(),
                 'stack'     => $exception->getTraceAsString(),
             ]);
