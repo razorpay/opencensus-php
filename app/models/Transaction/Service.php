@@ -39,7 +39,7 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
-        $merchantId = $this->merchant;
+        $merchantId = $this->merchant->getId();
 
         $year = (int) $input['year'];
 
@@ -104,6 +104,14 @@ class Service extends Base\Service
                 array_push($reportTxns, $this->toArrayReport($txn));
             }
         }
+
+
+        $this->trace->debug('MISC_TRACE_CODE', $reportTxns + [
+            'from'  => $from,
+            'to'    => $to,
+            'merchantId'=>$merchantId
+        ]);
+
 
         return $reportTxns;
     }
