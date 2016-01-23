@@ -118,7 +118,7 @@ Route::group(array('before' => 'auth.user'), function()
 
         Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
 
-        Route::get('/{mode}/generatereport/{month}/{year}', 'TransactionController@getGenerateReport');
+        Route::get('/{mode}/reports', 'TransactionController@getGenerateReport');
 
     });
 });
@@ -193,6 +193,8 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
 
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
+
+        Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
 
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
 

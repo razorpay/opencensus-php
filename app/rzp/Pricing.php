@@ -3,7 +3,7 @@
 namespace RZP;
 
 class Pricing extends Entity
-{   
+{
     public function create($params = null)
     {
         return parent::create($params);
@@ -45,6 +45,13 @@ class Pricing extends Entity
         $relativeUrl = $this->getEntityUrl().$this->id.'/rule';
 
         return $this->request('POST', $relativeUrl, $params);
+    }
+
+    public function deleteRule($planId, $ruleId)
+    {
+        $relativeUrl = $this->getEntityUrl().$planId.'/rule/'.$ruleId;
+
+        return $this->request('DELETE', $relativeUrl);
     }
 
     protected function getEntityUrl()

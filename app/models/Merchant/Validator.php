@@ -24,6 +24,10 @@ class Validator extends Base\Validator
         'email'         => 'required|email'
     );
 
+    protected static $changeNameRules = array(
+        'name'         => 'required|min:4|alpha_space|max:200'
+    );
+
     protected static $loginRules = array(
         'email'     =>      'required|email',
         'password'  =>      'required|between:6,50',

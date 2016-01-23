@@ -50,6 +50,7 @@ app.controller('EntitiesCtrl', [
     };
     var gatewayList = [
       'all',
+      'amex',
       'atom',
       'axis_genius',
       'axis_migs',
@@ -85,6 +86,10 @@ app.controller('EntitiesCtrl', [
     // This list is alphabetically sorted, take care to maintain that
     $scope.availableFilters = {
       adjustment: { merchant_id: ['Merchant Id'] },
+      amex: {
+        payment_id: ['Payment Id'],
+        received: booleanList
+      },
       axis_genius: {
         payment_id: ['Payment Id'],
         received: booleanList
@@ -106,6 +111,10 @@ app.controller('EntitiesCtrl', [
         received: booleanList,
         payment_id: ['Payment Id']
       },
+      bank_account: {
+        merchant_id: ['Merchant Id'],
+        deleted: booleanList
+      },
       card: {
         merchant_id: ['Merchant Id'],
         iin: ['IIN'],
@@ -125,7 +134,9 @@ app.controller('EntitiesCtrl', [
       },
       hdfc: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
+        gateway_transaction_id: ['Gateway Transaction Id'],
+        ref: ['Reference']
       },
       merchant: {
         email: ['Email'],
@@ -139,7 +150,8 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList2,
         mobikwik: booleanList2,
         payzapp: booleanList2,
-        card: booleanList2
+        card: booleanList2,
+        amex: booleanList2
       },
       netbanking: {
         payment_id: ['Payment Id'],
@@ -241,7 +253,8 @@ app.controller('EntitiesCtrl', [
         }
       }
     }
-    $scope.$watch('mode + entity_type + count + from + to', function (x) {
+
+    $scope.$watch('mode + entity_type + from + to', function (x) {
       $state.go('app.entities', {
         mode: $scope.mode,
         type: $scope.entity_type
@@ -371,10 +384,11 @@ app.controller('EntitiesCtrl', [
       // We send the methods param in a JSON encoded format
       if (entity === 'merchant') {
         var methods = {}, validMethods = [
+            'amex',
+            'card',
             'paytm',
             'mobikwik',
-            'payzapp',
-            'card'
+            'payzapp'
           ];
         for (var i in validMethods) {
           var method = validMethods[i];

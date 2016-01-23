@@ -260,6 +260,13 @@ class AdminController extends BaseController
 
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
 
+        // Edited safely on API side
+        // Edit on Dashboard as well
+        if (empty($error))
+        {
+            list($e,) = (new Merchant\Service)->changeName($id, $input);
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -382,6 +389,14 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->addPricingPlanRule($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function deletePricingPlanRule($planId, $ruleId)
+    {
+        list($error, $data) = (new Admin\Service)
+            ->deletePricingPlanRule($planId, $ruleId);
 
         return AppResponse::jsonResponse($error, $data);
     }

@@ -22,6 +22,7 @@
         Entity Type:
         <select class="form-control input-sm w-sm inline " name="entity_type" ng-model="entity_type">
           <option value="adjustment">Adjustment</option>
+          <option value="amex">Amex</option>
           <option value="atom">Atom</option>
           <option value="axis_genius">Axis Genius</option>
           <option value="axis_migs">Axis Migs</option>
@@ -56,7 +57,7 @@
       </div>
       <div class="col-xs-1">
         Count
-        <input type="number" min="10" step="10" class="form-control inline w-xxs" ng-model="count" value="20" placeholder="20" name="count">
+        <input type="number" min="10" step="10" class="form-control inline w-xxs" ng-model="count" value="20" placeholder="20" name="count" ng-enter="showTable()">
       </div>
       <div class="col-sm-2">
         From:

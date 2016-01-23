@@ -34,6 +34,7 @@
             <th>Amount</th>
             <th>Created At</th>
             <th>Fees</th>
+            <th>Service Tax</th>
           </tr>
         </thead>
         <tbody>
@@ -42,6 +43,7 @@
             <td>{{row.amount/100 | rupee:"INR "}}</td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>
             <td>{{row.fees/100 | rupee:"INR" }}</td>
+            <td>{{row.service_tax/100 | rupee:"INR" }}</td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">
@@ -58,6 +60,8 @@
         </div>
         <div class="col-sm-4 text-center">
           <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
+          <br>
+          <p>Note that Fees is inclusive of Service Tax</p>
         </div>
         <div class="col-sm-4 text-right text-center-xs">
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">

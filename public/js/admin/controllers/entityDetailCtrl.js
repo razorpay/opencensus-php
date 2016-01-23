@@ -148,6 +148,7 @@ app.controller('EntityDetailCtrl', [
       var isId = function (key) {
         var validEntities = [
           'adjustment',
+          'amex',
           'atom',
           'axis_genius',
           'axis_migs',

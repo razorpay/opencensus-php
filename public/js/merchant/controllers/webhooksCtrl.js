@@ -136,11 +136,14 @@ app.controller('WebhooksCtrl', [
     $scope.webhook = {
       url: "",
       events: {
-        'payment.authorized': true
+        'payment.authorized': false
       }
     };
     $scope.ok = function (webhook) {
       $modalInstance.close(webhook);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
     };
   }
 ]).controller('editWebhookCtrl', [

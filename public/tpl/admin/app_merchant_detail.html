@@ -14,7 +14,7 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will only mark the merchant as confirmed on the dashboard side. Use this if the merchant was already created on the API side, but confirmation failed for some reason.">
+        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Use with caution">
           Confirm Merchant
         </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
@@ -67,11 +67,9 @@
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions <i class="pull-right fa fa-cross"></i>
         </a>
-        <a href class="list-group-item" ng-click="openEditWallets()">
-          Activate/Deactivate Wallets
-          <strong class="pull-right label label-success">
-          W
-          </strong>
+        <a href class="list-group-item" ng-click="openEditMethods()">
+          Edit Methods
+          <i class="pull-right fa fa-money"></i>
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
           Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
@@ -160,7 +158,7 @@
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.live == 1">
+        <a href class="list-group-item" ng-show="merchant.details.activated == 1">
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </a>
@@ -254,6 +252,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
           Settlement Schedule <i class="fa fa-clock-o"></i>
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
+          Amex
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
@@ -399,16 +401,19 @@
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
   </div>
 </script>
-<script type="text/ng-template" id="editMerchantWallets.html">
+<script type="text/ng-template" id="editMerchantMethods.html">
   <div class="modal-header">
-    <h3 class="modal-title">Activate/Deactivate Merchant Wallet Accounts</h3>
+    <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>
   </div>
-  <div class="modal-body wallets-modal">
+  <div class="modal-body methods-modal">
+  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp)">
+    Warning: You shouldn&apos;t enable both PayTM with any other wallet
+  </span>
   <form class="form-horizontal">
     <div class="form-group" >
-      <div class="row" ng-repeat="(wallet, value) in methods">
-        <label class="col-lg-6 control-label">{{ wallet | titlecase }}</label>
-        <input class="col-lg-6" name="{{wallet}}" ng-model="methods[wallet]" type="checkbox"/>
+      <div class="row" ng-repeat="(method, value) in methods">
+        <label class="col-lg-6 control-label">{{ method | titlecase }}</label>
+        <input class="col-lg-6" name="{{method}}" ng-model="methods[method]" type="checkbox"/>
       </div>
     </div>
 
@@ -442,6 +447,7 @@
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.gateway">
              <option value="hdfc" selected>HDFC</option>
+             <option value="amex">Amex</option>
              <option value="atom">Atom</option>
              <option value="axis_migs">Axis MIGS</option>
              <option value="axis_genius">Axis Genius</option>
@@ -451,6 +457,7 @@
              <option value="billdesk">Billdesk</option>
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>
+             <option value="netbanking_kotak">Netbanking KOTAK</option>
           </select>
         </div>
       </div>
@@ -773,6 +780,7 @@
               <option value="PB">Punjab</option>
               <option value="RJ">Rajasthan</option>
               <option value="SK">Sikkim</option>
+              <option value="TG">Telangana</option>
               <option value="TN">Tamilnadu</option>
               <option value="TR">Tripura</option>
               <option value="UP">Uttar Pradesh</option>

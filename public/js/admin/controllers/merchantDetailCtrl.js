@@ -208,7 +208,7 @@ app.controller('MerchantDetailCtrl', [
         postMethods[i] = methods[i] ? 1 : 0;
       }
 
-      msg = typeof msg !== 'undefined' ? msg : 'Methods edited successfully';
+      msg = typeof msg !== 'undefined' ? msg : 'Methods edited successfully: ' + JSON.stringify(methods);
 
       var request = $http({
         method: 'post',
@@ -555,10 +555,10 @@ app.controller('MerchantDetailCtrl', [
         $scope.assignTerminal(terminal);
       }, $.noop);
     };
-    $scope.openEditWallets = function () {
+    $scope.openEditMethods = function () {
       var modalInstance = $modal.open({
-        templateUrl: 'editMerchantWallets.html',
-        controller: 'editMerchantWalletsCtrl',
+        templateUrl: 'editMerchantMethods.html',
+        controller: 'editMerchantMethodsCtrl',
         resolve: {
           methods: function () {
             return $scope.merchant.details.methods || {};
@@ -776,27 +776,51 @@ app.controller('MerchantDetailCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
-]).controller('editMerchantWalletsCtrl', [
+]).controller('editMerchantMethodsCtrl', [
   '$scope',
   '$modalInstance',
   'methods',
   function ($scope, $modalInstance, methods) {
     // Makes sure we have all methods listed
-    var wallets = ['paytm', 'mobikwik', 'payzapp'];
+    // This lets us display methods that are not returned
+    // by the API as false
+    var forcedMethods = [
+      'paytm',
+      'mobikwik',
+      'payzapp',
+      'emi',
+      'card',
+      'amex'
+    ];
     $scope.methods = {};
 
-    wallets.map(function (key) {
+    forcedMethods.map(function (method) {
       // Assign a default of false and override if we have it
-      $scope.methods[key] = false;
+      $scope.methods[method] = false;
 
-      if (methods.hasOwnProperty(key)) {
-        $scope.methods[key] = methods[key];
+      if (methods.hasOwnProperty(method)) {
+        $scope.methods[method] = methods[method];
       };
+    });
 
-    })
+    // This is the unedited methods
+    var defaultMethods = jQuery.extend({}, $scope.methods);;
+
+    $scope.changedMethods = function() {
+      var methods = $scope.methods;
+      for (var method in methods) {
+        if (methods[method] === defaultMethods[method]) {
+          delete methods[method];
+        }
+      }
+      return methods;
+    };
 
     $scope.ok = function () {
-      $modalInstance.close($scope.methods);
+      // We only want to send methods that were edited
+      // from their original
+      var methodsDiff = $scope.changedMethods();
+      $modalInstance.close(methodsDiff);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

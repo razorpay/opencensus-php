@@ -19,9 +19,9 @@ class Validator extends Base\Validator
 
     protected static $analyticsRules = array(
         'merchant_id'   =>  'required',
-        'from'          =>  'integer',
-        'to'            =>  'integer',
-        'type'          =>  'in:day,week,month,year'
+        'from'          =>  'required|integer',
+        'to'            =>  'required|integer',
+        'type'          =>  'required|in:day,week,month,year'
     );
 
     protected static $analyticsGenerators = array('type','from','to');

@@ -38,13 +38,13 @@ class MerchantTest extends TestCase
             $this->merchant = $this->buildEntity('merchant', array(
                 'id'    => Uuid::generate(),
                 'email' => static::generateMerchantEmail(),
-                'name'  => 'Random Test Merchant'
+                'name'  => 'XOXO Test Merchant'
             ));
         }
 
         // Make sure that the merchant has webhook tagged
         // So the webhook button is visible
-        $this->merchant->tag('webhook');
+        $this->merchant->tag('webhooks', 'team');
     }
 
     /**
