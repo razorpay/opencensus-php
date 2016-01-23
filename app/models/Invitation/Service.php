@@ -62,7 +62,7 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
-        if(!$invitation)
+        if (! $invitation)
         {
             $error = 'The invitation is invalid.';
             return array($error, null);
@@ -87,19 +87,20 @@ class Service extends Base\Service
      */
     public function removeInvitationForUser($inviteId, $user)
     {
-        $error = array();
+        $error = [];
 
         $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
-        if(!$invitation)
+        if (! $invitation)
         {
-            $error = 'The invitation is invalid.';
-            return array($error, null);
+            $error[] = 'The invitation is invalid.';
+        }
+        else
+        {
+            $invitation->delete();
         }
 
-        $invitation->delete();
-
-        return array($error, $invitation->toArray());
+        return $error;
     }
 
     /**
@@ -113,16 +114,13 @@ class Service extends Base\Service
     {
         $invitation = $user->invitations()->find($inviteId);
 
-        if(!$invitation)
+        if (! $invitation)
         {
-            return array('The invitation is invalid.');
+            return ['The invitation is invalid.'];
         }
 
         $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
-
         $invitation->delete();
-
-        return array();
     }
 
     /**
@@ -134,26 +132,25 @@ class Service extends Base\Service
      */
     public function updateInvitationForUser($inviteId, $user, $input)
     {
-        $error = array();
+        $error = [];
 
         $validation = (new Invitation\Validator)->validateInput('updateInvitation', $input);
 
-        if($validation->fails())
+        if ($validation->fails())
         {
-            return $validation->messages();
+            $error[] = $validation->messages();
         }
 
         $invitation = $user->currentMerchant()->invitations()->find($inviteId);
 
-        if(!$invitation)
+        if (! $invitation)
         {
-            return array('The invitation is invalid.');
+            $error[] = ['The invitation is invalid.'];
+            return $error;
         }
 
         $invitation->role = $input['role'];
         $invitation->save();
-
-        return $error;
     }
 
     /**
@@ -167,14 +164,12 @@ class Service extends Base\Service
     {
         $invitation = $user->invitations()->find($inviteId);
 
-        if(is_null($invitation))
+        if (! $invitation)
         {
-            return array('The invitation is invalid.');
+            return ['The invitation is invalid.'];
         }
 
         $invitation->delete();
-
-        return array();
     }
 
     /**
