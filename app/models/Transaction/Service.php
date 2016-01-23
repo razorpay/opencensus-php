@@ -105,6 +105,14 @@ class Service extends Base\Service
             }
         }
 
+
+        $this->trace->debug('MISC_TRACE_CODE', $reportTxns + [
+            'from'  => $from,
+            'to'    => $to,
+            'merchantId'=>$merchantId
+        ]);
+
+
         return $reportTxns;
     }
 
