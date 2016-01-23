@@ -218,9 +218,31 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
+
+            $this->checkPricingRuleForOverlap($rule, $newRule);
         }
+    }
 
+    protected function checkPricingRuleForOverlap($rule, $newRule)
+    {
+        if (($newRule[Entity::PAYMENT_METHOD] == Payment\Method::CARD) and
+                $rule[Entity::AMOUNT_RANGE_ACTIVE] and
+                 $newRule[Entity::AMOUNT_RANGE_ACTIVE])
+        {
+            if(
+                (($newRule[Entity::AMOUNT_RANGE_MAX] > $rule[Entity::AMOUNT_RANGE_MIN]) and
+                    ($newRule[Entity::AMOUNT_RANGE_MIN] < $rule[Entity::AMOUNT_RANGE_MIN])) or
+                (($rule[Entity::AMOUNT_RANGE_MAX] > $newRule[Entity::AMOUNT_RANGE_MIN]) and
+                    ($rule[Entity::AMOUNT_RANGE_MIN] < $newRule[Entity::AMOUNT_RANGE_MIN])) or
+                (($rule[Entity::AMOUNT_RANGE_MAX] > $newRule[Entity::AMOUNT_RANGE_MAX]) and
+                    ($rule[Entity::AMOUNT_RANGE_MIN] < $newRule[Entity::AMOUNT_RANGE_MIN]))
+            )
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
+            }
 
+        }
     }
 
     public static function validatePlanCountZero($plan)

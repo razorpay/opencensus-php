@@ -185,7 +185,7 @@ class Fee
 
         if ($feeType === Card\Type::UNKNOWN)
         {
-            $slackArray = $payment->card->toArrayPublic();
+            $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
             $this->slackPost("Unknown card type found", $slackArray, ['channel' => '#tech_logs']);
 
@@ -199,62 +199,131 @@ class Fee
         $pricing = $this->repo->
             getPricingRulesForCard($pricingPlanId, $isInternational, $network, $feeType);
 
-        $rule = null;
-
         $amount = $payment->getAmount();
 
+        $rule = $this->getRuleFromPricingCollection($pricing, $network, $feeType, $amount);
+
+        return $rule;
+    }
+
+    protected function getRuleFromPricingCollection($pricing, $network, $feeType, $amount)
+    {
         $rules = $pricing->all();
 
-        //flag to check amount rule
-        $amountRulePresent = false;
+        $rules = $this->filterRulesOnNetwork($rules, $network);
 
-        if (count($rules) === 1)
-        {
-            $rule = $pricing->first();
-        }
-        else if (count($rules) > 1)
-        {
-            foreach ($pricing->all() as $item)
-            {
-                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
-                {
-                    $rule = $item;
-                    break;
-                }
+        $rulesMap = $this->filterRulesOnFeeType($rules, $feeType);
 
-                if ($item->isAmountRangeActive())
-                {
-                    $amountRulePresent = true;
-                }
-            }
+        $rule = $this->chooseRuleWithAmount($rulesMap, $amount);
 
-            foreach ($pricing->all() as $item)
-            {
-                if ($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $feeType)
-                {
-                    $rule = $item;
-
-                    if($amountRulePresent)
-                    {
-                        if(($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount)
-                            and ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) > $amount))
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                    break;
-                }
-            }
-        }
-        else
+        if ($rule === null)
         {
             throw new Exception\LogicException(
                 'Failed to find a valid pricing rule for the payment');
+        }
+
+        return $rule;
+    }
+
+    protected function filterRulesOnNetwork($rules, $network)
+    {
+        $networkMatchRules     = [];
+        $nullnetworkMatchRules = [];
+
+        foreach ($rules as $item)
+        {
+            if($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
+            {
+                $networkMatchRules[] = $item;
+            }
+            else
+            {
+                $nullnetworkMatchRules[] = $item;
+            }
+        }
+
+        if(empty($networkMatchRules))
+        {
+            return $nullnetworkMatchRules;
+        }
+
+        return $networkMatchRules;
+    }
+
+    protected function filterRulesOnFeeType($rules, $feeType)
+    {
+        $feeTypeAmountRules    = [];
+        $nullTypeAmountRules   = [];
+        $feeTypeNonAmountRule  = [];
+        $nullTypeNonAmountRule = [];
+
+        foreach ($rules as $item)
+        {
+            if (($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $feeType))
+            {
+                if($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                {
+                    $feeTypeAmountRules[] = $item;
+                }
+                else
+                {
+                    $feeTypeNonAmountRule = $item;
+                }
+            }
+            else
+            {
+                if($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                {
+                    $nullTypeAmountRules[] = $item;
+                }
+                else
+                {
+                    $nullTypeNonAmountRule = $item;
+                }
+            }
+        }
+
+        return ['typeNonAmountRule' => $feeTypeNonAmountRule,
+                'typeAmountRules' => $feeTypeAmountRules,
+                'nullAmountRules' => $nullTypeAmountRules,
+                'nullNonAmountRule' => $nullTypeNonAmountRule];
+    }
+
+    protected function chooseRuleWithAmount($rulesMap, $amount)
+    {
+        $rule = null;
+
+        if (!empty($rulesMap['typeAmountRules']))
+        {
+            foreach ($rulesMap['typeAmountRules'] as $ruleItem)
+            {
+                if(($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount)
+                    and ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
+                {
+                    $rule = $ruleItem;
+                    break;
+                }
+            }
+        }
+        else if(!empty($rulesMap['typeNonAmountRule']))
+        {
+            $rule = $rulesMap['typeNonAmountRule'];
+        }
+        else if(!empty($rulesMap['nullAmountRules']))
+        {
+            foreach ($rulesMap['nullAmountRules'] as $ruleItem)
+            {
+                if(($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount)
+                    and ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
+                {
+                    $rule = $ruleItem;
+                    break;
+                }
+            }
+        }
+        else if(!empty($rulesMap['nullNonAmountRule']))
+        {
+            $rule = $rulesMap['nullNonAmountRule'];
         }
 
         return $rule;

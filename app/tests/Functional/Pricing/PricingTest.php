@@ -225,7 +225,7 @@ class PricingTest extends TestCase
             'payment_method_type'  => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'HDFC',
-            'percent_rate' => 1000,);
+            'percent_rate' => 1000);
 
         $request = array(
             'method' => 'POST',
@@ -249,7 +249,8 @@ class PricingTest extends TestCase
             'payment_method_type' => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'SBIN',
-            'percent_rate' => '275',);
+            'percent_rate' => '275',
+            );
 
         $pricingData =
             array(

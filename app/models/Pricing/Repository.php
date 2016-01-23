@@ -66,15 +66,15 @@ class Repository extends Base\Repository
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
                     ->where(Pricing\Entity::INTERNATIONAL, '=', $isInternational)
-                    ->where(function($query) use ($methodType)
-                    {
-                        $query->where(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', null)
-                              ->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
-                    })
                     ->where(function($query) use ($network)
                     {
                         $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
                               ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
+                    })
+                    ->where(function($query) use ($methodType)
+                    {
+                        $query->where(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', null)
+                              ->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
                     })
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();

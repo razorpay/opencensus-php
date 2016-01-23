@@ -109,11 +109,6 @@ class Entity extends Base\PublicEntity
         return (boolean) $this->getAttribute(self::INTERNATIONAL);
     }
 
-    public function isAmountRangeActive()
-    {
-        return (boolean) $this->getAttribute(self::AMOUNT_RANGE_ACTIVE);
-    }
-
     public function payments()
     {
         return $this->hasMany('Models\Transaction\Entity', 'pricing_rule_id');
