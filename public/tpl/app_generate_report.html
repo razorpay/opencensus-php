@@ -20,7 +20,7 @@
         </div>
         <div class="m-b col-sm-2"  ng-show="report.type == 'daily'">
           <select name="day" ng-model="report.day" class="form-control" required>
-            <option ng-repeat="day in days" value="{{day}}">{{day}}</option>
+            <option ng-selected="day==report.day" ng-repeat="day in days" value="{{day}}">{{day}}</option>
           </select>
         </div>
         <div class="m-b col-sm-4" ng-show="report.type == 'monthly' || report.type== 'daily'">
@@ -57,6 +57,12 @@
     <footer class="panel-footer">
       <div class="text-center m-t m-b">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+        <div class="row">
+          <div class="col-sm-12 text-center">
+            Daily Reports will include transactions on the given date, as well as payments
+            settled on that given date.
+          </div>
+        </div>
       </div>
     </footer>
   </div>
