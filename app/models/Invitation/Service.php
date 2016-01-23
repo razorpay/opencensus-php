@@ -18,6 +18,9 @@ class Service extends Base\Service
      */
     public function sendInvitation($input)
     {
+        $errors = [];
+        $response = null;
+
         $validation = (new Validator)->validateInput('sendInvitation', $input);
 
         if ($validation->fails())
@@ -26,20 +29,26 @@ class Service extends Base\Service
         }
 
         $user = Auth::user()->user();
+        $merchant = $user->getOwnerMerchant();
 
-        $merchant = $user->merchants()
-                         ->where('email', $user->email)
-                         ->where('role', 'owner')
-                         ->first();
+        if (! $merchant)
+        {
+            $errors[] = "You don't own any merchants";
+        }
+        else
+        {
+            $response = $merchant->toArray();
+        }
 
         if ($merchant->invitations()->where('email', $input['email'])->exists())
         {
-            return array(array('An invitation has already been sent to the user.'),array());
+            $errors[] = 'An invitation has already been sent to the user.';
         }
 
-        $invitation = $merchant->inviteUserByEmailWithRole($input['email'],$input['role']);
+        $invitation = $merchant->inviteUserByEmailWithRole($input['email'], $input['role']);
 
-        return array(null, $merchant->toArray());
+
+        return [$errors, $response];
     }
 
     /**

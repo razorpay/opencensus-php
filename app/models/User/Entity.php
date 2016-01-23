@@ -115,14 +115,14 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function currentMerchant()
     {
         $current_merchant_id = Session::get('current_merchant_id');
-        
-        if (is_null($current_merchant_id) && $this->hasMerchants()) 
+
+        if (is_null($current_merchant_id) && $this->hasMerchants())
         {
             $this->switchToMerchant($this->merchants->first());
 
             return $this->currentMerchant();
-        } 
-        elseif (! is_null($current_merchant_id)) 
+        }
+        elseif (! is_null($current_merchant_id))
         {
             $currentMerchant = $this->merchants->find($current_merchant_id);
 
@@ -139,6 +139,18 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function getCurrentMerchantId()
     {
         return $this->currentMerchant->id;
+    }
+
+    /**
+     * Returns the first merchant owned by this user
+     * @return Merchant\Entity
+     */
+    public function getOwnerMerchant()
+    {
+        return $this->merchants()
+            ->where('email', $this->email)
+            ->where('role', 'owner')
+            ->first();
     }
 
     /**
@@ -194,7 +206,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         $merchant = $this->merchants->find($merchant->id);
 
-        if($merchant) 
+        if($merchant)
         {
             return $merchant->pivot->role;
         }
@@ -211,7 +223,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         return $token;
     }
-    
+
     /**
      * Generates Confirmation token
      */
