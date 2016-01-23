@@ -16,11 +16,6 @@ class UserMailer extends Mailer
      */
     public function __construct(UserEntity $user)
     {
-        if(!is_object($user))
-        {
-            throw new InvalidContactInformationException(self::INVALID_USER_ERROR);
-        }
-
         $this->to = $user->name;
         $this->email = $user->email;
         $this->data = $user->toArray();
