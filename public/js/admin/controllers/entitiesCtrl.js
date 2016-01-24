@@ -55,6 +55,7 @@ app.controller('EntitiesCtrl', [
       'axis_genius',
       'axis_migs',
       'billdesk',
+      'ezeclick',
       'hdfc',
       'kotak',
       'paytm',
@@ -188,7 +189,8 @@ app.controller('EntitiesCtrl', [
           'all',
           'paytm',
           'mobikwik',
-          'payzapp'
+          'payzapp',
+          'ezeclick'
         ],
         iin: ['Card IIN'],
         last4: ['Card Last 4']
