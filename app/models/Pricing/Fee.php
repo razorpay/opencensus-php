@@ -144,7 +144,8 @@ class Fee
             if (count($pricing) > 1)
             {
                 throw new Exception\LogicException(
-                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
+                    'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
+                    [$pricing->toArray()]);
             }
 
             $rule = $pricing->first();
