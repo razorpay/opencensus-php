@@ -14,7 +14,8 @@ return [
                 'payment_method_type'  => 'credit',
                 'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000
+                'percent_rate' => 1000,
+                'international' => 0,
             ],
             'url' => '/pricing',
             'method' => 'POST'
@@ -31,7 +32,8 @@ return [
                         'payment_method_type'  => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000
+                        'percent_rate' => 1000,
+                        'international' => false,
                     ),
                 ),
             ],
@@ -45,7 +47,8 @@ return [
                 'payment_method_type'  => 'credit',
                 'payment_network' => 'MAES',
                 'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000
+                'percent_rate' => 1000,
+                'international' => 0,
             ],
             'method' => 'POST'
         ],
@@ -56,7 +59,8 @@ return [
                 'payment_method_type' => 'credit',
                 'payment_network' => 'MAES',
                 'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000
+                'percent_rate' => 1000,
+                'international' => false,
             ],
         ],
     ],
@@ -90,6 +94,7 @@ return [
                 'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
+                'international' => 0,
             ],
         ],
         'response' => [
@@ -122,6 +127,7 @@ return [
                         'payment_issuer' => 'AXIS',
                         'percent_rate' => 0,
                         'fixed_rate' => 3000,
+                        'international' => false,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -131,6 +137,7 @@ return [
                         'payment_issuer' => 'PUNB',
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
+                        'international' => false,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -140,6 +147,7 @@ return [
                         'payment_issuer' => 'ICIC',
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
+                        'international' => false,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -150,6 +158,7 @@ return [
                         'payment_issuer' => 'SBIN',
                         'percent_rate' => 275,
                         'fixed_rate' => 0,
+                        'international' => false,
                     ),
                 )
             ]
@@ -180,6 +189,7 @@ return [
                                 'payment_issuer' => 'AXIS',
                                 'percent_rate' => 0,
                                 'fixed_rate' => 3000,
+                                'international' => false,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -189,6 +199,7 @@ return [
                                 'payment_issuer' => 'PUNB',
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
+                                'international' => false,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -198,6 +209,7 @@ return [
                                 'payment_issuer' => 'ICIC',
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
+                                'international' => false,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -207,6 +219,7 @@ return [
                                 'payment_issuer' => 'SBIN',
                                 'percent_rate' => 275,
                                 'fixed_rate' => 0,
+                                'international' => false,
                             ),
                         )
                     ),
@@ -223,6 +236,7 @@ return [
                                 'payment_network' =>  'DICL',
                                 'payment_issuer' =>  'HDFC',
                                 'percent_rate' =>  1000,
+                                'international' => false,
                                 'fixed_rate' =>  0,
                                 'expired_at' => NULL
                             )
@@ -257,7 +271,8 @@ return [
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000
+                        'percent_rate' => 1000,
+                        'international' => false,
                     ),
                 ),
             ],
@@ -280,7 +295,8 @@ return [
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000
+                        'percent_rate' => 1000,
+                        'international' => false,
                     ),
                 ),
             ],
@@ -336,7 +352,8 @@ return [
                         'payment_network' => 'VISA',
                         'payment_issuer' => 'ICIC',
                         'percent_rate' => 1000,
-                        'fixed_rate' => 10000
+                        'fixed_rate' => 10000,
+                        'international' => false,
                     ),
                 ),
             ],
@@ -371,6 +388,166 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddInternationalPricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1100,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1100,
+                'international' => true,
+            ],
+        ],
+    ],
+
+    'testAddDuplicateInternationalPricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
+    'testAddInternationalPricingPlanRuleForNonCardMethod' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'netbanking',
+                'payment_method_type'  => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Internatioanl pricing rule is only allowed for card method',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddInternationalPricingPlanRuleWithExtraFields' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'For international pricing rule, attribute payment_method_type should not be set',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddDuplicateWalletPricingRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'wallet',
+                'payment_method_type'  => 'credit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1200,
+                'international' => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payment method type field may be sent only when payment method is card',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddDuplicateWalletPricingRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
 ];
