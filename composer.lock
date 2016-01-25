@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "bcf2dd4cbf5ffd198f4ec08eb896a5b2",
-    "content-hash": "a944af03a2a7024c6e2989525c129188",
+    "hash": "35e22c392ed110a6d3983ae66d412251",
+    "content-hash": "46a39ed996d41622e2d4742b164eb163",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1817,16 +1817,16 @@
         },
         {
             "name": "razorpay/razorpay",
-            "version": "1.2.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "630698a8de7c61ab672618e4977a61df1811d10c"
+                "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/630698a8de7c61ab672618e4977a61df1811d10c",
-                "reference": "630698a8de7c61ab672618e4977a61df1811d10c",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/fa3f849333f6954cd8c56d88afef6d98348efa7d",
+                "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d",
                 "shasum": ""
             },
             "require": {
@@ -1869,7 +1869,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2016-01-20 22:24:49"
+            "time": "2016-01-25 18:05:44"
         },
         {
             "name": "razorpay/spine",
@@ -1877,12 +1877,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "e38607d4e016884a0b4ca03c8f4a9dbed08866d6"
+                "reference": "49e54a5704afeaeb8a3751dd1b3c6c1d414229a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/e38607d4e016884a0b4ca03c8f4a9dbed08866d6",
-                "reference": "e38607d4e016884a0b4ca03c8f4a9dbed08866d6",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/49e54a5704afeaeb8a3751dd1b3c6c1d414229a7",
+                "reference": "49e54a5704afeaeb8a3751dd1b3c6c1d414229a7",
                 "shasum": ""
             },
             "require": {
@@ -1916,7 +1916,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-01-19 15:52:29"
+            "time": "2016-01-22 04:47:08"
         },
         {
             "name": "react/promise",
@@ -2068,16 +2068,16 @@
         },
         {
             "name": "schuppo/password-strength",
-            "version": "0.9",
+            "version": "0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/schuppo/PasswordStrengthPackage.git",
-                "reference": "3f89c0b25a95fd7c9cd76045d61978811518a328"
+                "reference": "acb8c328b78db6fc12d438f259f70163fa15c7bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schuppo/PasswordStrengthPackage/zipball/3f89c0b25a95fd7c9cd76045d61978811518a328",
-                "reference": "3f89c0b25a95fd7c9cd76045d61978811518a328",
+                "url": "https://api.github.com/repos/schuppo/PasswordStrengthPackage/zipball/acb8c328b78db6fc12d438f259f70163fa15c7bc",
+                "reference": "acb8c328b78db6fc12d438f259f70163fa15c7bc",
                 "shasum": ""
             },
             "require": {
@@ -2086,7 +2086,8 @@
                 "php": ">=5.4.0"
             },
             "require-dev": {
-                "illuminate/validation": "~4.1"
+                "illuminate/validation": "~4.1",
+                "phpunit/phpunit": "^4.8"
             },
             "type": "library",
             "autoload": {
@@ -2113,7 +2114,7 @@
                 "password strength",
                 "validation"
             ],
-            "time": "2015-12-12 12:48:27"
+            "time": "2016-01-23 16:55:51"
         },
         {
             "name": "stack/builder",
@@ -2775,16 +2776,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.0.1",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "49ff736bd5d41f45240cec77b44967d76e0c3d25"
+                "reference": "1289d16209491b584839022f29257ad859b8532d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/49ff736bd5d41f45240cec77b44967d76e0c3d25",
-                "reference": "49ff736bd5d41f45240cec77b44967d76e0c3d25",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/1289d16209491b584839022f29257ad859b8532d",
+                "reference": "1289d16209491b584839022f29257ad859b8532d",
                 "shasum": ""
             },
             "require": {
@@ -2796,7 +2797,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0-dev"
+                    "dev-master": "1.1-dev"
                 }
             },
             "autoload": {
@@ -2830,7 +2831,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2015-11-20 09:19:13"
+            "time": "2016-01-20 09:13:37"
         },
         {
             "name": "symfony/process",
@@ -3582,6 +3583,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "razorpay/razorpay": 20,
         "ollieread/multiauth": 20,
         "razorpay/spine": 20,
         "marlek/laravel-automigrate": 20,
