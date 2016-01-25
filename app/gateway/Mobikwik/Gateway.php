@@ -56,10 +56,13 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['gateway']['orderid'], Action::AUTHORIZE);
+                            $input['gateway']['orderid'], Action::AUTHORIZE);
+
         $input['gateway']['received'] = 1;
+
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
@@ -67,6 +70,7 @@ class Gateway extends Base\Gateway
                 'gateway' => 'mobikwik',
                 'payment_id' => $input['payment']['id'],
             ]);
+
         $this->verifyPaymentCallbackResponse($input);
     }
 
@@ -185,6 +189,64 @@ class Gateway extends Base\Gateway
                 $content['statuscode'],
                 $content['statusmessage']);
         }
+    }
+
+    public function checkExistingUser($input)
+    {
+        $this->action = 'check_user';
+
+        $content = array(
+            'action'        => 'existingusercheck',
+            'cell'          => $input['contact'],
+            'merchantname'  => 'razorpay',
+            'mid'           => $this->getMobikwikMerchantId($input['terminal']),    
+            'msgcode'       => '500',
+        );
+
+        $content['checksum'] = $this->getHashOfArray($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $response = $this->sendGatewayRequest($request);
+        $content = $this->xmlToArray($response->body);
+
+        $content['received'] = 1;
+
+        if ($content['statuscode'] !== '0')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST,
+                $content['statuscode'],
+                $content['statusdescription']);
+        }
+    }
+
+    public function otpGenerate($input)
+    {
+        $this->action = 'otp_generate';
+
+        $content = array(
+            'amount'    => $input['payment']['amount'],
+            'cell'      => $input['payment']['contact'],
+            'merchantname' => 'razorpay',
+            'mid'       => $this->getMobikwikMerchantId($input['terminal']),
+            'msgcode'   => '504',
+            'tokentype' => '0',
+        );
+
+        $content['checksum'] = $this->getHashOfArray($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $resposne = $this->sendGatewayRequest($request);
+        $content = $this->xmlToArray($response->body);
+
+        if ($content['statuscode'] !== '0')
+        {
+            ;
+        }
+
+
     }
 
     protected function getRefundRequestContentArray($input)

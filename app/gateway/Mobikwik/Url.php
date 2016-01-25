@@ -10,4 +10,6 @@ class Url
     const AUTHORIZE = '/wallet';
     const REFUND = '/walletrefund';
     const VERIFY = '/checkstatus';
+    const CHECK_USER = '/querywallet';
+    const OTP_GENERATE = '/otpgenerate';
 }
