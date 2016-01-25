@@ -53,12 +53,16 @@
             Contact
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
-            Fee
+            <span class="pull-right">{{(entity.fee - entity.service_tax)/100 | rupee:""}}</span>
+            Fees
           </a>
           <a href class="list-group-item">
             <span class="pull-right">{{entity.service_tax/100 | rupee:""}}</span>
             Service Tax
+          </a>
+          <a href class="list-group-item" tooltip="Total Fees is inclusive of Service Tax charges">
+            <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
+            Total Fees
           </a>
           <a href class="list-group-item" ng-show="entity.error_code">
             <span class="pull-right">
