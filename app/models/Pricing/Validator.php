@@ -11,17 +11,19 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|',
-        Entity::PAYMENT_METHOD      => 'required|alpha_space|in:card,netbanking,wallet',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
-        Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
+        Entity::PAYMENT_METHOD      => 'required|alpha|in:card,netbanking,wallet,emi',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
+        Entity::PAYMENT_NETWORK     => 'sometimes_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
+        Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
     protected static $addPlanRuleValidators = array(
         'addPlanRuleRate',
         'addPlanRuleNB',
-        'addPlanRulePaymentNetwork');
+        'addPlanRulePaymentNetwork',
+        'addPlanRuleInternational');
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
@@ -57,10 +59,11 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) and
+            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment network only needs to be passed when payment method is card');
+                'Payment network only needs to be passed when payment method is card or emi');
         }
     }
 
@@ -74,6 +77,37 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_RATE_NOT_DEFINED);
+        }
+    }
+
+    protected function validateAddPlanRuleInternational($input)
+    {
+        if ((isset($input[Entity::INTERNATIONAL]) === false) or
+            ($input[Entity::INTERNATIONAL] === '0'))
+        {
+            return;
+        }
+
+        $attrs = array(
+            Entity::PAYMENT_NETWORK,
+            Entity::PAYMENT_ISSUER,
+            Entity::PAYMENT_METHOD_TYPE,
+        );
+
+        foreach ($attrs as $attr)
+        {
+            if ((isset($input[$attr])) and
+                ($input[$attr] !== null))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "For international pricing rule, attribute $attr should not be set");
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Internatioanl pricing rule is only allowed for card method');
         }
     }
 
@@ -105,9 +139,6 @@ class Validator extends Base\Validator
 
         // The input and pricing rule (any) gateway should match
         $this->matchGateway($rule, $input);
-
-        // The input should not match any existing rule
-        $this->matchPaymentRules($plan, $input);
     }
 
     protected function matchGateway($planRule, $input)
@@ -128,16 +159,19 @@ class Validator extends Base\Validator
     /**
      * Check whether this new rule already exists
      */
-    public function matchPaymentRules($plan, $input)
+    public function matchPaymentRules($plan)
     {
         $rules = $plan->toArray();
 
+        $newRule = $this->entity;
+
         foreach ($rules as $rule)
         {
-            if (($rule[Entity::PAYMENT_METHOD] === $input[Entity::PAYMENT_METHOD]) and
-                ($rule[Entity::PAYMENT_METHOD_TYPE] === $input[Entity::PAYMENT_METHOD_TYPE]) and
-                ($rule[Entity::PAYMENT_NETWORK] === $input[Entity::PAYMENT_NETWORK]) and
-                ($rule[Entity::PAYMENT_ISSUER] === $input[Entity::PAYMENT_ISSUER]))
+            if (($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+                ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
+                ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
+                ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
+                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);

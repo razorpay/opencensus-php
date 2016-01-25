@@ -32,6 +32,8 @@ class Entity extends Base\PublicEntity
     const BANK                  = 'bank';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
+    const EMI_PLAN_ID           = 'emi_plan_id';
+    const EMI_DURATION          = 'emi_duration';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
     const AUTHORIZED_AT         = 'authorized_at';
@@ -61,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
+        self::EMI_PLAN_ID,
         self::BANK,
         self::WALLET,
         self::CURRENCY,
@@ -86,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::BANK,
         self::WALLET,
+        self::EMI_PLAN_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -114,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::METHOD,
+        self::EMI_PLAN_ID,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
         self::CAPTURED,
@@ -143,7 +148,8 @@ class Entity extends Base\PublicEntity
         self::SIGNED            => 0,
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
-        self::AUTO_CAPTURED     => 0);
+        self::AUTO_CAPTURED     => 0,
+    );
 
 // --------------------- Generators --------------------------------------------
 
@@ -293,6 +299,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
+    public function setEmiPlanId($planId)
+    {
+        $this->setAttribute(self::EMI_PLAN_ID, $planId);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -384,6 +395,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
+    public function getEmiPlanIdAttribute()
+    {
+        return $this->attributes[self::EMI_PLAN_ID];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
@@ -441,6 +457,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
     }
 
+    public function isEmi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -454,6 +475,11 @@ class Entity extends Base\PublicEntity
     public function isSigned()
     {
         return ((bool)$this->getAttribute(self::SIGNED) === true);
+    }
+
+    public function isInternational()
+    {
+        return $this->card->isInternational();
     }
 
 // ----------------------- Getters ---------------------------------------------
@@ -607,6 +633,11 @@ class Entity extends Base\PublicEntity
         $diff = $now - $at;
 
         return floor($diff / (60*24*24));
+    }
+
+    public function getEmiPlanId()
+    {
+        return $this->getAttribute(self::EMI_PLAN_ID);
     }
 
     /**

@@ -79,4 +79,21 @@ class EloquentEx extends \Razorpay\Spine\Entity
     {
         return static::getTableName() . '.' . $col;
     }
+
+    public function scopeBetweenTime($query, $from, $to)
+    {
+        $query->whereBetween(Common::CREATED_AT, [$from, $to]);
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        $query->where(Common::MERCHANT_ID, '=', $merchantId);
+    }
+
+    public function scopeOrderByCreatedAt($query, $desc = true)
+    {
+        $desc = ($desc) ? 'desc' : 'asc';
+
+        $query->orderBy(Common::CREATED_AT, $desc);
+    }
 }

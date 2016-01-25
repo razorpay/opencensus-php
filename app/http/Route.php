@@ -46,6 +46,7 @@ final class Route
         'iin_fetch_by_iin'                      => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
         'iin_fetch_multiple'                    => ['get',      'iins',                                     'CardController@getIins'                                            ],
         'iin_add'                               => ['post',     'iins',                                     'CardController@postIin'                                            ],
+        'iin_edit'                              => ['post',     'iins/{id}',                                'CardController@editIin'                                            ],
         'iin_import_post'                       => ['post',     'iins/import',                              'CardController@postIinFile'                                        ],
         'iin_generate_post'                     => ['post',     'iins/import/generate',                     'CardController@postIinGenerate'                                    ],
         'merchant_public_get_banks'             => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
@@ -161,7 +162,10 @@ final class Route
         'daily_settlement_compute_tax'          => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
         'get_features'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
         'dummy_feature'                         => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
-    );
+        'add_emi_plan'                          => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
+        'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
+        'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
+    ); 
 
     public static $public = array(
         'checkout',
@@ -190,6 +194,8 @@ final class Route
         'mock_wallet_payment',
         'dummy_return_callback',
         'dummy_critical_error',
+        'get_emi_plans',
+        'get_emi_plan_by_id'
     );
 
     public static $publicCallback = array(
@@ -277,7 +283,6 @@ final class Route
         'settlement_compute_tax',
         'daily_settlement_compute_tax',
         'refund_netbanking_generate_excel',
-        'transaction_monthly_report',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -286,6 +291,7 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'iin_edit',
         'iin_import_post',
         'iin_generate_post',
         'send_test_newsletter',
@@ -294,11 +300,13 @@ final class Route
         'merchant_add_features',
         'merchant_get_features',
         'get_features',
+        'add_emi_plan',
     );
 
     public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
+        'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
         'setl_fetch_by_id',

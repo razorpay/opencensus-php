@@ -23,6 +23,11 @@ class Detail extends Base\Entity
 
     protected $guarded = array('*');
 
+    public function __construct()
+    {
+        sddb(10);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);

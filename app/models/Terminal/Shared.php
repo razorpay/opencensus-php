@@ -78,4 +78,11 @@ class Shared
     {
         return self::$map[$terminal];
     }
+
+    public static function getSharedTerminalForGateway($gateway)
+    {
+        $map = array_flip(self::$map);
+
+        return $map[$gateway];
+    }
 }

@@ -42,6 +42,11 @@ trait Inquiry
 
         $successStatusArray = Status::getSuccessStatusArray();
 
+        if (empty($content['trackid']) === false)
+        {
+            assert ($content['trackid'] === $payment['payment_id']);
+        }
+
         if ((isset($content['result'])) and
             (($content['result'] === Result::APPROVED) or
              ($content['result'] === Result::CAPTURED)))
@@ -164,6 +169,8 @@ trait Inquiry
 
         $data = &$this->inquiryRequest['data'];
         $data = $content;
+
+        $this->inquiryResponse['data'] = [];
 
         $this->runRequestResponseFlow(
             $this->inquiryRequest,
