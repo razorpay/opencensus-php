@@ -38,7 +38,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'csv_email', 'features'
     ];
-
+    
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)

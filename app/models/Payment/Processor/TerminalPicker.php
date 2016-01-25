@@ -8,6 +8,8 @@ use EE\Error\ErrorCode;
 use Models\Bank\IFSC;
 use Models\Card;
 use Models\Card\Network;
+use Models\Emi;
+use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Method;
 use Models\Payment\Gateway;
@@ -84,6 +86,10 @@ class TerminalPicker
 
             case Method::WALLET:
                 $terminal = $this->pickWalletTerminal($terminals, $payment);
+                break;
+
+            case Method::EMI:
+                $terminal = $this->pickEmiTerminal($terminals, $payment);
                 break;
 
             default:
@@ -178,6 +184,19 @@ class TerminalPicker
         }
 
         return $this->getSharedTerminalForWallet($payment);
+    }
+
+    protected function pickEmiTerminal($terminals, $payment)
+    {
+        $bank = $this->payment->getBank();
+
+        if ($bank === IFSC::KKBK)
+        {
+            // for kotak, process as normal card transaction and mail for emi
+            return $this->pickCardTerminal($terminals, $payment);
+        }
+
+        return $this->getSharedTerminalForEmi($payment);
     }
 
     protected function getSharedTerminalForCard($payment)
@@ -402,6 +421,23 @@ class TerminalPicker
                 return $terminal;
             }
         }
+    }
+
+    protected function getSharedTerminalForEmi($payment)
+    {
+        $bank = $this->payment->getBank();
+        
+        $gateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
+
+        $emiPlanId = $this->payment->getEmiPlanId();
+        
+        $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
+                
+        $emiDuration = $emiPlan->getDuration();
+
+        $terminal = $this->repo->getEmiTerminal(Merchant\Account::SHARED_ACCOUNT, $gateway, $emiDuration);
+        
+        return $terminal;       
     }
 
     protected function validateCount($terminals, $merchant)

@@ -1,6 +1,5 @@
 <?php
 
-use Models\Card;
 use Models\Card\IIN;
 use Constants\Table;
 
@@ -20,7 +19,10 @@ class IinsTableSeeder extends Seeder
             IIN\Entity::NETWORK,
             IIN\Entity::TYPE,
             IIN\Entity::COUNTRY,
-            IIN\Entity::ISSUER);
+            IIN\Entity::ISSUER_NAME,
+            IIN\Entity::ISSUER,
+            IIN\Entity::EMI
+        );
 
         $assocRecords = array();
 

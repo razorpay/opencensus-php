@@ -123,6 +123,28 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::MERCHANT)->insert(
                 array(
+                    'id'            =>  Account::SHARED_ACCOUNT,
+                    'name'          =>  'Shared Account',
+                    'email'         =>  'shared@razorpay.com',
+                    'category'      =>  '1234',
+                    'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'shared@razorpay.com',
+                    'settlement_schedule' => 3,
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::SHARED_ACCOUNT,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
                     'id'            =>  Account::DEMO_ACCOUNT,
                     'name'          =>  'Demo Account',
                     'email'         =>  'demo@razorpay.com',
@@ -167,8 +189,22 @@ class DatabaseSeeder extends Seeder
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'card'          => '1',
+                    'emi'           => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
+                )
+            );
+
+            DB::table(Table::EMI_PLAN)->insert(
+                array(
+                    'id'            => 'abcdefghijklmn',
+                    'bank'          => 'KKBK',
+                    'duration'      => 9,
+                    'rate'          => 1400,
+                    'min_amount'    => 300000,
+                    'methods'       => 'card',
+                    'created_at'    => time(),
+                    'updated_at'    => time(), 
                 )
             );
         });
@@ -353,6 +389,22 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_paytm',
                 'gateway_terminal_id'   => 'shared_terminal_paytm',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_paytm_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => 'djfksjfksjfdkj',
+                'merchant_id'           => Account::SHARED_ACCOUNT,
+                'gateway'               => Gateway::HDFC,
+                'emi'                   => '1',
+                'shared'                => '1',
+                'emi_duration'          => 9,
+                'gateway_merchant_id'   => 'test_merchant_emi',
+                'gateway_terminal_id'   => 'shared_terminal_hdfc',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )

@@ -41,6 +41,7 @@ class Base
         'settlement'    => Models\Settlement\Entity::class,
         'transaction'   => Models\Transaction\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
+        'emi_plan'      => Models\Emi\Entity::class
     );
 
     protected static $liveAndTest = array(

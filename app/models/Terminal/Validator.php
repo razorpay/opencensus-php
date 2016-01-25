@@ -21,6 +21,8 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_with:emi|integer|in:3,6,9,12,15',
         Entity::SHARED                      => 'sometimes|boolean',
     );
 

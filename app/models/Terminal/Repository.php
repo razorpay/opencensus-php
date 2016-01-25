@@ -99,6 +99,18 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getEmiTerminal($mId, $gateway, $duration)
+    {        
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $mId)
+                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->where(Terminal\Entity::EMI, '=', '1')
+                    ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
+                    ->first();
+    }
+
     public function deleteOrFail($entity)
     {
         $repo = $this->repo;

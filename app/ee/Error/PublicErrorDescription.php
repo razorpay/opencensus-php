@@ -25,12 +25,14 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Rs 1';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY                 = 'Minimum amount allowed for net banking transaction for the merchant is INR 50';
+    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI               = 'Minimum transaction amount allowed is Rs 5000';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                 = 'Card provided is not a dictionary';
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                                 = 'Payment Exception: Card not provided';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'Invalid cvv';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                           = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT                   = 'Wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT                     = 'Card transactions are not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT                      = 'Emi transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS                                = 'Contact number can only contain digits and + symbol';
