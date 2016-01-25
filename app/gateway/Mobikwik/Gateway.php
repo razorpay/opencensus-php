@@ -74,15 +74,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
-        $content['orderid'] = $input['payment']['id'];
-
-        $content['checksum'] = $this->getHashForVerifyRequest(
-            $content['mid'], $content['orderid']);
-
-        $content = http_build_query($content);
-
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
@@ -172,26 +164,9 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
-        $content = [];
-        $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
-        $this->addTestMerchantIdIfTestMode($content);
 
+        $content = $this->getRefundRequestContentArray($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $content['txid'] = $input['payment']['id'];
-        $content['email'] = $payment['email'];
-        $content['amount'] = (string) ($input['refund']['amount'] / 100);
-
-        $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
-                                                              $content['txid'],
-                                                              $content['amount'],
-                                                              $content['email']);
-        if($input['refund']['amount'] < $input['payment']['amount'])
-        {
-            $content['ispartial'] = 'yes';
-        }
         $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
@@ -202,6 +177,7 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
+
         if ($content['statuscode'] !== '0')
         {
             throw new Exception\GatewayErrorException(
@@ -209,7 +185,51 @@ class Gateway extends Base\Gateway
                 $content['statuscode'],
                 $content['statusmessage']);
         }
+    }
 
+    protected function getRefundRequestContentArray($input)
+    {
+        $content = [];
+
+        $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
+
+        $this->addTestMerchantIdIfTestMode($content);
+
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::AUTHORIZE);
+
+        $content['txid'] = $input['payment']['id'];
+        $content['email'] = $payment['email'];
+        $content['amount'] = (string) ($input['refund']['amount'] / 100);
+
+        $content['checksum'] = $this->getHashForRefundRequest(
+                                        $content['mid'],
+                                        $content['txid'],
+                                        $content['amount'],
+                                        $content['email']);
+        
+        if ($input['refund']['amount'] < $input['payment']['amount'])
+        {
+            $content['ispartial'] = 'yes';
+        }
+
+        return $content;        
+    }
+
+    protected function getVerifyRequestArray($input)
+    {
+        $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
+
+        $content['orderid'] = $input['payment']['id'];
+
+        $content['checksum'] = $this->getHashForVerifyRequest(
+                                    $content['mid'], $content['orderid']);
+
+        $content = http_build_query($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
     }
 
     protected function addTerminalDetailsInTest(array & $content)
