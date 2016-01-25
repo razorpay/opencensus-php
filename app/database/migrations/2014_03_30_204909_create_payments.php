@@ -7,7 +7,6 @@ use Constants\Table;
 use Models\Payment\Entity as Payment;
 use Models\Merchant;
 use Models\Card;
-use Models\Emi;
 use Models\Terminal;
 use Models\Transaction;
 
@@ -145,11 +144,6 @@ class CreatePayments  extends Migration
                   ->references(Card\Entity::ID)
                   ->on(Table::CARD)
                   ->on_delete('restrict');
-
-            $table->foreign(Payment::EMI_PLAN_ID)
-                  ->references(Emi\Entity::ID)
-                  ->on(Table::EMI_PLAN)
-                  ->on_delete('restrict');
         });
     }
 
@@ -168,9 +162,7 @@ class CreatePayments  extends Migration
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::TERMINAL_ID.'_foreign');
 
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');
-            
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::EMI_PLAN_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');            
         });
 
         Schema::drop(Table::PAYMENT);

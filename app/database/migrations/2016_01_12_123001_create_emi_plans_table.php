@@ -2,6 +2,7 @@
 
 use Constants\Table;
 use Models\Emi;
+use Models\Payment\Entity as Payment;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
@@ -41,16 +42,29 @@ class CreateEmiPlansTable extends Migration {
             $table->integer(Emi\Entity::UPDATED_AT);
             $table->integer(Emi\Entity::DELETED_AT)
                   ->nullable();
-        });
+
+            Schema::table(Table::PAYMENT, function($table)
+            {
+                $table->foreign(Payment::EMI_PLAN_ID)
+                      ->references(Emi\Entity::ID)
+                      ->on(Table::EMI_PLAN)
+                      ->on_delete('restrict');
+            });
     }
 
     /**
-     * Revert the changes to the database.
+     * Reverse the migrations.
      *
      * @return void
      */
     public function down()
     {
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::EMI_PLAN_ID.'_foreign');
+
+        });
+
         Schema::drop(Table::EMI_PLAN);
     }
 }
