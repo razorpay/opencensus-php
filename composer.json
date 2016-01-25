@@ -4,7 +4,7 @@
     "keywords": ["dashboard", "razorpay"],
     "require": {
         "laravel/framework": "4.2.*",
-        "razorpay/razorpay": "1.2.*",
+        "razorpay/razorpay": "dev-master",
         "rmccue/requests": ">=1.0",
         "aws/aws-sdk-php-laravel": "1.*",
         "doctrine/cache": "1.*",
