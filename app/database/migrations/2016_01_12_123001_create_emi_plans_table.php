@@ -42,14 +42,15 @@ class CreateEmiPlansTable extends Migration {
             $table->integer(Emi\Entity::UPDATED_AT);
             $table->integer(Emi\Entity::DELETED_AT)
                   ->nullable();
+        });
 
-            Schema::table(Table::PAYMENT, function($table)
-            {
-                $table->foreign(Payment::EMI_PLAN_ID)
-                      ->references(Emi\Entity::ID)
-                      ->on(Table::EMI_PLAN)
-                      ->on_delete('restrict');
-            });
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment::EMI_PLAN_ID)
+                  ->references(Emi\Entity::ID)
+                  ->on(Table::EMI_PLAN)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
