@@ -63,6 +63,7 @@
           <th>Payment Method Type</th>
           <th>Payment Network</th>
           <th>Payment Issuer</th>
+          <th>International</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
           <th>Created At</th>
@@ -75,6 +76,7 @@
             <td>{{rule.payment_method_type || 'Any'}}</td>
             <td>{{rule.payment_network || 'Any'}}</td>
             <td>{{rule.payment_issuer || 'Any'}}</td>
+            <td>{{rule.international || 'false' | uppercase}}</td>
             <td>{{rule.percent_rate/100}} %</td>
             <td>{{rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>{{rule.created_at*1000 | date:'medium'}}</td>
@@ -92,7 +94,8 @@
             <td>{{new_rule.payment_method || 'Any'}}</td>
             <td>{{new_rule.payment_method_type || 'Any'}}</td>
             <td>{{new_rule.payment_network || 'Any'}}</td>
-            <td>{{new_rul.payment_issuer || 'Any'}}</td>
+            <td>{{new_rule.payment_issuer || 'Any'}}</td>
+            <td>{{new_rule.international || 'false' | uppercase}}</td>
             <td>{{new_rule.percent_rate/100}} %</td>
             <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>Preview Rule</td>
@@ -131,6 +134,12 @@
               </select>
             </td>
             <td>
+              <select class="form-control" name="international" ng-model="new_rule.international">
+                <option value='0'>False</option>
+                <option value='1'>True</option>
+              </select>
+            </td>
+            <td>
               <input class="form-control" type="text" name="percent_rate" ng-model="new_rule.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
             </td>
             <td>
@@ -156,6 +165,7 @@
           <th>Payment Method Type</th>
           <th>Payment Network</th>
           <th>Payment Issuer</th>
+          <th>International</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
         </thead>
@@ -165,6 +175,7 @@
             <td>{{new_plan.payment_method_type || 'Any'}}</td>
             <td>{{new_plan.payment_network || 'Any'}}</td>
             <td>{{new_plan.payment_issuer || 'Any'}}</td>
+            <td>{{new_plan.international || 'false' | uppercase}}</td>
             <td>{{new_plan.percent_rate/100}} %</td>
             <td>{{new_plan.fixed_rate/100 | rupee:"INR "}}</td>
           </tr>
@@ -197,6 +208,12 @@
               <select class="form-control" name="payment_issuer" ng-model="new_plan.payment_issuer">
                   <option value="">All</option>
                   <option value="HDFC">HDFC</option>
+              </select>
+            </td>
+            <td>
+              <select class="form-control" name="international" ng-model="new_plan.international">
+                <option value='0'>False</option>
+                <option value='1'>True</option>
               </select>
             </td>
             <td>

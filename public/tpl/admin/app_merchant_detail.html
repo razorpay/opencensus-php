@@ -313,6 +313,7 @@
                         <th>Payment Method Type</th>
                         <th>Payment Network</th>
                         <th>Payment Issuer</th>
+                        <th>International</th>
                         <th>Percent Rate</th>
                         <th>Fixed Rate</th>
                   </thead>
@@ -322,6 +323,7 @@
                         <td>{{rule.payment_method_type || 'Any'}}</td>
                         <td>{{rule.payment_network || 'Any'}}</td>
                         <td>{{rule.payment_issuer || 'Any'}}</td>
+                        <td>{{rule.international || 'false' | uppercase}}</td>
                         <td>{{rule.percent_rate/100}} %</td>
                         <td>{{rule.fixed_rate/100 | rupee}}</td>
                   </tr>
