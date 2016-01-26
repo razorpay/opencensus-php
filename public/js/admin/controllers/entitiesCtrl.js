@@ -55,6 +55,7 @@ app.controller('EntitiesCtrl', [
       'axis_genius',
       'axis_migs',
       'billdesk',
+      'ezeclick',
       'hdfc',
       'kotak',
       'paytm',
@@ -110,6 +111,10 @@ app.controller('EntitiesCtrl', [
         ],
         received: booleanList,
         payment_id: ['Payment Id']
+      },
+      bank_account: {
+        merchant_id: ['Merchant Id'],
+        deleted: booleanList
       },
       card: {
         merchant_id: ['Merchant Id'],
@@ -184,7 +189,8 @@ app.controller('EntitiesCtrl', [
           'all',
           'paytm',
           'mobikwik',
-          'payzapp'
+          'payzapp',
+          'ezeclick'
         ],
         iin: ['Card IIN'],
         last4: ['Card Last 4']

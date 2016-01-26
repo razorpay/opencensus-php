@@ -11,7 +11,19 @@
     </div>
     <div class="text-center m-t m-b">
       <div class="row">
-        <div class="m-b col-sm-8">
+        <div class="m-b col-sm-3">
+          <select name="type" ng-model="report.type" class="form-control" required>
+            <option value="daily">Daily</option>
+            <!-- <option value="weekly">Weekly</option> -->
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="m-b col-sm-2"  ng-show="report.type == 'daily'">
+          <select name="day" ng-model="report.day" class="form-control" required>
+            <option ng-selected="day==report.day" ng-repeat="day in days" value="{{day}}">{{day}}</option>
+          </select>
+        </div>
+        <div class="m-b col-sm-4" ng-show="report.type == 'monthly' || report.type== 'daily'">
           <select name="month" ng-model="report.month" class="form-control" required>
             <option value="1">January</option>
             <option value="2">February</option>
@@ -27,7 +39,13 @@
             <option value="12">December</option>
           </select>
         </div>
-        <div class="m-b col-sm-4">
+        <div class="m-b col-sm-4"  ng-show="report.type == 'weekly'">
+          <select name="month" ng-model="report.month" class="form-control" required>
+            <option ng-repeat="week in weeks" value="{{week}}">{{week}}</option>
+          </select>
+        </div>
+
+        <div class="m-b col-sm-2">
             <select name="year" ng-model="report.year" class="form-control" required>
               <option value="2015">2015</option>
               <option value="2016">2016</option>
@@ -36,5 +54,16 @@
       </div>
       <button  class="btn btn-primary btn-rounded" ng-click="generateReport()">Download Report</button>
     </div>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+        <div class="row">
+          <div class="col-sm-12 text-center">
+            Daily Reports will include transactions on the given date, as well as payments
+            settled on that given date.
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </div>

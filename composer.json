@@ -4,7 +4,7 @@
     "keywords": ["dashboard", "razorpay"],
     "require": {
         "laravel/framework": "4.2.*",
-        "razorpay/razorpay": "1.2.*",
+        "razorpay/razorpay": "dev-master",
         "rmccue/requests": ">=1.0",
         "aws/aws-sdk-php-laravel": "1.*",
         "doctrine/cache": "1.*",
@@ -13,7 +13,7 @@
         "razorpay/spine": "dev-master",
         "maknz/slack": "1.*",
         "bogardo/mailgun": "3.1.*",
-        "guzzlehttp/guzzle": "~4.0",
+        "guzzlehttp/guzzle": "~5.0",
         "maatwebsite/excel": "1.*",
         "vipsoft/unzip": "^1.1",
         "schuppo/password-strength": "~0.7",

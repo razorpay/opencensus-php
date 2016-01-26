@@ -260,6 +260,13 @@ class AdminController extends BaseController
 
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
 
+        // Edited safely on API side
+        // Edit on Dashboard as well
+        if (empty($error))
+        {
+            list($e,) = (new Merchant\Service)->changeName($id, $input);
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 

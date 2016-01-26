@@ -1514,40 +1514,9 @@ class Service extends Base\Service
             return [$error, []];
         }
 
-        // Setup credentials based on auth
-        switch ($input['auth'])
-        {
-            case 'proxy':
-                $this->setApiCredentials($input['merchant_id'], $input['mode']);
-                break;
+        $request = new RawApiRequest($input, $path);
+        return $request->send();
 
-            case 'admin':
-                $this->setApiCredentials(null, $input['mode']);
-                break;
-        }
-
-        // Prepare the request
-        $contentType = \Input::get('content_type', 'application/x-www-form-urlencoded');
-
-        $body = \Input::get('body', '');
-
-        ApiRequest::addHeader('Content-Type', $contentType);
-
-        // Fire the request
-        $request = new ApiRequest();
-
-        try
-        {
-            $response = $request->request($input['method'], $path, $body);
-        }
-        catch (ApiError $e)
-        {
-            $error = [$e->getMessage(), "Status Code: {$e->getHttpStatusCode()}"];
-
-            $response = null;
-        }
-
-        return [$error, $response];
     }
 
     public function logDataExport($entity, $params)
@@ -1623,19 +1592,7 @@ class Service extends Base\Service
 
     public function confirmMerchant($merchantId)
     {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        try
-        {
-            // This will also confirm the User Entities associated with the
-            // same merchant and same email id
-            $merchant->confirm();
-            $merchant->saveOrFail();
-        }
-        catch(\Exception $e)
-        {
-            return [$e->getMessage(), null];
-        }
+        (new Merchant\Service)->confirmMerchantById($merchantId);
 
         return [null, 'Merchant Confirmed'];
     }

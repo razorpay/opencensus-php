@@ -124,15 +124,16 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function getGenerateReport($mode, $month, $year)
+    public function getGenerateReport($mode)
     {
+        $input = Input::all();
         $this->checkMode($mode);
 
-        list($error, $file) = (new Api\Service)->generateReportForMonth($month, $year, $mode);
+        list($error, $file) = (new Api\Service)->generateReport($mode, $input);
 
         if (empty($error) === false)
         {
-            return AppResponse::jsonResponse($error);
+            return AppResponse::notFoundResponse($error);
         }
 
         $file->download('xlsx');

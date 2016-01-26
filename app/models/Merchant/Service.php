@@ -106,6 +106,30 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    /**
+     * take care when calling this function
+     * This is only called from the admin service
+     * @param  string $id    Merchant Id
+     * @param  array $input  Array with new Merchant Name
+     */
+    public function changeName($id, $input)
+    {
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if ($merchant->isTestAccount()) {
+            return [["Name change forbidden on this account"], null];
+        }
+
+        $error = $merchant->changeName($input);
+
+        if (empty($error))
+        {
+            $merchant->save();
+        }
+
+        return [$error, null];
+    }
+
     public function confirm($token)
     {
         $merchant = Merchant\Entity::getMerchantForConfirmation($token);
@@ -115,8 +139,17 @@ class Service extends Base\Service
             return array('Invalid confirmation token or the merchant is already confirmed.');
         }
 
+        return $this->confirmMerchantById($merchant->id);
+    }
+
+    public function confirmMerchantById($merchantId)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchantId);
+
         $merchantApiData = $merchant->generateApiData();
 
+        // This is internal auth as of now
+        // We need to shift this to some other auth
         $this->setApiCredentials();
 
         try

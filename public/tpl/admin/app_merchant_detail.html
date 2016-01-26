@@ -14,7 +14,7 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will only mark the merchant as confirmed on the dashboard side. Use this if the merchant was already created on the API side, but confirmation failed for some reason.">
+        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Use with caution">
           Confirm Merchant
         </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
@@ -158,7 +158,7 @@
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.live == 1">
+        <a href class="list-group-item" ng-show="merchant.details.activated == 1">
           <span class="pull-right">{{merchant.balance.live/100 | rupee }}</span>
           Balance (Live)
         </a>
@@ -453,6 +453,7 @@
              <option value="atom">Atom</option>
              <option value="axis_migs">Axis MIGS</option>
              <option value="axis_genius">Axis Genius</option>
+             <option value="ezeclick">Ezeclick</option>
              <option value="paytm">Paytm</option>
              <option value="wallet_payzapp">Payzapp</option>
              <option value="mobikwik">Mobikwik</option><

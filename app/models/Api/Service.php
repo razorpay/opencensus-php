@@ -4,6 +4,7 @@ namespace Models\Api;
 
 use Auth;
 use Models\Base;
+use Trace;
 
 class Service extends Base\Service
 {
@@ -155,61 +156,83 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function generateReportForMonth($month, $year, $mode)
+    /**
+     * Generates a excel report for the given parameters
+     * @param  string $mode  live|test
+     * @param  array  $input query parameters to be passed to API
+     */
+    public function generateReport($mode, $input = [])
     {
-        $data = array();
-        $error = (new Validator)->validateInput('generateReport', compact('month','year'), '')
-                                ->messages();
+        $data = $error = [];
+        $file = null;
 
-        if (empty($error))
+        // Increase the time limit for the excel generation
+        set_time_limit(60);
+
+        try
         {
-            try
+            $this->setApiCredentials($this->merchantId, $mode);
+            $data = $this->api
+                         ->transaction
+                         ->generateReport($input)
+                         ->toArray();
+
+            $traceData = [
+                'count' => count($data),
+                'params'=> $input
+            ];
+
+            // Put the first row in trace as well
+            if (count($data) >= 1)
             {
-                $params = array(
-                    'merchant_id' => $this->merchantId,
-                    'month' => (int)$month,
-                    'year' => (int)$year
-                );
-
-                $this->setApiCredentials(null, $mode);
-                $data = $this->api
-                             ->transaction
-                             ->generateReport($params)
-                             ->toArray();
-
-                // Sample endpoint for testing
-                // $response = \Requests::get('http://jsonplaceholder.typicode.com/posts');
-                // $data = json_decode($response->body, true);
-
-                $file = $this->generateTransactionReportAsExcelFromDataForMonth($data, $month, $year);
-
-                return array($error, $file);
+                $traceData['first_row'] = $data[0];
+                $file = $this->generateTransactionReportAsExcel($data);
             }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            else
             {
-                $error[] = $e->getMessage();
-                return array($error, null);
+                $traceData['empty'] = true;
+                $error = ['No data found for given range'];
             }
+
+            Trace::debug('MISC_TRACE_CODE', $traceData);
+
+            return array($error, $file);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
+        catch(\Exception $exception)
+        {
+            $error[] = "Could not generate report. Please try again later";
+
+            Trace::critical('ERROR_EXCEPTION', [
+                'message'   => $exception->getMessage(),
+                'code'      => $exception->getCode(),
+                'stack'     => $exception->getTraceAsString(),
+            ]);
         }
 
         return array($error, null);
     }
 
-    protected function generateTransactionReportAsExcelFromDataForMonth($data, $month, $year)
+    protected function generateTransactionReportAsExcel($data)
     {
-        $file = \Excel::create('transaction_report', function($excel) use ($data, $month, $year)
+        $file = \Excel::create('transaction_report', function($excel) use ($data)
         {
             // Set the title
-            $excel->setTitle("Transaction Report - $month/$year");
+            $excel->setTitle("Transaction Report");
 
             // Chain the setters
             $excel->setCreator('Razorpay')->setCompany('Razorpay');
 
             // Call them separately
-            $excel->setDescription("Transaction report for $month/$year");
+            $excel->setDescription("Transaction Report Razorpay");
 
             // Our first sheet
-            $excel->sheet($month, function($sheet) use ($data)
+            $excel->sheet('Export', function($sheet) use ($data)
             {
                 $sheet->fromArray($data);
             });
