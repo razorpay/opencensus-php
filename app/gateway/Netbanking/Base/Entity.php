@@ -7,6 +7,7 @@ use Gateway\Base;
 class Entity extends Base\Entity
 {
     const CAPS_PAYMENT_ID = 'caps_payment_id';
+    const BANK_PAYMENT_ID = 'bank_payment_id';
 
     protected $table = 'netbanking';
 
