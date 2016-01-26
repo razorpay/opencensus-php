@@ -61,7 +61,10 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = array(
         self::PERCENT_RATE  => 0,
-        self::FIXED_RATE    => 0);
+        self::FIXED_RATE    => 0,
+        self::AMOUNT_RANGE_ACTIVE   => false,
+        self::AMOUNT_RANGE_MIN      => null,
+        self::AMOUNT_RANGE_MAX      => null);
 
     const ZERO_PRICING = '10ZeroPricingP';
 
@@ -167,12 +170,16 @@ class Entity extends Base\PublicEntity
 
     public function getAmountRangeMinAttribute()
     {
-        return (int) $this->attributes[self::AMOUNT_RANGE_MIN];
+        $min = $this->attributes[self::AMOUNT_RANGE_MIN];
+
+        return ($min === null) ? $min : (int) $min;
     }
 
     public function getAmountRangeMaxAttribute()
     {
-        return (int) $this->attributes[self::AMOUNT_RANGE_MAX];
+        $max = $this->attributes[self::AMOUNT_RANGE_MAX];
+
+        return ($max === null) ? $max : (int) $max;
     }
 
     public function fillRule($input, $plan)
