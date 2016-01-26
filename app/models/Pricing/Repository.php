@@ -49,7 +49,7 @@ class Repository extends Base\Repository
     public function getMerchantPricingPlan($merchant)
     {
         $pricingPlanId = $merchant->getPricingPlanId();
-//sd($pricingPlanId);
+
         return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
@@ -68,13 +68,21 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::INTERNATIONAL, '=', $isInternational)
                     ->where(function($query) use ($network)
                     {
-                        $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
-                              ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
+                        $query->whereNull(Pricing\Entity::PAYMENT_NETWORK);
+
+                        if ($network !== null)
+                        {
+                            $query->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
+                        }
                     })
                     ->where(function($query) use ($methodType)
                     {
-                        $query->where(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', null)
-                              ->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
+                        $query->whereNull(Pricing\Entity::PAYMENT_METHOD_TYPE);
+
+                        if ($methodType !== null)
+                        {
+                            $query->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
+                        }
                     })
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
@@ -84,7 +92,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $pricingPlanId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->get();
     }

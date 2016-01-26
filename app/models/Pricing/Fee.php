@@ -142,7 +142,7 @@ class Fee
         }
         else
         {
-            $rule = $this->getRelevantPricingRule($pricingPlanId, $payment);
+            $rule = $this->getRelevantPricingRuleForMethod($pricingPlanId, $payment);
         }
 
         if ($rule === null)
@@ -158,7 +158,7 @@ class Fee
     {
         $method = $payment->getMethod();
 
-        $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
+        $pricing = $this->repo->getPricingRulesForMethod($pricingPlanId, $method);
 
         if (count($pricing) > 1)
         {
@@ -181,7 +181,10 @@ class Fee
         {
             $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
-            $this->slackPost("Unknown card type found", $slackArray, ['channel' => '#tech_logs']);
+            $this->slackPost(
+                'Unknown card type found',
+                $slackArray,
+                ['channel' => '#tech_logs']);
 
             $cardType = Card\Type::CREDIT;
         }
@@ -190,8 +193,8 @@ class Fee
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
-        $pricing = $this->repo->
-            getPricingRulesForCard($pricingPlanId, $isInternational, $network, $cardType);
+        $pricing = $this->repo->getPricingRulesForCard(
+                        $pricingPlanId, $isInternational, $network, $cardType);
 
         $amount = $payment->getAmount();
 
