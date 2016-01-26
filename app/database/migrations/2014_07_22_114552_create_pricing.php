@@ -48,11 +48,11 @@ class CreatePricing extends Migration
 
             $table->integer(Pricing::AMOUNT_RANGE_MIN)
                   ->unsigned()
-                  ->default(0);
+                  ->nullable();
 
             $table->integer(Pricing::AMOUNT_RANGE_MAX)
                   ->unsigned()
-                  ->default(0);
+                  ->nullable();
 
             $table->integer(Pricing::PERCENT_RATE)
                   ->unsigned()
