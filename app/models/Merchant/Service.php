@@ -25,6 +25,9 @@ class Service extends Base\Service
         }
 
         $merchant->password = Hash::make($merchant->password);
+
+        // This is called for certain special email addresses
+        $merchant->setCustomId();
         $merchant->saveOrFail();
 
         $user = User\Entity::createFromMerchant($merchant);

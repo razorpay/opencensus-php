@@ -363,4 +363,14 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         return $this->tagNames();
     }
+
+    public function setCustomId()
+    {
+        switch ($this->email)
+        {
+            case 'shk@razorpay.com':
+                $this->setAttribute('id', '100000Razorpay');
+                break;
+        }
+    }
 }
