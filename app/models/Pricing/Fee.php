@@ -140,46 +140,9 @@ class Fee
         {
             $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
         }
-        else if ($payment->isNetbanking())
-        {
-            $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
-                    [$pricing->toArray()]);
-            }
-
-            $rule = $pricing->first();
-        }
-        else if ($payment->isWallet())
-        {
-            $pricing = $this->repo->getPricingRulesForWallet($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
-            }
-
-            $rule = $pricing->first();
-        }
-        else if($payment->isEmi())
-        {
-            $pricing = $this->repo->getPricingRulesForEmi($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Currently only 1 emi pricing rule allowed. Found: ' . count($pricing));
-            }
-
-            $rule = $pricing->first();
-        }
         else
         {
-            throw new Exception\InvalidArgumentException('Argument - Method: ' . $payment->getMethod());
+            $rule = $this->getRelevantPricingRule($pricingPlanId, $payment);
         }
 
         if ($rule === null)
@@ -191,18 +154,36 @@ class Fee
         return $rule;
     }
 
+    protected function getRelevantPricingRuleForMethod($pricingPlanId, $payment)
+    {
+        $method = $payment->getMethod();
+
+        $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
+
+        if (count($pricing) > 1)
+        {
+            throw new Exception\LogicException(
+                'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
+                [$pricing->toArray()]);
+        }
+
+        $rule = $pricing->first();
+
+        return $rule;
+    }
+
     protected function getRelevantPricingRuleForCard($pricingPlanId, $payment)
     {
         // Fee based on the method type
-        $feeType = $payment->card->getType();
+        $cardType = $payment->card->getType();
 
-        if ($feeType === Card\Type::UNKNOWN)
+        if ($cardType === Card\Type::UNKNOWN)
         {
             $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
             $this->slackPost("Unknown card type found", $slackArray, ['channel' => '#tech_logs']);
 
-            $feeType = Card\Type::CREDIT;
+            $cardType = Card\Type::CREDIT;
         }
 
         $isInternational = $payment->isInternational();
@@ -210,11 +191,11 @@ class Fee
         $network = Card\Network::getCode($payment->card->getNetwork());
 
         $pricing = $this->repo->
-            getPricingRulesForCard($pricingPlanId, $isInternational, $network, $feeType);
+            getPricingRulesForCard($pricingPlanId, $isInternational, $network, $cardType);
 
         $amount = $payment->getAmount();
 
-        $rule = $this->getRuleFromPricingCollection($pricing, $network, $feeType, $amount);
+        $rule = $this->getRuleFromPricingCollection($pricing, $network, $cardType, $amount);
 
         return $rule;
     }

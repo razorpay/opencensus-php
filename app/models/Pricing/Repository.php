@@ -80,30 +80,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPricingRulesForNetBanking($id)
+    public function getPricingRulesForMethod($pricingPlanId, $method)
     {
         $repo = $this->repo;
 
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::NETBANKING)
-                    ->get();
-    }
-
-    public function getPricingRulesForWallet($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::WALLET)
-                    ->get();
-    }
-
-    public function getPricingRulesForEMI($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::EMI)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->get();
     }
 
