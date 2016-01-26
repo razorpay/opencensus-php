@@ -60,8 +60,8 @@ class Entity extends Base\PublicEntity
     protected static $generators = array('plan_id');
 
     protected $defaults = array(
-        self::PERCENT_RATE  => 0,
-        self::FIXED_RATE    => 0,
+        self::PERCENT_RATE          => 0,
+        self::FIXED_RATE            => 0,
         self::AMOUNT_RANGE_ACTIVE   => false,
         self::AMOUNT_RANGE_MIN      => null,
         self::AMOUNT_RANGE_MAX      => null);
@@ -100,6 +100,8 @@ class Entity extends Base\PublicEntity
 
         $this->getValidator()->addPlanRuleValidate($input, $plan);
 
+        $this->generate($input);
+
         $this->fill($input);
 
         $this->fillRule($input, $plan);
@@ -109,7 +111,12 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+        return $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isAmountRangeActive()
+    {
+        return $this->getAttribute(self::AMOUNT_RANGE_ACTIVE);
     }
 
     public function payments()
@@ -156,6 +163,24 @@ class Entity extends Base\PublicEntity
     public function getPaymentMethod()
     {
         return $this->getAttribute(self::PAYMENT_METHOD);
+    }
+
+    public function getAmountRange()
+    {
+        $min = $this->getAmountRangeMin();
+        $max = $this->getAmountRangeMax();
+
+        return [$min, $max];
+    }
+
+    public function getAmountRangeMin()
+    {
+        return $this->getAttribute(self::AMOUNT_RANGE_MIN);
+    }
+
+    public function getAmountRangeMax()
+    {
+        return $this->getAttribute(self::AMOUNT_RANGE_MAX);
     }
 
     public function getInternationalAttribute()

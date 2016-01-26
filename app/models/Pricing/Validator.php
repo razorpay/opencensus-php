@@ -17,8 +17,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|integer',
-        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|integer',
+        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|integer|min:0',
+        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|integer|max:1000000000',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
@@ -123,31 +123,25 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ((!isset($input[Entity::AMOUNT_RANGE_MIN])) or
-            (!isset($input[Entity::AMOUNT_RANGE_MAX])))
+        if ((isset($input[Entity::AMOUNT_RANGE_MIN]) === false) or
+            (isset($input[Entity::AMOUNT_RANGE_MAX]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount Range Rules require both min and max end of ranges');
         }
 
-        if ($input[Entity::AMOUNT_RANGE_MIN] < Payment\Entity::MIN_PAYMENT_AMOUNT)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Amount Range Rules min end of range has to be atleast '.
-                Payment\Entity::MIN_PAYMENT_AMOUNT);
-        }
-
-        if ($input[Entity::AMOUNT_RANGE_MIN] > $input[Entity::AMOUNT_RANGE_MAX])
+        if ($input[Entity::AMOUNT_RANGE_MIN] >= $input[Entity::AMOUNT_RANGE_MAX])
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount Range Rules require max end of ranges to be greater than'.
                 'min end of range');
         }
 
-        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD) and
+            ($input[Entity::PAYMENT_METHOD_TYPE] !== 'debit'))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount Range Rules are only allowed for card method');
+                'Amount Range Rules are only allowed for debit card method');
         }
     }
 
@@ -220,29 +214,53 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
 
-            $this->checkPricingRuleForOverlap($rule, $newRule);
+            if (($newRule->isAmountRangeActive()) and
+                ($rule->isAmountRangeActive()))
+            {
+                $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
+            }
         }
     }
 
-    protected function checkPricingRuleForOverlap($rule, $newRule)
+    protected function checkPricingRuleForAmountRangeOverlap($rule, $newRule)
     {
-        if (($newRule[Entity::PAYMENT_METHOD] == Payment\Method::CARD) and
-                $rule[Entity::AMOUNT_RANGE_ACTIVE] and
-                 $newRule[Entity::AMOUNT_RANGE_ACTIVE])
-        {
-            if(
-                (($newRule[Entity::AMOUNT_RANGE_MAX] > $rule[Entity::AMOUNT_RANGE_MIN]) and
-                    ($newRule[Entity::AMOUNT_RANGE_MIN] < $rule[Entity::AMOUNT_RANGE_MIN])) or
-                (($rule[Entity::AMOUNT_RANGE_MAX] > $newRule[Entity::AMOUNT_RANGE_MIN]) and
-                    ($rule[Entity::AMOUNT_RANGE_MIN] < $newRule[Entity::AMOUNT_RANGE_MIN])) or
-                (($rule[Entity::AMOUNT_RANGE_MAX] > $newRule[Entity::AMOUNT_RANGE_MAX]) and
-                    ($rule[Entity::AMOUNT_RANGE_MIN] < $newRule[Entity::AMOUNT_RANGE_MIN]))
-            )
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
-            }
+        list($newRuleMin, $newRuleMax) = $newRule->getAmountRange();
+        list($oldRuleMin, $oldRuleMax) = $rule->getAmountRange();
 
+        //
+        // We need to effectively check that the new pricing range does not overlap
+        // with the existing pricing range.
+        //
+        // First we check that new range boundaries are not in between the old
+        // range boundaries in any way.
+        // This checks for all conditions except one.
+        //
+        // The old range should not be a subset of the new range and so we
+        // also check for that.
+        //
+        // Max of one rule can be equal to min of another rule, and vice versa.
+        // But min of one rule cannot be equal to min of another
+        // and same for max. This needs to be ensure within the checks we have.
+        //
+
+        if (($this->between($newRuleMin, $oldRuleMin, $oldRuleMax)) or
+            ($this->between($newRuleMax, $oldRuleMin, $oldRuleMax)) or
+            ($newRuleMin === $oldRuleMin) or
+            ($newRuleMax === $oldRuleMax))
+        {
+            $flag = true;
+        }
+
+        if (($this->between($oldRuleMin, $newRuleMin, $newRuleMax)) and
+            ($this->between($oldRuleMax, $newRuleMin, $newRuleMax)))
+        {
+            $flag = true;
+        }
+
+        if ($flag)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pricing rule amount range collides with another existing rule\'s amount range. ');
         }
     }
 
@@ -253,5 +271,10 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
         }
+    }
+
+    protected function between($n, $min, $max)
+    {
+        return (($min < $n) and ($n < $max));
     }
 }
