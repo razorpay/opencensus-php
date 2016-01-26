@@ -184,7 +184,7 @@ $factory('Gateway\Atom\Entity', [
     'bank_transaction_id' => $faker->randomNumber(6),
 ]);
 
-$factory(Models\Card\Detail::class, [
+$factory(Models\Card\IIN\Entity::class, [
     'iin' => 411111,
     'category' => null,
     'network' => 'visa',
@@ -208,4 +208,13 @@ $factory(Models\Merchant\Webhook\Entity::class, [
         'payment.authorized' => true,
     ],
     'active' => true,
+]);
+
+$factory(Models\Emi\Entity::class, [
+    'id' => 10101010101010,
+    'duration' => 9,
+    'rate' => 1200,
+    'bank' => 'HDFC',
+    'methods' => 'card',
+    'min_amount' => 500000,
 ]);

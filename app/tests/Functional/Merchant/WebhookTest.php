@@ -54,7 +54,6 @@ class WebhookTest extends TestCase
 
     public function testWebhookEventData()
     {
-        $this->markTestSkipped();
         $webhook = $this->createWebhook();
 
         $inferno = $this->mockInferno();
@@ -111,7 +110,6 @@ class WebhookTest extends TestCase
 
     public function testWebhookDisableOn3Failures()
     {
-        $this->markTestSkipped();
         $webhook = $this->createWebhook();
 
         $this->fixtures->edit('webhook', $webhook['id'], ['failure_count' => 2]);
@@ -127,7 +125,6 @@ class WebhookTest extends TestCase
 
     public function testWebhookResetFailureCountAfterSuccessfulFiring()
     {
-        $this->markTestSkipped();
         $webhook = $this->createWebhook();
 
         $this->fixtures->edit(
@@ -141,6 +138,16 @@ class WebhookTest extends TestCase
         $this->assertEquals(0, $webhook['failure_count']);
         $this->assertEquals(true, $webhook['active']);
     }
+
+    public function testWebhookHittingTheDefinedRoute()
+    {
+        $this->markTestSkipped();
+
+        $webhook = $this->createWebhook();
+
+        $this->doAuthPayment();
+    }
+
 
     protected function mockInfernoWithResponseStatusCode($statusCode)
     {
@@ -169,7 +176,7 @@ class WebhookTest extends TestCase
     {
         $class = \Models\Merchant\Webhook\Inferno::class;
 
-        $inferno = Mockery::mock($class)->makePartial();
+        $inferno = Mockery::mock($class, [])->makePartial();
 
         $this->app->instance('webhook.inferno', $inferno);
 

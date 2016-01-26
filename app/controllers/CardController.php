@@ -47,4 +47,13 @@ class CardController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function editIin($id)
+    {
+        $input = Input::all();
+
+        $data = (new Card\IIN\Service)->editIin($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

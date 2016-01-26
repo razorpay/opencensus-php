@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use Carbon\Carbon;
 use Models\Base;
 use Models\Transaction;
+use Models\Settlement;
 
 class Repository extends Base\Repository
 {
@@ -16,7 +17,7 @@ class Repository extends Base\Repository
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
-        Entity::ENTITY_ID       => 'sometimes|alpha_num',
+        Entity::ENTITY_ID       => 'sometimes|string|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     );
 
@@ -46,37 +47,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchTransactionByMonthAndMerchantId($merchantId, $month, $year)
+    public function fetchTransactionsForTransactionReport($merchantId, $from, $to)
     {
-        assert($month > 0);
-        assert($month <= 12);
+        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($from, $to, $merchantId);
 
-        $startOfMonth = Carbon::today('Asia/Kolkata')
-                              ->month($month)
-                              ->startOfMonth()
-                              ->year($year)
-                              ->timestamp;
+        $setlIds = $setls->fetch(Settlement\Entity::ID)->all();
 
-        $endMonth = $month + 1;
+        $query = $this->newQuery();
 
-        if ($endMonth === 13)
-        {
-            $endMonth = 1;
-            $year++;
-        }
+        $txns = $query->merchantId($merchantId)
+                      ->where(function($query) use ($from, $to, $setlIds)
+                      {
+                        $query->betweenTime($from, $to);
 
-        $endOfMonth = Carbon::today('Asia/Kolkata')
-                            ->month($endMonth)
-                            ->startOfMonth()
-                            ->year($year)
-                            ->timestamp;
+                        if (count($setlIds) !== 0)
+                        {
+                            $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
+                        }
+                      })
+                      ->orderByCreatedAt()
+                      ->get();
 
-        $repo = $this->repo;
-
-        return $repo::where(Transaction\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where(Transaction\Entity::CREATED_AT, '>=', $startOfMonth)
-                    ->where(Transaction\Entity::CREATED_AT, '<=', $endOfMonth)
-                    ->get();
+        return $txns;
     }
 
     public function fetchTransactionsForAuthorizedRefundedPayments()
@@ -190,5 +182,14 @@ class Repository extends Base\Repository
 
         return $repo::where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
                     ->get();
+    }
+
+    protected function addQueryParamEntityId($query, $params)
+    {
+        $entityId = $params[Entity::ENTITY_ID];
+
+        Entity::stripSignWithoutValidation($entityId);
+
+        $query->where(Entity::ENTITY_ID, '=', $entityId);
     }
 }

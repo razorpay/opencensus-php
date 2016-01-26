@@ -194,6 +194,14 @@ trait Refund
 
         if ($balance->getBalance() < $refund->getAmount())
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [
+                    'message' => 'Not enough balance',
+                    'merchant_balance' => $balance->getBalance(),
+                    'refund_amount' => $refund->getAmount()
+                ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
         }

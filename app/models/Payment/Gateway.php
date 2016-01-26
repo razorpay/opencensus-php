@@ -72,6 +72,12 @@ class Gateway
             self::PAYTM,
             self::WALLET_PAYZAPP,
         ),
+
+        Method::EMI => array(
+            self::HDFC,
+            self::KOTAK,
+            self::AXIS_MIGS,
+        ),
     );
 
     /**
@@ -258,6 +264,11 @@ class Gateway
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
+
+    public static $emiBankToGatewayMap = array(
+        IFSC::HDFC      =>  Gateway::HDFC,
+        IFSC::UTIB      =>  Gateway::AXIS_MIGS
+    );
 
     public static function isNetbankingBankDirectlySupported($bank)
     {

@@ -23,6 +23,13 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditIin()
+    {
+        $this->testAddIin();
+        
+        $this->startTest();
+    }
+
     public function testGetIin()
     {
         $this->startTest();
@@ -40,6 +47,6 @@ class IinTest extends TestCase
 
         $testData = $this->testData[$func];
 
-        $this->runRequestResponseFlow($testData);
+        return $this->runRequestResponseFlow($testData);
     }
 }

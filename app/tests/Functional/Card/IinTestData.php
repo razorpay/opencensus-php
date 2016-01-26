@@ -25,6 +25,31 @@ return [
         ],
     ],
 
+    'testEditIin' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'post',
+            'content' => [
+                'country' => 'IN',
+                'issuer' => 'HDFC',
+                'issuer_name' => 'HDFC',
+                'emi' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin' => 112333,
+                'network' => 'RuPay',
+                'type' => 'debit',
+                'country' => 'IN',
+                'issuer' => 'HDFC',
+                'issuer_name' => 'HDFC',
+                'emi' => '0'
+            ],
+        ],
+    ],
+
+
     'testGetIin' => [
         'request' => [
             'url' => '/iins/607500',
@@ -32,13 +57,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 607500,
-                'category'  => 'STANDARD',
-                'network'   => 'RuPay',
-                'type'      => 'debit',
-                'country'   => 'IN',
-                'issuer'    => 'PUNJAB NATIONAL BANK',
-                'trivia'    => 'random trivia'
+                'iin'           => 607500,
+                'category'      => 'STANDARD',
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'country'       => 'IN',
+                'issuer_name'   => 'PUNJAB NATIONAL BANK',
+                'trivia'        => 'random trivia'
             ]
         ],
     ],
@@ -51,7 +76,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 6,
+                'count' => 7,
                 'items' => [
                     [
                     ]

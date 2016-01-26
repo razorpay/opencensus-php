@@ -52,6 +52,18 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentBilldeskEntity'], $payment);
     }
 
+    public function testPaymentOnDirectBilldeskTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:billdesk_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($terminal['id'], $payment['terminal_id']);
+    }
+
     public function testPaymentFailed()
     {
         $this->markTestIncomplete();

@@ -71,6 +71,18 @@ class Pricing extends Base
                         'fixed_rate' => 0,
                         'international' => 0,
                     ),
+                    array(
+                        'id' => '1zE3CYqf1zbyaE',
+                        'plan_id' => '1hDYlICobzOCYt',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_method' => 'emi',
+                        'payment_method_type' => null,
+                        'payment_network' => null,
+                        'payment_issuer' => null,
+                        'percent_rate' => 250,
+                        'fixed_rate' => 0,
+                    ),
+
                 );
 
         $this->addPricingRulesToDb($rows);

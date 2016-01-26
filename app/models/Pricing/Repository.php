@@ -98,6 +98,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPricingRulesForEMI($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::EMI)
+                    ->get();
+    }
+
     public function getZeroPricingPlanRuleForMethod($method)
     {
         $repo = $this->repo;
