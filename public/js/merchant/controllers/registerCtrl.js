@@ -5,11 +5,18 @@ app.controller('RegisterCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$analytics',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $analytics) {
+  '$location',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $analytics, $location) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.data = {};
     $scope.agree = false;
+
+    // Referrer is set only if present
+    if ($location.search().ref) {
+      $scope.data['ref'] = $location.search().ref;
+    }
+
     $scope.submit = function ($valid) {
       if (!$valid) {
         $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
