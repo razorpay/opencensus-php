@@ -45,11 +45,11 @@ class IinTest extends TestCase
     {
         $file = $this->getUploadedIinFile();
 
-        $testData = $this->testData['testImportIin'];
+        $testData = &$this->testData['testImportIin'];
 
         $testData['request']['files']['file'] = $file;
 
-        $this->runRequestResponseFlow($testData);
+        $this->startTest();
     }
 
     public function startTest()

@@ -88,7 +88,7 @@ return [
 
     'testImportIin' => [
         'request' => [
-            'url' => '/iins/import',
+            'url' => '/iins',
             'method' => 'post',
             'files' => [
                 'file' => '',
@@ -162,7 +162,7 @@ return [
                             'network'   => 'MasterCard',
                             'type'      => 'credit',
                             'country'   => 'IN',
-                            'issuer'    => 'PUNJAB NATIONAL BANK',
+                            'issuer'    => 'SBI',
                             'trivia'    => 'random trivia'
                         ],
                         'file_entry' => [
