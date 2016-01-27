@@ -26,6 +26,29 @@ return [
         ]
     ],
 
+    'testAddEmiTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'hdfc',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'category'  => '4567',
+                'emi'   => '1',
+                'emi_duration' => '6',
+                'shared'    => '1'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => 4567
+            ]
+        ]
+    ],
+
     'testReassignTerminalForSameGateway' => [
         'request' => [
             'content' => [
