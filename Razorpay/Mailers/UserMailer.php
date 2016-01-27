@@ -20,10 +20,12 @@ class UserMailer extends Mailer
         $this->email = $user->email;
         $this->data = $user->toArray();
 
-        if($user->hasMerchants())
+        if ($user->hasMerchants())
         {
-            $this->data['merchant_details'] =
-                $user->currentMerchant->merchantDetails->toArray();
+            $details = $user->currentMerchant->merchantDetails->toArray();
+
+            $this->data['merchant_details'] = $details;
+
         }
     }
 

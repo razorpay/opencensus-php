@@ -19,7 +19,7 @@ class Service extends Base\Service
     public function sendInvitation($input)
     {
         $errors = [];
-        $response = null;
+        $data = null;
 
         $validation = (new Validator)->validateInput('sendInvitation', $input);
 
@@ -29,26 +29,27 @@ class Service extends Base\Service
         }
 
         $user = Auth::user()->user();
+
         $merchant = $user->getOwnerMerchant();
 
-        if (! $merchant)
+        if ($merchant === false)
         {
             $errors[] = "You don't own any merchants";
         }
         else
         {
-            $response = $merchant->toArray();
+            $data = $merchant->toArray();
         }
 
-        if ($merchant->invitations()->where('email', $input['email'])->exists())
+        if ($merchant->hasInvitiationForEmail($input['email'])
         {
             $errors[] = 'An invitation has already been sent to the user.';
         }
 
-        $invitation = $merchant->inviteUserByEmailWithRole($input['email'], $input['role']);
+        $invitation = $merchant->inviteUserByEmailWithRole(
+                                    $input['email'], $input['role']);
 
-
-        return [$errors, $response];
+        return [$errors, $data];
     }
 
     /**
@@ -62,9 +63,10 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
-        if (! $invitation)
+        if ($invitation === false)
         {
             $error = 'The invitation is invalid.';
+
             return array($error, null);
         }
 
@@ -91,7 +93,7 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
-        if (! $invitation)
+        if ($invitation === false)
         {
             $error[] = 'The invitation is invalid.';
         }
@@ -114,12 +116,13 @@ class Service extends Base\Service
     {
         $invitation = $user->invitations()->find($inviteId);
 
-        if (! $invitation)
+        if ($invitation === false)
         {
             return ['The invitation is invalid.'];
         }
 
         $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+
         $invitation->delete();
     }
 
@@ -143,13 +146,15 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant()->invitations()->find($inviteId);
 
-        if (! $invitation)
+        if ($invitation === false)
         {
             $error[] = ['The invitation is invalid.'];
+
             return $error;
         }
 
         $invitation->role = $input['role'];
+
         $invitation->save();
     }
 
@@ -164,7 +169,7 @@ class Service extends Base\Service
     {
         $invitation = $user->invitations()->find($inviteId);
 
-        if (! $invitation)
+        if ($invitation === false)
         {
             return ['The invitation is invalid.'];
         }
@@ -181,14 +186,16 @@ class Service extends Base\Service
     public function getInvitationFromToken($invitationToken)
     {
         $error = array();
+
         $invitation = (new Invitation\Entity)->where('token', $invitationToken)->first();
 
-        if($invitation)
+        if ($invitation)
         {
             return array($error, $invitation);
         }
 
         $error = array('The invitation is invalid.');
+
         return array($error, null);
     }
 
@@ -205,6 +212,7 @@ class Service extends Base\Service
         foreach ($invitations as $invite)
         {
             $invite->setVisible(['id', 'merchant', 'role']);
+
             $invite->merchant->setVisible(['id','name','email']);
         }
 

@@ -5,6 +5,11 @@ use Http\AppResponse;
 
 class InvitationController extends BaseController
 {
+    public function __construct()
+    {
+        $this->service = new Invitation\Service;
+    }
+
     /**
      * Send an invitation for the given merchant.
      *
@@ -29,8 +34,7 @@ class InvitationController extends BaseController
     {
         $user = Auth::user()->user();
 
-        list($error, $data) = (new Invitation\Service)
-            ->resendInvitationForUser($inviteId, $user);
+        list($error, $data) = $this->service->resendInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -45,8 +49,7 @@ class InvitationController extends BaseController
     {
         $user = Auth::user()->user();
 
-        $error = (new Invitation\Service)
-            ->acceptInvitationForUser($inviteId, $user);
+        $error = $this->service->acceptInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -61,8 +64,7 @@ class InvitationController extends BaseController
     {
         $user = Auth::user()->user();
 
-        $error = (new Invitation\Service)
-            ->rejectInvitationForUser($inviteId, $user);
+        $error = $this->service->rejectInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -77,7 +79,7 @@ class InvitationController extends BaseController
     {
         $user = Auth::user()->user();
 
-        $error = (new Invitation\Service)->removeInvitationForUser($inviteId, $user);
+        $error = $this->service->removeInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -94,8 +96,7 @@ class InvitationController extends BaseController
 
         $user = Auth::user()->user();
 
-        $error = (new Invitation\Service)
-                  ->updateInvitationForUser($inviteId, $user, $input);
+        $error = $this->service->updateInvitationForUser($inviteId, $user, $input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -110,7 +111,7 @@ class InvitationController extends BaseController
     {
         $user = Auth::user()->user();
 
-        list($error, $data) = (new Invitation\Service)->removeInvitationForUser($inviteId, $user);
+        list($error, $data) = $this->service->removeInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
@@ -125,7 +126,7 @@ class InvitationController extends BaseController
     {
         $user = Auth::user()->user();
 
-        list($error, $data) = (new Invitation\Service)->getPendingInvitationsForUser($user);
+        list($error, $data) = $this->service->getPendingInvitationsForUser($user);
 
         return AppResponse::jsonResponse($error, $data);
     }

@@ -72,7 +72,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     /**
      * Generate the user instance from the merchant instance
-     * 
+     *
      * @param \Models\User\Entity $user
      * @return \Models\Merchant\Entity $merchant
      */
@@ -84,7 +84,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->id = Uuid::generate();
         $merchant->name = $businessName;
         $merchant->email = $user->email;
-        
+
         $merchant->password = $user->password;
         $merchant->confirm_token = $user->confirm_token;
         $merchant->created_at = $user->created_at;
@@ -92,10 +92,10 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         return $merchant;
     }
-    
+
     /**
      * Take care while calling this method
-     * 
+     *
      * @param array $input array with new email address
      */
     public function changeEmail($input)
@@ -187,7 +187,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $invitation = $this->invitations()
                            ->where('email', $email)->first();
 
-        if (! $invitation) 
+        if (! $invitation)
         {
             $invitation = $this->invitations()->create([
                 'user_id' => $invitedUser ? $invitedUser->id : null,
@@ -200,12 +200,12 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $view = $invitation->user_id
                         ? 'emails.invitations.existing'
                         : 'emails.invitations.new';
-        
-        Mail::send($view, compact('invitation'), function ($m) use ($invitation) 
+
+        Mail::send($view, compact('invitation'), function ($m) use ($invitation)
         {
             $m->to($invitation->email)->subject('New Invitation!');
         });
-       
+
         return $invitation;
     }
 
@@ -236,7 +236,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         $removedUser = (new User\Entity)->find($userId);
 
-        if($removedUser) 
+        if($removedUser)
             $removedUser->refreshCurrentMerchant();
     }
 
@@ -268,6 +268,13 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function merchantDetails()
     {
         return $this->hasOne('Models\MerchantDetails\Entity');
+    }
+
+    public function hasInvitiationForEmail($email)
+    {
+        return $merchant->invitations()
+                        ->where('email', $email)
+                        ->exists();
     }
 
     public static function getAggregations($data, $mode)

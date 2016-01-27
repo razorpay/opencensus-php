@@ -57,7 +57,7 @@ class Service extends Base\Service
 
     protected function slackSignupPost($slackData)
     {
-        if($_ENV['SLACK_ENABLE'] === true)
+        if ($_ENV['SLACK_ENABLE'] === true)
         {
             $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
 
@@ -91,10 +91,10 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            if($merchant->hasUsers())
+            if ($merchant->hasUsers())
             {
                 $user = $merchant->users()->where('email',$originalEmail)->first();
-                if($user)
+                if ($user)
                 {
                     $user->email = $merchant->email;
                     $user->saveOrFail();
@@ -308,7 +308,7 @@ class Service extends Base\Service
 
         $merchant = $this->fetch($merchantId);
 
-        if($user->currentMerchant->primaryOwner()->id == $user->id)
+        if ($user->currentMerchant->primaryOwner()->id === $user->id)
         {
             $merchant['primaryOwner'] = true;
         }
@@ -400,14 +400,14 @@ class Service extends Base\Service
     {
         $error = array();
 
-        if($userId == $user->id)
+        if ($userId === $user->id)
         {
             return array("You cannot remove yourself.");
         }
 
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
 
-        if(is_null($merchant))
+        if (is_null($merchant))
         {
             return array("We couldn't find the merchant that you own.");
         }
@@ -428,7 +428,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        if($userId == $user->id)
+        if ($userId === $user->id)
         {
             $error[] = "You cannot change your role.";
             return array($error, null);
@@ -436,7 +436,7 @@ class Service extends Base\Service
 
         $validator = (new Merchant\Entity)->validateInput('updateTeamMember',$input);
 
-        if($validator->fails())
+        if ($validator->fails())
         {
             $error = $validator->messages();
             return array($error, null);
@@ -444,7 +444,7 @@ class Service extends Base\Service
 
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
 
-        if(is_null($merchant))
+        if (is_null($merchant))
         {
             $error[] = "We couldn't find the merchant that you own.";
             return array($error, null);

@@ -16,7 +16,7 @@ class MerchantMailer extends Mailer
      */
     public function __construct(MerchantEntity $merchant)
     {
-        if(!is_object($merchant))
+        if (is_object($merchant) === false)
         {
             throw new InvalidContactInformationException(self::INVALID_MERCHANT_ERROR);
         }
@@ -35,11 +35,12 @@ class MerchantMailer extends Mailer
      */
     public function confirmActivationSubmission()
     {
-        $this->subject = 'Razorpay | Account pending approval for '
-            . $this->data['merchant_details']['business_name'];
+        $details = $this->data['merchant_details'];
 
-        $this->to = $this->data['merchant_details']['contact_name'];
-        $this->email = $this->data['merchant_details']['contact_email'];
+        $this->subject = 'Razorpay | Account pending approval for ' . $details['business_name'];
+
+        $this->to = $details['contact_name'];
+        $this->email = $details['contact_email'];
         $this->view = 'emails.submission';
 
         return $this;
