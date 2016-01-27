@@ -203,13 +203,13 @@ class Fee
         return $rule;
     }
 
-    protected function getRuleFromPricingCollection($pricing, $network, $feeType, $amount)
+    protected function getRuleFromPricingCollection($pricing, $network, $cardType, $amount)
     {
         $rules = $pricing->all();
 
         $rules = $this->filterRulesOnNetwork($rules, $network);
 
-        $rulesMap = $this->filterRulesOnFeeType($rules, $feeType);
+        $rulesMap = $this->filterRulesOnCardType($rules, $cardType);
 
         $rule = $this->chooseRuleWithAmount($rulesMap, $amount);
 
@@ -229,7 +229,7 @@ class Fee
 
         foreach ($rules as $item)
         {
-            if($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
+            if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
             {
                 $networkMatchRules[] = $item;
             }
@@ -239,7 +239,7 @@ class Fee
             }
         }
 
-        if(empty($networkMatchRules))
+        if (empty($networkMatchRules))
         {
             return $nullnetworkMatchRules;
         }
@@ -247,7 +247,7 @@ class Fee
         return $networkMatchRules;
     }
 
-    protected function filterRulesOnFeeType($rules, $feeType)
+    protected function filterRulesOnCardType($rules, $cardType)
     {
         $feeTypeAmountRules    = [];
         $nullTypeAmountRules   = [];
@@ -256,9 +256,9 @@ class Fee
 
         foreach ($rules as $item)
         {
-            if (($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $feeType))
+            if (($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $cardType))
             {
-                if($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
                 {
                     $feeTypeAmountRules[] = $item;
                 }
@@ -269,7 +269,7 @@ class Fee
             }
             else
             {
-                if($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
                 {
                     $nullTypeAmountRules[] = $item;
                 }
@@ -290,35 +290,35 @@ class Fee
     {
         $rule = null;
 
-        if (!empty($rulesMap['typeAmountRules']))
+        if (empty($rulesMap['typeAmountRules']) === false)
         {
             foreach ($rulesMap['typeAmountRules'] as $ruleItem)
             {
-                if(($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount)
-                    and ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
+                if (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount) and
+                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
                 {
                     $rule = $ruleItem;
                     break;
                 }
             }
         }
-        else if(!empty($rulesMap['typeNonAmountRule']))
+        else if (empty($rulesMap['typeNonAmountRule']) === false)
         {
             $rule = $rulesMap['typeNonAmountRule'];
         }
-        else if(!empty($rulesMap['nullAmountRules']))
+        else if (empty($rulesMap['nullAmountRules']) === false)
         {
             foreach ($rulesMap['nullAmountRules'] as $ruleItem)
             {
-                if(($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount)
-                    and ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
+                if (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount) and
+                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
                 {
                     $rule = $ruleItem;
                     break;
                 }
             }
         }
-        else if(!empty($rulesMap['nullNonAmountRule']))
+        else if (empty($rulesMap['nullNonAmountRule']) === false)
         {
             $rule = $rulesMap['nullNonAmountRule'];
         }
