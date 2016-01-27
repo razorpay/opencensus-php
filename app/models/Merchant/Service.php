@@ -16,6 +16,14 @@ class Service extends Base\Service
 {
     public function register(array $input)
     {
+        $referer = false;
+
+        if (isset($input['ref']))
+        {
+            $referer = $input['ref'];
+            unset($input['ref']);
+        }
+
         $merchant = new Merchant\Entity;
         $error = $merchant->build($input);
 
@@ -29,6 +37,11 @@ class Service extends Base\Service
         // This is called for certain special email addresses
         $merchant->setCustomId();
         $merchant->saveOrFail();
+
+        if ($referer)
+        {
+            $merchant->tag('ref-'.$referer);
+        }
 
         $user = User\Entity::createFromMerchant($merchant);
         $user->saveOrFail();
@@ -44,30 +57,38 @@ class Service extends Base\Service
         (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
         $slackData = [
-            'id'    => $merchant->id,
-            'name'  => $merchant->name,
-            'email' => $merchant->email
+            'id'        => $merchant->id,
+            'name'      => $merchant->name,
+            'email'     => $merchant->email
         ];
 
-        $this->slackSignupPost($slackData);
+        $this->slackSignupPost($slackData, $referer);
 
         return [$error, $slackData];
     }
 
-    protected function slackSignupPost($slackData)
+    protected function slackSignupPost($slackData, $referer)
     {
         if($_ENV['SLACK_ENABLE'] === true)
         {
+            $config = \Config::get('razorpay.sorting_hat');
             $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+            $message = "[New Signup]($merchantLink)";
+
+            if ($referer)
+            {
+                $message .= " | REF: $referer";
+            }
 
             $postData = [
                 'email'         => $slackData['email'],
                 'name'          => $slackData['name'],
                 // This is in slack formatting
-                'message'       => "[New Signup]($merchantLink)"
+                'message'       => $message,
+                'token'         => $config['token']
             ];
 
-            Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
+            Requests::post($config['url'], [], $postData);
         }
     }
 
