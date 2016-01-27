@@ -40,15 +40,18 @@ class Service extends Base\Service
         // Add more banks here as we direct connects with them.
         $banks = array(IFSC::HDFC);
 
-        if (isset($input['bank']) === false)
+        if ((isset($input['bank']) === false) or ($input['bank'] === IFSC::HDFC))
         {
             $input['bank'] = IFSC::HDFC;
+            $input['gateway'] = Payment\Gateway::NETBANKING_HDFC;
         }
+
+        $gateway = $input['gateway'];
 
         $bankCode = $input['bank'];
 
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-                                                $bankCode, $from, $to);
+                                                $bankCode, $from, $to, $gateway);
 
         $count = $refunds->count();
 
@@ -73,7 +76,7 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefundsExcel';
+        $action = 'generateRefunds';
 
         $file = Gateway::call($gateway, $action, $input, $this->mode);
 

@@ -114,13 +114,13 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
-    protected function generateText($data)
+    protected function generateText($data, $glue = '~')
     {
         $txt = '';
 
         foreach ($data as $row)
         {
-            $txt .= implode('~', array_values($row)) . "\r\n";
+            $txt .= implode($glue, array_values($row)) . "\r\n";
         }
 
         return $txt;
