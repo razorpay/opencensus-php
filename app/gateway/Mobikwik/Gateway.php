@@ -230,7 +230,7 @@ class Gateway extends Base\Gateway
             'cell'      => $input['payment']['contact'],
             'merchantname' => 'razorpay',
             'mid'       => $this->getMobikwikMerchantId($input['terminal']),
-            'msgcode'   => '504',
+            'msgcode'   => MessageCode::OTP_GENERATE,
             'tokentype' => '0',
         );
 
@@ -241,12 +241,49 @@ class Gateway extends Base\Gateway
         $resposne = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        if ($content['statuscode'] !== '0')
+        if ($content['statuscode'] !== Status::SUCCESS)
         {
-            ;
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content['statuscode'],
+                $content['statusmessage']);
         }
+    }
 
+    public function otpSubmit($input)
+    {
+        $content = array(
+            'amount'        => $input['payment']['amount'],
+            'cell'          => $input['payment']['contact'],
+            'comment'       => 'Doing something',
+            'merchantname'  => 'razorpay',
+            'mid'           => $this->getMobikwikMerchantId(),
+            'msgcode'       => MessageCode::OTP_SUBMIT,
+            'orderid'       => $input['payment']['id'],
+            'otp'           => $input['otp'],
+            'txntype'       => 'debit',
+        );
 
+        $content['checksum'] = $this->getHashOfArray($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $resposne = $this->sendGatewayRequest($request);
+        $content = $this->xmlToArray($response->body);
+
+        if ($content['statuscode'] !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content['statuscode'],
+                $content['statusmessage']);
+        }
     }
 
     protected function getRefundRequestContentArray($input)
