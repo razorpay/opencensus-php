@@ -313,6 +313,7 @@
                         <th>Payment Method Type</th>
                         <th>Payment Network</th>
                         <th>Payment Issuer</th>
+                        <th>International</th>
                         <th>Percent Rate</th>
                         <th>Fixed Rate</th>
                   </thead>
@@ -322,6 +323,7 @@
                         <td>{{rule.payment_method_type || 'Any'}}</td>
                         <td>{{rule.payment_network || 'Any'}}</td>
                         <td>{{rule.payment_issuer || 'Any'}}</td>
+                        <td>{{rule.international || 'false' | uppercase}}</td>
                         <td>{{rule.percent_rate/100}} %</td>
                         <td>{{rule.fixed_rate/100 | rupee}}</td>
                   </tr>
@@ -353,6 +355,9 @@
                     <th>Merchant Id 2</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
+                    <th>Emi</th>
+                    <th>Emi Duration (Months)</th>
+                    <th>Shared</th>
                     <th>Created At</th>
                   </thead>
                   <tbody>
@@ -365,6 +370,9 @@
                     <td>{{terminal.gateway_merchant_id2}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
+                    <td>{{terminal.emi}}</td>
+                    <th>{{terminal.emi_duration}}</th>
+                    <th>{{terminal.shared}}</th>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
                   </tr>
                 </tbody>
@@ -416,7 +424,6 @@
         <input class="col-lg-6" name="{{method}}" ng-model="methods[method]" type="checkbox"/>
       </div>
     </div>
-
   </form>
   </div>
   <div class="modal-footer">
@@ -515,6 +522,36 @@
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.card">
              <option value="1" selected>Yes</option>
+             <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="emi" class="col-lg-3 control-label">Emi</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" name="emi" ng-model="terminal.emi">
+             <option value="1">Yes</option>
+             <option value="0" selected>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="emi_duration" class="col-lg-3 control-label">Emi Duration</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.emi_duration">
+             <option value="3" >3</option>
+             <option value="6" >6</option>
+             <option value="9" >9</option>
+             <option value="12" >12</option>
+             <option value="15" >15</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="shared" class="col-lg-3 control-label">Shared</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.shared">
+             <option value="1">Yes</option>
              <option value="0">No</option>
           </select>
         </div>

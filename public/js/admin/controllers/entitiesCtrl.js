@@ -157,7 +157,8 @@ app.controller('EntitiesCtrl', [
       netbanking: {
         payment_id: ['Payment Id'],
         received: booleanList,
-        caps_payment_id: ['Caps Payment Id']
+        caps_payment_id: ['Caps Payment Id'],
+        bank_payment_id: ['Bank Reference Id']
       },
       payment: {
         bank: ['Bank Code'],
