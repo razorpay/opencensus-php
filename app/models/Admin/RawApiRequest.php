@@ -70,7 +70,7 @@ class RawApiRequest
         // id becomes rzp_{test|live}_merchant_id
         if ($merchantId)
         {
-            $id = $id.'_'.$merchant_id;
+            $id = $id.'_'.$merchantId;
         }
 
         $secret = Config::get('api.auth_pass');
