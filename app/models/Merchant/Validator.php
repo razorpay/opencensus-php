@@ -44,7 +44,7 @@ class Validator extends Base\Validator
         'gateway_access_code'                       => '',
         'gateway_secure_secret'                     => '',
         'card'                                      => 'required',
-        'emi'                                       => 'required',
+        'emi'                                       => '',
         'emi_duration'                              => '',
         'shared'                                    => '',
         'category'                                  => ''

@@ -200,7 +200,6 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomInteger(8))
             ->type(l::IdOrName('gateway_terminal_password'),$terminalPassword)
             ->type(l::IdOrName('gateway_terminal_password_confirmation'), $terminalPassword)
-            ->type(l::IdOrName('emi'), '0')
             ->type(l::IdOrName('category'), '3456')
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
