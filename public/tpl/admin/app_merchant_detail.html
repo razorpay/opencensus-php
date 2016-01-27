@@ -357,6 +357,7 @@
                     <th>Card Allowed</th>
                     <th>Emi</th>
                     <th>Emi Duration (Months)</th>
+                    <th>Shared</th>
                     <th>Created At</th>
                   </thead>
                   <tbody>
@@ -371,6 +372,7 @@
                     <td>{{terminal.card}}</td>
                     <td>{{terminal.emi}}</td>
                     <th>{{terminal.emi_duration}}</th>
+                    <th>{{terminal.shared}}</th>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
                   </tr>
                 </tbody>
@@ -529,7 +531,7 @@
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.emi">
              <option value="1">Yes</option>
-             <option value="0">No</option>
+             <option value="0" selected>No</option>
           </select>
         </div>
       </div>
@@ -542,6 +544,15 @@
              <option value="9" >9</option>
              <option value="12" >12</option>
              <option value="15" >15</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="shared" class="col-lg-3 control-label">Shared</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.shared">
+             <option value="1">Yes</option>
+             <option value="0">No</option>
           </select>
         </div>
       </div>

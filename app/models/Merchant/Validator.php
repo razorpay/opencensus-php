@@ -46,6 +46,7 @@ class Validator extends Base\Validator
         'card'                                      => 'required',
         'emi'                                       => 'required',
         'emi_duration'                              => '',
+        'shared'                                    => '',
         'category'                                  => ''
     );
 
