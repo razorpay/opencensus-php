@@ -38,7 +38,9 @@ class EmiTest extends TestCase
 
     public function testFetchEmiPlanUsingPlanId()
     {
-        $emi = $this->testAddEmiPlans();
+        $this->testAddEmiPlans();
+
+        $emi = $this->getLastEntity('emi', true);
 
         $request = &$this->testData['testFetchEmiPlanUsingPlanId']['request'];
         $request['url'] = '/emi/'.$emi['id'];
