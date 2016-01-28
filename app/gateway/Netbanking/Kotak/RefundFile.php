@@ -38,11 +38,12 @@ class RefundFile
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d-M-Y');
 
+            sd($row);
             $data[] = array(
                 $i++,
                 $row['gateway']['merchant_code'],
                 $date,
-                $row['payment']['id'],
+                $row['gateway']['int_payment_id'],
                 $row['refund']['amount'] / 100,
                 $row['gateway']['bank_payment_id'],
             );
