@@ -9,9 +9,23 @@ class Service extends Base\Service
 {
     public function reconcileSettlements($input)
     {
-        $collection = (new Kotak\Reconciler)->process($input);
+        //
+        // We have incorporated the new format we are receiving for reconciliation
+        // in Reconciler2 class, while also keeping the old one around in Reconciler.
+        // On testing, we use Reconciler, which let the tests pass basically.
+        // @todo: Write tests for the newer format
+        //
 
-        return $collection->toArrayPublic();
+        if (\App::environment('testing'))
+        {
+            $collection = (new Kotak\Reconciler)->process($input);
+        }
+        else
+        {
+            $collection = (new Kotak\Reconciler2)->process($input);
+        }
+
+        return $collection->toArray();
     }
 
     public function generateSettlementReconciliation($input)

@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
+    const GATEWAY_MERCHANT_ID2          = 'gateway_merchant_id2';
     const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
@@ -24,19 +25,23 @@ class Entity extends Base\PublicEntity
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
+    const EMI                           = 'emi';
+    const EMI_DURATION                  = 'emi_duration';
 
     const SHARED                        = 'shared';
 
     const DELETED_AT                    = 'deleted_at';
 
-    const MAX_TERMINALS_COUNT           = 10;
+    const MAX_TERMINALS_COUNT           = 15;
 
     protected $fillable = array(
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::SHARED,
         self::GATEWAY_MERCHANT_ID,
+        self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
@@ -49,7 +54,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::SHARED,
         self::GATEWAY_MERCHANT_ID,
+        self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
         self::USED_COUNT,
         self::CREATED_AT,
@@ -80,28 +87,25 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_ID       => null,
         self::GATEWAY_TERMINAL_PASSWORD => null,
         self::GATEWAY_ACCESS_CODE       => null,
-        self::GATEWAY_SECURE_SECRET     => null);
+        self::GATEWAY_SECURE_SECRET     => null,
+        self::SHARED                    => false
+    );
 
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
+        $methods = array(self::CARD, self::NETBANKING, self::EMI);
 
-        if (Payment\Gateway::isMethodSupported('card', $gateway))
+        foreach ($methods as $method) 
         {
-            $this->setAttribute(self::CARD, 1);
-        }
-        else
-        {
-            $this->setAttribute(self::CARD, 0);
-        }
-
-        if (Payment\Gateway::isMethodSupported('netbanking', $gateway))
-        {
-            $this->setAttribute(self::NETBANKING, 1);
-        }
-        else
-        {
-            $this->setAttribute(self::NETBANKING, 0);
+            if (Payment\Gateway::isMethodSupported($method, $gateway))
+            {
+                $this->setAttribute($method, 1);
+            }
+            else
+            {
+                $this->setAttribute($method, 0);
+            }
         }
     }
 
@@ -203,9 +207,46 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USED_COUNT);
     }
 
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function getShared()
+    {
+        return $this->getAttribute(self::SHARED);
+    }
+
     public function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
+    }
+
+    public function getCategoryAttribute()
+    {
+        $category = $this->attributes[self::CATEGORY];
+
+        if ($category !== null)
+        {
+            $category = (int) $category;
+        }
+
+        return $category;
+    }
+
+    public function getEmiDuartion()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getEmiDuartionAttribute()
+    {
+        return (integer)$this->attributes[self::EMI_DURATION];
+    }
+
+    public function getSharedAttribute()
+    {
+        return (boolean)$this->attributes[self::SHARED];
     }
 
     public function merchant()
@@ -232,9 +273,19 @@ class Entity extends Base\PublicEntity
         return (((int)$this->getAttribute(self::NETBANKING)) === 1);
     }
 
+    public function isEmiEnabled()
+    {
+        return (boolean)$this->getAttribute(self::EMI);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
+    }
+
+    public function isShared()
+    {
+        return (boolean)$this->getAttribute(self::SHARED);
     }
 
     public function isDeleted()

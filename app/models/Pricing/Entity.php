@@ -4,7 +4,7 @@ namespace Models\Pricing;
 
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const PLAN_ID               = 'plan_id';
@@ -13,6 +13,10 @@ class Entity extends Base\UniqueIdEntity
     const PAYMENT_METHOD        = 'payment_method';
     const PAYMENT_METHOD_TYPE   = 'payment_method_type';
     const PAYMENT_NETWORK       = 'payment_network';
+    const INTERNATIONAL         = 'international';
+
+    // Humanized name of the payment network
+    const PAYMENT_NETWORK_NAME  = 'payment_network_name';
     const PAYMENT_ISSUER        = 'payment_issuer';
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
@@ -28,7 +32,8 @@ class Entity extends Base\UniqueIdEntity
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
         self::PERCENT_RATE,
-        self::FIXED_RATE);
+        self::FIXED_RATE,
+        self::INTERNATIONAL);
 
     protected $table = \Constants\Table::PRICING;
 
@@ -47,6 +52,8 @@ class Entity extends Base\UniqueIdEntity
     protected $defaults = array(
         self::PERCENT_RATE  => 0,
         self::FIXED_RATE    => 0);
+
+    const ZERO_PRICING = '10ZeroPricingP';
 
     protected function modifyInputProvideDefaults(& $input)
     {
@@ -87,6 +94,16 @@ class Entity extends Base\UniqueIdEntity
         return $this;
     }
 
+    public function isInternational()
+    {
+        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany('Models\Transaction\Entity', 'pricing_rule_id');
+    }
+
     protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
@@ -116,6 +133,21 @@ class Entity extends Base\UniqueIdEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getPaymentNetwork()
+    {
+        return $this->getAttribute(self::PAYMENT_NETWORK);
+    }
+
+    public function getPaymentMethod()
+    {
+        return $this->getAttribute(self::PAYMENT_METHOD);
+    }
+
+    public function getInternationalAttribute()
+    {
+        return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
     public function fillRule($input, $plan)

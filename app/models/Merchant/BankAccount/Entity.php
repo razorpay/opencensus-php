@@ -2,11 +2,16 @@
 
 namespace Models\Merchant\BankAccount;
 
+use App;
 use EE\Exception;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletingTrait;
+
+    const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BENEFICIARY_CODE      = 'beneficiary_code';
     const IFSC_CODE             = 'ifsc_code';
@@ -22,10 +27,11 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CITY      = 'beneficiary_city';
     const BENEFICIARY_STATE     = 'beneficiary_state';
     const BENEFICIARY_COUNTRY   = 'beneficiary_country';
+    const DELETED_AT            = 'deleted_at';
 
     const IFSC_CODE_LENGTH = 11;
 
-    protected $primaryKey = self::MERCHANT_ID;
+    protected $primaryKey = self::ID;
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
 
@@ -48,6 +54,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $visible = array(
+        self::ID,
         self::MERCHANT_ID,
         self::BENEFICIARY_CODE,
         self::IFSC_CODE,
@@ -66,6 +73,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
         self::MERCHANT_ID,
         self::ENTITY,
         self::BENEFICIARY_CODE,
@@ -84,12 +92,17 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     );
 
+    protected $guarded = array(self::ID);
+
     protected static $generators = array(
-        self::BENEFICIARY_CODE,
+        self::ID,
         self::BENEFICIARY_COUNTRY,
     );
+
+    protected $genereateIdOnCreate = true;
 
     public function build(array $input = array())
     {
@@ -102,16 +115,6 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
-    protected function generateBeneficiaryCode($input)
-    {
-        $name = $input[self::BENEFICIARY_NAME];
-
-        // Caps all then remove spaces then cut first 4.
-        $code = substr(str_replace(' ', '', strtoupper($name)), 0, 4);
-
-        $this->setAttribute(self::BENEFICIARY_CODE, $code);
-    }
-
     protected function generateBeneficiaryCountry($input)
     {
         $this->setAttribute(self::BENEFICIARY_COUNTRY, 'IN');
@@ -120,6 +123,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function settlements()
+    {
+        return $this->hasMany('Models\Settlement\Entity');
     }
 
     public function getBeneficiaryName()
@@ -137,26 +145,44 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
+    public function getBeneficiaryCode()
+    {
+        return $this->getAttribute(self::BENEFICIARY_CODE);
+    }
+
+    public function setBeneficiaryCode($code)
+    {
+        return $this->setAttribute(self::BENEFICIARY_CODE, $code);
+    }
+
+    public function generateIdFromCreatedAt()
+    {
+        $createdAt = $this->getAttribute(self::CREATED_AT);
+        $this->setAttribute(
+            self::ID,
+            self::generateUniqueIdFromTimestamp($createdAt));
+    }
+
     public function equals($baCopy)
     {
         $orig = $this->toArray();
-
         unset(
+            $orig[self::ID],
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
+            $orig[self::DELETED_AT],
             $orig[self::BENEFICIARY_CODE],
             $orig[self::BENEFICIARY_ADDRESS3],
             $orig[self::BENEFICIARY_ADDRESS4]);
-
         $copy = $baCopy->toArray();
-
         unset(
+            $copy[self::ID],
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
+            $copy[self::DELETED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],
             $copy[self::BENEFICIARY_ADDRESS4],
             $copy[self::BENEFICIARY_CODE]);
-
         return ($orig == $copy);
     }
 }

@@ -19,6 +19,7 @@ class BankCodes
         IFSC::CBIN => 'CBI',
         IFSC::CNRB => 'CNB',
         IFSC::COSB => 'COB',
+        IFSC::CORP => 'CRP',
         IFSC::CSBK => 'CSB',
         IFSC::DEUT => 'DBK',
         IFSC::DCBL => 'DCB',
@@ -50,7 +51,6 @@ class BankCodes
         IFSC::UTBI => 'UNI',
         IFSC::VIJB => 'VJB',
         IFSC::YESB => 'YBK',
-        IFSC::DCBL => 'DC2',
         IFSC::JSBP => 'JSB',
         IFSC::NKGS => 'NKB',
         IFSC::SBBJ => 'SBJ',
@@ -66,4 +66,6 @@ class BankCodes
         Netbanking::LAVB_C => 'LVC',
         Netbanking::LAVB_R => 'LVR',
     );
+
+    // We are not using Deusctche Bank corporate net-banking currently.
 }

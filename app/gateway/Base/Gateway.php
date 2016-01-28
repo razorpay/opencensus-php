@@ -5,6 +5,7 @@ namespace Gateway\Base;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -46,11 +47,44 @@ class Gateway
      */
     protected $mock;
 
+    /**
+     * Namespacing for URL's
+     * used in case where multiple
+     * domains need to be supported
+     * @var string
+     */
+    protected $domainType;
+
+    /**
+     * Denotes if running in testing env
+     * @var boolean
+     */
+    protected $testing;
+
+    /**
+     * Some gateways whitelist our IP and requests to them can only
+     * be sent from those IP.
+     *
+     * Proxy address specifies the proxy through which these requests
+     * are routed. The proxy simply sits at the public IP machine
+     * and mostly acts transparently.
+     *
+     * @var string
+     */
+    protected $proxy;
+
     protected $sortRequestContent = true;
 
     public function __construct()
     {
         $this->trace = \Trace::getFacadeRoot();
+
+        $this->env = \App::getFacadeRoot()['env'];
+
+        if ($this->env === 'testing')
+        {
+            $this->testing = true;
+        }
 
         $this->loadGatewayConfig();
     }
@@ -95,6 +129,13 @@ class Gateway
         $this->mode = $mode;
     }
 
+    public function setMock($mock)
+    {
+        assert (is_bool($mock));
+
+        $this->mock = $mock;
+    }
+
     protected function sendGatewayRequest($request)
     {
         if (isset($request['options']) === false)
@@ -102,9 +143,9 @@ class Gateway
             $request['options']  = array();
         }
 
-        if (isset($request['header']) === false)
+        if (isset($request['headers']) === false)
         {
-            $request['header'] = array();
+            $request['headers'] = array();
         }
 
         $method = 'post';
@@ -119,11 +160,32 @@ class Gateway
         // \Log::info( 'Url: ' . $request['url'] . PHP_EOL);
         // \Log::info( json_encode($request['content'], JSON_PRETTY_PRINT) . PHP_EOL . PHP_EOL);
 
-        $response = Requests::$method(
-                    $request['url'],
-                    $request['header'],
-                    $request['content'],
-                    $request['options']);
+        try
+        {
+            $response = Requests::$method(
+                $request['url'],
+                $request['headers'],
+                $request['content'],
+                $request['options']);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $this->exception = $e;
+
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
@@ -161,45 +223,15 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
-    public function authorizeFailed(array $input)
+    protected function traceGatewayPaymentRequest($request, $input)
     {
-        $e = null;
-
-        try
-        {
-            $this->verify($input);
-        }
-        catch (Exception\PaymentVerificationException $e)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-                ['message' => 'Payment verification failed. Now converting to authorized']);
-        }
-
-        $verify = $e->getVerifyObject();
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not',
-                $verify->getDataToTrace());
-        }
-
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
-        {
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here');
-        }
-
-        return true;
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
     }
 
     protected function getNamespace()
@@ -243,7 +275,7 @@ class Gateway
         return $this->getHashOfString($hashString);
     }
 
-    protected function getSecret()
+    public function getSecret()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -295,11 +327,16 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $live = constant($urlClass . '::LIVE_DOMAIN');
+        $domainConstantName = strtoupper($this->mode)."_DOMAIN";
 
-        $test = constant($urlClass . '::TEST_DOMAIN');
+        if ($this->domainType !== null)
+        {
+            $domainType = strtoupper($this->domainType);
 
-        return ($this->mode === Mode::LIVE) ? $live : $test;
+            $domainConstantName = $domainType.'_'.$domainConstantName;
+        }
+
+        return constant($urlClass . '::' .$domainConstantName);
     }
 
     protected function getRelativeUrl($type)
@@ -311,6 +348,7 @@ class Gateway
 
     protected function getUrl($type = null)
     {
+
         $url = $this->getUrlDomain();
 
         if ($type === null)
@@ -331,6 +369,19 @@ class Gateway
 
         $app = \App::getFacadeRoot();
         $this->config = $app['config']->get($configGatewayStr);
+
+        $this->proxy = $app['config']->get('gateway.proxy_address');
+    }
+
+    protected function getFormValues($form, $url)
+    {
+        $crawler = new Crawler($form, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        $content = $form->getValues();
+
+        return $content;
     }
 
     protected function getTestAccessCode()
@@ -370,5 +421,16 @@ class Gateway
         }
 
         return $orderedData;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post')
+    {
+        $request = array(
+            'url' => $this->getUrl(),
+            'method' => $method,
+            'content' => $content,
+        );
+
+        return $request;
     }
 }

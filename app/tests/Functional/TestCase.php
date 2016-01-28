@@ -8,7 +8,6 @@
 namespace Tests\Functional;
 
 use Artisan;
-use DB;
 use Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase
@@ -30,6 +29,8 @@ class TestCase extends ParentTestCase
     public function setUp()
     {
         parent::setUp();
+
+//        $this->markTestSkipped();
 
         $this->db = new Database($this->app);
 

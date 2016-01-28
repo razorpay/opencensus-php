@@ -9,6 +9,8 @@ use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant\Methods;
 use Models\Card;
+use Models\Card\IIN;
+use Models\Emi;
 use Models\Payment;
 use Models\Transaction;
 use Trace\Trace;
@@ -23,11 +25,17 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->verifyPaymentMethodEnabled($payment);
+        $this->verifyPaymentMethodEnabled($payment, $input);
 
-        if ($payment->isMethod(Payment\Method::CARD))
+        if (($payment->isMethod(Payment\Method::CARD)) or
+            ($payment->isMethod(Payment\Method::EMI)))
         {
             $gatewayInput['card'] = $this->createCardEntity($input);
+        }
+
+        if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $this->setBankAndEmiPlanDetails($payment, $input);
         }
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
@@ -54,6 +62,8 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -63,9 +73,8 @@ trait Authorize
 
         if ($payment->isFailed() === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Non failed payment given for authorization where failed payment is needed',
-                ['payment_id' => $payment->getPublicId()]);
+            throw new Exception\BadRequestValidationFailureException(
+                'Non failed payment given for authorization where failed payment is needed');
         }
 
         $data = array(
@@ -94,7 +103,9 @@ trait Authorize
             $payment->setErrorNull();
             $payment->setVerified(true);
 
-            $this->postPaymentAuthorizeProcessing($payment);
+            // The second argument marks the payment as converted from failed
+            // to authorized
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -106,9 +117,11 @@ trait Authorize
 
         $message = 'Payment failed earlier converted to authorized';
 
-        $data = $payment->toArrayAdmin();
+        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->slackPost($message, $data, '', ['color' => 'bad']);
+        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+
+        $data = $payment->toArrayAdmin();
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
@@ -147,6 +160,11 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        if ($payment->card !== null)
+        {
+            $input['card'] = $payment->card->toArray();
+        }
+
         $this->checkForRecentFailedPayment($payment);
 
         Payment\Validator::bankAcsCallbackValidate($payment, $input);
@@ -164,25 +182,45 @@ trait Authorize
             throw $e;
         }
 
+        $this->updateAndNotifyPaymentAuthorized($payment);
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    protected function verifyPaymentMethodEnabled($payment)
+    protected function verifyPaymentMethodEnabled($payment, $input)
     {
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabledInLive($payment);
+            $this->verifyCardEnabledInLive($payment, $input);
         }
-
-        if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
             $this->verifyBankEnabled($payment);
         }
-
-        if ($payment->isMethod(Payment\Method::WALLET))
+        else if ($payment->isMethod(Payment\Method::WALLET))
         {
             $this->verifyWalletEnabled($payment);
         }
+        else if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $this->verifyEmiEnabled($payment);
+        }
+    }
+
+    protected function setBankAndEmiPlanDetails(& $payment, $input)
+    {
+        //set the bank 
+        $iin = substr($input['card']['number'], 0, 6);
+            
+        $iinEntity = (new IIN\Repository)->findOrFail($iin);
+        
+        $payment->setBank($iinEntity->getIssuer());
+
+        //set emi plan id
+        $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($iinEntity->getIssuer(), $input['emi_duration']);
+        
+        $payment->setEmiPlanId($emiPlan->getId());
+
     }
 
     protected function getReturnRequestDataForMerchant($payment)
@@ -221,10 +259,17 @@ trait Authorize
         return $data;
     }
 
-    protected function postPaymentAuthorizeProcessing($payment)
+    protected function updateAndNotifyPaymentAuthorized($payment, $wasFailed = false)
     {
         $this->updatePaymentAuthorized();
 
+        $this->eventPaymentAuthorized($payment);
+
+        $this->notifyAuthorized($payment, $wasFailed);
+    }
+
+    protected function postPaymentAuthorizeProcessing($payment)
+    {
         //
         // The returned value could be either Payment
         // model or an array containing callback data.
@@ -241,11 +286,29 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
+        return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function notifyAuthorized($payment, $wasFailed)
+    {
         // Trigger notification events for authorization
         $notifier = new Notify($payment);
-        $notifier->trigger(Notify::AUTHORIZED);
 
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        if ($wasFailed)
+        {
+            $trigger = Notify::FAILED_TO_AUTHORIZED;
+        }
+        else
+        {
+            $trigger = Notify::AUTHORIZED;
+        }
+
+        $notifier->trigger($trigger);
+    }
+
+    protected function eventPaymentAuthorized($payment)
+    {
+        $this->app['events']->fire('api.payment.authorized', array($payment));
     }
 
     protected function checkForRecentFailedPayment($payment)
@@ -377,21 +440,59 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabledInLive($payment)
+    protected function verifyEmiEnabled($payment)
     {
+        $methods = $this->methods;
+
+        if (($methods === null) or
+            ($methods->isEmiEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyCardEnabledInLive($payment, $input)
+    {
+        $methods = $this->methods;
+
+        $this->checkAndValidateAmexIfNotEnabled($methods, $input['card']);
+
         if ($this->mode === Mode::TEST)
         {
             return;
         }
 
         // Only check enabled or not on live mode
-        $methods = $this->methods;
 
         if (($methods === null) or
             ($methods->isCardEnabled() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function checkAndValidateAmexIfNotEnabled($methods, $card)
+    {
+        if (isset($card['number']) === false)
+        {
+            return;
+        }
+
+        $amex = $methods->getAmex();
+
+        $num = $card['number'];
+
+        $prefix = substr($num, 0, 2);
+
+        if ((($prefix === '34') or
+             ($prefix === '37')) and
+            ($amex === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                'number');
         }
     }
 
@@ -412,31 +513,34 @@ trait Authorize
 
     protected function updatePaymentAuthorized()
     {
-        $payment = $this->payment;
-
-        $payment->setAmountAuthorized();
-
-        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-        $payment->setAuthorizeTimestamp();
-
-        $payment->terminal->incrementUsedCount();
-
-        $payment->saveOrFail();
-        $payment->terminal->saveOrFail();
-
-        $gateway = $payment->getGateway();
-
-        if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+        $this->repo->transaction(function()
         {
-            $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+            $payment = $this->payment;
 
-            $txn->saveOrFail();
-        }
+            $payment->setAmountAuthorized();
 
-        $payment->saveOrFail();
+            $payment->setStatus(Payment\Status::AUTHORIZED);
 
-        $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+            $payment->setAuthorizeTimestamp();
+
+            $payment->terminal->incrementUsedCount();
+
+            $payment->saveOrFail();
+            $payment->terminal->saveOrFail();
+
+            $gateway = $payment->getGateway();
+
+            if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+            {
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+                $txn->saveOrFail();
+            }
+
+            $payment->saveOrFail();
+
+            $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+        });
     }
 
     protected function isGatewayActuallyAuthorizingPayment($payment)
@@ -453,7 +557,8 @@ trait Authorize
             $network = $payment->card->getNetwork();
             $network = Card\Network::getCode($network);
 
-            if ($network === Card\Network::MAES)
+            if (($network === Card\Network::MAES) or
+                ($network === Card\Network::RUPAY))
             {
                 return false;
             }

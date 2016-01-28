@@ -4,6 +4,8 @@ namespace Constants;
 
 class Table
 {
+    // Core entities
+
     const IIN               = 'iins';
     const KEY               = 'keys';
     const CARD              = 'cards';
@@ -12,11 +14,22 @@ class Table
     const METHODS           = 'merchant_banks';
     const PRICING           = 'pricing';
     const PAYMENT           = 'payments';
+    const WEBHOOK           = 'webhooks';
     const MERCHANT          = 'merchants';
     const TERMINAL          = 'terminals';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlements';
+    const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
     const DAILY_SETTLEMENT  = 'daily_settlements';
+
+    // Gateway related
+    const ATOM              = 'atom';
+    const HDFC              = 'hdfc';
+    const AXIS              = 'axis';
+    const PAYTM             = 'paytm';
+    const BILLDESK          = 'billdesk';
+    const MOBIKWIK          = 'mobikwik';
+    const NETBANKING        = 'netbanking';
 }

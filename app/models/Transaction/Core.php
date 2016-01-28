@@ -16,55 +16,40 @@ use Models\Adjustment;
 
 class Core extends Base\Core
 {
-    protected $entities = array();
+    protected $merchantBalance = null;
 
-    protected $record;
+    protected $nodalBalance = null;
 
     public function __construct()
     {
         $this->merchant = \BasicAuth::getMerchant();
         $this->merchantRepo = new Merchant\Repository;
+        $this->balanceRepo = new Merchant\Balance\Repository;
     }
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
-        list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
-
-        $amount = $payment->getAmount();
-        $credit = $amount - $fee;
-
-        $txnData = array(
-            Transaction\Entity::AMOUNT          => $amount,
-            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::FEE             => $fee,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::DEBIT           => 0,
-            Transaction\Entity::CURRENCY        => 'INR',
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
-            Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
-
-        if ($payment->getGateway() === Payment\Gateway::ATOM)
-        {
-            $this->paymentOnAtomGateway($txnData, $payment, $fee);
-        }
-
-        $txn = new Transaction\Entity($txnData);
+        $txn = new Transaction\Entity;
         $txn->generateId();
 
-        $txn->entity()->associate($payment);
-        $txn->merchant()->associate($payment->merchant);
-        $payment->transaction()->associate($txn);
+        $this->fillTxnFeesAndAmount($txn, $payment);
+
+        $this->txnCreationFromPaymentOperation($txn, $payment);
+
+        $this->updateFreeCredits($txn);
 
         $this->updateEscrowBalance($txn);
+
+        $this->balanceRepo->updateBalance($this->merchantBalance);
 
         return $txn;
     }
 
     public function updateOnCapture(Payment\Entity $payment)
     {
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
         $txn = $payment->transaction;
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
@@ -75,39 +60,92 @@ class Core extends Base\Core
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
-        list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
+        $txn = new Transaction\Entity;
+        $txn->generateId();
+
+        $this->fillTxnFeesAndAmount($txn, $payment);
+
+        $this->txnCreationFromPaymentOperation($txn, $payment);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
-        $amount = $payment->getAmount();
-        $credit = $amount - $fee;
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $txnData = array(
-            Transaction\Entity::AMOUNT          => $amount,
-            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::FEE             => $fee,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::DEBIT           => 0,
-            Transaction\Entity::CURRENCY        => 'INR',
-            Transaction\Entity::SETTLED_AT      => $settledAt,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
-            Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
-
-        if ($payment->getGateway() === Payment\Gateway::ATOM)
-        {
-            $this->paymentOnAtomGateway($txnData, $payment, $fee);
-        }
-
-        $txn = new Transaction\Entity($txnData);
-        $txn->generateId();
-
-        $txn->entity()->associate($payment);
-        $txn->merchant()->associate($payment->merchant);
-        $payment->transaction()->associate($txn);
+        $this->updateFreeCredits($txn);
 
         $this->updateBalances($txn);
 
         return $txn;
+    }
+
+    protected function txnCreationFromPaymentOperation($txn, $payment)
+    {
+        $txnData = array(
+            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
+            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
+
+        if ($payment->getGateway() === Payment\Gateway::ATOM)
+        {
+            $this->paymentOnAtomGateway($txnData, $payment, $txn->getFee());
+        }
+
+        $txn->fill($txnData);
+
+        $txn->entity()->associate($payment);
+        $txn->merchant()->associate($payment->merchant);
+        $payment->transaction()->associate($txn);
+    }
+
+    protected function fillTxnFeesAndAmount($txn, $payment)
+    {
+        $credit = $fee = $serviceTax = 0;
+        $pricingRuleId = null;
+
+        $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
+
+        $freeCredits = $merchantBalance->getCredits();
+
+        $amount = $payment->getAmount();
+
+        if ($freeCredits > 0)
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+            $credit = $amount;
+            $fee = 0;
+            $serviceTax = 0;
+
+            $txn->setGratis(true);
+        }
+        else
+        {
+            list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
+            $credit = $amount - $fee;
+        }
+
+        $txn->setPricingRule($pricingRuleId);
+        $txn->setAmount($amount);
+        $txn->setCredit($credit);
+        $txn->setDebit(0);
+        $txn->setFee($fee);
+        $txn->setServiceTax($serviceTax);
+
+        return $txn;
+    }
+
+    public function fillServiceTax($txn, $payment)
+    {
+        if ($txn->isGratis())
+        {
+            $txn->setServiceTax(0);
+        }
+        else
+        {
+            $serviceTax = (new Pricing\Fee)->calculateServiceTax($txn, $payment);
+
+            $txn->setServiceTax($serviceTax);
+        }
     }
 
     protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
@@ -134,17 +172,16 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
-        $createdAt = $refund->getAttribute(Refund\Entity::CREATED_AT);
-
-        $settledAt = $createdAt + 1;
+        $settledAt = 1;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT      => $refund->getAmount(),
-            Transaction\Entity::TYPE        => Transaction\Type::REFUND,
-            Transaction\Entity::FEE         => 0,
-            Transaction\Entity::DEBIT       => $refund->getAmount(),
-            Transaction\Entity::CREDIT      => 0,
-            Transaction\Entity::CURRENCY    => 'INR');
+            Transaction\Entity::AMOUNT          => $refund->getAmount(),
+            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
+            Transaction\Entity::FEE             => 0,
+            Transaction\Entity::SERVICE_TAX     => 0,
+            Transaction\Entity::DEBIT           => $refund->getAmount(),
+            Transaction\Entity::CREDIT          => 0,
+            Transaction\Entity::CURRENCY        => 'INR');
 
         $gateway = $refund->getGateway();
 
@@ -155,7 +192,11 @@ class Core extends Base\Core
 
         $channel = $payment->transaction->getChannel();
 
-        $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+        if ($payment->hasBeenCaptured())
+        {
+            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+        }
+
         $txnData[Transaction\Entity::CHANNEL] = $channel;
 
         $txn = new Transaction\Entity($txnData);
@@ -208,6 +249,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED         => 0,
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
+            Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
             Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
@@ -233,44 +275,30 @@ class Core extends Base\Core
 
     public function updateBalances(Transaction\Entity $txn, $updateEscrowBalance = true)
     {
-        $channel = $txn->getChannel();
-
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate($channel);
-
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $txn->merchant->getKey());
-
-        $merchantBalance->updateBalance($txn);
-        $this->merchantRepo->updateBalance($merchantBalance);
+        $txn = $this->updateMerchantBalance($txn);
 
         if ($updateEscrowBalance === true)
         {
-            $nodalBalance->updateBalance($txn);
-            $this->merchantRepo->updateBalance($nodalBalance);
+            $txn = $this->updateEscrowBalance($txn);
         }
+        else
+        {
+            $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
 
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $txn->fill($attributes);
+            $txn->setEscrowBalance($nodalBalance->getBalance());
+        }
 
         return $txn;
     }
 
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $txn->merchant->getKey());
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
         $merchantBalance->updateBalance($txn);
-        $this->merchantRepo->updateBalance($merchantBalance);
+        $this->balanceRepo->updateBalance($merchantBalance);
 
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-        );
-
-        $txn->fill($attributes);
+        $txn->setBalance($merchantBalance->getBalance());
 
         return $txn;
     }
@@ -279,17 +307,72 @@ class Core extends Base\Core
     {
         $channel = $txn->getChannel();
 
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate($channel);
+        $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
 
         $nodalBalance->updateBalance($txn);
-        $this->merchantRepo->updateBalance($nodalBalance);
+        $this->balanceRepo->updateBalance($nodalBalance);
 
-        $attributes = array(
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $txn->fill($attributes);
+        $txn->setEscrowBalance($nodalBalance->getBalance());
 
         return $txn;
+    }
+
+    public function updateFreeCredits($txn)
+    {
+        assert ($txn->isTypePayment() === true);
+
+        if (($txn->getFee() !== 0) or
+            ($txn->getCredit() !== $txn->getAmount()))
+        {
+            return;
+        }
+
+        $credits = $txn->getAmount();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $freeCredits = $merchantBalance->getCredits();
+
+        assert($freeCredits > 0);
+
+        if ($freeCredits < $credits)
+        {
+            $credits = $freeCredits;
+        }
+
+        $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
+
+        $nodalBalance->subtractCredits($credits);
+
+        $merchantBalance->subtractCredits($credits);
+    }
+
+    protected function getEscrowBalanceLockForUpdate($channel)
+    {
+        if ($this->nodalBalance !== null)
+        {
+            return $this->nodalBalance;
+        }
+
+        $nodalBalance = $this->balanceRepo->getEscrowBalanceLockForUpdate($channel);
+
+        $this->nodalBalance = $nodalBalance;
+
+        return $nodalBalance;
+    }
+
+    protected function getBalanceLockForUpdate(Merchant\Entity $merchant)
+    {
+        if ($this->merchantBalance !== null)
+        {
+            return $this->merchantBalance;
+        }
+
+        $merchantBalance = $this->balanceRepo->getBalanceLockForUpdate($merchant->getId());
+
+        $this->merchantBalance = $merchantBalance;
+
+        return $merchantBalance;
     }
 
     protected function getSettledAtTimestamp($payment)
@@ -318,15 +401,7 @@ class Core extends Base\Core
 
     protected function getSettlementSchedule($payment)
     {
-        $setlSchedule = $payment->merchant->getSettlementSchedule();
-
-        if (($setlSchedule < 3) and
-            ($method !== Method::CARD))
-        {
-            $setlSchedule = 3;
-        }
-
-        return $setlSchedule;
+        return $payment->merchant->getSettlementSchedule();
     }
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)

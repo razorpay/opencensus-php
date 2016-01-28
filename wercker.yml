@@ -35,6 +35,12 @@ build:
       - script:
           name: Run unit tests
           code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
+      - script:
+          name: List directory
+          code: ls -lah
+      - script:
+          name: Copy entire data to wercker-output-directory
+          code: ls -lah && cp -vr . $WERCKER_OUTPUT_DIR/
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -47,6 +53,21 @@ deploy:
       - script:
           name: Change to production mode
           code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
+      - script:
+          name: Run composer
+          code: composer config -g github-oauth.github.com $github_token
+      - script:
+          name: install dependencies
+          code: composer install --no-interaction
+      - script:
+          name: List directory
+          code: ls -lah
+      - script:
+          name: check vendor dir exists
+          code: if [ ! -d vendor ] ; then exit 1 ; fi;
+      - script:
+          name: check if dotfile rsyncignore exists
+          code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET

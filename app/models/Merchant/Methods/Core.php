@@ -2,10 +2,14 @@
 
 namespace Models\Merchant\Methods;
 
-use Models\Base;
+use Constants\Mode;
 use EE\Exception;
+use EE\Error\ErrorCode;
+use Models\Bank\IFSC;
+use Models\Base;
 use Models\Payment;
 use Models\Merchant;
+use Models\Pricing;
 use Models\Merchant\Methods;
 use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
@@ -25,9 +29,30 @@ class Core extends Base\Core
 
         $methods->setMethods($input);
 
+        $this->checkPricing($merchant, $methods);
+
         $this->repo->saveOrFail($methods);
 
         return $methods->toArray();
+    }
+
+    protected function checkPricing($merchant, $methods)
+    {
+        $pricingCore = new Pricing\Core;
+
+        if (($methods->isAmexEnabled()) and
+            ($pricingCore->checkPricingForAmex($merchant) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT);
+        }
+
+        if (($methods->isAnyWalletEnabled()) and
+            ($pricingCore->hasWalletPricing($merchant) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Wallet pricing not present for merchant');
+        }
     }
 
     public function getMerchantBanks($merchant)
@@ -45,7 +70,19 @@ class Core extends Base\Core
         //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
         // }
 
-        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+        $supportedBanks = null;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $supportedBanks = Netbanking::getSupportedBanksInTestMode();
+        }
+        else
+        {
+            $supportedBanks = Netbanking::getSupportedBanksInLiveMode();
+        }
+
+//        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+//        $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),Netbanking::getSbiepaySupportedBanks());
 
         $banks->setBanks($supportedBanks);
 
@@ -87,25 +124,37 @@ class Core extends Base\Core
         return $this->setPaymentBanks($banks, $input);
     }
 
-    public function setAllPaymentBanks($merchant)
+    public function setDefaultMethods($merchant)
+    {
+        $methods = (new Methods\Entity)->build();
+
+        $methods->merchant()->associate($merchant);
+
+        $methods->setMobikwik(true);
+        $methods->setPayzapp(true);
+
+        $this->setAllPaymentBanks($methods);
+
+        $this->repo->saveOrFail($methods);
+    }
+
+    public function setAllPaymentBanks($methods)
     {
         $input = [
             'banks' => \Models\Payment\Processor\Netbanking::getAllBanks()
         ];
 
-        $banks = $this->setPaymentBanksForMerchant($merchant, $input);
-
-        return $banks;
+        $this->setPaymentBanks($methods, $input);
     }
 
-    protected function setPaymentBanks($banks, $input)
+    protected function setPaymentBanks($methods, $input)
     {
         (new Validator)->validateInput('addBanks', $input);
 
-        $banks->setBanks($input['banks']);
-        $this->repo->saveOrFail($banks);
+        $methods->setBanks($input['banks']);
+        $this->repo->saveOrFail($methods);
 
-        return $this->getEnabledDisabledBanks($banks);
+        return $this->getEnabledDisabledBanks($methods);
     }
 
     protected function getEnabledDisabledBanks($banks)

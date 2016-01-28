@@ -27,6 +27,10 @@ trait Refund
      */
     protected function refund($id, $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            ['id' => $id, 'input' => $input]);
+
         $payment = $this->retrieve($id);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
@@ -78,7 +82,8 @@ trait Refund
      * @param  Payment\Refund\Entity $refund  Refund Entity
      * @return null
      */
-    protected function sendRefundNotification(Payment\Entity $payment,
+    protected function sendRefundNotification(
+        Payment\Entity $payment,
         Payment\Refund\Entity $refund)
     {
         //
@@ -102,21 +107,22 @@ trait Refund
                 'the status is ' . $payment->getStatus());
         }
 
-        $days = 5;
+        // For now allow refunding authorized payments immediately.
+        // $days = 5;
 
-        if ($this->payment->getDaysSinceAuthorized() <= $days)
-        {
+        // if ($this->payment->getDaysSinceAuthorized() <= $days)
+        // {
             if ((isset($input['force'])) and
                 ($input['force'] === '1'))
             {
                 unset($input['force']);
             }
-            else
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The authorized payment is not older than: ' . $days . ' days');
-            }
-        }
+        //     else
+        //     {
+        //         throw new Exception\BadRequestValidationFailureException(
+        //             'The authorized payment is not older than: ' . $days . ' days');
+        //     }
+        // }
 
         return $this->refund($id, $input);
     }
@@ -184,10 +190,18 @@ trait Refund
     {
         $merchant = $refund->merchant;
 
-        $balance = (new Merchant\Repository)->getMerchantBalance($merchant);
+        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
         if ($balance->getBalance() < $refund->getAmount())
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [
+                    'message' => 'Not enough balance',
+                    'merchant_balance' => $balance->getBalance(),
+                    'refund_amount' => $refund->getAmount()
+                ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
         }

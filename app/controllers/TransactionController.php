@@ -21,4 +21,13 @@ class TransactionController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getMonthlyReport()
+    {
+        $input = Input::all();
+
+        $data = (new Transaction\Service)->getReport($input);
+
+        return ApiResponse::json($data);
+    }
 }

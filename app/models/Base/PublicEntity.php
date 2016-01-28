@@ -105,6 +105,28 @@ class PublicEntity extends UniqueIdEntity
         return $this->getPublicId();
     }
 
+    public function getDashboardEntityLink()
+    {
+        $id = $this->getId();
+
+        $entity = $this->entity . 's';
+
+        // It's always needed for live mdoe. Not taking care of test for now.
+        $url = "https://dashboard.razorpay.com/admin#/app/$entity/live/$id";
+
+        return $url;
+    }
+
+    public function getDashboardEntityLinkForSlack()
+    {
+        $id = $this->getId();
+
+        $url = $this->getDashboardEntityLink();
+
+        // In the format <link|display_text>
+        return '<'. $url . '|' . $id.'>';
+    }
+
     public static function verifyIdAndStripSign(& $id)
     {
         static::stripSignOrFail($id);
@@ -150,6 +172,22 @@ class PublicEntity extends UniqueIdEntity
         $id = substr($id, $len);
 
         return true;
+    }
+
+    public static function stripSignWithoutValidation(& $id)
+    {
+        $delimiter = static::getDelimiter();
+
+        $ix = strpos($id, $delimiter);
+
+        if ($ix === false)
+        {
+            return false;
+        }
+
+        $id = substr($id, $ix + 1);
+
+        return $id;
     }
 
     public static function getSign()

@@ -106,9 +106,43 @@
                           <tr>
                             <td class="center darktext">
                               <center>
-                                Refund Id: {{$refund['id']}}
+                                Refund Id: {{$refund['public_id']}}
                               </center>
                               <hr class="small">
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Main text -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="darktext left-text-pad right-text-pad">
+<p>
+The refund process for your Order
+@if($payment['orderId'])
+ID {{$payment['orderId']}}
+@endif
+has been initiated.
+</p>
+
+<p>The refund amount is {{$refund['amount']}}. It may take up to 5-7 business
+days for the credit to reflect in your account. Actual time taken for refund
+depends on your payment cycle with your bank.
+</p>
                             </td>
                             <td class="expander"></td>
                           </tr>

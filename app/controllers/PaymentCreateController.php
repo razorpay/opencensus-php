@@ -54,10 +54,15 @@ class PaymentCreateController extends BaseController
     {
         $input = Input::all();
 
-        if (isset($input['callback_url']))
+        if (empty($input['callback_url']) === false)
         {
             $app = App::getFacadeRoot();
             $app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+        else
+        {
+            // It could be just blank or an empty array. Hence unset it here only.
+            unset($input['callback_url']);
         }
 
         $data = $this->payment->process($input);
@@ -81,6 +86,13 @@ class PaymentCreateController extends BaseController
 
                     return $response;
                 }
+                else if ($data['request']['method'] === 'direct')
+                {
+                    $response = Response::make($data['request']['content']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
             }
             else if ($data['type'] === 'return')
             {
@@ -100,7 +112,7 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a new payment on a JSONP Request
      */
-    public function getJSONP()
+    public function getCreatePaymentJsonp()
     {
         $input = Input::all();
 
@@ -112,6 +124,23 @@ class PaymentCreateController extends BaseController
         $data = $this->payment->process($input);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * Creates a new payment with an AJAX Request
+     * Sets the proper CORS headers
+     */
+    public function postAJAX()
+    {
+        $input = Input::all();
+
+        unset($input['callback']);
+
+        $data = $this->payment->process($input);
+
+        $response = ApiResponse::json($data);
+
+        return $response->header('Access-Control-Allow-Origin', '*');
     }
 
     public function postAutoCapture()

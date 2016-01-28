@@ -61,6 +61,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::WALLET, 8)
                   ->nullable();
 
+            $table->char(Payment::EMI_PLAN_ID, 14)
+                  ->nullable();
+
             $table->string(Payment::ERROR_CODE, 100)
                   ->nullable();
 
@@ -96,10 +99,18 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::SIGNED)
                   ->default(0);
 
-            $table->boolean(Payment::VERIFIED)
+            $table->tinyInteger(Payment::VERIFIED)
                   ->nullable();
 
             $table->text(Payment::CALLBACK_URL)
+                  ->nullable();
+
+            $table->integer(Payment::FEE)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Payment::SERVICE_TAX)
+                  ->unsigned()
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -151,7 +162,7 @@ class CreatePayments  extends Migration
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::TERMINAL_ID.'_foreign');
 
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');            
         });
 
         Schema::drop(Table::PAYMENT);

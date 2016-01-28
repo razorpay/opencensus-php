@@ -27,7 +27,7 @@ trait RequestResponseFlowTrait
             else
             {
                 $response = $this->makeRequest($data['request']);
-                //sd($response->getContent());
+                //s($response);
             }
         }
         catch (BaseException $e)
@@ -39,7 +39,7 @@ trait RequestResponseFlowTrait
             $response = $e->generatePublicJsonResponse();
         }
         finally
-        {//s($response->getContent());
+        {
             if ((isset($e) === false) and
                 (isset($data['exception'])))
             {
@@ -97,7 +97,7 @@ trait RequestResponseFlowTrait
     }
 
     public function processAndAssertException($actual, $expected)
-    {//sd($actual->getTraceAsString());
+    {
         $class = (isset($expected['class'])) ? $expected['class'] : 'EE\Exceptions\RecoverableException';
 
         $this->assertExceptionClass($actual, $class);
@@ -124,8 +124,7 @@ trait RequestResponseFlowTrait
         $actualContent = $this->getJsonContentFromResponse($response, $callback);
 
         $expectedContent = $data['response']['content'];
-//s($actualContent);
-//s($actualContent, $expectedContent);
+
         $this->checkStatusCodeIfJsonp($actualContent);
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);
@@ -174,7 +173,7 @@ trait RequestResponseFlowTrait
 
         $actualStatusCode = $response->getStatusCode();
 
-        $this->assertEquals($expectedHttpStatusCode, $actualStatusCode);
+        $this->assertEquals($expectedHttpStatusCode, $actualStatusCode, $response->getContent());
     }
 
     protected function getExpectedHttpStatusCode($data)

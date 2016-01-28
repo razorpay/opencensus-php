@@ -10,16 +10,20 @@ use EE\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $addBanksRules = array(
-        'banks' => 'sometimes|array');
+        Entity::BANKS => 'sometimes|array');
 
     protected static $addBanksValidators = array(
-        'banks');
+        Entity::BANKS);
 
     protected static $setMethodsRules = array(
-        'paytm'     => 'sometimes|boolean',
-        'card'      => 'sometimes|boolean',
-        'banks'     => 'sometimes|array',
-        'mobikwik'  => 'sometimes|boolean');
+        Entity::BANKS       => 'sometimes|array',
+        Entity::CARD        => 'sometimes|boolean',
+        Entity::AMEX        => 'sometimes|boolean',
+        Entity::PAYTM       => 'sometimes|boolean',
+        Entity::PAYZAPP     => 'sometimes|boolean',
+        Entity::MOBIKWIK    => 'sometimes|boolean',
+        Entity::EMI         => 'sometimes|boolean',
+    );
 
     protected static $setMethodsValidators = array(
         'methodBanks');

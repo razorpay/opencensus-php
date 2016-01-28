@@ -25,19 +25,47 @@ You can safely close this tab
 var data = {{json_encode($data);}};
 // Callback data //
 
+var s = 'razorpay_payment_id' in data;
+data = JSON.stringify(data);
 if(window.CheckoutBridge){
-  if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(JSON.stringify(data))}
+  if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(data)}
 } else {
-  document.cookie = "onComplete="+JSON.stringify(data)+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+  document.cookie = "onComplete="+data+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
 }
 
 function g(id){return document.getElementById(id)}
-function razorpay_callback(){return JSON.stringify(data)}
+function razorpay_callback(){return data}
+
 var t = g('text')
-var s = 'razorpay_payment_id' in data
 t.innerHTML += s ? 'Successful' : 'Failed'
 t.className = 'show ' + (s ? 's' : 'f')
 g('icon').innerHTML = s ? '&#10004' : '!'
-try{opener.onComplete(JSON.stringify(data))&&close()}catch(e){}
-g('closer').style.display = 'block'
+
+onerror = function(message){
+  message = JSON.stringify({
+    access_token: '3cddb790e27342ad86f431498a1f8342',
+    data: {
+      environment: 'production',
+      platform: 'popup',
+      body: {
+        message: {
+          body: message
+        }
+      }
+    }
+  })
+  var xhr = new XMLHttpRequest()
+  xhr.open('post', 'https://api.rollbar.com/api/1/item/', true)
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  xhr.send(message)
+}
+if(!window.CheckoutBridge){
+  if(window.opener) {
+    try{opener.onComplete(data)&&close()}catch(e){onerror(e.message)}
+    opener.postMessage(data,'*')
+  }
+  if(/\(iP.+(Cr|Fx)iOS/.test(navigator.userAgent))
+    setTimeout(close, 1000);
+}
+
 </script></body></html>

@@ -61,6 +61,15 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    public function postRefundOldAUthorizedPayments()
+    {
+        $input = Input::all();
+
+        $data = $this->payment->refundOldAuthorizedPayments($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->payment->authorizeFailed($id);
@@ -172,9 +181,16 @@ class PaymentController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments()
+    public function getVerifyPayments($filter)
     {
-        $data = $this->payment->verifyAllPayments();
+        $data = $this->payment->verifyMultiplePayments($filter);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
+    {
+        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
 
         return ApiResponse::json($data);
     }
@@ -189,5 +205,20 @@ class PaymentController extends BaseController
     public function sendReminderMailForAuthorizedPayments()
     {
         return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
+    }
+
+    public function postComputeServiceTax()
+    {
+        $data = $this->payment->computeServiceTax();
+        return ApiResponse::json($data);
+    }
+
+    public function postDummyRoute()
+    {
+        $input = Input::all();
+
+        $this->app['trace']->info(
+            \Trace\TraceCode::PAYMENT_WEBHOOK,
+            $input);
     }
 }

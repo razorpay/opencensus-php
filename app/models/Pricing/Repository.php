@@ -10,9 +10,14 @@ use EE\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'Pricing';
+
+    protected $appFetchParamRules = array(
+        Entity::PLAN_ID         => 'sometimes|string',
+    );
 
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
@@ -41,18 +46,26 @@ class Repository extends Base\Repository
         return $pricing;
     }
 
+    public function getMerchantPricingPlan($merchant)
+    {
+        $pricingPlanId = $merchant->getPricingPlanId();
+//sd($pricingPlanId);
+        return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
+    }
+
     public function getPricingPlanByIdOrFailPublic($id)
     {
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingRulesForGivenCardNetwork($id, $network)
+    public function getPricingRulesForGivenCardNetwork($id, $network, $isInternational = false)
     {
         $repo = $this->repo;
 
         // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
+                    ->where(Pricing\Entity::INTERNATIONAL, '=', $isInternational)
                     ->where(function($query) use ($network)
                     {
                         $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
@@ -78,6 +91,24 @@ class Repository extends Base\Repository
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::WALLET)
                     ->get();
+    }
+
+    public function getPricingRulesForEMI($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::EMI)
+                    ->get();
+    }
+
+    public function getZeroPricingPlanRuleForMethod($method)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', Pricing\Entity::ZERO_PRICING)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->firstOrFail();
     }
 
     public function getPricingPlans()
@@ -116,14 +147,29 @@ class Repository extends Base\Repository
     public function getPricingPlanRule($id)
     {
         $repo = $this->repo;
+        $rule = $repo::findOrFailPublic($id);
 
-        $repo::findOrFailPublic($id);
+        return $rule;
     }
 
-    public function deletePlanRule($id)
+    public function deletePlanRule($planId, $ruleId)
     {
         $repo = $this->repo;
 
-        $repo::delete($id);
+        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFail();
+
+        $count = $rule->payments->count();
+
+        if ($count === 0)
+        {
+            return $rule->forceDelete();
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Pricing rule cannot be deleted because it has been used more than once');
+        }
     }
 }

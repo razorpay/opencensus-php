@@ -22,16 +22,21 @@ trait AuthorizeFailed
                 ['message' => 'Payment verification failed. Now converting to authorized']);
         }
 
-        $verify = $e->getVerifyObject();
-
         if ($e === null)
         {
             throw new Exception\LogicException(
                 'When converting failed payment to authorized, payment verification ' .
                 'should have failed but instead it did not',
-                $verify->getDataToTrace());
+                $input);
         }
 
+        $verify = $e->getVerifyObject();
+
+        return $this->authorizeFailedPayment($verify);
+    }
+
+    protected function authorizeFailedPayment($verify)
+    {
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true))
         {

@@ -49,11 +49,19 @@ trait EntityFetchTrait
         return $content;
     }
 
-    protected function getEntityById($entity, $id)
+    protected function getEntityById($entity, $id, $admin = false)
     {
         $this->ba->proxyAuth();
 
         $url = '/'.$entity.'s/'.$id;
+
+        if ($admin)
+        {
+            $this->ba->appAuth();
+
+            $url = '/admin/'.$entity.'/'.$id;
+        }
+
         $request = array(
             'url' => $url,
             'method' => 'GET');
@@ -66,6 +74,11 @@ trait EntityFetchTrait
     protected function getLastTransaction($admin = false)
     {
         return $this->getLastEntity('transaction', $admin);
+    }
+
+    protected function getLastPayment($admin = false)
+    {
+        return $this->getLastEntity('payment', $admin);
     }
 
     protected function getPublicEntity($entity, array $input = array())
@@ -82,5 +95,10 @@ trait EntityFetchTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    public function getNodalAccountBalance()
+    {
+        return $this->getEntityById('balance', '10NodalAccount', true);
     }
 }

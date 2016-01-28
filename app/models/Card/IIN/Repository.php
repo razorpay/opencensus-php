@@ -8,6 +8,7 @@ use Models\Card;
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
+    // use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'IIN';
 

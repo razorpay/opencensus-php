@@ -52,6 +52,18 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentBilldeskEntity'], $payment);
     }
 
+    public function testPaymentOnDirectBilldeskTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:billdesk_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($terminal['id'], $payment['terminal_id']);
+    }
+
     public function testPaymentFailed()
     {
         $this->markTestIncomplete();
@@ -91,6 +103,7 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentRefund'], $refund);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
     }
@@ -115,6 +128,6 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(57, $count);
+        $this->assertEquals(58, $count);
     }
 }

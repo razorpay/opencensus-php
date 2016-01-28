@@ -52,6 +52,8 @@ class Service extends Base\Service
 
         $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
 
+        $rule->getValidator()->matchPaymentRules($plan);
+
         (new Pricing\Repository)->saveOrFail($rule);
 
         $this->trace->info(
@@ -91,9 +93,12 @@ class Service extends Base\Service
 
     public function deletePricingPlanRule($planId, $ruleId)
     {
-        $this->core->checkPlanId($id);
+        $flag = $this->repo->deletePlanRule($planId, $ruleId);
 
-        $this->core->deletePlanRule($ruleId);
+        if ($flag === true)
+        {
+            return ['message' => 'Pricing successfully deleted'];
+        }
     }
 
     public function replacePricingPlanRule($input)

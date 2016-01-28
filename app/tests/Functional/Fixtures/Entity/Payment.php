@@ -4,6 +4,8 @@ namespace Tests\Functional\Fixtures\Entity;
 
 class Payment extends Base
 {
+    use TransactionTrait;
+
     public function createCaptured(array $attributes = array())
     {
         if ((isset($attributes['method'])) and
@@ -44,6 +46,7 @@ class Payment extends Base
         $payment = $this->createCardAuthorized($attributes);
 
         $payment['status'] = 'captured';
+        $payment['authorized_at'] = $attributes['created_at'];
         $payment['captured_at'] = $attributes['created_at'] + 10;
 
         $hdfcAttrArray = array(
@@ -54,7 +57,7 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $txn = (new \Models\Transaction\Core)->updateOnCapture($payment);
+        $txn = $this->updateTransactionOnCapture($payment);
         $txn->saveOrFail();
 
         $payment->setStatus('captured');
@@ -69,9 +72,10 @@ class Payment extends Base
     public function createNetbankingCaptured(array $attributes = array())
     {
         $payment = $this->createNetbankingAuthorized($attributes);
+        $payment['authorized_at'] = $payment['created_at'];
         $payment['captured_at'] = $payment['created_at'] + 10;
 
-        $txn = (new \Models\Transaction\Core)->updateOnCapture($payment);
+        $txn = $this->updateTransactionOnCapture($payment);
         $txn->saveOrFail();
 
         $payment->setStatus('captured');
@@ -85,7 +89,7 @@ class Payment extends Base
         $defaultValues = array(
             'bank'  => 'HDFC',
             'status' => 'authorized',
-            'gateway' => 'atom',
+            'gateway' => 'billdesk',
             'method' => 'netbanking',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
@@ -98,7 +102,7 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $txn = (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+        $txn = $this->createTransactionForPaymentAuthorized($payment);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
@@ -111,7 +115,7 @@ class Payment extends Base
         $defaultValues = array(
             'bank'  => 'HDFC',
             'status' => 'failed',
-            'gateway' => 'atom',
+            'gateway' => 'billdesk',
             'method' => 'netbanking',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
@@ -141,6 +145,7 @@ class Payment extends Base
         $card = $this->fixtures->create('card');
 
         $defaultValues = array(
+            'authorized_at' => time(),
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'card_id' => $card['id'],
@@ -158,7 +163,7 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $txn = (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+        $txn = $this->createTransactionForPaymentAuthorized($payment);
         $txn->saveOrFail();
 
         $payment->saveOrFail();
@@ -179,5 +184,11 @@ class Payment extends Base
         $payment = parent::create($attributes);
 
         return $payment;
+    }
+
+    public function failPayment($id)
+    {
+        $this->edit(
+            $id, ['status' => 'failed', 'error_code' => 'BAD_REQUEST_PAYMENT_FAILED']);
     }
 }

@@ -56,10 +56,21 @@
                         <table class="twelve columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="darktext left-text-pad right-text-pad" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-left: 10px; padding-right: 10px;">
 <p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Hi {{{$merchant['name']}}},</p>
 
-<p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You have opted for the {{{$plan['plan_name']}}} plan.
-(₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction
-on all modes of payment).</p>
+<p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Your Razorpay account for
 
+<a title="Merchant Website" href="{{$merchant['website']}}" style="color: #2ba6cb; text-decoration: none;">{{{$merchant['billing_label']}}}</a>
+
+is now active. You have opted for the {{{$plan['name']}}} plan. The pricing details
+associated with the plan are:
+
+</p><ul align="left">
+  @foreach ($rules as $pricing => $methodDisplay)
+    <li style="text-align:left;" align="left">{{implode(' ,', $methodDisplay)}} - {{$pricing}}</li>
+  @endforeach
+  @if ($merchant['international'])
+  <li style="text-align:left;" align="left">3% on International Transactions</li>
+  @endif
+</ul><p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;"><i> Service Taxes Extra (14.5%)</i></p>
 <p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>.</p>
 
 <p style="margin: 0; color: #222222; font-family: -apple-system, '.SFNSText-Regular', 'San Francisco', 'Oxygen', 'Ubuntu', 'Roboto', 'Segoe UI', 'Helvetica Neue', 'Lucida Grande', sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com" style="color: #2ba6cb; text-decoration: none;">email</a>.</p>

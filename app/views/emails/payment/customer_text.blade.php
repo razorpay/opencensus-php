@@ -10,7 +10,7 @@ Website:    {{$merchant['billing_label']}}
 Link:       {{$merchant['website']}}
 @endif
 
-Payment Id:         {{$payment['id']}}
+Payment Id:         {{$payment['public_id']}}
 Amount:             {{$payment['amount']}}
 Payment Method:     {{ucwords($payment['method'][0])}}
 Payment Details:    {{$payment['method'][1]}}

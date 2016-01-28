@@ -12,6 +12,7 @@ class DefaultPlan
     {
         $pricing1 = self::getStartupPlanSeedData();
         $pricing2 = self::getPromotionalPlanSeedData();
+        $pricing3 = self::getZeroPlanSeedData();
 
         $data = array_merge($pricing1, $pricing2);
 
@@ -134,5 +135,35 @@ class DefaultPlan
                     'updated_at'    => time()
                 ),
             );
+    }
+
+    public static function getZeroPlanSeedData()
+    {
+        return array(
+            array(
+                'id' => '1ZeroPricingR1',
+                'plan_id' => '10ZeroPricingP',
+                'plan_name' => 'ZeroPricingPlan',
+                'payment_method' => 'card',
+                'percent_rate' => 0,
+                'fixed_rate' => 0,
+            ),
+            array(
+                'id' => '1ZeroPricingR2',
+                'plan_id' => '10ZeroPricingP',
+                'plan_name' => 'ZeroPricingPlan',
+                'payment_method' => 'netbanking',
+                'percent_rate' => 0,
+                'fixed_rate' => 0,
+            ),
+            array(
+                'id' => '1ZeroPricingR3',
+                'plan_id' => '10ZeroPricingP',
+                'plan_name' => 'ZeroPricingPlan',
+                'payment_method' => 'wallet',
+                'percent_rate' => 0,
+                'fixed_rate' => 0,
+            ),
+        );
     }
 }

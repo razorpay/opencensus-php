@@ -12,17 +12,19 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'amount'        =>  'required|integer|max:50000000',
         'currency'      =>  'required|size:3',
-        'method'        =>  'in:card,netbanking,wallet',
+        'method'        =>  'in:card,netbanking,wallet,emi',
         'card'          =>  'sometimes',
         'bank'          =>  'required_if:method,netbanking',
-        'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik',
+        'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp',
+        'emi_duration'  =>  'required_if:method,emi',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes',
-        'callback_url'  =>  'sometimes|url');
+        'callback_url'  =>  'sometimes|url',
+        '_'             =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',
@@ -42,7 +44,8 @@ class Validator extends Base\Validator
 
     protected function validateCardKey($input)
     {
-        if ($input['method'] !== Payment\Method::CARD)
+        if (($input['method'] !== Payment\Method::CARD) and 
+            ($input['method'] !== Payment\Method::EMI))
         {
             return;
         }
@@ -67,6 +70,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
+                'amount');
+        }
+
+        if(($input['method'] === Payment\Method::EMI) and
+           ($input['amount'] < 300000))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
                 'amount');
         }
     }

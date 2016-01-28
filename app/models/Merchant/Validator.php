@@ -23,16 +23,22 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
+        Entity::FEATURES                    => 'sometimes|max:255',
+        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
     );
 
-    protected static $editEmailRules = [
+    protected static $editCreditsRules = array(
+        Balance\Entity::CREDITS             => 'required|integer|min:0|max:50000000'
+    );
+
+    protected static $editEmailRules = array(
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
-    ];
+    );
 
     protected static $editValidators = [
-        'csv_email'
+        'csv_email', 'features'
     ];
-
+    
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
@@ -51,6 +57,11 @@ class Validator extends Base\Validator
                 );
             }
         }
+    }
+
+    protected function validateFeatures($input)
+    {
+        Features::validateFeatures($input);
     }
 
     public function validateBeforeActivate(Merchant\Entity $merchant)

@@ -131,4 +131,25 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getSettlementFixer()
+    {
+        $data = (new Transaction\Service)->settlementFixer();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postComputeDailySettlementServiceTax()
+    {
+        $data = (new Settlement\Daily\Service)->computeDailySettlementServiceTax();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postComputeSettlementServiceTax()
+    {
+        $data = (new Settlement\Service)->calculatePrevousSettlementServiceTax();
+
+        return ApiResponse::json($data);
+    }
 }

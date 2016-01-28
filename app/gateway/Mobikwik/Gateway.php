@@ -24,6 +24,7 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
         $content = array(
             'email'       => $input['payment']['email'],
             'amount'      => $input['payment']['amount'] / 100,
@@ -42,18 +43,9 @@ class Gateway extends Base\Gateway
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
 
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content,
-        );
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'request' => $request,
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -88,40 +80,32 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashForVerifyRequest(
             $content['mid'], $content['orderid']);
 
-
         $content = http_build_query($content);
 
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
+        $request = $this->getStandardRequestArray($content);
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
 
         $content = $this->xmlToArray($response->body);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content' => $content,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
         $this->verifySecureHashForQueryRequest($content);
 
         unset($content['checksum']);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $content);
 
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
 
         $verify->verifyResponseContent = $content;
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [
-                'request' => $verify->verifyResponseBody,
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['payment']['id'],
-            ]);
 
         return $content;
     }
@@ -140,12 +124,12 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-
-        $status = VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
             $verify->gatewaySuccess = false;
+
             // Could be the case where the transaction didn't even hit mobikwik
             if (($payment['received'] === false) and
                 (($payment['statuscode'] === null) or
@@ -162,7 +146,7 @@ class Gateway extends Base\Gateway
         else if ($content['statuscode'] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
-            //Gateway success , api success
+
             if ($payment['statuscode'] === Status::SUCCESS)
             {
                 $verify->apiSuccess = true;
@@ -172,21 +156,17 @@ class Gateway extends Base\Gateway
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
             }
-
         }
 
-        $verify->status = $status;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
-
-        if (($verify->match === true) and
-            ($payment['received'] === false))
+        if ($payment['received'] === false)
         {
             $payment->fill($content);
             $payment->saveOrFail();
         }
 
-        return $status;
+        return $verify->status;
     }
 
     public function refund(array $input)
@@ -215,11 +195,7 @@ class Gateway extends Base\Gateway
         $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
-        $request = array(
-            'url'     => $this->getUrl($this->action),
-            'method'  => 'post',
-            'content' => $content);
-
+        $request = $this->getStandardRequestArray($content);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
@@ -352,8 +328,13 @@ class Gateway extends Base\Gateway
 
     protected function getHashForAuthorizeRequest($content)
     {
-
-        $str = "'" . $content['cell'] . "''" . $content['email'] . "''" . $content['amount'] . "''" . $content['orderid'] . "''" . $content['redirecturl'] . "''" . $content['mid'] . "'";
+        $str = "'" .
+            $content['cell']        . "''" .
+            $content['email']       . "''" .
+            $content['amount']      . "''" .
+            $content['orderid']     . "''" .
+            $content['redirecturl'] . "''" .
+            $content['mid'] . "'";
 
         return $this->getHashOfString($str);
     }

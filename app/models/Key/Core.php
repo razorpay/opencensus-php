@@ -68,13 +68,19 @@ class Core
         (new Key\Repository)->saveOrFail($key);
     }
 
-    public function rollKey($keyId, array $input, $mode)
+    public function rollKey($merchantId, $keyId, array $input, $mode)
     {
         Key\Entity::verifyIdAndStripSign($keyId);
 
         Key\Validator::checkForDemoKeys($keyId);
 
-        $old = (new Key\Repository)->findOrFailPublic($keyId);
+        $old = (new Key\Repository)->findByMerchantIdAndKeyId($merchantId, $keyId);
+
+        if ($old === null)
+        {
+            throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
 
         $delay = false;
 

@@ -40,6 +40,11 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new GatewayManager($app);
         });
+
+        $this->app->bindShared('webhook.inferno', function($app)
+        {
+            return new \Models\Merchant\Webhook\Inferno;
+        });
     }
 
     /**
@@ -49,6 +54,11 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('mailgun', 'instance', 'exception.handler', 'gateway');
+        return array(
+            'mailgun',
+            'instance',
+            'exception.handler',
+            'gateway',
+            'webhook.inferno');
     }
 }

@@ -114,7 +114,7 @@ class Settler
             $this->setlRepo->commit();
         }
         catch (\Exception $e)
-        {
+        {throw $e;
             $this->setlRepo->rollback();
 
             $this->settlementFailure('kotak', $e);
@@ -200,11 +200,14 @@ class Settler
         $totalSetlGatewayFee = 0;
         $totalSetlApiFee = 0;
         $totalSetlFee = 0;
+        $totalServiceTax = 0;
 
         while ($i < $count)
         {
             // Settlement amount
-            $setlAmount = $setlGatewayFee = $setlApiFee = $setlFee = 0;
+            $setlAmount = $setlGatewayFee = $setlApiFee = 0;
+            $setlFee = $serviceTax = 0;
+
             $setlTxns = new Base\PublicCollection;
 
             // Get merchant
@@ -222,10 +225,29 @@ class Settler
                     continue;
                 }
 
+                if (($txn->getBalance() === 0) and
+                    ($txn->isTypeRefund()))
+                {
+                    $payment = $txn->entity->payment;
+
+                    if ($payment->hasBeenCaptured() === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::TRANSACTION_REFUND_TRACE,
+                            ['id' => $txn->getId()]);
+
+                        $txn[Transaction\Entity::SETTLED_AT] = null;
+                        $txn->saveOrFail();
+                        $i++;
+                        continue;
+                    }
+                }
+
                 $setlAmount += $txn->getCredit() - $txn->getDebit();
                 $setlGatewayFee += $txn->getGatewayFee();
                 $setlApiFee += $txn->getApiFee();
                 $setlFee += $txn->getFee();
+                $serviceTax += $txn->getServiceTax();
 
                 $setlTxns->push($txn);
                 $i++;
@@ -238,7 +260,12 @@ class Settler
             }
 
             $setl = (new Settlement\Merchant($merchant, $channel))->settle(
-                                        $setlTxns, $setlAmount, $setlFee, $setlApiFee, $setlGatewayFee);
+                                        $setlTxns,
+                                        $setlAmount,
+                                        $setlFee,
+                                        $setlApiFee,
+                                        $setlGatewayFee,
+                                        $serviceTax);
 
             $settlements->push($setl);
             $txnsSettled = $txnsSettled->merge($setlTxns);
@@ -247,6 +274,7 @@ class Settler
             $totalSetlApiFee += $setlApiFee;
             $totalSetlFee += $setlFee;
             $totalSetlGatewayFee += $setlGatewayFee;
+            $totalServiceTax += $serviceTax;
         }
 
         if (($totalSetlApiFee !== 0) and
@@ -265,11 +293,14 @@ class Settler
         $this->dailySettlement->api_fee = $totalSetlApiFee;
         $this->dailySettlement->gateway_fee = $totalSetlGatewayFee;
         $this->dailySettlement->fees = $totalSetlFee;
+        $this->dailySettlement->service_tax = $totalServiceTax;
 
         $amounts = array(
-            'amount' => $totalSetlAmount,
-            'api_fee' => $totalSetlApiFee,
-            'gateway_fee' => $totalSetlGatewayFee,
+            'amount'        => $totalSetlAmount,
+            'fees'          => $totalSetlApiFee,
+            'service_tax'   => $totalServiceTax,
+            'api_fee'       => $totalSetlApiFee,
+            'gateway_fee'   => $totalSetlGatewayFee,
         );
 
         return [$settlements, $txnsSettled, $amounts];

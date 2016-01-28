@@ -80,6 +80,17 @@ class Merchant extends Base
         return $merchant;
     }
 
+    public function createWithBalance()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+        return $merchant;
+    }
+
     public function createBankAccount($attributes)
     {
         $name = random_alpha_string(10);
@@ -110,7 +121,7 @@ class Merchant extends Base
         $this->fixtures->create('methods', $attributes);
     }
 
-    public function activate($id)
+    public function activate($id = '10000000000000')
     {
         return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
@@ -118,6 +129,21 @@ class Merchant extends Base
     public function holdFunds($id, $hold = true)
     {
         return $this->edit($id, ['hold_funds' => $hold]);
+    }
+
+    public function enableMethod($id = '10000000000000', $method)
+    {
+        return $this->fixtures->edit('methods', $id, [$method => true]);
+    }
+
+    public function disableMethod($id = '10000000000000', $method)
+    {
+        return $this->fixtures->edit('methods', $id, [$method => false]);
+    }
+
+    public function enableWallet($id = '10000000000000', $wallet)
+    {
+        return $this->fixtures->edit('methods', $id, [$wallet => true]);
     }
 
     public function enablePaytm($id = '10000000000000')
@@ -140,6 +166,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['card' => false]);
     }
 
+    public function enableEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => true]);
+    }
+
+    public function disableEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => false]);
+    }
+
     public function enableMobikwik($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['mobikwik' => true]);
@@ -150,4 +186,13 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function editCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
+    }
+
+    public function editCreditsforNodalAccount($credits)
+    {
+        return $this->editCredits($credits, '10NodalAccount');
+    }
 }

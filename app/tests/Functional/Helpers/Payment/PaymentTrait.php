@@ -10,6 +10,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
+    use PaymentAmexTrait;
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
     use PaymentAxisMigsTrait;
@@ -20,6 +21,7 @@ trait PaymentTrait
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
+    use PaymentSbiepayTrait;
 
     use RequestResponseFlowTrait
     {
@@ -245,6 +247,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
+
+        return $this->doAuthPayment($payment);
+    }
+
     protected function doAuthPaymentViaCheckoutRoute($payment)
     {
         if ($payment === null)
@@ -306,6 +321,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function verifyMultiplePayments($filter)
+    {
+        $request = array(
+            'url' => '/payments/verify/'.$filter,
+            'method' => 'GET');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function refundPayment($id, $amount = null)
     {
         $this->ba->privateAuth();
@@ -350,6 +378,20 @@ trait PaymentTrait
         $this->assertEquals('refund', $refund['entity']);
 
         return $refund;
+    }
+
+    protected function refundOldAuthorizedPayments()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/refund/authorized',
+            'content' => []);
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        return $data;
     }
 
     protected function authorizeFailedPayment($id)
@@ -420,6 +462,50 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function createWebhook(array $input = array())
+    {
+        $defaultInput = array(
+            'url' => 'http://localhost/v1/dummy/route',
+            'events' => [
+                'payment.authorized' => '1',
+            ]);
+
+        $input = array_merge($defaultInput, $input);
+
+        $request = array(
+            'url' => '/webhooks',
+            'method' => 'post',
+            'content' => $input);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editWebhook($wid, $input)
+    {
+        $request = array(
+            'url' => '/webhooks/'.$wid,
+            'method' => 'put',
+            'content' => $input);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function merchantEditCredits($id, $credits)
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/credits',
+            'method' => 'post',
+            'content' => ['credits' => $credits]);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;
@@ -467,6 +553,29 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getPaymentMethods()
+    {
+        $request = [
+            'url' => '/methods',
+            'method' => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function setPaymentMethods($methods, $merchantId = '10000000000000')
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url' => '/merchants/'.$merchantId.'/methods',
+            'method' => 'put',
+            'methods' => json_encode($methods)
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultPaymentArray()
     {
         //
@@ -479,7 +588,7 @@ trait PaymentTrait
                 'number'            => '4012001038443335',
                 'name'              => 'Harshil',
                 'expiry_month'      => '12',
-                'expiry_year'       => '2015',
+                'expiry_year'       => '2017',
                 'cvv'               => '566',
             ),
             'email'             => 'a@b.com',
@@ -512,6 +621,15 @@ trait PaymentTrait
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
+
+        return $payment;
+    }
+
+    protected function getDefaultWalletPaymentArray($wallet = 'mobikwik')
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
 
         return $payment;
     }
@@ -654,7 +772,7 @@ trait PaymentTrait
         }
         else
         {
-            // Has to be either redirect or a html form post.
+            // Has to be either redirect or a html form post.o
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
                     ($this->isResponseInstanceType('http', $response)) and
@@ -678,6 +796,8 @@ trait PaymentTrait
             }
             else
             {
+                $gateway = $response->headers->get('X-gateway');
+
                 //
                 // When doing form posts relevant here, we put in a
                 // second form which is not submitted but it contains gateway
@@ -710,7 +830,7 @@ trait PaymentTrait
 
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
-        return $this->$func($response, $callback);
+        return $this->$func($response, $callback, $gateway);
     }
 
     protected function processMerchantReturnCallbackForm($response)
@@ -893,12 +1013,20 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $statusCode = $response->getStatusCode();
-        $this->assertEquals($statusCode, '302');
+        $statusCode = (int) $response->getStatusCode();
 
-        $url = $response->getTargetUrl();
 
-        return $url;
+        if ($statusCode === 302)
+        {
+            return $response->getTargetUrl();
+        }
+        else if ($statusCode === 200)
+        {
+            // Probably a form here.
+            // Return url, method, content from that.
+
+            return $this->getFormRequestFromResponse($response->getContent(), $url);
+        }
     }
 
     public function getLocalMerchantCallbackUrl()
@@ -943,6 +1071,18 @@ trait PaymentTrait
         $this->assertTrue($this->isResponseInstanceType($type, $response));
     }
 
+    protected function mockServerContentFunction($closure)
+    {
+        $server = $this->mockServer()
+                       ->shouldReceive('content')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server);
+
+        return $server;
+    }
+
     protected function mockServer()
     {
         $class = $this->app['gateway']->getServerClass($this->gateway);
@@ -952,6 +1092,16 @@ trait PaymentTrait
 
     protected function setMockServer($server)
     {
-        return $this->app['gateway']->setServer($this->gateway, $server);
+         return $this->app['gateway']->setServer($this->gateway, $server);
+    }
+
+    protected function resetMockServer()
+    {
+        return $this->app['gateway']->resetServer($this->gateway);
+    }
+
+    protected function resetGatewayDriver()
+    {
+        return $this->app['gateway']->resetDriver($this->gateway);
     }
 }

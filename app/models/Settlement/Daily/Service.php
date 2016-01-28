@@ -81,4 +81,55 @@ class Service extends Base\Service
 
         return ['total_fees' => $totalFees, 'total_setl_count' => $totalSetlCount];
     }
+
+    public function computeDailySettlementServiceTax()
+    {
+        $repo = new Daily\Repository;
+
+        return $repo->transaction(function () use($repo)
+        {
+            $dailySettlements = $repo->getIfServiceTaxIsNullOrZero();
+
+            $setlRepo = new Settlement\Repository;
+
+            $totalServiceTax = 0;
+            $totalSetlCount = 0;
+
+            foreach ($dailySettlements as $daily)
+            {
+                $timestamp = $daily->getCreatedAt();
+
+                $date = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+                $date->startOfDay();
+
+                $from = $date->timestamp;
+                $to = $date->addDay()->timestamp;
+
+                $settlements = $setlRepo->fetch(['from' => $from, 'to' => $to]);
+
+                $dailyServiceTax = 0;
+
+                assert($daily->getSettlementCount() === $settlements->count());
+
+                foreach ($settlements as $setl)
+                {
+                    $dailyServiceTax += $setl->getServiceTax();
+                }
+
+                $daily->setServiceTax($dailyServiceTax);
+
+                $repo->saveOrFail($daily);
+
+                $totalServiceTax += $dailyServiceTax;
+
+                $totalSetlCount += $settlements->count();
+            }
+
+            return [
+                'total_service_tax'         => $totalServiceTax,
+                'total_daily_setl_count'    => $totalSetlCount,
+                'total_daily_settlements'   => $dailySettlements->count(),
+            ];
+        });
+    }
 }

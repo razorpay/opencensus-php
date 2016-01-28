@@ -19,9 +19,10 @@ class Repository extends Base\Repository
     public function fetchBetweenTimestamp($from, $to, $merchantId)
     {
         $repo = $this->repo;
-        return $repo::whereBetween(Entity::CREATED_AT, [$from, $to])
-            ->where(Base\Common::MERCHANT_ID, '=', $merchantId)
-            ->get();
+
+        return $repo::betweenTime($from, $to)
+                    ->merchantId($merchantId)
+                    ->get();
     }
 
     public function getSettlementWithFeesAsNullOrZero()
@@ -32,4 +33,15 @@ class Repository extends Base\Repository
                     ->orWhereNull(Entity::FEES)
                     ->get();
     }
+
+
+    public function getSettlementWithServiceTaxNullOrZero()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::SERVICE_TAX, '=', '0')
+                    ->orWhereNull(Entity::SERVICE_TAX)
+                    ->get();
+    }
+
 }

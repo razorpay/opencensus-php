@@ -10,9 +10,23 @@ use Models\Pricing;
 
 class Fee
 {
-    const SERVICE_TAX_PERCENT = 14;
+    const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
+
+    public function __construct()
+    {
+        $this->repo = new Pricing\Repository;
+    }
+
+    public function getZeroPricingPlanRule($payment)
+    {
+        $planId = Pricing\Entity::ZERO_PRICING;
+
+        $method = $payment->getMethod();
+
+        return $this->repo->getZeroPricingPlanRuleForMethod($method)->getId();
+    }
 
     public function calculateMerchantFees($payment)
     {
@@ -20,32 +34,63 @@ class Fee
 
         $rule = $this->getRelevantPricingRule($pricingPlanId, $payment);
 
-        $fee = $this->getFees($rule, $payment->getAmount());
+        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), self::SERVICE_TAX_PERCENT);
 
-        return array($fee, $rule->getKey());
+        return array($fee, $serviceTax, $rule->getKey());
     }
 
-    protected function getFees($rule, $amount)
+    public function calculateServiceTax($txn, $payment)
+    {
+        $rule = $this->repo->getPricingPlanRule($txn->getPricingRule());
+
+        $txnAuthTime = $payment->getAuthorizeTimestamp();
+
+        // Set the authorized_at time if not set
+        if (is_null($txnAuthTime) === True)
+        {
+            $txnCreatedTime = $payment->getCreatedTimestamp();
+            $txnCapturedTime = $payment->getCaptureTimestamp();
+
+            assert(is_null($txnCreatedTime) === FALSE);
+            assert(is_null($txnCapturedTime) === FALSE);
+
+            $txnAuthTime = ($txnCreatedTime + 45);
+
+            $payment->setAuthorizeTimestamp($txnAuthTime);
+        }
+
+        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), 0);
+
+        $serviceTax = $txn->getFee() - $fee;
+        assert($serviceTax > 0);
+
+        return $serviceTax;
+    }
+
+    protected function getFees($rule, $amount, $serviceTaxPercentage)
     {
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
-        $fee = $this->getFeesByPercentAndFixedRates($amount, $percent, $fixed);
+        list($fee, $serviceTax) = $this->getFeesByPercentAndFixedRates(
+                            $amount, $serviceTaxPercentage, $percent, $fixed);
 
-        return $fee;
+        assert ($fee < $amount);
+
+        return  array($fee, $serviceTax);
     }
 
-    protected function getFeesByPercentAndFixedRates($amount, $percent, $fixed)
+    protected function getFeesByPercentAndFixedRates($amount, $serviceTaxPercentage, $percent, $fixed)
     {
         $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
 
-        $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
+        $serviceTax = (int) ceil(($fee * $serviceTaxPercentage) / 100);
 
         $fee += $serviceTax;
 
-        return $fee;
+        return array($fee, $serviceTax);
     }
 
     protected function getFeesByPercentAndFixedRatesForAtom($amount, $percent, $fixed)
@@ -88,15 +133,26 @@ class Fee
 
     protected function getRelevantPricingRule($pricingPlanId, $payment)
     {
-        $pricingRepo = new Pricing\Repository;
-
         if ($payment->getMethod() === Payment\Method::CARD)
         {
             $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
         }
         else if ($payment->isNetbanking())
         {
-            $pricing = $pricingRepo->getPricingRulesForNetbanking($pricingPlanId);
+            $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
+
+            if (count($pricing) > 1)
+            {
+                throw new Exception\LogicException(
+                    'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
+                    [$pricing->toArray()]);
+            }
+
+            $rule = $pricing->first();
+        }
+        else if ($payment->isWallet())
+        {
+            $pricing = $this->repo->getPricingRulesForWallet($pricingPlanId);
 
             if (count($pricing) > 1)
             {
@@ -106,14 +162,14 @@ class Fee
 
             $rule = $pricing->first();
         }
-        else if ($payment->isWallet())
+        else if($payment->isEmi())
         {
-            $pricing = $pricingRepo->getPricingRulesForWallet($pricingPlanId);
+            $pricing = $this->repo->getPricingRulesForEmi($pricingPlanId);
 
             if (count($pricing) > 1)
             {
                 throw new Exception\LogicException(
-                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
+                    'Currently only 1 emi pricing rule allowed. Found: ' . count($pricing));
             }
 
             $rule = $pricing->first();
@@ -125,7 +181,8 @@ class Fee
 
         if ($rule === null)
         {
-            throw new Exception\LogicException('No appropriate pricing rule found', ['payment' => $payment->toArray()]);
+            throw new Exception\LogicException(
+                'No appropriate pricing rule found', ['payment' => $payment->toArray()]);
         }
 
         return $rule;
@@ -135,11 +192,12 @@ class Fee
     {
         $card = $payment->card;
 
-        $network = $card->getNetwork();
+        $network = Card\Network::getCode($card->getNetwork());
 
-        $pricingRepo = new Pricing\Repository;
+        $isInternational = $payment->isInternational();
 
-        $pricing = $pricingRepo->getPricingRulesForGivenCardNetwork($pricingPlanId, $network);
+        $pricing = $this->repo->
+            getPricingRulesForGivenCardNetwork($pricingPlanId, $network, $isInternational);
 
         $rule = null;
         $rules = $pricing->all();
@@ -152,7 +210,7 @@ class Fee
         {
             foreach ($pricing->all() as $item)
             {
-                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $card->getNetwork())
+                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
                 {
                     $rule = $item;
                     break;

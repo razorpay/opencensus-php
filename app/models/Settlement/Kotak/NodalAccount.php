@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Excel;
+
+use Mail;
+
 use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
@@ -217,7 +220,7 @@ class NodalAccount
 
         $data['file'] = $fullpath;
 
-        $this->mail->queue('emails.admin.settlement', $data, function($message) use ($data)
+        Mail::send('emails.admin.settlement', $data, function($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 

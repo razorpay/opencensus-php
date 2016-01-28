@@ -1,6 +1,6 @@
 <?php
 
-$factory('Models\Merchant\Entity', [
+$factory(Models\Merchant\Entity::class, [
     'id' => $faker->uniqueid,
     'name' => $faker->word,
     'email' => $faker->email,
@@ -16,10 +16,12 @@ $factory('Models\Merchant\Entity', [
     'settlement_schedule' => 3,
 ]);
 
-$factory('Models\Terminal\Entity', [
+$factory(Models\Terminal\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity,',
     'card' => 1,
+    'netbanking' => 0,
+    'shared' => 1,
     'gateway' => 'hdfc',
     'gateway_merchant_id' => $faker->word,
     'gateway_terminal_id' => $faker->word,
@@ -28,12 +30,13 @@ $factory('Models\Terminal\Entity', [
     'gateway_secure_secret' => null,
 ]);
 
-$factory('Models\Merchant\Balance', [
+$factory(Models\Merchant\Balance\Entity::class, [
     'id' => $faker->uniqueid,
     'balance' => 0,
 ]);
 
-$factory('Models\Merchant\BankAccount\Entity', [
+$factory(Models\Merchant\BankAccount\Entity::class, [
+    'id' => $faker->uniqueid,
     'merchant_id' => $faker->uniqueid,
     'ifsc_code' => 'RZPB0000000',
     'account_number' => 10010101011,
@@ -51,7 +54,7 @@ $factory('Models\Merchant\BankAccount\Entity', [
     'beneficiary_pin' => 100000,
 ]);
 
-$factory('Models\Card\Entity', [
+$factory(Models\Card\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 10000000000000,
     'name' => $faker->word,
@@ -65,13 +68,13 @@ $factory('Models\Card\Entity', [
     'length' => 16,
 ]);
 
-$factory('Models\Key\Entity', [
+$factory(Models\Key\Entity::class, [
     'id' => '1DP5mmOlF5G5ag',
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'secret' => 'eyJpdiI6InFjMFFDMkszYzRLeU5UZ2VnajhoMEE9PSIsInZhbHVlIjoiZzY3c0Zkd0VMQkE0cjU1T3hVQXZSSzBub1h4aHJkaThBRlwvZWJwMm5wdkE9IiwibWFjIjoiZmEyZWM5MzIyODBjMmU3N2RhMmQ2ZjA2ODA3OTk5ZjI0ZTY2ZTQ3ZGNiYzJjOTE4ODc5ZWNkYzY4MGQwYTZhZiJ9',
 ]);
 
-$factory('Models\Payment\Entity', [
+$factory(Models\Payment\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 10000000000000,
     'method' => 'card',
@@ -94,7 +97,7 @@ $factory('Models\Payment\Entity', [
     'updated_at' => $faker->timestamp,
 ]);
 
-$factory('Models\Payment\Refund\Entity', [
+$factory(Models\Payment\Refund\Entity::class, [
     'id' => $faker->uniqueid,
     'payment_id' => 'factory:Models\Payment\Entity',
     'merchant_id' => 'factory:Models\Merchant\Entity',
@@ -103,7 +106,7 @@ $factory('Models\Payment\Refund\Entity', [
     'transaction_id' => null,
 ]);
 
-$factory('Models\Pricing\Entity', [
+$factory(Models\Pricing\Entity::class, [
     'id' => $faker->uniqueid,
     'plan_id' => '1ycviEdCgurrFI',
     'plan_name' => 'testFixturePlan',
@@ -115,7 +118,7 @@ $factory('Models\Pricing\Entity', [
     'fixed_rate' => 10000,
 ]);
 
-$factory('Models\Transaction\Entity', [
+$factory(Models\Transaction\Entity::class, [
     'id' => $faker->uniqueid,
     'entity_id' => $faker->uniqueid,
     'type' => 'payment',
@@ -128,10 +131,11 @@ $factory('Models\Transaction\Entity', [
     'debit' => 0,
     'balance' => $faker->randomNumber,
     'gateway_fee' => null,
+    'gratis' => false,
     'channel' => 'kotak'
 ]);
 
-$factory('Models\Settlement\Entity', [
+$factory(Models\Settlement\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => $faker->randomNumber,
@@ -143,7 +147,7 @@ $factory('Models\Settlement\Entity', [
     'return_utr' => null,
 ]);
 
-$factory('Models\Adjustment\Entity', [
+$factory(Models\Adjustment\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => $faker->randomNumber,
@@ -180,7 +184,7 @@ $factory('Gateway\Atom\Entity', [
     'bank_transaction_id' => $faker->randomNumber(6),
 ]);
 
-$factory('Models\Card\Detail', [
+$factory(Models\Card\IIN\Entity::class, [
     'iin' => 411111,
     'category' => null,
     'network' => 'visa',
@@ -190,9 +194,27 @@ $factory('Models\Card\Detail', [
     'trivia' => $faker->sentence,
 ]);
 
-$factory('Models\Merchant\Methods\Entity', [
+$factory(Models\Merchant\Methods\Entity::class, [
     'merchant_id' => 10000000000000,
     'card'  => '1',
     'banks' => '[]',
     'paytm' => '0',
+]);
+
+$factory(Models\Merchant\Webhook\Entity::class, [
+    'merchant_id' => 10000000000000,
+    'url' => $faker->url,
+    'events' => [
+        'payment.authorized' => true,
+    ],
+    'active' => true,
+]);
+
+$factory(Models\Emi\Entity::class, [
+    'id' => 10101010101010,
+    'duration' => 9,
+    'rate' => 1200,
+    'bank' => 'HDFC',
+    'methods' => 'card',
+    'min_amount' => 500000,
 ]);

@@ -8,10 +8,11 @@ class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
-        'gateway_transaction_id',
         'payment_id',
         'refund_id',
         'action',
+        'received',
+        'gateway_transaction_id',
         'amount',
         'enroll_result',
         'status',
@@ -26,6 +27,25 @@ class Entity extends Base\Entity
         'created_at',
         'updated_at');
 
+    protected $fillable = array(
+        'payment_id',
+        'refund_id',
+        'gateway_transaction_id',
+        'action',
+        'received',
+        'amount',
+        'enroll_result',
+        'status',
+        'result',
+        'eci',
+        'auth',
+        'ref',
+        'avr',
+        'postdate',
+        'error_code',
+        'error_text',
+    );
+
     protected $table = 'hdfc';
 
     protected $primaryKey = 'id';
@@ -39,5 +59,52 @@ class Entity extends Base\Entity
     public function payment()
     {
         return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute('status');
+    }
+
+    public function getResult()
+    {
+        return $this->getAttribute('result');
+    }
+
+    public function getEnrollResult()
+    {
+        return $this->getAttribute('enroll_result');
+    }
+
+    public function getReceived()
+    {
+        return $this->getAttribute('received');
+    }
+
+    public function getReceivedAttribute()
+    {
+        $received = $this->attributes['received'];
+
+        if ($received !== null)
+        {
+            $received = (bool) $received;
+        }
+
+        return $received;
+    }
+
+    public function setReceived($value)
+    {
+        $this->setAttribute('received', $value);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute('status', $status);
+    }
+
+    public function setGatewayTransactionId($txnId)
+    {
+        $this->setAttribute('gateway_transaction_id', $txnId);
     }
 }

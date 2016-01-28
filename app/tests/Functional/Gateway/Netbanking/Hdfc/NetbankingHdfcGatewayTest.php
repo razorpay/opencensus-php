@@ -47,6 +47,19 @@ class NetbankingHdfcGatewayTest extends TestCase
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testPaymentOnDirectHdfcTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'HDFC';
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($terminal['id'], $payment['terminal_id']);
+    }
+
     public function testPaymentOnSharedTerminal()
     {
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
@@ -86,9 +99,8 @@ class NetbankingHdfcGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $id = substr($refund['id'], 5);
             $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
-            $this->fixtures->edit('refund', $id, ['created_at' => $createdAt]);
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();

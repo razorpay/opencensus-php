@@ -31,4 +31,13 @@ class Repository extends Base\Repository
 
         return $repo::notExpired()->find($keyId);
     }
+
+    public function findByMerchantIdAndKeyId($merchantId, $keyId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::ID, '=', $keyId)
+                    ->first();
+    }
 }

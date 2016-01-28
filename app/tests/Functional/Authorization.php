@@ -32,8 +32,8 @@ class Authorization
     public function basicAuth($user = null, $pwd = null)
     {
         $this->auth = array(
-               'PHP_AUTH_USER' => $user,
-               'PHP_AUTH_PW' => $pwd);
+            'PHP_AUTH_USER' => $user,
+            'PHP_AUTH_PW' => $pwd);
     }
 
     public function appAuth($user = 'rzp_test', $pwd = '')
@@ -66,14 +66,33 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function proxyAuthTest()
+    {
+        $this->proxyAuth();
+    }
+
+    public function proxyAuthLive()
+    {
+        $this->proxyAuth('rzp_live_10000000000000');
+    }
+
     public function publicAuth($key = null)
     {
         $this->type = 'public';
 
         if ($key === null)
         {
-            $this->key = $this->defaultKey;
-            $key = $this->defaultKey;
+            // $this->key = $this->defaultKey;
+            // $key = $this->defaultKey;
+            if ($this->key === null)
+            {
+                $this->key = $this->defaultKey;
+                $key = $this->defaultKey;
+            }
+            else
+            {
+                $key = $this->key;
+            }
         }
         else
         {

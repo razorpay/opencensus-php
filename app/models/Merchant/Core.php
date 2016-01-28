@@ -28,7 +28,9 @@ class Core extends Base\Core
 
         $this->createBalance($merchant, Mode::TEST);
 
-        (new Methods\Core)->setAllPaymentBanks($merchant);
+        (new Merchant\BankAccount\Core)->createTestBankAccount($merchant);
+
+        (new Methods\Core)->setDefaultMethods($merchant);
 
         return $merchant;
     }
@@ -62,12 +64,26 @@ class Core extends Base\Core
 
     public function createBalance($merchant, $mode)
     {
-        $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
+        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
 
         $merchantBalance->setConnection($mode);
 
-        $this->repo->updateBalance($merchantBalance);
+        (new Merchant\Balance\Repository)->createBalance($merchantBalance);
 
         return $merchantBalance;
+    }
+
+    public function addOrUpdateMerchantFeatures($merchant, $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            array('old_features' => $merchant->getFeatures(),
+                  'new_features' => $input[Entity::FEATURES]));
+
+        $merchant->edit($input);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant;
     }
 }

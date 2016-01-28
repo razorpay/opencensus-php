@@ -107,6 +107,26 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentWithBlankMethod()
+    {
+        $payment = [
+            'amount'            =>  '50000',
+            'currency'          => 'INR',
+            'description'       => 'random description',
+            'method'            => '',
+            'bank'              => '',
+            'email'             => 'adsf@gmail.com',
+            'contact'           => '8383893939',
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testDescriptionAsArray()
     {
         $testData = & $this->testData[__FUNCTION__];

@@ -194,7 +194,7 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence())
+        if ($this->verifyKeyExistence() === true)
         {
             $response = $this->verifySecret();
 
@@ -284,6 +284,14 @@ class BasicAuth
         if (($this->isKeyBlank()) and
             ($this->verifyInternalApp()))
         {
+            // It's an internal auth. We check whether dashboard
+            // merchant header is set. In that case, it's coming
+            // from merchant dashboard and not admin dashboard
+            // which can potentially cause a security issue and
+            // hence needs to be actively checked against.
+
+            $this->checkForDashboardMerchantHeader();
+
             return;
         }
 
@@ -357,9 +365,37 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
+    public function feature()
+    {
+        return $this->verifyFeatureAccess();
+    }
+
 // --------------------- Basic Auths Ends --------------------------------------
 
 // --------------------- Verifiers ---------------------------------------------
+
+    /**
+     * Checks if the accessed route is a beta feature route, if yes
+     * checks if the merchant has access to the feature
+     */
+    public function verifyFeatureAccess()
+    {
+        $route = $this->getCurrentRouteName();
+
+        if (array_key_exists($route, Route::$routeNameToFeatureMap) === true)
+        {
+            $accessedFeature = Route::$routeNameToFeatureMap[$route];
+            $allowedFeatures = $this->merchant->getFeatures();
+
+            if (!empty($allowedFeatures) and
+                in_array($accessedFeature, $allowedFeatures))
+            {
+                return;
+            }
+            return ApiResponse::routeNotFound();
+        }
+    }
+
 
     public function verifyHttps()
     {
@@ -429,15 +465,7 @@ class BasicAuth
         //
         $key = $this->fetchKey($keyId);
 
-        $exists = ($key !== null);
-
-        if ($exists === false)
-        {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_KEY);
-        }
-
-        return $exists;
+        return ($key !== null);
     }
 
     /**
@@ -556,6 +584,17 @@ class BasicAuth
         $clientIpRegex = '/^10\.0\.[0-9]{1,3}\.[0-9]{1,3}$/';
 
         return preg_match($clientIpRegex, $clientIp);
+    }
+
+    protected function checkForDashboardMerchantHeader()
+    {
+        $dash = $this->request->headers->get('X-Dashboard-Merchant');
+
+        if (empty($dash) === false)
+        {
+            $this->trace->warning(
+                TraceCode::DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED);
+        }
     }
 
     protected function verifyInternalAppSecret()
@@ -685,7 +724,7 @@ class BasicAuth
         if (($key === null) or
             ($key === ''))
         {
-           return ApiResponse::provideApiKey();
+            return ApiResponse::provideApiKey();
         }
 
         $this->viaQueryParams = true;
@@ -740,6 +779,9 @@ class BasicAuth
 
     protected function invalidApiKey()
     {
+        $this->trace->info(
+            TraceCode::BAD_REQUEST_INVALID_API_KEY);
+
        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
@@ -751,7 +793,13 @@ class BasicAuth
 
     public function sign($str)
     {
+        if ($this->key === null)
+        {
+            throw new Exception\LogicException('Key cannot be null here');
+        }
+
         $secret = Crypt::decrypt($this->key->getSecret());
+
         return hash_hmac('sha1', $str, $secret);
     }
 }
