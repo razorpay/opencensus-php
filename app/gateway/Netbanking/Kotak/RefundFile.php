@@ -68,7 +68,9 @@ class RefundFile
 
     protected function getTextData($data, $prependLine = '')
     {
-        $txt = $this->generateText($data, '|');
+        $ignoreLastNewline = true;
+
+        $txt = $this->generateText($data, '|', $ignoreLastNewline);
 
         $txt = $prependLine.$txt;
 
