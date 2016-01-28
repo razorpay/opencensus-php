@@ -40,6 +40,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const AMEX  = 'AMEX';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
+    const EMI   = 'EMI';
     const JCB   = 'JCB';
     const MAES  = 'MAES';
     const MC    = 'MC';
@@ -54,6 +55,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
         'Diners Club'       =>  self::DICL,
+        'EMI'               =>  self::EMI,
         'Discover'          =>  self::DISC,
         'JCB'               =>  self::JCB,
         'Maestro'           =>  self::MAES,
