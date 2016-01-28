@@ -94,40 +94,7 @@ return [
                 'file' => '',
             ],
             'content' => [
-                'mapping' => [
-                    'iin' => [
-                        'level' => 'direct',
-                        'columnName' => 'BIN',
-                    ],
-                    'category' => [
-                        'level' => 'direct',
-                        'columnName' => 'CARD_BRAND'
-                    ],
-                    'network' => [
-                        'level' => 'constant',
-                        'value' => 'MasterCard',
-                    ],
-                    'type' => [
-                        'level' => 'lookup',
-                        'columnName' => 'TYPE',
-                        'map' => [
-                            'FC' => 'credit',
-                            'DC' => 'credit',
-                            'FD' => 'debit',
-                            'DD' => 'debit'
-                        ],
-                    ],
-                    'country' => [
-                        'level' => 'lookup',
-                        'columnName' => 'TYPE',
-                        'map' => [
-                            'DC' => 'IN',
-                            'DD' => 'IN',
-                            'FD' => NULL,
-                            'FC' => NULL
-                        ],
-                    ],
-                ],
+                'network' => 'MasterCard',
             ],
         ],
         'response' => [
@@ -136,22 +103,20 @@ return [
                     '513456' => [
                         [
                             'iin' =>'513456',
-                            'category' => 'PREMIUM',
-                            'network' => 'MasterCard',
-                            'type' => 'debit',
-                            'country' => 'IN',
-                            'issuer' => null,
-                            'trivia'    => null,
-                        ],
-                        [
-                            'iin' =>'513456',
                             'category' => 'CLASSIC',
                             'network' => 'MasterCard',
                             'type' => 'debit',
                             'country' => 'IN',
-                            'issuer' => null,
-                            'trivia'    => null,
                         ],
+                    ],
+                    '511666' => [
+                        [
+                            'iin' => '511666',
+                            'category' => 'PREMIUM',
+                            'network' => 'MasterCard',
+                            'type' => 'debit',
+                            'country' => 'IN',
+                        ]
                     ]
                 ],
                 'db_conflicts'=> [
@@ -162,8 +127,6 @@ return [
                             'network'   => 'MasterCard',
                             'type'      => 'credit',
                             'country'   => 'IN',
-                            'issuer'    => 'SBI',
-                            'trivia'    => 'random trivia'
                         ],
                         'file_entry' => [
                             'iin'       => '549752',
@@ -171,25 +134,22 @@ return [
                             'network'   => 'MasterCard',
                             'type'      => 'credit',
                             'country'   => 'IN',
-                            'issuer'    => null,
-                            'trivia'    => null,
                         ],
                     ],
                 ],
                 'network_errors' => [
                     '497522' => [
-                        'iin'       => '497522',
-                        'category'  => 'CLASSIC',
-                        'network'   => 'MasterCard',
-                        'type'      => 'credit',
-                        'country'   => 'IN',
-                        'issuer'    => null,
-                        'trivia'    => null,
+                        [
+                            'iin'       => '497522',
+                            'category'  => 'CLASSIC',
+                            'network'   => 'Visa',
+                            'type'      => 'credit',
+                            'country'   => 'IN',
+                        ],
                     ]
                 ],
-                'success' => 4,
+                'success' => 5,
             ],
         ],
     ],
-
 ];

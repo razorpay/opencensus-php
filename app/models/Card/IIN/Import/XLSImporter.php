@@ -3,7 +3,7 @@
 namespace Models\Card\IIN\Import;
 
 use Models\Card\IIN;
-
+use EE\Exception;
 /**
  * This class is called by the service function with the input data.
  * The handles the rest of processing.
@@ -19,16 +19,18 @@ class XLSImporter
      */
     public function import($input)
     {
+        if(!isset($input['network']))
+        {
+            throw new Exception\BadRequestException("please pass network name as input for given file");
+        }
         // Extracts and returns the columns and data
         $ret = (new XLSFileHandler)->getData($input);
 
-        $formatedData = (new Formatter)->formatData(
-                                                    $input,
-                                                    $ret['columns'],
-                                                    $ret['data']);
+        $formatedData = (new Formatter)->formatData($ret['columns'], $ret['data']);
 
         $dataCleaner = new DataCleaner();
-        $cleaned = $dataCleaner->parse($formatedData);
+        $cleaned = $dataCleaner->parse($input['network'], $formatedData);
+        
         $this->enterIntoDB($cleaned);
 
         $duplicates = $dataCleaner->getDuplicateEntries();

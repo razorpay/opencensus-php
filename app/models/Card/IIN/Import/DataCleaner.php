@@ -2,7 +2,6 @@
 
 namespace Models\Card\IIN\Import;
 
-use Models\Card;
 use Models\Card\IIN;
 use EE\Exception;
 
@@ -22,14 +21,14 @@ class DataCleaner
 
     protected $repo = null;
 
-    protected $networkRegexes = array(
-        'MasterCard'    => '/^5[1-5][0-9]{4,}$/',
-        'Visa'  => '/^4[0-9]{5,}$/',
+    public static $networkRegexes = array(
+        'MasterCard'        => '/^5[1-5][0-9]{4,}$/',
+        'Visa'              => '/^4[0-9]{5,}$/',
         'American Express'  => '/^3[47][0-9]{4,}$/',
-        'JCB'   => '/^(?:2131|1800|35[0-9]{3})/',
-        'Diners Club'  => '/^3(?:0[0-5]|[68][0-9])/',
-        'Discover'  => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
-        'Union Pay'   => '/^62[0-9]{4,}$/',
+        'JCB'               => '/^(?:2131|1800|35[0-9]{3})/',
+        'Diners Club'       => '/^3(?:0[0-5]|[68][0-9])/',
+        'Discover'          => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
+        'Union Pay'         => '/^62[0-9]{4,}$/',
     );
 
     public function __construct()
@@ -74,15 +73,15 @@ class DataCleaner
      * the duplicate entries and the entries that are present in the database.
      *
      * Formatted data: Each input row should be a associative array with keys
-     * from Card\Detail.
+     * from IIN.
      *
      * @param array $formattedData   array of formatted datas.
      *
      * @return array   cleaned data
      */
-    public function parse($formattedData)
+    public function parse($network, $data)
     {
-        $uniqueRecords = $this->removeDuplicate($formattedData);
+        $uniqueRecords = $this->removeDuplicate($network, $data);
         $cleaned = $this->removeDBConflicts($uniqueRecords);
         return $cleaned;
     }
@@ -126,67 +125,44 @@ class DataCleaner
      *
      * @return array  associative array of formatted data with iin as thier key.
      */
-    protected function removeDuplicate($formattedData)
+    protected function removeDuplicate($inputNetwork, $data)
     {
         $indexed = array();
         // Indexeing the data based on IIN number
-        foreach ($formattedData as $d)
+        foreach ($data as $input)
         {
-            $indexed[$d[Card\Detail::IIN]][] = $d;
-        }
+            $iin = $input[IIN\Entity::IIN];
+            $network = $this->getNetwork($iin);
+            $input[IIN\Entity::NETWORK] = $network;
 
-        $data = array();
-        foreach ($indexed as $rows)
-        {
-            $len = count($rows);
-            $iin = $rows[0][Card\Detail::IIN];
-            if ($this->checkDuplicates($rows))
+            if (strcmp($inputNetwork, $network) !== 0)
             {
-
-                $network = $rows[0][Card\Detail::NETWORK];
-                if ($this->checkNetworkValidity($iin, $network) === true)
-                {
-                    array_push($this->uniqueIins, $iin);
-                    $data[$iin] = $rows[0];
-                }
-                else
-                {
-                    $this->networkCheckFails[$iin] = $rows[0];
-                }
+                $this->networkCheckFails[$iin][] = $input;
             }
-            else
+            else if (isset($indexed[$iin]))
             {
-                $this->duplicate[$iin] = $rows;
+                $this->duplicate[$iin][] = $input;
+            }
+            else 
+            {
+                array_push($this->uniqueIins, $iin);
+                $indexed[$iin] = $input;
             }
         }
-        return $data;
+
+        return $indexed;
     }
 
-    protected function checkDuplicates($rows)
+    protected function getNetwork($iin)
     {
-        $row1 = $rows[0];
-        $i = 0;
-        $len = count($rows);
-        for ($i = 1; $i < $len; $i++)
+        foreach (self::$networkRegexes as $network => $regex) 
         {
-            if (count(array_diff_assoc($row1, $rows[$i])) !== 0)
+            if(preg_match($regex, $iin) === 1)
             {
-                return false;
+                return $network;
             }
         }
-        return true;
-    }
 
-    protected function checkNetworkValidity($iin, $network)
-    {
-        //sd($network);
-        if (!isset($this->networkRegexes[$network]))
-        {
-             new Exception\BadRequestException("Unknown Network");
-        }
-
-        $regex = $this->networkRegexes[$network];
-        return (preg_match($regex, $iin) === 1);
-
+        return null;
     }
 }
