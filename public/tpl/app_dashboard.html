@@ -119,30 +119,32 @@
           <h4 class="font-thin m-t-none m-b">Transaction Types</h4>
           <div class="">
             <div class="text-center-folded">
-              <span class="pull-right">{{ paymentaggregations.VISA }}%</span>
-              <span>Visa</span>
+              <span class="pull-right">{{ paymentaggregations.CARD }}%</span>
+              <span>Card</span>
             </div>
-            <progressbar value="paymentaggregations.VISA" class="progress-xs m-t-sm bg-white" animate="true" type="primary"></progressbar>
-            <div class="text-center-folded">
-              <span class="pull-right">{{paymentaggregations.MC}}%</span>
-              <span>MasterCard</span>
-            </div>
-            <progressbar value="paymentaggregations.MC" class="progress-xs m-t-sm bg-white" animate="true" type="info"></progressbar>
-            <div class="text-center-folded">
-              <span class="pull-right">{{paymentaggregations.MAES}}%</span>
-              <span>Maestro</span>
-            </div>
-            <progressbar value="paymentaggregations.MAES" class="progress-xs m-t-sm bg-white" animate="true"></progressbar>
+            <progressbar value="paymentaggregations.CARD" class="progress-xs m-t-sm bg-white" animate="true" type="primary"></progressbar>
+
             <div class="text-center-folded">
               <span class="pull-right">{{paymentaggregations.NETBANKING}}%</span>
               <span>Net Banking</span>
             </div>
             <progressbar value="paymentaggregations.NETBANKING" class="progress-xs m-t-sm bg-white" animate="true" type="success"></progressbar>
-            <div class="text-center-folded">
-              <span class="pull-right">{{paymentaggregations.OTHER}}%</span>
-              <span>Other</span>
+
+            <div class="text-center-folded" ng-show="paymentaggregations.WALLET > 0">
+              <span class="pull-right">{{paymentaggregations.WALLET}}%</span>
+              <span>Wallet</span>
             </div>
-            <progressbar value="paymentaggregations.OTHER" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.WALLET" ng-show="paymentaggregations.WALLET > 0"
+              class="progress-xs m-t-sm bg-white" animate="true" type="info">
+            </progressbar>
+
+            <div class="text-center-folded" ng-show="paymentaggregations.EMI > 0">
+              <span class="pull-right">{{paymentaggregations.EMI}}%</span>
+              <span>EMI</span>
+            </div>
+            <progressbar value="paymentaggregations.EMI" ng-show="paymentaggregations.EMI > 0"
+              class="progress-xs m-t-sm bg-white" animate="true" type="warning">
+            </progressbar>
           </div>
         </div>
       </div>

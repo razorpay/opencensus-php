@@ -52,17 +52,40 @@ app.controller('DashboardAggregationsCtrl', [
       NETBANKING: 0,
       OTHER: 0
     };
+
+    function parsePaymentAggregations(data) {
+      var headers = [
+        'CARD',
+        'EMI',
+        'NETBANKING',
+        'WALLET'
+      ], total = 0, result = {};
+
+      // Convert to integers
+      for (var i in headers) {
+        var method = headers[i];
+        data[method] = parseInt(data[method]);
+      }
+
+      // Calculate sums
+      for (var i in headers) {
+        var method = headers[i];
+        total += data[method];
+      }
+
+      // Calculate percentages
+      for (var i in headers) {
+        var method = headers[i];
+        result[method] = Math.ceil((data[method] * 100)/total);
+      }
+
+      // Return response
+      return result;
+    }
     var request = $http.get('/' + $scope.mode + '/analytics/payment/aggregations');
     request.success(function (result) {
       if (result.data) {
-        var total = parseInt(result.data.CARD) + parseInt(result.data.NETBANKING);
-        if (total) {
-          $scope.paymentaggregations.VISA = parseInt(parseInt(result.data.VISA) * 100 / total);
-          $scope.paymentaggregations.MC = parseInt(parseInt(result.data.MC) * 100 / total);
-          $scope.paymentaggregations.MAES = parseInt(parseInt(result.data.MAES) * 100 / total);
-          $scope.paymentaggregations.NETBANKING = parseInt(parseInt(result.data.NETBANKING) * 100 / total);
-          $scope.paymentaggregations.OTHER = 100 - $scope.paymentaggregations.VISA - $scope.paymentaggregations.MC - $scope.paymentaggregations.MAES - $scope.paymentaggregations.NETBANKING;
-        }
+        $scope.paymentaggregations = parsePaymentAggregations(result.data);
       }
     });
   }
