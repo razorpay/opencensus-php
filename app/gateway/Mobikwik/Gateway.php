@@ -53,6 +53,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
@@ -196,10 +197,10 @@ class Gateway extends Base\Gateway
         $this->action = 'check_user';
 
         $content = array(
-            'action'        => 'existingusercheck',
-            'cell'          => $input['contact'],
-            'merchantname'  => 'razorpay',
-            'mid'           => $this->getMobikwikMerchantId($input['terminal']),    
+            'action'        => Action::CHECK_USER,
+            'cell'          => $input['payment']['contact'],
+            'merchantname'  => 'Razorpay',
+            'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => '500',
         );
 
@@ -212,18 +213,23 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
 
-        if ($content['statuscode'] !== '0')
+        $code = (int)$input['gateway']['statuscode'];
+
+        if ($content['statuscode'] !== Status::SUCCESS)
         {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+            // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST,
-                $content['statuscode'],
-                $content['statusdescription']);
+                $errorCode,
+                $input['gateway']['statuscode'],
+                $input['gateway']['statusmessage']);
         }
     }
 
     public function otpGenerate($input)
     {
-        $this->action = 'otp_generate';
+        $this->action = Action::OTP_GENERATE;
 
         $content = array(
             'amount'    => $input['payment']['amount'],
@@ -306,13 +312,13 @@ class Gateway extends Base\Gateway
                                         $content['txid'],
                                         $content['amount'],
                                         $content['email']);
-        
+
         if ($input['refund']['amount'] < $input['payment']['amount'])
         {
             $content['ispartial'] = 'yes';
         }
 
-        return $content;        
+        return $content;
     }
 
     protected function getVerifyRequestArray($input)
