@@ -50,7 +50,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const CARD  = 'CARD';
     const NETBANKING = 'NETBANKING';
     const WALLET  = 'WALLET';
-    const EMI   = 'EMI';
     const UNKNOWN = 'UNKNOWN';
 
     protected static $api_mappings = array(
