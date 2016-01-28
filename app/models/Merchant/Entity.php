@@ -50,6 +50,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const CARD  = 'CARD';
     const NETBANKING = 'NETBANKING';
     const WALLET  = 'WALLET';
+    const EMI   = 'EMI';
     const UNKNOWN = 'UNKNOWN';
 
     protected static $api_mappings = array(
@@ -67,6 +68,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'card'              =>  self::CARD,
         'netbanking'        =>  self::NETBANKING,
         'wallet'            =>  self::WALLET,
+        'emi'               =>  self::EMI,
         'Unknown'           =>  self::UNKNOWN
     );
 
