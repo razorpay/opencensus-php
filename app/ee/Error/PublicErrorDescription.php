@@ -66,6 +66,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_MAX_WRONG_ATTEMPT_LIMIT_CROSSED            = 'Maximum wrong attempt limit crossed for wallet';
     const BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER      = 'Maximum wallet payment amount limit has been crossed for the customer';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ACTIVATED                              = 'Wallet has not been activated for the customer';
+    const BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST                        = 'Wallet user does not exist';
+    const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_MOBILE                     = 'Account seems to be registered with invalid mobile';
+    const BAD_REQUEST_PAYMENT_WALLET_NO_USER_WITH_CELL                          = 'No Wallet Account is associated with specified contact number';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';
