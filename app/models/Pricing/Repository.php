@@ -93,7 +93,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPricingRulesForEMI($id)
+    public function getPricingRulesForEmi($id)
     {
         $repo = $this->repo;
 
