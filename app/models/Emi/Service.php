@@ -35,4 +35,13 @@ class Service extends Base\Service
 
         return $emiPlan->toArrayPublic();
     }
+
+    public function deleteEmiPlan($id)
+    {
+        $emiPlan = $this->repo->findOrFailPublic($id);
+
+        $this->repo->deleteOrFail($emiPlan);
+
+        return $emiPlan->toArrayPublic();
+    }
 }

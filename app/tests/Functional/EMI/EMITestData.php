@@ -57,4 +57,22 @@ return [
             ],
         ],
     ],
+
+    'testDeleteEmiPlan' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/emi/{id}',
+            'method' => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'bank' => 'HDFC',
+                'rate' => 1045,
+                'duration' => 3,
+                'methods' => 'card',
+                'min_amount' => 300000
+            ],
+        ],
+    ],
 ];
