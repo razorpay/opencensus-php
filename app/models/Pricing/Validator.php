@@ -4,6 +4,7 @@ namespace Models\Pricing;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use EE\Error\PublicErrorDescription;
 use Models\Base;
 use Models\Payment;
 
@@ -11,6 +12,7 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|',
+        Entity::PLAN_NAME           => 'sometimes|',
         Entity::PAYMENT_METHOD      => 'required|alpha|in:card,netbanking,wallet,emi',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
@@ -214,8 +216,8 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
 
-            if (($newRule->isAmountRangeActive()) and
-                ($rule->isAmountRangeActive()))
+            if ($newRule[Entity::AMOUNT_RANGE_ACTIVE] and
+                $rule[Entity::AMOUNT_RANGE_ACTIVE])
             {
                 $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
             }
@@ -225,7 +227,7 @@ class Validator extends Base\Validator
     protected function checkPricingRuleForAmountRangeOverlap($rule, $newRule)
     {
         list($newRuleMin, $newRuleMax) = $newRule->getAmountRange();
-        list($oldRuleMin, $oldRuleMax) = $rule->getAmountRange();
+        list($oldRuleMin, $oldRuleMax) = (new Entity($rule))->getAmountRange();
 
         //
         // We need to effectively check that the new pricing range does not overlap
@@ -242,6 +244,8 @@ class Validator extends Base\Validator
         // But min of one rule cannot be equal to min of another
         // and same for max. This needs to be ensure within the checks we have.
         //
+
+        $flag = false;
 
         if (($this->between($newRuleMin, $oldRuleMin, $oldRuleMax)) or
             ($this->between($newRuleMax, $oldRuleMin, $oldRuleMax)) or
@@ -260,7 +264,7 @@ class Validator extends Base\Validator
         if ($flag)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Pricing rule amount range collides with another existing rule\'s amount range. ');
+                PublicErrorDescription::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
         }
     }
 

@@ -294,8 +294,10 @@ class Fee
         {
             foreach ($rulesMap['typeAmountRules'] as $ruleItem)
             {
-                if (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount) and
-                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
+                if ((($amount === Payment\Entity::MIN_PAYMENT_AMOUNT) and
+                    $ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) === $amount) or
+                    (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount) and
+                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount)))
                 {
                     $rule = $ruleItem;
                     break;
@@ -310,8 +312,10 @@ class Fee
         {
             foreach ($rulesMap['nullAmountRules'] as $ruleItem)
             {
-                if (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) <= $amount) and
-                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount))
+                if ((($amount === Payment\Entity::MIN_PAYMENT_AMOUNT) and
+                    $ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) === $amount) or
+                    (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount) and
+                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount)))
                 {
                     $rule = $ruleItem;
                     break;
