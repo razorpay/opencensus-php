@@ -15,3 +15,4 @@ class Repository extends Base\Repository
         Entity::BANK_PAYMENT_ID     => 'sometimes|string|max:20',
         Entity::INT_PAYMENT_ID		=> 'sometimes|',
     );
+}
