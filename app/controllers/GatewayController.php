@@ -19,7 +19,7 @@ class GatewayController extends BaseController
 
         $app = \App::getFacadeRoot();
         $app['slack']->send($input, 'transactions', '#tech_logs');
-    }key 
+    } 
 
     public function callbackKotak()
     {

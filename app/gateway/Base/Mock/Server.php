@@ -197,7 +197,7 @@ class Server
             <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
             <html lang="en">
                 <body>
-                <form name="form1" action="'.$request['url'].'" method="post">';
+                <form name="form1" action="'.$request['url'].'" method="'.$request['method'].'">';
 
         foreach ($request['content'] as $key => $value)
         {

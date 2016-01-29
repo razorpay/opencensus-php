@@ -39,10 +39,12 @@ class Server extends Base\Mock\Server
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
+        $callbackUrl = 'http://localhost/v1/gateway/netbanking_kotak/callback';
+
         $request = array(
             'url' => $callbackUrl,
             'content' => ['msg' => $msg],
-            'method' => 'post',
+            'method' => 'get',
         );
 
         return $this->makePostResponse($request);

@@ -825,10 +825,14 @@ trait PaymentTrait
     {
         $gateway = $this->decryptGatewayText($gateway);
 
-        if (strpos($gateway, 'netbanking') !== false)
-            $gateway = 'netbanking';
+        $func = $gateway;
 
-        $func = 'runPaymentCallbackFlow'.studly_case($gateway);
+        if (strpos($gateway, 'netbanking') !== false)
+            $func = 'netbanking';
+
+        $func = studly_case($func);
+
+        $func = 'runPaymentCallbackFlow'.$func;
 
         return $this->$func($response, $callback, $gateway);
     }
