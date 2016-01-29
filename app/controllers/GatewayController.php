@@ -26,7 +26,11 @@ class GatewayController extends BaseController
         $inputMsg = Input::get('msg');
         $input = explode('|', $inputMsg);
 
+        $mode = 'test';
+
         $app = \App::getFacadeRoot();
+        $app['config']->set('database.default', $mode);
+
         $trace = $app['trace'];
 
         // check mode before search
@@ -38,10 +42,8 @@ class GatewayController extends BaseController
                 'input_arr' => $input
             ]);
 
-        $mode = 'test';
 
         $repo = new \Gateway\Netbanking\Base\Repository;
-        $repo->connection($mode);
 
         $nb = $repo->findByTraceIdAndAction($input[3], \Gateway\Base\Action::AUTHORIZE);
 
@@ -54,7 +56,7 @@ class GatewayController extends BaseController
         $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
 
-        $payment = (new \Models\Payment\Repository)->connection($mode)->findOrFailPublic($paymentId);
+        $payment = (new \Models\Payment\Repository)->findOrFailPublic($paymentId);
         $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');
