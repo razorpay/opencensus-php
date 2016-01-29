@@ -1596,5 +1596,13 @@ class Service extends Base\Service
 
         return [null, 'Merchant Confirmed'];
     }
+
+    public function editIIN($iin, $input)
+    {
+        // Auth as admin, live mode
+        $this->setApiCredentials(null);
+
+        $this->api->iin->edit($iin, $input);
+    }
 }
 

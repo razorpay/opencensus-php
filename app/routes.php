@@ -194,6 +194,10 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
 
+        Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
+
+        Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
+
         Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
 
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
