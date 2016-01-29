@@ -1602,7 +1602,8 @@ class Service extends Base\Service
         // Auth as admin, live mode
         $this->setApiCredentials(null);
 
-        $this->api->iin->edit($iin, $input);
+        $this->api->IIN->edit($iin, $input);
+        return [null, 'IIN Edit successful'];
     }
 }
 

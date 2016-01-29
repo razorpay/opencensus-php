@@ -606,10 +606,11 @@ class AdminController extends BaseController
      * Edit an existing IIN
      * @param  int $iin 6 digit IIN
      */
-    public function editIIN($iin)
+    public function putEditIIN($iin)
     {
+        $input = Input::all();
         list($error, $data) = $response = (new Admin\Service)
-            ->editIIN($iin);
+            ->editIIN($iin, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }

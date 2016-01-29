@@ -106,7 +106,7 @@ app.controller('EntityDetailCtrl', [
             alert(data.errors);
           }
         }).error(function () {
-          alert('There was an error while deleting the terminal');
+          alert('There was an error while editing the terminal');
         });
       }
     };
@@ -125,26 +125,36 @@ app.controller('EntityDetailCtrl', [
           alert('There was an error while deleting the IIN');
         });
       }
-      /*,edit: function (id, data) {
-        delete data.id;
+      ,edit: function (iin) {
+        var iinId = iin.iin;
+
+        iin = {
+          category: iin.category,
+          country: iin.country,
+          emi: iin.emi,
+          issuer_name: iin.issuer_name
+          // The following are not editable
+          //network: iin.network,
+          //type: iin.type
+        };
         // Lets remove all the empty variables
-        for (var i in data) {
-          if (data[i] === '' || data[i] === null) {
-            delete data[i];
+        for (var i in iin) {
+          if (iin[i] === '' || iin[i] === null) {
+            delete iin[i];
           }
         }
-        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id, data);
+        var request = $http.put('/admin/iin/' + iinId, iin);
         request.success(function (data) {
           if (data.success) {
-            alert('Terminal edit successfully');
+            alert('IIN edit successfully');
             window.location.reload();
           } else {
             alert(data.errors);
           }
         }).error(function () {
-          alert('There was an error while deleting the terminal');
+          alert('There was an error while editing the terminal');
         });
-      }*/
+      }
     };
 
 
@@ -179,7 +189,7 @@ app.controller('EntityDetailCtrl', [
           }
         });
         modalInstance.result.then(function (input) {
-          $scope.iin.edit(input.id, input);
+          $scope.iin.edit(input);
         }, function () {
         });
       }
@@ -265,6 +275,21 @@ app.controller('EntityDetailCtrl', [
     console.debug($scope.terminal);
     $scope.ok = function (terminal) {
       $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editIinModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+    // This is the current IIN
+    $scope.iin = current;
+    $scope.ok = function (iin) {
+      $modalInstance.close(iin);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
