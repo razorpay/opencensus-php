@@ -37,6 +37,8 @@ class TerminalPicker
 
     protected $network;
 
+    protected $sharedTerminals = [];
+
     public function __construct()
     {
         $this->repo = new Terminal\Repository;
@@ -208,7 +210,14 @@ class TerminalPicker
             return $terminal;
         }
 
-        return $this->getSharedGenericTerminalForCard($payment);
+        $terminal = $this->getSharedGenericTerminalForCard($payment);
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        return $this->getSharedGenericTerminalForCard2($payment);
     }
 
     protected function getSharedCategoryTerminalForCard($payment)
@@ -247,6 +256,40 @@ class TerminalPicker
             $gateways = Gateway::$domesticCardGatewaysInTest;
 
             if ($this->selectSharedCardTerminalFromGatewayList($gateways, $network))
+            {
+                return $this->terminal;
+            }
+        }
+    }
+
+    protected function getSharedGenericTerminalForCard2($payment)
+    {
+        $sharedTerminals = $this->sharedTerminals;
+
+        $network = $payment->card->getNetworkCode();
+
+        if ($payment->merchant->isInternational())
+        {
+            $gateways = Gateway::$internationalCardGateways;
+
+            if ($this->selectSharedCardTerminalFromGatewayList2($gateways, $network))
+            {
+                return $this->terminal;
+            }
+        }
+
+        $gateways = Gateway::$domesticCardGateways;
+
+        if ($this->selectSharedCardTerminalFromGatewayList2($gateways, $network))
+        {
+            return $this->terminal;
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $gateways = Gateway::$domesticCardGatewaysInTest;
+
+            if ($this->selectSharedCardTerminalFromGatewayList2($gateways, $network))
             {
                 return $this->terminal;
             }
@@ -426,18 +469,18 @@ class TerminalPicker
     protected function getSharedTerminalForEmi($payment)
     {
         $bank = $this->payment->getBank();
-        
+
         $gateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
 
         $emiPlanId = $this->payment->getEmiPlanId();
-        
+
         $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
-                
+
         $emiDuration = $emiPlan->getDuration();
 
         $terminal = $this->repo->getEmiTerminal(Merchant\Account::SHARED_ACCOUNT, $gateway, $emiDuration);
-        
-        return $terminal;       
+
+        return $terminal;
     }
 
     protected function validateCount($terminals, $merchant)
@@ -457,6 +500,28 @@ class TerminalPicker
         return $this->repo->fetch(['count' => 100], $merchant->getId());
     }
 
+    protected function getSharedTerminals()
+    {
+        $gatewayTerminals = $this->repo->getSharedTerminalsOnCommonAccount();
+
+        $terminals = [];
+
+        foreach ($gatewayTerminals as $terminal)
+        {
+            $gateway = $terminal->getGateway();
+
+            if (isset($terminals[$gateway]))
+            {
+                array_push($terminals[$gateway], $terminal);
+            }
+        }
+
+
+        $this->sharedTerminals = $terminals;
+
+        return $this->sharedTerminals;
+    }
+
     protected function selectSharedCardTerminalFromGatewayList($gateways, $network)
     {
         foreach ($gateways as $gateway)
@@ -473,10 +538,39 @@ class TerminalPicker
         }
     }
 
+    protected function selectSharedCardTerminalFromGatewayList2($gateways, $network)
+    {
+        foreach ($gateways as $gateway)
+        {
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+            $terminal = $this->sharedTerminalExists($sharedTerminal);
+
+            if (($terminal !== null) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $terminal;
+            }
+        }
+    }
+
     protected function terminalExists($terminal)
     {
         $this->terminal = $this->repo->find($terminal);
 
         return $this->terminal;
+    }
+
+    protected function sharedTerminalExists($terminal)
+    {
+        $sharedTerminals = $this->sharedTerminals;
+
+        foreach ($sharedTerminals as $shared)
+        {
+            if ($shared->getId() === $terminal)
+            {
+                return $terminal;
+            }
+        }
     }
 }
