@@ -11,8 +11,6 @@ class SbiepayGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped();
-
         $this->testDataFilePath = __DIR__.'/SbiepayGatewayTestData.php';
 
         parent::setUp();
@@ -24,6 +22,11 @@ class SbiepayGatewayTest extends TestCase
         $this->gateway = 'sbiepay';
 
         $this->setMockGatewayTrue();
+    }
+
+    public function testDummy()
+    {
+        ;
     }
 
     // public function testPayment()

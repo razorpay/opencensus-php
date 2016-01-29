@@ -11,8 +11,6 @@ class KotakGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped();
-
         $this->testDataFilePath = __DIR__.'/KotakGatewayTestData.php';
 
         parent::setUp();
@@ -22,6 +20,11 @@ class KotakGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'kotak';
+    }
+
+    public function testDummy()
+    {
+        ;
     }
 
     // public function testPayment()
