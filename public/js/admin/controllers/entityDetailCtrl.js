@@ -133,9 +133,6 @@ app.controller('EntityDetailCtrl', [
           country: iin.country,
           emi: iin.emi,
           issuer_name: iin.issuer_name
-          // The following are not editable
-          //network: iin.network,
-          //type: iin.type
         };
         // Lets remove all the empty variables
         for (var i in iin) {
