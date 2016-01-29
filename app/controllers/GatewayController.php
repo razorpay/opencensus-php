@@ -3,6 +3,7 @@
 use Trace\Trace;
 use Trace\TraceCode;
 use Http\Route;
+use EE\Exception;
 
 class GatewayController extends BaseController
 {
@@ -42,7 +43,8 @@ class GatewayController extends BaseController
 
         if ($nb === null)
         {
-            return;
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to find requisite trace id: ' . $input[3]);
         }
 
         $publicPaymentId = $nb->getPublicPaymentId();
