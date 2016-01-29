@@ -52,7 +52,20 @@ class Entity extends Base\PublicEntity
 
     public function getPublicId()
     {
-        $mode = \BasicAuth::getMode();
+        if ($mode === null)
+        {
+            $mode = \BasicAuth::getMode();
+        }
+
+        return 'rzp_' . $mode . '_' . $this->getKey();
+    }
+
+    public function getPublicKey($mode = null)
+    {
+        if ($mode === null)
+        {
+            $mode = \BasicAuth::getMode();
+        }
 
         return 'rzp_' . $mode . '_' . $this->getKey();
     }

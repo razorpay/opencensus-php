@@ -19,7 +19,7 @@ class GatewayController extends BaseController
 
         $app = \App::getFacadeRoot();
         $app['slack']->send($input, 'transactions', '#tech_logs');
-    }
+    }key 
 
     public function callbackKotak()
     {
@@ -55,7 +55,7 @@ class GatewayController extends BaseController
         $publicPaymentId = $nb->getPublicPaymentId();
 
         $payment = (new \Models\Payment\Repository)->connection($mode)->findOrFailPublic($paymentId);
-        $publicKey = $payment->merchant->keys()->first();
+        $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');
 
