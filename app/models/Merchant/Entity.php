@@ -40,6 +40,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const AMEX  = 'AMEX';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
+    const EMI   = 'EMI';
     const JCB   = 'JCB';
     const MAES  = 'MAES';
     const MC    = 'MC';
@@ -65,6 +66,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'card'              =>  self::CARD,
         'netbanking'        =>  self::NETBANKING,
         'wallet'            =>  self::WALLET,
+        'emi'               =>  self::EMI,
         'Unknown'           =>  self::UNKNOWN
     );
 
@@ -362,5 +364,15 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     protected function getTagsAttribute()
     {
         return $this->tagNames();
+    }
+
+    public function setCustomId()
+    {
+        switch ($this->email)
+        {
+            case 'shk@razorpay.com':
+                $this->setAttribute('id', '100000Razorpay');
+                break;
+        }
     }
 }
