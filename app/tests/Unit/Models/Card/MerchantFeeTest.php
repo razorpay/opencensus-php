@@ -6,9 +6,6 @@ use Mockery;
 use Models\Card;
 use Models\Pricing;
 use Models\Payment;
-// use Tests\TestCase;
-use App;
-use Models\Payment\Processor\Authorize;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -49,7 +46,7 @@ class MerchantFeeTest extends TestCase
         $this->fee->setPricingRepo($this->getMockPricingRepo());
     }
 
-    public function getMockPricingRepo()
+    public function getMockPricingRepo($withCreditCardRule = false)
     {
         $pricingRuleOne = new Pricing\Entity(array(
                 'id' => '1nvp2XPMmaRLxx',
@@ -57,6 +54,22 @@ class MerchantFeeTest extends TestCase
                 'plan_name' => 'testDefaultPlan',
                 'payment_method' => 'card',
                 'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingRuleCredit = new Pricing\Entity(array(
+                'id' => '1nvp2XPMmaRLxy',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
                 'payment_network' => null,
                 'payment_issuer' => null,
                 'amount_range_active' => false,
@@ -77,7 +90,7 @@ class MerchantFeeTest extends TestCase
                 'payment_issuer' => NULL,
                 'international' => false,
                 'amount_range_active' => true,
-                'amount_range_min' => 100,
+                'amount_range_min' => 0,
                 'amount_range_max' => 200000,
                 'percent_rate' => 75,
                 'fixed_rate' => 0,
@@ -131,13 +144,20 @@ class MerchantFeeTest extends TestCase
                 'international' => 0,
             ));
 
-        $pricingPlan = new Pricing\Plan([
+        $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
             $pricingRuleThree,
             $pricingPlanAmex,
             $pricingPlanDicl,
-        ]);
+        ];
+
+        if ($withCreditCardRule)
+        {
+            $pricingRules[] = $pricingRuleCredit;
+        }
+
+        $pricingPlan = new Pricing\Plan($pricingRules);
 
         return Mockery::mock('Illuminate\Database\Connection',
             function($mock) use ($pricingPlan)
@@ -147,33 +167,75 @@ class MerchantFeeTest extends TestCase
         });
     }
 
+    // Credit cards that don't have if have
+    // no definite rule to fall back,
+    // will fall back to debit card rules
     public function testCreditCardRuleSelection()
     {
-        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x");
+        $useCreditCardRule = true;
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
+
+        // Credit Card Rule Available in plan,
+        // If card type unknown, will be treated as
+        // debit card and their rules will be applied
+
+        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLxy", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200000", "Visa", "1nvp2XPMmaRLxy", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200100", "Visa", "1nvp2XPMmaRLxy", Card\Type::CREDIT);
+
+        $useCreditCardRule = false;
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
+
+        // Credit Card Not Rule Available in plan,
+        // Unknown Cards will be treated as debit card
+        // subsequent rules will be applied.
+
+        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLxx", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200000", "Visa", "1nvp2XPMmaRLxx", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200100", "Visa", "1nvp2XPMmaRLxx", Card\Type::CREDIT);
     }
 
     public function testDebitCardRuleSelection()
     {
-        $isDebit = true;
+        // Debit Cards and subsequent amount range rules
 
-        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", $isDebit);
+        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::DEBIT);
 
-        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", $isDebit);
+        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", Card\Type::DEBIT);
 
-        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", $isDebit);
+        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", Card\Type::DEBIT);
     }
+
 
     public function testAmexCardRuleSelection()
     {
-        $this->runMerchantFeeTest("100", "American Express", "1OwH8rTI0ejFxx");
+        $this->runMerchantFeeTest("100", "American Express", "1OwH8rTI0ejFxx", Card\Type::CREDIT);
     }
 
     public function testDiclCardRuleSelection()
     {
-        $this->runMerchantFeeTest("100", "Diners Club", "1fq0OXpgeyafQx");
+        $this->runMerchantFeeTest("100", "Diners Club", "1fq0OXpgeyafQx", Card\Type::CREDIT);
     }
 
-    protected function runMerchantFeeTest($amount, $networkFullName, $expectedRuleKey, $isDebit = false)
+    protected function runMerchantFeeTest($amount, $networkFullName, $expectedRuleKey, $cardType)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -187,10 +249,7 @@ class MerchantFeeTest extends TestCase
 
         $payment->card->setNetwork($networkFullName);
 
-        if ($isDebit)
-        {
-            $payment->card->setType(Card\Type::DEBIT);
-        }
+        $payment->card->setType($cardType);
 
         list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
 
