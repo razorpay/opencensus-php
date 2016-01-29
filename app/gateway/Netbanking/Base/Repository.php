@@ -12,5 +12,6 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID          => 'sometimes|string|size:14',
         Entity::CAPS_PAYMENT_ID     => 'sometimes|string|size:14',
-        Entity::BANK_PAYMENT_ID     => 'sometimes|string|max:20');
-}
+        Entity::BANK_PAYMENT_ID     => 'sometimes|string|max:20',
+        Entity::INT_PAYMENT_ID		=> 'sometimes|',
+    );
