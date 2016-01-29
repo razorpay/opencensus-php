@@ -24,30 +24,16 @@ class KotakGatewayTest extends TestCase
         $this->gateway = 'kotak';
     }
 
-    public function testPayment()
-    {
-        $this->config['gateway.mock_kotak'] = true;
+    // public function testPayment()
+    // {
+    //     $this->config['gateway.mock_kotak'] = true;
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '6070020000000000';
-        $payment = $this->doAuthAndCapturePayment($payment);
+    //     $payment = $this->getDefaultPaymentArray();
+    //     $payment['card']['number'] = '6070020000000000';
+    //     $payment = $this->doAuthAndCapturePayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+    //     $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment);
-    }
-
-    public function testPaymentTransactionCannotBeProcessed()
-    {
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->runTestForAuthPayment();
-    }
-
-    public function testTransactionDeclinedPayment()
-    {
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->runTestForAuthPayment();
-    }
+    //     $this->assertTestResponse($payment);
+    // }
 }

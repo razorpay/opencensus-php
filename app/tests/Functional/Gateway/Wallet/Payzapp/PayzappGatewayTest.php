@@ -54,55 +54,6 @@ class PayzappGatewayTest extends TestCase
             $this->testData['testPaymentPayzappEntity'], $payment);
     }
 
-    public function testPaymentFailed()
-    {
-        $this->markTestIncomplete();
-
-        $this->failPaymentOnBankPage = true;
-    }
-
-    public function testPaymentVerify()
-    {
-        $this->markTestIncomplete();
-
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $this->verifyPayment($payment['id']);
-    }
-
-    public function testPaymentRefund()
-    {
-        $this->markTestIncomplete();
-
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $this->refundPayment($payment['id']);
-
-        $refund = $this->getLastEntity('billdesk', true);
-        $this->assertTestResponse($refund);
-    }
-
-    public function testAuthorizedPaymentRefund()
-    {
-        $this->markTestIncomplete();
-
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthPayment($payment);
-
-        $input['force'] = '1';
-        $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
-
-        $refund = $this->getLastEntity('billdesk', true);
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentRefund'], $refund);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
-    }
-
     protected function runPaymentCallbackFlowWalletPayzapp($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
