@@ -40,11 +40,11 @@ class Inferno
             return;
         }
 
+        $request = $this->getRequestArray($data, $webhook);
+
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
-            [$data]);
-
-        $request = $this->getRequestArray($data, $webhook);
+            $request);
 
         $response = $this->makeRequest($request);
 
@@ -123,7 +123,7 @@ class Inferno
             'Content-Type' => 'application/json',
         ];
 
-        $request['options'] = ['timeout' => 5];
+        $request['options'] = ['timeout' => 10];
 
         return $request;
     }
