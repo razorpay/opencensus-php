@@ -111,7 +111,7 @@ app.controller('EntityDetailCtrl', [
       }
     };
 
-    // Terminal Specific actions
+    // IIN Specific actions
     $scope.iin = {
       delete: function (id) {
         var request = $http.delete('/admin/' + $scope.mode + '/iin/' + id);
@@ -150,6 +150,23 @@ app.controller('EntityDetailCtrl', [
           }
         }).error(function () {
           alert('There was an error while editing the terminal');
+        });
+      }
+    };
+
+    // EMI Specific actions
+    $scope.emi = {
+      delete: function (id) {
+        // EMI plans are also modeless
+        var request = $http.delete('/admin/emi/' + id);
+        request.success(function (data) {
+          if (data.success) {
+            alert('EMI Plan deleted');
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while deleting the EMI Plan');
         });
       }
     };

@@ -1605,5 +1605,27 @@ class Service extends Base\Service
         $this->api->IIN->edit($iin, $input);
         return [null, 'IIN Edit successful'];
     }
+
+    /**
+     * deletes an EMI Plan
+     * @param  string $emiId EMI Plan Id
+     * @return array
+     */
+    public function deleteEmi($emiId)
+    {
+        $this->setApiCredentials(null);
+        $error = $data = [];
+
+        try
+        {
+            $this->api->EMI->setId($emiId)->delete($emiId);
+        }
+        catch (\Exception $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
 }
 

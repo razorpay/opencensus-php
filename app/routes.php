@@ -150,84 +150,68 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
-
-        Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
-
+        // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
 
-        Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
-
-        Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
-
+        // Pricing Plan Routes
         Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
-
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
-
         Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
 
+        Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
+
+        // Admin merchant actions
+        Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
+        Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
-
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
-
         Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
-
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
-
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
-
         Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
-
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-
         Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
-
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
-
         Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
-
         Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
-
         Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
+        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
+        Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
+        Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
 
-        Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
-
+        // IIN Routes
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
-
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
-
         Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
 
+        // EMI Plan Routes
+        Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
+
+        // Admin Payment Actions
         Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
-
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
-
-        // These 2 use proxy auth so needs merchantId
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
-
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
-
-        Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
-
-        Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
-
-        Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
-
-        Route::post('/admin/trigger/error', 'AdminController@triggerError');
-
-        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
-
-        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
-
-        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
-
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
-
         Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
 
+        // More admin payment actions
+        // These use proxy auth so needs merchantId
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
+
+        // Admin Main Actions, mostly initiated from the Actions screen
+        Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
+        Route::post('/admin/trigger/error', 'AdminController@triggerError');
         Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
+        Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
+
+        // Newsletter
+        Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
+        Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
+
+        // Terminal Routes
+        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
+        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
     });
 
     Route::group(array('before' => 'auth.superadmin'), function()
