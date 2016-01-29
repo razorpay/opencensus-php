@@ -110,11 +110,49 @@ app.controller('EntityDetailCtrl', [
         });
       }
     };
+
+    // Terminal Specific actions
+    $scope.iin = {
+      delete: function (id) {
+        var request = $http.delete('/admin/' + $scope.mode + '/iin/' + id);
+        request.success(function (data) {
+          if (data.success) {
+            alert('IIN deleted');
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while deleting the IIN');
+        });
+      }
+      /*,edit: function (id, data) {
+        delete data.id;
+        // Lets remove all the empty variables
+        for (var i in data) {
+          if (data[i] === '' || data[i] === null) {
+            delete data[i];
+          }
+        }
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id, data);
+        request.success(function (data) {
+          if (data.success) {
+            alert('Terminal edit successfully');
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while deleting the terminal');
+        });
+      }*/
+    };
+
+
     $scope.toJson = function (data) {
       return angular.toJson(data, 4);
     };
     $scope.open = {
-      'terminalEdit': function (terminal) {
+      terminalEdit: function (terminal) {
         var modalInstance = $modal.open({
           templateUrl: 'editTerminal.html',
           controller: 'editTerminalModalCtrl',
@@ -127,6 +165,21 @@ app.controller('EntityDetailCtrl', [
         modalInstance.result.then(function (input) {
           delete input.merchant_id;
           $scope.terminal.edit(input.id, input);
+        }, function () {
+        });
+      },
+      iinEdit: function (iin) {
+        var modalInstance = $modal.open({
+          templateUrl: 'editIin.html',
+          controller: 'editIinModalCtrl',
+          resolve: {
+            current: function () {
+              return iin;
+            }
+          }
+        });
+        modalInstance.result.then(function (input) {
+          $scope.iin.edit(input.id, input);
         }, function () {
         });
       }
