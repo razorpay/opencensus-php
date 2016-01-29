@@ -74,7 +74,7 @@ class BeneficiaryFile
                 'Agreement expiry date' => $agreementExpiryDateText,
                 $ratesColumnHeader      => self::DEFAULT_PRICING_RATE,
                 'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
-                'Bene_A/c No.'          => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
+                'Bene_A/c No.'          => '`'.$ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
             );
 
             array_push($data, $array);
