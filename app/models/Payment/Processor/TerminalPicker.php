@@ -169,7 +169,6 @@ class TerminalPicker
         }
 
         return $this->getSharedTerminalForNetbanking($payment);
-
     }
 
     protected function pickWalletTerminal($terminals, $payment)
@@ -264,6 +263,8 @@ class TerminalPicker
 
     protected function getSharedGenericTerminalForCard2($payment)
     {
+        $this->getSharedTerminals();
+
         $sharedTerminals = $this->sharedTerminals;
 
         $network = $payment->card->getNetworkCode();
@@ -308,6 +309,20 @@ class TerminalPicker
         }
 
         $terminal = $this->selectSharedGatewayNetbankingTerminal();
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $terminal = $this->selectSharedDirectNetbankingBankTerminal2($bank);
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $terminal = $this->selectSharedGatewayNetbankingTerminal2();
 
         return $terminal;
     }
@@ -436,6 +451,22 @@ class TerminalPicker
         }
     }
 
+    protected function selectSharedDirectNetbankingBankTerminal2($bank)
+    {
+        if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
+        {
+            return;
+        }
+
+        $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+        $this->getSharedTerminals();
+
+        return $this->sharedTerminalExists($sharedTerminal);
+    }
+
     protected function selectSharedGatewayNetbankingTerminal()
     {
         $gateways = Gateway::$netbankingGateways;
@@ -447,6 +478,25 @@ class TerminalPicker
             if ($this->terminalExists($sharedTerminal))
             {
                 return $this->terminal;
+            }
+        }
+    }
+
+    protected function selectSharedGatewayNetbankingTerminal2()
+    {
+        $this->getSharedTerminals();
+
+        $gateways = Gateway::$netbankingGateways;
+
+        foreach ($gateways as $gateway)
+        {
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+            $terminal = $this->sharedTerminalExists($sharedTerminal);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
             }
         }
     }
