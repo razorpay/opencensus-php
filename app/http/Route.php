@@ -46,7 +46,7 @@ final class Route
         'iin_fetch_by_iin'                      => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
         'iin_fetch_multiple'                    => ['get',      'iins',                                     'CardController@getIins'                                            ],
         'iin_add'                               => ['post',     'iins',                                     'CardController@postIin'                                            ],
-        'iin_edit'                              => ['post',     'iins/{id}',                                'CardController@editIin'                                            ],
+        'iin_edit'                              => ['put',      'iins/{id}',                                'CardController@editIin'                                            ],
         'iin_generate_post'                     => ['post',     'iins/import/generate',                     'CardController@postIinGenerate'                                    ],
         'merchant_public_get_banks'             => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                       => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                                   ],
