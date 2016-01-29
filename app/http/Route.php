@@ -408,9 +408,12 @@ final class Route
         return self::getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array())
+    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
-        $key = \BasicAuth::getPublicKey();
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
 
         return self::getUrl('payment_callback_with_key_post', $parameters, $key);
     }
