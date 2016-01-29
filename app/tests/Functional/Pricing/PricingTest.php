@@ -161,8 +161,6 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
-
-        $this->startTest($testData);
     }
 
     public function testAddDuplicateInternationalPricingPlanRule()

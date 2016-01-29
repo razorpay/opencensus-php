@@ -205,11 +205,19 @@ class Fee
 
     protected function getRuleFromPricingCollection($pricing, $network, $cardType, $amount)
     {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
         $rules = $pricing->all();
+
+        // Current Implementation
+        // 1. Filter based on Network
+        // 2. Filter based on Card Type and AmountRange (if applicable.)
 
         $rules = $this->filterRulesOnNetwork($rules, $network);
 
-        $rulesMap = $this->filterRulesOnCardType($rules, $cardType);
+        $rulesMap = $this->filterRulesOnCardTypeAndAmountRange($rules, $cardType);
 
         $rule = $this->chooseRuleWithAmount($rulesMap, $amount);
 
@@ -222,6 +230,9 @@ class Fee
         return $rule;
     }
 
+    // Filters the given rules to give only the currently applicable
+    // set of rules based on network. If corresponding network rules are
+    // not available, rules other than these are provided.
     protected function filterRulesOnNetwork($rules, $network)
     {
         $networkMatchRules     = [];
@@ -247,7 +258,9 @@ class Fee
         return $networkMatchRules;
     }
 
-    protected function filterRulesOnCardType($rules, $cardType)
+    // Groups currently available rules into those
+    // based on current CardType and AmountRange.
+    protected function filterRulesOnCardTypeAndAmountRange($rules, $cardType)
     {
         $feeTypeAmountRules    = [];
         $nullTypeAmountRules   = [];
@@ -286,6 +299,9 @@ class Fee
                 'nullNonAmountRule' => $nullTypeNonAmountRule];
     }
 
+    // Choose the applicable rule based upon the provided rules
+    // map and the amount. Amount is considered only if amount
+    // rules are available for current type.
     protected function chooseRuleWithAmount($rulesMap, $amount)
     {
         $rule = null;
