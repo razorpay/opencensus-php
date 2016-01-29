@@ -64,13 +64,6 @@ class BilldeskGatewayTest extends TestCase
         $this->assertEquals($terminal['id'], $payment['terminal_id']);
     }
 
-    public function testPaymentFailed()
-    {
-        $this->markTestIncomplete();
-
-        $this->failPaymentOnBankPage = true;
-    }
-
     public function testPaymentVerify()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
