@@ -22,6 +22,15 @@ class Fee
         $this->repo = new Pricing\Repository;
     }
 
+    /**
+     *  Used in testing to mock
+     *  pricing repository
+     */
+    public function setPricingRepo($repo)
+    {
+        $this->repo = $repo;
+    }
+
     public function getZeroPricingPlanRule($payment)
     {
         $planId = Pricing\Entity::ZERO_PRICING;
@@ -186,7 +195,7 @@ class Fee
                 $slackArray,
                 ['channel' => '#tech_logs']);
 
-            $cardType = Card\Type::CREDIT;
+            $cardType = Card\Type::DEBIT;
         }
 
         $isInternational = $payment->isInternational();
@@ -238,15 +247,15 @@ class Fee
         $networkMatchRules     = [];
         $nullnetworkMatchRules = [];
 
-        foreach ($rules as $item)
+        foreach ($rules as $rule)
         {
-            if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
+            if ($rule->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
             {
-                $networkMatchRules[] = $item;
+                $networkMatchRules[] = $rule;
             }
             else
             {
-                $nullnetworkMatchRules[] = $item;
+                $nullnetworkMatchRules[] = $rule;
             }
         }
 
@@ -258,8 +267,10 @@ class Fee
         return $networkMatchRules;
     }
 
-    // Groups currently available rules into those
-    // based on current CardType and AmountRange.
+    /**
+     * Groups currently available rules into those
+     * based on current CardType and AmountRange.
+     */
     protected function filterRulesOnCardTypeAndAmountRange($rules, $cardType)
     {
         $feeTypeAmountRules    = [];
@@ -267,28 +278,28 @@ class Fee
         $feeTypeNonAmountRule  = [];
         $nullTypeNonAmountRule = [];
 
-        foreach ($rules as $item)
+        foreach ($rules as $rule)
         {
-            if (($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $cardType))
+            if (($rule->getPaymentMethodType() === $cardType))
             {
-                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                if ($rule->isAmountRangeActive())
                 {
-                    $feeTypeAmountRules[] = $item;
+                    $feeTypeAmountRules[] = $rule;
                 }
                 else
                 {
-                    $feeTypeNonAmountRule = $item;
+                    $feeTypeNonAmountRule = $rule;
                 }
             }
-            else
+            else if ($rule->getPaymentMethodType() === null)
             {
-                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                if ($rule->isAmountRangeActive())
                 {
-                    $nullTypeAmountRules[] = $item;
+                    $nullTypeAmountRules[] = $rule;
                 }
                 else
                 {
-                    $nullTypeNonAmountRule = $item;
+                    $nullTypeNonAmountRule = $rule;
                 }
             }
         }
