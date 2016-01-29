@@ -47,7 +47,8 @@ class Base
     protected static $liveAndTest = array(
         'merchant',
         'pricing',
-        'methods');
+        'methods',
+        'iin');
 
     public function create(array $attributes = array())
     {
