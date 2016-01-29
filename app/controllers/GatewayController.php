@@ -38,8 +38,12 @@ class GatewayController extends BaseController
                 'input_arr' => $input
             ]);
 
-        $nb = (new \Gateway\Netbanking\Base\Repository)->findByTraceIdAndAction(
-                                        $input[3], \Gateway\Base\Action::AUTHORIZE);
+        $mode = 'test';
+
+        $repo = new \Gateway\Netbanking\Base\Repository;
+        $repo->connection($mode);
+
+        $nb = $repo->findByTraceIdAndAction($input[3], \Gateway\Base\Action::AUTHORIZE);
 
         if ($nb === null)
         {
@@ -47,14 +51,19 @@ class GatewayController extends BaseController
                 'Failed to find requisite trace id: ' . $input[3]);
         }
 
+        $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
+
+        $payment = (new \Models\Payment\Repository)->connection($mode)->findOrFailPublic($paymentId);
+        $publicKey = $payment->merchant->keys()->first();
 
         $secret = \App::make('config')->get('app.key');
 
         $hash = hash_hmac('sha1', $publicPaymentId, $secret);
 
-        $url = Route::getUrlWithPublicCallbackAuth(
-                        ['id' => $publicPaymentId, 'hash' => $hash]);
+        $params = ['id' => $publicPaymentId, 'hash' => $hash];
+
+        $url = Route::getUrlWithPublicCallbackAuth($params, $publicKey);
 
         $url = $url . '?msg=' . $inputMsg;
 
