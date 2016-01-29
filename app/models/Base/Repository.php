@@ -24,9 +24,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function findOrFailPublic($id, $columns = array('*'))
     {
-        $repo = $this->repo;
-
-        return $repo::findOrFailPublic($id, $columns);
+        return $this->newQuery()->findOrFailPublic($id, $columns);
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
