@@ -17,6 +17,6 @@ class IIN extends Entity
     public function edit($iin, $params)
     {
         $url = $this->getEntityUrl() . $iin;
-        return $this->request('POST', $url, $params);
+        return $this->request('PUT', $url, $params);
     }
 }
