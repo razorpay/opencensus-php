@@ -39,6 +39,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::EMI,
+        self::EMI_DURATION,
         self::SHARED,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -54,6 +56,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::EMI,
+        self::EMI_DURATION,
         self::SHARED,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -88,7 +92,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD => null,
         self::GATEWAY_ACCESS_CODE       => null,
         self::GATEWAY_SECURE_SECRET     => null,
-        self::SHARED                    => false
+        self::SHARED                    => false,
+        self::EMI                       => false,
     );
 
     public function generateMethod($input)

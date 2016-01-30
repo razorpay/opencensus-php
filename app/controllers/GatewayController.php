@@ -3,6 +3,7 @@
 use Trace\Trace;
 use Trace\TraceCode;
 use Http\Route;
+use EE\Exception;
 
 class GatewayController extends BaseController
 {
@@ -18,14 +19,18 @@ class GatewayController extends BaseController
 
         $app = \App::getFacadeRoot();
         $app['slack']->send($input, 'transactions', '#tech_logs');
-    }
+    } 
 
     public function callbackKotak()
     {
         $inputMsg = Input::get('msg');
         $input = explode('|', $inputMsg);
 
+        $mode = 'test';
+
         $app = \App::getFacadeRoot();
+        $app['config']->set('database.default', $mode);
+
         $trace = $app['trace'];
 
         // check mode before search
@@ -37,22 +42,30 @@ class GatewayController extends BaseController
                 'input_arr' => $input
             ]);
 
-        $nb = (new \Gateway\Netbanking\Base\Repository)->findByTraceIdAndAction(
-                                        $input[3], \Gateway\Base\Action::AUTHORIZE);
+
+        $repo = new \Gateway\Netbanking\Base\Repository;
+
+        $nb = $repo->findByTraceIdAndAction($input[3], \Gateway\Base\Action::AUTHORIZE);
 
         if ($nb === null)
         {
-            return;
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to find requisite trace id: ' . $input[3]);
         }
 
+        $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
+
+        $payment = (new \Models\Payment\Repository)->findOrFailPublic($paymentId);
+        $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');
 
         $hash = hash_hmac('sha1', $publicPaymentId, $secret);
 
-        $url = Route::getUrlWithPublicCallbackAuth(
-                        ['id' => $publicPaymentId, 'hash' => $hash]);
+        $params = ['id' => $publicPaymentId, 'hash' => $hash];
+
+        $url = Route::getUrlWithPublicCallbackAuth($params, $publicKey);
 
         $url = $url . '?msg=' . $inputMsg;
 

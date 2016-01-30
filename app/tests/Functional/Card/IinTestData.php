@@ -33,7 +33,7 @@ return [
                 'country' => 'IN',
                 'issuer' => 'HDFC',
                 'issuer_name' => 'HDFC',
-                'emi' => 0
+                'emi' => 1
             ],
         ],
         'response' => [
@@ -44,7 +44,7 @@ return [
                 'country' => 'IN',
                 'issuer' => 'HDFC',
                 'issuer_name' => 'HDFC',
-                'emi' => '0'
+                'emi' => '1'
             ],
         ],
     ],

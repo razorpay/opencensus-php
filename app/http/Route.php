@@ -163,6 +163,7 @@ final class Route
         'add_emi_plan'                          => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
+        'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
     ); 
 
     public static $public = array(
@@ -193,7 +194,6 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_plans',
-        'get_emi_plan_by_id'
     );
 
     public static $publicCallback = array(
@@ -297,6 +297,8 @@ final class Route
         'merchant_get_features',
         'get_features',
         'add_emi_plan',
+        'delete_emi_plan',
+        'get_emi_plan_by_id'
     );
 
     public static $proxy = array(
@@ -406,9 +408,12 @@ final class Route
         return self::getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array())
+    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
-        $key = \BasicAuth::getPublicKey();
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
 
         return self::getUrl('payment_callback_with_key_post', $parameters, $key);
     }
