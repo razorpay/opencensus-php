@@ -11,7 +11,7 @@
         "ollieread/multiauth": "dev-master",
         "barryvdh/laravel-debugbar": "1.*",
         "razorpay/spine": "dev-master",
-        "maknz/slack": "1.*",
+        "maknz/slack": "dev-queue",
         "bogardo/mailgun": "3.1.*",
         "guzzlehttp/guzzle": "~5.0",
         "maatwebsite/excel": "1.*",
@@ -32,6 +32,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/spine.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/slack.git"
         }
     ],
     "autoload": {
