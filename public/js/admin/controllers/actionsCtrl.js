@@ -27,6 +27,8 @@ app.controller('ActionsCtrl', [
       });
     };
     $scope.addIIN = function (iin) {
+      iin.emi = iin.emi ? 1 : 0;
+
       var request = $http({
         method: 'post',
         url: '/admin/iin/add',
