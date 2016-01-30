@@ -198,6 +198,7 @@ class MerchantFeeTest extends TestCase
                      ->andReturn($pricingPlan);
             });
 
+        return $mock;
     }
 
     /**
