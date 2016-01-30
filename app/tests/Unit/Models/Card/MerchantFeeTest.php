@@ -13,33 +13,29 @@ class MerchantFeeTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $card = [
+        'number' => '4012001036275556',
+        'expiry_month' => '1',
+        'expiry_year' => '2017',
+        'cvv' => '123',
+        'name' => 'Abhay',
+    ];
+
+    protected $input = [
+        'method' => 'card',
+        'card' => [],
+        'currency' => "INR",
+        'amount'   => 0,
+        'email' => "test@razorpay.com",
+        'contact'   => "1234567890",
+        'notes' => [
+            'order_id'  => "3453"
+        ],
+    ];
+
     public function setUp()
     {
         parent::setUp();
-
-        $this->testDataFilePath = __DIR__.'/helpers/MerchantFeeTestData.php';
-
-        $this->unknownCard = [
-            'number' => '4012001036275556',
-            'expiry_month' => '1',
-            'expiry_year' => '2017',
-            'cvv' => '123',
-            'name' => 'Abhay',
-        ];
-
-        $this->input = [
-            'method' => 'card',
-            'card' => [],
-            'currency' => "INR",
-            'amount'   => 0,
-            'email' => "test@razorpay.com",
-            'contact'   => "1234567890",
-            'notes' => [
-                'order_id'  => "3453"
-            ],
-        ];
-
-        $this->paymentEntity = $this->getDefaultPaymentArray();
 
         $this->fee = new Pricing\Fee();
 
@@ -86,8 +82,8 @@ class MerchantFeeTest extends TestCase
                 'plan_name' => 'testDefaultPlan',
                 'payment_method' => 'card',
                 'payment_method_type' => 'debit',
-                'payment_network' => NULL,
-                'payment_issuer' => NULL,
+                'payment_network' => null,
+                'payment_issuer' => null,
                 'international' => false,
                 'amount_range_active' => true,
                 'amount_range_min' => 0,
@@ -102,8 +98,8 @@ class MerchantFeeTest extends TestCase
                 'plan_name' => 'testDefaultPlan',
                 'payment_method' => 'card',
                 'payment_method_type' => 'debit',
-                'payment_network' => NULL,
-                'payment_issuer' => NULL,
+                'payment_network' => null,
+                'payment_issuer' => null,
                 'international' => false,
                 'amount_range_active' => true,
                 'amount_range_min' => 200000,
@@ -159,12 +155,15 @@ class MerchantFeeTest extends TestCase
 
         $pricingPlan = new Pricing\Plan($pricingRules);
 
-        return Mockery::mock('Illuminate\Database\Connection',
+        $mock = Mockery::mock(
+            'Models\Pricing\Repository',
             function($mock) use ($pricingPlan)
-        {
-            $mock->shouldReceive("getPricingRulesForCard")
-                ->andReturn($pricingPlan);
-        });
+            {
+                $mock->shouldReceive("getPricingRulesForCard")
+                     ->andReturn($pricingPlan);
+            });
+
+        return $mock;
     }
 
     protected function getMockInternationalPricingRepo()
@@ -191,26 +190,29 @@ class MerchantFeeTest extends TestCase
 
         $pricingPlan = new Pricing\Plan($pricingRules);
 
-        return Mockery::mock('Illuminate\Database\Connection',
+        $mock = Mockery::mock(
+            'Models\Pricing\Repository',
             function($mock) use ($pricingPlan)
-        {
-            $mock->shouldReceive("getPricingRulesForCard")
-                ->andReturn($pricingPlan);
-        });
+            {
+                $mock->shouldReceive("getPricingRulesForCard")
+                     ->andReturn($pricingPlan);
+            });
 
     }
 
-    // Credit cards that don't have if have
-    // no definite rule to fall back,
-    // will fall back to debit card rules
+    /**
+     * Credit cards that don't have if have
+     * no definite rule to fall back,
+     * will fall back to debit card rules
+     */
     public function testCreditCardRuleSelection()
     {
         $useCreditCardRule = true;
 
         $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
 
-        // Credit Card Rule Available in plan,
-        // If card type unknown, will be treated as
+        // Credit Card rule not available in plan,
+        // Card type unknown will be treated as
         // debit card and their rules will be applied
 
         $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
@@ -229,9 +231,9 @@ class MerchantFeeTest extends TestCase
 
         $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
 
-        // Credit Card Not Rule Available in plan,
+        // Credit Card rule not available in plan,
         // Unknown Cards will be treated as debit card
-        // subsequent rules will be applied.
+        // and subsequent rules will be applied.
 
         $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
 
@@ -293,7 +295,7 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
     }
 
-    protected function runMerchantFeeTest($amount, $networkFullName, $expectedRuleKey, $cardType, $isCardInternational = false)
+    protected function runMerchantFeeTest($amount, $network, $expectedRule, $cardType, $isCardInternational = false)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -303,9 +305,9 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
-        $payment->card = (new Card\Entity())->build($this->unknownCard);
+        $payment->card = (new Card\Entity)->build($this->card);
 
-        $payment->card->setNetwork($networkFullName);
+        $payment->card->setNetwork($network);
 
         $payment->card->setType($cardType);
 
@@ -313,6 +315,6 @@ class MerchantFeeTest extends TestCase
 
         list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
 
-        $this->assertEquals($expectedRuleKey, $ruleKey);
+        $this->assertEquals($expectedRule, $ruleKey);
     }
 }

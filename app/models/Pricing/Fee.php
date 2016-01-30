@@ -228,6 +228,11 @@ class Fee
         // 3. Filter based on AmountRange
         // 4. Choose based on Amount
 
+        $filters = array(
+            Pricing\Entity::PAYMENT_NETWORK, $network, false,
+            Pricing\Entity::PAYMENT_METHOD_TYPE, $cardType, false,
+            Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true);
+
         $rules = $this->filterRulesOnFieldByValue($rules, Pricing\Entity::PAYMENT_NETWORK, $network);
 
         $rules = $this->filterRulesOnFieldByValue($rules, Pricing\Entity::PAYMENT_METHOD_TYPE, $cardType);
@@ -236,8 +241,8 @@ class Fee
 
         $amountRangeActive = true;
 
-        $rules = $this->filterRulesOnFieldByValue($rules,
-         Pricing\Entity::AMOUNT_RANGE_ACTIVE, $amountRangeActive, $isFieldBoolean);
+        $rules = $this->filterRulesOnFieldByValue(
+            $rules, Pricing\Entity::AMOUNT_RANGE_ACTIVE, $amountRangeActive, $isFieldBoolean);
 
         $rule = $this->chooseRuleWithAmount($rules, $amount);
 
@@ -255,8 +260,7 @@ class Fee
      * If the value is not found, matches based on null
      * will be returned, unless the field is boolean
      * when matches based on boolean false will be returned.
-     * */
-
+     */
     protected function filterRulesOnFieldByValue($rules, $fieldName, $fieldValue, $isFieldBoolean = false)
     {
         $matchRules     = [];
@@ -293,8 +297,7 @@ class Fee
      * If the rules are amount range active rules,
      * choose rule based on amount
      * else return first available rule.
-     * */
-
+     */
     protected function chooseRuleWithAmount($rules, $amount)
     {
         $relevantRule = null;
