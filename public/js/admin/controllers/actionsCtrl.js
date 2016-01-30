@@ -46,6 +46,26 @@ app.controller('ActionsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+    $scope.addEMI = function (emi) {
+      var request = $http({
+        method: 'post',
+        url: '/admin/emi',
+        transformRequest: transformRequestAsFormPost,
+        data: emi
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'EMI Plan added successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
     $scope.verifyAllPayments = function () {
       var request = $http({
         method: 'POST',
@@ -222,6 +242,13 @@ app.controller('ActionsCtrl', [
       });
       modalInstance.result.then($scope.addIIN, $.noop);
     };
+    $scope.openAddEMI = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'addEMIModalContent.html',
+        controller: 'addEMIModalCtrl'
+      });
+      modalInstance.result.then($scope.addEMI, $.noop);
+    };
     $scope.openVerifyPayment = function () {
       var modalInstance = $modal.open({
         templateUrl: 'verifyPaymentModalContent.html',
@@ -324,6 +351,23 @@ app.controller('ActionsCtrl', [
   function ($scope, $modalInstance, $http) {
     $scope.ok = function (iin) {
       $modalInstance.close(iin);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('addEMIModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  function ($scope, $modalInstance, $http) {
+    $scope.emi = {
+      bank: 'HDFC',
+      duration: 3,
+      methods: ''
+    };
+    $scope.ok = function (emi) {
+      $modalInstance.close(emi);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

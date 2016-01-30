@@ -641,4 +641,14 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function postAddEMIPlan()
+    {
+        $input = Input::all();
+
+        list($error, $data) = $response = (new Admin\Service)
+            ->addEMI($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

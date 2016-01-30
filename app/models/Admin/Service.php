@@ -1618,9 +1618,27 @@ class Service extends Base\Service
 
         try
         {
-            $this->api->EMI->setId($emiId)->delete($emiId);
+            $data = $this->api->EMI->setId($emiId)->delete($emiId);
         }
-        catch (\Exception $e)
+        catch (ApiError $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
+    public function addEMI($input)
+    {
+        // EMI Plans are modeless so we don't care about live or test
+        $this->setApiCredentials(null);
+        $error = $data = [];
+
+        try
+        {
+            $data = $this->api->EMI->create($input);
+        }
+        catch (ApiError $e)
         {
             $error = $e->getMessage();
         }
