@@ -45,7 +45,7 @@ class AdminTest extends TestCase
                 'id'=> Uuid::generate(),
                 'email' =>static::generateMerchantEmail(),
                 'confirm_token' => static::generateRandomString(24),
-                'name'  => 'XOXO Test Merchant'
+                'name'  => 'RZP Test Merchant'
             ));
 
             $this->merchant_details = $this->createEntity('merchant_details',
