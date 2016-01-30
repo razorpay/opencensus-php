@@ -158,7 +158,9 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
         Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
 
+        // EMI Routes
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
+        Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
 
         // Admin merchant actions
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');

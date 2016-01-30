@@ -23,6 +23,9 @@
         <a href class="list-group-item" ng-click="openAddIIN()">
           Add IIN Rule
         </a>
+        <a href class="list-group-item" ng-click="openAddEMI()">
+          Add EMI Plan
+        </a>
         <a href class="list-group-item" ng-click="openVerifyPayment()">
           Verify Payment
         </a>
@@ -251,6 +254,61 @@
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned banks for the merchant will be replace with selected." ng-click="ok(bankdata)">OK</button>
   </div>
 </script>
+
+<script type="text/ng-template" id="addEMIModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Add EMI Plan</h3>
+  </div>
+  <div class="modal-body banks-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="bank" class="col-lg-2 control-label">Bank</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="bank" ng-model="emi.bank">
+            <option value="HDFC">HDFC</option>
+            <option value="KKBK">KKBK</option>
+            <option value="UTIB">UTIB</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="duration" class="col-lg-2 control-label">Duration (months)</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="duration" ng-model="emi.duration">
+            <option value="3">3</option>
+            <option value="6">6</option>
+            <option value="9">9</option>
+            <option value="12">12</option>
+            <option value="15">15</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="methods" class="col-lg-2 control-label">Methods</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="methods" ng-model="emi.methods">
+            <option value="">Leave Blank</option>
+            <option value="card">Leave Blank</option>
+            <option value="netbanking">Net Banking</option>
+            <option value="wallet">Wallet</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="rate" class="col-lg-2 control-label">Interest Rate</label>
+        <div class="col-lg-10" >
+          <input type="number" class="form-control m-b" name="rate" ng-model="emi.rate" placeholder="1250">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Please make sure you have checked all fields properly." ng-click="ok(emi)">OK</button>
+  </div>
+</script>
+
+
 <script type="text/ng-template" id="verifyPaymentModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Verify Payment</h3>
