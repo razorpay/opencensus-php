@@ -28,7 +28,7 @@ return [
     'testEditIin' => [
         'request' => [
             'url' => '/iins/112333',
-            'method' => 'post',
+            'method' => 'put',
             'content' => [
                 'country' => 'IN',
                 'issuer' => 'HDFC',
