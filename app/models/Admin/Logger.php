@@ -46,6 +46,8 @@ trait Logger
         $text = $this->getMerchantDashboardSlackText($merchant);
         $text .= " $action by $adminId";
 
-        $this->slackPost($text, $data, '#dev-test');
+        $channel = \Config::get('razorpay.slack.operations');
+
+        $this->slackPost($text, $data, $channel);
     }
 }

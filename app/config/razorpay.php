@@ -21,5 +21,10 @@ return array(
     'sorting_hat'   =>  [
         'token' =>  '4cace071107c854f0e320c309da81ff62c950da324e2c21d312362f174ca5b5e',
         'url'   =>  'https://sorting-hat-slack.herokuapp.com/'
+    ],
+
+    'slack' =>  [
+        // Channel to which to log operation team actions
+        'operations'    =>  '#operations_log'
     ]
 );
