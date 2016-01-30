@@ -7,4 +7,9 @@ return array(
     'team' => 'razorpay',
 
     'mock' => $_ENV['SLACK_MOCK'],
+
+    'channels'  =>  [
+        'low'   =>  '#transactions',
+        'high'  =>  '#transactions_high'
+    ]
 );
