@@ -167,6 +167,39 @@ class MerchantFeeTest extends TestCase
         });
     }
 
+    protected function getMockInternationalPricingRepo()
+    {
+        $internationalRule = new Pricing\Entity(array(
+                'id' => '1nvp2XPMmaRLzz',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'international' => true,
+            ));
+
+        $pricingRules = [
+            $internationalRule
+        ];
+
+        $pricingPlan = new Pricing\Plan($pricingRules);
+
+        return Mockery::mock('Illuminate\Database\Connection',
+            function($mock) use ($pricingPlan)
+        {
+            $mock->shouldReceive("getPricingRulesForCard")
+                ->andReturn($pricingPlan);
+        });
+
+    }
+
     // Credit cards that don't have if have
     // no definite rule to fall back,
     // will fall back to debit card rules
@@ -235,7 +268,32 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest("100", "Diners Club", "1fq0OXpgeyafQx", Card\Type::CREDIT);
     }
 
-    protected function runMerchantFeeTest($amount, $networkFullName, $expectedRuleKey, $cardType)
+    public function testInternationalCardRuleSelection()
+    {
+        $isCardInternational = true;
+
+        $this->fee->setPricingRepo($this->getMockInternationalPricingRepo());
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLzz", Card\Type::CREDIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLzz", Card\Type::DEBIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "American Express", "1nvp2XPMmaRLzz", Card\Type::CREDIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "American Express", "1nvp2XPMmaRLzz", Card\Type::DEBIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "American Express", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::CREDIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::DEBIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
+    }
+
+    protected function runMerchantFeeTest($amount, $networkFullName, $expectedRuleKey, $cardType, $isCardInternational = false)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -250,6 +308,8 @@ class MerchantFeeTest extends TestCase
         $payment->card->setNetwork($networkFullName);
 
         $payment->card->setType($cardType);
+
+        $payment->card->setInternational($isCardInternational);
 
         list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
 
