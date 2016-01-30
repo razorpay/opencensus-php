@@ -40,7 +40,7 @@ class Inferno
             return;
         }
 
-        $request = $this->getRequestArray($data, $webhook);
+        $request = $this->getRequestArray($data['event'], $webhook);
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
