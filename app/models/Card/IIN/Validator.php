@@ -30,6 +30,8 @@ class Validator extends Base\Validator
         Entity::TRIVIA        => 'sometimes',
         Entity::ISSUER_NAME   => 'sometimes',
         Entity::EMI           => 'sometimes|integer|in:0,1',
+        Entity::NETWORK       => 'required',
+        Entity::TYPE          => 'required'
     );
 
     protected static $createValidators = array(
@@ -39,6 +41,8 @@ class Validator extends Base\Validator
     );
 
     protected static $editValidators = array(
+        Entity::NETWORK,
+        Entity::TYPE,
         Entity::ISSUER,
     );
 
