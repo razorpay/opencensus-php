@@ -30,8 +30,8 @@ class Validator extends Base\Validator
         Entity::TRIVIA        => 'sometimes',
         Entity::ISSUER_NAME   => 'sometimes',
         Entity::EMI           => 'sometimes|integer|in:0,1',
-        Entity::NETWORK       => 'required',
-        Entity::TYPE          => 'required'
+        Entity::NETWORK       => 'sometimes',
+        Entity::TYPE          => 'sometimes'
     );
 
     protected static $createValidators = array(
@@ -48,6 +48,11 @@ class Validator extends Base\Validator
 
     protected function validateNetwork($input)
     {
+        if(!isset($input[Entity::NETWORK]))
+        {
+            return;
+        }
+
         $network = $input[Entity::NETWORK];
 
         if (Card\Network::isValidNetworkName($network) === false)
@@ -69,6 +74,11 @@ class Validator extends Base\Validator
 
     protected function validateType($input)
     {
+        if(!isset($input[Entity::TYPE]))
+        {
+            return;
+        }
+        
         if (Card\Type::isValidType($input[Entity::TYPE]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
