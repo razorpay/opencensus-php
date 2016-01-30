@@ -83,12 +83,12 @@ class RefundFile
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $data = [
-            'amount'    => $totalAmount,
-            'subject'   => "Kotak NB Refund files for $today",
+            'subject'   => 'Kotak NB Refund files for '.$today,
+            'body'      => 'PFA attached refund file.';
             'file'      => $urlText,
         ];
 
-        $this->mail->queue('emails.admin.kotak_refund', $data, function($message) use ($data)
+        $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 
