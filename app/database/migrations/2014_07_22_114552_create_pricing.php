@@ -43,6 +43,17 @@ class CreatePricing extends Migration
             $table->boolean(Pricing::INTERNATIONAL)
                   ->default(0);
 
+            $table->boolean(Pricing::AMOUNT_RANGE_ACTIVE)
+                  ->default(0);
+
+            $table->integer(Pricing::AMOUNT_RANGE_MIN)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Pricing::AMOUNT_RANGE_MAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Pricing::PERCENT_RATE)
                   ->unsigned()
                   ->default(0);

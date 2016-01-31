@@ -136,6 +136,33 @@ class PricingTest extends TestCase
         return $this->startTest($testData);
     }
 
+    public function testAddAmountRangePricingPlanRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddAmountRangePricingPlanRuleOverlap()
+    {
+        $content = $this->createAmountRangePricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddAmountRangePricingPlanRuleDuplicate()
+    {
+        $content = $this->createAmountRangePricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddDuplicateInternationalPricingPlanRule()
     {
         $content = $this->testAddInternationalPricingPlanRule();
@@ -225,7 +252,7 @@ class PricingTest extends TestCase
             'payment_method_type'  => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'HDFC',
-            'percent_rate' => 1000,);
+            'percent_rate' => 1000);
 
         $request = array(
             'method' => 'POST',
@@ -249,7 +276,8 @@ class PricingTest extends TestCase
             'payment_method_type' => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'SBIN',
-            'percent_rate' => '275',);
+            'percent_rate' => '275',
+            );
 
         $pricingData =
             array(
@@ -300,6 +328,33 @@ class PricingTest extends TestCase
             'url' => '/pricing/'.$pricingPlanId);
 
         $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function createAmountRangePricingPlan()
+    {
+        $pricingPlan = array(
+            'plan_name' => 'AmountRangePlan',
+            'payment_method' => 'card',
+            'payment_method_type'  => 'debit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 1500,
+            'amount_range_active' => true,
+            'amount_range_min' => 100,
+            'amount_range_max' => 25000);
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/pricing',
+            'content' => $pricingPlan);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('rules', $content);
+
+        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
 
         return $content;
     }

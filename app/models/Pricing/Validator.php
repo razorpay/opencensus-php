@@ -4,6 +4,7 @@ namespace Models\Pricing;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use EE\Error\PublicErrorDescription;
 use Models\Base;
 use Models\Payment;
 
@@ -11,11 +12,15 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|',
+        Entity::PLAN_NAME           => 'sometimes|',
         Entity::PAYMENT_METHOD      => 'required|alpha|in:card,netbanking,wallet,emi',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
+        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|integer|min:0',
+        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|integer|max:1000000000',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
@@ -23,7 +28,8 @@ class Validator extends Base\Validator
         'addPlanRuleRate',
         'addPlanRuleNB',
         'addPlanRulePaymentNetwork',
-        'addPlanRuleInternational');
+        'addPlanRuleInternational',
+        'addPlanRuleAmountRange');
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
@@ -111,6 +117,36 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAddPlanRuleAmountRange($input)
+    {
+        if ((isset($input[Entity::AMOUNT_RANGE_ACTIVE]) === false) or
+            ($input[Entity::AMOUNT_RANGE_ACTIVE] === '0'))
+        {
+            return;
+        }
+
+        if ((isset($input[Entity::AMOUNT_RANGE_MIN]) === false) or
+            (isset($input[Entity::AMOUNT_RANGE_MAX]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules require both min and max end of ranges');
+        }
+
+        if ($input[Entity::AMOUNT_RANGE_MIN] >= $input[Entity::AMOUNT_RANGE_MAX])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules require max end of ranges to be greater than'.
+                'min end of range');
+        }
+
+        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD) and
+            ($input[Entity::PAYMENT_METHOD_TYPE] !== 'debit'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount Range Rules are only allowed for debit card method');
+        }
+    }
+
     public function createPlanValidate($input)
     {
         // If no plan name, then set it to null
@@ -171,11 +207,64 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
-                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]))
+                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
+                ($rule[Entity::AMOUNT_RANGE_ACTIVE] === $newRule[Entity::AMOUNT_RANGE_ACTIVE]) and
+                ($rule[Entity::AMOUNT_RANGE_MIN] === $newRule[Entity::AMOUNT_RANGE_MIN]) and
+                ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
+
+            if ($newRule[Entity::AMOUNT_RANGE_ACTIVE] and
+                $rule[Entity::AMOUNT_RANGE_ACTIVE])
+            {
+                $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
+            }
+        }
+    }
+
+    protected function checkPricingRuleForAmountRangeOverlap($rule, $newRule)
+    {
+        list($newRuleMin, $newRuleMax) = $newRule->getAmountRange();
+        list($oldRuleMin, $oldRuleMax) = (new Entity($rule))->getAmountRange();
+
+        //
+        // We need to effectively check that the new pricing range does not overlap
+        // with the existing pricing range.
+        //
+        // First we check that new range boundaries are not in between the old
+        // range boundaries in any way.
+        // This checks for all conditions except one.
+        //
+        // The old range should not be a subset of the new range and so we
+        // also check for that.
+        //
+        // Max of one rule can be equal to min of another rule, and vice versa.
+        // But min of one rule cannot be equal to min of another
+        // and same for max. This needs to be ensure within the checks we have.
+        //
+
+        $flag = false;
+
+        if (($this->between($newRuleMin, $oldRuleMin, $oldRuleMax)) or
+            ($this->between($newRuleMax, $oldRuleMin, $oldRuleMax)) or
+            ($newRuleMin === $oldRuleMin) or
+            ($newRuleMax === $oldRuleMax))
+        {
+            $flag = true;
+        }
+
+        if (($this->between($oldRuleMin, $newRuleMin, $newRuleMax)) and
+            ($this->between($oldRuleMax, $newRuleMin, $newRuleMax)))
+        {
+            $flag = true;
+        }
+
+        if ($flag)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
         }
     }
 
@@ -186,5 +275,10 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
         }
+    }
+
+    protected function between($n, $min, $max)
+    {
+        return (($min < $n) and ($n < $max));
     }
 }

@@ -49,7 +49,7 @@ class Repository extends Base\Repository
     public function getMerchantPricingPlan($merchant)
     {
         $pricingPlanId = $merchant->getPricingPlanId();
-//sd($pricingPlanId);
+
         return $this->getPricingPlanByIdOrFailPublic($pricingPlanId);
     }
 
@@ -58,7 +58,7 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingRulesForGivenCardNetwork($id, $network, $isInternational = false)
+    public function getPricingRulesForCard($id, $isInternational = false, $network = null, $methodType = null)
     {
         $repo = $this->repo;
 
@@ -68,37 +68,32 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::INTERNATIONAL, '=', $isInternational)
                     ->where(function($query) use ($network)
                     {
-                        $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
-                              ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
+                        $query->whereNull(Pricing\Entity::PAYMENT_NETWORK);
+
+                        if ($network !== null)
+                        {
+                            $query->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
+                        }
+                    })
+                    ->where(function($query) use ($methodType)
+                    {
+                        $query->whereNull(Pricing\Entity::PAYMENT_METHOD_TYPE);
+
+                        if ($methodType !== null)
+                        {
+                            $query->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
+                        }
                     })
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
 
-    public function getPricingRulesForNetBanking($id)
+    public function getPricingRulesForMethod($pricingPlanId, $method)
     {
         $repo = $this->repo;
 
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::NETBANKING)
-                    ->get();
-    }
-
-    public function getPricingRulesForWallet($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::WALLET)
-                    ->get();
-    }
-
-    public function getPricingRulesForEmi($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::EMI)
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $pricingPlanId)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->get();
     }
 

@@ -7,9 +7,12 @@ use EE\Exception;
 use Models\Card;
 use Models\Payment;
 use Models\Pricing;
+use Services\SlackPoster;
 
 class Fee
 {
+    use SlackPoster;
+
     const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
@@ -137,46 +140,9 @@ class Fee
         {
             $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
         }
-        else if ($payment->isNetbanking())
-        {
-            $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
-                    [$pricing->toArray()]);
-            }
-
-            $rule = $pricing->first();
-        }
-        else if ($payment->isWallet())
-        {
-            $pricing = $this->repo->getPricingRulesForWallet($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
-            }
-
-            $rule = $pricing->first();
-        }
-        else if($payment->isEmi())
-        {
-            $pricing = $this->repo->getPricingRulesForEmi($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Currently only 1 emi pricing rule allowed. Found: ' . count($pricing));
-            }
-
-            $rule = $pricing->first();
-        }
         else
         {
-            throw new Exception\InvalidArgumentException('Argument - Method: ' . $payment->getMethod());
+            $rule = $this->getRelevantPricingRuleForMethod($pricingPlanId, $payment);
         }
 
         if ($rule === null)
@@ -188,39 +154,193 @@ class Fee
         return $rule;
     }
 
+    protected function getRelevantPricingRuleForMethod($pricingPlanId, $payment)
+    {
+        $method = $payment->getMethod();
+
+        $pricing = $this->repo->getPricingRulesForMethod($pricingPlanId, $method);
+
+        if (count($pricing) > 1)
+        {
+            throw new Exception\LogicException(
+                'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
+                [$pricing->toArray()]);
+        }
+
+        $rule = $pricing->first();
+
+        return $rule;
+    }
+
     protected function getRelevantPricingRuleForCard($pricingPlanId, $payment)
     {
-        $card = $payment->card;
+        // Fee based on the method type
+        $cardType = $payment->card->getType();
 
-        $network = Card\Network::getCode($card->getNetwork());
+        if ($cardType === Card\Type::UNKNOWN)
+        {
+            $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
+
+            $this->slackPost(
+                'Unknown card type found',
+                $slackArray,
+                ['channel' => '#tech_logs']);
+
+            $cardType = Card\Type::CREDIT;
+        }
 
         $isInternational = $payment->isInternational();
 
-        $pricing = $this->repo->
-            getPricingRulesForGivenCardNetwork($pricingPlanId, $network, $isInternational);
+        $network = Card\Network::getCode($payment->card->getNetwork());
 
-        $rule = null;
+        $pricing = $this->repo->getPricingRulesForCard(
+                        $pricingPlanId, $isInternational, $network, $cardType);
+
+        $amount = $payment->getAmount();
+
+        $rule = $this->getRuleFromPricingCollection($pricing, $network, $cardType, $amount);
+
+        return $rule;
+    }
+
+    protected function getRuleFromPricingCollection($pricing, $network, $cardType, $amount)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
         $rules = $pricing->all();
 
-        if (count($rules) === 1)
+        // Current Implementation
+        // 1. Filter based on Network
+        // 2. Filter based on Card Type and AmountRange (if applicable.)
+
+        $rules = $this->filterRulesOnNetwork($rules, $network);
+
+        $rulesMap = $this->filterRulesOnCardTypeAndAmountRange($rules, $cardType);
+
+        $rule = $this->chooseRuleWithAmount($rulesMap, $amount);
+
+        if ($rule === null)
         {
-            $rule = $pricing->first();
+            throw new Exception\LogicException(
+                'Failed to find a valid pricing rule for the payment');
         }
-        else if (count($rules) === 2)
+
+        return $rule;
+    }
+
+    // Filters the given rules to give only the currently applicable
+    // set of rules based on network. If corresponding network rules are
+    // not available, rules other than these are provided.
+    protected function filterRulesOnNetwork($rules, $network)
+    {
+        $networkMatchRules     = [];
+        $nullnetworkMatchRules = [];
+
+        foreach ($rules as $item)
         {
-            foreach ($pricing->all() as $item)
+            if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
             {
-                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
+                $networkMatchRules[] = $item;
+            }
+            else
+            {
+                $nullnetworkMatchRules[] = $item;
+            }
+        }
+
+        if (empty($networkMatchRules))
+        {
+            return $nullnetworkMatchRules;
+        }
+
+        return $networkMatchRules;
+    }
+
+    // Groups currently available rules into those
+    // based on current CardType and AmountRange.
+    protected function filterRulesOnCardTypeAndAmountRange($rules, $cardType)
+    {
+        $feeTypeAmountRules    = [];
+        $nullTypeAmountRules   = [];
+        $feeTypeNonAmountRule  = [];
+        $nullTypeNonAmountRule = [];
+
+        foreach ($rules as $item)
+        {
+            if (($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $cardType))
+            {
+                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
                 {
-                    $rule = $item;
+                    $feeTypeAmountRules[] = $item;
+                }
+                else
+                {
+                    $feeTypeNonAmountRule = $item;
+                }
+            }
+            else
+            {
+                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                {
+                    $nullTypeAmountRules[] = $item;
+                }
+                else
+                {
+                    $nullTypeNonAmountRule = $item;
+                }
+            }
+        }
+
+        return ['typeNonAmountRule' => $feeTypeNonAmountRule,
+                'typeAmountRules' => $feeTypeAmountRules,
+                'nullAmountRules' => $nullTypeAmountRules,
+                'nullNonAmountRule' => $nullTypeNonAmountRule];
+    }
+
+    // Choose the applicable rule based upon the provided rules
+    // map and the amount. Amount is considered only if amount
+    // rules are available for current type.
+    protected function chooseRuleWithAmount($rulesMap, $amount)
+    {
+        $rule = null;
+
+        if (empty($rulesMap['typeAmountRules']) === false)
+        {
+            foreach ($rulesMap['typeAmountRules'] as $ruleItem)
+            {
+                if ((($amount === Payment\Entity::MIN_PAYMENT_AMOUNT) and
+                    $ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) === $amount) or
+                    (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount) and
+                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount)))
+                {
+                    $rule = $ruleItem;
                     break;
                 }
             }
         }
-        else
+        else if (empty($rulesMap['typeNonAmountRule']) === false)
         {
-            throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment');
+            $rule = $rulesMap['typeNonAmountRule'];
+        }
+        else if (empty($rulesMap['nullAmountRules']) === false)
+        {
+            foreach ($rulesMap['nullAmountRules'] as $ruleItem)
+            {
+                if ((($amount === Payment\Entity::MIN_PAYMENT_AMOUNT) and
+                    $ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) === $amount) or
+                    (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount) and
+                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount)))
+                {
+                    $rule = $ruleItem;
+                    break;
+                }
+            }
+        }
+        else if (empty($rulesMap['nullNonAmountRule']) === false)
+        {
+            $rule = $rulesMap['nullNonAmountRule'];
         }
 
         return $rule;
