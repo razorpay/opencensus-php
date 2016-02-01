@@ -398,4 +398,12 @@ class Service extends Base\Service
 
         return compact('test', 'live');
     }
+
+    public function fetchReferredMerchants($merchantId)
+    {
+        $tag = "ref-$merchantId";
+
+        return Merchant\Entity::withAnyTag($tag)
+            ->get(['id', 'name', 'email', 'activated', 'created_at']);
+    }
 }
