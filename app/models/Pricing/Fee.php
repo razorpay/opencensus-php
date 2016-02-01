@@ -202,7 +202,7 @@ class Fee
                 ['channel' => '#tech_logs']);
 
             */
-            $cardType = Card\Type::CREDIT;
+            $cardType = Card\Type::DEBIT;
 
         }
 
