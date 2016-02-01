@@ -3,14 +3,26 @@
 namespace Models\Merchant\Webhook;
 
 use Requests;
+use Trace\TraceCode;
 
 class Inferno
 {
+    protected $trace;
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     public function fire($job, $data)
     {
         $repo = new Repository;
 
-        $webhook = $repo->find($data['webhook_id']);
+        $mode = $data['mode'];
+
+        $webhook = $repo->connection($mode)->find($data['webhook_id']);
 
         if ($webhook === null)
         {
@@ -28,18 +40,36 @@ class Inferno
             return;
         }
 
-        $request = $this->getRequestArray($data, $webhook);
+        $request = $this->getRequestArray($data['event'], $webhook);
+
+        $this->trace->info(
+            TraceCode::WEBHOOK_FIRING,
+            $request);
 
         $response = $this->makeRequest($request);
 
         if ($response->success === false)
         {
+            $this->trace->info(
+                TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                [
+                    'webhook' => $webhook->getId(),
+                    'response_code' => $response->status_code
+                ]);
+
             // It's a failure, increment failure count.
             $repo->bumpFailureCount($webhook);
 
             if (($webhook->isActive() === false) or
                 ($job->attempts() >= 3))
             {
+                $this->trace->info(
+                    TraceCode::WEBHOOK_DEACTIVATE,
+                    [
+                        'webhook' => $webhook->getId(),
+                        'response_code' => $response->status_code
+                    ]);
+
                 // Webhook is now inactive
                 // So let's just delete the job
                 $job->delete();
@@ -56,6 +86,13 @@ class Inferno
             {
                 $repo->resetFailureCount($webhook);
             }
+
+            $this->trace->info(
+                TraceCode::WEBHOOK_FIRED,
+                [
+                    'webhook' => $webhook->getId(),
+                    'response_code' => $response->status_code,
+                ]);
 
             $job->delete();
         }
@@ -86,7 +123,7 @@ class Inferno
             'Content-Type' => 'application/json',
         ];
 
-        $request['options'] = ['timeout' => 5];
+        $request['options'] = ['timeout' => 10];
 
         return $request;
     }

@@ -30,7 +30,7 @@ class Repository extends Base\Repository
         //
         // retrieve iin details
         //
-        return Card\Detail::find($iin);
+        return Card\IIN\Entity::find($iin);
     }
 
     protected function addQueryParamStatus($query, $params)

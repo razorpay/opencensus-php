@@ -170,6 +170,8 @@ trait Inquiry
         $data = &$this->inquiryRequest['data'];
         $data = $content;
 
+        $this->inquiryResponse['data'] = [];
+
         $this->runRequestResponseFlow(
             $this->inquiryRequest,
             $this->inquiryResponse);

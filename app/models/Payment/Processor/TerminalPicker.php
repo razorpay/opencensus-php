@@ -8,6 +8,8 @@ use EE\Error\ErrorCode;
 use Models\Bank\IFSC;
 use Models\Card;
 use Models\Card\Network;
+use Models\Emi;
+use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Method;
 use Models\Payment\Gateway;
@@ -34,6 +36,8 @@ class TerminalPicker
     protected $merchant;
 
     protected $network;
+
+    protected $sharedTerminals = [];
 
     public function __construct()
     {
@@ -84,6 +88,10 @@ class TerminalPicker
 
             case Method::WALLET:
                 $terminal = $this->pickWalletTerminal($terminals, $payment);
+                break;
+
+            case Method::EMI:
+                $terminal = $this->pickEmiTerminal($terminals, $payment);
                 break;
 
             default:
@@ -161,7 +169,6 @@ class TerminalPicker
         }
 
         return $this->getSharedTerminalForNetbanking($payment);
-
     }
 
     protected function pickWalletTerminal($terminals, $payment)
@@ -180,6 +187,19 @@ class TerminalPicker
         return $this->getSharedTerminalForWallet($payment);
     }
 
+    protected function pickEmiTerminal($terminals, $payment)
+    {
+        $bank = $this->payment->getBank();
+
+        if ($bank === IFSC::KKBK)
+        {
+            // for kotak, process as normal card transaction and mail for emi
+            return $this->pickCardTerminal($terminals, $payment);
+        }
+
+        return $this->getSharedTerminalForEmi($payment);
+    }
+
     protected function getSharedTerminalForCard($payment)
     {
         $terminal = $this->getSharedCategoryTerminalForCard($payment);
@@ -189,7 +209,14 @@ class TerminalPicker
             return $terminal;
         }
 
-        return $this->getSharedGenericTerminalForCard($payment);
+        $terminal = $this->getSharedGenericTerminalForCard($payment);
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        return $this->getSharedGenericTerminalForCard2($payment);
     }
 
     protected function getSharedCategoryTerminalForCard($payment)
@@ -234,6 +261,42 @@ class TerminalPicker
         }
     }
 
+    protected function getSharedGenericTerminalForCard2($payment)
+    {
+        $this->getSharedTerminals();
+
+        $sharedTerminals = $this->sharedTerminals;
+
+        $network = $payment->card->getNetworkCode();
+
+        if ($payment->merchant->isInternational())
+        {
+            $gateways = Gateway::$internationalCardGateways;
+
+            if ($this->selectSharedCardTerminalFromGatewayList2($gateways, $network))
+            {
+                return $this->terminal;
+            }
+        }
+
+        $gateways = Gateway::$domesticCardGateways;
+
+        if ($this->selectSharedCardTerminalFromGatewayList2($gateways, $network))
+        {
+            return $this->terminal;
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $gateways = Gateway::$domesticCardGatewaysInTest;
+
+            if ($this->selectSharedCardTerminalFromGatewayList2($gateways, $network))
+            {
+                return $this->terminal;
+            }
+        }
+    }
+
     protected function getSharedTerminalForNetbanking($payment)
     {
         $bank = $this->payment->getBank();
@@ -246,6 +309,20 @@ class TerminalPicker
         }
 
         $terminal = $this->selectSharedGatewayNetbankingTerminal();
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $terminal = $this->selectSharedDirectNetbankingBankTerminal2($bank);
+
+        if ($terminal !== null)
+        {
+            return $terminal;
+        }
+
+        $terminal = $this->selectSharedGatewayNetbankingTerminal2();
 
         return $terminal;
     }
@@ -374,6 +451,22 @@ class TerminalPicker
         }
     }
 
+    protected function selectSharedDirectNetbankingBankTerminal2($bank)
+    {
+        if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
+        {
+            return;
+        }
+
+        $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+        $this->getSharedTerminals();
+
+        return $this->sharedTerminalExists($sharedTerminal);
+    }
+
     protected function selectSharedGatewayNetbankingTerminal()
     {
         $gateways = Gateway::$netbankingGateways;
@@ -385,6 +478,25 @@ class TerminalPicker
             if ($this->terminalExists($sharedTerminal))
             {
                 return $this->terminal;
+            }
+        }
+    }
+
+    protected function selectSharedGatewayNetbankingTerminal2()
+    {
+        $this->getSharedTerminals();
+
+        $gateways = Gateway::$netbankingGateways;
+
+        foreach ($gateways as $gateway)
+        {
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+            $terminal = $this->sharedTerminalExists($sharedTerminal);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
             }
         }
     }
@@ -404,6 +516,23 @@ class TerminalPicker
         }
     }
 
+    protected function getSharedTerminalForEmi($payment)
+    {
+        $bank = $this->payment->getBank();
+
+        $gateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
+
+        $emiPlanId = $this->payment->getEmiPlanId();
+
+        $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
+
+        $emiDuration = $emiPlan->getDuration();
+
+        $terminal = $this->repo->getEmiTerminal(Merchant\Account::SHARED_ACCOUNT, $gateway, $emiDuration);
+
+        return $terminal;
+    }
+
     protected function validateCount($terminals, $merchant)
     {
         $count = $terminals->count();
@@ -419,6 +548,28 @@ class TerminalPicker
     protected function getTerminals($merchant)
     {
         return $this->repo->fetch(['count' => 100], $merchant->getId());
+    }
+
+    protected function getSharedTerminals()
+    {
+        $gatewayTerminals = $this->repo->getSharedTerminalsOnCommonAccount();
+
+        $terminals = [];
+
+        foreach ($gatewayTerminals as $terminal)
+        {
+            $gateway = $terminal->getGateway();
+
+            if (isset($terminals[$gateway]))
+            {
+                array_push($terminals[$gateway], $terminal);
+            }
+        }
+
+
+        $this->sharedTerminals = $terminals;
+
+        return $this->sharedTerminals;
     }
 
     protected function selectSharedCardTerminalFromGatewayList($gateways, $network)
@@ -437,10 +588,39 @@ class TerminalPicker
         }
     }
 
+    protected function selectSharedCardTerminalFromGatewayList2($gateways, $network)
+    {
+        foreach ($gateways as $gateway)
+        {
+            $sharedTerminal = Shared::getSharedTerminalForGateway($gateway);
+
+            $terminal = $this->sharedTerminalExists($sharedTerminal);
+
+            if (($terminal !== null) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $terminal;
+            }
+        }
+    }
+
     protected function terminalExists($terminal)
     {
         $this->terminal = $this->repo->find($terminal);
 
         return $this->terminal;
+    }
+
+    protected function sharedTerminalExists($terminal)
+    {
+        $sharedTerminals = $this->sharedTerminals;
+
+        foreach ($sharedTerminals as $shared)
+        {
+            if ($shared->getId() === $terminal)
+            {
+                return $terminal;
+            }
+        }
     }
 }

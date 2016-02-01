@@ -36,6 +36,19 @@ class Service extends Base\Service
     {
         $iin = (new Entity)->build($input);
 
+        $this->repo->saveOrFail($iin);
+        
+        return $iin->toArrayPublic();
+    }
+
+    public function editIin($id, $input)
+    {
+        $iin = $this->repo->findOrFail($id);
+
+        $iin->edit($input);
+
+        $this->repo->saveOrFail($iin);
+
         return $iin->toArrayPublic();
     }
 }

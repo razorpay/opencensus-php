@@ -36,6 +36,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="netbanking">Net Banking</option>
                 <option value="card" selected>Card</option>
                 <option value="wallet">Wallet</option>
+                <option value="emi">Emi</option>
             </select>
         </td>
     </tr>
@@ -70,10 +71,22 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </td>
     </tr>
     <tr>
+        <td colspan="40">Select EMI Duration</td>
+        <td>
+            <select name="emi_duration">
+                <option value="3">3 Months @12%</option>
+                <option value="6">6 Months @12%</option>
+                <option value="9">9 Months @14%</option>
+                <option value="12">12 Months @14%</option>
+            </select>
+        </td>
+    </tr>    
+    <tr>
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
         <input type="hidden" value="INR" name="currency">
+        <input type="hidden" value="<?=$key_id?>" name="key_id">
     </tr>
     <tr>
         <td colspan="40">Card No: </b> </td>

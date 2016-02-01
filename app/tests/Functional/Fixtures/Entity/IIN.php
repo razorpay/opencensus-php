@@ -1,0 +1,87 @@
+<?php
+
+namespace Tests\Functional\Fixtures\Entity;
+
+class Iin extends Base
+{
+    protected $items = array(
+        array(
+            'iin'           => '400040',
+            'category'      => 'CORPORATE T&E',
+            'network'       => 'Visa',
+            'type'          => 'debit',
+            'country'       => 'IN',
+            'issuer_name'   => 'STATE BANK OF INDI',
+            'trivia'        => 'random',
+        ),
+        array(
+            'iin'           => '502165',
+            'category'      => null,
+            'network'       => 'Maestro',
+            'type'          => 'debit',
+            'country'       => 'IN',
+            'issuer_name'   => null,
+            'trivia'        => 'random',
+            ),
+        array(
+            'iin'           => '502166',
+            'category'      => null,
+            'network'       => 'Maestro',
+            'type'          => 'debit',
+            'country'       => 'IN',
+            'issuer_name'   => null,
+            'trivia'        => 'random',
+            ),
+        array(
+            'iin'           => '549752',
+            'category'      => 'STANDARD',
+            'network'       => 'MasterCard',
+            'type'          => 'credit',
+            'country'       => 'IN',
+            'issuer_name'   => 'PUNJAB NATIONAL BANK',
+            'trivia'        => 'random trivia'
+            ),
+        array(
+            'iin'           => '607002',
+            'category'      => 'STANDARD',
+            'network'       => 'RuPay',
+            'type'          => 'debit',
+            'country'       => 'IN',
+            'issuer_name'   => 'PUNJAB NATIONAL BANK',
+            'trivia'        => 'random trivia'
+            ),
+        array(
+            'iin'           => '607500',
+            'category'      => 'STANDARD',
+            'network'       => 'RuPay',
+            'type'          => 'debit',
+            'country'       => 'IN',
+            'issuer_name'   => 'PUNJAB NATIONAL BANK',
+            'trivia'        => 'random trivia'
+            ),
+        array(
+            'iin'           => '414767',
+            'category'      => 'STANDARD',
+            'network'       => 'Visa',
+            'type'          => 'credit',
+            'country'       => 'IN',
+            'issuer_name'   => 'KOTAK',
+            'issuer'        => 'HDFC',
+            'emi'           => 1,
+            'trivia'        => 'random trivia'
+            ),
+        );
+
+    public function createDefaultIins()
+    {
+        $items = $this->items;
+
+        $iins = [];
+        foreach ($items as $attributes)
+        {
+            $iins[] = $this->fixtures->create('iin', $attributes);
+        }
+
+        return $iins;
+    }
+}

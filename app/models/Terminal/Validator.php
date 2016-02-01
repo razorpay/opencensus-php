@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
+use Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -21,17 +22,21 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,15',
         Entity::SHARED                      => 'sometimes|boolean',
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY);
+        Entity::GATEWAY, Entity::EMI);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15'
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,15',
     );
 
     protected static $billdeskTerminalRules = array(
@@ -104,6 +109,26 @@ class Validator extends Base\Validator
         if (property_exists(__CLASS__, $var))
         {
             $this->validateInput($op, $input);
+        }
+    }
+
+    protected function validateEmi($input)
+    {
+        if(!isset($input[Entity::EMI]))
+        {
+            return;
+        }
+
+        if($input[Entity::MERCHANT_ID] != Merchant\Account::SHARED_ACCOUNT)
+        {
+            throw new Exception\LogicException(
+                'EMI Terminals can only be added to shared merchant account');
+        }
+
+        if(!isset($input[Entity::SHARED]) or ($input[Entity::SHARED] !== '1'))
+        {
+            throw new Exception\LogicException(
+                'EMI Terminals must be shared terminals');
         }
     }
 

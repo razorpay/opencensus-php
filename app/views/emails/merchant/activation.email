@@ -114,8 +114,7 @@
 
 <a title="Merchant Website" href="{{$merchant['website']}}">{{{$merchant['billing_label']}}}</a>
 
-is now active. You have opted for the {{{$plan['name']}}} plan. The pricing details
-associated with the plan are:
+is now active. The pricing details associated with your account are:
 
 <ul align="left">
   @foreach ($rules as $pricing => $methodDisplay)

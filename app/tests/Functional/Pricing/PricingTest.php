@@ -127,6 +127,78 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddInternationalPricingPlanRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddAmountRangePricingPlanRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddAmountRangePricingPlanRuleOverlap()
+    {
+        $content = $this->createAmountRangePricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddAmountRangePricingPlanRuleDuplicate()
+    {
+        $content = $this->createAmountRangePricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddDuplicateInternationalPricingPlanRule()
+    {
+        $content = $this->testAddInternationalPricingPlanRule();
+
+        $testData['request']['url'] = '/pricing/'. $content['plan_id'] . '/rule';
+
+        $this->startTest($testData);
+
+        $this->startTest($testData);
+    }
+
+    public function testAddInternationalPricingPlanRuleForNonCardMethod()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddInternationalPricingPlanRuleWithExtraFields()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        return $this->startTest($testData);
+    }
+
+    public function testAddDuplicateWalletPricingRule()
+    {
+        $testData['request']['url'] = '/pricing/'. '1hDYlICobzOCYt' . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testDeletePricingPlanRule()
     {
         $content = $this->startTest();
@@ -142,7 +214,7 @@ class PricingTest extends TestCase
 
         $pricing = $this->getEntityById('pricing', $ruleId, true);
 
-        $this->testData[__FUNCTION__]['request']['url'] = 
+        $this->testData[__FUNCTION__]['request']['url'] =
                 '/pricing/'.$pricing['plan_id'].'/rule/'.$ruleId;
 
         $this->startTest();
@@ -190,6 +262,7 @@ class PricingTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('rules', $content);
+
         $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
 
         return $content;
@@ -203,7 +276,8 @@ class PricingTest extends TestCase
             'payment_method_type' => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'SBIN',
-            'percent_rate' => '275');
+            'percent_rate' => '275',
+            );
 
         $pricingData =
             array(
@@ -212,19 +286,19 @@ class PricingTest extends TestCase
                     'payment_method_type' => 'credit',
                     'payment_network' => 'DICL',
                     'payment_issuer' => 'ICIC',
-                    'percent_rate' => 250),
+                    'percent_rate' => 250,),
                 array(
                     'payment_method' => 'card',
                     'payment_method_type' => 'debit',
                     'payment_network' => 'MAES',
                     'payment_issuer' => 'PUNB',
-                    'percent_rate' => 250),
+                    'percent_rate' => 250,),
                 array(
                     'payment_method' => 'card',
                     'payment_method_type' => 'credit',
                     'payment_network' => 'MC',
                     'payment_issuer' => 'AXIS',
-                    'fixed_rate' => 3000)
+                    'fixed_rate' => 3000,)
                 );
 
         $request = array(
@@ -254,6 +328,33 @@ class PricingTest extends TestCase
             'url' => '/pricing/'.$pricingPlanId);
 
         $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function createAmountRangePricingPlan()
+    {
+        $pricingPlan = array(
+            'plan_name' => 'AmountRangePlan',
+            'payment_method' => 'card',
+            'payment_method_type'  => 'debit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 1500,
+            'amount_range_active' => true,
+            'amount_range_min' => 100,
+            'amount_range_max' => 25000);
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/pricing',
+            'content' => $pricingPlan);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('rules', $content);
+
+        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
 
         return $content;
     }

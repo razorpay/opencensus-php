@@ -21,6 +21,7 @@ class Pricing extends Base
                         'payment_issuer' => null,
                         'percent_rate' => 200,
                         'fixed_rate' => 0,
+                        'international' => 0,
                     ),
                     array(
                         'id' => '1OwH8rTI0ejFxS',
@@ -32,6 +33,7 @@ class Pricing extends Base
                         'payment_issuer' => null,
                         'percent_rate' => 300,
                         'fixed_rate' => 0,
+                        'international' => 0,
                     ),
                     array(
                         'id' => '1fq0OXpgeyafQq',
@@ -43,6 +45,7 @@ class Pricing extends Base
                         'payment_issuer' => null,
                         'percent_rate' => 300,
                         'fixed_rate' => 0,
+                        'international' => 0,
                     ),
                     array(
                         'id' => '1zD0BXpeOyaqpB',
@@ -54,6 +57,7 @@ class Pricing extends Base
                         'payment_issuer' => null,
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
+                        'international' => 0,
                     ),
                     array(
                         'id' => '1zE3CYqf1zbyrD',
@@ -65,7 +69,20 @@ class Pricing extends Base
                         'payment_issuer' => null,
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
+                        'international' => 0,
                     ),
+                    array(
+                        'id' => '1zE3CYqf1zbyaE',
+                        'plan_id' => '1hDYlICobzOCYt',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_method' => 'emi',
+                        'payment_method_type' => null,
+                        'payment_network' => null,
+                        'payment_issuer' => null,
+                        'percent_rate' => 250,
+                        'fixed_rate' => 0,
+                    ),
+
                 );
 
         $this->addPricingRulesToDb($rows);

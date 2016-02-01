@@ -46,6 +46,7 @@ final class Route
         'iin_fetch_by_iin'                      => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
         'iin_fetch_multiple'                    => ['get',      'iins',                                     'CardController@getIins'                                            ],
         'iin_add'                               => ['post',     'iins',                                     'CardController@postIin'                                            ],
+        'iin_edit'                              => ['put',      'iins/{id}',                                'CardController@editIin'                                            ],
         'merchant_public_get_banks'             => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                       => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                    => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                                       ],
@@ -161,7 +162,11 @@ final class Route
         'daily_settlement_compute_tax'          => ['post',     'dailysettlements/compute/tax',             'SettlementController@postComputeDailySettlementServiceTax'         ],
         'get_features'                          => ['get',      'features',                                 'MerchantController@getAllFeatures'                                 ],
         'dummy_feature'                         => ['get',      'features/dummy',                           'MerchantController@getDummyFeatures'                               ],
-    );
+        'add_emi_plan'                          => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
+        'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
+        'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
+        'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+    ); 
 
     public static $public = array(
         'checkout',
@@ -190,6 +195,7 @@ final class Route
         'mock_wallet_payment',
         'dummy_return_callback',
         'dummy_critical_error',
+        'get_emi_plans',
     );
 
     public static $publicCallback = array(
@@ -278,7 +284,6 @@ final class Route
         'settlement_compute_tax',
         'daily_settlement_compute_tax',
         'refund_netbanking_generate_excel',
-        'transaction_monthly_report',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -287,17 +292,22 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'iin_edit',
         'send_test_newsletter',
         'send_newsletter',
         'payment_compute_tax',
         'merchant_add_features',
         'merchant_get_features',
         'get_features',
+        'add_emi_plan',
+        'delete_emi_plan',
+        'get_emi_plan_by_id'
     );
 
     public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
+        'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
         'setl_fetch_by_id',
@@ -402,9 +412,12 @@ final class Route
         return self::getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array())
+    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
-        $key = \BasicAuth::getPublicKey();
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
 
         return self::getUrl('payment_callback_with_key_post', $parameters, $key);
     }

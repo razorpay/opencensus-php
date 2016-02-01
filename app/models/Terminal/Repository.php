@@ -5,6 +5,7 @@ namespace Models\Terminal;
 use Models\Base;
 use Models\Terminal;
 use Models\Payment;
+use Models\Merchant;
 
 class Repository extends Base\Repository
 {
@@ -97,6 +98,25 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::SHARED, '=', '1')
                     ->where(Terminal\Entity::CATEGORY, '=', $category)
                     ->first();
+    }
+
+    public function getEmiTerminal($mId, $gateway, $duration)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $mId)
+                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Terminal\Entity::SHARED, '=', '1')
+                    ->where(Terminal\Entity::EMI, '=', '1')
+                    ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
+                    ->first();
+    }
+
+    public function getSharedTerminalsOnCommonAccount()
+    {
+        return $this->newQuery()
+                    ->where(Terminal\Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
+                    ->get();
     }
 
     public function deleteOrFail($entity)

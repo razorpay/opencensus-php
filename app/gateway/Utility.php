@@ -26,7 +26,8 @@ class Utility
             (strpos($msg, 'failed to connect') !== false) or
             (strpos($msg, 'could not resolve host') !== false) or
             (strpos($msg, 'resolving timed out') !== false) or
-            (strpos($msg, 'name lookup timed out' !== false)))
+            (strpos($msg, 'name lookup timed out') !== false) or
+            (strpos($msg, 'connection timed out') !== false))
         {
             return true;
         }

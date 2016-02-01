@@ -18,6 +18,17 @@ class Notify
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
 
+    /**
+     * The minimum amount for a transaction to be considered risky
+     * This is used to decide low and high value transactions and pick
+     * the correct slack channel. Currently set to INR 1000
+     */
+    const MIN_RISK_AMOUNT = 100000;
+
+    /**
+     * When are receipt emails sent to the customer
+     * @var Array
+     */
     protected static $receptEmails = [
         self::AUTHORIZED,
         self::FAILED_TO_AUTHORIZED
@@ -171,8 +182,27 @@ class Notify
         if ((array_key_exists($event, $slackMessages)) and
             ($this->isSlackEnabled($event)))
         {
-            $this->slackPost($slackMessages[$event], $slackData);
+            $settings = [
+                'channel'   => $this->getSlackChannel()
+            ];
+
+            $this->slackPost($slackMessages[$event], $slackData, $settings);
         }
+    }
+
+    /**
+     * Returns the slack channel to be used for posting
+     */
+    protected function getSlackChannel()
+    {
+        $channel = \Config::get('slack.channels.low');
+
+        if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
+        {
+            $channel = \Config::get('slack.channels.high');
+        }
+
+        return $channel;
     }
 
     /**

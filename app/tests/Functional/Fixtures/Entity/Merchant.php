@@ -166,6 +166,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['card' => false]);
     }
 
+    public function enableEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => true]);
+    }
+
+    public function disableEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => false]);
+    }
+
     public function enableMobikwik($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['mobikwik' => true]);

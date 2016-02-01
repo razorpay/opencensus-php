@@ -10,6 +10,8 @@ use Trace\TraceCode;
 
 class ApiEventSubscriber
 {
+    protected $app;
+
     /**
      * Event being fired
      * @var string
@@ -24,13 +26,18 @@ class ApiEventSubscriber
 
     public function __construct()
     {
-        $app = \App::getFacadeRoot();
+        $this->app = \App::getFacadeRoot();
 
-        $this->event = $app['events'];
+        $this->event = $this->app['events'];
 
-        $this->queue = $app['queue'];
+        $this->queue = $this->app['queue'];
 
-        $this->trace = $app['trace'];
+        $this->trace = $this->app['trace'];
+    }
+
+    public function getMode()
+    {
+        return $this->app['rzp.mode'];
     }
 
     public function onEvent($params)
@@ -78,7 +85,6 @@ class ApiEventSubscriber
 
         $attributes = array(
             Entity::EVENT       => $eventFired,
-            Entity::MERCHANT_ID => $payment->getMerchantId(),
             Entity::CONTAINS    => Contains::getEntityNamesForEvent($eventFired),
             Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
         );
@@ -96,6 +102,7 @@ class ApiEventSubscriber
         $event->merchant()->associate($payment->merchant);
 
         $data = array(
+            'mode'          => $this->getMode(),
             'event'         => json_encode($event->toArrayPublic()),
             'webhook_id'    => $webhook->getId());
 

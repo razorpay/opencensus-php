@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.24",
+            "version": "2.8.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "54b67f902bb2c5bbab481bc3c46537752a018830"
+                "reference": "c1605360b6624958a5397601ad5543cd45fcf8f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/54b67f902bb2c5bbab481bc3c46537752a018830",
-                "reference": "54b67f902bb2c5bbab481bc3c46537752a018830",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c1605360b6624958a5397601ad5543cd45fcf8f7",
+                "reference": "c1605360b6624958a5397601ad5543cd45fcf8f7",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-11-16 22:34:08"
+            "time": "2016-01-30 00:53:32"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1888,12 +1888,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "630698a8de7c61ab672618e4977a61df1811d10c"
+                "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/630698a8de7c61ab672618e4977a61df1811d10c",
-                "reference": "630698a8de7c61ab672618e4977a61df1811d10c",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/fa3f849333f6954cd8c56d88afef6d98348efa7d",
+                "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d",
                 "shasum": ""
             },
             "require": {
@@ -1936,7 +1936,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2016-01-20 22:24:49"
+            "time": "2016-01-25 18:05:44"
         },
         {
             "name": "razorpay/spine",
@@ -1944,12 +1944,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "e38607d4e016884a0b4ca03c8f4a9dbed08866d6"
+                "reference": "d6a7e8d073fb73ff664857670d0936311b8c3a59"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/e38607d4e016884a0b4ca03c8f4a9dbed08866d6",
-                "reference": "e38607d4e016884a0b4ca03c8f4a9dbed08866d6",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/d6a7e8d073fb73ff664857670d0936311b8c3a59",
+                "reference": "d6a7e8d073fb73ff664857670d0936311b8c3a59",
                 "shasum": ""
             },
             "require": {
@@ -1983,7 +1983,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-01-19 15:52:29"
+            "time": "2016-01-28 11:07:24"
         },
         {
             "name": "react/promise",

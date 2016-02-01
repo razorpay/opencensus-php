@@ -13,10 +13,18 @@ class Entity extends Base\PublicEntity
     const PAYMENT_METHOD        = 'payment_method';
     const PAYMENT_METHOD_TYPE   = 'payment_method_type';
     const PAYMENT_NETWORK       = 'payment_network';
+    const INTERNATIONAL         = 'international';
 
     // Humanized name of the payment network
     const PAYMENT_NETWORK_NAME  = 'payment_network_name';
     const PAYMENT_ISSUER        = 'payment_issuer';
+
+    // Amount Range Rule
+    const AMOUNT_RANGE_ACTIVE   = 'amount_range_active';
+    const AMOUNT_RANGE_MIN      = 'amount_range_min';
+    const AMOUNT_RANGE_MAX      = 'amount_range_max';
+
+
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
     const EXPIRED_AT            = 'expired_at';
@@ -30,6 +38,10 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_METHOD_TYPE,
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
+        self::INTERNATIONAL,
+        self::AMOUNT_RANGE_ACTIVE,
+        self::AMOUNT_RANGE_MIN,
+        self::AMOUNT_RANGE_MAX,
         self::PERCENT_RATE,
         self::FIXED_RATE);
 
@@ -48,8 +60,11 @@ class Entity extends Base\PublicEntity
     protected static $generators = array('plan_id');
 
     protected $defaults = array(
-        self::PERCENT_RATE  => 0,
-        self::FIXED_RATE    => 0);
+        self::PERCENT_RATE          => 0,
+        self::FIXED_RATE            => 0,
+        self::AMOUNT_RANGE_ACTIVE   => false,
+        self::AMOUNT_RANGE_MIN      => null,
+        self::AMOUNT_RANGE_MAX      => null);
 
     const ZERO_PRICING = '10ZeroPricingP';
 
@@ -85,11 +100,23 @@ class Entity extends Base\PublicEntity
 
         $this->getValidator()->addPlanRuleValidate($input, $plan);
 
+        $this->generate($input);
+
         $this->fill($input);
 
         $this->fillRule($input, $plan);
 
         return $this;
+    }
+
+    public function isInternational()
+    {
+        return $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isAmountRangeActive()
+    {
+        return $this->getAttribute(self::AMOUNT_RANGE_ACTIVE);
     }
 
     public function payments()
@@ -136,6 +163,48 @@ class Entity extends Base\PublicEntity
     public function getPaymentMethod()
     {
         return $this->getAttribute(self::PAYMENT_METHOD);
+    }
+
+    public function getAmountRange()
+    {
+        $min = $this->getAmountRangeMin();
+        $max = $this->getAmountRangeMax();
+
+        return [$min, $max];
+    }
+
+    public function getAmountRangeMin()
+    {
+        return $this->getAttribute(self::AMOUNT_RANGE_MIN);
+    }
+
+    public function getAmountRangeMax()
+    {
+        return $this->getAttribute(self::AMOUNT_RANGE_MAX);
+    }
+
+    public function getInternationalAttribute()
+    {
+        return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
+    public function getAmountRangeActiveAttribute()
+    {
+        return (bool) $this->attributes[self::AMOUNT_RANGE_ACTIVE];
+    }
+
+    public function getAmountRangeMinAttribute()
+    {
+        $min = $this->attributes[self::AMOUNT_RANGE_MIN];
+
+        return ($min === null) ? $min : (int) $min;
+    }
+
+    public function getAmountRangeMaxAttribute()
+    {
+        $max = $this->attributes[self::AMOUNT_RANGE_MAX];
+
+        return ($max === null) ? $max : (int) $max;
     }
 
     public function fillRule($input, $plan)
