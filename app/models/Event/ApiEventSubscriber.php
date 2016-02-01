@@ -93,7 +93,7 @@ class ApiEventSubscriber
 
         $payload = array(
             Constants\Entity::PAYMENT => [
-                'data' => $payment->toArrayPublic(),
+                'entity' => $payment->toArrayPublic(),
             ],
         );
 
