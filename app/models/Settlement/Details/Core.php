@@ -29,7 +29,6 @@ class Core extends Base\Core
             try
             {
                 $merchant = $setl->merchant;
-                sd($merchant);
                 $setlDetails = $this->repo->getSettlementDetails($setl->getId(), $merchant);
 
                 if($setlDetails->count() === 0)
