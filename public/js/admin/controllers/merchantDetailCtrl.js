@@ -106,6 +106,13 @@ app.controller('MerchantDetailCtrl', [
       });
     }
 
+    $scope.markMerchantAsReferred = function(referral)
+    {
+      var tags = $scope.merchant.details.tags;
+      tags.push('ref-'+referral);
+      $scope.tagMerchant(tags);
+    }
+
     $scope.featureMerchant = function(features) {
       // Tags will be a csv field
       var request = $http({
@@ -540,6 +547,21 @@ app.controller('MerchantDetailCtrl', [
       });
       modalInstance.result.then(function (tags) {
         $scope.tagMerchant(tags);
+      }, $.noop);
+    };
+
+    $scope.openReferralTagModal = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'tagReferralContent.html',
+        controller: 'referralModalCtrl',
+        resolve: {
+          current: function () {
+            return getReferer();
+          }
+        }
+      });
+      modalInstance.result.then(function (referral) {
+        $scope.markMerchantAsReferred(referral);
       }, $.noop);
     };
     $scope.openFeatureMerchant = function () {
@@ -992,6 +1014,20 @@ app.controller('MerchantDetailCtrl', [
     $scope.tags = current.join();
     $scope.ok = function (tags) {
       $modalInstance.close(tags);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('referralModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  'current',
+  function ($scope, $modalInstance, current) {
+    // We need to keep it to a csv field
+    $scope.referral = current;
+    $scope.ok = function (referral) {
+      $modalInstance.close(referral);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
