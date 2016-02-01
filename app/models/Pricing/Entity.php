@@ -165,6 +165,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_METHOD);
     }
 
+    public function getPaymentMethodType()
+    {
+        return $this->getAttribute(self::PAYMENT_METHOD_TYPE);
+    }
+
     public function getAmountRange()
     {
         $min = $this->getAmountRangeMin();
