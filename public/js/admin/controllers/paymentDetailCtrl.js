@@ -163,12 +163,12 @@ app.controller('PaymentDetailCtrl', [
         if (data.success) {
           var payment = JSON.stringify(data.data.payment);
           $scope.alerts.addAlert('success', 'Payment Verified successfully: ' + payment, true);
-          window.location.reload();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
           });
+          window.location.reload();
         }
         window.scrollTo(0, 0);
       }).error(function () {
