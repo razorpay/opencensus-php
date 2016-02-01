@@ -35,13 +35,13 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'create_'.Entity::NETWORK,
+        'create_network',
         Entity::TYPE,
         Entity::ISSUER,
     );
 
     protected static $editValidators = array(
-        'edit_'.Entity::NETWORK,
+        'edit_network',
         Entity::TYPE,
         Entity::ISSUER,
     );
