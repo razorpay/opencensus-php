@@ -3,6 +3,7 @@
 namespace Models\Card\IIN;
 
 use Models\Base;
+use Models\Bank;
 use Models\Card;
 use Models\Card\Network;
 use EE\Error\ErrorCode;
@@ -23,6 +24,8 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
+        Entity::NETWORK       => 'sometimes',
+        Entity::TYPE          => 'sometimes',
         Entity::COUNTRY       => 'sometimes|size:2',
         Entity::CATEGORY      => 'sometimes',
         Entity::ISSUER        => 'sometimes',
@@ -32,20 +35,33 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'network',
-        'type');
+        Entity::NETWORK,
+        Entity::TYPE,
+        Entity::ISSUER,
+    );
+
+    protected static $editValidators = array(
+        Entity::NETWORK,
+        Entity::TYPE,
+        Entity::ISSUER,
+    );
 
     protected function validateNetwork($input)
     {
-        $network = $input['network'];
+        if(!isset($input[Entity::NETWORK]))
+        {
+            return;
+        }
+
+        $network = $input[Entity::NETWORK];
 
         if (Card\Network::isValidNetworkName($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid network name: ' . $input['network']);
+                'Not a valid network name: ' . $input[Entity::NETWORK]);
         }
 
-        $detected = Card\Network::detectNetwork($input['iin']);
+        $detected = Card\Network::detectNetwork($input[Entity::IIN]);
         $fullName = Card\Network::getFullName($detected);
 
         if (($fullName !== 'Unknown') and
@@ -58,10 +74,29 @@ class Validator extends Base\Validator
 
     protected function validateType($input)
     {
-        if (Card\Type::isValidType($input['type']) === false)
+        if(!isset($input[Entity::TYPE]))
+        {
+            return;
+        }
+
+        if (Card\Type::isValidType($input[Entity::TYPE]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid type name: ' . $input['type']);
+                'Not a valid type name: ' . $input[Entity::TYPE]);
+        }
+    }
+
+    protected function validateIssuer($input)
+    {
+        if(!isset($input[Entity::ISSUER]))
+        {
+            return;
+        }
+
+        if(!Bank\IFSC::exists($input[Entity::ISSUER]))
+        {
+          throw new Exception\BadRequestValidationFailureException(
+             'Invalid bank name in input: '. $bank);
         }
     }
 }
