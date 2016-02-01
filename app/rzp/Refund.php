@@ -14,7 +14,7 @@ class Refund extends Entity
 
     public function all($options = array())
     {
-        return parent::all();
+        return parent::all($options);
     }
 
     public function generateNetBankingExcel($params)
