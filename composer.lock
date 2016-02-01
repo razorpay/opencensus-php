@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "35e22c392ed110a6d3983ae66d412251",
-    "content-hash": "46a39ed996d41622e2d4742b164eb163",
+    "hash": "67e07fedc7939e9efa217f199049c797",
+    "content-hash": "d14220417cf7f9b808ac5e9d2f221751",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.24",
+            "version": "2.8.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "54b67f902bb2c5bbab481bc3c46537752a018830"
+                "reference": "c1605360b6624958a5397601ad5543cd45fcf8f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/54b67f902bb2c5bbab481bc3c46537752a018830",
-                "reference": "54b67f902bb2c5bbab481bc3c46537752a018830",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c1605360b6624958a5397601ad5543cd45fcf8f7",
+                "reference": "c1605360b6624958a5397601ad5543cd45fcf8f7",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-11-16 22:34:08"
+            "time": "2016-01-30 00:53:32"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1152,16 +1152,16 @@
         },
         {
             "name": "maknz/slack",
-            "version": "1.7.0",
+            "version": "dev-queue",
             "source": {
                 "type": "git",
-                "url": "https://github.com/maknz/slack.git",
-                "reference": "7f21fefc70c76b304adc1b3a780c8740dfcfb595"
+                "url": "https://github.com/razorpay/slack.git",
+                "reference": "733cfda4cac3323612428f549d967404e57317d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maknz/slack/zipball/7f21fefc70c76b304adc1b3a780c8740dfcfb595",
-                "reference": "7f21fefc70c76b304adc1b3a780c8740dfcfb595",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/733cfda4cac3323612428f549d967404e57317d8",
+                "reference": "733cfda4cac3323612428f549d967404e57317d8",
                 "shasum": ""
             },
             "require": {
@@ -1170,6 +1170,7 @@
                 "php": ">=5.4.0"
             },
             "require-dev": {
+                "illuminate/queue": "4.*",
                 "mockery/mockery": "0.9.*",
                 "phpunit/phpunit": "4.2.*"
             },
@@ -1182,7 +1183,6 @@
                     "Maknz\\Slack\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-2-Clause"
             ],
@@ -1197,7 +1197,10 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2015-06-03 03:35:16"
+            "support": {
+                "source": "https://github.com/razorpay/slack/tree/queue"
+            },
+            "time": "2015-10-15 00:00:30"
         },
         {
             "name": "marlek/laravel-automigrate",
@@ -1877,12 +1880,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "49e54a5704afeaeb8a3751dd1b3c6c1d414229a7"
+                "reference": "d6a7e8d073fb73ff664857670d0936311b8c3a59"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/49e54a5704afeaeb8a3751dd1b3c6c1d414229a7",
-                "reference": "49e54a5704afeaeb8a3751dd1b3c6c1d414229a7",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/d6a7e8d073fb73ff664857670d0936311b8c3a59",
+                "reference": "d6a7e8d073fb73ff664857670d0936311b8c3a59",
                 "shasum": ""
             },
             "require": {
@@ -1916,7 +1919,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-01-22 04:47:08"
+            "time": "2016-01-28 11:07:24"
         },
         {
             "name": "react/promise",
@@ -3318,20 +3321,20 @@
         },
         {
             "name": "hamcrest/hamcrest-php",
-            "version": "v1.2.2",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hamcrest/hamcrest-php.git",
-                "reference": "b37020aa976fa52d3de9aa904aa2522dc518f79c"
+                "reference": "776503d3a8e85d4f9a1148614f95b7a608b046ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hamcrest/hamcrest-php/zipball/b37020aa976fa52d3de9aa904aa2522dc518f79c",
-                "reference": "b37020aa976fa52d3de9aa904aa2522dc518f79c",
+                "url": "https://api.github.com/repos/hamcrest/hamcrest-php/zipball/776503d3a8e85d4f9a1148614f95b7a608b046ad",
+                "reference": "776503d3a8e85d4f9a1148614f95b7a608b046ad",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.2"
+                "php": "^5.3|^7.0"
             },
             "replace": {
                 "cordoval/hamcrest-php": "*",
@@ -3340,15 +3343,18 @@
             },
             "require-dev": {
                 "phpunit/php-file-iterator": "1.3.3",
-                "satooshi/php-coveralls": "dev-master"
+                "phpunit/phpunit": "~4.0",
+                "satooshi/php-coveralls": "^1.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
             "autoload": {
                 "classmap": [
                     "hamcrest"
-                ],
-                "files": [
-                    "hamcrest/Hamcrest.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3359,7 +3365,7 @@
             "keywords": [
                 "test"
             ],
-            "time": "2015-05-11 14:41:42"
+            "time": "2016-01-20 08:20:44"
         },
         {
             "name": "laracasts/testdummy",
@@ -3419,16 +3425,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/padraic/mockery.git",
-                "reference": "1a9bde4985f4a125ed7287be7d9f4d3df25d5d10"
+                "reference": "791ca92e112f64af3ce5833e05bb10ab2578a626"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/1a9bde4985f4a125ed7287be7d9f4d3df25d5d10",
-                "reference": "1a9bde4985f4a125ed7287be7d9f4d3df25d5d10",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/791ca92e112f64af3ce5833e05bb10ab2578a626",
+                "reference": "791ca92e112f64af3ce5833e05bb10ab2578a626",
                 "shasum": ""
             },
             "require": {
-                "hamcrest/hamcrest-php": "~1.1",
+                "hamcrest/hamcrest-php": "^2.0@dev",
                 "lib-pcre": ">=7.0",
                 "php": ">=5.4.0"
             },
@@ -3476,7 +3482,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2015-12-14 11:56:42"
+            "time": "2016-01-28 11:09:46"
         },
         {
             "name": "raveren/kint",
@@ -3586,6 +3592,7 @@
         "razorpay/razorpay": 20,
         "ollieread/multiauth": 20,
         "razorpay/spine": 20,
+        "maknz/slack": 20,
         "marlek/laravel-automigrate": 20,
         "zizaco/testcases-laravel": 20,
         "mockery/mockery": 20
