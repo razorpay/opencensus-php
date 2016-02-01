@@ -35,24 +35,34 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::NETWORK,
+        'create_'.Entity::NETWORK,
         Entity::TYPE,
         Entity::ISSUER,
     );
 
     protected static $editValidators = array(
-        Entity::NETWORK,
+        'edit_'.Entity::NETWORK,
         Entity::TYPE,
         Entity::ISSUER,
     );
 
-    protected function validateNetwork($input)
+    protected function validateCreateNetwork($input)
+    {
+        $this->validateNetwork($input, $input[Entity::IIN]);
+    }
+
+    protected function validateEditNetwork($input)
     {
         if(!isset($input[Entity::NETWORK]))
         {
             return;
         }
 
+        $this->validateNetwork($input, $this->entity->getIin());
+    }
+
+    protected function validateNetwork($input, $iin)
+    {
         $network = $input[Entity::NETWORK];
 
         if (Card\Network::isValidNetworkName($network) === false)
@@ -61,7 +71,7 @@ class Validator extends Base\Validator
                 'Not a valid network name: ' . $input[Entity::NETWORK]);
         }
 
-        $detected = Card\Network::detectNetwork($input[Entity::IIN]);
+        $detected = Card\Network::detectNetwork($iin);
         $fullName = Card\Network::getFullName($detected);
 
         if (($fullName !== 'Unknown') and
