@@ -404,6 +404,6 @@ class Service extends Base\Service
         $tag = "ref-$merchantId";
 
         return Merchant\Entity::withAnyTag($tag)
-            ->get(['id', 'name', 'email', 'activated']);
+            ->get(['id', 'name', 'email', 'activated', 'created_at']);
     }
 }
