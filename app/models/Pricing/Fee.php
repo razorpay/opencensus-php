@@ -190,6 +190,10 @@ class Fee
 
         if ($cardType === Card\Type::UNKNOWN)
         {
+
+            //Disabling until IIN
+            //import is complete
+            /*
             $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
             $this->slackPost(
@@ -197,7 +201,9 @@ class Fee
                 $slackArray,
                 ['channel' => '#tech_logs']);
 
-            $cardType = Card\Type::DEBIT;
+            */
+            $cardType = Card\Type::CREDIT;
+
         }
 
         $isInternational = $payment->isInternational();
