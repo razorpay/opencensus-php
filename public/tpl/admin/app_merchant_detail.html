@@ -154,6 +154,10 @@
           <span class="pull-right">{{merchant.details.features.join()}}</span>
           Features
         </a>
+        <a class="list-group-item" ng-show="referer!=false">
+          <span class="pull-right">{{referer}}</span>
+          Referer
+        </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
