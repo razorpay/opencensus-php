@@ -60,6 +60,8 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('/apihost', 'MerchantController@getApihost');
 
+    Route::get('/referred', 'MerchantController@getReferredMerchants');
+
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
 
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
