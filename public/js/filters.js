@@ -36,4 +36,8 @@ angular.module('app.filters', []).filter('fromNow', function () {
       .match(/-?([^-]{1,3}(\..+)?$|[^-]{1,2}(?=.([^\.]{2})+(\..+)?$))/g);
     return symbol + splits.join(',');
   }
+}).filter('capitalize', function() {
+    return function(input) {
+      return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
+    }
 });

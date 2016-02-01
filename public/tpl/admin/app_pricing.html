@@ -65,8 +65,7 @@
           <th>Payment Issuer</th>
           <th>International</th>
           <th>Amount Range Active</th>
-          <th>Amount Range Min</th>
-          <th>Amount Range Max</th>
+          <th>Amount Range</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
           <th>Created At</th>
@@ -75,14 +74,13 @@
         <tbody>
           <tr ng-repeat="rule in show_plan.rules">
             <td>{{rule.id}}</td>
-            <td>{{rule.payment_method || 'Any'}}</td>
-            <td>{{rule.payment_method_type || 'Any'}}</td>
+            <td>{{rule.payment_method || 'Any' | capitalize }}</td>
+            <td>{{rule.payment_method_type || 'Any' | capitalize }}</td>
             <td>{{rule.payment_network || 'Any'}}</td>
             <td>{{rule.payment_issuer || 'Any'}}</td>
-            <td>{{rule.international || 'false' | uppercase}}</td>
-            <td>{{rule.amount_range_active || 'false' | uppercase}}</td>
-            <td>{{rule.amount_range_min/100 | rupee:"INR " }}</td>
-            <td>{{rule.amount_range_max/100 | rupee:"INR " }}</td>
+            <td>{{rule.international ?  'True' : 'False' }}</td>
+            <td>{{rule.amount_range_active ? 'True' : 'False' }}</td>
+            <td>{{rule.amount_range === 1 ? '200000-1000000000' : '0-200000' }}</td>
             <td>{{rule.percent_rate/100}} %</td>
             <td>{{rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>{{rule.created_at*1000 | date:'medium'}}</td>
@@ -97,14 +95,13 @@
           </tr>
           <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate">
             <td>Preview Rule</td>
-            <td>{{new_rule.payment_method || 'Any'}}</td>
-            <td>{{new_rule.payment_method_type || 'Any'}}</td>
+            <td>{{new_rule.payment_method || 'Any' | capitalize }}</td>
+            <td>{{new_rule.payment_method_type || 'Any' | capitalize }}</td>
             <td>{{new_rule.payment_network || 'Any'}}</td>
             <td>{{new_rule.payment_issuer || 'Any'}}</td>
-            <td>{{new_rule.international || 'false' | uppercase}}</td>
-            <td>{{new_rule.amount_range_active || 'false' | uppercase}}</td>
-            <td>{{new_rule.amount_range_min/100 | rupee:"INR " }}</td>
-            <td>{{new_rule.amount_range_max/100 | rupee:"INR " }}</td>
+            <td>{{new_rule.international === "1" ? 'True' : 'False' }}</td>
+            <td>{{new_rule.amount_range_active === "1" ? 'True' : 'False' }}</td>
+            <td>{{new_rule.amount_range === "0" ? '0-200000' : '200000-1000000000'}}</td>
             <td>{{new_rule.percent_rate/100}} %</td>
             <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>Preview Rule</td>
@@ -156,10 +153,10 @@
               </select>
             </td>
             <td>
-              <input class="form-control" type="text" name="amount_range_min" ng-model="new_rule.amount_range_min" tooltip="Minimum of this amount range rule in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
-            </td>
-            <td>
-              <input class="form-control" type="text" name="amount_range_max" ng-model="new_rule.amount_range_max" tooltip="Maximum of this amount range rule in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
+              <select class="form-control" name="amount_range" ng-model="new_rule.amount_range">
+                <option value='0'>0-200000</option>
+                <option value='1'>200000-1000000000</option>
+              </select>
             </td>
             <td>
               <input class="form-control" type="text" name="percent_rate" ng-model="new_rule.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
@@ -189,21 +186,19 @@
           <th>Payment Issuer</th>
           <th>International</th>
           <th>Amount Range Active</th>
-          <th>Amount Range Min</th>
-          <th>Amount Range Max</th>
+          <th>Amount Range</th>
           <th>Percent Rate</th>
           <th>Fixed Rate</th>
         </thead>
         <tbody>
           <tr ng-show="new_plan.percent_rate || new_plan.fixed_rate" tooltip="Preview">
-            <td>{{new_plan.payment_method || 'Any'}}</td>
-            <td>{{new_plan.payment_method_type || 'Any'}}</td>
+            <td>{{new_plan.payment_method || 'Any' | capitalize}}</td>
+            <td>{{new_plan.payment_method_type || 'Any' | capitalize }}</td>
             <td>{{new_plan.payment_network || 'Any'}}</td>
             <td>{{new_plan.payment_issuer || 'Any'}}</td>
-            <td>{{new_plan.international || 'false' | uppercase}}</td>
-            <td>{{new_plan.amount_range_active || 'false' | uppercase}}</td>
-            <td>{{new_plan.amount_range_min/100 | rupee:"INR " }}</td>
-            <td>{{new_plan.amount_range_max/100 | rupee:"INR " }}</td>
+            <td>{{new_plan.international === "1" ? 'True' : 'False'}}</td>
+            <td>{{new_plan.amount_range_active === "1" ? 'True' : 'False'}}</td>
+            <td>{{new_plan.amount_range === "0" ? '0-200000' : '200000-1000000000'}}</td>
             <td>{{new_plan.percent_rate/100}} %</td>
             <td>{{new_plan.fixed_rate/100 | rupee:"INR "}}</td>
           </tr>
@@ -252,10 +247,10 @@
               </select>
             </td>
             <td>
-              <input class="form-control" type="text" name="amount_range_min" ng-model="new_plan.amount_range_min" tooltip="Minimum of this amount range rule in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
-            </td>
-            <td>
-              <input class="form-control" type="text" name="amount_range_max" ng-model="new_plan.amount_range_max" tooltip="Maximum of this amount range rule in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
+              <select class="form-control" name="amount_range" ng-model="new_plan.amount_range">
+                <option value='0'>0-200000</option>
+                <option value='1'>200000-1000000000</option>
+              </select>
             </td>
             <td>
               <input class="form-control" type="text" name="percent_rate" ng-model="new_plan.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
