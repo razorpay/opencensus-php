@@ -10,11 +10,13 @@ app.controller('PricingsCtrl', [
     $scope.show_plan = {};
     $scope.create_plan = false;
     generateTable();
+
     $scope.createPlan = function () {
       $scope.new_plan = {};
       $scope.show_plan = {};
       $scope.create_plan = true;
     };
+
     $scope.savePlan = function () {
       var data = $scope.new_plan;
       assignRangeForCreate(data);
@@ -124,26 +126,32 @@ app.controller('PricingsCtrl', [
           assignRangeForRule(show_plan.rules[i]);
       };
     }
+
     function assignRangeForRule(show_rule){
-      if(show_rule.amount_range_active){
-        if(show_rule.amount_range_max === 200000){
+      if(show_rule.amount_range_active) {
+        if (show_rule.amount_range_max === 200000) {
           show_rule.amount_range = 0;
-        }else if (show_rule.amount_range_min === 200000) {
+        }
+        else if (show_rule.amount_range_min === 200000) {
           show_rule.amount_range = 1;
-        }else{
+        }
+        else {
           show_rule.amount_range = null;
-        };
+        }
       };
     }
-    function assignRangeForCreate(create_rule){
-      if(create_rule.amount_range === "1"){
+
+    /**
+     * Sets defaults ranges for now
+     */
+    function assignRangeForCreate(create_rule) {
+      if (create_rule.amount_range == 1) {
         create_rule.amount_range_min = 200000;
         create_rule.amount_range_max = 1000000000;
-      }else if (create_rule.amount_range === "0") {
+      }
+      else {
         create_rule.amount_range_min = 0;
         create_rule.amount_range_max = 200000;
-      }else{
-
       }
 
       //Unset amount_range
