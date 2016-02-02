@@ -11,21 +11,52 @@ app.controller('PricingsCtrl', [
     $scope.create_plan = false;
     generateTable();
 
+    var getDefaultRule = function() {
+      return {
+        payment_method: "card",
+        payment_method_type: "",
+        payment_network: "",
+        payment_issuer: "",
+        international: "0",
+        amount_range_active: "0",
+        amount_range: "low",
+        amount_range_min: 0,
+        amount_range_max: 0,
+        percent_rate: 200,
+        fixed_rate: 0
+      }
+    }
+
+    function getPayload (input) {
+      var data = input;
+      // This contains high/low and we don't send that
+      delete data['amount_range'];
+      if (data.amount_range_active == '0') {
+        delete data['amount_range_min'];
+        delete data['amount_range_max'];
+      }
+      return data;
+    }
+
+    $scope.new_plan = $scope.new_rule = getDefaultRule();
+
     $scope.createPlan = function () {
-      $scope.new_plan = {};
+      $scope.new_plan = getDefaultRule();
       $scope.show_plan = {};
       $scope.create_plan = true;
     };
 
     $scope.savePlan = function () {
-      var data = $scope.new_plan;
-      assignRangeForCreate(data);
+
+      var data = getPayload($scope.new_plan);
+
       var request = $http({
         method: 'post',
         url: '/admin/pricing/new',
         transformRequest: transformRequestAsFormPost,
         data: data
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Plan created successfully', true);
@@ -71,22 +102,34 @@ app.controller('PricingsCtrl', [
       });
     };
 
+    $scope.$watch('new_rule.amount_range+new_rule.amount_range_active', function() {
+      var range = getDefaultAmountRange($scope.new_rule);
+      $scope.new_rule.amount_range_min = range[0];
+      $scope.new_rule.amount_range_max = range[1];
+    });
+
+    $scope.$watch('new_plan.amount_range+new_plan.amount_range_active', function() {
+      var range = getDefaultAmountRange($scope.new_plan);
+      $scope.new_plan.amount_range_min = range[0];
+      $scope.new_plan.amount_range_max = range[1];
+    });
+
     $scope.saveRule = function () {
-      var data = $scope.new_rule;
+
+      var data = getPayload($scope.new_rule);
       var plan_id = $scope.show_plan.id;
-      assignRangeForCreate(data);
+
       var request = $http({
         method: 'post',
         url: '/admin/pricing/' + plan_id,
         transformRequest: transformRequestAsFormPost,
         data: data
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success ', 'Rule added successfully', true);
-          assignRangeForRule(data.data);
           $scope.show_plan.rules.push(data.data);
-          $scope.new_rule = {};
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
@@ -97,6 +140,7 @@ app.controller('PricingsCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
     $scope.showPlan = function (id) {
       if ($scope.show_plan.id == id) {
         $scope.show_plan = {};
@@ -106,13 +150,11 @@ app.controller('PricingsCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.create_plan = false;
-          $scope.new_plan = {};
-          assignRangeForShowPlan(data.data);
           $scope.show_plan = data.data;
-          $scope.new_rule = {};
         }
       });
     };
+
     function generateTable() {
       var request = $http.get('/admin/pricing/list');
       request.success(function (data) {
@@ -121,41 +163,21 @@ app.controller('PricingsCtrl', [
         }
       });
     }
-    function assignRangeForShowPlan(show_plan) {
-      for (var i = show_plan.rules.length - 1; i >= 0; i--) {
-          assignRangeForRule(show_plan.rules[i]);
-      };
-    }
-
-    function assignRangeForRule(show_rule){
-      if(show_rule.amount_range_active) {
-        if (show_rule.amount_range_max === 200000) {
-          show_rule.amount_range = 0;
-        }
-        else if (show_rule.amount_range_min === 200000) {
-          show_rule.amount_range = 1;
-        }
-        else {
-          show_rule.amount_range = null;
-        }
-      };
-    }
 
     /**
      * Sets defaults ranges for now
      */
-    function assignRangeForCreate(create_rule) {
-      if (create_rule.amount_range == 1) {
-        create_rule.amount_range_min = 200000;
-        create_rule.amount_range_max = 1000000000;
+    function getDefaultAmountRange(input) {
+
+      var range = [];
+      if (input.amount_range == 'high') {
+        range = [200000,1000000000];
       }
       else {
-        create_rule.amount_range_min = 0;
-        create_rule.amount_range_max = 200000;
+        range = [0,  200000];
       }
 
-      //Unset amount_range
-      delete create_rule['amount_range'];
+      return range;
     }
   }
 ]);

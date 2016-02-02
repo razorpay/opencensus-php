@@ -80,7 +80,7 @@
             <td>{{rule.payment_issuer || 'Any'}}</td>
             <td>{{rule.international ?  'True' : 'False' }}</td>
             <td>{{rule.amount_range_active ? 'True' : 'False' }}</td>
-            <td>{{rule.amount_range === 1 ? '200000-1000000000' : '0-200000' }}</td>
+            <td><span ng-show="rule.amount_range_active">{{rule.amount_range_min}}-{{rule.amount_range_max}}</span></td>
             <td>{{rule.percent_rate/100}} %</td>
             <td>{{rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>{{rule.created_at*1000 | date:'medium'}}</td>
@@ -100,8 +100,12 @@
             <td>{{new_rule.payment_network || 'Any'}}</td>
             <td>{{new_rule.payment_issuer || 'Any'}}</td>
             <td>{{new_rule.international === "1" ? 'True' : 'False' }}</td>
-            <td>{{new_rule.amount_range_active === "1" ? 'True' : 'False' }}</td>
-            <td>{{new_rule.amount_range === "0" ? '0-200000' : '200000-1000000000'}}</td>
+            <td>{{new_rule.amount_range_active == "1" ? 'True' : 'False' }}</td>
+            <td>
+              <span ng-show="new_rule.amount_range_active == '1'">
+                {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
+              </span>
+            </td>
             <td>{{new_rule.percent_rate/100}} %</td>
             <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>Preview Rule</td>
@@ -153,9 +157,10 @@
               </select>
             </td>
             <td>
-              <select class="form-control" name="amount_range" ng-model="new_rule.amount_range">
-                <option value='0'>0-200000</option>
-                <option value='1'>200000-1000000000</option>
+              <select class="form-control" name="amount_range" ng-model="new_rule.amount_range"
+                ng-show="new_rule.amount_range_active">
+                <option value='low'>0-200000</option>
+                <option value='high'>200000-1000000000</option>
               </select>
             </td>
             <td>
@@ -166,7 +171,7 @@
             </td>
             <td>
               <a href ng-click="saveRule()"><button class="btn btn-primary btn-rounded">Save</button></a>
-              <a href ng-click="new_rule = {}"><button class="btn btn-primary btn-rounded">Cancel</button></a>
+              <a href ng-click=""><button class="btn btn-primary btn-rounded">Cancel</button></a>
             </td>
           </tr>
         </tbody>
@@ -248,8 +253,8 @@
             </td>
             <td>
               <select class="form-control" name="amount_range" ng-model="new_plan.amount_range">
-                <option value='0'>0-200000</option>
-                <option value='1'>200000-1000000000</option>
+                <option value='low'>0-200000</option>
+                <option value='high'>200000-1000000000</option>
               </select>
             </td>
             <td>
