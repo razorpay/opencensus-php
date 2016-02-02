@@ -16,8 +16,7 @@
             <!-- <th>Webhook Id</th> -->
             <th data-toggle="true">Merchant Id</th>
             <th>Name</th>
-            <th>Email</th>
-            <th>Created At</th>
+            <th>Registered At</th>
             <th>Activated</th>
           </tr>
         </thead>
@@ -26,7 +25,6 @@
             <!-- <td>{{webhook.id}}</td> -->
             <td>{{merchant.id}}</td>
             <td>{{merchant.name}}</td>
-            <td>{{merchant.email}}</td>
             <td>{{merchant.created_at*1000 | date:'medium'}}</td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
           </tr>
