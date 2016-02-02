@@ -42,7 +42,7 @@
   <li>
     <a id="generateReportNav" ui-sref="app.generatereport">
       <i class="fa fa-file-excel-o icon text-danger-lter"></i>
-      <b class="badge bg-success dk pull-right ng-binding">beta</b>
+      <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
       <span>Reports</span>
     </a>
   </li>
@@ -51,14 +51,18 @@
       <i class="fa fa-users icon text-info-lter"></i>
       <b class="badge bg-success dk pull-right ng-binding">beta</b>
       <span>Team</span>
+      </a>
+  </li>
+
+  <li ng-show="user.tags.indexOf('Referral') != -1">
+    <a id="referredNav" ui-sref="app.referrals">
+      <i class="fa fa-gift icon text-danger-lter"></i>
+      <b class="badge bg-success dk pull-right ng-binding">beta</b>
+      <span>Referrals</span>
     </a>
   </li>
   <li class="line dk"></li>
 
-
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-    <span>Settings</span>
-  </li>
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Settings</span>
   </li>

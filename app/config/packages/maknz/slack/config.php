@@ -107,16 +107,16 @@ return [
   |
   | Which attachment fields should be interpreted in Slack's Markdown-like
   | language. By default, Slack assumes that no fields in an attachment
-  | should be formatted as Markdown. 
+  | should be formatted as Markdown.
   |
   */
 
-  'markdown_in_attachments' => [],
+  //'markdown_in_attachments' => [],
 
   // Allow Markdown in just the text and title fields
   // 'markdown_in_attachments' => ['text', 'title']
 
   // Allow Markdown in all fields
-  // 'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback']
+  'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback']
 
 ];

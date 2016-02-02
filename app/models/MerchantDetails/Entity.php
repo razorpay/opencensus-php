@@ -329,6 +329,11 @@ class Entity extends Base\Entity
         return self::$URL_KEYS;
     }
 
+    public function getBillingLabel()
+    {
+        return $this->getAttribute('business_dba');
+    }
+
     public function changeTransactionEmail($email)
     {
         $input = [

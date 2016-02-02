@@ -23,6 +23,16 @@
 * Download the latest selenium server jar file from `http://www.seleniumhq.org/download/` and download it in the `~/.selenium` directory.
 * Make sure you have firefox installed.
 
+## Homestead specific instructions
+
+* Install XQuartz (Mac Only)
+* Add this to Homestead.yaml : `configure.ssh.forward_x11 = true`
+* Ensure Selenium is available in /home/vagrant/.selenium
+* `sudo apt-get update`
+* `sudo apt-get install openjdk-7-jre xvfb firefox`
+* Run selenium server manually : `java -jar ~/.selenium/selenium-server.jar`
+* Run tests : `xvfb-run phpunit`
+
 # Selenium
 
 If you can't get selenium to work, make sure `API_MOCK` is true in `.env.testing.php`.

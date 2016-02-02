@@ -1,0 +1,35 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Referrals
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="ReferralsCtrl">
+    <div class="panel-heading">
+      Referrals
+    </div>
+    <div class="table-responsive">
+      <table class="referrals-table table table-striped b-t b-light" ui-jq="footable">
+        <thead>
+          <tr>
+            <!-- <th>Webhook Id</th> -->
+            <th data-toggle="true">Merchant Id</th>
+            <th>Name</th>
+            <th>Registered At</th>
+            <th>Activated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="merchant in referrals">
+            <!-- <td>{{webhook.id}}</td> -->
+            <td>{{merchant.id}}</td>
+            <td>{{merchant.name}}</td>
+            <td>{{merchant.created_at*1000 | date:'medium'}}</td>
+            <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

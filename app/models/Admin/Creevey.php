@@ -141,8 +141,10 @@ class Creevey
                 $url = action('AdminController@getMerchantScreenshot', $this->merchantId);
 
                 $link = "Screenshots Captured ({$this->name}): <$url|View>";
+                $channel = $this->getChannel();
 
-                Slack::to('#sales')->from('creevey')->withIcon(':camera:')->send($link);
+                // This is already running in a queue. No need to queue the slack post
+                Slack::to($channel)->from('creevey')->withIcon(':camera:')->send($link);
             }
 
             else
@@ -159,6 +161,14 @@ class Creevey
         {
             $job->delete();
         }
+    }
+
+    /**
+     * Returns channel to post Creevey to on Slack
+     */
+    protected function getChannel()
+    {
+        return Config::get('razorpay.slack.creevey');
     }
 
     public function handleError($status)

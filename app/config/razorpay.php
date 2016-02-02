@@ -2,19 +2,30 @@
 
 return array(
 
-	/*
-	|--------------------------------------------------------------------------
-	| Add the curresponding email addresses for the respective categories
-	|--------------------------------------------------------------------------
-	|
-	| Here you can add different company email addresses
-	|
-	*/
+    /*
+    |--------------------------------------------------------------------------
+    | Add the curresponding email addresses for the respective categories
+    |--------------------------------------------------------------------------
+    |
+    | Here you can add different company email addresses
+    |
+    */
 
-	'emails' => array(
+    'emails' => array(
 
-		'contact' => 'contact@razorpay.com',
+        'contact' => 'contact@razorpay.com',
 
-		'sales' => 'salesteam@razorpay.com'
-	),
+        'sales' => 'salesteam@razorpay.com'
+    ),
+
+    'sorting_hat'   =>  [
+        'token' =>  '4cace071107c854f0e320c309da81ff62c950da324e2c21d312362f174ca5b5e',
+        'url'   =>  'https://sorting-hat-slack.herokuapp.com/'
+    ],
+
+    'slack' =>  [
+        // Channel to which to log operation team actions
+        'operations'    =>  '#operations_log',
+        'creevey'       =>  '#operations_log',
+    ]
 );

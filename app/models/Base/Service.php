@@ -44,7 +44,7 @@ class Service
                 );
             }
 
-            Slack::to($channel)->attach($data)->send($headline);
+            Slack::to($channel)->attach($data)->queue($headline);
         }
     }
 

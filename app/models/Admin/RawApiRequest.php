@@ -70,7 +70,7 @@ class RawApiRequest
         // id becomes rzp_{test|live}_merchant_id
         if ($merchantId)
         {
-            $id = $id.'_'.$merchant_id;
+            $id = $id.'_'.$merchantId;
         }
 
         $secret = Config::get('api.auth_pass');
@@ -141,7 +141,6 @@ class RawApiRequest
             $this->prepareRequest();
             $method = $this->input['method'];
             $response = $this->client->$method($this->path, $this->params)->json();
-
         }
         // This captures all the errors that might happen for now
         catch(\GuzzleHttp\Exception\ConnectException $e)
@@ -151,7 +150,12 @@ class RawApiRequest
         catch(\GuzzleHttp\Exception\GuzzleException $e)
         {
             $json = $e->getResponse()->json();
-            $errors = [$json->error->description, "Status Code: {$e->getResponse()->getStatusCode()}"];
+            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
+        }
+        catch(\GuzzleHttp\Exception\ClientException $e)
+        {
+            $json = $e->getResponse()->json();
+            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
         finally
         {

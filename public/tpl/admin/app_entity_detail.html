@@ -28,9 +28,9 @@
         </div>
       </div>
     </div>
-    <div class="panel-footer row">
+    <div class="panel-footer row" ng-show="entity.entity == 'terminal'">
       <div class="btn-group text-left" role="group"
-        aria-label="Terminal Actions" ng-show="entity.entity == 'terminal'"
+        aria-label="Terminal Actions"
       >
         <button class="btn btn-danger" ng-click="terminal.delete(entity.id)"
           ng-confirm-click="Are you sure you want to delete this terminal?"
@@ -40,6 +40,34 @@
         <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
           Edit Terminal
         </button>
+      </div>
+    </div>
+    <div class="panel-footer row" ng-show="entity.entity == 'iin'">
+      <div class="btn-group text-left" role="group"
+        aria-label="IIN Actions"
+      >
+        <button class="btn btn-danger" ng-click="iin.delete(entity.id)"
+          ng-confirm-click="Are you sure you want to delete this iin?"
+        >
+          Delete IIN
+        </button>
+        <button class="btn btn-info" ng-click="open.iinEdit(entity)">
+          Edit IIN
+        </button>
+      </div>
+    </div>
+    <div class="panel-footer row" ng-show="entity.entity == 'emi'">
+      <div class="btn-group text-left" role="group"
+        aria-label="EMI Plan Actions"
+      >
+        <button class="btn btn-danger" ng-click="emi.delete(entity.id)"
+          ng-confirm-click="Are you sure you want to delete this EMI Plan?"
+        >
+          Delete EMI Plan
+        </button>
+        <!-- <button class="btn btn-info" ng-click="open.emiEdit(entity)">
+          Edit EMI Plan
+        </button> -->
       </div>
     </div>
   </div>
@@ -115,5 +143,101 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal editing is dangerous. Please ensure you have filled the correct details." ng-click="ok(terminal)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="editIin.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit IIN</h3>
+  </div>
+  <div class="modal-body iin-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="iin" class="col-lg-2 control-label">IIN (6 digit):</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="iin" ng-model="iin.iin" readonly="true">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="network" class="col-lg-2 control-label">Network:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="network" ng-model="iin.network">
+            <option value="American Express">American Express</option>
+            <option value="Diners Club">Diners Club</option>
+            <option value="Discover">Discover</option>
+            <option value="JCB">JCB</option>
+            <option value="Maestro">Maestro</option>
+            <option value="MasterCard">MasterCard</option>
+            <option value="RuPay">RuPay</option>
+            <option value="Visa">Visa</option>
+            <option value="Union Pay">Union Pay</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="type" class="col-lg-2 control-label">Type:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="type" ng-model="iin.type">
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+            <option value="unkown">Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="country" class="col-lg-2 control-label">Country (2 character):</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="country" length="2" ng-model="iin.country" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="category" class="col-lg-2 control-label">Category:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="category" ng-model="iin.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="issuer" class="col-lg-2 control-label">Issuer:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="issuer" ng-model="iin.issuer" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="issuer_name" class="col-lg-2 control-label">Issuer Name:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="issuer_name" ng-model="iin.issuer_name" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="emi" class="col-lg-2 control-label">EMI:</label>
+        <div class="col-lg-10" >
+          <label class="i-checks ng-binding">
+            <input ng-model="iin.emi" name="emi" type="checkbox" class="ng-pristine ng-valid">
+            <i></i>
+            EMI Available
+          </label>
+        </div>
+      </div>
+      <!--<div class="form-group">
+        <label for="emi" class="col-lg-2 control-label">International:</label>
+        <div class="col-lg-10" >
+          <label class="i-checks ng-binding">
+            <input name="international" ng-model="iin.international" type="checkbox" class="ng-pristine ng-valid">
+            <i></i>
+            International
+          </label>
+        </div>
+      </div>-->
+      <div class="form-group">
+        <label for="trivia" class="col-lg-2 control-label">Trivia:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="trivia" ng-model="iin.trivia" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(iin)">OK</button>
   </div>
 </script>

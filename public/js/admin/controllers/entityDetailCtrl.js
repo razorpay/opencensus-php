@@ -106,15 +106,79 @@ app.controller('EntityDetailCtrl', [
             alert(data.errors);
           }
         }).error(function () {
-          alert('There was an error while deleting the terminal');
+          alert('There was an error while editing the terminal');
         });
       }
     };
+
+    // IIN Specific actions
+    $scope.iin = {
+      delete: function (id) {
+        var request = $http.delete('/admin/' + $scope.mode + '/iin/' + id);
+        request.success(function (data) {
+          if (data.success) {
+            alert('IIN deleted');
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while deleting the IIN');
+        });
+      }
+      ,edit: function (iin) {
+        var iinId = iin.iin;
+
+        iin = {
+          category: iin.category,
+          country: iin.country,
+          emi: iin.emi ? 1 : 0,
+          issuer_name: iin.issuer_name,
+          issuer: iin.issuer,
+          trivia: iin.trivia
+        };
+        // Lets remove all the empty variables
+        for (var i in iin) {
+          if (iin[i] === '' || iin[i] === null) {
+            delete iin[i];
+          }
+        }
+        var request = $http.put('/admin/iin/' + iinId, iin);
+        request.success(function (data) {
+          if (data.success) {
+            alert('IIN edit successfully');
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while editing the terminal');
+        });
+      }
+    };
+
+    // EMI Specific actions
+    $scope.emi = {
+      delete: function (id) {
+        // EMI plans are also modeless
+        var request = $http.delete('/admin/emi/' + id);
+        request.success(function (data) {
+          if (data.success) {
+            alert('EMI Plan deleted');
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          alert('There was an error while deleting the EMI Plan');
+        });
+      }
+    };
+
+
     $scope.toJson = function (data) {
       return angular.toJson(data, 4);
     };
     $scope.open = {
-      'terminalEdit': function (terminal) {
+      terminalEdit: function (terminal) {
         var modalInstance = $modal.open({
           templateUrl: 'editTerminal.html',
           controller: 'editTerminalModalCtrl',
@@ -127,6 +191,21 @@ app.controller('EntityDetailCtrl', [
         modalInstance.result.then(function (input) {
           delete input.merchant_id;
           $scope.terminal.edit(input.id, input);
+        }, function () {
+        });
+      },
+      iinEdit: function (iin) {
+        var modalInstance = $modal.open({
+          templateUrl: 'editIin.html',
+          controller: 'editIinModalCtrl',
+          resolve: {
+            current: function () {
+              return iin;
+            }
+          }
+        });
+        modalInstance.result.then(function (input) {
+          $scope.iin.edit(input);
         }, function () {
         });
       }
@@ -212,6 +291,22 @@ app.controller('EntityDetailCtrl', [
     console.debug($scope.terminal);
     $scope.ok = function (terminal) {
       $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('editIinModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+    // This is the current IIN
+    $scope.iin = current;
+    $scope.iin.emi = current ? true : false;
+    $scope.ok = function (iin) {
+      $modalInstance.close(iin);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

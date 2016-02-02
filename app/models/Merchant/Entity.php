@@ -42,6 +42,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const AMEX  = 'AMEX';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
+    const EMI   = 'EMI';
     const JCB   = 'JCB';
     const MAES  = 'MAES';
     const MC    = 'MC';
@@ -67,6 +68,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'card'              =>  self::CARD,
         'netbanking'        =>  self::NETBANKING,
         'wallet'            =>  self::WALLET,
+        'emi'               =>  self::EMI,
         'Unknown'           =>  self::UNKNOWN
     );
 
@@ -345,17 +347,19 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     public static function updatePaymentAggregations($data, $merchant_details, $mode)
     {
-        $obj = array();
+        $obj = [];
 
         $method = static::$api_mappings[$data['method']];
 
-        $obj[static::$api_mappings[$data['method']]] = $merchant_details->$method + 1;
+        $currentCount = $merchant_details->$method;
+
+        $obj[static::$api_mappings[$data['method']]] =  $currentCount + 1;
 
         if(isset($data['network']))
         {
             $network = static::$api_mappings[$data['network']];
 
-            $obj[static::$api_mappings[$data['network']]] = $merchant_details->$network + 1;
+            $obj[static::$api_mappings[$data['network']]] = $currentCount + 1;
         }
 
         \DB::table('payment_aggregations')

@@ -11,7 +11,8 @@ class Validator extends Base\Validator
         'email'                 => 'required|email|unique:merchants',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
-        'captcha'               => 'required'
+        'captcha'               => 'required',
+        'ref'                   => 'sometimes|max:255'
     );
 
     protected static $createValidators = array('captcha');
