@@ -246,12 +246,22 @@ class Entity extends Base\PublicEntity
 
     public function getEmiDuartionAttribute()
     {
-        return (integer)$this->attributes[self::EMI_DURATION];
+        return (int) $this->attributes[self::EMI_DURATION];
+    }
+
+    public function getCardAttribute()
+    {
+        return (bool) $this->attributes[self::CARD];
+    }
+
+    protected function getNetbankingAttribute()
+    {
+        return (bool) $this->attributes[self::NETBANKING];
     }
 
     public function getSharedAttribute()
     {
-        return (boolean)$this->attributes[self::SHARED];
+        return (bool) $this->attributes[self::SHARED];
     }
 
     public function merchant()
@@ -270,17 +280,17 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return (((int)$this->getAttribute(self::CARD)) === 1);
+        return $this->getAttribute(self::CARD);
     }
 
     public function isNetbankingEnabled()
     {
-        return (((int)$this->getAttribute(self::NETBANKING)) === 1);
+        return $this->getAttribute(self::NETBANKING);
     }
 
     public function isEmiEnabled()
     {
-        return (boolean)$this->getAttribute(self::EMI);
+        return (bool) $this->getAttribute(self::EMI);
     }
 
     public function isGateway($gateway)
@@ -290,7 +300,7 @@ class Entity extends Base\PublicEntity
 
     public function isShared()
     {
-        return (boolean)$this->getAttribute(self::SHARED);
+        return (bool) $this->getAttribute(self::SHARED);
     }
 
     public function isDeleted()
