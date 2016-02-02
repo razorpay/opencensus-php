@@ -172,6 +172,19 @@ class Plan extends PublicCollection
         return $plan;
     }
 
+    public function hasMethod($method)
+    {
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getPaymentMethod() === $method)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function hasNetworkAmex()
     {
         foreach ($this->items as $rule)
@@ -187,14 +200,6 @@ class Plan extends PublicCollection
 
     public function hasMethodWallet()
     {
-        foreach ($this->items as $rule)
-        {
-            if ($rule->getPaymentMethod() === 'wallet')
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->hasMethod('wallet');
     }
 }
