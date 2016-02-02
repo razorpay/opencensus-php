@@ -44,7 +44,7 @@ trait Inquiry
 
         if (empty($content['trackid']) === false)
         {
-            assert ($content['trackid'] === $payment['payment_id']);
+            assert ($content['trackid'] === $input['payment']['id']);
         }
 
         if ((isset($content['result'])) and
