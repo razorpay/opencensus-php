@@ -213,4 +213,15 @@ class MerchantController extends BaseController
 
         return AppResponse::jsonResponse([], $data[$mode]['balance']);
     }
+
+    /**
+     * Completely dashboard side function
+     */
+    public function getReferredMerchants()
+    {
+        $id = Auth::user()->user()->getCurrentMerchantId();
+        $data = (new Merchant\Service)->fetchReferredMerchants($id);
+
+        return AppResponse::jsonResponse([], $data);
+    }
 }

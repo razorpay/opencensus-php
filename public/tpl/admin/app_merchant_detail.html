@@ -122,6 +122,9 @@
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
+        <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()">
+          Mark as Referred <i class="pull-right fa fa-gift"></i>
+        </a>
         <a href class="list-group-item" id="btn-tagMerchant" ng-click="openTagMerchant()">
           Tag Merchant <i class="pull-right fa fa-tag"></i>
         </a>
@@ -153,6 +156,10 @@
         <a class="list-group-item" ng-show="merchant.details.features.length > 0 " ng-click="openFeatureMerchant()">
           <span class="pull-right">{{merchant.details.features.join()}}</span>
           Features
+        </a>
+        <a class="list-group-item" ng-show="referer!=false">
+          <span class="pull-right">{{referer}}</span>
+          Referer
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
@@ -990,6 +997,29 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(tags)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="tagReferralContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Mark as Refered</h3>
+  </div>
+  <div class="modal-body merchant-tag-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Merchant Id</label>
+        <div class="col-lg-6">
+          <input type="text" class="form-control m-b"
+            ng-model="referral" name="merchant-id"
+          >
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <div>You can also type other referral sources instead of merchant id</div>
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(referral)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="featureModalContent.html">
