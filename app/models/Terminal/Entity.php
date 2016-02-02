@@ -94,12 +94,13 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SECURE_SECRET     => null,
         self::SHARED                    => false,
         self::EMI                       => false,
+        self::EMI_DURATION              => null,
     );
 
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
-        $methods = array(self::CARD, self::NETBANKING, self::EMI);
+        $methods = array(self::CARD, self::NETBANKING);
 
         foreach ($methods as $method) 
         {
@@ -239,15 +240,21 @@ class Entity extends Base\PublicEntity
         return $category;
     }
 
-    public function getEmiDuartion()
+    public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getEmiDuartionAttribute()
+    public function getEmiDurationAttribute()
     {
-        return (int) $this->attributes[self::EMI_DURATION];
-    }
+        $emiDuration = $this->attributes[self::EMI_DURATION];
+
+        if ($emiDuration !== null)
+        {
+            $emiDuration = (int) $emiDuration;
+        }
+
+        return $emiDuration;    }
 
     public function getCardAttribute()
     {
