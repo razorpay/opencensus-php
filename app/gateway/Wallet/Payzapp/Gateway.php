@@ -357,7 +357,7 @@ class Gateway extends Base\Gateway
 
         $content =  array(
             'pg_instance_id'                    => $this->config['live_pg_instance_id'],
-            'merchant_id'                       => $input['terminal']['gateway_merchant_id'],
+            'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
             'perform'                           => $this->performMap[$this->perform],
             'currency_code'                     => '356',
             'transaction_type'                  => TransactionType::$codes['SALE'],
