@@ -25,6 +25,7 @@ return array(
 
     'slack' =>  [
         // Channel to which to log operation team actions
-        'operations'    =>  '#operations_log'
+        'operations'    =>  '#operations_log',
+        'creevey'       =>  '#operations_log',
     ]
 );
