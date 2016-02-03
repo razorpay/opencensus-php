@@ -310,9 +310,6 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-        $payzappEntity = $this->getRepo()->fetchWalletByPaymentId(
-                            $verify->input['payment']['id']);
-
         $status = VerifyResult::STATUS_MATCH;
 
         $txnResultStrings = explode("transaction_id=", $content);
@@ -323,9 +320,10 @@ class Gateway extends Base\Gateway
 
         parse_str($originalTxnIdRecord, $txnStatus);
 
+
         $responseCode = strtoupper(ResponseCode::$statusCodes[$txnStatus['status']]);
 
-        if ($responseCode !== $payzappEntity['response_description'])
+        if ($responseCode !== $payment['response_description'])
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -339,8 +337,8 @@ class Gateway extends Base\Gateway
             'error_message'         =>      $txnStatus['pg_error_msg'],
         );
 
-        $payzappEntity->fill($postVerifyAttributes);
-        $payzappEntity->saveOrFail();
+        $payment->fill($postVerifyAttributes);
+        $payment->saveOrFail();
 
         return $status;
     }
@@ -387,9 +385,9 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
 
-        $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
+        // $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
 
-        $verify->payment = $mappedPayment;
+        $verify->payment = $payment;
 
         return $payment;
     }
