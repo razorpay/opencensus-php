@@ -18,7 +18,8 @@ h1{
 	text-align: justify;
 	font-size: 16px;
 	line-height: 24px;
-	font-weight: lighter;
+	letter-spacing: 1px;
+	font-weight: 300;
 	color: #444444;
 	margin-bottom: 20px;
 }
@@ -96,6 +97,6 @@ h1{
 
 .newsletter img{
 	max-width: 580px;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 	margin-top: 5px;
 }

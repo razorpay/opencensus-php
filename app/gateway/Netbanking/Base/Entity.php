@@ -23,6 +23,7 @@ class Entity extends Base\Entity
         'client_code',
         'merchant_code',
         'bank_payment_id',
+        'status',
         'error_message',
         'date',
         'refund_id',

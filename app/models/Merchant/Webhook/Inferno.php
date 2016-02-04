@@ -7,31 +7,29 @@ use Trace\TraceCode;
 
 class Inferno
 {
+    protected $job;
+
     protected $trace;
+
+    protected $repo;
 
     public function __construct()
     {
         $app = \App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        $this->repo = new Repository;
     }
 
     public function fire($job, $data)
     {
-        $repo = new Repository;
+        $this->job = $job;
+        $this->repo = new Repository;
 
-        $mode = $data['mode'];
+        $repo = $this->repo;
 
-        $webhook = $repo->connection($mode)->find($data['webhook_id']);
-
-        if ($webhook === null)
-        {
-            $this->trace->info(
-                TraceCode::WEBHOOK_FIRING,
-                ['data' => $data]);
-
-            $job->delete();
-        }
+        $webhook = $this->getWebhook($data);
 
         if ($webhook->isActive() === false)
         {
@@ -46,9 +44,41 @@ class Inferno
             TraceCode::WEBHOOK_FIRING,
             $request);
 
-        $response = $this->makeRequest($request);
+        $timeout = false;
 
-        if ($response->success === false)
+        try
+        {
+            $response = $this->makeRequest($request);
+        }
+        catch (\Requests_Exception $e)
+        {
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                $timeout = true;
+
+                $this->trace->info(
+                    TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                    [
+                        'webhook' => $webhook->getId(),
+                        'exception' => $e->getMessage(),
+                    ]);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
+
+        if ($timeout === true)
+        {
+            $this->webhookBumpFailureCount($webhook);
+        }
+        else if ($response->success === false)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
@@ -57,44 +87,11 @@ class Inferno
                     'response_code' => $response->status_code
                 ]);
 
-            // It's a failure, increment failure count.
-            $repo->bumpFailureCount($webhook);
-
-            if (($webhook->isActive() === false) or
-                ($job->attempts() >= 3))
-            {
-                $this->trace->info(
-                    TraceCode::WEBHOOK_DEACTIVATE,
-                    [
-                        'webhook' => $webhook->getId(),
-                        'response_code' => $response->status_code
-                    ]);
-
-                // Webhook is now inactive
-                // So let's just delete the job
-                $job->delete();
-            }
-            else
-            {
-                // Attempt again after 1 hour
-                $job->release(3600);
-            }
+            $this->webhookBumpFailureCount($webhook);
         }
         else
         {
-            if ($webhook->getFailureCount() !== 0)
-            {
-                $repo->resetFailureCount($webhook);
-            }
-
-            $this->trace->info(
-                TraceCode::WEBHOOK_FIRED,
-                [
-                    'webhook' => $webhook->getId(),
-                    'response_code' => $response->status_code,
-                ]);
-
-            $job->delete();
+            $this->webhookSuccessfullyFired($webhook, $response);
         }
     }
 
@@ -126,5 +123,67 @@ class Inferno
         $request['options'] = ['timeout' => 10];
 
         return $request;
+    }
+
+    protected function webhookSuccessfullyFired($webhook, $response)
+    {
+        if ($webhook->getFailureCount() !== 0)
+        {
+            $this->repo->resetFailureCount($webhook);
+        }
+
+        $this->trace->info(
+            TraceCode::WEBHOOK_FIRED,
+            [
+                'webhook' => $webhook->getId(),
+                'response_code' => $response->status_code,
+            ]);
+
+        $this->job->delete();
+    }
+
+    protected function webhookBumpFailureCount($webhook)
+    {
+        $job = $this->job;
+
+        // It's a failure, increment failure count.
+        $this->repo->bumpFailureCount($webhook);
+
+        if (($webhook->isActive() === false) or
+            ($job->attempts() >= 3))
+        {
+            $this->trace->info(
+                TraceCode::WEBHOOK_DEACTIVATE,
+                ['webhook' => $webhook->getId()]);
+
+            // Webhook is now inactive
+            // So let's just delete the job
+            $job->delete();
+        }
+        else
+        {
+            // Attempt again after 1 hour
+            $job->release(3600);
+        }
+    }
+
+    protected function getWebhook($data)
+    {
+        $mode = $data['mode'];
+
+        $webhook = $this->repo
+                        ->connection($mode)
+                        ->find($data['webhook_id']);
+
+        if ($webhook === null)
+        {
+            $this->trace->info(
+                TraceCode::WEBHOOK_FIRING,
+                ['data' => $data]);
+
+            $this->job->delete();
+        }
+
+        return $webhook;
     }
 }
