@@ -339,7 +339,7 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
 
-        if (ResponseCode::$statusCodes[$txnStatus['status']] !== $payment['status'])
+        if ($txnStatus['status'] !== $payment['status_code'])
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -445,7 +445,7 @@ class Gateway extends Base\Gateway
         // to void/refund to settle
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            array('content' => $content));
+            array('content' => $responseContent));
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
