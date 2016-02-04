@@ -211,7 +211,8 @@ class Gateway extends Base\Gateway
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            if ($payment['vpc_TxnResponseCode'] === '0')
+            if (($payment['vpc_TxnResponseCode'] === '0') and
+                ($input['payment']['status'] !== 'failed'))
             {
                 $verify->apiSuccess = true;
 
