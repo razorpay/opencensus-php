@@ -47,7 +47,10 @@ class Base
     protected static $liveAndTest = array(
         'merchant',
         'pricing',
-        'methods');
+        'methods',
+        'emi_plan',
+        'iin'
+    );
 
     public function create(array $attributes = array())
     {
@@ -58,9 +61,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (($entity === 'merchant') or
-            ($entity === 'pricing') or
-            ($entity === 'methods'))
+        if (in_array($entity, self::$liveAndTest))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }

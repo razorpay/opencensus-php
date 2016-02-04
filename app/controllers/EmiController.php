@@ -29,4 +29,11 @@ class EmiController extends BaseController
         return ApiResponse::json($data);
 
     }
+
+    public function deleteEmiPlan($id)
+    {
+        $data = (new Emi\Service)->deleteEmiPlan($id);
+
+        return ApiResponse::json($data);
+    }
 }

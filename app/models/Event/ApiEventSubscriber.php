@@ -85,7 +85,6 @@ class ApiEventSubscriber
 
         $attributes = array(
             Entity::EVENT       => $eventFired,
-            Entity::MERCHANT_ID => $payment->getMerchantId(),
             Entity::CONTAINS    => Contains::getEntityNamesForEvent($eventFired),
             Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
         );
@@ -94,7 +93,7 @@ class ApiEventSubscriber
 
         $payload = array(
             Constants\Entity::PAYMENT => [
-                'data' => $payment->toArrayPublic(),
+                'entity' => $payment->toArrayPublic(),
             ],
         );
 

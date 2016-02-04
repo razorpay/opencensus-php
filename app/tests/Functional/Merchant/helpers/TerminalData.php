@@ -35,7 +35,6 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'  => '4567',
                 'emi'   => '1',
-                'emi_duration' => '6',
                 'shared'    => '1'
             ],
             'method' => 'POST'

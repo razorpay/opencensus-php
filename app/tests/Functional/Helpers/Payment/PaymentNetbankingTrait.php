@@ -24,6 +24,16 @@ trait PaymentNetbankingTrait
             ;
         }
 
+        if ($gateway === 'netbanking_kotak')
+        {
+            $response = $this->makeRequest($data);
+            $this->assertEquals($response->getStatusCode(), '302');
+
+            $data = array(
+                'url' => $response->headers->get('location'),
+                'method' => 'get');
+        }
+
         if (filter_var($data, FILTER_VALIDATE_URL))
         {
             return $this->submitPaymentCallbackRedirect($data);

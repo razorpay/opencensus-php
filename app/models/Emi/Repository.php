@@ -6,8 +6,9 @@ use Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
+    use Base\RepositoryFetch;   
+    use Base\RepositoryUpdateTestAndLive;
+    
     protected $entity = 'emi';
 
     public function getAllEmiPlans()

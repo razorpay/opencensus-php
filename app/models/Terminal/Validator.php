@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,15',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
     );
 
@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
         Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,15',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
     );
 
     protected static $billdeskTerminalRules = array(
@@ -158,9 +158,11 @@ class Validator extends Base\Validator
 
     protected function matchGatewayForNewTerminal($new, $existing)
     {
-        // If 1 exists, then another should not be added for the same gateway
+        // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
-            ($new->getId() !== $existing->getId()))
+            ($new->getId() !== $existing->getId()) and
+            ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
+            ($new->getEmiDuration() === $existing->getEmiDuration()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

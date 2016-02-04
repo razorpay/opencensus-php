@@ -57,6 +57,16 @@ class Entity extends Base\PublicEntity
         return 'rzp_' . $mode . '_' . $this->getKey();
     }
 
+    public function getPublicKey($mode = null)
+    {
+        if ($mode === null)
+        {
+            $mode = \BasicAuth::getMode();
+        }
+
+        return 'rzp_' . $mode . '_' . $this->getKey();
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);

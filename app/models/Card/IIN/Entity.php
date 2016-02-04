@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
     const EMI           = 'emi';
     const TRIVIA        = 'trivia';
 
+    const INTERNATIONAL = 'international';
+
     const ID_LENGTH = 6;
     const COUNTRY_LENGTH = 2;
 
@@ -27,6 +29,8 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::IIN;
 
     public $timestamps = false;
+
+    protected $appends = array(self::INTERNATIONAL);
 
     protected $fillable = array(
         self::IIN,
@@ -59,9 +63,19 @@ class Entity extends Base\PublicEntity
         self::EMI       =>  0,
     );
 
+    public function getIin()
+    {
+        return $this->getAttribute(self::IIN);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getCountry()
+    {
+        return $this->getAttribute(self::COUNTRY);
     }
 
     public function getNetwork()
@@ -82,5 +96,12 @@ class Entity extends Base\PublicEntity
     public function getIssuerAttribute()
     {
         return $this->attributes[self::ISSUER];
+    }
+
+    public function getInternationalAttribute()
+    {
+        $country = $this->getCountry();
+
+        return ($country !== 'IN');
     }
 }

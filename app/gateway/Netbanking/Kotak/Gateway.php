@@ -101,14 +101,12 @@ class Gateway extends Base\Gateway
 
         $payment->saveOrFail();
 
-        if (($attrs['status'] === '') or
-            ($attrs['bank_payment_id'] === ''))
+        if ($attrs['status'] !== 'Y')
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $attrs['status'],
-                '');
+                $attrs,'');
         }
     }
 
