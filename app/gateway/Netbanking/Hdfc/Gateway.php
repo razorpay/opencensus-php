@@ -124,7 +124,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function generateRefundsExcel($input)
+    public function generateRefunds($input)
     {
         foreach ($input as & $row)
         {
