@@ -108,7 +108,7 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForHdfcNB();
 
-        $this->assertEquals($data['count'], 3);
+        $this->assertEquals($data['netbanking_hdfc']['count'], 3);
     }
 
     protected function doNetbankingHdfcAuthAndCapturePayment()

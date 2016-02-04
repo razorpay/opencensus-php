@@ -45,23 +45,23 @@ class Service extends Base\Service
 
         if (isset($input['bank']))
         {
-            $returnValue[] = $this->generateNBRefundFileForBank($input['bank'], $from, $to);
+            $gateway = Payment\Gateway::$netbankingToGatewayMap[$input['bank']];
+
+            $returnValue[$gateway] = $this->generateNBRefundFileForBank($input['bank'], $from, $to, $gateway);
         }
         else
         {
             foreach (Payment\Gateway::$netbankingToGatewayMap as $bankCode => $bankGateway)
             {
-                $returnValue[] = $this->generateNBRefundFileForBank($bankCode, $from, $to);
+                $returnValue[$bankGateway] = $this->generateNBRefundFileForBank($bankCode, $from, $to, $bankGateway);
             }
         }
 
         return $returnValue;
     }
 
-    protected function generateNBRefundFileForBank($bankCode, $from, $to)
+    protected function generateNBRefundFileForBank($bankCode, $from, $to, $gateway)
     {
-        $gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
-
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
                                                 $bankCode, $from, $to, $gateway);
 
