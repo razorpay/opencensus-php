@@ -11,6 +11,7 @@ use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
 use Gateway\Wallet\Base;
+use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
@@ -104,6 +105,7 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input, $mappedPayment);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
+
         $attrs['received'] = true;
 
         $pickupDataContent = array(
@@ -124,6 +126,7 @@ class Gateway extends Base\Gateway
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
 
         $payment->fill($attrs);
+
         $payment->saveOrFail();
 
         $this->trace->info(
@@ -172,15 +175,12 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                        $input['payment']['id'], Action::AUTHORIZE);
-
         $wallet = $this->getRepo()->
                     fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 
-        $perform = $this->getPerformForPayment($payment);
+        $perform = $this->getPerformForPayment($input['payment']);
 
         $content =  array(
             'pg_instance_id'                    => $this->config['live_pg_instance_id'],
@@ -197,11 +197,11 @@ class Gateway extends Base\Gateway
         $refundAttributes = array(
             'payment_id'            =>    $input['payment']['id'],
             'action'                =>    $this->action,
-            'amount'                =>    $payment['amount'],
+            'amount'                =>    $input['payment']['amount'],
             'wallet'                =>    $input['payment']['wallet'],
-            'email'                 =>    $payment['email'],
+            'email'                 =>    $input['payment']['email'],
             'received'              =>    0,
-            'contact'               =>    $payment['contact'],
+            'contact'               =>    $input['payment']['contact'],
             'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
             'refund_id'             =>    $input['refund']['id'],
         );
@@ -211,6 +211,7 @@ class Gateway extends Base\Gateway
         $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
 
         $responseContent =  "";
+
         $response = $this->postRequest($content);
 
         parse_str($response, $responseContent);
@@ -243,6 +244,11 @@ class Gateway extends Base\Gateway
         $refund->fill($successfulTxnAttributes);
         $refund->saveOrFail();
 
+
+    }
+
+    protected function createRefundEntityWithPaymentDetails($input)
+    {
 
     }
 
@@ -308,22 +314,32 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
+
         $content = $verify->verifyResponseContent;
 
         $status = VerifyResult::STATUS_MATCH;
 
-        $txnResultStrings = explode("transaction_id=", $content);
+        $verifiedAction = $this->getActionFromTransactionType($verify->transactionType);
 
-        $originalTxnIdRecord = $txnResultStrings[1];
+        $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
-        $originalTxnIdRecord = "transaction_id=".$originalTxnIdRecord;
+        $verify->apiSuccess = true;
 
-        parse_str($originalTxnIdRecord, $txnStatus);
+        $verify->gatewaySuccess = false;
 
+        if(ResponseCode::$statusCodes[$txnStatus['status']] === "Success")
+        {
+            $verify->gatewaySuccess = true;
+        }
 
-        $responseCode = strtoupper(ResponseCode::$statusCodes[$txnStatus['status']]);
+        $paymentEntity = (new \Models\Payment\Core)->retirevePaymentById($payment['payment_id']);
 
-        if ($responseCode !== $payment['response_description'])
+        if($paymentEntity['status'] === "failed")
+        {
+            $verify->apiSuccess = false;
+        }
+
+        if (ResponseCode::$statusCodes[$txnStatus['status']] !== $payment['status'])
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -337,45 +353,103 @@ class Gateway extends Base\Gateway
             'error_message'         =>      $txnStatus['pg_error_msg'],
         );
 
-        $payment->fill($postVerifyAttributes);
-        $payment->saveOrFail();
+        $verify->verifyResponseContent = $postVerifyAttributes;
+
+        if($verify->match === false)
+        {
+            $attributes = array(
+                'action'            => $verifiedAction
+            );
+
+            $paymentEntity->fill($attributes);
+
+            $paymentEntity->saveOrFail();
+        }
 
         return $status;
+    }
+
+    protected function getTransactionStatusForVerifyFromContent($content)
+    {
+        $txnResultStrings = explode("transaction_id=", $content);
+
+        $originalTxnIdRecord = $txnResultStrings[1];
+
+        $originalTxnIdRecord = "transaction_id=".$originalTxnIdRecord;
+
+        parse_str($originalTxnIdRecord, $txnStatus);
+
+        return $txnStatus;
+    }
+
+    protected function getActionFromTransactionType($transactionType)
+    {
+        $map = [
+            'SALE'      => 'authorized',
+            'VOID'      => 'refunded',
+            'REFUND'    => 'refunded',
+        ];
+
+        return $map[$transactionType];
     }
 
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
+
         $payment = $verify->payment;
 
         $walletEntity = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
 
         $verify->wallet = $walletEntity;
+
         $this->perform  = 'verify';
 
-        $content =  array(
-            'pg_instance_id'                    => $this->config['live_pg_instance_id'],
-            'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
-            'perform'                           => $this->performMap[$this->perform],
-            'currency_code'                     => '356',
-            'transaction_type'                  => TransactionType::$codes['SALE'],
-            'amount'                            => $input['payment']['amount'],
-            'merchant_reference_no'             => $input['payment']['id'],
-        );
+        $latestTransactionType = 0;
 
-        $this->addMerchantDetailsInTest($content);
+        foreach (TransactionType::$codes as $txnType => $txnTypeCode)
+        {
+            $content =  array(
+                'pg_instance_id'                    => $this->config['live_pg_instance_id'],
+                'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
+                'perform'                           => $this->performMap[$this->perform],
+                'currency_code'                     => '356',
+                'transaction_type'                  => $txnTypeCode,
+                'amount'                            => $input['payment']['amount'],
+                'merchant_reference_no'             => $input['payment']['id'],
+            );
 
-        $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
+            $this->addMerchantDetailsInTest($content);
 
-        $content = $this->postRequest($content);
+            $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
 
+            $content = $this->postRequest($content);
+
+            $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
+
+            if(($txnTypeCode > $latestTransactionType) and (!empty($txnStatus['status'])) and
+                (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success'))
+            {
+                $responseContent = $content;
+
+                $verify->transactionType = $txnType ;
+
+                $response = $this->response;
+
+                $latestTransactionType   = $txnTypeCode;
+            }
+
+        }
+
+        // Once a trnasction begins, it goes through from sale
+        // to void/refund to settle
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             array('content' => $content));
 
-        $verify->verifyResponse = $this->response;
-        $verify->verifyResponseBody = $this->response->body;
-        $verify->verifyResponseContent = $content;
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $responseContent;
 
         return $content;
     }
@@ -410,7 +484,9 @@ class Gateway extends Base\Gateway
             $this->response = $response;
             $content = $response->body;
 
-        } else {
+        }
+        else
+        {
 
             $request = array(
                 'method'  => 'post',
