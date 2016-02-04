@@ -33,7 +33,7 @@ class Core extends Base\Core
         if ($ba->equals($bankAccount))
         {
             $this->trace->info(
-                TraceCode::MISC_CODE,
+                TraceCode::MISC_TRACE_CODE,
                 [
                     'old' => $ba->toArray(),
                     'new' => $bankAccount->toArray(),
