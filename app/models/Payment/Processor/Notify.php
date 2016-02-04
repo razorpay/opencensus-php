@@ -38,28 +38,39 @@ class Notify
     protected $mailViews = [
         self::AUTHORIZED    =>  [
             'customer'  => [
-                'html'=> 'emails.payment.customer',
-                'text'=> 'emails.payment.customer_text'
+                'from' => 'receipts@razorpay.com',
+                'view' => [
+                    'html'=> 'emails.payment.customer',
+                    'text'=> 'emails.payment.customer_text'
+                ]
             ]
         ],
         self::CAPTURED      =>  [
             'merchant'  => [
-                'html'=> 'emails.payment.merchant',
-                'text'=> 'emails.payment.merchant_text'
+                'view' => [
+                    'html'=> 'emails.payment.merchant',
+                    'text'=> 'emails.payment.merchant_text'
+                ]
             ]
         ],
         self::REFUNDED      =>  [
-            'customer'  => 'emails.refund.common',
-            'merchant'  => 'emails.refund.common'
+            'view' => [
+                'customer'  => 'emails.refund.common',
+                'merchant'  => 'emails.refund.common'
+            ]
         ],
         self::FAILED_TO_AUTHORIZED => [
             'customer'  => [
-                'html'  =>  'emails.payment.customer',
-                'text'  =>  'emails.payment.customer_text'
+                'view' => [
+                    'html'  =>  'emails.payment.customer',
+                    'text'  =>  'emails.payment.customer_text'
+                ]
             ],
             'merchant'  =>  [
-                'html'  =>  'emails.payment.failed_to_authorized',
-                'text'  =>  'emails.payment.failed_to_authorized_text',
+                'view' => [
+                    'html'  =>  'emails.payment.failed_to_authorized',
+                    'text'  =>  'emails.payment.failed_to_authorized_text',
+                ],
             ],
         ],
     ];
@@ -111,7 +122,7 @@ class Notify
      * @param  string $to      Email address to send to
      * @return null
      */
-    protected function sendMail($view, $subject, $to)
+    protected function sendMail($view, $subject, $to, $from = 'reports@razorpay.com')
     {
         Mail::queue(
             $view,
@@ -134,6 +145,7 @@ class Notify
                     $message->to($to);
                 }
 
+                $message->from($from);
                 $message->subject($subject);
                 $message->from('reports@razorpay.com');
                 $message->replyTo('support@razorpay.com');
@@ -150,12 +162,17 @@ class Notify
     {
         // This sends out mail for all views defined above
         // type = merchant|customer
-        foreach ($this->mailViews[$event] as $type => $view)
+        foreach ($this->mailViews[$event] as $type => $struct)
         {
             $isMerchant = ($type === 'merchant');
 
             $subject = $this->getSubject($event, $isMerchant);
             $to = $this->template[$type]['email'];
+
+            $view = $struct['view'];
+            $from = null;
+
+            $from = (isset($struct['from'])) ? $struct['from'] : null;
 
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
