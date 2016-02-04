@@ -117,6 +117,7 @@ trait FileHandlerTrait
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
         $txt = '';
+
         $count = count($data);
 
         foreach ($data as $row)
@@ -125,10 +126,10 @@ trait FileHandlerTrait
 
             $count--;
 
-            if(!$ignoreLastNewline and ($count > 0))
-            {
+           if($ignoreLastNewline and ($count > 0))
+           {
                 $txt .= "\r\n";
-            }
+           }
 
         }
 

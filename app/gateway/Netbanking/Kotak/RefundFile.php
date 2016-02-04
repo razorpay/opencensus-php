@@ -28,6 +28,7 @@ class RefundFile
 
     public function generate($input)
     {
+        // S.No in this file begins with 1
         $i = 1;
 
         $data = [];
@@ -38,7 +39,6 @@ class RefundFile
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d-M-Y');
 
-            sd($row);
             $data[] = array(
                 $i++,
                 $row['gateway']['merchant_code'],
@@ -55,16 +55,19 @@ class RefundFile
 
         $i--;
 
+        // First Line in the file is expected to be of the format
+        // Format : FileName|ItemsCount|TotalAmount(Rs.)|CHECKSUM
         $initialLine = $name.'|'.$i.'|'.$totalAmount.'|CHECKSUM'."\r\n";
 
         $txt = $this->getTextData($data, $initialLine);
 
         $urlText = $this->writeToTextFile($txt);
 
-        $this->sendKotakRefundsMail($totalAmount, $urlText);
+        $fileFullPath = $this->getFullFilePath($name);
 
-        return ;
+        $this->sendKotakRefundsMail($totalAmount, $fileFullPath);
 
+        return $urlText;
     }
 
     protected function getTextData($data, $prependLine = '')
@@ -84,7 +87,7 @@ class RefundFile
 
         $data = [
             'subject'   => 'Kotak NB Refund files for '.$today,
-            'body'      => 'PFA attached refund file.';
+            'body'      => 'PFA attached refund file.',
             'file'      => $urlText,
         ];
 

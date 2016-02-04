@@ -71,7 +71,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to, $gateway = Payment\Gateway::NETBANKING_HDFC)
+    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to, $gateway)
     {
         $repo = $this->repo;
 

@@ -21,8 +21,12 @@ class Service extends Base\Service
         if (isset($input['on']))
         {
             $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+
+            $fromTimeStamp = $from->timestamp;
+
             $to = $from->addDay()->timestamp - 1;
-            $from = $from->timestamp;
+
+            $from = $fromTimeStamp;
         }
         else
         {
@@ -37,18 +41,26 @@ class Service extends Base\Service
             }
         }
 
-        // Add more banks here as we direct connects with them.
-        $banks = array(IFSC::HDFC);
+        $returnValue = [];
 
-        if ((isset($input['bank']) === false) or ($input['bank'] === IFSC::HDFC))
+        if (isset($input['bank']))
         {
-            $input['bank'] = IFSC::HDFC;
-            $input['gateway'] = Payment\Gateway::NETBANKING_HDFC;
+            $returnValue[] = $this->generateNBRefundFileForBank($input['bank'], $from, $to);
+        }
+        else
+        {
+            foreach (Payment\Gateway::$netbankingToGatewayMap as $bankCode => $bankGateway)
+            {
+                $returnValue[] = $this->generateNBRefundFileForBank($bankCode, $from, $to);
+            }
         }
 
-        $gateway = $input['gateway'];
+        return $returnValue;
+    }
 
-        $bankCode = $input['bank'];
+    protected function generateNBRefundFileForBank($bankCode, $from, $to)
+    {
+        $gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
 
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
                                                 $bankCode, $from, $to, $gateway);
