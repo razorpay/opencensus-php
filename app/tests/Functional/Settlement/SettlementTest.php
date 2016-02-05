@@ -156,8 +156,8 @@ class SettlementTest extends TestCase
         $this->assertSame('collection', $content['entity']);
         $this->assertSame($content['count'], 5);
 
-        //payment - refund - servicetax - fee(not including service tax)
-        $totalAmount = (int)$content['items'][0]['amount'] - ((int)$content['items'][1]['amount'] + (int)$content['items'][3]['amount'] + (int)$content['items'][4]['amount']);
+        //payment + adjustment - refund - servicetax - fee(not including service tax)
+        $totalAmount = ((int)$content['items'][0]['amount'] + (int)$content['items'][2]['amount'])- ((int)$content['items'][1]['amount'] + (int)$content['items'][3]['amount'] + (int)$content['items'][4]['amount']);
 
         $this->assertSame($totalAmount, $setl['amount']);
     }
