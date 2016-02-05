@@ -419,7 +419,9 @@ class Service extends Base\Service
             'entity'        => 'methods',
             'card'          => true,
             'netbanking'    => [],
-            'wallet'        => []);
+            'wallet'        => [],
+            'emi'           => false
+        );
 
         $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
 
@@ -428,6 +430,7 @@ class Service extends Base\Service
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
             $data['wallet'] = $methods->getEnabledWallets();
+            $data['emi'] = $methods->isEmiEnabled();
         }
 
         if ($this->mode === Mode::TEST)
