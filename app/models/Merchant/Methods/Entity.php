@@ -63,9 +63,10 @@ class Entity extends Base\PublicEntity
     );
 
     protected $wallets = array(
+        self::MOBIKWIK,
         self::PAYTM,
         self::PAYZAPP,
-        self::MOBIKWIK);
+    );
 
     public function setMethods(array $input = array())
     {

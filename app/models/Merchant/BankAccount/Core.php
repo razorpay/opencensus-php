@@ -6,6 +6,7 @@ use Constants\Mode;
 use Models\Base;
 use Models\Merchant\BankAccount;
 use Mail;
+use Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -14,6 +15,8 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->repo = new Repository;
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     public function createOrChangeBankAccount($input, $merchant)
@@ -29,6 +32,13 @@ class Core extends Base\Core
 
         if ($ba->equals($bankAccount))
         {
+            $this->trace->info(
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'old' => $ba->toArray(),
+                    'new' => $bankAccount->toArray(),
+                ]);
+
             return $bankAccount;
         }
 

@@ -63,6 +63,11 @@ class Entity extends Base\PublicEntity
         self::EMI       =>  0,
     );
 
+    public function getIin()
+    {
+        return $this->getAttribute(self::IIN);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);

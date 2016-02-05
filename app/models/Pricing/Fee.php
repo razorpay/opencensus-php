@@ -8,6 +8,8 @@ use Models\Card;
 use Models\Payment;
 use Models\Pricing;
 use Services\SlackPoster;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Fee
 {
@@ -20,6 +22,15 @@ class Fee
     public function __construct()
     {
         $this->repo = new Pricing\Repository;
+    }
+
+    /**
+     *  Used in testing to mock
+     *  pricing repository
+     */
+    public function setPricingRepo($repo)
+    {
+        $this->repo = $repo;
     }
 
     public function getZeroPricingPlanRule($payment)
@@ -179,6 +190,10 @@ class Fee
 
         if ($cardType === Card\Type::UNKNOWN)
         {
+
+            //Disabling until IIN
+            //import is complete
+            /*
             $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
 
             $this->slackPost(
@@ -186,7 +201,9 @@ class Fee
                 $slackArray,
                 ['channel' => '#tech_logs']);
 
-            $cardType = Card\Type::CREDIT;
+            */
+            $cardType = Card\Type::DEBIT;
+
         }
 
         $isInternational = $payment->isInternational();
@@ -213,13 +230,27 @@ class Fee
 
         // Current Implementation
         // 1. Filter based on Network
-        // 2. Filter based on Card Type and AmountRange (if applicable.)
+        // 2. Filter based on Card Type
+        // 3. Filter based on AmountRange
+        // 4. Choose based on Amount
 
-        $rules = $this->filterRulesOnNetwork($rules, $network);
+        $filters = array(
+            Pricing\Entity::PAYMENT_NETWORK, $network, false,
+            Pricing\Entity::PAYMENT_METHOD_TYPE, $cardType, false,
+            Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true);
 
-        $rulesMap = $this->filterRulesOnCardTypeAndAmountRange($rules, $cardType);
+        $rules = $this->filterRulesOnFieldByValue($rules, Pricing\Entity::PAYMENT_NETWORK, $network);
 
-        $rule = $this->chooseRuleWithAmount($rulesMap, $amount);
+        $rules = $this->filterRulesOnFieldByValue($rules, Pricing\Entity::PAYMENT_METHOD_TYPE, $cardType);
+
+        $isFieldBoolean = true;
+
+        $amountRangeActive = true;
+
+        $rules = $this->filterRulesOnFieldByValue(
+            $rules, Pricing\Entity::AMOUNT_RANGE_ACTIVE, $amountRangeActive, $isFieldBoolean);
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount);
 
         if ($rule === null)
         {
@@ -230,120 +261,84 @@ class Fee
         return $rule;
     }
 
-    // Filters the given rules to give only the currently applicable
-    // set of rules based on network. If corresponding network rules are
-    // not available, rules other than these are provided.
-    protected function filterRulesOnNetwork($rules, $network)
+    /**
+     * Filter pricing rules based on fieldName and fieldValue
+     * If the value is not found, matches based on null
+     * will be returned, unless the field is boolean
+     * when matches based on boolean false will be returned.
+     */
+    protected function filterRulesOnFieldByValue($rules, $fieldName, $fieldValue, $isFieldBoolean = false)
     {
-        $networkMatchRules     = [];
-        $nullnetworkMatchRules = [];
+        $matchRules     = [];
+        $nullMatchRules = [];
 
-        foreach ($rules as $item)
+        $counterValue = null;
+
+        if ($isFieldBoolean)
         {
-            if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
+            $counterValue = !$fieldValue;
+        }
+
+        foreach ($rules as $rule)
+        {
+            if ($rule->getAttribute($fieldName) === $fieldValue)
             {
-                $networkMatchRules[] = $item;
+                $matchRules[] = $rule;
             }
-            else
+            else if($rule->getAttribute($fieldName) === $counterValue)
             {
-                $nullnetworkMatchRules[] = $item;
+                $nullMatchRules[] = $rule;
             }
         }
 
-        if (empty($networkMatchRules))
+        if (empty($matchRules))
         {
-            return $nullnetworkMatchRules;
+            return $nullMatchRules;
         }
 
-        return $networkMatchRules;
+        return $matchRules;
     }
 
-    // Groups currently available rules into those
-    // based on current CardType and AmountRange.
-    protected function filterRulesOnCardTypeAndAmountRange($rules, $cardType)
+    /**
+     * If the rules are amount range active rules,
+     * choose rule based on amount
+     * else return first available rule.
+     */
+    protected function chooseRuleWithAmount($rules, $amount)
     {
-        $feeTypeAmountRules    = [];
-        $nullTypeAmountRules   = [];
-        $feeTypeNonAmountRule  = [];
-        $nullTypeNonAmountRule = [];
+        $relevantRule = null;
 
-        foreach ($rules as $item)
+        // Either all the rules will be amount range active,
+        // Else none will be, so test against only one.
+        if ($rules[0]->isAmountRangeActive())
         {
-            if (($item->getAttribute(Pricing\Entity::PAYMENT_METHOD_TYPE) === $cardType))
+            foreach ($rules as $rule)
             {
-                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
+                if (($rule->getAmountRangeMin() < $amount) and
+                    ($rule->getAmountRangeMax() >= $amount))
                 {
-                    $feeTypeAmountRules[] = $item;
-                }
-                else
-                {
-                    $feeTypeNonAmountRule = $item;
-                }
-            }
-            else
-            {
-                if ($item->getAttribute(Pricing\Entity::AMOUNT_RANGE_ACTIVE))
-                {
-                    $nullTypeAmountRules[] = $item;
-                }
-                else
-                {
-                    $nullTypeNonAmountRule = $item;
-                }
-            }
-        }
-
-        return ['typeNonAmountRule' => $feeTypeNonAmountRule,
-                'typeAmountRules' => $feeTypeAmountRules,
-                'nullAmountRules' => $nullTypeAmountRules,
-                'nullNonAmountRule' => $nullTypeNonAmountRule];
-    }
-
-    // Choose the applicable rule based upon the provided rules
-    // map and the amount. Amount is considered only if amount
-    // rules are available for current type.
-    protected function chooseRuleWithAmount($rulesMap, $amount)
-    {
-        $rule = null;
-
-        if (empty($rulesMap['typeAmountRules']) === false)
-        {
-            foreach ($rulesMap['typeAmountRules'] as $ruleItem)
-            {
-                if ((($amount === Payment\Entity::MIN_PAYMENT_AMOUNT) and
-                    $ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) === $amount) or
-                    (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount) and
-                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount)))
-                {
-                    $rule = $ruleItem;
+                    $relevantRule = $rule;
                     break;
                 }
             }
+
         }
-        else if (empty($rulesMap['typeNonAmountRule']) === false)
+        // If only one other possible rule, return it.
+        else if(count($rules) === 1)
         {
-            $rule = $rulesMap['typeNonAmountRule'];
+            return $rules[0];
         }
-        else if (empty($rulesMap['nullAmountRules']) === false)
+        // Ideally should not reach this case, ever.
+        else
         {
-            foreach ($rulesMap['nullAmountRules'] as $ruleItem)
-            {
-                if ((($amount === Payment\Entity::MIN_PAYMENT_AMOUNT) and
-                    $ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) === $amount) or
-                    (($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MIN) < $amount) and
-                    ($ruleItem->getAttribute(Pricing\Entity::AMOUNT_RANGE_MAX) >= $amount)))
-                {
-                    $rule = $ruleItem;
-                    break;
-                }
-            }
-        }
-        else if (empty($rulesMap['nullNonAmountRule']) === false)
-        {
-            $rule = $rulesMap['nullNonAmountRule'];
+            $this->trace->info(
+                TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,
+                ['amount' => $amount, 'plan_id' => $rules[0]->getPlanId()]);
+
+            return $rules[0];
         }
 
-        return $rule;
+        return $relevantRule;
     }
 
     public function getGatewayFeeForAtomSharedTerminal($payment)

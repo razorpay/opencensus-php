@@ -21,8 +21,12 @@ class Service extends Base\Service
         if (isset($input['on']))
         {
             $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+
+            $fromTimeStamp = $from->timestamp;
+
             $to = $from->addDay()->timestamp - 1;
-            $from = $from->timestamp;
+
+            $from = $fromTimeStamp;
         }
         else
         {
@@ -37,18 +41,29 @@ class Service extends Base\Service
             }
         }
 
-        // Add more banks here as we direct connects with them.
-        $banks = array(IFSC::HDFC);
+        $returnValue = [];
 
-        if (isset($input['bank']) === false)
+        if (isset($input['bank']))
         {
-            $input['bank'] = IFSC::HDFC;
+            $gateway = Payment\Gateway::$netbankingToGatewayMap[$input['bank']];
+
+            $returnValue[$gateway] = $this->generateNBRefundFileForBank($input['bank'], $from, $to, $gateway);
+        }
+        else
+        {
+            foreach (Payment\Gateway::$netbankingToGatewayMap as $bankCode => $bankGateway)
+            {
+                $returnValue[$bankGateway] = $this->generateNBRefundFileForBank($bankCode, $from, $to, $bankGateway);
+            }
         }
 
-        $bankCode = $input['bank'];
+        return $returnValue;
+    }
 
+    protected function generateNBRefundFileForBank($bankCode, $from, $to, $gateway)
+    {
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-                                                $bankCode, $from, $to);
+                                                $bankCode, $from, $to, $gateway);
 
         $count = $refunds->count();
 
@@ -73,7 +88,7 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefundsExcel';
+        $action = 'generateRefunds';
 
         $file = Gateway::call($gateway, $action, $input, $this->mode);
 

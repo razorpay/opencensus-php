@@ -159,7 +159,7 @@ return [
             'contains' => ['payment'],
             'payload' => [
                 'payment' => [
-                    'data' => [
+                    'entity' => [
                         // 'id' => 'pay_4WVwsa1ZAIsNZ5',
                         'entity' => 'payment',
                         'amount' => 50000,
@@ -193,7 +193,7 @@ return [
             'contains' => ['payment'],
             'payload' => [
                 'payment' => [
-                    'data' => [
+                    'entity' => [
 //                        'id' => 'pay_4WVwsa1ZAIsNZ5',
                         'entity' => 'payment',
                         'method' => 'card',

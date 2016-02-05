@@ -176,6 +176,7 @@ class DatabaseSeeder extends Seeder
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'paytm'         => '1',
                     'mobikwik'      => '1',
+                    'payzapp'       => '1',
                     'card'          => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -188,6 +189,7 @@ class DatabaseSeeder extends Seeder
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'paytm'         => '1',
                     'mobikwik'      => '1',
+                    'payzapp'       => '1',
                     'card'          => '1',
                     'emi'           => '1',
                     'created_at'    =>  time(),

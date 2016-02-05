@@ -71,7 +71,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to)
+    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to, $gateway)
     {
         $repo = $this->repo;
 
@@ -85,7 +85,7 @@ class Repository extends Base\Repository
 
         $refunds = $query->join(
             $ptable,
-            function ($join) use ($from, $to, $bank)
+            function ($join) use ($from, $to, $bank, $gateway)
             {
                 $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
                 $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
@@ -98,7 +98,7 @@ class Repository extends Base\Repository
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
                      ->where($pbank, '=', $bank)
-                     ->where($pgateway, '=', Payment\Gateway::NETBANKING_HDFC);
+                     ->where($pgateway, '=', $gateway);
             })
             ->with('payment')
             ->get();

@@ -24,4 +24,11 @@ class Core extends Base\Core
 
         return ($plan->hasMethodWallet());
     }
+
+    public function hasEmiPricing($merchant)
+    {
+        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
+
+        return $plan->hasMethod('emi');
+    }
 }

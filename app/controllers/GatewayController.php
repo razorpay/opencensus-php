@@ -21,6 +21,11 @@ class GatewayController extends BaseController
         $app['slack']->send($input, 'transactions', '#tech_logs');
     } 
 
+    public function callbackKotakCancel()
+    {
+        return $this->callbackKotak();
+    }
+
     public function callbackKotak()
     {
         $inputMsg = Input::get('msg');

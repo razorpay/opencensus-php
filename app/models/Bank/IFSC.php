@@ -159,4 +159,9 @@ class IFSC
     const HVBK = 'HVBK';
     const YESB = 'YESB';
     const ZSBL = 'ZSBL';
+
+    public static function exists($code)
+    {
+        return defined(get_class().'::'.$code);
+    }
 }

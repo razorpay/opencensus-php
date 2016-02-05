@@ -53,6 +53,13 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException(
                 'Wallet pricing not present for merchant');
         }
+
+        if (($methods->isEmiEnabled()) and
+            ($pricingCore->hasEmiPricing($merchant) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Emi pricing not present for merchant');
+        }
     }
 
     public function getMerchantBanks($merchant)
