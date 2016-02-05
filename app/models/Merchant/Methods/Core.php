@@ -55,7 +55,7 @@ class Core extends Base\Core
         }
 
         if (($methods->isEmiEnabled()) and
-            ($pricingCore->hasWalletPricing($merchant) === false))
+            ($pricingCore->hasEmiPricing($merchant) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Emi pricing not present for merchant');
