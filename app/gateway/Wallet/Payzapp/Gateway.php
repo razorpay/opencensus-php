@@ -224,6 +224,7 @@ class Gateway extends Base\Gateway
         );
 
         $refund->fill($postTxnAttributes);
+
         $refund->saveOrFail();
 
         if (ResponseCode::$statusCodes[$responseContent['status']] !== 'Success')
@@ -242,9 +243,8 @@ class Gateway extends Base\Gateway
         );
 
         $refund->fill($successfulTxnAttributes);
+
         $refund->saveOrFail();
-
-
     }
 
     protected function createRefundEntityWithPaymentDetails($input)
@@ -348,23 +348,21 @@ class Gateway extends Base\Gateway
 
         $postVerifyAttributes = array(
             'response_code'         =>      $txnStatus['pg_error_code'],
-            'response_description'  =>      $txnStatus['pg_error_msg'],
+            'response_description'  =>      $txnStatus['pg_error_detail'],
             'status_code'           =>      $txnStatus['status'],
-            'error_message'         =>      $txnStatus['pg_error_msg'],
+            'error_message'         =>      $txnStatus['pg_error_detail'],
         );
 
         $verify->verifyResponseContent = $postVerifyAttributes;
 
-        if($verify->match === false)
-        {
-            $attributes = array(
-                'action'            => $verifiedAction
-            );
+        $attributes = array(
+            'action'            => $verifiedAction,
+            'verified'          => true,
+        );
 
-            $paymentEntity->fill($attributes);
+        $paymentEntity->fill($attributes);
 
-            $paymentEntity->saveOrFail();
-        }
+        $paymentEntity->saveOrFail();
 
         return $status;
     }
@@ -407,7 +405,12 @@ class Gateway extends Base\Gateway
 
         $latestTransactionType = 0;
 
-        foreach (TransactionType::$codes as $txnType => $txnTypeCode)
+        //Don't Check for settle during Verify
+        $verifyStates = TransactionType::$codes;
+
+        unset($verifyStates['SETTLE']);
+
+        foreach ($verifyStates as $txnType => $txnTypeCode)
         {
             $content =  array(
                 'pg_instance_id'                    => $this->config['live_pg_instance_id'],
@@ -445,7 +448,7 @@ class Gateway extends Base\Gateway
         // to void/refund to settle
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            array('content' => $responseContent));
+            array('content' => $responseContent, 'response' => $response));
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
@@ -595,7 +598,7 @@ class Gateway extends Base\Gateway
     protected function getPerformForPayment($payment, $forceRefund = false)
     {
         $now                = Carbon::now('Asia/Kolkata');
-        $paymentCreatedDate = Carbon::createFromTimestamp($payment->created_at, 'Asia/Kolkata');
+        $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
 
         if (!$forceRefund && $paymentCreatedDate->isSameDay($now))
         {

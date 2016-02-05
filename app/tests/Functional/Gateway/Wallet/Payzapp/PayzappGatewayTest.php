@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Gateway\Wallet\Payzapp;
 
+use EE\Exception;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
@@ -29,9 +30,11 @@ class PayzappGatewayTest extends TestCase
     public function testPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
+
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterAuthorize'], $txn);
 
@@ -52,6 +55,46 @@ class PayzappGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentPayzappEntity'], $payment);
+    }
+
+    public function testRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payzapp');
+
+        $postAuthPaymentInfo = $this->doAuthPayment($payment);
+
+        $payment = $this->capturePayment($postAuthPaymentInfo['razorpay_payment_id'], $payment['amount']);
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterRefund'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('wallet', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentPayzappEntityAfterRefund'], $payment);
+    }
+
+    public function testVerifyPayment()
+    {
+        $this->markTestIncomplete();
+
+        $payment = $this->getDefaultWalletPaymentArray('payzapp');
+
+        $postAuthPaymentInfo = $this->doAuthPayment($payment);
+
+        $payment = $this->capturePayment($postAuthPaymentInfo['razorpay_payment_id'], $payment['amount']);
+
+        $this->verifyPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
     }
 
     protected function runPaymentCallbackFlowWalletPayzapp($response, &$callback = null)
