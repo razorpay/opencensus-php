@@ -78,6 +78,7 @@ class CreateHdfcGateway extends Migration
             $table->index('refund_id');
             $table->index('gateway_transaction_id');
             $table->index('received');
+            $table->index('ref');
         });
     }
 
