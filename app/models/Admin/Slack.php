@@ -2,6 +2,8 @@
 
 namespace Models\Admin;
 
+use Models\Api;
+
 class Slack
 {
     protected static $entityPrefixes = [
@@ -12,19 +14,16 @@ class Slack
         'rfnd_' =>  'refund',
     ];
 
+    const EMAIL_REGEX = "/[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})/";
+
     function __construct($message)
     {
         $response = "Undefined";
+        $this->mode = $this->getMode();
 
         try
         {
-            list($entity, $id) = $this->getEntityAndId($message);
-
-            $mode = $this->getMode();
-
-            list($error, $response) = (new Service)->fetchEntityById($mode, $entity, $id);
-
-            $response = ['Entity URL', $response];
+            $response = ['Text', $this->getEntity($message)];
         }
         catch (\Exception $e)
         {
@@ -52,7 +51,27 @@ class Slack
         return 'live';
     }
 
-    protected function getEntityAndId($message)
+    protected function getEntity($message)
+    {
+        // The order of strategies is important
+        $strategies = ['entity_with_prefix', 'email_address', 'apex_entity'];
+
+        foreach ($strategies as $strategy)
+        {
+            $method = studly_case("check_$strategy");
+            $response = $this->$method($message);
+
+            // We are returned an array
+            if ($response)
+            {
+                return $response;
+            }
+        }
+
+        throw new \Exception("Couldn't find an entity");
+    }
+
+    protected function checkEntityWithPrefix($message)
     {
         // First we try to find a entity with a prefix
         foreach (static::$entityPrefixes as $prefix => $entity)
@@ -62,10 +81,13 @@ class Slack
             if (isset($matches[1]))
             {
                 // First is the entity type, second is the id
-                return [$entity, $matches[1]];
+                return $this->fetchEntity($entity, $matches[1]);
             }
         }
+    }
 
+    protected function checkApexEntity($message)
+    {
         // We haven't found anything matching so far
         // Maybe there is an entity id lurking somewhere
 
@@ -74,11 +96,39 @@ class Slack
         // We have an entity id, but we don't know which entity
         if (isset($matches[1]))
         {
-            $entity = $this->guessEntityFromMessage($message);
-            return [$entity, $matches[1]];
+            $entity = $this->guessEntityFromMessageCode($message);
+            return $this->fetchEntity($entity, $matches[1]);
         }
+    }
 
-        throw new \Exception("Couldn't find an entity");
+    protected function checkEmailAddress($message)
+    {
+        $matches = [];
+
+        // Another approach is to search by email address
+        preg_match(static::EMAIL_REGEX, $message, $matches);
+
+        if (isset($matches[1]))
+        {
+            // We have an email address
+            $email = $matches[1];
+            $params = [
+                'count' =>  1,
+                'email' =>  $email
+            ];
+
+            list(, $merchants) = (new Service)->fetchMultipleEntities($this->mode, 'merchant', $params);
+
+            if ($merchants['count'] === 1)
+            {
+                $merchant = $merchants['items'][0];
+                return $merchant;
+            }
+            else
+            {
+                throw new \Exception("No merchant found with that email address");
+            }
+        }
     }
 
     /**
@@ -87,7 +137,7 @@ class Slack
      * @param  [type] $m [description]
      * @return [type]    [description]
      */
-    protected function guessEntityFromMessage($m)
+    protected function guessEntityFromMessageCode($m)
     {
         $entity = 'merchant';
         $code = substr($m, 0, 2);
@@ -107,5 +157,18 @@ class Slack
         }
 
         return 'merchant';
+    }
+
+    protected function fetchEntity($entity, $id)
+    {
+        list($error, $response) = (new Service)
+            ->fetchEntityById($this->mode, $entity, $id);
+
+        if ($error)
+        {
+            throw new \Exception($e->getMessage());
+        }
+
+        return $response;
     }
 }
