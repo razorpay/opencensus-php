@@ -81,7 +81,7 @@ class Server extends Base\Mock\Server
         $txnId = $this->getAcosaTxnId();
 
         $txnResponse = 'transaction_id='.$txnId.'&status=50020&pg_error_code=0&'.
-        'pg_error_detail=No Error&merchant_reference_no='.$input['merchant_reference_no'];
+        'pg_error_msg=No Error&merchant_reference_no='.$input['merchant_reference_no'];
 
         return $this->makeResponse($txnResponse);
     }

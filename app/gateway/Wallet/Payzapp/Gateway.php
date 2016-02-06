@@ -348,9 +348,9 @@ class Gateway extends Base\Gateway
 
         $postVerifyAttributes = array(
             'response_code'         =>      $txnStatus['pg_error_code'],
-            'response_description'  =>      $txnStatus['pg_error_detail'],
+            'response_description'  =>      $txnStatus['pg_error_msg'],
             'status_code'           =>      $txnStatus['status'],
-            'error_message'         =>      $txnStatus['pg_error_detail'],
+            'error_message'         =>      $txnStatus['pg_error_msg'],
         );
 
         $verify->verifyResponseContent = $postVerifyAttributes;
