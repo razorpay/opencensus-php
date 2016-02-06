@@ -1677,7 +1677,7 @@ class Service extends Base\Service
      */
     public function querySlack(array $input)
     {
-        $slack = new Slack($input['text']);
+        $slack = new Slack($input['text'], $input['user_name'], $input['channel_name']);
 
         return $slack->getResponse();
     }

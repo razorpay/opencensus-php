@@ -16,7 +16,7 @@ class Slack
 
     const EMAIL_REGEX = "/[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})/";
 
-    function __construct($message)
+    function __construct($message, $user, $channel)
     {
         $response = "Undefined";
         $this->mode = $this->getMode();
@@ -27,6 +27,10 @@ class Slack
             $text = $this->getFormattedLinkForSlack($entity['entity'], $entity['id']);
 
             $response = [$text, $entity];
+
+            // We found something. Lets log it as well
+            // the method is in Logger.php
+            (new Service)->logSlackQuery($user, $entity, $channel);
         }
         catch (\Exception $e)
         {
@@ -44,7 +48,7 @@ class Slack
         return $this->response;
     }
 
-    protected function getMode()
+    protected static function getMode()
     {
         if (\App::environment('dev'))
         {
@@ -152,6 +156,7 @@ class Slack
             's '    =>  'settlement',
             't '    =>  'transaction',
             'c '    =>  'card',
+            '$ '    =>  'pricing'
         ];
 
         if (isset($entityCodeMap[$code]))
@@ -164,22 +169,39 @@ class Slack
 
     protected function fetchEntity($entity, $id)
     {
-        list($error, $response) = (new Service)
-            ->fetchEntityById($this->mode, $entity, $id);
+        $method = studly_case('fetch_'.$entity);
+        $error = null;
+        if (method_exists($this, $method))
+        {
+            list($error, $response) = $this->$method($id);
+        }
+        else
+        {
+            list($error, $response) = (new Service)
+                ->fetchEntityById($this->mode, $entity, $id);
+        }
 
         if ($error)
         {
-            throw new \Exception($e->getMessage());
+            throw new \Exception($error[0]);
         }
 
         return $response;
     }
 
-    protected function getFormattedLinkForSlack($entity, $id)
+    protected function fetchPricing($id)
     {
-        $url = "https://dashboard.razorpay.com/admin#/app/$entity/{$this->mode}/$id";
+        return (new Service)->fetchPricingPlan($id);
+    }
+
+    public static function getFormattedLinkForSlack($entity, $id, $label = null)
+    {
+        $label = $label ? $label : $id;
+
+        $mode = static::getMode();
+        $url = "https://dashboard.razorpay.com/admin#/app/$entity/$mode/$id";
 
         // In the format <link|display_text>
-        return '<'. $url . '|' . $id.'>';
+        return '<'. $url . '|' . $label.'>';
     }
 }
