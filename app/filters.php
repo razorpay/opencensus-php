@@ -2,6 +2,7 @@
 
 use Razorpay\Api\Request as ApiRequest;
 use Http\AppResponse;
+use Http\SlackResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,17 @@ Route::filter('auth.user', function()
             $adminUsername = $admin->username;
             ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
         }
+    }
+});
+
+Route::filter('slack', function()
+{
+    $slackToken = Config::get('razorpay.slack.command_token');
+    $tokenFromInput = Input::get('token', false);
+
+    if ($slackToken !== $tokenFromInput)
+    {
+        return SlackResponse::jsonResponse("Invalid Slack Token");
     }
 });
 

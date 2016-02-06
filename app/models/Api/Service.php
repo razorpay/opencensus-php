@@ -10,7 +10,16 @@ class Service extends Base\Service
 {
     public function __construct()
     {
-        $this->merchantId = Auth::user()->user()->getCurrentMerchantId();
+        $loggedInUser = Auth::user()->user();
+
+        if ($loggedInUser)
+        {
+            $this->merchantId = $loggedInUser->getCurrentMerchantId();
+        }
+        else
+        {
+            $this->merchantId = 'anonymous';
+        }
     }
 
     public function fetchEntity($id, $mode, $entity)
