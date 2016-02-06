@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use Models\Bank\IFSC;
 use Models\Bank\Name;
+use Constants\Mode;
 
 class Netbanking
 {
@@ -263,14 +264,19 @@ class Netbanking
         return self::$billdesk;
     }
 
-    public static function getSupportedBanksInTestMode()
+    public static function getSupportedBanks($mode = Mode::LIVE)
     {
         $banks = self::getSupportedBanksInLiveMode();
 
-        $banks = array_merge($banks, self::$selfInTest);
-        $banks = array_merge($banks, self::$sbiepay);
+        if ($mode === Mode::TEST)
+        {
+            $banks = self::getSupportedBanksInLiveMode();
 
-        return array_unique($banks);
+            $banks = array_merge($banks, self::$selfInTest);
+            $banks = array_merge($banks, self::$sbiepay);
+        }
+
+        return array_unique($banks);            
     }
 
     public static function getSupportedBanksInLiveMode()

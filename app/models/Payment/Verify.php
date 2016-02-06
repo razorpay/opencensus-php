@@ -60,7 +60,7 @@ class Verify
 
     public function verifyAllPayments()
     {
-        $ts = time() - 30 * 60;
+        $ts = time() - 15 * 60;
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
