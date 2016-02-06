@@ -18,7 +18,7 @@ class ResponseCodeMap
         '30' => 'Wallet TopUp Failed',
         '31' => 'Wallet Debit Failed',
         '32' => 'Wallet Credit Failed',
-        '33' => 'User does not have sufficient balance in his wallet',
+        '33' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
         '40' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN,
         '41' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE,
         '42' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE,

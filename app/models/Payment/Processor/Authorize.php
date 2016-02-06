@@ -12,6 +12,7 @@ use Models\Card;
 use Models\Card\IIN;
 use Models\Emi;
 use Models\Payment;
+use Models\Payment\Method;
 use Models\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -19,6 +20,11 @@ use Mail;
 
 trait Authorize
 {
+    /**
+     * There are different ways of doing payment authorization.
+     */
+    protected $type;
+
     public function authorize($payment, $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -26,6 +32,11 @@ trait Authorize
         $gatewayInput = [];
 
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
+
+        if ($this->canRunOtpPaymentFlow($payment))
+        {
+            return $this->runOtpPaymentFlow($gatewayInput, $payment);
+        }
 
         $request = $this->callGatewayAuthorize($gatewayInput);
 
@@ -250,7 +261,7 @@ trait Authorize
         $data['version'] = 1;
         $data['payment_id'] = $payment->getPublicId();
 
-        $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
+        $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
         return $data;
     }
@@ -378,6 +389,50 @@ trait Authorize
             return $callbackData;
         }
         catch(Exception\BaseException $e)
+        {
+            $this->updatePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
+    protected function canRunOtpPaymentFlow($payment)
+    {
+        return false;
+        
+        return (($payment->getMethod() === Method::WALLET) and
+                ($payment->getWallet() === Wallet::MOBIKWIK));
+    }
+
+    protected function runOtpPaymentFlow($gatewayInput, $payment)
+    {
+        return $this->callGatewayMobikwikOtpGenerate($gatewayInput, $payment);
+    }
+
+    protected function callGatewayMobikwikOtpGenerate($data, $payment)
+    {
+        try
+        {
+            $this->type = 'otp_generate';
+
+            $this->callGatewayFunction('checkExistingUser', $data);
+
+            $this->callGatewayFunction('otpGenerate', $data);
+
+            return array(
+                'type' => 'otp',
+                'request' => [
+                    'url' => $data['callbackUrl'],
+                    'method' => 'post',
+                ],
+                'version' => 1,
+                'payment_id' => $payment->getPublicId(),
+                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+            );
+        }
+        catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed(
                     $e->getError(),
@@ -580,6 +635,12 @@ trait Authorize
 
         return true;
     }
+
+    protected function getEncryptedGatewayText($gateway)
+    {
+        return \Crypt::encrypt($gateway . '__' . time());
+    }
+
 
     protected function verifyHash($hash, $paymentPublicId)
     {

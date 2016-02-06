@@ -50,6 +50,7 @@ return array(
     'KOTAK_GATEWAY_TEST_TERMINAL_ID'                    => 'randomid',
 
     'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'                 => 'random_hash_secret',
+    'MOBIKWIK_GATEWAY_TEST_MERCHANT_ID'                 => 'RANDOM2',
 
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                    => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                    => 'randomsecret',

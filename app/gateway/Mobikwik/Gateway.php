@@ -7,7 +7,7 @@ use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
-use Gateway\Base\Action;
+// use Gateway\Base\Action;
 use Gateway\Base\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -54,6 +54,18 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if ((isset($input['gateway']['type'])) and
+            ($input['gateway']['type'] === 'otp'))
+        {
+            return $this->callbackOtpSubmit($input);
+        }
+
+
+        return $this->callbackNormalFlow($input);
+    }
+
+    protected function callbackNormalFlow(array $input)
+    {
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
@@ -194,7 +206,7 @@ class Gateway extends Base\Gateway
 
     public function checkExistingUser($input)
     {
-        $this->action = 'check_user';
+        $this->action = Action::CHECK_USER;
 
         $content = array(
             'action'        => Action::CHECK_USER,
@@ -207,13 +219,13 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
-
+s($request);
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
         $content['received'] = 1;
-
-        $code = (int)$input['gateway']['statuscode'];
+s($content);
+        $code = $content['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
@@ -222,8 +234,8 @@ class Gateway extends Base\Gateway
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 $errorCode,
-                $input['gateway']['statuscode'],
-                $input['gateway']['statusmessage']);
+                $content['statuscode'],
+                $content['statusdescription']);
         }
     }
 
@@ -244,8 +256,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $resposne = $this->sendGatewayRequest($request);
+        $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
+
+        $code = $content['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
@@ -255,21 +269,23 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content['statuscode'],
-                $content['statusmessage']);
+                $content['statusdescription']);
         }
     }
 
-    public function otpSubmit($input)
+    public function callbackOtpSubmit($input)
     {
+        $this->action = Action::OTP_SUBMIT;
+
         $content = array(
             'amount'        => $input['payment']['amount'],
             'cell'          => $input['payment']['contact'],
-            'comment'       => 'Doing something',
+            'comment'       => 'Order id - ' . $input['payment']['public_id'],
             'merchantname'  => 'razorpay',
-            'mid'           => $this->getMobikwikMerchantId(),
+            'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
-            'otp'           => $input['otp'],
+            'otp'           => $input['gateway']['otp'],
             'txntype'       => 'debit',
         );
 
@@ -277,8 +293,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $resposne = $this->sendGatewayRequest($request);
+        $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
+
+        $code = $content['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
@@ -288,7 +306,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content['statuscode'],
-                $content['statusmessage']);
+                $content['statusdescription']);
         }
     }
 
@@ -341,11 +359,6 @@ class Gateway extends Base\Gateway
     {
         $content['merchantname'] = 'TestMerchant';
         $content['mid'] = $this->getTestMerchantId();
-    }
-
-    protected function getTestMerchantId()
-    {
-        return 'MBK9002';
     }
 
     protected function getMobikwikMerchantId($terminal)
@@ -515,7 +528,7 @@ class Gateway extends Base\Gateway
     protected function verifyPaymentCallbackResponse($input)
     {
         $content = $input['gateway'];
-        $code = (int)$input['gateway']['statuscode'];
+        $code = (int) $input['gateway']['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {

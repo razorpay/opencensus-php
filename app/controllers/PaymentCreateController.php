@@ -94,6 +94,11 @@ class PaymentCreateController extends BaseController
                     return $response;
                 }
             }
+            else if ($data['type'] === 'otp')
+            {
+                return View::make('gateway.gatewayOtpPostForm')
+                           ->with('data', $data);
+            }
             else if ($data['type'] === 'return')
             {
                 return $this->returnMerchantFullRedirectView($data);
