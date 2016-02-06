@@ -462,8 +462,6 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
 
-        // $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
-
         $verify->payment = $payment;
 
         return $payment;
