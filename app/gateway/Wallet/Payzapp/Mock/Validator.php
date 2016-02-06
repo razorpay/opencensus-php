@@ -18,6 +18,33 @@ class Validator extends Base\Validator
         'auth_data'
     );
 
+    protected static $refundRules = array(
+        'pg_instance_id'                 => 'required|string',
+        'merchant_id'                    => 'required|string',
+        'perform'                        => 'required|in:processMerchantAPI#DirectVoid,processMerchantAPI#DirectRefund',
+        'orginal_transaction_id'         => 'required|string',
+        'original_merchant_reference_no' => 'required|string',
+        'login_id'                       => 'required|in:random',
+        'pgName'                         => 'required|in:hdfcpg',
+        'message_hash'                   => 'required|string',
+    );
+
+    protected static $verifyRules = array(
+        'pg_instance_id'                 => 'required|string',
+        'merchant_id'                    => 'required|string',
+        'perform'                        => 'required|in:getPaymentResult',
+        'currency_code'                  => 'required|in:356',
+        'transaction_type'               => 'required|in:9003,9011,9021,9030',
+        'amount'                         => 'required|integer',
+        'merchant_reference_no'          => 'required|string',
+        'message_hash'                   => 'required|string',
+    );
+
+
+    protected static $refundValidators = array(
+
+    );
+
     protected static $merchantInfoRules = array(
         'merId'                     => 'required|string|max:21',
         'merAppId'                  => 'required|integer|digits:4',

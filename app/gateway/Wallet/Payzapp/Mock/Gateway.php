@@ -71,4 +71,9 @@ class Gateway extends Payzapp\Gateway
 
         return $content;
     }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+    }
 }

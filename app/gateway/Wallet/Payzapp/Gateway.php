@@ -11,6 +11,7 @@ use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
 use Gateway\Wallet\Base;
+use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
@@ -104,6 +105,7 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input, $mappedPayment);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
+
         $attrs['received'] = true;
 
         $pickupDataContent = array(
@@ -124,6 +126,7 @@ class Gateway extends Base\Gateway
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
 
         $payment->fill($attrs);
+
         $payment->saveOrFail();
 
         $this->trace->info(
@@ -172,15 +175,12 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                        $input['payment']['id'], Action::AUTHORIZE);
-
         $wallet = $this->getRepo()->
                     fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 
-        $perform = $this->getPerformForPayment($payment);
+        $perform = $this->getPerformForPayment($input['payment']);
 
         $content =  array(
             'pg_instance_id'                    => $this->config['live_pg_instance_id'],
@@ -194,36 +194,37 @@ class Gateway extends Base\Gateway
 
         $this->addMerchantDetailsInTest($content);
 
-        $refundAttributes = array(
-            'payment_id'            =>    $input['payment']['id'],
-            'action'                =>    $this->action,
-            'amount'                =>    $payment['amount'],
-            'wallet'                =>    $input['payment']['wallet'],
-            'email'                 =>    $payment['email'],
-            'received'              =>    0,
-            'contact'               =>    $payment['contact'],
-            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
-            'refund_id'             =>    $input['refund']['id'],
-        );
-
-        $refund = $this->createGatewayRefundEntity($refundAttributes);
-
         $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
 
         $responseContent =  "";
+
         $response = $this->postRequest($content);
 
         parse_str($response, $responseContent);
 
-        $postTxnAttributes = array(
-            'response_code'         =>      $responseContent['pg_error_code'],
-            'response_description'  =>      $responseContent['pg_error_detail'],
-            'status_code'           =>      $responseContent['status'],
-            'error_message'         =>      $responseContent['pg_error_detail'],
+        $refundAttributes = array(
+            'payment_id'            =>    $input['payment']['id'],
+            'action'                =>    $this->action,
+            'amount'                =>    $input['payment']['amount'],
+            'wallet'                =>    $input['payment']['wallet'],
+            'email'                 =>    $input['payment']['email'],
+            'received'              =>    0,
+            'contact'               =>    $input['payment']['contact'],
+            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
+            'refund_id'             =>    $input['refund']['id'],
+            'response_code'         =>    $responseContent['pg_error_code'],
+            'response_description'  =>    $responseContent['pg_error_detail'],
+            'status_code'           =>    $responseContent['status'],
+            'error_message'         =>    $responseContent['pg_error_detail'],
         );
 
-        $refund->fill($postTxnAttributes);
-        $refund->saveOrFail();
+        if (isset($responseContent['new_transaction_id']))
+        {
+            $refundAttributes['gateway_payment_id_2'] =  $responseContent['new_transaction_id'];
+            $refundAttributes['gateway_refund_id']    =  $responseContent['new_transaction_id'];
+        }
+
+        $refund = $this->createGatewayRefundEntity($refundAttributes);
 
         if (ResponseCode::$statusCodes[$responseContent['status']] !== 'Success')
         {
@@ -234,15 +235,10 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
+    }
 
-        $successfulTxnAttributes = array(
-            'gateway_payment_id_2'  =>      $responseContent['new_transaction_id'],
-            'gateway_refund_id'     =>      $responseContent['new_transaction_id'],
-        );
-
-        $refund->fill($successfulTxnAttributes);
-        $refund->saveOrFail();
-
+    protected function createRefundEntityWithPaymentDetails($input)
+    {
 
     }
 
@@ -308,10 +304,74 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
+
         $content = $verify->verifyResponseContent;
 
         $status = VerifyResult::STATUS_MATCH;
 
+        $verifiedAction = $this->getActionFromTransactionType($verify->transactionType);
+
+        $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
+
+        $verify->apiSuccess = true;
+
+        $verify->gatewaySuccess = false;
+
+        if($this->isTransactionSuccess($txnStatus))
+        {
+            $verify->gatewaySuccess = true;
+        }
+
+        $paymentEntity = (new \Models\Payment\Core)->retirevePaymentById($payment['payment_id']);
+
+        if($paymentEntity['status'] === "failed")
+        {
+            $verify->apiSuccess = false;
+        }
+
+        // If both don't match we have a status mis match
+        if (!($verify->gatewaySuccess and $verify->apiSuccess))
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $responseDescription = $this->getResponseDescription($txnStatus);
+
+        $postVerifyAttributes = array(
+            'response_code'         =>      $txnStatus['pg_error_code'],
+            'response_description'  =>      $responseDescription,
+            'status_code'           =>      $txnStatus['status'],
+            'error_message'         =>      $responseDescription,
+        );
+
+        if (!isset($payment['gateway_payment_id_2']))
+        {
+            $gateway_payment_id_2 =
+                $verify->verifystatusResults['SALE']['status']['transaction_id'];
+
+            $payment->fill(['gateway_payment_id_2' => $gateway_payment_id_2 ]);
+
+            $payment->saveOrFail();
+        }
+
+        $verify->verifyResponseContent = $postVerifyAttributes;
+
+        $attributes = array(
+            'action'            => $verifiedAction,
+            'verified'          => true,
+        );
+
+        $paymentEntity->fill($attributes);
+
+        $paymentEntity->saveOrFail();
+
+        return $status;
+    }
+
+    protected function getTransactionStatusForVerifyFromContent($content)
+    {
         $txnResultStrings = explode("transaction_id=", $content);
 
         $originalTxnIdRecord = $txnResultStrings[1];
@@ -320,72 +380,124 @@ class Gateway extends Base\Gateway
 
         parse_str($originalTxnIdRecord, $txnStatus);
 
+        return $txnStatus;
+    }
 
-        $responseCode = strtoupper(ResponseCode::$statusCodes[$txnStatus['status']]);
+    protected function getActionFromTransactionType($transactionType)
+    {
+        $map = [
+            'SALE'      => 'authorized',
+            'VOID'      => 'refunded',
+            'REFUND'    => 'refunded',
+        ];
 
-        if ($responseCode !== $payment['response_description'])
+        return $map[$transactionType];
+    }
+
+    protected function getResponseDescription($txnStatus)
+    {
+        //In test api Payzapp returns pg_error_detail
+        if(isset($txnStatus['pg_error_detail']))
         {
-            $status = VerifyResult::STATUS_MISMATCH;
+            return $txnStatus['pg_error_detail'];
         }
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
-
-        $postVerifyAttributes = array(
-            'response_code'         =>      $txnStatus['pg_error_code'],
-            'response_description'  =>      $txnStatus['pg_error_msg'],
-            'status_code'           =>      $txnStatus['status'],
-            'error_message'         =>      $txnStatus['pg_error_msg'],
-        );
-
-        $payment->fill($postVerifyAttributes);
-        $payment->saveOrFail();
-
-        return $status;
+        //In beta api Payzapp returns pg_error_msg
+        else if(isset($txnStatus['pg_error_msg']))
+        {
+            return $txnStatus['pg_error_msg'];
+        }
+        // Because Payzapp
+        else
+        {
+            return "";
+        }
     }
 
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
+
         $payment = $verify->payment;
 
         $walletEntity = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
 
         $verify->wallet = $walletEntity;
+
         $this->perform  = 'verify';
 
-        $content =  array(
-            'pg_instance_id'                    => $this->config['live_pg_instance_id'],
-            'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
-            'perform'                           => $this->performMap[$this->perform],
-            'currency_code'                     => '356',
-            'transaction_type'                  => TransactionType::$codes['SALE'],
-            'amount'                            => $input['payment']['amount'],
-            'merchant_reference_no'             => $input['payment']['id'],
-        );
+        $latestTransactionType = 0;
 
-        $this->addMerchantDetailsInTest($content);
+        $responseContent = '';
 
-        $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
+        $response = '';
 
-        $content = $this->postRequest($content);
+        $txnStatusResults = [];
+        //Don't Check for settle during Verify
+        $verifyStates = TransactionType::$codes;
+
+        unset($verifyStates['SETTLE']);
+
+        foreach ($verifyStates as $txnType => $txnTypeCode)
+        {
+            $content =  array(
+                'pg_instance_id'                    => $this->config['live_pg_instance_id'],
+                'merchant_id'                       => $input['terminal']['gateway_merchant_id2'],
+                'perform'                           => $this->performMap[$this->perform],
+                'currency_code'                     => '356',
+                'transaction_type'                  => $txnTypeCode,
+                'amount'                            => $input['payment']['amount'],
+                'merchant_reference_no'             => $input['payment']['id'],
+            );
+
+            $this->addMerchantDetailsInTest($content);
+
+            $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
+
+            $content = $this->postRequest($content);
+
+            $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
+
+            //Record the transaction status for sale first and otherlater ones if possible.
+            $txnStatusResults[$txnType] = [
+                'status'    => $txnStatus,
+                'content'   => $content,
+                'response'  => $this->response,
+            ];
+
+
+            if(($txnType === 'SALE') or $this->isTransactionSuccess($txnStatus))
+            {
+                $responseContent = $content;
+
+                $verify->transactionType = $txnType ;
+
+                $response = $this->response;
+
+                $latestTransactionType   = $txnTypeCode;
+            }
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            array('content' => $content));
+            array('txnStatusResults' => $txnStatusResults));
 
-        $verify->verifyResponse = $this->response;
-        $verify->verifyResponseBody = $this->response->body;
-        $verify->verifyResponseContent = $content;
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $responseContent;
+        $verify->verifystatusResults = $txnStatusResults;
 
         return $content;
+    }
+
+    protected function isTransactionSuccess($txnStatus)
+    {
+        return ((!empty($txnStatus['status'])) and (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
     }
 
     protected function getPaymentToVerify($input, $verify)
     {
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                     $input['payment']['id'], Action::AUTHORIZE);
-
-        // $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
 
         $verify->payment = $payment;
 
@@ -410,7 +522,9 @@ class Gateway extends Base\Gateway
             $this->response = $response;
             $content = $response->body;
 
-        } else {
+        }
+        else
+        {
 
             $request = array(
                 'method'  => 'post',
@@ -519,7 +633,7 @@ class Gateway extends Base\Gateway
     protected function getPerformForPayment($payment, $forceRefund = false)
     {
         $now                = Carbon::now('Asia/Kolkata');
-        $paymentCreatedDate = Carbon::createFromTimestamp($payment->created_at, 'Asia/Kolkata');
+        $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
 
         if (!$forceRefund && $paymentCreatedDate->isSameDay($now))
         {
