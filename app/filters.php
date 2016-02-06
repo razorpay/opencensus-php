@@ -25,16 +25,6 @@ App::before(function($request)
 App::after(function($request, $response)
 {
     $response->headers->set('X-Frame-Options', 'SAMEORIGIN', true);
-
-    // This is necessary for protection against json/jsonp array vulnerability
-    // Refer https:// docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
-    if (($response instanceof \Illuminate\Http\JsonResponse) and
-        (App::environment('dev') === false))
-    {
-        $json = ")]}',\n" . $response->getContent();
-
-        return $response->setContent($json);
-    }
 });
 
 /*
