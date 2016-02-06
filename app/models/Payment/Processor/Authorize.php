@@ -25,31 +25,7 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->verifyPaymentMethodEnabled($payment, $input);
-
-        if (($payment->isMethod(Payment\Method::CARD)) or
-            ($payment->isMethod(Payment\Method::EMI)))
-        {
-            $gatewayInput['card'] = $this->createCardEntity($input);
-        }
-
-        if ($payment->isMethod(Payment\Method::EMI))
-        {
-            $this->setBankAndEmiPlanDetails($payment, $input);
-        }
-
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
-
-        $this->repo->saveOrFail($payment);
-
-        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
-
-        //
-        // Call gateway with required info
-        //
-        $gatewayInput['payment'] = $payment->toArray();
-
-        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+        $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
         $request = $this->callGatewayAuthorize($gatewayInput);
 
@@ -77,57 +53,15 @@ trait Authorize
                 'Non failed payment given for authorization where failed payment is needed');
         }
 
-        $data = array(
-            'payment' => $payment->toArray(),
-        );
-
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             ['payment_id' => $payment->getId()]);
 
-        $this->repo->transaction(function() use ($data)
-        {
-            $this->repo->lockForUpdate($this->payment->getKey());
+        $this->runAuthorizeFailedTransaction($payment);
 
-            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+        $this->traceAuthorizeFailedOperationData($payment);
 
-            if ($flag === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeded on the gateway has actually not. ' .
-                    'Should not have called this function in this scenario');
-            }
-
-            $payment = $this->payment;
-
-            $payment->setErrorNull();
-            $payment->setVerified(true);
-
-            // The second argument marks the payment as converted from failed
-            // to authorized
-            $this->updateAndNotifyPaymentAuthorized($payment, true);
-
-            $this->repo->saveOrFail($payment);
-        });
-
-        $traceData = array(
-            'payment_id' => $payment->getId(),
-            'error' => $payment->getErrorDetails(),
-        );
-
-        $message = 'Payment failed earlier converted to authorized';
-
-        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
-
-        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
-
-        $data = $payment->toArrayAdmin();
-
-        $this->trace->info(
-            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-            $traceData);
-
-        return $data;
+        return $payment->toArrayAdmin();
     }
 
     /**
@@ -185,6 +119,68 @@ trait Authorize
         $this->updateAndNotifyPaymentAuthorized($payment);
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
+    {
+        $this->verifyPaymentMethodEnabled($payment, $input);
+
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+
+        //
+        // Call gateway input
+        //
+        $gatewayInput['payment'] = $payment->toArray();
+
+        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+    }
+
+    protected function runAuthorizeFailedTransaction($payment)
+    {
+        $this->repo->transaction(function() use ($payment)
+        {
+            $data = array('payment' => $payment->toArray());
+
+            $this->repo->lockForUpdate($payment->getKey());
+
+            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+
+            if ($flag === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Should not have called this function in this scenario');
+            }
+
+            $payment->setErrorNull();
+            $payment->setVerified(true);
+
+            // The second argument marks the payment as converted from failed
+            // to authorized
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
+
+            $this->repo->saveOrFail($payment);
+        });
+    }
+
+    protected function runPaymentMethodRelatedPreProcessing($payment, $input, array & $gatewayInput)
+    {
+        if (($payment->isMethod(Payment\Method::CARD)) or
+            ($payment->isMethod(Payment\Method::EMI)))
+        {
+            $gatewayInput['card'] = $this->createCardEntity($input);
+        }
+
+        if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $this->setBankAndEmiPlanDetails($payment, $input);
+        }
     }
 
     protected function verifyPaymentMethodEnabled($payment, $input)
@@ -321,6 +317,24 @@ trait Authorize
         {
             $this->rethrowFailedPaymentErrorException($payment);
         }
+    }
+
+    protected function traceAuthorizeFailedOperationData($payment)
+    {
+        $traceData = array(
+            'payment_id' => $payment->getId(),
+            'error' => $payment->getErrorDetails(),
+        );
+
+        $message = 'Payment failed earlier converted to authorized';
+
+        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
+
+        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            $traceData);
     }
 
     protected function rethrowFailedPaymentErrorException($payment)
