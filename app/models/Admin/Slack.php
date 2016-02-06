@@ -23,7 +23,10 @@ class Slack
 
         try
         {
-            $response = ['Text', $this->getEntity($message)];
+            $entity = $this->getEntity($message);
+            $text = $this->getFormattedLinkForSlack($entity['entity'], $entity['id']);
+
+            $response = [$text, $entity];
         }
         catch (\Exception $e)
         {
@@ -170,5 +173,13 @@ class Slack
         }
 
         return $response;
+    }
+
+    protected function getFormattedLinkForSlack($entity, $id)
+    {
+        $url = "https://dashboard.razorpay.com/admin#/app/$entity/{$this->mode}/$id";
+
+        // In the format <link|display_text>
+        return '<'. $url . '|' . $id.'>';
     }
 }

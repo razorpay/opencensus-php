@@ -7,6 +7,11 @@ use Trace;
 
 class SlackResponse
 {
+
+    protected static $filteredKeys = [
+        'admin',
+    ];
+
     public static function jsonResponse($text, $data = [])
     {
         $response = [
@@ -22,15 +27,7 @@ class SlackResponse
 
     protected static function makeAttachments($data)
     {
-        // Drop all nested fields
-
-        foreach ($data as $key => $value)
-        {
-            if (! is_scalar($value))
-            {
-                unset($data[$key]);
-            }
-        }
+        $data = static::cleanData($data);
 
         $fields = [];
 
@@ -38,15 +35,46 @@ class SlackResponse
         {
             $fields[] = [
                 'title' => $key,
-                'value' => (string) $value,
+                'value' => static::transformValue($value),
                 'short' => true
             ];
         }
 
         return [
-            'fallback'  =>  "{$data['entity']} - {$data['id']}",
-            'pretext'   =>  "Link to entity here",
+            'fallback'  =>  "Entity can't be displayed here",
             'fields'    =>  $fields
         ];
+    }
+
+    protected static function transformValue($value)
+    {
+        // We can't use switch here because
+        // switch uses loose equality checks
+        if ($value === true)
+        {
+            return "true";
+        }
+        elseif ($value === false)
+        {
+            return "false";
+        }
+
+        return $value;
+    }
+
+    // Drops filtered keys and drops null values
+    protected static function cleanData($data)
+    {
+        return array_filter($data, function ($value, $key) {
+
+            if ((in_array($key, static::$filteredKeys))or
+                ($value === null) or
+                ($value === "") or
+                (! is_scalar($value)))
+            {
+                return false;
+            }
+            return true;
+        }, ARRAY_FILTER_USE_BOTH);
     }
 }
