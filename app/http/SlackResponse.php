@@ -17,8 +17,13 @@ class SlackResponse
         $response = [
             "response_type" => "in_channel",
             "text"          => $text,
-            "attachments"   => [(count($data) > 0) ? static::makeAttachments($data) : []]
+
         ];
+
+        if (count($data) >0)
+        {
+            $response['attachments'] = [static::makeAttachments($data)];
+        }
 
         Trace::debug('SLACK_QUERY_RESPONSE', $response);
 

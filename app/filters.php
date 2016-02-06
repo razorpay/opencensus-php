@@ -76,18 +76,7 @@ Route::filter('slack', function()
 
     if ($slackToken !== $tokenFromInput)
     {
-        try
-        {
-            SlackResponse::jsonResponse("Invalid Slack Token");
-        }
-        catch(\Throwable $e)
-        {
-            die($e->getMessage());
-        }
-    }
-    else
-    {
-        //SlackResponse::jsonResponse("WTF");
+        return SlackResponse::jsonResponse("Invalid Slack Token");
     }
 });
 
