@@ -293,7 +293,7 @@ class Gateway extends Base\Gateway
     protected function verifyPaymentCallbackResponse($input)
     {
         $resCode = (int) $input['resCode'];
-
+        $resCode = 1;
         if ($resCode === 0)
         {
             return;
