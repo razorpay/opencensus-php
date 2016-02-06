@@ -168,12 +168,12 @@ return [
           'contact'                 => '9918899029',
           'gateway_merchant_id'     => '3456',
           'gateway_payment_id'      => NULL,
-          'gateway_payment_id_2'    => NULL,
-          'gateway_refund_id'       => NULL,
-          'response_code'           => NULL,
-          'response_description'    => NULL,
-          'status_code'             => NULL,
-          'error_message'           => NULL,
+          // 'gateway_payment_id_2'    => NULL,
+          // 'gateway_refund_id'       => NULL,
+          'response_code'           => '0',
+          'response_description'    => 'No Error',
+          'status_code'             => '50020',
+          'error_message'           => 'No Error',
           'reference1'              => NULL,
           'reference2'              => NULL,
           'date'                    => NULL,
@@ -183,9 +183,4 @@ return [
           'entity'                  => 'wallet',
           'admin'                   => true,
     ],
-    'testVerifyPayment' => [
-        'exception' => [
-            'class' => 'EE\Exception\PaymentVerificationException',
-        ],
-    ]
 ];

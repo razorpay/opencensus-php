@@ -194,6 +194,14 @@ class Gateway extends Base\Gateway
 
         $this->addMerchantDetailsInTest($content);
 
+        $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
+
+        $responseContent =  "";
+
+        $response = $this->postRequest($content);
+
+        parse_str($response, $responseContent);
+
         $refundAttributes = array(
             'payment_id'            =>    $input['payment']['id'],
             'action'                =>    $this->action,
@@ -204,28 +212,19 @@ class Gateway extends Base\Gateway
             'contact'               =>    $input['payment']['contact'],
             'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
             'refund_id'             =>    $input['refund']['id'],
+            'response_code'         =>    $responseContent['pg_error_code'],
+            'response_description'  =>    $responseContent['pg_error_detail'],
+            'status_code'           =>    $responseContent['status'],
+            'error_message'         =>    $responseContent['pg_error_detail'],
         );
+
+        if (isset($responseContent['new_transaction_id']))
+        {
+            $refundAttributes['gateway_payment_id_2'] =  $responseContent['new_transaction_id'];
+            $refundAttributes['gateway_refund_id']    =  $responseContent['new_transaction_id'];
+        }
 
         $refund = $this->createGatewayRefundEntity($refundAttributes);
-
-        $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
-
-        $responseContent =  "";
-
-        $response = $this->postRequest($content);
-
-        parse_str($response, $responseContent);
-
-        $postTxnAttributes = array(
-            'response_code'         =>      $responseContent['pg_error_code'],
-            'response_description'  =>      $responseContent['pg_error_detail'],
-            'status_code'           =>      $responseContent['status'],
-            'error_message'         =>      $responseContent['pg_error_detail'],
-        );
-
-        $refund->fill($postTxnAttributes);
-
-        $refund->saveOrFail();
 
         if (ResponseCode::$statusCodes[$responseContent['status']] !== 'Success')
         {
@@ -236,15 +235,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
-
-        $successfulTxnAttributes = array(
-            'gateway_payment_id_2'  =>      $responseContent['new_transaction_id'],
-            'gateway_refund_id'     =>      $responseContent['new_transaction_id'],
-        );
-
-        $refund->fill($successfulTxnAttributes);
-
-        $refund->saveOrFail();
     }
 
     protected function createRefundEntityWithPaymentDetails($input)
@@ -339,7 +329,8 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
 
-        if ($txnStatus['status'] !== $paymentEntity['status_code'])
+        // If both don't match we have a status mis match
+        if (!($verify->gatewaySuccess and $verify->apiSuccess))
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -354,6 +345,16 @@ class Gateway extends Base\Gateway
             'status_code'           =>      $txnStatus['status'],
             'error_message'         =>      $responseDescription,
         );
+
+        if (!isset($payment['gateway_payment_id_2']))
+        {
+            $gateway_payment_id_2 =
+                $verify->verifystatusResults['SALE']['status']['transaction_id'];
+
+            $payment->fill(['gateway_payment_id_2' => $gateway_payment_id_2 ]);
+
+            $payment->saveOrFail();
+        }
 
         $verify->verifyResponseContent = $postVerifyAttributes;
 
@@ -458,9 +459,9 @@ class Gateway extends Base\Gateway
 
             //Record the transaction status for sale first and otherlater ones if possible.
             $txnStatusResults[$txnType] = [
-                'status_array'  => $txnStatus,
-                'content'       => $content,
-                'response'      => $this->response,
+                'status'    => $txnStatus,
+                'content'   => $content,
+                'response'  => $this->response,
             ];
 
 
@@ -483,6 +484,7 @@ class Gateway extends Base\Gateway
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
         $verify->verifyResponseContent = $responseContent;
+        $verify->verifystatusResults = $txnStatusResults;
 
         return $content;
     }

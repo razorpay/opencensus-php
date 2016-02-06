@@ -88,8 +88,6 @@ class PayzappGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
-        $this->markTestIncomplete();
-
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
         $postAuthPaymentInfo = $this->doAuthPayment($payment);
@@ -99,6 +97,8 @@ class PayzappGatewayTest extends TestCase
         $this->verifyPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['verified'], 1);
     }
 
     protected function runPaymentCallbackFlowWalletPayzapp($response, &$callback = null)
