@@ -25,7 +25,7 @@ class Core extends Base\Core
 
     public function setPaymentMethods($merchant, $input)
     {
-        $methods = $this->repo->getMerchantBanks($merchant->getId());
+        $methods = $this->repo->getMerchantMethods($merchant->getId());
 
         $methods->setMethods($input);
 
@@ -64,7 +64,7 @@ class Core extends Base\Core
 
     public function getMethods($merchant)
     {
-        $methods = $this->repo->getMerchantBanks($merchant->getId());
+        $methods = $this->repo->getMerchantMethods($merchant->getId());
 
         $supportedBanks = Netbanking::getSupportedBanks($this->mode);
 
@@ -75,7 +75,7 @@ class Core extends Base\Core
 
     public function getEnabledAndDisabledBanks($merchant)
     {
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
+        $banks = $this->repo->getMerchantMethods($merchant->getId());
 
         return $this->getEnabledDisabledBanks($banks);
     }
@@ -87,7 +87,7 @@ class Core extends Base\Core
 
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
+        $banks = $this->repo->getMerchantMethods($merchant->getId());
 
         if ($banks === null)
         {

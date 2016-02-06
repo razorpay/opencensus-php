@@ -24,17 +24,10 @@ class Repository extends Base\Repository
         Entity::EMI         => 'sometimes|in:0,1',
     );
 
-    public function getMerchantBanks($id)
+    public function getMerchantMethods($id)
     {
         $repo = $this->repo;
 
         return $repo::find($id);
-    }
-
-    public function saveMerchantBanks($banks)
-    {
-        $repo = $this->repo;
-
-        $this->saveOrFail($banks);
     }
 }
