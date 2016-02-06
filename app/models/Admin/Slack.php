@@ -2,6 +2,7 @@
 
 namespace Models\Admin;
 
+use Carbon\Carbon;
 use Models\Api;
 
 class Slack
@@ -71,11 +72,11 @@ class Slack
             // We are returned an array
             if ($response)
             {
-                return $response;
+                return $this->decorateEntity($response);
             }
         }
 
-        throw new \Exception("Couldn't find an entity");
+        throw new \Exception("Couldn't find an entity in the query");
     }
 
     protected function checkEntityWithPrefix($message)
@@ -189,6 +190,57 @@ class Slack
         return $response;
     }
 
+    // Converts timestamps and entity ids to links
+    protected function decorateEntity($data)
+    {
+        $strategies = [
+            'isDate'   =>  'formatDate',
+            'isId'     =>  'formatId'
+        ];
+
+        foreach ($data as $key => $value)
+        {
+            foreach ($strategies as $checkMethod => $formatMethod)
+            {
+                if ($this->$checkMethod($key, $value))
+                {
+                    $data[$key] = $this->$formatMethod($key, $value);
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    protected function isDate($key, $value)
+    {
+        return substr($key, -3) === '_at';
+    }
+
+    protected function isId($key, $value)
+    {
+        // The public_id field should not be linked
+        return ((substr($key, -3) === '_id') and ($key !== 'public_id'));
+    }
+
+    protected function formatDate($key, $value)
+    {
+        return Carbon::createFromTimeStamp($value, "Asia/Kolkata")->format('j M Y h:i a');
+    }
+
+    protected function formatId($key, $value)
+    {
+        $entity = substr($key, 0, -3);
+
+        // We want this field to be dropped in this case
+        if (($value === null) or ($value === ""))
+        {
+            return "";
+        }
+
+        return $this->getFormattedLinkForSlack($entity, $value);
+    }
+
     protected function fetchPricing($id)
     {
         return (new Service)->fetchPricingPlan($id);
@@ -199,8 +251,15 @@ class Slack
         $label = $label ? $label : $id;
 
         $mode = static::getMode();
-        $url = "https://dashboard.razorpay.com/admin#/app/$entity/$mode/$id";
 
+        if ($entity === 'payment' or $entity === 'merchant')
+        {
+            $url = url("admin#/app/{$entity}s/$mode/$id");
+        }
+        else
+        {
+            $url = url("admin#/app/entity/$mode/$entity/$id");
+        }
         // In the format <link|display_text>
         return '<'. $url . '|' . $label.'>';
     }
