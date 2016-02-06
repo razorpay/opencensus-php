@@ -243,6 +243,7 @@ app.controller('EntityDetailCtrl', [
           'iin',
           'kotak',
           'merchant',
+          'methods',
           'mobikwik',
           'netbanking',
           'payment',

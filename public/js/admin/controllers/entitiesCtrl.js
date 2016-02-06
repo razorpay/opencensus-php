@@ -154,6 +154,14 @@ app.controller('EntitiesCtrl', [
         card: booleanList2,
         amex: booleanList2
       },
+      methods: {
+        card: booleanList,
+        amex: booleanList,
+        emi: booleanList,
+        paytm: booleanList,
+        mobikwik: booleanList,
+        payzapp: booleanList
+      }
       netbanking: {
         payment_id: ['Payment Id'],
         received: booleanList,
