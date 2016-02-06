@@ -29,7 +29,7 @@ class PayzappGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->markTestSkipped();
+        // $this->markTestSkipped();
 
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
@@ -61,7 +61,7 @@ class PayzappGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
-        $this->markTestSkipped();
+        // $this->markTestSkipped();
 
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
