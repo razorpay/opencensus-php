@@ -15,10 +15,13 @@ class TraceCode
 
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
+    const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
-        self::MISC_TRACE_CODE                       => 'Miscellaneous trace code');
+        self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
+        self::SLACK_QUERY_RESPONSE                  => 'Slack Query Response Log'
+    );
 
     /**
      * Translate event code to message

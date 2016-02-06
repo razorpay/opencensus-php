@@ -113,6 +113,11 @@ Route::group(array('before' => 'guest.user'), function()
     });
 });
 
+Route::group(['before' => 'slack'], function ()
+{
+    Route::post('/slack', 'AdminController@postSlackQuery');
+});
+
 Route::group(array('before' => 'auth.admin'), function()
 {
     Route::get('/admin/user', 'AdminController@getAdmin');
