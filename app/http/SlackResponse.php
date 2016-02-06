@@ -70,6 +70,9 @@ class SlackResponse
     // Drops filtered keys and drops null values
     protected static function cleanData($data)
     {
+        return $data;
+
+        // Move to the following once php 5.6 is live
         return array_filter($data, function ($value, $key) {
 
             if ((in_array($key, static::$filteredKeys))or
