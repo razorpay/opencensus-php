@@ -413,7 +413,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        $banks = (new Methods\Core)->getMerchantBanks($merchant);
+        $banks = (new Methods\Core)->getMethods($merchant);
 
         $banks = ($banks === null) ? [] : $banks->getBanks();
 
