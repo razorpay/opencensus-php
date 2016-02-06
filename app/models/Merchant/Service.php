@@ -389,12 +389,14 @@ class Service extends Base\Service
 
     public function getEnabledBanks()
     {
-        $banks = (new Methods\Core)->getMerchantBanks($this->merchant);
+        $methods = (new Methods\Core)->getMethods($this->merchant);
 
-        if ($banks === null)
+        if ($methods === null)
+        {
             return [];
+        }
 
-        return $banks->toArrayWithBankNames();
+        return $methods->toArrayWithBankNames();
     }
 
     public function setPaymentBanks($id, $input)
@@ -423,7 +425,7 @@ class Service extends Base\Service
             'emi'           => false
         );
 
-        $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
+        $methods = (new Methods\Core)->getMethods($this->merchant);
 
         if ($methods !== null)
         {
