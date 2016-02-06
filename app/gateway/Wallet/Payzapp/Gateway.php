@@ -327,7 +327,7 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if(ResponseCode::$statusCodes[$txnStatus['status']] === "Success")
+        if($this->isTransactionSuccess($txnStatus))
         {
             $verify->gatewaySuccess = true;
         }
@@ -339,18 +339,20 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
 
-        if ($txnStatus['status'] !== $payment['status_code'])
+        if ($txnStatus['status'] !== $paymentEntity['status_code'])
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
+        $responseDescription = $this->getResponseDescription($txnStatus);
+
         $postVerifyAttributes = array(
             'response_code'         =>      $txnStatus['pg_error_code'],
-            'response_description'  =>      $txnStatus['pg_error_msg'],
+            'response_description'  =>      $responseDescription,
             'status_code'           =>      $txnStatus['status'],
-            'error_message'         =>      $txnStatus['pg_error_msg'],
+            'error_message'         =>      $responseDescription,
         );
 
         $verify->verifyResponseContent = $postVerifyAttributes;
@@ -391,6 +393,25 @@ class Gateway extends Base\Gateway
         return $map[$transactionType];
     }
 
+    protected function getResponseDescription($txnStatus)
+    {
+        //In test api Payzapp returns pg_error_detail
+        if(isset($txnStatus['pg_error_detail']))
+        {
+            return $txnStatus['pg_error_detail'];
+        }
+        //In beta api Payzapp returns pg_error_msg
+        else if(isset($txnStatus['pg_error_msg']))
+        {
+            return $txnStatus['pg_error_msg'];
+        }
+        // Because Payzapp
+        else
+        {
+            return "";
+        }
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
@@ -405,6 +426,11 @@ class Gateway extends Base\Gateway
 
         $latestTransactionType = 0;
 
+        $responseContent = '';
+
+        $response = '';
+
+        $txnStatusResults = [];
         //Don't Check for settle during Verify
         $verifyStates = TransactionType::$codes;
 
@@ -430,8 +456,15 @@ class Gateway extends Base\Gateway
 
             $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
-            if(($txnTypeCode > $latestTransactionType) and (!empty($txnStatus['status'])) and
-                (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success'))
+            //Record the transaction status for sale first and otherlater ones if possible.
+            $txnStatusResults[$txnType] = [
+                'status_array'  => $txnStatus,
+                'content'       => $content,
+                'response'      => $this->response,
+            ];
+
+
+            if(($txnType === 'SALE') or $this->isTransactionSuccess($txnStatus))
             {
                 $responseContent = $content;
 
@@ -441,20 +474,22 @@ class Gateway extends Base\Gateway
 
                 $latestTransactionType   = $txnTypeCode;
             }
-
         }
 
-        // Once a trnasction begins, it goes through from sale
-        // to void/refund to settle
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            array('content' => $responseContent, 'response' => $response));
+            array('txnStatusResults' => $txnStatusResults));
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
         $verify->verifyResponseContent = $responseContent;
 
         return $content;
+    }
+
+    protected function isTransactionSuccess($txnStatus)
+    {
+        return ((!empty($txnStatus['status'])) and (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
     }
 
     protected function getPaymentToVerify($input, $verify)
