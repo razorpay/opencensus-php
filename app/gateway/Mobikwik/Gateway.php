@@ -224,6 +224,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
@@ -259,6 +261,8 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
@@ -296,6 +300,8 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
