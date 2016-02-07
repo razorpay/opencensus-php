@@ -562,7 +562,7 @@ class Gateway extends Base\Gateway
 
     protected function getUrlDomain()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === Mode::LIVE)
         {
             $apiDomainActionList = array(
                 Action::CHECK_USER,
