@@ -234,6 +234,16 @@ class Gateway
             ]);
     }
 
+    protected function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                    $input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $payment;
+
+        return $payment;
+    }
+
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));

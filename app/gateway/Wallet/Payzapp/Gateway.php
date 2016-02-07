@@ -494,16 +494,6 @@ class Gateway extends Base\Gateway
         return ((!empty($txnStatus['status'])) and (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
     }
 
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
-    }
-
     protected function postRequest($content, $type = null)
     {
         $url = $this->getUrl($type);
