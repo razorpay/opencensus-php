@@ -542,7 +542,7 @@ class Gateway extends Base\Gateway
     {
         if (in_array($this->action, $this->acosaActions))
         {
-            $this->domainType = 'acosa';
+            $this->domainType = 'acosa_'.$this->mode;
         }
     }
 
