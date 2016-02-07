@@ -9,32 +9,44 @@ $public_url = $key_id.'@'.$baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
 ?>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
-<HTML>
-<HEAD>
-    <TITLE>Razorpay - Testing page</TITLE>
-</HEAD>
+<?php
 
-<BODY>
+$baseurl = $_SERVER['HTTP_HOST'] . '/v1';
+
+$key_id = 'rzp_test_1DP5mmOlF5G5ag';
+$secret = 'thisissupersecret';
+
+$public_url = $key_id.'@'.$baseurl;
+$private_url = $key_id.':'.$secret.'@'.$baseurl;
+?>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
+<html>
+<head>
+    <title>Razorpay - Testing page</title>
+</head>
+
+<body>
 <table border="1" align="center"  width="100%" >
     <tr>
-    <td align = "left" width = "90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</b></td>
-    <td align = "right"width = "10%"><img SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+    <td align = "left" width = "90%"><b>Testing Page</b></td>
+    <td align = "right"width = "10%"><img src="" width="169" height="37" border="0" alt=""></td>
     </tr>
 </table>
 <br><br>
 <form method="post" id="paymentform" action="//<?=$public_url?>/payments">
 <table border="1" align="center"  width="300">
     <tr>
-    <th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
+    <th colspan="50" bgcolor="brown" >Enter Parameters</th>
     </tr>
-            <input name="method" type="hidden" value="card">
-<!--     <tr>
+    <tr>
         <td colspan="40">Select Method: </td>
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
                 <option value="card" selected>Card</option>
+                <option value="wallet">Wallet</option>
+                <option value="emi">Emi</option>
             </select>
         </td>
     </tr>
@@ -43,39 +55,72 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
         <td>
             <select name="bank">
                 <option value="HDFC">HDFC Bank</option>
+                <option value="SBIN">SBI Bank</option>
+                <option value="ICIC">ICICI Bank</option>
+                <option value="CITI">CITI Bank</option>
+                <option value="UTIB">Axis Bank</option>
+                <option value="YESB">Yes Bank</option>
+                <option value="KKBK">Kotak Bank</option>
+                <option value="VIJB">Vijaya Bank</option>
+                <option value="PUNB">Punjab Bank</option>
+                <option value="SBTR">State Bank of Travancore</option>
+                <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
+                <option value="UBIN">United Bank</option>
+                <option value="BARB">Bank of Baroda</option>
             </select>
         </td>
     </tr>
- -->    <tr>
+    <tr>
+        <td colspan="40">Select Wallet </td>
+        <td>
+            <select name="wallet">
+                <option value="paytm">Paytm</option>
+                <option value="mobikwik">Mobikwik</option>
+                <option value="payzapp">Payzapp</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select EMI Duration</td>
+        <td>
+            <select name="emi_duration">
+                <option value="3">3 Months @12%</option>
+                <option value="6">6 Months @12%</option>
+                <option value="9">9 Months @14%</option>
+                <option value="12">12 Months @14%</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan='40'>CardHolder/Member Name:</td>
+        <td><input type="text" name="card[name]" size="25" value="shashank"></td>
+        <input type="hidden" value="INR" name="currency">
+        <input type="hidden" value="<?=$key_id?>" name="key_id">
+    </tr>
+    <tr>
         <td colspan="40">Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="" size="25"></td>
+        <td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
-        <td><input size="3" type="text" name="card[cvv]" value="" maxlength=4></td>
+        <td><input size="3" type="text" name="card[cvv]" value="880" maxlength=4></td>
     </tr>
     <tr>
         <td colspan ='40'>Exp Date:</td>
-        <td><input type="text" name="card[expiry_month]" value="" placeholder="Month"></td>
-        <td><input type="text" name="card[expiry_year]" value="" placeholder="Year"></td>
+        <td><input type="text" name="card[expiry_month]" value="11"></td>
+        <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <input type="hidden" name="amount" size="25" value="5000">
-            <td>50</td>
-        </tr>
-        <tr>
-            <td colspan='40'>CardHolder/Member Name:</td>
-            <td><input type="text" name="card[name]" size="25" value=""></td>
-        </tr>
-        <tr>
-            <td>Email:</td>
-            <td><input type="text" name="email" size="25" value="" placeholder="email"></td>
-        </tr>
-        <tr>
-            <td>Mobile:</td>
-            <td><input type="text" name="contact" size="25" value="" placeholder="contact"></td>
-            <input type="hidden" value="INR" name="currency">
-        </tr>
+            <td><input type="text" name="amount" size="25" value="500"></td>
+    </tr>
+    <tr>
+        <td colspan='40'>Email:</td>
+        <td><input type="text" name="email" size="25" value="test@razorpay.com"></td>
+        <td><input type="text" name="contact" size="25" value="1234567890"></td>
+    </tr>
+    <tr>
+        <td colspan='40'>Order Id:</td>
+        <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
     </tr>
     <tr>
         <td colspan="100" align="center"><input type="submit" value="  Submit  "></td>
@@ -98,10 +143,10 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 </table>
 <table border="1" align="center"  width="100%" >
     <tr>
-    <td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</td>
-    <td align="right"width="10%"><IMG SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+    <td align="left" width="90%"><b>Testing Page</b></td>
+    <td align="right"width="10%"><img src="" width="169" height="37" border="0" alt=""></td>
     </tr>
 </table>
 
-</BODY>
-</HTML>
+</body>
+</html>
