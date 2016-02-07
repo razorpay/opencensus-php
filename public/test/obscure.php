@@ -80,7 +80,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="12">12 Months @14%</option>
             </select>
         </td>
-    </tr>    
+    </tr>
     <tr>
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
@@ -102,7 +102,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="500"></td>
+            <td><input type="text" name="amount" size="25" value="100"></td>
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
