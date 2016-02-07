@@ -85,9 +85,10 @@ class Reconciler2
 
     protected function parseReturnFile($file)
     {
-        $data = Excel::load($file)
-                      ->formatDates(false)
-                      ->toArray();
+        $data = Excel::selectSheetsByIndex(0)
+                     ->load($file)
+                     ->formatDates(false)
+                     ->toArray();
 
         if ((count($data) === 3) and
             (count($data[1]) === 0))
@@ -143,6 +144,11 @@ class Reconciler2
 
     protected function reconcileSetl($row)
     {
+        if (isset($row['utr_sr_no']))
+        {
+            $row['utr_no'] = $row['utr_sr_no'];
+        }
+
         $setl = $this->loadSettlementAndRelations($row);
 
         $setl = $this->processSettlementStatus($setl, $row);
@@ -154,10 +160,16 @@ class Reconciler2
     {
         $status = $row['status'];
 
-        $utr = $row['utr_no'];
-        $utr = ($utr === '') ? null : $utr;
-
-        $setl->setUtr($utr);
+        if (isset($row['utr_no']))
+        {
+            $utr = $row['utr_no'];
+            $utr = ($utr === '') ? null : $utr;
+            $setl->setUtr($utr);
+        }
+        else
+        {
+            assert ($row['pdtifsccode'] === '958');
+        }
 
         if (($status === 'Account Debited') or
             ($status === 'Presented and Paid'))
