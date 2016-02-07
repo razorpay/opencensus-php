@@ -53,10 +53,33 @@ trait Inquiry
         {
             $verify->gatewaySuccess = true;
 
+            //
+            // Following situations have been accounted for:
+            // * Api payment status is success. Api hdfc payment status
+            //   is also success. Leading to brand it as success and moving on.
+            //
+            // * Second case is an interesting one. Here, api payment status is
+            //   successful. But, for some reason hdfc payment status stored with us
+            //   indicates failure. This could happen mostly due to race conditions
+            //   like for example callback route being hit twice very quickly.
+            //   This will cause auth request being sent twice very quickly. In
+            //   this situation, the second request will fail and hdfc payment will
+            //   be marked as unsuccessful. However, api payment will still be successful
+            //   because of first case. So, we mark hdfc payment as successful and move on.
+            // * Otherwise it's an error probably on our side. We will deal with more
+            //   cases as we discover them.
+            //
+
             if ((in_array($payment['status'], $successStatusArray)) and
                 ($input['payment']['status'] !== 'failed'))
             {
                 $verify->apiSuccess = true;
+            }
+            else if ((in_array($payment['status'], $successStatusArray) === false) and
+                     ($input['payment']['status'] === 'authorized'))
+            {
+                $verify->apiSuccess = true;
+                $this->fillPaymentStatusAndContent($verify);
             }
             else
             {
@@ -91,31 +114,7 @@ trait Inquiry
                 $payment->setReceived(false);
             }
 
-            $enrollResult = $payment['enroll_result'];
-
-            $status = null;
-
-            if ($verify->gatewaySuccess === true)
-            {
-
-                if ($content['result'] === Result::APPROVED)
-                {
-                    $status = Status::AUTHORIZED;
-                }
-                else if ($content['result'] === Result::CAPTURED)
-                {
-                    $status = Status::CAPTURED;
-                }
-                else
-                {
-                    throw new Exception\LogicException(
-                        'Not expecting this result code: ' . $content['result']);
-                }
-
-                $payment->setStatus($status);
-
-                $payment->fill($content);
-            }
+            $this->fillPaymentStatusAndContent($verify);
         }
         else
         {
@@ -130,6 +129,36 @@ trait Inquiry
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
         return $verify->status;
+    }
+
+    protected function fillPaymentStatusAndContent($verify)
+    {
+        $status = null;
+
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        if ($verify->gatewaySuccess === true)
+        {
+
+            if ($content['result'] === Result::APPROVED)
+            {
+                $status = Status::AUTHORIZED;
+            }
+            else if ($content['result'] === Result::CAPTURED)
+            {
+                $status = Status::CAPTURED;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Not expecting this result code: ' . $content['result']);
+            }
+
+            $payment->setStatus($status);
+
+            $payment->fill($content);
+        }
     }
 
     protected function wasEnrollSuccessful($payment)
