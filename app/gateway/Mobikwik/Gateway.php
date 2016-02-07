@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
 
     public function checkExistingUser($input)
     {
-        $this->action = Action::CHECK_USER;
+        $this->action($input, Action::CHECK_USER);
 
         $content = array(
             'action'        => 'existingusercheck',
@@ -249,7 +249,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate($input)
     {
-        $this->action = Action::OTP_GENERATE;
+        $this->action($input, Action::OTP_GENERATE);
 
         $content = array(
             'amount'    => $input['payment']['amount'],
@@ -287,7 +287,7 @@ class Gateway extends Base\Gateway
 
     public function callbackOtpSubmit($input)
     {
-        $this->action = Action::OTP_SUBMIT;
+        $this->action($input, Action::OTP_SUBMIT);
 
         $content = array(
             'amount'        => $input['payment']['amount'],

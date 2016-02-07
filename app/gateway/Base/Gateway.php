@@ -119,6 +119,12 @@ class Gateway
         $this->action = Action::VERIFY;
     }
 
+    public function action(array $input, $action)
+    {
+        $this->action = $action;
+        $this->input = $input;
+    }
+
     public function setTerminal($terminal)
     {
         $this->terminal = $terminal;
