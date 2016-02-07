@@ -86,6 +86,66 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($responseContent);
     }
 
+    public function checkUser($input)
+    {
+        // verify checksum.
+
+        $content = array(
+            'messagecode'       => '500',
+            'status'            => 'SUCCESS',
+            'statuscode'        => '0',
+            'statusdescription' => 'User Exists',
+            'emailaddress'      =>  'random@gmail.com',
+            'range'             => '100-500',
+            'statuscode'        => '0',
+            'statusdescription' => 'User exists',
+            'nonzeroflag'       => 'y'
+        );
+
+        $responseContent = $this->generateXMLResponse($content);
+
+        return $this->makeResponse($responseContent);
+    }
+
+    public function otpGenerate($input)
+    {
+        // verify checksum.
+
+        $content = array(
+            'messagecode'       => '504',
+            'status'            => 'SUCCESS',
+            'statuscode'        => '0',
+            'statusdescription' => 'Message Sent to xxxxxx784',
+            'emailaddress'      =>  'random@gmail.com',
+            'range'             => '100-500',
+            'statuscode'        => '0',
+            'statusdescription' => 'User exists',
+            'nonzeroflag'       => 'y',
+            'checksum'          => 'a44e07b54a5df145d722407617318c2f8a7d6fefd2ab1df9b4766b768741b6ad',
+        );
+
+        $responseContent = $this->generateXMLResponse($content);
+
+        return $this->makeResponse($responseContent);
+    }
+
+    public function otpSubmit($input)
+    {
+        $content = array(
+            'messagecode'       => '503',
+            'status'            => 'SUCCESS',
+            'statuscode'        => '0',
+            'statusdescription' => 'Amount Debited',
+            'debitedamount'     => $input['amount'],
+            'balanceamount'     => random_integer(4),
+            'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
+        );
+
+        $responseContent = $this->generateXMLResponse($content);
+
+        return $this->makeResponse($responseContent);
+    }
+
     protected function makeResponse($json)
     {
         $response = \Response::make($json);
@@ -95,7 +155,6 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
-
 
     protected function getAuthMethod($input)
     {

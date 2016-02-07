@@ -67,7 +67,7 @@ trait GatewayTrait
 
         $server->setInput($request['content']);
 
-        $action = $this->action;
+        $action = studly_case($this->action);
 
         $response = $server->$action($input);
 
