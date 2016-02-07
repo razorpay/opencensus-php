@@ -7,7 +7,7 @@ class Url
     const LIVE_DOMAIN 	= 'https://mobikwik.com';
     // const TEST_DOMAIN   = 'https://mobikwik.com';
     const TEST_DOMAIN   = 'https://test.mobikwik.com/mobikwik';
-    const API_DOMAIN    = 'https://walletapi.mobikwik.com/querywallet';
+    const API_DOMAIN    = 'https://walletapi.mobikwik.com';
 
     const AUTHORIZE 	= '/wallet';
     const REFUND 		= '/walletrefund';

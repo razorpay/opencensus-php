@@ -337,13 +337,13 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $domainConstantName = strtoupper($this->mode)."_DOMAIN";
+        $domainConstantName = strtoupper($this->mode).'_DOMAIN';
 
         if ($this->domainType !== null)
         {
             $domainType = strtoupper($this->domainType);
 
-            $domainConstantName = $domainType.'_'.$domainConstantName;
+            $domainConstantName = $domainType.'_DOMAIN';
         }
 
         return constant($urlClass . '::' .$domainConstantName);
@@ -358,7 +358,6 @@ class Gateway
 
     protected function getUrl($type = null)
     {
-
         $url = $this->getUrlDomain();
 
         if ($type === null)

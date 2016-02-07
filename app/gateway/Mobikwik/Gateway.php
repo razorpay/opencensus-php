@@ -546,6 +546,24 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getUrlDomain()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $apiDomainActionList = array(
+                Action::CHECK_USER,
+                Action::OTP_GENERATE,
+                Action::OTP_SUBMIT);
+
+            if (in_array($this->action, $apiDomainActionList))
+            {
+                $this->domainType = 'api';
+            }
+        }
+
+        return parent::getUrlDomain();
+    }
+
     protected function xmlToArray($xml)
     {
         $res = simplexml_load_string($xml);
@@ -559,6 +577,5 @@ class Gateway extends Base\Gateway
 
         return (array) $res;
     }
-
 }
 
