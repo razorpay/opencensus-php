@@ -424,7 +424,7 @@ trait Authorize
             return array(
                 'type' => 'otp',
                 'request' => [
-                    'url' => $data['callbackUrl'],
+                    'url' => $this->getOtpSubmitUrl(),
                     'method' => 'post',
                 ],
                 'version' => 1,
@@ -662,15 +662,29 @@ trait Authorize
      */
     protected function getCallbackUrl()
     {
-        $publicId = $this->payment->getPublicId();
-
-        $hash = $this->getHashOfPaymentPublicId();
-
-        $params = ['id' => $publicId, 'hash' => $hash];
+        $params = $this->getPaymentIdAndHashParams();
 
         $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
+    }
+
+    protected function getOtpSubmitUrl()
+    {
+        $params = $this->getPaymentIdAndHashParams();
+
+        $otpSubmitUrl = Route::getUrlWithPublicAuth('payment_otp_submit', $params);
+
+        return $otpSubmitUrl;
+    }
+
+    protected function getPaymentIdAndHashParams()
+    {
+        $publicId = $this->payment->getPublicId();
+
+        $hash = $this->getHashOfPaymentPublicId();
+
+        return ['id' => $publicId, 'hash' => $hash];
     }
 
     /**

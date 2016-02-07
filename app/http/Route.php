@@ -21,6 +21,7 @@ final class Route
         'payment_callback_get'                  => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'        => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_get'         => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
+        'payment_otp_submit'                    => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
         'payment_refund'                        => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_capture'                       => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                        => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
@@ -165,7 +166,7 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
-    ); 
+    );
 
     public static $public = array(
         'checkout',
@@ -173,6 +174,7 @@ final class Route
         'payment_create_checkout',
         'payment_create_jsonp',
         'payment_create_ajax',
+        'payment_otp_submit',
         'payment_cancel',
         'merchant_public_get_banks',
         'merchant_methods',

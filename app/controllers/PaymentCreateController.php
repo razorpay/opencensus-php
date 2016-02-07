@@ -164,6 +164,15 @@ class PaymentCreateController extends BaseController
         return $this->returnCallbackResponse($data);
     }
 
+    public function postOtpSubmit($id, $hash)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->callback($id, $hash, $input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function returnCallbackResponse($data)
     {
         if (isset($data['type']))
