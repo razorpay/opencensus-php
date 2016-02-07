@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
         $this->action = Action::CHECK_USER;
 
         $content = array(
-            'action'        => Action::CHECK_USER,
+            'action'        => 'existingusercheck',
             'cell'          => $input['payment']['contact'],
             'merchantname'  => 'Razorpay',
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
