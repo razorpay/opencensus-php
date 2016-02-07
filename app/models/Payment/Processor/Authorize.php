@@ -33,7 +33,7 @@ trait Authorize
 
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        if ($this->canRunOtpPaymentFlow($payment))
+        if ($this->canRunOtpPaymentFlow($payment, $input))
         {
             return $this->runOtpPaymentFlow($gatewayInput, $payment);
         }
@@ -216,16 +216,16 @@ trait Authorize
 
     protected function setBankAndEmiPlanDetails(& $payment, $input)
     {
-        //set the bank 
+        //set the bank
         $iin = substr($input['card']['number'], 0, 6);
-            
+
         $iinEntity = (new IIN\Repository)->findOrFail($iin);
-        
+
         $payment->setBank($iinEntity->getIssuer());
 
         //set emi plan id
         $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($iinEntity->getIssuer(), $input['emi_duration']);
-        
+
         $payment->setEmiPlanId($emiPlan->getId());
 
     }
@@ -398,11 +398,11 @@ trait Authorize
         }
     }
 
-    protected function canRunOtpPaymentFlow($payment)
+    protected function canRunOtpPaymentFlow($payment, $input)
     {
-        return false;
-        
-        return (($payment->getMethod() === Method::WALLET) and
+        return ((isset($input['_']['source'])) and
+                ($input['_']['source'] === 'checkoutjs') and
+                ($payment->getMethod() === Method::WALLET) and
                 ($payment->getWallet() === Wallet::MOBIKWIK));
     }
 
