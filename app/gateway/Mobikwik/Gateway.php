@@ -45,8 +45,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_AUTH_REQUEST, $request);
-
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
@@ -222,7 +220,7 @@ class Gateway extends Base\Gateway
             'msgcode'       => '500',
         );
 
-        $content['checksum'] = $this->getHashOfArray($content);
+        $content['checksum'] = $this->getHashForCheckExistingUserRequest($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -449,7 +447,6 @@ class Gateway extends Base\Gateway
 
     protected function getHashForVerifyRequest($mid, $orderId)
     {
-
         $str = "'" . $mid . "''" . $orderId . "'";
 
         return $this->getHashOfString($str);
@@ -476,7 +473,6 @@ class Gateway extends Base\Gateway
 
     protected function getHashForRefundRequest($mid, $orderId, $amount, $email)
     {
-
         $str = "'" . $mid . "''" . $orderId . "''" . $amount . "''" . $email . "'";
 
         return $this->getHashOfString($str);
@@ -491,6 +487,18 @@ class Gateway extends Base\Gateway
             $content['orderid']     . "''" .
             $content['redirecturl'] . "''" .
             $content['mid'] . "'";
+
+        return $this->getHashOfString($str);
+    }
+
+    protected function getHashForCheckExistingUserRequest($content)
+    {
+        $str = "'" .
+            $content['action']          . "''" .
+            $content['cell']            . "''" .
+            $content['merchantname']    . "''" .
+            $content['mid']             . "''" .
+            $content['msgcode'] . "'";
 
         return $this->getHashOfString($str);
     }
