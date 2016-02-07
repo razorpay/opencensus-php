@@ -201,7 +201,7 @@ class Service extends Base\Service
             catch (Exception\GatewayTimeoutException $e)
             {
                 $this->trace->info(
-                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    TraceCode::GATEWAY_REQUEST_TIMEOUT,
                     ['payment_id' => $payment->getId()]);
 
                 // Just continue
