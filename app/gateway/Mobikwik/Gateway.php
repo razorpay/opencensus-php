@@ -219,12 +219,12 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
-s($request);
+
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
         $content['received'] = 1;
-s($content);
+
         $code = $content['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
