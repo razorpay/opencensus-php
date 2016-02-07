@@ -196,6 +196,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
 
@@ -228,6 +230,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $content['received'] = 1;
 
@@ -267,6 +271,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
         $code = $content['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
@@ -305,6 +311,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $code = $content['statuscode'];
 
