@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
         $gateway = $input[self::GATEWAY];
         $methods = array(self::CARD, self::NETBANKING);
 
-        foreach ($methods as $method) 
+        foreach ($methods as $method)
         {
             if (Payment\Gateway::isMethodSupported($method, $gateway))
             {
@@ -313,5 +313,12 @@ class Entity extends Base\PublicEntity
     public function isDeleted()
     {
         return ($this->getAttribute(self::DELETED_AT) !== null);
+    }
+
+    public function matchEncryptedAttribute($attribute, $value)
+    {
+        $actualValue = $this->getAttribute($attribute);
+
+        return ($value === $actualValue);
     }
 }

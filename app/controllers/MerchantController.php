@@ -164,6 +164,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postCheckTerminalEncryptedValue($id)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->checkTerminalEncryptedValue($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postActivate($id)
     {
         $data = (new Merchant\Service)->activate($id);
