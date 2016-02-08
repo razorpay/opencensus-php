@@ -13,6 +13,7 @@ use Trace\TraceCode;
 class Notify
 {
     use SlackPoster;
+
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
@@ -38,28 +39,39 @@ class Notify
     protected $mailViews = [
         self::AUTHORIZED    =>  [
             'customer'  => [
-                'html'=> 'emails.payment.customer',
-                'text'=> 'emails.payment.customer_text'
+                'from' => 'care',
+                'view' => [
+                    'html'=> 'emails.payment.customer',
+                    'text'=> 'emails.payment.customer_text'
+                ]
             ]
         ],
         self::CAPTURED      =>  [
             'merchant'  => [
-                'html'=> 'emails.payment.merchant',
-                'text'=> 'emails.payment.merchant_text'
+                'view' => [
+                    'html'=> 'emails.payment.merchant',
+                    'text'=> 'emails.payment.merchant_text'
+                ]
             ]
         ],
         self::REFUNDED      =>  [
-            'customer'  => 'emails.refund.common',
-            'merchant'  => 'emails.refund.common'
+            'view' => [
+                'customer'  => 'emails.refund.common',
+                'merchant'  => 'emails.refund.common'
+            ]
         ],
         self::FAILED_TO_AUTHORIZED => [
             'customer'  => [
-                'html'  =>  'emails.payment.customer',
-                'text'  =>  'emails.payment.customer_text'
+                'view' => [
+                    'html'  =>  'emails.payment.customer',
+                    'text'  =>  'emails.payment.customer_text'
+                ]
             ],
             'merchant'  =>  [
-                'html'  =>  'emails.payment.failed_to_authorized',
-                'text'  =>  'emails.payment.failed_to_authorized_text',
+                'view' => [
+                    'html'  =>  'emails.payment.failed_to_authorized',
+                    'text'  =>  'emails.payment.failed_to_authorized_text',
+                ],
             ],
         ],
     ];
@@ -82,6 +94,8 @@ class Notify
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
+
+        $this->domain = $this->app['config']->get('applications.mailgun.url');
     }
 
     /**
@@ -111,14 +125,16 @@ class Notify
      * @param  string $to      Email address to send to
      * @return null
      */
-    protected function sendMail($view, $subject, $to)
+    protected function sendMail($view, $subject, $to, $from = 'reports')
     {
+        $from    = $this->getCompleteEmail($from);
+        $replyTo = $this->getCompleteEmail('support');
+
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to)
+            function ($message) use ($subject, $to, $from, $replyTo)
             {
-
                 // to might be an array
                 if (is_array($to))
                 {
@@ -134,11 +150,22 @@ class Notify
                     $message->to($to);
                 }
 
+                $message->from($from);
                 $message->subject($subject);
-                $message->from('reports@razorpay.com');
-                $message->replyTo('support@razorpay.com');
+                $message->replyTo($replyTo);
             }
         );
+    }
+
+
+    /**
+     * Returns a complete email address
+     * @param  string $user (reports)
+     * @return string (reports@razorpay.com)
+     */
+    protected function getCompleteEmail($user)
+    {
+        return "$user@{$this->domain}";
     }
 
     /**
@@ -150,17 +177,21 @@ class Notify
     {
         // This sends out mail for all views defined above
         // type = merchant|customer
-        foreach ($this->mailViews[$event] as $type => $view)
+        foreach ($this->mailViews[$event] as $type => $struct)
         {
             $isMerchant = ($type === 'merchant');
 
             $subject = $this->getSubject($event, $isMerchant);
             $to = $this->template[$type]['email'];
 
+            $view = $struct['view'];
+
+            $from = (isset($struct['from'])) ? $struct['from'] : null;
+
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
-                $this->sendMail($view, $subject, $to);
+                $this->sendMail($view, $subject, $to, $from);
             }
         }
     }
