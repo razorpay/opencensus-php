@@ -317,6 +317,12 @@ class Notify
         $website = $this->template['merchant']['website'];
         $text    = $this->template['merchant']['billing_label'];
 
+        if (empty($text))
+        {
+            $text = $this->template['merchant']['id'];
+            $website = $this->payment->merchant->getDashboardEntityLink();
+        }
+
         return "<$website|$text>";
     }
 
@@ -327,7 +333,7 @@ class Notify
      */
     protected function getPaymentLinkForSlack($id)
     {
-        return "<https://dashboard.razorpay.com/admin#/app/payments/live/$id|$id>";
+        return "<https://dashboard.razorpay.com/admin#/app/payments/live/$id|pay_$id>";
     }
 
     /**
@@ -337,7 +343,7 @@ class Notify
      */
     protected function getRefundLinkForSlack($id)
     {
-        return "<https://dashboard.razorpay.com/admin#/app/entity/live/refund/$id|$id>";
+        return "<https://dashboard.razorpay.com/admin#/app/entity/live/refund/$id|rfnd_$id>";
     }
 
     /**
@@ -362,7 +368,7 @@ class Notify
             case self::AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
-                unset($data['method']);
+                unset($data['method'], $data['public_id']);
                 break;
 
             // Capture is unused right now
@@ -374,6 +380,7 @@ class Notify
                 $data = $this->template['refund'];
                 $data['id'] = $this->getRefundLinkForSlack($data['id']);
                 $data['payment_id'] = $this->getPaymentLinkForSlack($data['payment_id']);
+                unset($data['public_id']);
                 break;
         }
 
@@ -415,7 +422,8 @@ class Notify
                 'billing_label' =>  $this->payment->merchant->getBillingLabel(),
                 'website'       =>  $this->payment->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         =>  $this->payment->merchant->getTransactionReportEmail()
+                'email'         =>  $this->payment->merchant->getTransactionReportEmail(),
+                'id'            =>  $this->payment->merchant->getId(),
             ],
             'payment'   =>  [
                 'id'        =>  $this->payment->getId(),
