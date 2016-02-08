@@ -162,7 +162,7 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList,
         mobikwik: booleanList,
         payzapp: booleanList
-      }
+      },
       netbanking: {
         payment_id: ['Payment Id'],
         received: booleanList,

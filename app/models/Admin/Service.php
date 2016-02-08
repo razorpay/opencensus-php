@@ -1667,5 +1667,19 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    /**
+     * See the data params at
+     * https://razorpay.slack.com/services/20502106306?updated=1#service_setup
+     *
+     * The token is matched in the filter stage, so we just parse the message here
+     * @param  array  $input Slack input
+     */
+    public function querySlack(array $input)
+    {
+        $slack = new Slack($input['text'], $input['user_name'], $input['channel_name']);
+
+        return $slack->getResponse();
+    }
 }
 

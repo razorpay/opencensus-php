@@ -50,4 +50,16 @@ trait Logger
 
         $this->slackPost($text, $data, $channel);
     }
+
+    public function logSlackQuery($user, $entity, $channel)
+    {
+        $label = "{$entity['entity']}:{$entity['id']}";
+        $linkText = Slack::getFormattedLinkForSlack($entity['entity'], $entity['id'], $label);
+
+        $text = "@$user queried $linkText in #$channel";
+
+        $postChannel = \Config::get('razorpay.slack.operations');
+
+        $this->slackPost($text, [], $postChannel);
+    }
 }

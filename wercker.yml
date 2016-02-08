@@ -35,6 +35,7 @@ build:
           code: cp app/config/grunt.sample.json app/config/grunt.json && sed -i "2s/development/production/" app/config/grunt.json
       - grunt:
           tasks: default
+          fail-on-warnings: true
       # This pins the selenium version to our choice
       - script:
           name: Install selenium

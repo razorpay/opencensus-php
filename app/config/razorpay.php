@@ -27,5 +27,9 @@ return array(
         // Channel to which to log operation team actions
         'operations'    =>  '#operations_log',
         'creevey'       =>  '#operations_log',
+
+
+        // This is used by the /v query command on slack
+        'command_token' =>  'By9i0lp0y0T4mvgUn0Ljj1Rt'
     ]
 );
