@@ -168,6 +168,9 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+        'create_order'                          => ['post',     'orders',                                   'OrdersController@createOrder'                                      ],
+        'get_order'                             => ['get',      'orders/{id}',                              'OrdersController@getOrder'                                         ],
+        'update_order'                          => ['put',      'orders/{id}',                              'OrdersController@updateOrder'                                      ],
     );
 
     public static $public = array(
@@ -213,6 +216,7 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'create_order',
         'dummy_feature',
     );
 
@@ -305,7 +309,8 @@ final class Route
         'get_features',
         'add_emi_plan',
         'delete_emi_plan',
-        'get_emi_plan_by_id'
+        'get_emi_plan_by_id',
+        'update_order',
     );
 
     public static $proxy = array(
