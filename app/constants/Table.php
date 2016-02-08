@@ -9,6 +9,7 @@ class Table
     const IIN               = 'iins';
     const KEY               = 'keys';
     const CARD              = 'cards';
+    const ORDER             = 'orders';
     const REFUND            = 'refunds';
     const BALANCE           = 'balance';
     const METHODS           = 'merchant_banks';
