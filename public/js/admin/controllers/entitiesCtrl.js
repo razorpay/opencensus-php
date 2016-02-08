@@ -137,7 +137,8 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList,
         gateway_transaction_id: ['Gateway Transaction Id'],
-        ref: ['Reference']
+        ref: ['Reference'],
+        auth: ['Auth Code']
       },
       merchant: {
         email: ['Email'],
