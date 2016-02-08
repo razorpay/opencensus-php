@@ -252,7 +252,7 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::OTP_GENERATE);
 
         $content = array(
-            'amount'    => $input['payment']['amount'],
+            'amount'    => $input['payment']['amount'] / 100,
             'cell'      => $input['payment']['contact'],
             'merchantname' => 'razorpay',
             'mid'       => $this->getMobikwikMerchantId($input['terminal']),
@@ -290,7 +290,7 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::OTP_SUBMIT);
 
         $content = array(
-            'amount'        => $input['payment']['amount'],
+            'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $input['payment']['contact'],
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
             'merchantname'  => 'razorpay',
