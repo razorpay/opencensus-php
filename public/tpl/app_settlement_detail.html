@@ -27,11 +27,11 @@
           Created At
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{entity.fees | rupee}}</span>
+          <span class="pull-right">{{entity.fees/100 | rupee}}</span>
           Fees
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{entity.service_tax | rupee}}</span>
+          <span class="pull-right">{{entity.service_tax/100 | rupee}}</span>
           Service Tax
         </a>
       </div>
