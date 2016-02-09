@@ -168,10 +168,10 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
-        'order_create'                          => ['post',     'orders',                                   'OrdersController@createOrder'                                      ],
-        'order_fetch'                           => ['get',      'orders',                                   'OrdersController@getOrder'                                         ],
-        'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrdersController@fetchOrderById'                                   ],
-        'order_update'                          => ['put',      'orders/{id}',                              'OrdersController@updateOrder'                                      ],
+        'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                      ],
+        'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrder'                                         ],
+        'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                   ],
+        'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                      ],
     );
 
     public static $public = array(

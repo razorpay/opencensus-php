@@ -22,4 +22,14 @@ class Entity extends Base\PublicEntity
     // Auto capture if set
     // const CAPTURE     = 'capture';
 
+    protected $fillable = array(
+        self::ID,
+        self::MERCHANT_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::ATTEMPTS,
+        self::STATUS,
+        self::RECEIPT);
+
+
 }
