@@ -1,6 +1,6 @@
 <?php
 
-namespaace Models\Order;
+namespace Models\Order;
 
 use Models\Base;
 
@@ -13,11 +13,11 @@ class Entity extends Base\PublicEntity
     const ATTEMPTS    = 'attempts';
     const STATUS      = 'status';
     const RECEIPT     = 'receipt';
-    const METHOD      = 'method';
-    const ACCOUNT_ID  = 'account_id';
-    const CREATED_AT  = 'created_at';
-    const VALIDITY    = 'validity';
-    const VALID_TILL  = 'valid_till';
+    // const METHOD      = 'method';
+    // const ACCOUNT_ID  = 'account_id';
+    // const CREATED_AT  = 'created_at';
+    // const VALIDITY    = 'validity';
+    // const VALID_TILL  = 'valid_till';
 
     // Auto capture if set
     // const CAPTURE     = 'capture';
