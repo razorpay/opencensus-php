@@ -12,6 +12,7 @@ use Models\Card;
 use Models\Card\IIN;
 use Models\Emi;
 use Models\Payment;
+use Models\Payment\Method;
 use Models\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -19,37 +20,23 @@ use Mail;
 
 trait Authorize
 {
+    /**
+     * There are different ways of doing payment authorization.
+     */
+    protected $type;
+
     public function authorize($payment, $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
         $gatewayInput = [];
 
-        $this->verifyPaymentMethodEnabled($payment, $input);
+        $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
-        if (($payment->isMethod(Payment\Method::CARD)) or
-            ($payment->isMethod(Payment\Method::EMI)))
+        if ($this->canRunOtpPaymentFlow($payment, $input))
         {
-            $gatewayInput['card'] = $this->createCardEntity($input);
+            return $this->runOtpPaymentFlow($gatewayInput, $payment);
         }
-
-        if ($payment->isMethod(Payment\Method::EMI))
-        {
-            $this->setBankAndEmiPlanDetails($payment, $input);
-        }
-
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
-
-        $this->repo->saveOrFail($payment);
-
-        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
-
-        //
-        // Call gateway with required info
-        //
-        $gatewayInput['payment'] = $payment->toArray();
-
-        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
         $request = $this->callGatewayAuthorize($gatewayInput);
 
@@ -77,57 +64,15 @@ trait Authorize
                 'Non failed payment given for authorization where failed payment is needed');
         }
 
-        $data = array(
-            'payment' => $payment->toArray(),
-        );
-
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             ['payment_id' => $payment->getId()]);
 
-        $this->repo->transaction(function() use ($data)
-        {
-            $this->repo->lockForUpdate($this->payment->getKey());
+        $this->runAuthorizeFailedTransaction($payment);
 
-            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+        $this->traceAuthorizeFailedOperationData($payment);
 
-            if ($flag === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeded on the gateway has actually not. ' .
-                    'Should not have called this function in this scenario');
-            }
-
-            $payment = $this->payment;
-
-            $payment->setErrorNull();
-            $payment->setVerified(true);
-
-            // The second argument marks the payment as converted from failed
-            // to authorized
-            $this->updateAndNotifyPaymentAuthorized($payment, true);
-
-            $this->repo->saveOrFail($payment);
-        });
-
-        $traceData = array(
-            'payment_id' => $payment->getId(),
-            'error' => $payment->getErrorDetails(),
-        );
-
-        $message = 'Payment failed earlier converted to authorized';
-
-        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
-
-        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
-
-        $data = $payment->toArrayAdmin();
-
-        $this->trace->info(
-            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-            $traceData);
-
-        return $data;
+        return $payment->toArrayAdmin();
     }
 
     /**
@@ -187,6 +132,68 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
+    {
+        $this->verifyPaymentMethodEnabled($payment, $input);
+
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+
+        //
+        // Call gateway input
+        //
+        $gatewayInput['payment'] = $payment->toArray();
+
+        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+    }
+
+    protected function runAuthorizeFailedTransaction($payment)
+    {
+        $this->repo->transaction(function() use ($payment)
+        {
+            $data = array('payment' => $payment->toArray());
+
+            $this->repo->lockForUpdate($payment->getKey());
+
+            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+
+            if ($flag === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Should not have called this function in this scenario');
+            }
+
+            $payment->setErrorNull();
+            $payment->setVerified(true);
+
+            // The second argument marks the payment as converted from failed
+            // to authorized
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
+
+            $this->repo->saveOrFail($payment);
+        });
+    }
+
+    protected function runPaymentMethodRelatedPreProcessing($payment, $input, array & $gatewayInput)
+    {
+        if (($payment->isMethod(Payment\Method::CARD)) or
+            ($payment->isMethod(Payment\Method::EMI)))
+        {
+            $gatewayInput['card'] = $this->createCardEntity($input);
+        }
+
+        if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $this->setBankAndEmiPlanDetails($payment, $input);
+        }
+    }
+
     protected function verifyPaymentMethodEnabled($payment, $input)
     {
         if ($payment->isMethod(Payment\Method::CARD))
@@ -209,16 +216,16 @@ trait Authorize
 
     protected function setBankAndEmiPlanDetails(& $payment, $input)
     {
-        //set the bank 
+        //set the bank
         $iin = substr($input['card']['number'], 0, 6);
-            
+
         $iinEntity = (new IIN\Repository)->findOrFail($iin);
-        
+
         $payment->setBank($iinEntity->getIssuer());
 
         //set emi plan id
         $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($iinEntity->getIssuer(), $input['emi_duration']);
-        
+
         $payment->setEmiPlanId($emiPlan->getId());
 
     }
@@ -254,7 +261,7 @@ trait Authorize
         $data['version'] = 1;
         $data['payment_id'] = $payment->getPublicId();
 
-        $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
+        $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
         return $data;
     }
@@ -323,6 +330,24 @@ trait Authorize
         }
     }
 
+    protected function traceAuthorizeFailedOperationData($payment)
+    {
+        $traceData = array(
+            'payment_id' => $payment->getId(),
+            'error' => $payment->getErrorDetails(),
+        );
+
+        $message = 'Payment failed earlier converted to authorized';
+
+        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
+
+        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            $traceData);
+    }
+
     protected function rethrowFailedPaymentErrorException($payment)
     {
         $internalErrorCode = $payment->getInternalErrorCode();
@@ -373,6 +398,50 @@ trait Authorize
         }
     }
 
+    protected function canRunOtpPaymentFlow($payment, $input)
+    {
+        return ((isset($input['_']['source'])) and
+                ($input['_']['source'] === 'checkoutjs') and
+                ($payment->getMethod() === Method::WALLET) and
+                ($payment->getWallet() === Wallet::MOBIKWIK));
+    }
+
+    protected function runOtpPaymentFlow($gatewayInput, $payment)
+    {
+        return $this->callGatewayMobikwikOtpGenerate($gatewayInput, $payment);
+    }
+
+    protected function callGatewayMobikwikOtpGenerate($data, $payment)
+    {
+        try
+        {
+            $this->type = 'otp_generate';
+
+            $this->callGatewayFunction('checkExistingUser', $data);
+
+            $this->callGatewayFunction('otpGenerate', $data);
+
+            return array(
+                'type' => 'otp',
+                'request' => [
+                    'url' => $this->getOtpSubmitUrl(),
+                    'method' => 'post',
+                ],
+                'version' => 1,
+                'payment_id' => $payment->getPublicId(),
+                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+            );
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->updatePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
+    }
+
     /**
      * Creates card and payment entities
      *
@@ -413,7 +482,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        $banks = (new Methods\Core)->getMerchantBanks($merchant);
+        $banks = (new Methods\Core)->getMethods($merchant);
 
         $banks = ($banks === null) ? [] : $banks->getBanks();
 
@@ -567,6 +636,12 @@ trait Authorize
         return true;
     }
 
+    protected function getEncryptedGatewayText($gateway)
+    {
+        return \Crypt::encrypt($gateway . '__' . time());
+    }
+
+
     protected function verifyHash($hash, $paymentPublicId)
     {
         $expectedHash = $this->getHashOfPaymentPublicId();
@@ -587,15 +662,29 @@ trait Authorize
      */
     protected function getCallbackUrl()
     {
-        $publicId = $this->payment->getPublicId();
-
-        $hash = $this->getHashOfPaymentPublicId();
-
-        $params = ['id' => $publicId, 'hash' => $hash];
+        $params = $this->getPaymentIdAndHashParams();
 
         $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
+    }
+
+    protected function getOtpSubmitUrl()
+    {
+        $params = $this->getPaymentIdAndHashParams();
+
+        $otpSubmitUrl = Route::getUrlWithPublicAuth('payment_otp_submit', $params);
+
+        return $otpSubmitUrl;
+    }
+
+    protected function getPaymentIdAndHashParams()
+    {
+        $publicId = $this->payment->getPublicId();
+
+        $hash = $this->getHashOfPaymentPublicId();
+
+        return ['id' => $publicId, 'hash' => $hash];
     }
 
     /**

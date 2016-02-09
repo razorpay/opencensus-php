@@ -4,6 +4,7 @@ namespace Models\Card\IIN;
 
 use Models\Bank;
 use Models\Base;
+use Models\Bank;
 use Models\Card;
 use Models\Card\Network;
 use EE\Error\ErrorCode;
@@ -24,6 +25,8 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
+        Entity::NETWORK       => 'sometimes',
+        Entity::TYPE          => 'sometimes',
         Entity::COUNTRY       => 'sometimes|size:2',
         Entity::CATEGORY      => 'sometimes',
         Entity::ISSUER        => 'sometimes',
@@ -35,33 +38,43 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::NETWORK,
+        'create_network',
         Entity::TYPE,
         Entity::ISSUER,
     );
 
     protected static $editValidators = array(
-        Entity::NETWORK,
+        'edit_network',
         Entity::TYPE,
         Entity::ISSUER,
     );
 
-    protected function validateNetwork($input)
+    protected function validateCreateNetwork($input)
+    {
+        $this->validateNetwork($input, $input[Entity::IIN]);
+    }
+
+    protected function validateEditNetwork($input)
     {
         if(!isset($input[Entity::NETWORK]))
         {
             return;
         }
 
+        $this->validateNetwork($input, $this->entity->getIin());
+    }
+
+    protected function validateNetwork($input, $iin)
+    {
         $network = $input[Entity::NETWORK];
 
         if (Card\Network::isValidNetworkName($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid network name: ' . $input['network']);
+                'Not a valid network name: ' . $input[Entity::NETWORK]);
         }
 
-        $detected = Card\Network::detectNetwork($input[Entity::IIN]);
+        $detected = Card\Network::detectNetwork($iin);
         $fullName = Card\Network::getFullName($detected);
 
         if (($fullName !== 'Unknown') and
@@ -97,7 +110,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid bank name in input: '. $bank);
-            
         }
     }
 }

@@ -16,6 +16,9 @@ return [
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
             ],
             'url' => '/pricing',
             'method' => 'POST'
@@ -34,6 +37,9 @@ return [
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000,
                         'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
                     ),
                 ),
             ],
@@ -49,6 +55,9 @@ return [
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
             ],
             'method' => 'POST'
         ],
@@ -61,6 +70,9 @@ return [
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => false,
+                'amount_range_active' => false,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
             ],
         ],
     ],
@@ -95,6 +107,9 @@ return [
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => 0,
+                'amount_range_active' => 0,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
             ],
         ],
         'response' => [
@@ -128,6 +143,9 @@ return [
                         'percent_rate' => 0,
                         'fixed_rate' => 3000,
                         'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -138,6 +156,9 @@ return [
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
                         'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -148,6 +169,9 @@ return [
                         'percent_rate' => 250,
                         'fixed_rate' => 0,
                         'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
@@ -159,6 +183,9 @@ return [
                         'percent_rate' => 275,
                         'fixed_rate' => 0,
                         'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
                     ),
                 )
             ]
@@ -425,6 +452,9 @@ return [
                 'payment_issuer' => null,
                 'percent_rate' => 1200,
                 'international' => 1,
+                'amount_range_active' => 0,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
             ],
             'method' => 'POST'
         ],
@@ -533,6 +563,9 @@ return [
                 'percent_rate' => 300,
                 'fixed_rate' => 0,
                 'international' => 0,
+                'amount_range_active' => 0,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
             ],
             'method' => 'POST'
         ],
@@ -541,6 +574,96 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+    'testAddAmountRangePricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1500,
+                'fixed_rate' => 0,
+                'international' => 0,
+                'amount_range_active' => 1,
+                'amount_range_min' => 100,
+                'amount_range_max' => 25000,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1500,
+                'international' => false,
+                'amount_range_active' => true,
+                'amount_range_min' => 100,
+                'amount_range_max' => 25000,
+            ],
+        ],
+    ],
+    'testAddAmountRangePricingPlanRuleOverlap' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1500,
+                'fixed_rate' => 0,
+                'international' => 0,
+                'amount_range_active' => 1,
+                'amount_range_min' => 2500,
+                'amount_range_max' => 100000000,
+            ],
+            'method' => 'POST'
+        ],
+        'response'  =>  [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testAddAmountRangePricingPlanRuleDuplicate' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1500,
+                'fixed_rate' => 0,
+                'international' => 0,
+                'amount_range_active' => 1,
+                'amount_range_min' => 100,
+                'amount_range_max' => 25000,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
             ],
             'status_code' => 400,

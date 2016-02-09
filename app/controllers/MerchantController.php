@@ -164,6 +164,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postCheckTerminalEncryptedValue($id)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->checkTerminalEncryptedValue($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postActivate($id)
     {
         $data = (new Merchant\Service)->activate($id);
@@ -332,6 +341,8 @@ class MerchantController extends BaseController
 
     public function getCheckout()
     {
+        $input = Input::all();
+
         $methods = (new Merchant\Service)->getPaymentMethods();
 
         $app = \App::getFacadeRoot();
@@ -347,6 +358,10 @@ class MerchantController extends BaseController
         if (in_array($context, array_keys($urlMap)))
         {
             $url = $urlMap[$context];
+        }
+        else if (isset($input['checkout']))
+        {
+            $url = $input['checkout'];
         }
 
         $data['checkout'] = $url;

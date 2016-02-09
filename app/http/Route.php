@@ -21,6 +21,7 @@ final class Route
         'payment_callback_get'                  => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'        => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_get'         => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
+        'payment_otp_submit'                    => ['post',     'payments/{id}/otp_submit/{hash}',          'PaymentCreateController@postOtpSubmit'                             ],
         'payment_refund'                        => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_capture'                       => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                        => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
@@ -89,6 +90,7 @@ final class Route
         'terminal_delete'                       => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                                ],
         'terminal_edit'                         => ['put',      'terminals/{id}',                           'MerchantController@putTerminal2'                                   ],
         'terminal_restore'                      => ['put',      'terminals/{id}/restore',                   'MerchantController@restoreTerminal',                               ],
+        'terminal_check_encrypted_value'        => ['post',     'terminals/{id}/secret',                    'MerchantController@postCheckTerminalEncryptedValue'                ],
         'webhook_create'                        => ['post',     'webhooks',                                 'MerchantController@postWebhook'                                    ],
         'webhook_edit'                          => ['put',      'webhooks/{id}',                            'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                         => ['get',      'webhooks/{id}',                            'MerchantController@getWebhook'                                     ],
@@ -151,6 +153,7 @@ final class Route
         'gateway_payment_callback'              => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback'              => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
+        'gateway_payment_callback_kotak_cancel' => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                  => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
         'dummy_route'                           => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
@@ -164,7 +167,8 @@ final class Route
         'add_emi_plan'                          => ['post',     'emi',                                      'EmiController@addEmiPlan'                                          ],
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
-    ); 
+        'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+    );
 
     public static $public = array(
         'checkout',
@@ -172,6 +176,7 @@ final class Route
         'payment_create_checkout',
         'payment_create_jsonp',
         'payment_create_ajax',
+        'payment_otp_submit',
         'payment_cancel',
         'merchant_public_get_banks',
         'merchant_methods',
@@ -194,7 +199,6 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_plans',
-        'get_emi_plan_by_id'
     );
 
     public static $publicCallback = array(
@@ -248,6 +252,7 @@ final class Route
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
+        'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_create_plan',
@@ -299,6 +304,8 @@ final class Route
         'merchant_get_features',
         'get_features',
         'add_emi_plan',
+        'delete_emi_plan',
+        'get_emi_plan_by_id'
     );
 
     public static $proxy = array(
@@ -328,6 +335,7 @@ final class Route
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
+        'gateway_payment_callback_kotak_cancel',
     );
 
     public static $internalApps = array(
@@ -408,9 +416,12 @@ final class Route
         return self::getUrl($routeName, $parameters, $key);
     }
 
-    public static function getUrlWithPublicCallbackAuth(array $parameters = array())
+    public static function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
     {
-        $key = \BasicAuth::getPublicKey();
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
 
         return self::getUrl('payment_callback_with_key_post', $parameters, $key);
     }

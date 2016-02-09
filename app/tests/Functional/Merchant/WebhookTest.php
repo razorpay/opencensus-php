@@ -24,6 +24,11 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWebhookWithDisallowedPort()
+    {
+        $this->startTest();
+    }
+
     public function testRecreateWebhook()
     {
         $this->createWebhook();
@@ -148,23 +153,39 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testWebhookEventDataJustBeforeFiring()
+    {
+        $webhook = $this->createWebhook();
+
+        $inferno = $this->mockInferno();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $inferno->shouldReceive('makeRequest')
+                ->once()
+                ->with(Mockery::type('array'))
+                ->andReturnUsing(function ($request) use ($testData)
+                    {
+                        $request['content'] = json_decode($request['content'], true);
+
+                        $this->assertArraySelectiveEquals($testData, $request);
+
+                        $response = $this->getStandardWebhookResponse();
+
+                        return $response;
+                    });
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        $this->doAuthPayment();
+    }
+
 
     protected function mockInfernoWithResponseStatusCode($statusCode)
     {
         $inferno = $this->mockInferno();
 
-        $response = new \Requests_Response;
-        $response->status_code = $statusCode;
-
-        $success = false;
-
-        if (($statusCode >= 200) and
-            ($statusCode < 300))
-        {
-            $success = true;
-        }
-
-        $response->success = $success;
+        $response = $this->getStandardWebhookResponse($statusCode);
 
         $inferno->shouldReceive('makeRequest')
                 ->andReturn($response);
@@ -181,5 +202,23 @@ class WebhookTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
 
         return $inferno;
+    }
+
+    protected function getStandardWebhookResponse($statusCode = 200)
+    {
+        $response = new \Requests_Response;
+        $response->status_code = $statusCode;
+
+        $success = false;
+
+        if (($statusCode >= 200) and
+            ($statusCode < 300))
+        {
+            $success = true;
+        }
+
+        $response->success = $success;
+
+        return $response;
     }
 }

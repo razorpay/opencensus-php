@@ -60,7 +60,7 @@ class Verify
 
     public function verifyAllPayments()
     {
-        $ts = time() - 30 * 60;
+        $ts = time() - 15 * 60;
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
@@ -96,7 +96,7 @@ class Verify
             catch (Exception\GatewayTimeoutException $e)
             {
                 $this->trace->info(
-                    TraceCode::GATEWAY_REQUESTY_TIMEOUT,
+                    TraceCode::GATEWAY_REQUEST_TIMEOUT,
                     ['payment_id' => $payment->getId()]);
 
                 // Just continue

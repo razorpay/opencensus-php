@@ -47,6 +47,8 @@ class Service extends Base\Service
 
         $iin->edit($input);
 
+        $this->repo->saveOrFail($iin);
+
         return $iin->toArrayPublic();
     }
 

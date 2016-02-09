@@ -13,36 +13,32 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $paymentId)
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
                     ->where('action', '=', $action)
                     ->firstOrFail();
     }
 
     public function findByPaymentIdAndAction($paymentId, $action)
     {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $paymentId)
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
                     ->where('action', '=', $action)
                     ->first();
     }
 
     public function findByTraceIdAndAction($paymentId, $action)
     {
-        $repo = $this->repo;
-
-        return $repo::where('int_payment_id', '=', $paymentId)
+        return $this->newQuery()
+                    ->where('int_payment_id', '=', $paymentId)
                     ->where('action', '=', $action)
                     ->first();
     }
 
     public function findRefunds($paymentId)
     {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $paymentId)
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
                     ->where('action', '=', 'refund')
                     ->get();
     }

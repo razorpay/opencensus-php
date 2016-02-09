@@ -300,8 +300,17 @@ class Entity extends Base\PublicEntity
 
     public function getFeaturesAttribute()
     {
-        $features = explode(',', $this->attributes[self::FEATURES]);
-        return array_map('trim', $features);
+        $features = $this->attributes[self::FEATURES];
+
+        if($features === null)
+        {
+            return [];
+        }
+        else
+        {
+            $features = explode(',', $features);
+            return array_map('trim', $features);
+        }
     }
 
     public function setFeaturesAttribute($features)

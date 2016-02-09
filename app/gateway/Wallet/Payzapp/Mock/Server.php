@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 use Gateway\Payzapp;
 use Gateway\Base;
 use Gateway\Base\Action;
+use \Gateway\Wallet\Payzapp\TransactionType;
 use Models\Card;
 
 class Server extends Base\Mock\Server
@@ -55,7 +56,7 @@ class Server extends Base\Mock\Server
             'method' => 'post',
         );
 
-        return $this->makePostResponse($request);;
+        return $this->makePostResponse($request);
     }
 
     public function callback($input)
@@ -64,11 +65,39 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $txnTypeToCodeMap = TransactionType::$codes;
+
+        $txnCodeToTypeMap = array_flip($txnTypeToCodeMap);
+
+        if($txnCodeToTypeMap[strval($input['transaction_type'])] === 'SETTLE')
+        {
+            echo "Not supposed to reach here";
+        }
+
+        $txnId = $this->getAcosaTxnId();
+
+        $txnResponse = 'transaction_id='.$txnId.'&status=50020&pg_error_code=0&'.
+        'pg_error_msg=No Error&merchant_reference_no='.$input['merchant_reference_no'];
+
+        return $this->makeResponse($txnResponse);
     }
 
     public function refund($input)
     {
-        return $this->makeResponse($msg);
+        parent::refund($input);
+
+        $this->validateActionInput($input, 'refund');
+
+        $refundTxnId = $this->getAcosaTxnId();
+
+        $refundResponse = 'status=50020&pg_error_code=0&pg_error_detail=No Error&
+        &new_transaction_id='.$refundTxnId.'&new_merchant_reference_no='.$input['original_merchant_reference_no'];
+
+        return $this->makeResponse($refundResponse);
     }
 
     protected function getContentFromInput($input)
@@ -84,6 +113,11 @@ class Server extends Base\Mock\Server
     protected static function getWibmoTxnId()
     {
         return random_alphanum_string(21);
+    }
+
+    protected static function getAcosaTxnId()
+    {
+        return mt_rand(10000000,99999999);
     }
 
     protected static function getDataPickupCode($wibmoTxnId)

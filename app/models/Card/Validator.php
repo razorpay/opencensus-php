@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         $currentMonth = date('n');
         $currentYear = (int) date('Y');
 
-        if (($month < $currentMonth) &&
+        if (($month < $currentMonth) and
             ($year <= $currentYear))
         {
             throw new Exception\BadRequestException(

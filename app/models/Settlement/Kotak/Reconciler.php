@@ -129,7 +129,7 @@ class Reconciler
 
         if ($status === 'P')
         {
-            $setl->setStatus(Settlement\Status::TRANSFERRED);
+            $setl->setStatus(Settlement\Status::SETTLED);
             $this->setlRepo->save($setl);
         }
         else

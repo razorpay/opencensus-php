@@ -13,11 +13,23 @@ use Trace\TraceCode;
 class Notify
 {
     use SlackPoster;
+
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
     const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
 
+    /**
+     * The minimum amount for a transaction to be considered risky
+     * This is used to decide low and high value transactions and pick
+     * the correct slack channel. Currently set to INR 1000
+     */
+    const MIN_RISK_AMOUNT = 100000;
+
+    /**
+     * When are receipt emails sent to the customer
+     * @var Array
+     */
     protected static $receptEmails = [
         self::AUTHORIZED,
         self::FAILED_TO_AUTHORIZED
@@ -27,28 +39,43 @@ class Notify
     protected $mailViews = [
         self::AUTHORIZED    =>  [
             'customer'  => [
-                'html'=> 'emails.payment.customer',
-                'text'=> 'emails.payment.customer_text'
+                'from' => 'care',
+                'view' => [
+                    'html'=> 'emails.payment.customer',
+                    'text'=> 'emails.payment.customer_text'
+                ]
             ]
         ],
         self::CAPTURED      =>  [
             'merchant'  => [
-                'html'=> 'emails.payment.merchant',
-                'text'=> 'emails.payment.merchant_text'
+                'view' => [
+                    'html'=> 'emails.payment.merchant',
+                    'text'=> 'emails.payment.merchant_text'
+                ]
             ]
         ],
         self::REFUNDED      =>  [
-            'customer'  => 'emails.refund.common',
-            'merchant'  => 'emails.refund.common'
+            'customer'  => [
+                'from'  =>  'care',
+                'view'  =>  'emails.refund.common',
+            ],
+            'merchant'  => [
+                'view'  =>  'emails.refund.common',
+            ]
         ],
         self::FAILED_TO_AUTHORIZED => [
             'customer'  => [
-                'html'  =>  'emails.payment.customer',
-                'text'  =>  'emails.payment.customer_text'
+                'from'  =>  'care',
+                'view' => [
+                    'html'  =>  'emails.payment.customer',
+                    'text'  =>  'emails.payment.customer_text'
+                ]
             ],
             'merchant'  =>  [
-                'html'  =>  'emails.payment.failed_to_authorized',
-                'text'  =>  'emails.payment.failed_to_authorized_text',
+                'view' => [
+                    'html'  =>  'emails.payment.failed_to_authorized',
+                    'text'  =>  'emails.payment.failed_to_authorized_text',
+                ],
             ],
         ],
     ];
@@ -71,6 +98,8 @@ class Notify
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
+
+        $this->domain = $this->app['config']->get('applications.mailgun.url');
     }
 
     /**
@@ -100,13 +129,24 @@ class Notify
      * @param  string $to      Email address to send to
      * @return null
      */
-    protected function sendMail($view, $subject, $to)
+    protected function sendMail($view, $subject, $to, $from = 'reports')
     {
+        $from    = $this->getCompleteEmail($from);
+        $replyTo = $this->getCompleteEmail('support');
+        $domain  = $this->domain;
+
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to)
+            function ($message) use ($subject, $to, $from, $replyTo, $domain)
             {
+                // Bug fix because some from addresses were
+                // not generated properly and are in the queue
+                // Will drop this later
+                if ($from === "@$domain")
+                {
+                    $from = "reports@$domain";
+                }
 
                 // to might be an array
                 if (is_array($to))
@@ -123,11 +163,22 @@ class Notify
                     $message->to($to);
                 }
 
+                $message->from($from);
                 $message->subject($subject);
-                $message->from('reports@razorpay.com');
-                $message->replyTo('support@razorpay.com');
+                $message->replyTo($replyTo);
             }
         );
+    }
+
+
+    /**
+     * Returns a complete email address
+     * @param  string $user (reports)
+     * @return string (reports@razorpay.com)
+     */
+    protected function getCompleteEmail($user)
+    {
+        return "$user@{$this->domain}";
     }
 
     /**
@@ -139,17 +190,29 @@ class Notify
     {
         // This sends out mail for all views defined above
         // type = merchant|customer
-        foreach ($this->mailViews[$event] as $type => $view)
+        foreach ($this->mailViews[$event] as $type => $struct)
         {
             $isMerchant = ($type === 'merchant');
 
             $subject = $this->getSubject($event, $isMerchant);
             $to = $this->template[$type]['email'];
 
+            $view = $struct['view'];
+
+            $from = (isset($struct['from'])) ? $struct['from'] : null;
+
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
-                $this->sendMail($view, $subject, $to);
+                if ($from !== null)
+                {
+                    $this->sendMail($view, $subject, $to, $from);
+                }
+                else
+                {
+                    $this->sendMail($view, $subject, $to);
+                }
+
             }
         }
     }
@@ -171,8 +234,27 @@ class Notify
         if ((array_key_exists($event, $slackMessages)) and
             ($this->isSlackEnabled($event)))
         {
-            $this->slackPost($slackMessages[$event], $slackData);
+            $settings = [
+                'channel'   => $this->getSlackChannel()
+            ];
+
+            $this->slackPost($slackMessages[$event], $slackData, $settings);
         }
+    }
+
+    /**
+     * Returns the slack channel to be used for posting
+     */
+    protected function getSlackChannel()
+    {
+        $channel = \Config::get('slack.channels.low');
+
+        if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
+        {
+            $channel = \Config::get('slack.channels.high');
+        }
+
+        return $channel;
     }
 
     /**
@@ -256,6 +338,12 @@ class Notify
         $website = $this->template['merchant']['website'];
         $text    = $this->template['merchant']['billing_label'];
 
+        if (empty($text))
+        {
+            $text = $this->template['merchant']['id'];
+            $website = $this->payment->merchant->getDashboardEntityLink();
+        }
+
         return "<$website|$text>";
     }
 
@@ -266,7 +354,7 @@ class Notify
      */
     protected function getPaymentLinkForSlack($id)
     {
-        return "<https://dashboard.razorpay.com/admin#/app/payments/live/$id|$id>";
+        return "<https://dashboard.razorpay.com/admin#/app/payments/live/$id|pay_$id>";
     }
 
     /**
@@ -276,7 +364,7 @@ class Notify
      */
     protected function getRefundLinkForSlack($id)
     {
-        return "<https://dashboard.razorpay.com/admin#/app/entity/live/refund/$id|$id>";
+        return "<https://dashboard.razorpay.com/admin#/app/entity/live/refund/$id|rfnd_$id>";
     }
 
     /**
@@ -301,7 +389,7 @@ class Notify
             case self::AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
-                unset($data['method']);
+                unset($data['method'], $data['public_id']);
                 break;
 
             // Capture is unused right now
@@ -313,6 +401,7 @@ class Notify
                 $data = $this->template['refund'];
                 $data['id'] = $this->getRefundLinkForSlack($data['id']);
                 $data['payment_id'] = $this->getPaymentLinkForSlack($data['payment_id']);
+                unset($data['public_id']);
                 break;
         }
 
@@ -354,7 +443,8 @@ class Notify
                 'billing_label' =>  $this->payment->merchant->getBillingLabel(),
                 'website'       =>  $this->payment->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         =>  $this->payment->merchant->getTransactionReportEmail()
+                'email'         =>  $this->payment->merchant->getTransactionReportEmail(),
+                'id'            =>  $this->payment->merchant->getId(),
             ],
             'payment'   =>  [
                 'id'        =>  $this->payment->getId(),

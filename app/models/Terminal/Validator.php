@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
+use Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -22,18 +23,20 @@ class Validator extends Base\Validator
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_with:emi|integer|in:3,6,9,12,15',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
     );
 
     protected static $createValidators = array(
-        Entity::GATEWAY);
+        Entity::GATEWAY, Entity::EMI);
 
     protected static $hdfcTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15'
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
+        Entity::EMI                         => 'sometimes|boolean',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
     );
 
     protected static $billdeskTerminalRules = array(
@@ -109,6 +112,26 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateEmi($input)
+    {
+        if(!isset($input[Entity::EMI]))
+        {
+            return;
+        }
+
+        if($input[Entity::MERCHANT_ID] != Merchant\Account::SHARED_ACCOUNT)
+        {
+            throw new Exception\LogicException(
+                'EMI Terminals can only be added to shared merchant account');
+        }
+
+        if(!isset($input[Entity::SHARED]) or ($input[Entity::SHARED] !== '1'))
+        {
+            throw new Exception\LogicException(
+                'EMI Terminals must be shared terminals');
+        }
+    }
+
     public function validateExistingTerminalsCount($existingTerminals)
     {
         $count = $existingTerminals->count();
@@ -135,9 +158,11 @@ class Validator extends Base\Validator
 
     protected function matchGatewayForNewTerminal($new, $existing)
     {
-        // If 1 exists, then another should not be added for the same gateway
+        // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
-            ($new->getId() !== $existing->getId()))
+            ($new->getId() !== $existing->getId()) and
+            ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
+            ($new->getEmiDuration() === $existing->getEmiDuration()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

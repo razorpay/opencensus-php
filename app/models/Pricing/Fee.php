@@ -7,9 +7,14 @@ use EE\Exception;
 use Models\Card;
 use Models\Payment;
 use Models\Pricing;
+use Services\SlackPoster;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Fee
 {
+    use SlackPoster;
+
     const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
@@ -17,6 +22,15 @@ class Fee
     public function __construct()
     {
         $this->repo = new Pricing\Repository;
+    }
+
+    /**
+     *  Used in testing to mock
+     *  pricing repository
+     */
+    public function setPricingRepo($repo)
+    {
+        $this->repo = $repo;
     }
 
     public function getZeroPricingPlanRule($payment)
@@ -137,46 +151,9 @@ class Fee
         {
             $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
         }
-        else if ($payment->isNetbanking())
-        {
-            $pricing = $this->repo->getPricingRulesForNetbanking($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
-                    [$pricing->toArray()]);
-            }
-
-            $rule = $pricing->first();
-        }
-        else if ($payment->isWallet())
-        {
-            $pricing = $this->repo->getPricingRulesForWallet($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
-            }
-
-            $rule = $pricing->first();
-        }
-        else if($payment->isEmi())
-        {
-            $pricing = $this->repo->getPricingRulesForEmi($pricingPlanId);
-
-            if (count($pricing) > 1)
-            {
-                throw new Exception\LogicException(
-                    'Currently only 1 emi pricing rule allowed. Found: ' . count($pricing));
-            }
-
-            $rule = $pricing->first();
-        }
         else
         {
-            throw new Exception\InvalidArgumentException('Argument - Method: ' . $payment->getMethod());
+            $rule = $this->getRelevantPricingRuleForMethod($pricingPlanId, $payment);
         }
 
         if ($rule === null)
@@ -188,42 +165,180 @@ class Fee
         return $rule;
     }
 
+    protected function getRelevantPricingRuleForMethod($pricingPlanId, $payment)
+    {
+        $method = $payment->getMethod();
+
+        $pricing = $this->repo->getPricingRulesForMethod($pricingPlanId, $method);
+
+        if (count($pricing) > 1)
+        {
+            throw new Exception\LogicException(
+                'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
+                [$pricing->toArray()]);
+        }
+
+        $rule = $pricing->first();
+
+        return $rule;
+    }
+
     protected function getRelevantPricingRuleForCard($pricingPlanId, $payment)
     {
-        $card = $payment->card;
+        // Fee based on the method type
+        $cardType = $payment->card->getType();
 
-        $network = Card\Network::getCode($card->getNetwork());
+        if ($cardType === Card\Type::UNKNOWN)
+        {
+
+            //Disabling until IIN
+            //import is complete
+            /*
+            $slackArray = ['id' => $payment->card->getDashboardEntityLinkForSlack() ];
+
+            $this->slackPost(
+                'Unknown card type found',
+                $slackArray,
+                ['channel' => '#tech_logs']);
+
+            */
+            $cardType = Card\Type::DEBIT;
+
+        }
 
         $isInternational = $payment->isInternational();
 
-        $pricing = $this->repo->
-            getPricingRulesForGivenCardNetwork($pricingPlanId, $network, $isInternational);
+        $network = Card\Network::getCode($payment->card->getNetwork());
 
-        $rule = null;
+        $pricing = $this->repo->getPricingRulesForCard(
+                        $pricingPlanId, $isInternational, $network, $cardType);
+
+        $amount = $payment->getAmount();
+
+        $rule = $this->getRuleFromPricingCollection($pricing, $network, $cardType, $amount);
+
+        return $rule;
+    }
+
+    protected function getRuleFromPricingCollection($pricing, $network, $cardType, $amount)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
         $rules = $pricing->all();
 
-        if (count($rules) === 1)
-        {
-            $rule = $pricing->first();
-        }
-        else if (count($rules) === 2)
-        {
-            foreach ($pricing->all() as $item)
-            {
-                if ($item->getAttribute(Pricing\Entity::PAYMENT_NETWORK) === $network)
-                {
-                    $rule = $item;
-                    break;
-                }
-            }
-        }
-        else
+        // Current Implementation
+        // 1. Filter based on Network
+        // 2. Filter based on Card Type
+        // 3. Filter based on AmountRange
+        // 4. Choose based on Amount
+
+        $filters = array(
+            Pricing\Entity::PAYMENT_NETWORK, $network, false,
+            Pricing\Entity::PAYMENT_METHOD_TYPE, $cardType, false,
+            Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true);
+
+        $rules = $this->filterRulesOnFieldByValue($rules, Pricing\Entity::PAYMENT_NETWORK, $network);
+
+        $rules = $this->filterRulesOnFieldByValue($rules, Pricing\Entity::PAYMENT_METHOD_TYPE, $cardType);
+
+        $isFieldBoolean = true;
+
+        $amountRangeActive = true;
+
+        $rules = $this->filterRulesOnFieldByValue(
+            $rules, Pricing\Entity::AMOUNT_RANGE_ACTIVE, $amountRangeActive, $isFieldBoolean);
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount);
+
+        if ($rule === null)
         {
             throw new Exception\LogicException(
                 'Failed to find a valid pricing rule for the payment');
         }
 
         return $rule;
+    }
+
+    /**
+     * Filter pricing rules based on fieldName and fieldValue
+     * If the value is not found, matches based on null
+     * will be returned, unless the field is boolean
+     * when matches based on boolean false will be returned.
+     */
+    protected function filterRulesOnFieldByValue($rules, $fieldName, $fieldValue, $isFieldBoolean = false)
+    {
+        $matchRules     = [];
+        $nullMatchRules = [];
+
+        $counterValue = null;
+
+        if ($isFieldBoolean)
+        {
+            $counterValue = !$fieldValue;
+        }
+
+        foreach ($rules as $rule)
+        {
+            if ($rule->getAttribute($fieldName) === $fieldValue)
+            {
+                $matchRules[] = $rule;
+            }
+            else if($rule->getAttribute($fieldName) === $counterValue)
+            {
+                $nullMatchRules[] = $rule;
+            }
+        }
+
+        if (empty($matchRules))
+        {
+            return $nullMatchRules;
+        }
+
+        return $matchRules;
+    }
+
+    /**
+     * If the rules are amount range active rules,
+     * choose rule based on amount
+     * else return first available rule.
+     */
+    protected function chooseRuleWithAmount($rules, $amount)
+    {
+        $relevantRule = null;
+
+        // Either all the rules will be amount range active,
+        // Else none will be, so test against only one.
+        if ($rules[0]->isAmountRangeActive())
+        {
+            foreach ($rules as $rule)
+            {
+                if (($rule->getAmountRangeMin() < $amount) and
+                    ($rule->getAmountRangeMax() >= $amount))
+                {
+                    $relevantRule = $rule;
+                    break;
+                }
+            }
+
+        }
+        // If only one other possible rule, return it.
+        else if(count($rules) === 1)
+        {
+            return $rules[0];
+        }
+        // Ideally should not reach this case, ever.
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,
+                ['amount' => $amount, 'plan_id' => $rules[0]->getPlanId()]);
+
+            return $rules[0];
+        }
+
+        return $relevantRule;
     }
 
     public function getGatewayFeeForAtomSharedTerminal($payment)

@@ -14,17 +14,20 @@ class Repository extends Base\Repository
 
     protected $entity = 'Methods';
 
-    public function getMerchantBanks($id)
+    protected $appFetchParamRules = array(
+        Entity::CARD        => 'sometimes|in:0,1',    
+        Entity::AMEX        => 'sometimes|in:0,1',    
+        Entity::BANKS       => 'sometimes|in:0,1',    
+        Entity::PAYTM       => 'sometimes|in:0,1',    
+        Entity::MOBIKWIK    => 'sometimes|in:0,1',        
+        Entity::PAYZAPP     => 'sometimes|in:0,1',    
+        Entity::EMI         => 'sometimes|in:0,1',
+    );
+
+    public function getMerchantMethods($id)
     {
         $repo = $this->repo;
 
         return $repo::find($id);
-    }
-
-    public function saveMerchantBanks($banks)
-    {
-        $repo = $this->repo;
-
-        $this->saveOrFail($banks);
     }
 }

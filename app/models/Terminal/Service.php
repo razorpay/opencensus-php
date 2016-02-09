@@ -114,4 +114,31 @@ class Service extends Base\Service
 
         return $terminal->toArrayPublic();
     }
+
+    public function checkTerminalEncryptedValue($id, $input)
+    {
+        $terminalRepo = new Terminal\Repository;
+
+        $terminal = $terminalRepo->findOrFail($id);
+
+        $flag = true;
+
+        if (isset($input['secret']))
+        {
+            $flag = $terminal->matchEncryptedAttribute(
+                        Terminal\Entity::GATEWAY_SECURE_SECRET, $input['secret']);
+        }
+        else if (isset($input['password']))
+        {
+            $flag = $terminal->matchEncryptedAttribute(
+                        Terminal\Entity::GATEWAY_TERMINAL_PASSWORD, $input['password']);
+        }
+        else if (isset($input['access_code']))
+        {
+            $flag = $terminal->matchEncryptedAttribute(
+                        Terminal\Entity::GATEWAY_ACCESS_CODE, $input['access_code']);
+        }
+
+        return ['match' => $flag];
+    }
 }

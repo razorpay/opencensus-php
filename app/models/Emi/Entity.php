@@ -44,7 +44,6 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT);
 
     protected $public = array(
-        self::ID,
         self::BANK,
         self::RATE,
         self::DURATION,

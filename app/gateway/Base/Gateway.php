@@ -119,6 +119,12 @@ class Gateway
         $this->action = Action::VERIFY;
     }
 
+    public function action(array $input, $action)
+    {
+        $this->action = $action;
+        $this->input = $input;
+    }
+
     public function setTerminal($terminal)
     {
         $this->terminal = $terminal;
@@ -234,6 +240,16 @@ class Gateway
             ]);
     }
 
+    protected function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                    $input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $payment;
+
+        return $payment;
+    }
+
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
@@ -327,13 +343,13 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $domainConstantName = strtoupper($this->mode)."_DOMAIN";
+        $domainConstantName = strtoupper($this->mode).'_DOMAIN';
 
         if ($this->domainType !== null)
         {
             $domainType = strtoupper($this->domainType);
 
-            $domainConstantName = $domainType.'_'.$domainConstantName;
+            $domainConstantName = $domainType.'_DOMAIN';
         }
 
         return constant($urlClass . '::' .$domainConstantName);
@@ -348,7 +364,6 @@ class Gateway
 
     protected function getUrl($type = null)
     {
-
         $url = $this->getUrlDomain();
 
         if ($type === null)

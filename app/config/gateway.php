@@ -85,6 +85,8 @@ return array(
 
     'mobikwik' => array(
         'test_hash_secret'  => $_ENV['MOBIKWIK_GATEWAY_TEST_HASH_SECRET'],
+        'test_merchant_id'  => 'MBK9002',
+        // 'test_merchant_id'  => 'MBK7518',
     ),
 
     'paytm' => array(

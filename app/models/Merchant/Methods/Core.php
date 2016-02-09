@@ -25,7 +25,7 @@ class Core extends Base\Core
 
     public function setPaymentMethods($merchant, $input)
     {
-        $methods = $this->repo->getMerchantBanks($merchant->getId());
+        $methods = $this->repo->getMerchantMethods($merchant->getId());
 
         $methods->setMethods($input);
 
@@ -53,55 +53,29 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException(
                 'Wallet pricing not present for merchant');
         }
+
+        if (($methods->isEmiEnabled()) and
+            ($pricingCore->hasEmiPricing($merchant) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Emi pricing not present for merchant');
+        }
     }
 
-    public function getMerchantBanks($merchant)
+    public function getMethods($merchant)
     {
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
+        $methods = $this->repo->getMerchantMethods($merchant->getId());
 
-        // $billdesk = (new Terminal\Repository)->getByMerchantIdAndGateway(
-        //                                         $merchant->getId(), 'billdesk');
-        // if ($billdesk !== null)
-        // {
-        //     $supportedBanks = Netbanking::getAllBanks();
-        // }
-        // else
-        // {
-        //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
-        // }
+        $supportedBanks = Netbanking::getSupportedBanks($this->mode);
 
-        $supportedBanks = null;
+        $methods->setBanks($supportedBanks);
 
-        if ($this->mode === Mode::TEST)
-        {
-            $supportedBanks = Netbanking::getSupportedBanksInTestMode();
-        }
-        else
-        {
-            $supportedBanks = Netbanking::getSupportedBanksInLiveMode();
-        }
-
-//        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
-//        $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),Netbanking::getSbiepaySupportedBanks());
-
-        $banks->setBanks($supportedBanks);
-
-        return $banks;
-    }
-
-    public function getMerchantBanksArray($merchant)
-    {
-        $banks = $this->getMerchantBanks($merchant);
-
-        if ($banks === null)
-            return [];
-
-        return $banks->toArrayWithBankNames();
+        return $methods;
     }
 
     public function getEnabledAndDisabledBanks($merchant)
     {
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
+        $banks = $this->repo->getMerchantMethods($merchant->getId());
 
         return $this->getEnabledDisabledBanks($banks);
     }
@@ -113,7 +87,7 @@ class Core extends Base\Core
 
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
+        $banks = $this->repo->getMerchantMethods($merchant->getId());
 
         if ($banks === null)
         {
@@ -130,6 +104,8 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
+        $methods->setCard(true);
+        $methods->setAmex(true);
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
 

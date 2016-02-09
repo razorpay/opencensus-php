@@ -112,6 +112,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
+        $input = $verify->input;
 
         $amountRefunded = (int) ($content['TotalRefundAmount'] * 100);
 
@@ -127,31 +128,26 @@ class Gateway extends Base\Gateway
                 $verify->apiSuccess = false;
                 $verify->gatewaySuccess = false;
             }
+        }
+        else if ($content['AuthStatus'] === AuthStatus::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+
+            if (($payment['AuthStatus'] !== AuthStatus::SUCCESS) or
+                ($input['payment']['status'] === 'failed'))
+            {
+                $verify->apiSuccess = false;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
             else
             {
-                $status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
-        }
-        else if ($payment['AuthStatus'] === AuthStatus::SUCCESS)
-        {
-            $verify->apiSuccess = true;
-
-            if ($content['AuthStatus'] === AuthStatus::SUCCESS)
-            {
-                $verify->gatewaySuccess = true;
 
                 // Check that refund amount matches.
                 if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
                 {
                     $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
                 }
-            }
-            else
-            {
-                $verify->gatewaySuccess = false;
-                $status = VerifyResult::STATUS_MISMATCH;
             }
         }
         else

@@ -94,6 +94,11 @@ class PaymentCreateController extends BaseController
                     return $response;
                 }
             }
+            else if ($data['type'] === 'otp')
+            {
+                return View::make('gateway.gatewayOtpPostForm')
+                           ->with('data', $data);
+            }
             else if ($data['type'] === 'return')
             {
                 return $this->returnMerchantFullRedirectView($data);
@@ -157,6 +162,15 @@ class PaymentCreateController extends BaseController
         $data = $this->payment->callback($id, $hash, $input);
 
         return $this->returnCallbackResponse($data);
+    }
+
+    public function postOtpSubmit($id, $hash)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->callback($id, $hash, $input);
+
+        return ApiResponse::json($data);
     }
 
     protected function returnCallbackResponse($data)

@@ -5,6 +5,6 @@ namespace Models\Settlement;
 class Status
 {
     const CREATED       = 'created';
-    const TRANSFERRED   = 'transferred';
+    const SETTLED       = 'settled';
     const FAILED        = 'failed';
 }
