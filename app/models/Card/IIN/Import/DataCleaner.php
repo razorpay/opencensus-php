@@ -129,6 +129,8 @@ class DataCleaner
     {
         $indexed = array();
         // Indexeing the data based on IIN number
+        
+        $index = 0;
         foreach ($data as $input)
         {
             $iin = $input[IIN\Entity::IIN];
@@ -137,17 +139,19 @@ class DataCleaner
 
             if (strcmp($inputNetwork, $network) !== 0)
             {
-                $this->networkCheckFails[$iin][] = $input;
+                $this->networkCheckFails[$iin][] = $index;
             }
             else if (isset($indexed[$iin]))
             {
-                $this->duplicate[$iin][] = $input;
+                $this->duplicate[$iin][] = $index;
             }
             else 
             {
                 array_push($this->uniqueIins, $iin);
                 $indexed[$iin] = $input;
             }
+
+            $index++;
         }
 
         return $indexed;

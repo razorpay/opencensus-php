@@ -23,6 +23,7 @@ class XLSImporter
         {
             throw new Exception\BadRequestException("please pass network name as input for given file");
         }
+
         // Extracts and returns the columns and data
         $ret = (new XLSFileHandler)->getData($input);
 
@@ -30,12 +31,13 @@ class XLSImporter
 
         $dataCleaner = new DataCleaner();
         $cleaned = $dataCleaner->parse($input['network'], $formatedData);
-        
-        $this->enterIntoDB($cleaned);
-
         $duplicates = $dataCleaner->getDuplicateEntries();
         $conflits = $dataCleaner->getDBConflicts();
         $networkCheckFails = $dataCleaner->getNetworkCheckFails();
+        
+        $this->enterIntoDB($cleaned);
+        $this->updateIntoDB($conflits);
+
         $successCount = count($cleaned);
 
         return array(
@@ -65,4 +67,46 @@ class XLSImporter
 
     }
 
+    protected function updateIntoDB(& $conflits)
+    {
+        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::CATEGORY, IIN\Entity::COUNTRY);
+        
+        foreach ($conflits as $iin => $entry) 
+        {
+            list($input, $conflict) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
+
+            if(!$conflict and !empty($input))
+            {
+                $entity = IIN\Entity::find($iin); 
+                $entity->edit($input);
+                $entity->saveOrFail();
+            }
+
+            if(!$conflict)
+            {
+                unset($conflits[$iin]);
+            }
+        }
+    }
+
+    protected function getInputForIinUpdate($dbEntry, $fileEntry, $columns)
+    {
+        unset($fileEntry[IIN\Entity::IIN]);
+        $conflict = false;
+
+        foreach ($columns as $column)
+        {
+            if(isset($dbEntry[$column]))
+            {
+                if($dbEntry[$column] !== $fileEntry[$column])
+                {
+                    $conflict = true;
+                }
+                unset($fileEntry[$column]);
+            }
+
+        }
+
+        return [$fileEntry, $conflict];
+    }
 }

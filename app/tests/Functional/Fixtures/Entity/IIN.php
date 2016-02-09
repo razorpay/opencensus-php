@@ -42,6 +42,11 @@ class Iin extends Base
             'trivia'        => 'random trivia'
             ),
         array(
+            'iin'           => '559300',
+            'network'       => 'MasterCard',
+            'type'          => 'credit',
+            ),
+        array(
             'iin'           => '607002',
             'category'      => 'STANDARD',
             'network'       => 'RuPay',

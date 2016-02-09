@@ -102,52 +102,18 @@ return [
         'response' => [
             'content' => [
                 'duplicates'  => [
-                    '513456' => [
-                        [
-                            'iin' =>'513456',
-                            'category' => 'CLASSIC',
-                            'network' => 'MasterCard',
-                            'type' => 'debit',
-                            'country' => 'IN',
-                        ],
+                    '513456' => [ 
+                        6,
                     ],
                     '511666' => [
-                        [
-                            'iin' => '511666',
-                            'category' => 'PREMIUM',
-                            'network' => 'MasterCard',
-                            'type' => 'debit',
-                            'country' => 'IN',
-                        ]
+                        4,
                     ]
                 ],
                 'db_conflicts'=> [
-                    '549752' => [
-                        'db_entry' => [
-                            'iin'       => 549752,
-                            'category'  => 'STANDARD',
-                            'network'   => 'MasterCard',
-                            'type'      => 'credit',
-                            'country'   => 'IN',
-                        ],
-                        'file_entry' => [
-                            'iin'       => '549752',
-                            'category'  => 'STANDARD',
-                            'network'   => 'MasterCard',
-                            'type'      => 'credit',
-                            'country'   => 'IN',
-                        ],
-                    ],
                 ],
                 'network_errors' => [
                     '497522' => [
-                        [
-                            'iin'       => '497522',
-                            'category'  => 'CLASSIC',
-                            'network'   => 'Visa',
-                            'type'      => 'credit',
-                            'country'   => 'IN',
-                        ],
+                        8,
                     ]
                 ],
                 'success' => 5,
