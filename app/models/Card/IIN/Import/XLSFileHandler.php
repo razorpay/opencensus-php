@@ -18,6 +18,7 @@ class XLSFileHandler
     public function getData($input)
     {
         $file = $this->getFile($input);
+
         $filePath = $this->moveFile($file);
 
         $data = $this->parse($filePath);
@@ -54,7 +55,6 @@ class XLSFileHandler
      */
     protected function moveFile($file)
     {
-
         $originalName = $file->getClientOriginalName();
         $dir = "/tmp";
         $newFilePath = $dir . "/" . $originalName;
@@ -95,13 +95,17 @@ class XLSFileHandler
      */
     protected function parse($filePath)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time',600);
+        ini_set('memory_limit', '1024M');
+
         // The Laravel Excel Reader crashed due to some unknown reason
         // So, using the internal PHPExecl object
         $excelReader = Excel::load($filePath)->excel;
 
         $sheet = $excelReader->getSheet(0);
         $highestRow = $sheet->getHighestRow();
-        $highestColumn = $sheet->getHighestColumn();
+        $highestColumn = $sheet->getHighestDataColumn();
         $columnNames = array();
 
         $data = $sheet->rangeToArray('A1' . ':' . $highestColumn . $highestRow,

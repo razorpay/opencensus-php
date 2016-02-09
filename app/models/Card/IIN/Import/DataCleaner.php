@@ -104,7 +104,7 @@ class DataCleaner
         foreach ($dbRecords as $entity)
         {
 
-            $iin = (string)$entity->getIinAttribute();
+            $iin = (string) $entity->getIinAttribute();
 
             $this->dbConflicts[$iin] = array(
                                 'db_entry'   => $entity->toArray(),
@@ -129,7 +129,7 @@ class DataCleaner
     {
         $indexed = array();
         // Indexeing the data based on IIN number
-        
+
         $index = 0;
         foreach ($data as $input)
         {
@@ -143,9 +143,12 @@ class DataCleaner
             }
             else if (isset($indexed[$iin]))
             {
-                $this->duplicate[$iin][] = $index;
+                if ($input !== $indexed[$iin])
+                {
+                    $this->duplicate[$iin][] = $index;
+                }
             }
-            else 
+            else
             {
                 array_push($this->uniqueIins, $iin);
                 $indexed[$iin] = $input;
@@ -159,7 +162,7 @@ class DataCleaner
 
     protected function getNetwork($iin)
     {
-        foreach (self::$networkRegexes as $network => $regex) 
+        foreach (self::$networkRegexes as $network => $regex)
         {
             if(preg_match($regex, $iin) === 1)
             {

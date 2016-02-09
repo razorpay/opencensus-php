@@ -7,7 +7,7 @@ use Models\Base;
 use EE\Exception;
 
 /**
- * This class takes the column names, rows and the input and formats 
+ * This class takes the column names, rows and the input and formats
  * the data.
  *
  * Formatted data: Each input row is an associative array with keys
@@ -28,9 +28,9 @@ class Formatter
         'FD'    =>  NULL,
         'FC'    =>  NULL
     );
- 
+
     /**
-     * formats the data to iin entity 
+     * formats the data to iin entity
      *
      * @param array $columns    the title of each column
      * @param array $data       the rows
@@ -47,8 +47,8 @@ class Formatter
             $index = 0;
 
             foreach($columns as $column)
-            {                
-                switch (strtolower($column)) 
+            {
+                switch (strtolower($column))
                 {
                     case 'type':
                         $input[IIN::COUNTRY] = self::$countryMap[$row[$index]];
@@ -60,7 +60,7 @@ class Formatter
                         break;
 
                     case 'card_brand':
-                        $input[IIN::CATEGORY] = $row[$index];
+                        // $input[IIN::CATEGORY] = $row[$index];
                         break;
 
                     default:

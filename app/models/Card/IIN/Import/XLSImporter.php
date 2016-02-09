@@ -34,7 +34,7 @@ class XLSImporter
         $duplicates = $dataCleaner->getDuplicateEntries();
         $conflits = $dataCleaner->getDBConflicts();
         $networkCheckFails = $dataCleaner->getNetworkCheckFails();
-        
+
         $this->enterIntoDB($cleaned);
         $this->updateIntoDB($conflits);
 
@@ -67,24 +67,29 @@ class XLSImporter
 
     }
 
-    protected function updateIntoDB(& $conflits)
+    protected function updateIntoDB(& $conflicts)
     {
-        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::CATEGORY, IIN\Entity::COUNTRY);
-        
-        foreach ($conflits as $iin => $entry) 
-        {
-            list($input, $conflict) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
+        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::COUNTRY);
 
-            if(!$conflict and !empty($input))
+        foreach ($conflicts as $iin => $entry)
+        {
+            list($input, $conflict, $diff) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
+
+            if (($conflict === false) and
+                (empty($input) === false))
             {
-                $entity = IIN\Entity::find($iin); 
+                $entity = IIN\Entity::find($iin);
                 $entity->edit($input);
                 $entity->saveOrFail();
             }
 
-            if(!$conflict)
+            if ($conflict === false)
             {
-                unset($conflits[$iin]);
+                unset($conflicts[$iin]);
+            }
+            else
+            {
+                $conflicts[$iin] = $diff;
             }
         }
     }
@@ -92,21 +97,28 @@ class XLSImporter
     protected function getInputForIinUpdate($dbEntry, $fileEntry, $columns)
     {
         unset($fileEntry[IIN\Entity::IIN]);
+
         $conflict = false;
+
+        $diff = [];
 
         foreach ($columns as $column)
         {
-            if(isset($dbEntry[$column]))
+            if (($column === 'country') or
+                ((isset($dbEntry[$column])) and
+                 ($dbEntry[$column] !== '')))
             {
-                if($dbEntry[$column] !== $fileEntry[$column])
+                if ($dbEntry[$column] !== $fileEntry[$column])
                 {
                     $conflict = true;
+
+                    $diff[$column] = ['db' => $dbEntry[$column], 'file' => $fileEntry[$column]];
                 }
+
                 unset($fileEntry[$column]);
             }
-
         }
 
-        return [$fileEntry, $conflict];
+        return [$fileEntry, $conflict, $diff];
     }
 }
