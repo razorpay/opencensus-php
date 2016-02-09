@@ -4,7 +4,6 @@ namespace Models\Card\IIN;
 
 use Models\Bank;
 use Models\Base;
-use Models\Bank;
 use Models\Card;
 use Models\Card\Network;
 use EE\Error\ErrorCode;
