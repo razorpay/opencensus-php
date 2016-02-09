@@ -208,8 +208,19 @@ class Processor
 
     protected function cancelPayment($payment)
     {
-        $e = new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER);
+        $errorCode = null;
+
+        if ((isset($input['platform'])) and
+            ($input['platform'] === 'android_sdk'))
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
+        }
+        else
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
+        }
+
+        $e = new Exception\BadRequestException($errorCode);
 
         $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
 
