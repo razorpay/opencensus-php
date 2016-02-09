@@ -55,13 +55,17 @@ class Notify
             ]
         ],
         self::REFUNDED      =>  [
-            'view' => [
-                'customer'  => 'emails.refund.common',
-                'merchant'  => 'emails.refund.common'
+            'customer'  => [
+                'from'  =>  'care',
+                'view'  =>  'emails.refund.common',
+            ],
+            'merchant'  => [
+                'view'  =>  'emails.refund.common',
             ]
         ],
         self::FAILED_TO_AUTHORIZED => [
             'customer'  => [
+                'from'  =>  'care',
                 'view' => [
                     'html'  =>  'emails.payment.customer',
                     'text'  =>  'emails.payment.customer_text'
@@ -129,12 +133,21 @@ class Notify
     {
         $from    = $this->getCompleteEmail($from);
         $replyTo = $this->getCompleteEmail('support');
+        $domain  = $this->domain;
 
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $replyTo)
+            function ($message) use ($subject, $to, $from, $replyTo, $domain)
             {
+                // Bug fix because some from addresses were
+                // not generated properly and are in the queue
+                // Will drop this later
+                if ($from === "@$domain")
+                {
+                    $from = "reports@$domain";
+                }
+
                 // to might be an array
                 if (is_array($to))
                 {
