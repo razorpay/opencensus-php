@@ -1,7 +1,9 @@
 'use strict';
 /* Services */
-angular.module('app.services', [])  // User Service
-                                    // Fetches & stores details of currently logged in user
+angular.module('app.services', [])
+// User Service
+// Fetches & stores details of currently logged in user
+// This actually returns the merchant currently
 .factory('user', [
   '$q',
   '$http',

@@ -3,7 +3,7 @@
 use Models\Invitation;
 use Http\AppResponse;
 
-class InvitationController extends BaseController
+class InvitationsController extends BaseController
 {
     public function __construct()
     {

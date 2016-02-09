@@ -18,6 +18,9 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('/user', 'MerchantController@getMerchant');
     Route::get('/user/keepalive', 'UserController@getKeepAlive');
     Route::get('/user/logout', 'UserController@getLogout');
+
+    // This returns the current logged in user details
+    Route::get('user/details', 'UserController@getUserDetails');
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
     Route::get('/{mode}/payments', 'TransactionController@getPayments');
     Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
@@ -42,24 +45,23 @@ Route::group(array('before' => 'auth.user'), function()
     Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
     Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
 
-    Route::get('settings/invitations', 'InvitationController@getPendingInvitationsForUser');
-    Route::post('settings/invitations', 'InvitationController@postSendMerchantInvitation');
+    Route::get('settings/invitations', 'InvitationsController@getPendingInvitationsForUser');
+    Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
 
-    Route::get('settings/invitations/{invite}/resend', 'InvitationController@getResendMerchantInvitation');
-    Route::delete('settings/invitations/{invite}', 'InvitationController@deleteMerchantInvitation');
+    Route::get('settings/invitations/{invite}/resend', 'InvitationsController@getResendMerchantInvitation');
+    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitation');
 
-    Route::put('settings/invitations/{invite}', 'InvitationController@updateMerchantInvitation');
-    Route::post('settings/invitations/{invite}/accept', 'InvitationController@postAcceptMerchantInvitation');
-    Route::delete('settings/invitations/{invite}/reject', 'InvitationController@deleteRejectMerchantInvitation');
-    Route::delete('settings/invitations/{invite}', 'InvitationController@deleteMerchantInvitationForUser');
+    Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
+    Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
+    Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
+    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
 
-    Route::get('settings/invitations/pending', 'InvitationController@switchCurrentMerchant');
+    Route::get('settings/invitations/pending', 'InvitationsController@switchCurrentMerchant');
 
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
     Route::delete('settings/merchants/{merchant}/membership', 'InvitationsController@leaveMerchant');
 
     Route::get('settings/merchants', 'UserController@getAllMerchantsForUser');
-
 
     Route::group(array('before' => 'csrf'), function()
     {
@@ -83,7 +85,7 @@ Route::group(array('before' => 'guest.user'), function()
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/user/signin', 'UserController@postSignin');
-        Route::post('/user/register', 'MerchantController@postRegister');
+        Route::post('/user/register', 'UserController@postRegister');
         Route::post('/user/resend', 'MerchantController@postResendConfirmation');
         Route::post('/user/password/reset', 'PasswordController@postRemind');
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');

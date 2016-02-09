@@ -15,59 +15,6 @@ use Razorpay\Api\Errors\BadRequestError;
 
 class Service extends Base\Service
 {
-    public function register(array $input)
-    {
-        $referer = false;
-
-        if (isset($input['ref']))
-        {
-            $referer = $input['ref'];
-            unset($input['ref']);
-        }
-
-        $merchant = new Merchant\Entity;
-        $error = $merchant->build($input);
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $merchant->password = Hash::make($merchant->password);
-
-        // This is called for certain special email addresses
-        $merchant->setCustomId();
-        $merchant->saveOrFail();
-
-        if ($referer)
-        {
-            $merchant->tag('ref-'.$referer);
-        }
-
-        $user = User\Entity::createFromMerchant($merchant);
-        $user->saveOrFail();
-        $user->merchants()->attach($merchant, ['role' => 'owner']);
-
-        $details = array(
-            'merchant_id' => $merchant->id,
-            'contact_email' => $merchant->email
-        );
-
-        MerchantDetails\Entity::createOrFail($details);
-
-        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
-
-        $slackData = [
-            'id'        => $merchant->id,
-            'name'      => $merchant->name,
-            'email'     => $merchant->email
-        ];
-
-        $this->slackSignupPost($slackData, $referer);
-
-        return [$error, $slackData];
-    }
-
     protected function slackSignupPost($slackData, $referer)
     {
         if ($_ENV['SLACK_ENABLE'] === true)

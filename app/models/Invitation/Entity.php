@@ -14,6 +14,13 @@ class Entity extends Base\Entity
      */
     protected $table = 'invitations';
 
+    protected $fillable = [
+        'user_id',
+        'email',
+        'token',
+        'role'
+    ];
+
     /**
      * Get the merchant that owns the invitation.
      */

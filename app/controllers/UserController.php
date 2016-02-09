@@ -104,7 +104,7 @@ class UserController extends BaseController
         $user = Auth::user()->user();
 
         list($error, $data) = (new User\Service)->getAllMerchantsForUser($user);
-        
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -118,7 +118,14 @@ class UserController extends BaseController
         $user = Auth::user()->user();
 
         list($error, $data) = (new User\Service)->getOwnedMerchantForUser($user);
-        
+
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getUserDetails()
+    {
+        $userdata = Auth::user()->user();
+
+        return AppResponse::jsonResponse(null, $userdata);
     }
 }

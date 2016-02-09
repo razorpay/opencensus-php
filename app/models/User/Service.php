@@ -12,6 +12,7 @@ use Models\Merchant;
 use Models\Invitation;
 use Models\MerchantDetails;
 use Razorpay\Mailers\UserMailer;
+use Requests;
 
 class Service extends Base\Service
 {

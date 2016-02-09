@@ -274,7 +274,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     public function hasInvitiationForEmail($email)
     {
-        return $merchant->invitations()
+        return $this->invitations()
                         ->where('email', $email)
                         ->exists();
     }

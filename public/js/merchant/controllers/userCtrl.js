@@ -26,6 +26,22 @@ app.controller('UserCtrl', [
       });
     };
 
+    $scope.getLoggedInUser = function ()
+    {
+      var request = $http.get('/user/details');
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.loggedInUser = data.data;
+          console.debug(data.data);
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.acceptInvitation = function(invite) {
       var request = $http.post('settings/invitations/' + invite.id + '/accept');
       request.success(function (data) {
@@ -53,6 +69,7 @@ app.controller('UserCtrl', [
       });
     }
     $scope.refreshUser = function (force) {
+      $scope.getLoggedInUser();
       user.identity(force).then(function (data) {
         $scope.user = data;
         Rollbar.configure({

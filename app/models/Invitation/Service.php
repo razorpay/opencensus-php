@@ -41,7 +41,7 @@ class Service extends Base\Service
             $data = $merchant->toArray();
         }
 
-        if ($merchant->hasInvitiationForEmail($input['email'])
+        if ($merchant->hasInvitiationForEmail($input['email']))
         {
             $errors[] = 'An invitation has already been sent to the user.';
         }
