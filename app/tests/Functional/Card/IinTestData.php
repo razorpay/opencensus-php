@@ -102,12 +102,6 @@ return [
         'response' => [
             'content' => [
                 'duplicates'  => [
-                    '513456' => [ 
-                        6,
-                    ],
-                    '511666' => [
-                        4,
-                    ]
                 ],
                 'db_conflicts'=> [
                 ],
