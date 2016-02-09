@@ -191,7 +191,15 @@ class Notify
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
-                $this->sendMail($view, $subject, $to, $from);
+                if ($from !== null)
+                {
+                    $this->sendMail($view, $subject, $to, $from);
+                }
+                else
+                {
+                    $this->sendMail($view, $subject, $to);
+                }
+
             }
         }
     }
