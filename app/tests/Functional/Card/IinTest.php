@@ -26,7 +26,7 @@ class IinTest extends TestCase
     public function testEditIin()
     {
         $this->testAddIin();
-        
+
         $this->startTest();
     }
 
@@ -40,7 +40,7 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function startTest()
+    public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];

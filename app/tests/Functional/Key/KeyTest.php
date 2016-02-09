@@ -53,7 +53,7 @@ class KeyTest extends TestCase
         $content = $this->startTest();
     }
 
-    protected function startTest()
+    protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
