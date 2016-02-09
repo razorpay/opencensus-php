@@ -1,6 +1,7 @@
 <?php
 
 use Http\AppResponse;
+use Http\SlackResponse;
 use Models\Admin;
 use Models\Merchant;
 
@@ -646,9 +647,19 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = $response = (new Admin\Service)
+        list($error, $data) = (new Admin\Service)
             ->addEMI($input);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postSlackQuery()
+    {
+        $input = Input::all();
+
+        list($message, $data) = (new Admin\Service)
+            ->querySlack($input);
+
+        return SlackResponse::jsonResponse($message, $data);
     }
 }

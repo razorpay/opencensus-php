@@ -89,6 +89,12 @@ Route::group(array('before' => 'guest.user'), function()
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
     });
 });
+
+Route::group(['before' => 'slack'], function ()
+{
+    Route::post('/slack', 'AdminController@postSlackQuery');
+});
+
 Route::group(array('before' => 'auth.admin'), function()
 {
     Route::get('/admin/user', 'AdminController@getAdmin');

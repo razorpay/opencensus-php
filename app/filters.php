@@ -2,6 +2,7 @@
 
 use Razorpay\Api\Request as ApiRequest;
 use Http\AppResponse;
+use Http\SlackResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,16 +25,6 @@ App::before(function($request)
 App::after(function($request, $response)
 {
     $response->headers->set('X-Frame-Options', 'SAMEORIGIN', true);
-
-    // This is necessary for protection against json/jsonp array vulnerability
-    // Refer https:// docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
-    if (($response instanceof \Illuminate\Http\JsonResponse) and
-        (App::environment('dev') === false))
-    {
-        $json = ")]}',\n" . $response->getContent();
-
-        return $response->setContent($json);
-    }
 });
 
 /*
@@ -65,6 +56,17 @@ Route::filter('auth.user', function()
             $adminUsername = $admin->username;
             ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
         }
+    }
+});
+
+Route::filter('slack', function()
+{
+    $slackToken = Config::get('razorpay.slack.command_token');
+    $tokenFromInput = Input::get('token', false);
+
+    if ($slackToken !== $tokenFromInput)
+    {
+        return SlackResponse::jsonResponse("Invalid Slack Token");
     }
 });
 

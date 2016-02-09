@@ -134,7 +134,9 @@ app.controller('EntityDetailCtrl', [
           emi: iin.emi ? 1 : 0,
           issuer_name: iin.issuer_name,
           issuer: iin.issuer,
-          trivia: iin.trivia
+          trivia: iin.trivia,
+          network: iin.network,
+          type: iin.type
         };
         // Lets remove all the empty variables
         for (var i in iin) {
@@ -241,6 +243,7 @@ app.controller('EntityDetailCtrl', [
           'iin',
           'kotak',
           'merchant',
+          'methods',
           'mobikwik',
           'netbanking',
           'payment',
@@ -304,7 +307,6 @@ app.controller('EntityDetailCtrl', [
   function ($scope, $modalInstance, $http, current) {
     // This is the current IIN
     $scope.iin = current;
-    $scope.iin.emi = current ? true : false;
     $scope.ok = function (iin) {
       $modalInstance.close(iin);
     };

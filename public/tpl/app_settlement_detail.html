@@ -22,6 +22,18 @@
           <span class="pull-right">{{entity.status | titlecase}}</span>
           Status
         </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{entity.created_at*1000 | date:'medium'}}</span>
+          Created At
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{entity.fees/100 | rupee}}</span>
+          Fees
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{entity.service_tax/100 | rupee}}</span>
+          Service Tax
+        </a>
       </div>
     </div>
   </div>
