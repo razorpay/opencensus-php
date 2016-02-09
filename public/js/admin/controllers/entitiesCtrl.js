@@ -99,6 +99,10 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList
       },
+      bank_account: {
+        merchant_id: ['Merchant Id'],
+        deleted: booleanList
+      },
       balance: {},
       billdesk: {
         AuthStatus: [
@@ -111,10 +115,6 @@ app.controller('EntitiesCtrl', [
         ],
         received: booleanList,
         payment_id: ['Payment Id']
-      },
-      bank_account: {
-        merchant_id: ['Merchant Id'],
-        deleted: booleanList
       },
       card: {
         merchant_id: ['Merchant Id'],
@@ -133,6 +133,8 @@ app.controller('EntitiesCtrl', [
         ],
         status: statusList
       },
+      daily_settlement: {},
+      emi_plan: {},
       hdfc: {
         payment_id: ['Payment Id'],
         received: booleanList,
@@ -140,6 +142,9 @@ app.controller('EntitiesCtrl', [
         ref: ['Reference'],
         auth: ['Auth Code']
       },
+      iin: {},
+      key: {},
+      kotak: {},
       merchant: {
         email: ['Email'],
         activated: booleanList,
@@ -221,6 +226,10 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id']
       },
+      settlement: {
+        transaction_id: ['Transaction Id'],
+        merchant_id: ['Merchant Id']
+      },
       terminal: {
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
@@ -238,10 +247,6 @@ app.controller('EntitiesCtrl', [
           'settlement',
           'adjustment'
         ]
-      },
-      settlement: {
-        transaction_id: ['Transaction Id'],
-        merchant_id: ['Merchant Id']
       },
       webhook: {
         merchant_id: ['Merchant Id'],
@@ -310,6 +315,15 @@ app.controller('EntitiesCtrl', [
       $scope.entity.skip -= $scope.count;
       $scope.generateTable();
     };
+
+    $scope.getEntityListForUI = function () {
+      var uiEntities = {};
+      for (var entity in $scope.availableFilters) {
+        uiEntities[entity] = entity.replace('_', ' ');
+      }
+
+      return uiEntities;
+    }
     $scope.search = function () {
       clear('skip');
       var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type + '/' + $scope.entity.id);
