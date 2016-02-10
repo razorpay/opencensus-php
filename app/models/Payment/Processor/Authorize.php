@@ -282,9 +282,12 @@ trait Authorize
 
     protected function updateOrderStatus($payment)
     {
-        $payment->order->setStatus(Order\Status::PAID);
+        if (isset($payment->order))
+        {
+            $payment->order->setStatus(Order\Status::PAID);
 
-        $this->orderRepo->saveOrFail($payment->order);
+            $payment->order->saveOrFail();
+        }
     }
 
     protected function postPaymentAuthorizeProcessing($payment)
