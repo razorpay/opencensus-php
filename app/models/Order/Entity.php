@@ -113,20 +113,20 @@ class Entity extends Base\PublicEntity
         $this->setAttempts($attempts);
     }
 
-    public function getAuthorizedAttribute()
-    {
-        $authorized = $this->getAttribute(self::AUTHORIZED);
+    // public function getAuthorizedAttribute()
+    // {
+    //     $authorized = $this->getAttribute(self::AUTHORIZED);
 
-        if ($authorized !== null)
-        {
-            $authorized = (int) $authorized;
-        }
+    //     if ($authorized !== null)
+    //     {
+    //         $authorized = (int) $authorized;
+    //     }
 
-        return $authorized;
-    }
+    //     return $authorized;
+    // }
 
     public function isAuthorized()
     {
-        return ($this->getAuthorizedAttribute() === 1);
+        return (((int) $this->getAttribute(self::AUTHORIZED)) === 1);
     }
 }

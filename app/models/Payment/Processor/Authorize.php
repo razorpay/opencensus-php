@@ -284,7 +284,7 @@ trait Authorize
     {
         if (isset($payment->order))
         {
-            $payment->order->setAuthorized(1);
+            $payment->order->setAuthorized(true);
 
             $payment->order->saveOrFail();
         }
