@@ -168,7 +168,7 @@ final class Route
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
         'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                      ],
-        'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrder'                                         ],
+        'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                        ],
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                   ],
         'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                      ],
     );

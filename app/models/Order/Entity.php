@@ -70,4 +70,9 @@ class Entity extends Base\PublicEntity
     {
         return (int) $this->attributes[self::AMOUNT];
     }
+
+    protected function getAttemptsAttribute()
+    {
+        return (int) $this->attributes[self::ATTEMPTS];
+    }
 }

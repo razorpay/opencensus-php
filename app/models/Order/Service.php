@@ -36,8 +36,8 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $orders = $this->repo->fetch($input);
+        $orders = (new Repository)->fetch($input, $this->merchant->getId());
 
-        return $order->toArrayPublic();
+        return $orders->toArrayPublic();
     }
 }
