@@ -23,7 +23,6 @@ class Entity extends Base\PublicEntity
     // const CAPTURE     = 'capture';
 
     protected $fillable = array(
-        self::ID,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT);
@@ -48,5 +47,15 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAmountAttribute();
+    }
+
+    protected function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
     }
 }
