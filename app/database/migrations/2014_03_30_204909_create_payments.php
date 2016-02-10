@@ -109,9 +109,6 @@ class CreatePayments  extends Migration
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
 
-            $table->char(Payment::ORDER_ID, 14)
-                  ->nullable();
-
             $table->integer(Payment::FEE)
                   ->unsigned()
                   ->nullable();
@@ -152,11 +149,6 @@ class CreatePayments  extends Migration
                   ->references(Card\Entity::ID)
                   ->on(Table::CARD)
                   ->on_delete('restrict');
-
-            // $table->foreign(Payment::ORDER_ID)
-            //       ->references(Order\Entity::ID)
-            //       ->on(Table::ORDER)
-            //       ->on_delete('restrict');
         });
     }
 
@@ -169,8 +161,6 @@ class CreatePayments  extends Migration
     {
         Schema::table(Table::PAYMENT, function($table)
         {
-            // $table->dropForeign(Table::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
-
             $table->dropForeign(Table::PAYMENT.'_'.Payment::CARD_ID.'_foreign');
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::TRANSACTION_ID.'_foreign');

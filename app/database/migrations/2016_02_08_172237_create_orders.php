@@ -77,7 +77,7 @@ class CreateOrders extends Migration {
 
         });
 
-        Schema::table(Table::TRANSACTION, function($table)
+        Schema::table(Table::PAYMENT, function($table)
         {
             $table->foreign(Payment::ORDER_ID)
                   ->references(ORDER::ID)
