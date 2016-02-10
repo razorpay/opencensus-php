@@ -27,4 +27,10 @@ return [
             ],
         ],
     ],
+
+    'testGetOrder' => [
+        'amount'        => 500,
+        'currency'      => 'INR',
+        'receipt'       => 'rcptid42',
+    ],
 ];

@@ -34,6 +34,18 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::ATTEMPTS  => 0);
 
+    protected $public = array(
+        self::ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::RECEIPT,
+        self::ATTEMPTS,
+        self::CREATED_AT);
+
+    protected static $sign = '';
+
+    protected static $delimiter = '_';
+
     public function merchant()
     {
         return $this->belongsTo('Models\Order\Entity');

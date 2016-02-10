@@ -35,7 +35,7 @@ class OrderController extends BaseController
     {
         $input = Input::all();
 
-        $data = $this->order->fetchById($id);
+        $data = $this->order->fetch($id);
 
         return ApiResponse::json($data);
     }
