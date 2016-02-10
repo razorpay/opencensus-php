@@ -396,6 +396,11 @@ class MerchantTest extends TestCase
         $this->assertBodyHasText("Password changed successfully");
     }
 
+    public function testInvitations()
+    {
+        //
+    }
+
     /**
      * Tests merchant logout since he is logged in after confirmation
      */
