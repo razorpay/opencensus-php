@@ -325,7 +325,8 @@ class Processor
                     'Merchant mismatch');
             }
 
-            if ($this->order->getStatus() === Order\Status::PAID)
+            if (($this->order->getStatus() === Order\Status::PAID) or
+                ($this->order->isAuthorized()))
             {
                 // Order already paid for
                 throw new Exception\BadRequestValidationFailureException(

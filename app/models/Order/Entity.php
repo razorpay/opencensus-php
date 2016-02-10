@@ -17,7 +17,6 @@ class Entity extends Base\PublicEntity
     // To Mark If a payment corresponding to
     // this order is in authorized state
     const AUTHORIZED    = 'authorized';
-    const AUTHORIZED_AT = 'authorized_at';
 
     // const METHOD      = 'method';
     // const ACCOUNT_ID  = 'account_id';
@@ -126,15 +125,8 @@ class Entity extends Base\PublicEntity
         return $authorized;
     }
 
-    public function setAuthorizeTimestamp($authTimestamp = NULL)
+    public function isAuthorized()
     {
-        if(is_null($authTimestamp))
-        {
-            $this->setAttribute(self::AUTHORIZED_AT, time());
-        }
-        else
-        {
-            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
-        }
+        return ($this->getAuthorizedAttribute() === 1);
     }
 }
