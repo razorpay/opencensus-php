@@ -6,13 +6,19 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID          = 'id';
-    const MERCHANT_ID = 'merchant_id';
-    const AMOUNT      = 'amount';
-    const CURRENCY    = 'currency';
-    const ATTEMPTS    = 'attempts';
-    const STATUS      = 'status';
-    const RECEIPT     = 'receipt';
+    const ID            = 'id';
+    const MERCHANT_ID   = 'merchant_id';
+    const AMOUNT        = 'amount';
+    const CURRENCY      = 'currency';
+    const ATTEMPTS      = 'attempts';
+    const STATUS        = 'status';
+    const RECEIPT       = 'receipt';
+
+    // To Mark If a payment corresponding to
+    // this order is in authorized state
+    const AUTHORIZED    = 'authorized';
+    const AUTHORIZED_AT = 'authorized_at';
+
     // const METHOD      = 'method';
     // const ACCOUNT_ID  = 'account_id';
     // const CREATED_AT  = 'created_at';
@@ -66,6 +72,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::ATTEMPTS, $attempts);
     }
 
+    public function setAuthorized($authorized)
+    {
+        return $this->setAttribute(self::AUTHORIZED, $authorized);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -101,5 +112,29 @@ class Entity extends Base\PublicEntity
         $attempts = $this->getAttempts() + 1;
 
         $this->setAttempts($attempts);
+    }
+
+    public function getAuthorizedAttribute()
+    {
+        $authorized = $this->getAttribute(self::AUTHORIZED);
+
+        if ($authorized !== null)
+        {
+            $authorized = (int) $authorized;
+        }
+
+        return $authorized;
+    }
+
+    public function setAuthorizeTimestamp($authTimestamp = NULL)
+    {
+        if(is_null($authTimestamp))
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, time());
+        }
+        else
+        {
+            $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
+        }
     }
 }

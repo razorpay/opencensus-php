@@ -280,18 +280,20 @@ trait Authorize
 
         // If payment has an associated order
         // set the order to be paid
-        $this->updateOrderStatus($payment);
+        $this->updateAuthorizedOrderStatus($payment);
 
         $this->eventPaymentAuthorized($payment);
 
         $this->notifyAuthorized($payment, $wasFailed);
     }
 
-    protected function updateOrderStatus($payment)
+    protected function updateAuthorizedOrderStatus($payment)
     {
         if (isset($payment->order))
         {
-            $payment->order->setStatus(Order\Status::PAID);
+            $payment->order->setAuthorized(1);
+
+            $payment->order->setAuthorizeTimestamp();
 
             $payment->order->saveOrFail();
         }
