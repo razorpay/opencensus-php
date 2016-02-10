@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const STATUS                = 'status';
+    const ORDER_ID              = 'order_id';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
