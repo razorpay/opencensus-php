@@ -14,6 +14,7 @@ use Models\Merchant;
 use Models\Merchant\BankAccount;
 use Models\Terminal;
 use Models\Payment;
+use Models\Order;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -56,6 +57,8 @@ class Processor
         $this->checkMerchantPermissions();
 
         $this->repo = new Payment\Repository;
+
+        $this->orderRepo = new Order\Repository;
 
         $this->app = App::getFacadeRoot();
     }
@@ -294,9 +297,49 @@ class Processor
 
         $payment->merchant()->associate($this->merchant);
 
+        $this->setOrderDetails($payment, $input);
+
         $this->payment = $payment;
 
         return $payment;
+    }
+
+    protected function setOrderDetails($payment, $input)
+    {
+        if (isset($input['order_id']))
+        {
+            $this->order = $this->orderRepo->findOrFail($input['order_id']);
+
+            if ($this->order->getAmount() !== $payment->getAmount())
+            {
+                // Order and Payment amount mismatch
+                throw new Exception\BadRequestValidationFailureException(
+                    'Order and Payment Amount Mismatch Error');
+
+            }
+
+            if ($this->order->getMerchantId() !== $payment->getMerchantId())
+            {
+                // Merchant mismatch
+                throw new Exception\BadRequestValidationFailureException(
+                    'Merchant mismatch');
+            }
+
+            if ($this->order->getStatus() === Order\Status::PAID)
+            {
+                // Order already paid for
+                throw new Exception\BadRequestValidationFailureException(
+                    'Order already paid for');
+            }
+            else
+            {
+                $this->order->setStatus(Order\Status::ATTEMPTED);
+
+                $this->order->incrementAttempts();
+            }
+
+            $payment->order()->associate($this->order);
+        }
     }
 
     protected function tracePaymentFailed($error, $traceCode)
