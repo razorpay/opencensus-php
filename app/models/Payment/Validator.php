@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes',
         'callback_url'  =>  'sometimes|url',
+        'order_id'      =>  'sometimes',
         '_'             =>  'sometimes');
 
     protected static $captureRules = array(
@@ -44,7 +45,7 @@ class Validator extends Base\Validator
 
     protected function validateCardKey($input)
     {
-        if (($input['method'] !== Payment\Method::CARD) and 
+        if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
         {
             return;

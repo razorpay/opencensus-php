@@ -8,9 +8,9 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'amount'        =>  'required|integer|max:50000000',
-        'currency'      =>  'required|size:3',
+        'currency'      =>  'required|size:3|in:INR',
         // 'attempts'      =>  '',
         // 'status'        =>  '',
-        'receipt'       =>  'sometimes'
+        'receipt'       =>  'required|string',
     );
 }
