@@ -24,4 +24,13 @@ class OrderTest extends TestCase
 
         return $order;
     }
+
+    public function testGetOrder()
+    {
+        $this->testCreateOrder();
+
+        $order = $this->getLastEntity('order');
+
+        sd($order);
+    }
 }
