@@ -2,14 +2,20 @@
 app.controller('RegisterCtrl', [
   '$scope',
   '$http',
+  '$state',
   'alertsFactory',
+  'user',
   'transformRequestAsFormPost',
   '$analytics',
   '$location',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $analytics, $location) {
+  function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location) {
+
+    $scope.data = {};
+    if($location.search().invitation)
+      $scope.data.invitation = $location.search().invitation;
+
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
-    $scope.data = {};
     $scope.agree = false;
 
     // Referrer is set only if present
@@ -43,7 +49,12 @@ app.controller('RegisterCtrl', [
             name: data.data.name,
             email: data.data.email
           });
-          $scope.alerts.addAlert('success', 'Registration Successful. Please check your inbox for confirmation email from Razorpay.', true);
+          if(data.data.login) {
+            user.identity(true);
+            $state.go('app.dashboard');
+          }
+          else
+            $scope.alerts.addAlert('success', 'Registration Successful. Please check your inbox for confirmation email from Razorpay.', true);
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (error, key) {

@@ -15,9 +15,9 @@ class MerchantController extends BaseController
     public function getMerchant()
     {
        $user = Auth::user()->user();
-
-       $merchant = (new Merchant\Service)->fetch($user->currentMerchant->id);
-
+   
+       $merchant = (new Merchant\Service)->fetchCurrentMerchantForUser($user);
+    
        $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
 
        $data = $merchant + $merchantDetails;
@@ -39,6 +39,40 @@ class MerchantController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)->resendConfirmation($input);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    /**
+     * Update a team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function updateTeamMember($userId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user()->user();
+
+        list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $user, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Remove the team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function removeTeamMember($userId)
+    {
+        $input = Input::all();
+
+        $user = Auth::user()->user();
+
+        $error = (new Merchant\Service)->removeTeamMemberForOwner($userId, $user, $input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -89,7 +123,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = $merchant = Auth::user()->user()->getCurrentMerchantId();
+        $input['merchant_id'] = Auth::user()->user()->getCurrentMerchantId();
 
         list($error, $data) = (new Merchant\Service)->rollKeys($input, $mode);
 

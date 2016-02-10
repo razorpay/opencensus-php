@@ -11,7 +11,65 @@ app.controller('UserCtrl', [
   'modeFactory',
   function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
     $scope.mode = modeFactory.getMode();
+    $scope.invitations = [];
+
+    $scope.getPendingInvitations = function(){
+      var request = $http.get('/settings/invitations');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.invitations = data.data;
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.getLoggedInUser = function ()
+    {
+      var request = $http.get('/user/details');
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.loggedInUser = data.data;
+          console.debug(data.data);
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
+    $scope.acceptInvitation = function(invite) {
+      var request = $http.post('settings/invitations/' + invite.id + '/accept');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'You have accepted the invite.', true);
+          location.reload();
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+    $scope.rejectInvitation = function(invite) {
+      var request = $http.delete('settings/invitations/' + invite.id + '/reject');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'You have rejected the invite.', true);
+          $scope.getPendingInvitations();
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
     $scope.refreshUser = function (force) {
+      $scope.getLoggedInUser();
       user.identity(force).then(function (data) {
         $scope.user = data;
         Rollbar.configure({

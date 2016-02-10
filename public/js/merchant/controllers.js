@@ -79,6 +79,35 @@ angular.module('app.controllers', [
       });
     };
   }
+]).controller('switchMerchantCtrl', [
+  '$scope',
+  '$http',
+  '$state',
+  function ($scope, $http, $state) {
+    var request = $http.get('/settings/merchants');
+    request.success(function (data) {
+      if (data.success) {
+        $scope.merchants = data.data;
+      } else {
+        $scope.alerts.addAlert('danger', null, true);
+      }
+    }).error(function () {
+      $scope.alerts.addAlert('danger', null, true);
+    });
+
+    $scope.switchMerchant = function (merchant){
+      var request = $http.get('/settings/merchants/switch/' + merchant.id);
+      request.success(function (data) {
+        if (data.success) {
+          location.reload();
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+  }
 ]).controller('activationModalCtrl', [
   '$scope',
   '$modalInstance',

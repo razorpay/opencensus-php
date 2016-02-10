@@ -6,6 +6,7 @@ use Uuid;
 use Session;
 use Models\Base;
 use Models\Merchant;
+use Models\Invitation;
 use RandomLib\Factory as RandomLibFactory;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
@@ -56,26 +57,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     }
 
     /**
-     * Generate the user instance from the merchant instance
-     */
-    public static function createFromMerchant($merchant)
-    {
-        $user = new static();
-        $user->timestamps = false;
-
-        $user->id = Uuid::generate();
-        $user->name = $merchant->name;
-        $user->email = $merchant->email;
-        
-        $user->password = $merchant->password;
-        $user->confirm_token = $merchant->confirm_token;
-        $user->created_at = $merchant->created_at;
-        $user->updated_at = $merchant->updated_at;
-
-        return $user;
-    }
-
-    /**
      * Determine if the user is a member of any merchants.
      *
      * @return bool
@@ -93,6 +74,14 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
                     ->withPivot(['role'])
                     ->orderBy('name', 'asc');
+    }
+
+    /**
+     * Get all of the pending invitations for the user.
+     */
+    public function invitations()
+    {
+        return $this->hasMany(Invitation\Entity::class);
     }
 
     /**
@@ -125,17 +114,17 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      */
     public function currentMerchant()
     {
-        $current_merchant_id = Session::get('current_merchant_id');
-        
-        if (is_null($current_merchant_id) && $this->hasMerchants()) 
+        $currentMerchantId = Session::get('current_merchant_id');
+
+        if (is_null($currentMerchantId) && $this->hasMerchants())
         {
             $this->switchToMerchant($this->merchants->first());
 
             return $this->currentMerchant();
-        } 
-        elseif (! is_null($current_merchant_id)) 
+        }
+        else if (is_null($currentMerchantId) === false)
         {
-            $currentMerchant = $this->merchants->find($current_merchant_id);
+            $currentMerchant = $this->merchants->find($currentMerchantId);
 
             return $currentMerchant ?: $this->refreshCurrentMerchant();
         }
@@ -150,6 +139,18 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function getCurrentMerchantId()
     {
         return $this->currentMerchant->id;
+    }
+
+    /**
+     * Returns the first merchant owned by this user
+     * @return Merchant\Entity
+     */
+    public function getOwnerMerchant()
+    {
+        return $this->merchants()
+            ->where('email', $this->email)
+            ->where('role', 'owner')
+            ->first();
     }
 
     /**
@@ -205,7 +206,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         $merchant = $this->merchants->find($merchant->id);
 
-        if($merchant) 
+        if($merchant)
         {
             return $merchant->pivot->role;
         }
@@ -222,7 +223,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         return $token;
     }
-    
+
     /**
      * Generates Confirmation token
      */

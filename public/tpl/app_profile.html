@@ -4,8 +4,8 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md profile-wrapper">
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+<div class="wrapper-md profile-wrapper" ng-init="getPendingInvitations()">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3">
     <div class="panel-heading m-t m-b">
       Merchant Id: <strong>{{user.id}}</strong>
     </div>
@@ -20,7 +20,7 @@
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{user.email}}</span>
-          Email Id
+          Merchant Email Id
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{user.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': user.activated == 1, 'fa-times text-danger':user.activated == 0}"></i></span>
@@ -36,30 +36,56 @@
         </a>
       </div>
     </div>
+    <div class="row wrapper" ng-show="user.tags.indexOf('Team') != -1">
+      <div class="panel panel-default">
+        <div class="list-group">
+          <a href class="list-group-item">
+            <span class="pull-right">{{loggedInUser.name | titlecase}}</span>
+            User Name
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{loggedInUser.email}}</span>
+            Login Email Id
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-heading m-t m-b" ng-show="invitations">
+      Pending Invitations
+    </div>
+    <div class="row wrapper">
+      <a href class="list-group-item" ng-repeat="invite in invitations">
+        <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
+        <span class="pull-right"><button class="btn btn-danger" ng-click="rejectInvitation(invite)">Reject</button></span>
+        Invitation from {{ invite.merchant.name }} for the {{ invite.role | titlecase }} role
+      </a>
+    </div>
     <div class="text-center m-b">
-      <script type="text/ng-template" id="passwordModalContent.html">
-        <div class="modal-header">
-          <h3 class="modal-title">Change Password</h3>
-        </div>
-        <div class="modal-body change-pwd-modal">
-            <form ng-init="data={}">
-              <div class="form-group">
-                  <input type="password" placeholder="Current Password" name="old_password" class="form-control" ng-model="data.old_password">
-              </div>
-              <div class="form-group">
-                  <input type="password" placeholder="New Password" name="password" class="form-control" ng-model="data.password">
-              </div>
-              <div class="form-group">
-                  <input type="password" placeholder="Confirm New Password" name="password_confirmation" class="form-control" ng-model="data.password_confirmation">
-              </div>
-            </form>
-        </div>
-        <div class="modal-footer">                  
-            <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-            <button class="btn btn-primary modal-ok" ng-click="ok(data)">Change Password</button>
-        </div>
-      </script>
       <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>
     </div>
   </div>
 </div>
+
+<script type="text/ng-template" id="passwordModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Change Password</h3>
+  </div>
+  <div class="modal-body change-pwd-modal">
+      <form ng-init="data={}">
+        <div class="form-group">
+            <input type="password" placeholder="Current Password" name="old_password" class="form-control" ng-model="data.old_password">
+        </div>
+        <div class="form-group">
+            <input type="password" placeholder="New Password" name="password" class="form-control" ng-model="data.password">
+        </div>
+        <div class="form-group">
+            <input type="password" placeholder="Confirm New Password" name="password_confirmation" class="form-control" ng-model="data.password_confirmation">
+        </div>
+      </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(data)">Change Password</button>
+  </div>
+</script>

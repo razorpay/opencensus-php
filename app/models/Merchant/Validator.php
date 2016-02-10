@@ -55,6 +55,10 @@ class Validator extends Base\Validator
         'banks'                                      => 'required|array'
     );
 
+    protected static $updateTeamMemberRules = array(
+        'role'  => 'required|in:owner,manager,operations,finance,developer'
+    );
+
     protected static $api_dashboard_mappings = array(
             'id'        => 'id',
             'name'      => 'name',
@@ -83,31 +87,6 @@ class Validator extends Base\Validator
             {
                 throw new \Exception(
                     'Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
-            }
-        }
-    }
-
-    protected function validateCaptcha($input)
-    {
-        if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' OR $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
-        {
-            $captchaResponse = $input['captcha'];
-
-            if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
-                $clientIpAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-            } else {
-                $clientIpAddress = $_SERVER['REMOTE_ADDR'];
-            }
-
-            $url = "https://www.google.com/recaptcha/api/siteverify?secret=".$_ENV['NOCAPTCHA_SECRET']."&response=".$captchaResponse."&remoteip=".$clientIpAddress;
-
-            $response = \Requests::get($url);
-
-            $output = json_decode($response->body);
-
-            if($output->success !== true)
-            {
-                $this->addError('captcha', 'Captcha Failed');
             }
         }
     }

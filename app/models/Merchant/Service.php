@@ -8,68 +8,16 @@ use Requests;
 use Models\Base;
 use Models\Merchant;
 use Models\User;
+use Models\Invitation;
 use Models\MerchantDetails;
 use Razorpay\Mailers\UserMailer;
-
+use Razorpay\Api\Errors\BadRequestError;
 
 class Service extends Base\Service
 {
-    public function register(array $input)
-    {
-        $referer = false;
-
-        if (isset($input['ref']))
-        {
-            $referer = $input['ref'];
-            unset($input['ref']);
-        }
-
-        $merchant = new Merchant\Entity;
-        $error = $merchant->build($input);
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $merchant->password = Hash::make($merchant->password);
-
-        // This is called for certain special email addresses
-        $merchant->setCustomId();
-        $merchant->saveOrFail();
-
-        if ($referer)
-        {
-            $merchant->tag('ref-'.$referer);
-        }
-
-        $user = User\Entity::createFromMerchant($merchant);
-        $user->saveOrFail();
-        $user->merchants()->attach($merchant, ['role' => 'owner']);
-
-        $details = array(
-            'merchant_id' => $merchant->id,
-            'contact_email' => $merchant->email
-        );
-
-        MerchantDetails\Entity::createOrFail($details);
-
-        (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
-
-        $slackData = [
-            'id'        => $merchant->id,
-            'name'      => $merchant->name,
-            'email'     => $merchant->email
-        ];
-
-        $this->slackSignupPost($slackData, $referer);
-
-        return [$error, $slackData];
-    }
-
     protected function slackSignupPost($slackData, $referer)
     {
-        if($_ENV['SLACK_ENABLE'] === true)
+        if ($_ENV['SLACK_ENABLE'] === true)
         {
             $config = \Config::get('razorpay.sorting_hat');
             $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
@@ -111,16 +59,16 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            if($merchant->hasUsers())
+            if ($merchant->hasUsers())
             {
                 $user = $merchant->users()->where('email',$originalEmail)->first();
-                if($user)
+                if ($user)
                 {
                     $user->email = $merchant->email;
-                    $user->save();
+                    $user->saveOrFail();
                 }
             }
-            $merchant->save();
+            $merchant->saveOrFail();
         }
 
         $merchantDetails = $merchant->merchantDetails;
@@ -158,7 +106,7 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::getMerchantForConfirmation($token);
 
-        if ($merchant === null)
+        if (is_null($merchant))
         {
             return array('Invalid confirmation token or the merchant is already confirmed.');
         }
@@ -185,7 +133,7 @@ class Service extends Base\Service
                 $response = $this->api->merchant->create($merchantApiData);
             }
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             return array($e->getMessage());
         }
@@ -207,11 +155,11 @@ class Service extends Base\Service
                 'password'  => $input['password']
             );
 
-            $user = \Auth::user();
+            $user = Auth::user();
 
             if ($user->once($credentials))
             {
-                $user = \Auth::user()->get();
+                $user = Auth::user()->get();
 
                 $merchant = $user->currentMerchant;
 
@@ -223,11 +171,11 @@ class Service extends Base\Service
 
                 (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
 
-                return [[], []];
+                return array(array(),array());
             }
         }
 
-        return [['Email or password is invalid.'], []];
+        return array(array('Email or password is invalid.'), array());
     }
 
     public function fetch($merchant_id)
@@ -267,7 +215,7 @@ class Service extends Base\Service
                                 ->create()
                                 ->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -307,7 +255,7 @@ class Service extends Base\Service
                 'new'           => $response['new']
             );
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -315,6 +263,35 @@ class Service extends Base\Service
         return array($error, $key_data);
     }
 
+
+    /**
+     * Get the merchant entity from the gibven merchant id
+     *
+     * @param  string $merchantId
+     * @return Array with merchant, merchant details
+     */
+    public function fetchCurrentMerchantForUser($user)
+    {
+        $merchantId = $user->getCurrentMerchantId();
+
+        $merchant = $this->fetch($merchantId);
+
+        if ($user->currentMerchant->primaryOwner()->id === $user->id)
+        {
+            $merchant['primaryOwner'] = true;
+        }
+        else
+        {
+            $merchant['primaryOwner'] = false;
+        }
+
+        return $merchant;
+    }
+
+    /**
+     * Returns all the webhooks
+     * @param  string $mode live|test
+     */
     public function getWebhooks($mode)
     {
         $merchantId = \Auth::user()->user()->getCurrentMerchantId();
@@ -382,7 +359,85 @@ class Service extends Base\Service
     }
 
     /**
+     * Remove the team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function removeTeamMemberForOwner($userId, $user, $input)
+    {
+        $error = array();
+
+        if ($userId === $user->id)
+        {
+            return array("You cannot remove yourself.");
+        }
+
+        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
+
+        if (is_null($merchant))
+        {
+            return array("We couldn't find the merchant that you own.");
+        }
+
+        $merchant->users()->detach($userId);
+
+        return $error;
+    }
+
+
+    /**
+     * Update a team member on the given merchant.
+     *
+     * @param  string  $userId
+     * @return \Illuminate\Http\Response
+     */
+    public function updateTeamMemberForOwner($userId, $user, $input)
+    {
+        $error = array();
+
+        if ($userId === $user->id)
+        {
+            $error[] = "You cannot change your role.";
+            return array($error, null);
+        }
+
+        $validator = (new Merchant\Entity)->validateInput('updateTeamMember',$input);
+
+        if ($validator->fails())
+        {
+            $error = $validator->messages();
+            return array($error, null);
+        }
+
+        $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
+
+        if (is_null($merchant))
+        {
+            $error[] = "We couldn't find the merchant that you own.";
+            return array($error, null);
+        }
+
+        $userToUpdate = $merchant->users->find($userId);
+
+        if (is_null($userToUpdate))
+        {
+            $error[] = "The team member you are looking for does'nt exist";
+            return array($error, null);
+        }
+
+        $userToUpdate->merchants()->updateExistingPivot(
+            $merchant->id, ['role' => $input['role']]
+        );
+
+        list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($user);
+
+        return array($error, $merchant);
+    }
+
+    /**
      * Fetches merchant balance
+     *
      * @param  string $merchantId Merchant Id
      * @return array contains both test and live balances
      */

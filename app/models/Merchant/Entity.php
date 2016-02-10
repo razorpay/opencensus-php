@@ -2,9 +2,11 @@
 
 namespace Models\Merchant;
 
+use Mail;
 use Uuid;
 use Models\Base;
 use Models\User;
+use Models\Invitation;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
@@ -71,7 +73,31 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     );
 
     /**
+     * Generate the user instance from the merchant instance
+     *
+     * @param \Models\User\Entity $user
+     * @return \Models\Merchant\Entity $merchant
+     */
+    public static function createFromUserWithBusinessName($user, $businessName)
+    {
+        $merchant = new static();
+        $merchant->timestamps = false;
+
+        $merchant->id = Uuid::generate();
+        $merchant->name = $businessName;
+        $merchant->email = $user->email;
+
+        $merchant->password = $user->password;
+        $merchant->confirm_token = $user->confirm_token;
+        $merchant->created_at = $user->created_at;
+        $merchant->updated_at = $user->updated_at;
+
+        return $merchant;
+    }
+
+    /**
      * Take care while calling this method
+     *
      * @param array $input array with new email address
      */
     public function changeEmail($input)
@@ -99,6 +125,23 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     }
 
     /**
+     * Get all of the merchants for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllMerchantsForUser($user)
+    {
+        $merchants = $user->merchants()->with('owner')->get();
+
+        foreach ($merchants as $merchant)
+        {
+            $merchant->owner->setVisible(['name']);
+        }
+
+        return $merchants;
+    }
+
+    /**
      * Get the owners of the merchant.
      */
     public function owners()
@@ -122,6 +165,81 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $this->belongsToMany(
             User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
         )->withPivot('role');
+    }
+
+    /**
+     * Get all of the pending invitations for the merchant.
+     */
+    public function invitations()
+    {
+        return $this->hasMany(Invitation\Entity::class)
+                    ->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Invite a user to the merchants by e-mail address.
+     *
+     * @param  string  $email
+     * @return \Models\Merchant\Entity
+     */
+    public function inviteUserByEmailWithRole($email, $role)
+    {
+        $invitedUser = (new User\Entity)->where('email', $email)->first();
+
+        $invitation = $this->invitations()
+                           ->where('email', $email)->first();
+
+        if (! $invitation)
+        {
+            $invitation = $this->invitations()->create([
+                'user_id' => $invitedUser ? $invitedUser->id : null,
+                'email' => $email,
+                'token' => str_random(40),
+                'role' => $role,
+            ]);
+        }
+
+        $view = $invitation->user_id
+                        ? 'emails.invitations.existing'
+                        : 'emails.invitations.new';
+
+        Mail::send($view, compact('invitation'), function ($m) use ($invitation)
+        {
+            $m->to($invitation->email)->subject('New Invitation!');
+        });
+
+        return $invitation;
+    }
+
+    /**
+     * Attach a user to a given merchant based on their invitation.
+     *
+     * @param  \Models\Invitation\Entity  $invitation
+     * @param  \Models\User\Entity  $user
+     * @return void
+     */
+    public static function attachUserToMerchantByInvitation($invitation, $user)
+    {
+        $user->joinMerchantByIdWithRole($invitation->merchant->id, $invitation->role);
+        $user->switchToMerchant($invitation->merchant);
+
+        $invitation->delete();
+    }
+
+    /**
+     * Remove a user from the merchant by their ID.
+     *
+     * @param  int  $userId
+     * @return void
+     */
+    public function removeUserById($userId)
+    {
+        $this->users()->detach([$userId]);
+
+        $removedUser = (new User\Entity)->find($userId);
+
+        if($removedUser)
+            $removedUser->refreshCurrentMerchant();
     }
 
     /**
@@ -152,6 +270,13 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function merchantDetails()
     {
         return $this->hasOne('Models\MerchantDetails\Entity');
+    }
+
+    public function hasInvitiationForEmail($email)
+    {
+        return $this->invitations()
+                        ->where('email', $email)
+                        ->exists();
     }
 
     public static function getAggregations($data, $mode)

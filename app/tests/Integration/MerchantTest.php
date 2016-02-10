@@ -52,12 +52,14 @@ class MerchantTest extends TestCase
      */
     public function testRegister()
     {
+        $businessName = random_alpha_string(6). ' Merchant';
+
         $this->browser
             // Visits the 'register page
             ->open('/admin')
             ->open('/#/access/signup')
             ->waitForPresent('form[name="signup"]')
-            //->waitForCondition("window.$('form[name=\"signup\"]').length > 0", 5000)
+            ->type(l::IdOrName('business_name'), $businessName)
             // Fill name
             ->type(l::IdOrName('name'), $this->merchant->name)
             // Fill email
@@ -386,11 +388,17 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('old_password'), '123456xx')
             ->type(l::IdOrName('password'), '1234567xx')
             ->type(l::IdOrName('password_confirmation'), '1234567xx')
-            ->click(l::css('.modal-ok'))                 // Click in the button
+            ->click(l::css('.modal-ok'))
+            // Click in the button
             ->waitForAbsent('.change-pwd-modal')
             ->waitForLoaded();
 
         $this->assertBodyHasText("Password changed successfully");
+    }
+
+    public function testInvitations()
+    {
+        //
     }
 
     /**
