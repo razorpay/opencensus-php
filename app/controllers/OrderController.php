@@ -22,11 +22,11 @@ class OrderController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getOrder()
+    public function getOrders()
     {
         $input = Input::all();
 
-        $data = $this->order->fetch($input);
+        $data = $this->order->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }

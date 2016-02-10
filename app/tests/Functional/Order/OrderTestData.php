@@ -33,4 +33,14 @@ return [
         'currency'      => 'INR',
         'receipt'       => 'rcptid42',
     ],
+
+    'testGetMultipleOrders' => [
+        'request' => [
+            'url' => '/orders',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

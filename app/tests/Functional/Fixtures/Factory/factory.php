@@ -218,3 +218,15 @@ $factory(Models\Emi\Entity::class, [
     'methods' => 'card',
     'min_amount' => 500000,
 ]);
+
+$factory(Models\Order\Entity::class, [
+    'id' => $faker->uniqueid,
+    'merchant_id' => 10000000000000,
+    'amount' => 1000000,
+    'currency' => 'INR',
+    'status' => 'created',
+    'receipt' => $faker->uniqueid,
+    'attempts' => 0,
+    'created_at' => $faker->timestamp,
+    'updated_at' => $faker->timestamp,
+]);
