@@ -789,6 +789,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('hdfc', 'trackid', 'id');
     }
 
+    public function order()
+    {
+        return $this->belongsTo('Models\Order\Entity');
+    }
+
 // --------------- Relation to other entity section ends -----------------------
 
     public function refundAmount($amount)

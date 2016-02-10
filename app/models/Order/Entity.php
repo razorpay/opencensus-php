@@ -51,9 +51,19 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Order\Entity');
     }
 
+    public function payment()
+    {
+        return $this->hasMany('Models\Payment\Entity');
+    }
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setAttempts($attempts)
+    {
+        return $this->setAttribute(self::ATTEMPTS, $attempts);
     }
 
     public function getStatus()
@@ -74,5 +84,22 @@ class Entity extends Base\PublicEntity
     protected function getAttemptsAttribute()
     {
         return (int) $this->attributes[self::ATTEMPTS];
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttemptsAttribute();
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function incrementAttempts()
+    {
+        $attempts = $this->getAttempts() + 1;
+
+        $this->setAttempts($attempts);
     }
 }

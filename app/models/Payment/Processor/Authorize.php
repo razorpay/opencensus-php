@@ -14,6 +14,7 @@ use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
 use Models\Transaction;
+use Models\Order;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
@@ -270,9 +271,20 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
+        // If payment has an associated order
+        // set the order to be paid
+        $this->updateOrderStatus($payment);
+
         $this->eventPaymentAuthorized($payment);
 
         $this->notifyAuthorized($payment, $wasFailed);
+    }
+
+    protected function updateOrderStatus($payment)
+    {
+        $payment->order->setStatus(Order\Status::PAID);
+
+        $this->orderRepo->saveOrFail($payment->order);
     }
 
     protected function postPaymentAuthorizeProcessing($payment)

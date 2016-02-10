@@ -110,6 +110,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="contact" size="25" value="1234567890"></td>
     </tr>
     <tr>
+        <td colspan='40'>Razorpay Order Id:</td>
+        <td><input type="text" name="order_id" size="25" value=""></td>
+    </tr>
+    <tr>
         <td colspan='40'>Order Id:</td>
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
     </tr>
