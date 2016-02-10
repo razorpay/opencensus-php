@@ -111,7 +111,7 @@ class InvitationsController extends BaseController
     {
         $user = Auth::user()->user();
 
-        list($error, $data) = $this->service->removeInvitationForUser($inviteId, $user);
+        $error = $this->service->removeInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }

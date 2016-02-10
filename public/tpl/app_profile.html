@@ -55,13 +55,11 @@
       Pending Invitations
     </div>
     <div class="row wrapper">
-      <div class="list-group">
-        <a href class="list-group-item" ng-repeat="invite in invitations">
-          <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
-          <span class="pull-right"><button class="btn btn-default" ng-click="rejectInvitation(invite)">Reject</button></span>
-          Invitation from {{ invite.merchant.name }} for the {{ invite.role | titlecase }} role
-        </a>
-      </div>
+      <a href class="list-group-item" ng-repeat="invite in invitations">
+        <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
+        <span class="pull-right"><button class="btn btn-danger" ng-click="rejectInvitation(invite)">Reject</button></span>
+        Invitation from {{ invite.merchant.name }} for the {{ invite.role | titlecase }} role
+      </a>
     </div>
     <div class="text-center m-b">
       <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>

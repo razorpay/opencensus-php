@@ -388,7 +388,8 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('old_password'), '123456xx')
             ->type(l::IdOrName('password'), '1234567xx')
             ->type(l::IdOrName('password_confirmation'), '1234567xx')
-            ->click(l::css('.modal-ok'))                 // Click in the button
+            ->click(l::css('.modal-ok'))
+            // Click in the button
             ->waitForAbsent('.change-pwd-modal')
             ->waitForLoaded();
 

@@ -9,8 +9,8 @@ app.controller('TeamManagementCtrl', [
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.roles = ['owner','manager','operations','finance','developer'];
-    
+    $scope.roles = ['owner','manager'];
+
     $scope.team = {
       role: $scope.roles[1]
     };
@@ -22,7 +22,7 @@ app.controller('TeamManagementCtrl', [
         if (data.success) {
           $scope.users = data.data.users;
           $scope.invitations = data.data.invitations;
-        } 
+        }
       })
       .error(function () {
         $scope.alerts.addAlert('danger', null, true);
@@ -117,9 +117,9 @@ app.controller('TeamManagementCtrl', [
     };
 
     $scope.resendInvitation = function(invite) {
-      
+
       var request = $http.get('/settings/invitations/' + invite.id + '/resend');
-      
+
       request
       .success(function (data) {
         if (data.success) {
@@ -137,14 +137,14 @@ app.controller('TeamManagementCtrl', [
     };
 
     $scope.sendInvitation = function() {
-      
+
       var request = $http({
         method: 'post',
         url: '/settings/invitations',
         transformRequest: transformRequestAsFormPost,
         data: $scope.team
       });
-      
+
       request
       .success(function (data) {
         if (data.success) {

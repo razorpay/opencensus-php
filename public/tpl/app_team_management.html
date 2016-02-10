@@ -1,13 +1,13 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Manage Dashboard ({{mode + " Mode"| titlecase }})
+    Manage Team
     <spinner class="inline"></spinner>
   </h1>
 </div>
 <div class="wrapper-md" ng-controller="TeamManagementCtrl" ng-init="getTeamMembers()">
   <div class="panel panel-default col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
-      Invite users to manage dashboard - {{mode | titlecase}} Mode
+      Invite users to your Organization Team
     </div>
     <div class="text-center m-t m-b">
       <div class="text-center m-t" ng-show="alerts.getAlerts().length > 0">
@@ -18,7 +18,7 @@
           <input type="text" class="form-control" name="description" ng-model="team.email" placeholder="Email address of the user" tooltip-placement="right" tooltip="Email Address" required>
         </div>
         <div class="m-b col-sm-4">
-            <select ng-init="team.role = roles[1]" ng-model="team.role" ng-options="role | titlecase for role in roles" class="form-control" required></select>
+          <input type="hidden" ng-model="team.role">
         </div>
       </div>
       <button  class="btn btn-primary btn-rounded" ng-click="sendInvitation()">Send Invitation</button>
@@ -30,8 +30,11 @@
       <div class="row wrapper">
         <div class="row" ng-repeat="user in users">
           <div class="m-b col-sm-5">{{ user.email }}</div>
-          <div class="m-b col-sm-3"><select ng-model="user.pivot.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div>
-          <div class="m-b col-sm-4"><button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)">Update</button><button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">Remove</button></div>
+          <!-- <div class="m-b col-sm-3"><select ng-model="user.pivot.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div> -->
+          <div class="m-b col-sm-4">
+            <!-- <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)">Update</button> -->
+            <button class="btn btn-sm btn-danger" ng-click="removeTeamMember(user)">Remove</button>
+          </div>
         </div>
       </div>
     </div>
@@ -42,8 +45,11 @@
       <div class="row wrapper">
         <div class="row" ng-repeat="invite in invitations">
           <div class="m-b col-sm-5">{{ invite.email }}</div>
-          <div class="m-b col-sm-3"><select ng-model="invite.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div>
-          <div class="m-b col-sm-4"><button class="btn btn-sm btn-primary" ng-click="resendInvitation(invite)">Resend</button><button class="btn btn-sm btn-success" ng-click="updateInvitation(invite)">Update</button><button class="btn btn-sm btn-danger" ng-click="removeInvitation(invite)">Cancel</button></div>
+          <!-- <div class="m-b col-sm-3"><select ng-model="invite.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div> -->
+          <div class="m-b col-sm-4">
+            <button class="btn btn-sm btn-primary" ng-click="resendInvitation(invite)">Resend</button>
+            <!-- <button class="btn btn-sm btn-success" ng-click="updateInvitation(invite)">Update</button> -->
+            <button class="btn btn-sm btn-danger" ng-click="removeInvitation(invite)">Cancel</button></div>
         </div>
       </div>
     </div>
