@@ -306,7 +306,7 @@ class Processor
 
     protected function setOrderDetails($payment, $input)
     {
-        if (isset($input['order_id']))
+        if (!empty($input['order_id']))
         {
             $this->order = $this->orderRepo->findOrFail($input['order_id']);
 
@@ -336,6 +336,8 @@ class Processor
                 $this->order->setStatus(Order\Status::ATTEMPTED);
 
                 $this->order->incrementAttempts();
+
+                $this->order->saveOrFail();
             }
 
             $payment->order()->associate($this->order);
