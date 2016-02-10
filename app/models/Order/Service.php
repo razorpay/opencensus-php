@@ -21,7 +21,7 @@ class Service extends Base\Service
 
         $order = $this->core->create($input, $merchant);
 
-        return $order;
+        return $order->toArray();
     }
 
     // public function
