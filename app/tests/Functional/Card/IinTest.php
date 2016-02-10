@@ -8,6 +8,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 class IinTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use IinTrait;
 
     public function setUp()
     {
@@ -37,6 +38,17 @@ class IinTest extends TestCase
 
     public function testGetIins()
     {
+        $this->startTest();
+    }
+
+    public function testImportIin()
+    {
+        $file = $this->getUploadedIinFile();
+
+        $testData = &$this->testData['testImportIin'];
+
+        $testData['request']['files']['file'] = $file;
+
         $this->startTest();
     }
 
