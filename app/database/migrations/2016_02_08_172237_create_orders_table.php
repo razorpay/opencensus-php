@@ -35,9 +35,13 @@ class CreateOrdersTable extends Migration {
 
             $table->integer(Order::ATTEMPTS);
 
-            $table->char(Order::STATUS);//
+            $table->string(Order::STATUS, 10);
 
-            $table->char(Order::RECEIPT);//
+            $table->string(Order::RECEIPT, 20);
+
+            // Adds created_at and updated_at columns to the table
+            $table->integer(Settlement::CREATED_AT);
+            $table->integer(Settlement::UPDATED_AT);
 
             // Commented parts to be added incrementally
 
@@ -52,7 +56,6 @@ class CreateOrdersTable extends Migration {
 
             // $table->integer(Order::VALID_TILL);
 
-            $table->index(Order::MERCHANT_ID);
             $table->index(Order::STATUS);
             $table->index(Order::RECEIPT);
 
@@ -66,11 +69,19 @@ class CreateOrdersTable extends Migration {
             // Commented parts to be added incrementally
 
             // References Merchant Id add
-            // $table->foreign(Order::MERCHANT_ID)
-            //       ->references(Merchant::ID)
-            //       ->on(Table::MERCHANT)
-            //       ->on_delete('restrict');
+            $table->foreign(Order::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
+        });
+
+        Schema::table(Table::TRANSACTION, function($table)
+        {
+            $table->foreign(Payment::ORDER_ID)
+                  ->references(ORDER::ID)
+                  ->on(Table::ORDER)
+                  ->on_delete('restrict');
         });
 	}
 
@@ -81,6 +92,12 @@ class CreateOrdersTable extends Migration {
 	 */
 	public function down()
 	{
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(
+                TABLE::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
+        });
+
         Schema::drop(Table::ORDER);
 	}
 
