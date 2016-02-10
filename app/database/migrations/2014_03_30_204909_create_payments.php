@@ -36,6 +36,9 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::STATUS);
 
+            $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Payment::AMOUNT_AUTHORIZED)
                   ->unsigned()
                   ->default(0);
@@ -162,7 +165,7 @@ class CreatePayments  extends Migration
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::TERMINAL_ID.'_foreign');
 
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');            
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::PAYMENT);
