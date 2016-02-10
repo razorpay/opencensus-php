@@ -44,7 +44,6 @@ class Entity extends Base\PublicEntity
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const CALLBACK_URL          = 'callback_url';
-    const ORDER_ID              = 'order_id';
     const SERVICE_TAX           = 'service_tax';
     const FEE                   = 'fee';
 
