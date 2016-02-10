@@ -40,8 +40,8 @@ class CreateOrders extends Migration {
             $table->string(Order::RECEIPT, 20);
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Settlement::CREATED_AT);
-            $table->integer(Settlement::UPDATED_AT);
+            $table->integer(Order::CREATED_AT);
+            $table->integer(Order::UPDATED_AT);
 
             // Commented parts to be added incrementally
 
@@ -70,7 +70,7 @@ class CreateOrders extends Migration {
 
             // References Merchant Id add
             $table->foreign(Order::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
+                  ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 

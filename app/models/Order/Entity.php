@@ -31,5 +31,5 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::RECEIPT);
 
-
+    protected $table = \Constants\Order::PAYMENT;
 }
