@@ -28,7 +28,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECEIPT);
 
-    protected $table = \Constants\Order::PAYMENT;
+    protected $table = \Constants\Table::ORDER;
 
     public function merchant()
     {
@@ -44,5 +44,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::STATUS);
     }
-
 }
