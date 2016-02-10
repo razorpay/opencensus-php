@@ -27,10 +27,10 @@ class OrderTest extends TestCase
 
     public function testGetOrder()
     {
-        $this->testCreateOrder();
+        $order = $this->testCreateOrder();
 
-        $order = $this->getLastEntity('order');
+        $order = $this->getEntityById('order', $order['id']);
 
-        sd($order);
+        $this->assertArraySelectiveEquals($this->testData[__FUNCTION__], $order);
     }
 }

@@ -3,6 +3,7 @@
 namespace Models\Order;
 
 use Models\Base;
+use Models\Order;
 
 class Service extends Base\Service
 {
@@ -24,5 +25,19 @@ class Service extends Base\Service
         return $order->toArray();
     }
 
-    // public function
+    public function fetch($id)
+    {
+        Order\Entity::verifyIdAndStripSign($id);
+
+        $order = (new Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        return $order->toArrayPublic();
+    }
+
+    public function fetchMultiple($input)
+    {
+        $orders = $this->repo->fetch($input);
+
+        return $order->toArrayPublic();
+    }
 }
