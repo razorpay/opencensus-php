@@ -2,6 +2,7 @@
 
 namespace Models\Card\IIN\Import;
 
+use Models\Card\Network;
 use Models\Card\IIN;
 use EE\Exception;
 
@@ -20,16 +21,6 @@ class DataCleaner
     protected $networkCheckFails = array();
 
     protected $repo = null;
-
-    public static $networkRegexes = array(
-        'MasterCard'        => '/^5[1-5][0-9]{4,}$/',
-        'Visa'              => '/^4[0-9]{5,}$/',
-        'American Express'  => '/^3[47][0-9]{4,}$/',
-        'JCB'               => '/^(?:2131|1800|35[0-9]{3})/',
-        'Diners Club'       => '/^3(?:0[0-5]|[68][0-9])/',
-        'Discover'          => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
-        'Union Pay'         => '/^62[0-9]{4,}$/',
-    );
 
     public function __construct()
     {
@@ -134,7 +125,7 @@ class DataCleaner
         foreach ($data as $input)
         {
             $iin = $input[IIN\Entity::IIN];
-            $network = $this->getNetwork($iin);
+            $network = Network::$fullName[Network::detectNetwork($iin)];
             $input[IIN\Entity::NETWORK] = $network;
 
             if (strcmp($inputNetwork, $network) !== 0)
@@ -158,18 +149,5 @@ class DataCleaner
         }
 
         return $indexed;
-    }
-
-    protected function getNetwork($iin)
-    {
-        foreach (self::$networkRegexes as $network => $regex)
-        {
-            if(preg_match($regex, $iin) === 1)
-            {
-                return $network;
-            }
-        }
-
-        return null;
     }
 }

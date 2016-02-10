@@ -46,7 +46,7 @@ class Formatter
             $input = array();
             $index = 0;
 
-            foreach($columns as $column)
+            foreach ($columns as $column)
             {
                 switch (strtolower($column))
                 {

@@ -43,7 +43,7 @@ class CardController extends BaseController
     {
         $input = Input::all();
 
-        if(isset($input['file']))
+        if (isset($input['file']))
         {
             $data = (new Card\IIN\Service)->importIin($input); 
         }
