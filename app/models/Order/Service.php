@@ -17,8 +17,12 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $order = $this->core->create($input);
+        $merchant = $this->merchant;
+
+        $order = $this->core->create($input, $merchant);
 
         return $order;
     }
+
+    // public function
 }

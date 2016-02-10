@@ -24,12 +24,25 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::CURRENCY,
-        self::ATTEMPTS,
-        self::STATUS,
         self::RECEIPT);
 
     protected $table = \Constants\Order::PAYMENT;
+
+    public function merchant()
+    {
+        return $this->belongsTo('Models\Order\Entity');
+    }
+
+    public function setStatus($status)
+    {
+        return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
 }

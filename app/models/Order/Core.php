@@ -15,9 +15,13 @@ class Core extends Base\Core
         $this->repo = new Repository;
     }
 
-    public function create($input)
+    public function create($input, $merchant)
     {
         $order = (new Entity)->build($input);
+
+        $order->merchant()->associate($merchant);
+
+        $order->setStatus(Status::CREATED);
 
         $this->repo->saveOrFail($order);
 
