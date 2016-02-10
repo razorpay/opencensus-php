@@ -30,6 +30,8 @@ class Entity extends Base\PublicEntity
 
     protected $table = \Constants\Table::ORDER;
 
+    protected $genereateIdOnCreate = true;
+
     public function merchant()
     {
         return $this->belongsTo('Models\Order\Entity');
