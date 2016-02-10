@@ -286,8 +286,6 @@ trait Authorize
         {
             $payment->order->setAuthorized(1);
 
-            $payment->order->setAuthorizeTimestamp();
-
             $payment->order->saveOrFail();
         }
     }
