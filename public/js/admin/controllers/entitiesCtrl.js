@@ -161,6 +161,7 @@ app.controller('EntitiesCtrl', [
         amex: booleanList2
       },
       methods: {
+        merchant_id: ['Merchant Id'],
         card: booleanList,
         amex: booleanList,
         emi: booleanList,
