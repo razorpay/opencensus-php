@@ -32,6 +32,9 @@ class Entity extends Base\PublicEntity
 
     protected $genereateIdOnCreate = true;
 
+    protected $defaults = array(
+        self::ATTEMPTS  => 0);
+
     public function merchant()
     {
         return $this->belongsTo('Models\Order\Entity');
