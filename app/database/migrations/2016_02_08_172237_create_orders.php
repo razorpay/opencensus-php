@@ -33,7 +33,8 @@ class CreateOrders extends Migration {
 
             $table->char(Order::CURRENCY, Payment::CURRENCY_LENGTH);
 
-            $table->integer(Order::ATTEMPTS);
+            $table->integer(Order::ATTEMPTS)
+                  ->default(0);
 
             $table->string(Order::STATUS, 10);
 
