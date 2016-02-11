@@ -6,13 +6,18 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID          = 'id';
-    const MERCHANT_ID = 'merchant_id';
-    const AMOUNT      = 'amount';
-    const CURRENCY    = 'currency';
-    const ATTEMPTS    = 'attempts';
-    const STATUS      = 'status';
-    const RECEIPT     = 'receipt';
+    const ID            = 'id';
+    const MERCHANT_ID   = 'merchant_id';
+    const AMOUNT        = 'amount';
+    const CURRENCY      = 'currency';
+    const ATTEMPTS      = 'attempts';
+    const STATUS        = 'status';
+    const RECEIPT       = 'receipt';
+
+    // To Mark If a payment corresponding to
+    // this order is in authorized state
+    const AUTHORIZED    = 'authorized';
+
     // const METHOD      = 'method';
     // const ACCOUNT_ID  = 'account_id';
     // const CREATED_AT  = 'created_at';
@@ -51,9 +56,24 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Order\Entity');
     }
 
+    public function payment()
+    {
+        return $this->hasMany('Models\Payment\Entity');
+    }
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setAttempts($attempts)
+    {
+        return $this->setAttribute(self::ATTEMPTS, $attempts);
+    }
+
+    public function setAuthorized($authorized)
+    {
+        return $this->setAttribute(self::AUTHORIZED, $authorized);
     }
 
     public function getStatus()
@@ -74,5 +94,39 @@ class Entity extends Base\PublicEntity
     protected function getAttemptsAttribute()
     {
         return (int) $this->attributes[self::ATTEMPTS];
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttemptsAttribute();
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function incrementAttempts()
+    {
+        $attempts = $this->getAttempts() + 1;
+
+        $this->setAttempts($attempts);
+    }
+
+    // public function getAuthorizedAttribute()
+    // {
+    //     $authorized = $this->getAttribute(self::AUTHORIZED);
+
+    //     if ($authorized !== null)
+    //     {
+    //         $authorized = (int) $authorized;
+    //     }
+
+    //     return $authorized;
+    // }
+
+    public function isAuthorized()
+    {
+        return (((int) $this->getAttribute(self::AUTHORIZED)) === 1);
     }
 }

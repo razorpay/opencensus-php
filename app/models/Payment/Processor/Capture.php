@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use Models\Merchant;
 use Models\Payment;
+use Models\Order;
 use Models\Transaction;
 use Trace\TraceCode;
 
@@ -71,7 +72,7 @@ trait Capture
             'payment' => $payment->toArray(),
             'amount' => $amount);
 
-        if (($payment->getMethod() === Payment\Method::CARD) or 
+        if (($payment->getMethod() === Payment\Method::CARD) or
             ($payment->getMethod() === Payment\Method::EMI))
         {
             $data['card'] = $payment->card->toArray();
@@ -80,6 +81,8 @@ trait Capture
         $payment->setCaptureAmount($amount);
 
         $this->captureOnGateway($data);
+
+        $this->updatePaidOrderStatus($payment);
 
         return $payment;
     }
@@ -152,5 +155,15 @@ trait Capture
 
         $txn->saveOrFail();
         $payment->saveOrFail();
+    }
+
+    protected function updatePaidOrderStatus()
+    {
+        if (isset($payment->order))
+        {
+            $payment->order->setStatus(Order\Status::PAID);
+
+            $payment->order->saveOrFail();
+        }
     }
 }
