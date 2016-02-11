@@ -71,6 +71,14 @@ class Service extends Base\Service
             $merchant = Merchant\Entity::createFromUserWithBusinessName($user,$businessName);
             $merchant->save();
 
+            if ($referer)
+            {
+                $merchant->tag('ref-'.$referer);
+            }
+
+            // This is called for certain special email addresses
+            $merchant->setCustomId();
+
             $user->merchants()->attach($merchant, ['role' => 'owner']);
 
             $details = array('merchant_id' => $merchant->id,'contact_email' => $merchant->email);
