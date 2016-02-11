@@ -13,7 +13,8 @@ class Validator extends Base\Validator
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
         'captcha'               => 'required',
-        'invitation'            => 'max:40'
+        'invitation'            => 'max:40',
+        'ref'                   => 'sometimes|max:255'
     );
 
     protected static $createValidators = array('captcha');
