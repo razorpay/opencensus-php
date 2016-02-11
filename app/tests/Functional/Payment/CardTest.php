@@ -87,7 +87,7 @@ class CardTest extends TestCase
         $content = $this->startTest($testData);
     }
 
-    public function startTest()
+    public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];

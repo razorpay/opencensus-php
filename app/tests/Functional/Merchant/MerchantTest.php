@@ -433,7 +433,7 @@ class MerchantTest extends TestCase
             });
     }
 
-    protected function startTest()
+    protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];

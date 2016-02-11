@@ -2,8 +2,8 @@
 
 namespace Models\Card\IIN;
 
-use Models\Base;
 use Models\Bank;
+use Models\Base;
 use Models\Card;
 use Models\Card\Network;
 use EE\Error\ErrorCode;
@@ -105,8 +105,8 @@ class Validator extends Base\Validator
 
         if(!Bank\IFSC::exists($input[Entity::ISSUER]))
         {
-          throw new Exception\BadRequestValidationFailureException(
-             'Invalid bank name in input: '. $bank);
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid bank name in input: '. $bank);
         }
     }
 }

@@ -184,6 +184,13 @@ trait Authorize
                 $this->error = true;
                 break;
 
+            case Payment\Result::NOT_CAPTURED:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00007);
+                $this->error = true;
+                break;
+
             case Payment\Result::HOST_TIMEOUT:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,

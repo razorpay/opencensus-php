@@ -197,7 +197,7 @@ class Gateway extends Base\Gateway
             // Could be the case where the transaction didn't even hit migs
             if (($payment['received'] === false) and
                 (($payment['vpc_TxnResponseCode'] === null) or
-                 ($payment['vpc_TxnResponseCode'] === '0')))
+                 ($payment['vpc_TxnResponseCode'] !== '0')))
             {
                 $verify->apiSuccess = false;
                 $verify->gatewaySuccess = false;
@@ -213,19 +213,19 @@ class Gateway extends Base\Gateway
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            if (($payment['vpc_TxnResponseCode'] === '0') and
-                ($input['payment']['status'] !== 'failed'))
+            if ($content['vpc_TxnResponseCode'] === '0')
             {
-                $verify->apiSuccess = true;
+                $verify->gatewaySuccess = true;
 
-                if ($content['vpc_TxnResponseCode'] === '0')
+                if (($payment['vpc_TxnResponseCode'] !== '0') or
+                    ($input['payment']['status'] === 'failed'))
                 {
-                    $verify->gatewaySuccess = true;
+                    $verify->apiSuccess = false;
+                    $status = VerifyResult::STATUS_MISMATCH;
                 }
                 else
                 {
-                    $verify->gatewaySuccess = false;
-                    $status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
                 }
             }
             else
@@ -238,7 +238,8 @@ class Gateway extends Base\Gateway
                 // on migs end as well.
                 //
 
-                if ($content['vpc_TxnResponseCode'] === '0')
+                if (($payment['vpc_TxnResponseCode'] === '0') or
+                    ($input['payment']['status'] !== 'failed'))
                 {
                     // It's marked as success, in this case, if it's totally refunded,
                     // then that means billdesk refunded the payment on it's own end
@@ -429,6 +430,11 @@ class Gateway extends Base\Gateway
 
     protected function getAmaTxnResponseContent($response)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_RESPONSE,
+            ['action' => 'Support action response string',
+            'content' => $response->body]);
+
         parse_str($response->body, $content);
 
         return $content;

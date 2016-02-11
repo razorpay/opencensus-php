@@ -103,7 +103,7 @@ class MerchantCreateTest extends TestCase
         $this->assertSame(array(), $content['disabled']);
     }
 
-    protected function startTest()
+    protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];

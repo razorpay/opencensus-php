@@ -5,6 +5,7 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
+use Tests\Functional\Fixtures\Entity\Iin;
 return [
     'testAddIin' => [
         'request' => [
@@ -78,12 +79,39 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 7,
+                'count' => 8,
                 'items' => [
                     [
                     ]
                 ]
             ]
+        ],
+    ],
+
+    'testImportIin' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'MasterCard',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'duplicates'  => [
+                ],
+                'db_conflicts'=> [
+                ],
+                'network_errors' => [
+                    '497522' => [
+                        8,
+                    ]
+                ],
+                'success' => 5,
+            ],
         ],
     ],
 ];

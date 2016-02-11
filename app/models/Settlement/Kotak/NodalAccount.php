@@ -138,7 +138,7 @@ class NodalAccount
 //                'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ifsc,
-                'Beneficiary_Acc_No'    => '`'.$ba->getAccountNumber(),
+                'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId());
 
@@ -152,6 +152,7 @@ class NodalAccount
             // Excel file has couple extra fields for calculating text data of that row.
             $array['Symbol'] = '~';
             $array['Text File'] = $this->getExcelTextFieldFormula($row);
+            $array['Beneficiary_Acc_No'] = "'".$array['Beneficiary_Acc_No'];
             $row++;
 
             array_push($excelData, $array);

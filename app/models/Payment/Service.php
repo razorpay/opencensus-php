@@ -75,9 +75,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function cancel($id)
+    public function cancel($id, $input)
     {
-        $this->processor()->cancel($id);
+        $this->processor()->cancel($id, $input);
 
         return ['success' => true];
     }

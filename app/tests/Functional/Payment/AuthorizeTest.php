@@ -260,7 +260,7 @@ class AuthorizeTest extends TestCase
         $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
-    public function startTest()
+    public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];

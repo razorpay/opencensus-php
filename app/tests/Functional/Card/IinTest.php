@@ -8,6 +8,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 class IinTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use IinTrait;
 
     public function setUp()
     {
@@ -26,7 +27,7 @@ class IinTest extends TestCase
     public function testEditIin()
     {
         $this->testAddIin();
-        
+
         $this->startTest();
     }
 
@@ -40,7 +41,18 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function startTest()
+    public function testImportIin()
+    {
+        $file = $this->getUploadedIinFile();
+
+        $testData = &$this->testData['testImportIin'];
+
+        $testData['request']['files']['file'] = $file;
+
+        $this->startTest();
+    }
+
+    public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];

@@ -31,4 +31,9 @@ class Repository extends Base\Repository
 
         return $repo::find($id);
     }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::MERCHANT_ID, 'desc');
+    }
 }

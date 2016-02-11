@@ -14,7 +14,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::IIN             => 'sometimes|integer|digits:6',
-        Entity::LAST4           => 'sometimes|integer|digits:4',
+        Entity::LAST4           => 'sometimes|string|digits:4',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::NETWORK         => 'sometimes|alpha_space',
         Payment\Entity::STATUS  => 'sometimes|string',

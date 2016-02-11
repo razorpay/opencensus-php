@@ -61,7 +61,7 @@ class TestCase extends ParentTestCase
         parent::tearDown();
     }
 
-    protected function startTest($testDataToReplace = array())
+    protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];

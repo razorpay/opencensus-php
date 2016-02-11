@@ -237,7 +237,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00004   => 'Gateway request timeout. Response returned but response result code is "HOST TIMEOUT"',
         Hdfc\ErrorCode::RP00005   => 'Denied by risk. Response result code is "DENIED BY RISK"',
         Hdfc\ErrorCode::RP00006   => 'Authorization not approved. Response result code is "NOT APPROVED"',
-        Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done. Response result code is "NOT CAPTURED"',
+        Hdfc\ErrorCode::RP00007   => 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"',
         Hdfc\ErrorCode::RP00008   => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
     );
@@ -310,7 +310,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00004   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         Hdfc\ErrorCode::RP00005   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         Hdfc\ErrorCode::RP00006   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
-        Hdfc\ErrorCode::RP00007   => Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        Hdfc\ErrorCode::RP00007   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
         Hdfc\ErrorCode::RP00008   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         Hdfc\ErrorCode::RP00009   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
     );
