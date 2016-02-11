@@ -588,13 +588,24 @@ class Gateway extends Base\Gateway
 
     protected function xmlToArray($xml)
     {
-        $res = simplexml_load_string($xml);
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+        }
+        catch (\Exception $e)
+        {
+            $res = false;
+        }
 
         if ($res === false)
         {
             throw new Exception\RuntimeException(
                 'Failed to convert xml to array',
-                ['xml' => $xml]);
+                ['xml' => $xml],
+                $e);
         }
 
         return (array) $res;
