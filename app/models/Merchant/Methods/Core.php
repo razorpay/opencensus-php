@@ -9,8 +9,8 @@ use Models\Bank\IFSC;
 use Models\Base;
 use Models\Payment;
 use Models\Merchant;
-use Models\Pricing;
 use Models\Merchant\Methods;
+use Models\Pricing;
 use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
 
@@ -26,6 +26,11 @@ class Core extends Base\Core
     public function setPaymentMethods($merchant, $input)
     {
         $methods = $this->repo->getMerchantMethods($merchant->getId());
+
+        if ($methods === null)
+        {
+            $methods = $this->setDefaultMethods($merchant);
+        }
 
         $methods->setMethods($input);
 
@@ -112,6 +117,8 @@ class Core extends Base\Core
         $this->setAllPaymentBanks($methods);
 
         $this->repo->saveOrFail($methods);
+
+        return $methods;
     }
 
     public function setAllPaymentBanks($methods)
