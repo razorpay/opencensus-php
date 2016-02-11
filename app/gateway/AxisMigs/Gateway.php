@@ -430,6 +430,11 @@ class Gateway extends Base\Gateway
 
     protected function getAmaTxnResponseContent($response)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_RESPONSE,
+            ['action' => 'Support action response string',
+            'content' => $response->body]);
+
         parse_str($response->body, $content);
 
         return $content;
