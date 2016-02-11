@@ -179,6 +179,8 @@ class Gateway extends Base\Gateway
             ['payment_id' => $input['payment']['id'],
              'content' => $content]);
 
+        unset($content['vpc_Command']);
+
         if ((isset($content['vpc_DRExists']) === false) and
             ($content['vpc_TxnResponseCode'] === '7'))
         {
