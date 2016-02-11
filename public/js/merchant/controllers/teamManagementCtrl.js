@@ -21,6 +21,7 @@ app.controller('TeamManagementCtrl', [
       .success(function (data) {
         if (data.success) {
           $scope.users = data.data.users;
+          console.log($scope.users);
           $scope.invitations = data.data.invitations;
         }
       })
@@ -28,6 +29,11 @@ app.controller('TeamManagementCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+
+    user.identity(true).then(function(data) {
+      $scope.merchant = data;
+    });
 
     $scope.updateTeamMember = function (user){
       var request = $http({

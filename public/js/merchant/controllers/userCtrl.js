@@ -33,7 +33,6 @@ app.controller('UserCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.loggedInUser = data.data;
-          console.debug(data.data);
         } else {
           $scope.alerts.addAlert('danger', null, true);
         }
