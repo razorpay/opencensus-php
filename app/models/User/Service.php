@@ -23,9 +23,17 @@ class Service extends Base\Service
      */
     public function register(array $input)
     {
+        $referer = false;
+
+        if (isset($input['ref']))
+        {
+            $referer = $input['ref'];
+            unset($input['ref']);
+        }
+
         $invitationToken = Input::get('invitation', null);
 
-        if($invitationToken)
+        if ($invitationToken)
         {
             User\Validator::$createRules['email'] = 'email|unique:merchants';
 
@@ -78,7 +86,7 @@ class Service extends Base\Service
             'email' => $user->email
         );
 
-        $this->slackSignupPost($data);
+        $this->slackSignupPost($data, $referer);
 
         if(isset($invitation))
         {
@@ -95,20 +103,28 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    protected function slackSignupPost($slackData)
+    protected function slackSignupPost($slackData, $referer = false)
     {
-        if($_ENV['SLACK_ENABLE'] === true)
+        if ($_ENV['SLACK_ENABLE'] === true)
         {
-            $userLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+            $config = \Config::get('razorpay.sorting_hat');
+            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
+            $message = "[New Signup]($merchantLink)";
+
+            if ($referer)
+            {
+                $message .= " | REF: $referer";
+            }
 
             $postData = [
                 'email'         => $slackData['email'],
                 'name'          => $slackData['name'],
                 // This is in slack formatting
-                'message'       => "[New Signup]($userLink)"
+                'message'       => $message,
+                'token'         => $config['token']
             ];
 
-            Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
+            Requests::post($config['url'], [], $postData);
         }
     }
 
