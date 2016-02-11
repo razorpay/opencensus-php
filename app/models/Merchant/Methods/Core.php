@@ -25,12 +25,7 @@ class Core extends Base\Core
 
     public function setPaymentMethods($merchant, $input)
     {
-        $methods = $this->repo->getMerchantMethods($merchant->getId());
-
-        if ($methods === null)
-        {
-            $methods = $this->setDefaultMethods($merchant);
-        }
+        $methods = $this->getPaymentMethods($merchant);
 
         $methods->setMethods($input);
 
@@ -69,7 +64,7 @@ class Core extends Base\Core
 
     public function getMethods($merchant)
     {
-        $methods = $this->repo->getMerchantMethods($merchant->getId());
+        $methods = $this->getPaymentMethods($merchant);
 
         $supportedBanks = Netbanking::getSupportedBanks($this->mode);
 
@@ -85,22 +80,16 @@ class Core extends Base\Core
         return $this->getEnabledDisabledBanks($banks);
     }
 
-    public function getBankNames($banks)
+    protected function getPaymentMethods($merchant)
     {
-        return \Models\Bank\Name::getNames($banks);
-    }
+        $methods = $this->repo->getMerchantMethods($merchant->getId());
 
-    public function setPaymentBanksForMerchant($merchant, $input)
-    {
-        $banks = $this->repo->getMerchantMethods($merchant->getId());
-
-        if ($banks === null)
+        if ($methods === null)
         {
-            $banks = new Methods\Entity;
-            $banks->merchant()->associate($merchant);
+            $methods = $this->setDefaultMethods($merchant);
         }
 
-        return $this->setPaymentBanks($banks, $input);
+        return $methods;
     }
 
     public function setDefaultMethods($merchant)
@@ -130,6 +119,19 @@ class Core extends Base\Core
         $this->setPaymentBanks($methods, $input);
     }
 
+    public function setPaymentBanksForMerchant($merchant, $input)
+    {
+        $banks = $this->repo->getMerchantMethods($merchant->getId());
+
+        if ($banks === null)
+        {
+            $banks = new Methods\Entity;
+            $banks->merchant()->associate($merchant);
+        }
+
+        return $this->setPaymentBanks($banks, $input);
+    }
+
     protected function setPaymentBanks($methods, $input)
     {
         (new Validator)->validateInput('addBanks', $input);
@@ -156,5 +158,10 @@ class Core extends Base\Core
             'disabled' => $this->getBankNames($disabled));
 
         return $data;
+    }
+
+    public function getBankNames($banks)
+    {
+        return \Models\Bank\Name::getNames($banks);
     }
 }
