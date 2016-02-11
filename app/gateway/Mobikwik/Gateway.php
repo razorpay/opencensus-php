@@ -602,6 +602,10 @@ class Gateway extends Base\Gateway
 
         if ($res === false)
         {
+            $this->trace->error(
+                TraceCode::GATEWAY_REFUND_ERROR,
+                ['xml' => $xml]);
+
             throw new Exception\RuntimeException(
                 'Failed to convert xml to array',
                 ['xml' => $xml],
