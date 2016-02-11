@@ -191,6 +191,8 @@ class Gateway extends Base\Gateway
         $content = http_build_query($content);
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
