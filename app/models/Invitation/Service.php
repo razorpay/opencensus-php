@@ -41,13 +41,23 @@ class Service extends Base\Service
             $data = $merchant->toArray();
         }
 
-        if ($merchant->hasInvitiationForEmail($input['email']))
+        // This is a double check because going ahead once we have roles
+        // Users can invite others as well, meaning user->email check would
+        // become important.
+        if ($merchant->email === $input['email'] or $user->email === $input['email'])
+        {
+            $errors[] = "You can't invite yourself";
+        }
+        else if ($merchant->hasInvitiationForEmail($input['email']))
         {
             $errors[] = 'An invitation has already been sent to the user.';
         }
 
-        $invitation = $merchant->inviteUserByEmailWithRole(
-                                    $input['email'], $input['role']);
+        if (empty($errors))
+        {
+            $invitation = $merchant->inviteUserByEmailWithRole(
+                $input['email'], $input['role']);
+        }
 
         return [$errors, $data];
     }
