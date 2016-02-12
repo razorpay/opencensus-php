@@ -161,15 +161,13 @@ class Service extends Base\Service
             {
                 $user = Auth::user()->get();
 
-                $merchant = $user->currentMerchant;
-
                 if ($user->confirm_token === null)
                 {
-                    return [['Merchant already confirmed. You can login ' .
+                    return [['User already confirmed. You can login ' .
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
-                (new UserMailer($merchant))->accountVerification()->queueAndDeliver();
+                (new UserMailer($user))->accountVerification()->queueAndDeliver();
 
                 return array(array(),array());
             }
