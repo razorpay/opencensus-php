@@ -15,6 +15,10 @@ app.controller('TeamManagementCtrl', [
       role: $scope.roles[1]
     };
 
+    user.identity(true).then(function(data) {
+      $scope.merchant = data;
+    });
+
     $scope.getTeamMembers = function(){
       var request = $http.get('/settings/merchants/owned');
       request

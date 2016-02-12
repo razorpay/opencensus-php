@@ -2,8 +2,9 @@ Hi!
 
 <br><br>
 
-{{ $invitation->merchant->primaryOwner()->first()->name }} has invited you to join their team with the role as {{ ucfirst($invitation->role) }}! If you do not already have an account,
-you may click the following link to get started:
+{{ $invitation->merchant->primaryOwner()->name }} has invited you to join their team ({{$invitation->merchant->name}}).
+
+If you do not already have an account, you may click the following link to get started:
 
 <br><br>
 
