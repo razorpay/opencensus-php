@@ -29,7 +29,7 @@ class AddEmiToPaymentAggregations extends Migration {
     {
         Schema::table('payment_aggregations', function($table)
         {
-            $table->dropColumn('WALLET');
+            $table->dropColumn('EMI');
         });
     }
 
