@@ -28,8 +28,9 @@
         Team Members
       </div>
       <div class="row wrapper">
-        <div class="row" ng-repeat="user in users">
-          <div class="m-b col-sm-5">{{ user.email }}</div>
+        <div class="row" ng-repeat="user in users" ng-show="user.email !== merchant.email">
+          <div class="m-b col-sm-3">{{ user.email }}</div>
+          <div class="m-b col-sm-3">{{ user.name }}</div>
           <!-- <div class="m-b col-sm-3"><select ng-model="user.pivot.role" ng-options="role | titlecase for role in roles" class="form-control" required></select></div> -->
           <div class="m-b col-sm-4">
             <!-- <button class="btn btn-sm btn-success" ng-click="updateTeamMember(user)">Update</button> -->
