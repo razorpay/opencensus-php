@@ -120,7 +120,7 @@ is now active. The pricing details associated with your account are:
   @foreach ($rules as $pricing => $methodDisplay)
     <li style="text-align:left;" align="left">{{implode(' ,', $methodDisplay)}} - {{$pricing}}</li>
   @endforeach
-  @if ($merchant['international'])
+  @if ($merchant['international'] === true)
   <li style="text-align:left;" align="left">3% on International Transactions</li>
   @endif
 </ul>
