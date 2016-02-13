@@ -298,6 +298,16 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
+        if ($response->status_code !== 200)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                '',
+                'Wrong status code: ' . $response->status_code);
+        }
+
+        $content = $response->body;
+
         $content = $this->getContentAfterChecksumVerification($response->body);
 
         return $content;
