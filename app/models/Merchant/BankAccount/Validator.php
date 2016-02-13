@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $addBankAccountRules = array(
         'ifsc_code'             => 'required|alpha_num|size:11',
-        'account_number'        => 'required|between:5,20',
+        'account_number'        => 'required|alpha_num|between:5,20',
         'beneficiary_name'      => 'required|min:4|max:40|alpha_space_num',
         'beneficiary_address1'  => 'required|max:30',
         'beneficiary_address2'  => 'sometimes|max:30',
