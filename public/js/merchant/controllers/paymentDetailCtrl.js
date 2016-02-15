@@ -151,12 +151,9 @@ app.controller('PaymentDetailCtrl', [
     // This is stored in INR
     $scope.amount = (amount/100).toFixed(2);
 
-    $scope.getAmountInPaise = function() {
-      return parseFloat($scope.amount)*100;
-    }
-    $scope.ok = function () {
-      var paise = $scope.getAmountInPaise();
-      $modalInstance.close(paise);
+    // We get amount in INR
+    $scope.ok = function (amount) {
+      $modalInstance.close(amount*100);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
