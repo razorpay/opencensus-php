@@ -232,11 +232,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::COUNTRY);
     }
-
-    public function getInternationalAttribute()
-    {
-        $country = $this->getCountry();
-
-        return ($country !== 'IN');
-    }
 }
