@@ -216,18 +216,18 @@ trait Authorize
 
     protected function setBankAndEmiPlanDetails(& $payment, $input)
     {
-        //set the bank
+        // Set the bank
         $iin = substr($input['card']['number'], 0, 6);
 
         $iinEntity = (new IIN\Repository)->findOrFail($iin);
 
         $payment->setBank($iinEntity->getIssuer());
 
-        //set emi plan id
-        $emiPlan = (new Emi\Repository)->fetchByBankAndDuration($iinEntity->getIssuer(), $input['emi_duration']);
+        // Set emi plan id
+        $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
+                        $iinEntity->getIssuer(), $input['emi_duration']);
 
         $payment->setEmiPlanId($emiPlan->getId());
-
     }
 
     protected function getReturnRequestDataForMerchant($payment)
