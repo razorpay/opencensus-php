@@ -58,7 +58,7 @@ trait Authorize
     {
         $this->setPayment($payment);
 
-        if ($payment->isFailed() === false)
+        if ($payment->isStatusCreatedOrFailed() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Non failed payment given for authorization where failed payment is needed');

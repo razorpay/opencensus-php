@@ -134,7 +134,8 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = true;
 
             if (($payment['AuthStatus'] !== AuthStatus::SUCCESS) or
-                ($input['payment']['status'] === 'failed'))
+                ($input['payment']['status'] === 'failed') or
+                ($input['payment']['status'] === 'created'))
             {
                 $verify->apiSuccess = false;
                 $status = VerifyResult::STATUS_MISMATCH;

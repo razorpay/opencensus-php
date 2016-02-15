@@ -438,9 +438,20 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::FAILED);
     }
 
+    public function isCreated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CREATED);
+    }
+
     protected function isStatus($status)
     {
         return ($this->getAttribute(self::STATUS) === $status);
+    }
+
+    public function isStatusCreatedOrFailed()
+    {
+        return (($this->isFailed()) or
+                ($this->isCreated()));
     }
 
     public function hasBeenCaptured()

@@ -317,14 +317,14 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if($this->isTransactionSuccess($txnStatus))
+        if ($this->isTransactionSuccess($txnStatus))
         {
             $verify->gatewaySuccess = true;
         }
 
         $paymentEntity = (new \Models\Payment\Core)->retirevePaymentById($payment['payment_id']);
 
-        if($paymentEntity['status'] === "failed")
+        if ($paymentEntity['status'] === "failed")
         {
             $verify->apiSuccess = false;
         }
