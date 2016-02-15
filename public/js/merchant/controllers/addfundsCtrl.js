@@ -63,17 +63,31 @@ app.controller('AddfundsCtrl', [
         $scope.options.prefill.email = data.email;
       });
     }
+
     function fetchHost() {
-      if (window.location.hostname == 'betadashboard.razorpay.com') {
-        uiLoad.loadScript('https://betacheckout.razorpay.com/v1/checkout.js');
-      } else {
-        uiLoad.loadScript('https://checkout.razorpay.com/v1/checkout.js');
-      }
       $http.get('/apihost').success(function (data) {
-        var host = data.data.split('/');
-        $scope.options.protocol = host[0].substring(0, host[0].length - 1);
-        $scope.options.hostname = host[2];
+        // data.data contains the API_URL environment variable
+        loadCheckout(data.data);
       });
+    }
+
+    function loadCheckout(apiURL)
+    {
+      var api = document.createElement('a');
+      api.href = apiURL;
+
+      // This needs to be global
+      window.Razorpay = {
+        config: {
+          protocol: api.protocol.slice(0,-1),
+          hostname: api.hostname,
+          // Remove the starting slash, but keep the trailing one
+          version: api.pathname.slice(1)
+        }
+      }
+
+      var checkoutURL = 'https://checkout.razorpay.com/v1/checkout.js';
+      uiLoad.loadScript(checkoutURL);
     }
     function fetchKey() {
       var request = $http.get('/' + $scope.mode + '/keys');
