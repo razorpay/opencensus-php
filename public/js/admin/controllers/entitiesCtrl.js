@@ -8,7 +8,7 @@ app.controller('EntitiesCtrl', [
   '$stateParams',
   'admin',
   function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
-    $scope.entity_type = $stateParams.type;
+    $scope.entity_type = $stateParams.type || 'payment';
     $scope.mode = $stateParams.mode;
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();

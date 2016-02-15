@@ -21,7 +21,7 @@
       <div class="col-sm-2 m-b-xs">
         Entity Type:
         <select class="form-control input-sm w-sm inline " name="entity_type" ng-model="entity_type">
-          <option ng-repeat="(entity, display) in getEntityListForUI()" value="{{entity}}">
+          <option ng-repeat="(entity, display) in getEntityListForUI()" value="{{entity}}" ng-selected="entity_type==entity">
             {{display | titlecase}}
           </option>
         </select>
