@@ -134,7 +134,8 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = true;
 
             if (($payment['AuthStatus'] !== AuthStatus::SUCCESS) or
-                ($input['payment']['status'] === 'failed'))
+                ($input['payment']['status'] === 'failed') or
+                ($input['payment']['status'] === 'created'))
             {
                 $verify->apiSuccess = false;
                 $status = VerifyResult::STATUS_MISMATCH;
@@ -297,6 +298,16 @@ class Gateway extends Base\Gateway
         }
 
         $this->response = $response;
+
+        if ($response->status_code !== 200)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                '',
+                'Wrong status code: ' . $response->status_code);
+        }
+
+        $content = $response->body;
 
         $content = $this->getContentAfterChecksumVerification($response->body);
 

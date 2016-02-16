@@ -179,6 +179,8 @@ class Gateway extends Base\Gateway
             ['payment_id' => $input['payment']['id'],
              'content' => $content]);
 
+        unset($content['vpc_Command']);
+
         if ((isset($content['vpc_DRExists']) === false) and
             ($content['vpc_TxnResponseCode'] === '7'))
         {
@@ -216,7 +218,8 @@ class Gateway extends Base\Gateway
                 $verify->gatewaySuccess = true;
 
                 if (($payment['vpc_TxnResponseCode'] !== '0') or
-                    ($input['payment']['status'] === 'failed'))
+                    ($input['payment']['status'] === 'failed') or
+                    ($input['payment']['status'] === 'created'))
                 {
                     $verify->apiSuccess = false;
                     $status = VerifyResult::STATUS_MISMATCH;
@@ -428,6 +431,11 @@ class Gateway extends Base\Gateway
 
     protected function getAmaTxnResponseContent($response)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_RESPONSE,
+            ['action' => 'Support action response string',
+            'content' => $response->body]);
+
         parse_str($response->body, $content);
 
         return $content;

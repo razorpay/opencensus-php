@@ -15,12 +15,13 @@ class Repository extends Base\Repository
     protected $entity = 'Methods';
 
     protected $appFetchParamRules = array(
-        Entity::CARD        => 'sometimes|in:0,1',    
-        Entity::AMEX        => 'sometimes|in:0,1',    
-        Entity::BANKS       => 'sometimes|in:0,1',    
-        Entity::PAYTM       => 'sometimes|in:0,1',    
-        Entity::MOBIKWIK    => 'sometimes|in:0,1',        
-        Entity::PAYZAPP     => 'sometimes|in:0,1',    
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+        Entity::CARD        => 'sometimes|in:0,1',
+        Entity::AMEX        => 'sometimes|in:0,1',
+        Entity::BANKS       => 'sometimes|in:0,1',
+        Entity::PAYTM       => 'sometimes|in:0,1',
+        Entity::MOBIKWIK    => 'sometimes|in:0,1',
+        Entity::PAYZAPP     => 'sometimes|in:0,1',
         Entity::EMI         => 'sometimes|in:0,1',
     );
 

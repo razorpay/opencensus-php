@@ -191,6 +191,8 @@ class Gateway extends Base\Gateway
         $content = http_build_query($content);
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
@@ -588,13 +590,28 @@ class Gateway extends Base\Gateway
 
     protected function xmlToArray($xml)
     {
-        $res = simplexml_load_string($xml);
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+        }
+        catch (\Exception $e)
+        {
+            $res = false;
+        }
 
         if ($res === false)
         {
+            $this->trace->error(
+                TraceCode::GATEWAY_REFUND_ERROR,
+                ['xml' => $xml]);
+
             throw new Exception\RuntimeException(
                 'Failed to convert xml to array',
-                ['xml' => $xml]);
+                ['xml' => $xml],
+                $e);
         }
 
         return (array) $res;

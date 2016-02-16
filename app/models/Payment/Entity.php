@@ -443,6 +443,12 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === $status);
     }
 
+    public function isStatusCreatedOrFailed()
+    {
+        return (($this->isFailed()) or
+                ($this->isCreated()));
+    }
+
     public function hasBeenCaptured()
     {
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
