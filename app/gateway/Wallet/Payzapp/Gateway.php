@@ -197,7 +197,7 @@ class Gateway extends Base\Gateway
 
         $responseContent =  '';
 
-        $response = $this->postRequest($content);
+        $response = $this->postRequest($content)['content'];
 
         parse_str($response, $responseContent);
 
@@ -270,7 +270,7 @@ class Gateway extends Base\Gateway
 
     protected function makePickUpDataRequest($content)
     {
-        return $this->postRequest($content, 'pickup_data');
+        return $this->postRequest($content, 'pickup_data')['content'];
     }
 
     protected function performProcessForTxn()
@@ -330,8 +330,7 @@ class Gateway extends Base\Gateway
         }
 
         // If both don't match we have a status mis match
-        if (($verify->gatewaySuccess and !$verify->apiSuccess) or
-             (!$verify->gatewaySuccess and $verify->apiSuccess))
+        if (!($verify->gatewaySuccess === $verify->apiSuccess))
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -389,12 +388,12 @@ class Gateway extends Base\Gateway
 
     protected function getResponseDescription($txnStatus)
     {
-        //In test api Payzapp returns pg_error_detail
+        // In test api Payzapp returns pg_error_detail
         if (isset($txnStatus['pg_error_detail']))
         {
             return $txnStatus['pg_error_detail'];
         }
-        //In beta api Payzapp returns pg_error_msg
+        // In beta api Payzapp returns pg_error_msg
         else if (isset($txnStatus['pg_error_msg']))
         {
             return $txnStatus['pg_error_msg'];
@@ -443,7 +442,9 @@ class Gateway extends Base\Gateway
 
             $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
 
-            $content = $this->postRequest($content);
+            $requestResponse = $this->postRequest($content);
+
+            $content = $requestResponse['content'];
 
             $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
@@ -451,9 +452,8 @@ class Gateway extends Base\Gateway
             $txnStatusResults[$txnType] = [
                 'status'    => $txnStatus,
                 'content'   => $content,
-                'response'  => $this->response,
+                'response'  => $requestResponse['response'],
             ];
-
 
             if (($txnType === 'SALE') or
                 ($this->isTransactionSuccess($txnStatus)))
@@ -462,7 +462,7 @@ class Gateway extends Base\Gateway
 
                 $verify->transactionType = $txnType ;
 
-                $response = $this->response;
+                $response = $requestResponse['response'];
 
                 $latestTransactionType = $txnTypeCode;
             }
@@ -501,9 +501,7 @@ class Gateway extends Base\Gateway
 
             $response = $this->runRequestResponseFlow($request);
 
-            $this->response = $response;
             $content = $response->body;
-
         }
         else
         {
@@ -526,7 +524,8 @@ class Gateway extends Base\Gateway
             $content = json_decode($response->body, true);
         }
 
-        return $content;
+        return [ 'response' => $response,
+                 'content'   => $content ];
     }
 
     protected function setDomainType()
@@ -617,7 +616,7 @@ class Gateway extends Base\Gateway
         $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
 
         if (($forceRefund  === false) and
-            ($paymentCreatedDate->isSameDay($now))
+            ($paymentCreatedDate->isSameDay($now)))
         {
             $this->perform = 'void';
         }
@@ -747,7 +746,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfArray($content)
     {
-        $str = $this->getStringToHash($content, "|");
+        $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
     }
