@@ -1,9 +1,18 @@
 <!doctype html>
 <html lang="en">
     <script>
-        if (typeof(CheckoutBridge) !== 'undefined' && typeof(CheckoutBridge.setPaymentID) === 'function') {
-            CheckoutBridge.setPaymentID("{{$data['payment_id']}}");
-        }
+
+        try{
+
+            var payment_id = "{{$data['payment_id']}}";
+            if (typeof(CheckoutBridge) !== 'undefined' && typeof(CheckoutBridge.setPaymentID) === 'function') {
+                CheckoutBridge.setPaymentID(payment_id);
+            }
+            else if(window.opener){
+                opener.setPaymentID(payment_id);
+            }
+
+        } catch(e){}
 
         function sub() {
             document.form1.submit();

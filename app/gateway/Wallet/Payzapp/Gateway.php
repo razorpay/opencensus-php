@@ -175,8 +175,7 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
-        $wallet = $this->getRepo()->
-                    fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 
@@ -196,9 +195,9 @@ class Gateway extends Base\Gateway
 
         $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
 
-        $responseContent =  "";
+        $responseContent =  '';
 
-        $response = $this->postRequest($content);
+        $response = $this->postRequest($content)['content'];
 
         parse_str($response, $responseContent);
 
@@ -271,7 +270,7 @@ class Gateway extends Base\Gateway
 
     protected function makePickUpDataRequest($content)
     {
-        return $this->postRequest($content, 'pickup_data');
+        return $this->postRequest($content, 'pickup_data')['content'];
     }
 
     protected function performProcessForTxn()
@@ -309,28 +308,29 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        $verifiedAction = $this->getActionFromTransactionType($verify->transactionType);
-
         $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
         $verify->apiSuccess = true;
 
         $verify->gatewaySuccess = false;
 
-        if($this->isTransactionSuccess($txnStatus))
+        if ($this->isTransactionSuccess($txnStatus))
         {
             $verify->gatewaySuccess = true;
         }
 
-        $paymentEntity = (new \Models\Payment\Core)->retirevePaymentById($payment['payment_id']);
+        $input = $verify->input;
 
-        if($paymentEntity['status'] === "failed")
+        // If payment status is either failed or created,
+        // this is an apiFailure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
         {
             $verify->apiSuccess = false;
         }
 
         // If both don't match we have a status mis match
-        if (!($verify->gatewaySuccess and $verify->apiSuccess))
+        if (!($verify->gatewaySuccess === $verify->apiSuccess))
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -346,6 +346,7 @@ class Gateway extends Base\Gateway
             'error_message'         =>      $responseDescription,
         );
 
+        // If the wallet entity does not have an acosa transaction id, fill it.
         if (!isset($payment['gateway_payment_id_2']))
         {
             $gateway_payment_id_2 =
@@ -358,25 +359,16 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $postVerifyAttributes;
 
-        $attributes = array(
-            'action'            => $verifiedAction,
-            'verified'          => true,
-        );
-
-        $paymentEntity->fill($attributes);
-
-        $paymentEntity->saveOrFail();
-
         return $status;
     }
 
     protected function getTransactionStatusForVerifyFromContent($content)
     {
-        $txnResultStrings = explode("transaction_id=", $content);
+        $txnResultStrings = explode('transaction_id=', $content);
 
         $originalTxnIdRecord = $txnResultStrings[1];
 
-        $originalTxnIdRecord = "transaction_id=".$originalTxnIdRecord;
+        $originalTxnIdRecord = 'transaction_id='.$originalTxnIdRecord;
 
         parse_str($originalTxnIdRecord, $txnStatus);
 
@@ -396,32 +388,26 @@ class Gateway extends Base\Gateway
 
     protected function getResponseDescription($txnStatus)
     {
-        //In test api Payzapp returns pg_error_detail
-        if(isset($txnStatus['pg_error_detail']))
+        // In test api Payzapp returns pg_error_detail
+        if (isset($txnStatus['pg_error_detail']))
         {
             return $txnStatus['pg_error_detail'];
         }
-        //In beta api Payzapp returns pg_error_msg
-        else if(isset($txnStatus['pg_error_msg']))
+        // In beta api Payzapp returns pg_error_msg
+        else if (isset($txnStatus['pg_error_msg']))
         {
             return $txnStatus['pg_error_msg'];
         }
         // Because Payzapp
         else
         {
-            return "";
+            return '';
         }
     }
 
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
-
-        $payment = $verify->payment;
-
-        $walletEntity = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
-
-        $verify->wallet = $walletEntity;
 
         $this->perform  = 'verify';
 
@@ -432,11 +418,14 @@ class Gateway extends Base\Gateway
         $response = '';
 
         $txnStatusResults = [];
-        //Don't Check for settle during Verify
+
         $verifyStates = TransactionType::$codes;
 
+        // Don't Check for settle during Verify
         unset($verifyStates['SETTLE']);
 
+        // Since payzapp does not provide state of the payment with payment result api,
+        // We will have to check for status of all possible states
         foreach ($verifyStates as $txnType => $txnTypeCode)
         {
             $content =  array(
@@ -453,7 +442,9 @@ class Gateway extends Base\Gateway
 
             $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
 
-            $content = $this->postRequest($content);
+            $requestResponse = $this->postRequest($content);
+
+            $content = $requestResponse['content'];
 
             $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
@@ -461,19 +452,19 @@ class Gateway extends Base\Gateway
             $txnStatusResults[$txnType] = [
                 'status'    => $txnStatus,
                 'content'   => $content,
-                'response'  => $this->response,
+                'response'  => $requestResponse['response'],
             ];
 
-
-            if(($txnType === 'SALE') or $this->isTransactionSuccess($txnStatus))
+            if (($txnType === 'SALE') or
+                ($this->isTransactionSuccess($txnStatus)))
             {
                 $responseContent = $content;
 
                 $verify->transactionType = $txnType ;
 
-                $response = $this->response;
+                $response = $requestResponse['response'];
 
-                $latestTransactionType   = $txnTypeCode;
+                $latestTransactionType = $txnTypeCode;
             }
         }
 
@@ -491,7 +482,8 @@ class Gateway extends Base\Gateway
 
     protected function isTransactionSuccess($txnStatus)
     {
-        return ((!empty($txnStatus['status'])) and (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
+        return ((empty($txnStatus['status']) === false) and
+                (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success'));
     }
 
     protected function postRequest($content, $type = null)
@@ -509,9 +501,7 @@ class Gateway extends Base\Gateway
 
             $response = $this->runRequestResponseFlow($request);
 
-            $this->response = $response;
             $content = $response->body;
-
         }
         else
         {
@@ -524,7 +514,7 @@ class Gateway extends Base\Gateway
 
             $options = [];
 
-            if($this->mode === Mode::LIVE)
+            if ($this->mode === Mode::LIVE)
             {
                 $options = array('proxy'   => true);
             }
@@ -532,10 +522,10 @@ class Gateway extends Base\Gateway
             $response = $this->runRequestResponseFlow($request, $options);
 
             $content = json_decode($response->body, true);
-
         }
 
-        return $content;
+        return [ 'response' => $response,
+                 'content'   => $content ];
     }
 
     protected function setDomainType()
@@ -550,7 +540,7 @@ class Gateway extends Base\Gateway
     {
         $secret = parent::getTestSecret();
 
-        if($this->domainType !== null)
+        if ($this->domainType !== null)
         {
             return $this->config['test_pg_hash_key'];
         }
@@ -562,7 +552,7 @@ class Gateway extends Base\Gateway
     {
         $secret = parent::getLiveSecret();
 
-        if($this->domainType !== null)
+        if ($this->domainType !== null)
         {
             return $this->input['terminal']['gateway_terminal_password'];
         }
@@ -625,7 +615,8 @@ class Gateway extends Base\Gateway
         $now                = Carbon::now('Asia/Kolkata');
         $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
 
-        if (!$forceRefund && $paymentCreatedDate->isSameDay($now))
+        if (($forceRefund  === false) and
+            ($paymentCreatedDate->isSameDay($now)))
         {
             $this->perform = 'void';
         }
@@ -755,7 +746,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfArray($content)
     {
-        $str = $this->getStringToHash($content, "|");
+        $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
     }

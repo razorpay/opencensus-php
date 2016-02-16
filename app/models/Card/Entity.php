@@ -227,4 +227,9 @@ class Entity extends Base\PublicEntity
     {
         return 'XXXX-XXXX-XXXX-'.$this->getLast4();
     }
+
+    public function getCountry()
+    {
+        return $this->getAttribute(self::COUNTRY);
+    }
 }

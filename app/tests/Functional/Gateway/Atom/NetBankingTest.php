@@ -55,19 +55,6 @@ class NetbankingTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
-    public function testNBPaymentFailureAtBank()
-    {
-        $this->markTestIncomplete();
-        $this->ba->publicAuth();
-
-        $content = $this->startTest();
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertTestResponse($payment, 'testNBPaymentFailureAtBankEntity');
-
-        $this->assertEquals('atom', $payment['gateway']);
-    }
-
     public function testAtomCardPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');

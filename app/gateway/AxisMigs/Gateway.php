@@ -218,7 +218,8 @@ class Gateway extends Base\Gateway
                 $verify->gatewaySuccess = true;
 
                 if (($payment['vpc_TxnResponseCode'] !== '0') or
-                    ($input['payment']['status'] === 'failed'))
+                    ($input['payment']['status'] === 'failed') or
+                    ($input['payment']['status'] === 'created'))
                 {
                     $verify->apiSuccess = false;
                     $status = VerifyResult::STATUS_MISMATCH;

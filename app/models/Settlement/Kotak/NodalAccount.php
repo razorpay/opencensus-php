@@ -114,7 +114,10 @@ class NodalAccount
 
             $ifsc = $ba->getIfscCode();
 
-            if (substr($ifsc, 0, 4) === 'KKBK')
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            if (($ifscFirstFour === 'KKBK') or
+                ($ifscFirstFour === 'VYSA'))
             {
                 $type = 'IFT';
                 $iftAmount += $amount;

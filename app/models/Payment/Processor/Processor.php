@@ -196,7 +196,7 @@ class Processor
      * Cancels a previously created payment
      *
      * @param  string   $id      Id of payment to be captured
-     * @param  array    $input   
+     * @param  array    $input
      *
      * @return Payment\Entity   Payment\Entity object
      */

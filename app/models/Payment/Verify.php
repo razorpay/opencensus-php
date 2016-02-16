@@ -72,6 +72,8 @@ class Verify
         $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
         $time = time();
 
+        $timeDiff = 0;
+
         foreach ($payments as $payment)
         {
             $merchant = $payment->merchant;
@@ -88,6 +90,8 @@ class Verify
 
                 // Attempt to authorize payments whose verification failed
                 $this->processor($merchant)->authorizeFailedPayment($payment);
+
+                $timeDiff += $time - $payment->getCreatedAt();
 
                 $authorized++;
 
@@ -120,15 +124,23 @@ class Verify
             }
         }
 
-        $time = time() - $time;
+        $totalTime = time() - $time;
+
+        $avgTimeDiff = 0;
+
+        if ($authorized !== 0)
+        {
+            $avgTimeDiff = $timeDiff / $authorized;
+        }
 
         $results = array(
-            'verified'      => $verified,
-            'failed'        => $failed,
-            'authorized'    => $authorized,
-            'timed out'     => $timedOut,
-            'error'         => $error,
-            'total time'    => $time . ' secs');
+            'verified'          => $verified,
+            'failed'            => $failed,
+            'authorized'        => $authorized,
+            'timed out'         => $timedOut,
+            'error'             => $error,
+            'authorizedTime'    => $avgTimeDiff,
+            'totalTime'         => $totalTime . ' secs');
 
         $message = 'Payment verify result';
 

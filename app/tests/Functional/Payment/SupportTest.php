@@ -82,7 +82,8 @@ class SupportTest extends TestCase
                 'authorized'    => 0,
                 'timed out'     => 0,
                 'error'         => 0,
-                'total time'    => '0 secs',
+                'authorizedTime'=> 0,
+                'totalTime'     => '0 secs',
             ],
             $content);
     }

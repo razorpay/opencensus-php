@@ -7,7 +7,7 @@ The pricing details associated with your account are:
 @foreach ($rules as $pricing => $methodDisplay)
 - {{implode(',', $methodDisplay)}} - {{$pricing}}
 @endforeach
-@if ($merchant['international'])
+@if ($merchant['international'] === true)
 - 3% on International Transactions
 @endif
 - Service Taxes Extra (14.5%)
