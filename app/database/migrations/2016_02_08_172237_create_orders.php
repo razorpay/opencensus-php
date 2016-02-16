@@ -60,6 +60,7 @@ class CreateOrders extends Migration {
 
             // $table->integer(Order::VALID_TILL);
 
+            $table->index(Order::CREATED_AT);
             $table->index(Order::STATUS);
             $table->index(Order::RECEIPT);
 
