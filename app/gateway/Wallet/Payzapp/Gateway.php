@@ -98,35 +98,22 @@ class Gateway extends Base\Gateway
         assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['gateway']['merTxnId'], Action::AUTHORIZE);
+                    $input['gateway']['merTxnId'], Action::AUTHORIZE);
 
         $mappedPayment = $this->getReverseMappedAttributes($payment->toArray());
 
         $this->verifySecureHash($input, $mappedPayment);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
-
         $attrs['received'] = true;
 
-        $pickupDataContent = array(
-            'wibmoTxnId'        =>      $input['gateway']['wibmoTxnId'],
-            'dataPickupCode'    =>      $input['gateway']['dataPickUpCode'],
-            'merTxnId'          =>      $input['gateway']['merTxnId'],
-            'merchantInfo'      =>      array(
-                'merId'                 => $input['terminal']['gateway_merchant_id'],
-                'merAppId'              => $input['terminal']['gateway_terminal_id'],
-                'merCountryCode'        => 'IN',
-            )
-        );
-
-        $serverData = $this->pickupData($pickupDataContent);
+        $serverData = $this->pickupData($input);
 
         $this->verifyPaymentCallbackResponse($serverData);
 
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];
 
         $payment->fill($attrs);
-
         $payment->saveOrFail();
 
         $this->trace->info(
@@ -175,6 +162,70 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
+        $content = $this->getRefundRequestContent($input);
+
+        $response = $this->postRequest($content)['content'];
+
+        $content =  [];
+
+        parse_str($response, $content);
+
+        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse(
+                                    $input, $content);
+
+        $refund = $this->createGatewayRefundEntity($refundAttributes);
+
+        if (ResponseCode::$statusCodes[$content['status']] !== 'Success')
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [$content, $content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        }
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $this->setDomainType();
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+    }
+
+    protected function pickupData($input)
+    {
+        $content = array(
+            'wibmoTxnId'        =>      $input['gateway']['wibmoTxnId'],
+            'dataPickupCode'    =>      $input['gateway']['dataPickUpCode'],
+            'merTxnId'          =>      $input['gateway']['merTxnId'],
+            'merchantInfo'      =>      array(
+                'merId'                 => $input['terminal']['gateway_merchant_id'],
+                'merAppId'              => $input['terminal']['gateway_terminal_id'],
+                'merCountryCode'        => 'IN',
+            )
+        );
+
+        $this->addMerchantDetailsInTest($content);
+
+        $content['msgHash'] = $this->getHashForDataPickupRequest($content);
+
+        $content = $this->makePickUpDataRequest($content);
+
+        return $content;
+    }
+
+    protected function getRefundRequestContent($input)
+    {
         $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
@@ -195,88 +246,12 @@ class Gateway extends Base\Gateway
 
         $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
 
-        $responseContent =  '';
-
-        $response = $this->postRequest($content)['content'];
-
-        parse_str($response, $responseContent);
-
-        $refundAttributes = array(
-            'payment_id'            =>    $input['payment']['id'],
-            'action'                =>    $this->action,
-            'amount'                =>    $input['payment']['amount'],
-            'wallet'                =>    $input['payment']['wallet'],
-            'email'                 =>    $input['payment']['email'],
-            'received'              =>    0,
-            'contact'               =>    $input['payment']['contact'],
-            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
-            'refund_id'             =>    $input['refund']['id'],
-            'response_code'         =>    $responseContent['pg_error_code'],
-            'response_description'  =>    $responseContent['pg_error_detail'],
-            'status_code'           =>    $responseContent['status'],
-            'error_message'         =>    $responseContent['pg_error_detail'],
-        );
-
-        if (isset($responseContent['new_transaction_id']))
-        {
-            $refundAttributes['gateway_payment_id_2'] =  $responseContent['new_transaction_id'];
-            $refundAttributes['gateway_refund_id']    =  $responseContent['new_transaction_id'];
-        }
-
-        $refund = $this->createGatewayRefundEntity($refundAttributes);
-
-        if (ResponseCode::$statusCodes[$responseContent['status']] !== 'Success')
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content, $responseContent]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
-        }
-    }
-
-    protected function createRefundEntityWithPaymentDetails($input)
-    {
-
-    }
-
-    public function verify(array $input)
-    {
-        parent::verify($input);
-
-        $this->setDomainType();
-
-        $verify = new Verify($this->gateway, $input);
-
-        return $this->runPaymentVerifyFlow($verify);
-    }
-
-    public function capture(array $input)
-    {
-        parent::capture($input);
-    }
-
-    protected function pickupData($content)
-    {
-        $this->addMerchantDetailsInTest($content);
-
-        $content['msgHash'] = $this->getHashForDataPickupRequest($content);
-
-        $content = $this->makePickUpDataRequest($content);
-
         return $content;
     }
 
     protected function makePickUpDataRequest($content)
     {
         return $this->postRequest($content, 'pickup_data')['content'];
-    }
-
-    protected function performProcessForTxn()
-
-    {
-
     }
 
     protected function verifyPaymentCallbackResponse($input)
@@ -303,7 +278,6 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
-
         $content = $verify->verifyResponseContent;
 
         $status = VerifyResult::STATUS_MATCH;
@@ -311,7 +285,6 @@ class Gateway extends Base\Gateway
         $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
         $verify->apiSuccess = true;
-
         $verify->gatewaySuccess = false;
 
         if ($this->isTransactionSuccess($txnStatus))
@@ -322,7 +295,7 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         // If payment status is either failed or created,
-        // this is an apiFailure
+        // this is an api failure
         if (($input['payment']['status'] === 'failed') or
             ($input['payment']['status'] === 'created'))
         {
@@ -330,7 +303,7 @@ class Gateway extends Base\Gateway
         }
 
         // If both don't match we have a status mis match
-        if (!($verify->gatewaySuccess === $verify->apiSuccess))
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -360,6 +333,33 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $postVerifyAttributes;
 
         return $status;
+    }
+
+    protected function getRefundEntityAttributesFromRefundResponse($input, $content)
+    {
+        $refundAttributes = array(
+            'payment_id'            =>    $input['payment']['id'],
+            'action'                =>    $this->action,
+            'amount'                =>    $input['payment']['amount'],
+            'wallet'                =>    $input['payment']['wallet'],
+            'email'                 =>    $input['payment']['email'],
+            'received'              =>    0,
+            'contact'               =>    $input['payment']['contact'],
+            'gateway_merchant_id'   =>    $input['terminal']['gateway_merchant_id2'],
+            'refund_id'             =>    $input['refund']['id'],
+            'response_code'         =>    $content['pg_error_code'],
+            'response_description'  =>    $content['pg_error_detail'],
+            'status_code'           =>    $content['status'],
+            'error_message'         =>    $content['pg_error_detail'],
+        );
+
+        if (isset($content['new_transaction_id']))
+        {
+            $refundAttributes['gateway_payment_id_2'] =  $content['new_transaction_id'];
+            $refundAttributes['gateway_refund_id']    =  $content['new_transaction_id'];
+        }
+
+        return $refundAttributes;
     }
 
     protected function getTransactionStatusForVerifyFromContent($content)
@@ -492,34 +492,30 @@ class Gateway extends Base\Gateway
 
         if (in_array($this->action, $this->acosaActions))
         {
-
             $request = array(
                 'method'  => 'post',
                 'url'     => 'https://' . $url,
                 'content' => $content,
                 'headers' => ['Content-Type' => 'application/x-www-form-urlencoded']);
 
-            $response = $this->runRequestResponseFlow($request);
+            $response = $this->sendGatewayRequest($request);
 
             $content = $response->body;
         }
         else
         {
-
             $request = array(
                 'method'  => 'post',
                 'url'     => 'https://' . $url,
                 'content' => json_encode($content),
                 'headers' => ['Content-Type' => 'application/json']);
 
-            $options = [];
-
             if ($this->mode === Mode::LIVE)
             {
-                $options = array('proxy'   => true);
+                $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
             }
 
-            $response = $this->runRequestResponseFlow($request, $options);
+            $response = $this->sendGatewayRequest($request);
 
             $content = json_decode($response->body, true);
         }
@@ -777,39 +773,5 @@ class Gateway extends Base\Gateway
         }
 
         return $input['terminal']['gateway_terminal_id'];
-    }
-
-    protected function runRequestResponseFlow(array $request, array $options = [])
-    {
-        if ((isset($options['proxy'])) && ($options['proxy'] === true))
-        {
-            $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-        }
-
-        $request['options']['timeout'] = 30;
-
-        try
-        {
-            // send the request and get response
-            return $this->sendGatewayRequest($request);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $this->exception = $e;
-
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (\Gateway\Utility::checkTimeout($e))
-            {
-                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
     }
 }
