@@ -101,7 +101,8 @@ class RawApiRequest
         if ($this->input['file'] instanceof \SplFileInfo)
         {
             // @note: The second parameter is crucial and a huge
-            // security risk if not added
+            // security risk if not added because otherwise it
+            // replicates register_globals
             mb_parse_str($this->input['body'], $postArray);
             $this->params['body'] = [];
 
@@ -113,10 +114,15 @@ class RawApiRequest
             $file = Input::file('file');
 
             // Now that we have added all POST params, we add the file itself
+            // This contains the field name to be used for the file field
             $fileFieldName = $this->input['file_name'];
-            $postFile = new PostFile($file->getClientOriginalName(), fopen($file, 'r'));
-            $this->params['body'][$fileFieldName] = $postFile;
+            // This contains the original file name with extension
+            $fileName = $file->getClientOriginalName();
 
+            // This is as per guzzle 5, will need to get changed for 6
+            $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
+
+            $this->params['body'][$fileFieldName] = $postFile;
         }
         // We just pass the body as it is
         else
