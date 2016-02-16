@@ -289,11 +289,13 @@ trait Authorize
 
     protected function updateAuthorizedOrderStatus($payment)
     {
-        if (isset($payment->order))
-        {
-            $payment->order->setAuthorized(true);
+        $order = $payment->order;
 
-            $payment->order->saveOrFail();
+        if (isset($order))
+        {
+            $order->setAuthorized(true);
+
+            $order->saveOrFail();
         }
     }
 
