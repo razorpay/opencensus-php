@@ -44,6 +44,5 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = $array;
 
         $this->startTest();
-//        $orders = $this->
     }
 }

@@ -271,10 +271,6 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
-        // If payment has an associated order
-        // set the order to be paid
-        $this->updateAuthorizedOrderStatus($payment);
-
         $this->eventPaymentAuthorized($payment);
 
         $this->notifyAuthorized($payment, $wasFailed);
@@ -624,6 +620,10 @@ trait Authorize
             }
 
             $payment->saveOrFail();
+
+            // If payment has an associated order
+            // set the order to be paid
+            $this->updateAuthorizedOrderStatus($payment);
 
             $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
