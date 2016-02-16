@@ -49,7 +49,7 @@ class Core extends Base\Core
         return $payment;
     }
 
-    public function retirevePaymentById($id)
+    public function retrievePaymentById($id)
     {
         return $this->paymentRepo->findOrFail($id);
     }
