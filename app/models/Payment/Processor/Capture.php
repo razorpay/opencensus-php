@@ -82,8 +82,6 @@ trait Capture
 
         $this->captureOnGateway($data);
 
-        $this->updatePaidOrderStatus($payment);
-
         return $payment;
     }
 
@@ -114,6 +112,8 @@ trait Capture
             $this->updatePaymentCaptured();
 
             $this->createTransactionFromCapturedPayment($this->payment);
+
+            $this->updatePaidOrderStatus($payment);
 
             $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });

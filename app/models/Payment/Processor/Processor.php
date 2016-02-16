@@ -306,7 +306,7 @@ class Processor
 
     protected function setOrderDetails($payment, $input)
     {
-        if (!empty($input['order_id']))
+        if (empty($input['order_id']) === false)
         {
             $this->order = $this->orderRepo->findOrFail($input['order_id']);
 
@@ -315,14 +315,13 @@ class Processor
                 // Order and Payment amount mismatch
                 throw new Exception\BadRequestValidationFailureException(
                     'Order and Payment Amount Mismatch Error');
-
             }
 
             if ($this->order->getMerchantId() !== $payment->getMerchantId())
             {
                 // Merchant mismatch
                 throw new Exception\BadRequestValidationFailureException(
-                    'Merchant mismatch');
+                    'Order id not found');
             }
 
             if (($this->order->getStatus() === Order\Status::PAID) or
@@ -332,14 +331,12 @@ class Processor
                 throw new Exception\BadRequestValidationFailureException(
                     'Order already paid for');
             }
-            else
-            {
-                $this->order->setStatus(Order\Status::ATTEMPTED);
 
-                $this->order->incrementAttempts();
+            $this->order->setStatus(Order\Status::ATTEMPTED);
 
-                $this->order->saveOrFail();
-            }
+            $this->order->incrementAttempts();
+
+            $this->order->saveOrFail();
 
             $payment->order()->associate($this->order);
         }
