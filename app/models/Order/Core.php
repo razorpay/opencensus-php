@@ -21,8 +21,6 @@ class Core extends Base\Core
 
         $order->merchant()->associate($merchant);
 
-        $order->setStatus(Status::CREATED);
-
         $this->repo->saveOrFail($order);
 
         return $order;
