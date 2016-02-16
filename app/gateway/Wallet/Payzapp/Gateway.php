@@ -175,8 +175,7 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
-        $wallet = $this->getRepo()->
-                    fetchWalletByPaymentId($input['payment']['id']);
+        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
 
         $originalTransactionId = $wallet['gateway_payment_id_2'];
 
@@ -196,7 +195,7 @@ class Gateway extends Base\Gateway
 
         $content['message_hash'] = 'MERCHANT-API-HTTPS:7:'.$this->getHashForRefundRequest($content);
 
-        $responseContent =  "";
+        $responseContent =  '';
 
         $response = $this->postRequest($content);
 
@@ -366,11 +365,11 @@ class Gateway extends Base\Gateway
 
     protected function getTransactionStatusForVerifyFromContent($content)
     {
-        $txnResultStrings = explode("transaction_id=", $content);
+        $txnResultStrings = explode('transaction_id=', $content);
 
         $originalTxnIdRecord = $txnResultStrings[1];
 
-        $originalTxnIdRecord = "transaction_id=".$originalTxnIdRecord;
+        $originalTxnIdRecord = 'transaction_id='.$originalTxnIdRecord;
 
         parse_str($originalTxnIdRecord, $txnStatus);
 
@@ -391,19 +390,19 @@ class Gateway extends Base\Gateway
     protected function getResponseDescription($txnStatus)
     {
         //In test api Payzapp returns pg_error_detail
-        if(isset($txnStatus['pg_error_detail']))
+        if (isset($txnStatus['pg_error_detail']))
         {
             return $txnStatus['pg_error_detail'];
         }
         //In beta api Payzapp returns pg_error_msg
-        else if(isset($txnStatus['pg_error_msg']))
+        else if (isset($txnStatus['pg_error_msg']))
         {
             return $txnStatus['pg_error_msg'];
         }
         // Because Payzapp
         else
         {
-            return "";
+            return '';
         }
     }
 
@@ -456,7 +455,8 @@ class Gateway extends Base\Gateway
             ];
 
 
-            if(($txnType === 'SALE') or $this->isTransactionSuccess($txnStatus))
+            if (($txnType === 'SALE') or
+                ($this->isTransactionSuccess($txnStatus)))
             {
                 $responseContent = $content;
 
@@ -464,7 +464,7 @@ class Gateway extends Base\Gateway
 
                 $response = $this->response;
 
-                $latestTransactionType   = $txnTypeCode;
+                $latestTransactionType = $txnTypeCode;
             }
         }
 
@@ -482,8 +482,8 @@ class Gateway extends Base\Gateway
 
     protected function isTransactionSuccess($txnStatus)
     {
-        return ((!empty($txnStatus['status'])) and
-         (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
+        return ((empty($txnStatus['status']) === false) and
+                (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success'));
     }
 
     protected function postRequest($content, $type = null)
@@ -516,7 +516,7 @@ class Gateway extends Base\Gateway
 
             $options = [];
 
-            if($this->mode === Mode::LIVE)
+            if ($this->mode === Mode::LIVE)
             {
                 $options = array('proxy'   => true);
             }
@@ -524,7 +524,6 @@ class Gateway extends Base\Gateway
             $response = $this->runRequestResponseFlow($request, $options);
 
             $content = json_decode($response->body, true);
-
         }
 
         return $content;
@@ -542,7 +541,7 @@ class Gateway extends Base\Gateway
     {
         $secret = parent::getTestSecret();
 
-        if($this->domainType !== null)
+        if ($this->domainType !== null)
         {
             return $this->config['test_pg_hash_key'];
         }
@@ -554,7 +553,7 @@ class Gateway extends Base\Gateway
     {
         $secret = parent::getLiveSecret();
 
-        if($this->domainType !== null)
+        if ($this->domainType !== null)
         {
             return $this->input['terminal']['gateway_terminal_password'];
         }
@@ -617,7 +616,8 @@ class Gateway extends Base\Gateway
         $now                = Carbon::now('Asia/Kolkata');
         $paymentCreatedDate = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
 
-        if (!$forceRefund && $paymentCreatedDate->isSameDay($now))
+        if (($forceRefund  === false) and
+            ($paymentCreatedDate->isSameDay($now))
         {
             $this->perform = 'void';
         }
