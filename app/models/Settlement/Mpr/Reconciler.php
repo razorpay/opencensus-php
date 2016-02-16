@@ -214,7 +214,7 @@ class Reconciler
 
     protected function getPaymentAndRelations($paymentId)
     {
-        $payment  = (new Payment\Core)->retirevePaymentById($paymentId);
+        $payment  = (new Payment\Core)->retrievePaymentById($paymentId);
 
         $transaction = $payment->transaction;
 

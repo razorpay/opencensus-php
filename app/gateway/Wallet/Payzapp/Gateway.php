@@ -309,28 +309,30 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        $verifiedAction = $this->getActionFromTransactionType($verify->transactionType);
-
         $txnStatus = $this->getTransactionStatusForVerifyFromContent($content);
 
         $verify->apiSuccess = true;
 
         $verify->gatewaySuccess = false;
 
-        if($this->isTransactionSuccess($txnStatus))
+        if ($this->isTransactionSuccess($txnStatus))
         {
             $verify->gatewaySuccess = true;
         }
 
-        $paymentEntity = (new \Models\Payment\Core)->retirevePaymentById($payment['payment_id']);
+        $input = $verify->input;
 
-        if($paymentEntity['status'] === "failed")
+        // If payment status is either failed or created,
+        // this is an apiFailure
+        if (($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
         {
             $verify->apiSuccess = false;
         }
 
         // If both don't match we have a status mis match
-        if (!($verify->gatewaySuccess and $verify->apiSuccess))
+        if (($verify->gatewaySuccess and !$verify->apiSuccess) or
+             (!$verify->gatewaySuccess and $verify->apiSuccess))
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -346,6 +348,7 @@ class Gateway extends Base\Gateway
             'error_message'         =>      $responseDescription,
         );
 
+        // If the wallet entity does not have an acosa transaction id, fill it.
         if (!isset($payment['gateway_payment_id_2']))
         {
             $gateway_payment_id_2 =
@@ -357,15 +360,6 @@ class Gateway extends Base\Gateway
         }
 
         $verify->verifyResponseContent = $postVerifyAttributes;
-
-        $attributes = array(
-            'action'            => $verifiedAction,
-            'verified'          => true,
-        );
-
-        $paymentEntity->fill($attributes);
-
-        $paymentEntity->saveOrFail();
 
         return $status;
     }
@@ -417,8 +411,6 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $payment = $verify->payment;
-
         $this->perform  = 'verify';
 
         $latestTransactionType = 0;
@@ -435,7 +427,7 @@ class Gateway extends Base\Gateway
         unset($verifyStates['SETTLE']);
 
         // Since payzapp does not provide state of the payment with payment result api,
-        // We will have to check for all possible states to and go with final status
+        // We will have to check for status of all possible states
         foreach ($verifyStates as $txnType => $txnTypeCode)
         {
             $content =  array(
@@ -490,7 +482,8 @@ class Gateway extends Base\Gateway
 
     protected function isTransactionSuccess($txnStatus)
     {
-        return ((!empty($txnStatus['status'])) and (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
+        return ((!empty($txnStatus['status'])) and
+         (ResponseCode::$statusCodes[$txnStatus['status']] === 'Success')) ;
     }
 
     protected function postRequest($content, $type = null)
