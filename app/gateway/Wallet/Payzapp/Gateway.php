@@ -419,10 +419,6 @@ class Gateway extends Base\Gateway
 
         $payment = $verify->payment;
 
-        $walletEntity = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
-
-        $verify->wallet = $walletEntity;
-
         $this->perform  = 'verify';
 
         $latestTransactionType = 0;
@@ -432,11 +428,14 @@ class Gateway extends Base\Gateway
         $response = '';
 
         $txnStatusResults = [];
-        //Don't Check for settle during Verify
+
         $verifyStates = TransactionType::$codes;
 
+        // Don't Check for settle during Verify
         unset($verifyStates['SETTLE']);
 
+        // Since payzapp does not provide state of the payment with payment result api,
+        // We will have to check for all possible states to and go with final status
         foreach ($verifyStates as $txnType => $txnTypeCode)
         {
             $content =  array(
