@@ -102,11 +102,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttemptsAttribute();
     }
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function incrementAttempts()
     {
         $attempts = $this->getAttempts() + 1;
@@ -129,5 +124,12 @@ class Entity extends Base\PublicEntity
     public function isAuthorized()
     {
         return (((int) $this->getAttribute(self::AUTHORIZED)) === 1);
+    }
+
+    public function setAttemptsAttribute($attempts)
+    {
+        assert ($attempts > 0);
+
+        return $this->setAttribute(self::ATTEMPTS, $attempts);
     }
 }
