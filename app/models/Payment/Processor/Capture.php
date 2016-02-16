@@ -157,13 +157,15 @@ trait Capture
         $payment->saveOrFail();
     }
 
-    protected function updatePaidOrderStatus()
+    protected function updatePaidOrderStatus($payment)
     {
-        if (isset($payment->order))
-        {
-            $payment->order->setStatus(Order\Status::PAID);
+        $order = $payment->order;
 
-            $payment->order->saveOrFail();
+        if (isset($order))
+        {
+            $order->setStatus(Order\Status::PAID);
+
+            $order->saveOrFail();
         }
     }
 }
