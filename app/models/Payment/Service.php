@@ -266,7 +266,7 @@ class Service extends Base\Service
 
     public function timeoutOldPayments()
     {
-        $timestamp = time() - 10 * 60;
+        $timestamp = time() - 9 * 60;
 
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
