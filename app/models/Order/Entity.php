@@ -12,6 +12,8 @@ class Entity extends Base\PublicEntity
     const CURRENCY      = 'currency';
     const ATTEMPTS      = 'attempts';
     const STATUS        = 'status';
+
+    // Ideally should be a unique from the merchant side as well
     const RECEIPT       = 'receipt';
 
     // To Mark If a payment corresponding to
@@ -48,7 +50,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CREATED_AT);
 
-    protected static $sign = '';
+    protected static $sign = 'ordr';
 
     protected static $delimiter = '_';
 

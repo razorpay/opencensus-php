@@ -308,7 +308,9 @@ class Processor
     {
         if (empty($input['order_id']) === false)
         {
-            $this->order = $this->orderRepo->findOrFail($input['order_id']);
+            $order_id = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
+
+            $this->order = $this->orderRepo->findOrFail($order_id);
 
             if ($this->order->getAmount() !== $payment->getAmount())
             {
