@@ -52,6 +52,8 @@ class Reconciler2
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->dailySetlRepo = new Settlement\Daily\Repository;
+
+        $this->trace = \App::make('trace');
     }
 
     public function process($input)
@@ -60,6 +62,9 @@ class Reconciler2
 
         if ($reconcileFile === null)
         {
+            $this->trace->info(
+                TraceCode::MISC_TRACE_CODE, ['message' => 'No file present']);
+
             return new Base\PublicCollection;
         }
 
