@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
+        self::STATUS,
         self::ATTEMPTS,
         self::CREATED_AT);
 
