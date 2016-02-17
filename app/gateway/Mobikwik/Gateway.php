@@ -336,11 +336,11 @@ class Gateway extends Base\Gateway
 
         $this->addTestMerchantIdIfTestMode($content);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-                                $input['payment']['id'], Action::AUTHORIZE);
+        // $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        //                         $input['payment']['id'], Action::AUTHORIZE);
 
         $content['txid'] = $input['payment']['id'];
-        $content['email'] = $payment['email'];
+        $content['email'] = $input['payment']['email'];
         $content['amount'] = (string) ($input['refund']['amount'] / 100);
 
         $content['checksum'] = $this->getHashForRefundRequest(
