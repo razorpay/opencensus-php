@@ -113,7 +113,7 @@ trait Capture
 
             $this->createTransactionFromCapturedPayment($this->payment);
 
-            $this->updatePaidOrderStatus($payment);
+            $this->updatePaidOrderStatus($this->payment);
 
             $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
