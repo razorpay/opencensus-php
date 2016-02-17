@@ -7,6 +7,7 @@ use Models\Base;
 use Models\Merchant\Methods;
 use Models\Payment;
 use Models\Card;
+use Models\Order;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorDescription;
 
@@ -15,6 +16,10 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'Payment';
+
+    protected $entityFetchParamRules = array(
+        Entity::ORDER_ID        => 'sometimes|string|size:19',
+    );
 
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|string',
@@ -206,6 +211,13 @@ class Repository extends Base\Repository
         {
             $quere->whereNotNull(Entity::CAPTURED_AT);
         }
+    }
+
+    protected function addQueryParamOrderId($query, $params)
+    {
+        $order_id = (new Order\Entity)->verifyIdAndStripSign($params[Entity::ORDER_ID]);
+
+        $query->where(Entity::ORDER_ID, '=', $order_id);
     }
 
     protected function joinQueryCard($query)

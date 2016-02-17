@@ -12,6 +12,8 @@ trait RepositoryFetch
         'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
+//    protected $entityFetchParamRules = array();
+
 //    protected $appFetchParamRules = array();
 
 //    protected $proxyFetchParamRules = array();
@@ -94,6 +96,12 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
+        if (isset($this->entityFetchParamRules))
+        {
+            $this->fetchParamRules = array_merge(
+                $this->fetchParamRules, $this->entityFetchParamRules);
+        }
+
         if (($this->auth->isProxyAuth()) and
             (isset($this->proxyAuthFetchParamRules)))
         {

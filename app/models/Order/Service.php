@@ -22,7 +22,7 @@ class Service extends Base\Service
 
         $order = $this->core->create($input, $merchant);
 
-        return $order->toArray();
+        return $order->toArrayPublic();
     }
 
     public function fetch($id)
