@@ -86,15 +86,16 @@ class Service extends Base\Service
             MerchantDetails\Entity::createOrFail($details);
 
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
+
+            $data = [
+                'id'        => $merchant->id,
+                'name'      => $merchant->name,
+                'email'     => $user->email,
+                'user_name' => $user->name,
+            ];
+
+            $this->slackSignupPost($data, $referer);
         }
-
-        $data = array(
-            'id'    => $user->id,
-            'name'  => $user->name,
-            'email' => $user->email
-        );
-
-        $this->slackSignupPost($data, $referer);
 
         if(isset($invitation))
         {
@@ -117,7 +118,7 @@ class Service extends Base\Service
         {
             $config = \Config::get('razorpay.sorting_hat');
             $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
-            $message = "[New Signup]($merchantLink)";
+            $message = "[New Signup]($merchantLink) as {$slackData['user_name']}";
 
             if ($referer)
             {
