@@ -11,7 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
-        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
+        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getcheckout'                                    ],
         'merchant_methods'                      => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
         'payment_create'                        => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'               => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
@@ -168,10 +168,10 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
-        'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                      ],
-        'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                        ],
-        'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                   ],
-        'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                      ],
+        'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
+        'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
+        'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
+        'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
     );
 
     public static $public = array(
