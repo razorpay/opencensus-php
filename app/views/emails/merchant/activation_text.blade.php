@@ -17,7 +17,7 @@ The pricing details associated with your account are:
 - Service Taxes Extra (14.5%)
 
 In case you haven't integrated our API in your application, the instructions can be found at https://docs.razorpay.com.
-Please ensure you use live mode keys for your production application.
+Please ensure that your production website/app is using the live keys generated from the dashboard.
 
 If you face any issues while implementing this, feel free to drop us an email at support@razorpay.com.
 
