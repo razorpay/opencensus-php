@@ -104,4 +104,9 @@ class Entity extends Base\PublicEntity
 
         return ($country !== 'IN');
     }
+
+    public function isEmiAvailable()
+    {
+        return (bool) $this->getAttribute(self::EMI);
+    }
 }
