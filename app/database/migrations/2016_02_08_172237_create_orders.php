@@ -24,7 +24,7 @@ class CreateOrders extends Migration {
             $table->engine = 'InnoDB';
 
             $table->char(Order::ID, 14)
-                   ->primary();
+                  ->primary();
 
             $table->char(Order::MERCHANT_ID, 14);
 
