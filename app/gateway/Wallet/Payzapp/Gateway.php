@@ -287,6 +287,10 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
         $verify->gatewaySuccess = false;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            array('txnStatus' => $txnStatus));
+
         if ($this->isTransactionSuccess($txnStatus))
         {
             $verify->gatewaySuccess = true;
@@ -329,6 +333,10 @@ class Gateway extends Base\Gateway
 
             $payment->saveOrFail();
         }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            array('postVerifyAttributes' => $postVerifyAttributes));
 
         $verify->verifyResponseContent = $postVerifyAttributes;
 
