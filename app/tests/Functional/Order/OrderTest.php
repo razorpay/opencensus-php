@@ -56,12 +56,28 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
-        $order = $this->getLastEntity('order');
+        $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'attempted');
+        $this->assertEquals($order['authorized'], true);
 
         $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
 
         $order = $this->getLastEntity('order');
         $this->assertEquals($order['status'], 'paid');
+    }
+
+    public function testOrderAndPaymentAmountMismatch()
+    {
+        $order = $this->testCreateOrder();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = '1000';
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 }

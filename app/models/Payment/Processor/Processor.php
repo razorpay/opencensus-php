@@ -325,8 +325,8 @@ class Processor
         if ($this->order->getAmount() !== $payment->getAmount())
         {
             // Order and Payment amount mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Order and Payment Amount Mismatch Error');
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
         }
 
         if ($this->order->getMerchantId() !== $payment->getMerchantId())
