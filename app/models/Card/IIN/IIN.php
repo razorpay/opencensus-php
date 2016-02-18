@@ -64,12 +64,13 @@ class IIN
             {
                 if (substr($cardNumber, 0, strlen($iin)) === $iin)
                 {
-                    return;
+                    return true;
                 }
             }
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
+            return false;
         }
+
+        return true;
     }
 }

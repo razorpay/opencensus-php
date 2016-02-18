@@ -222,7 +222,7 @@ trait Authorize
         $iinEntity = (new IIN\Repository)->findOrFail($iin);
 
         if (($iinEntity->isEmiAvailable() === false) or
-            (IIN\IIN::isValidCardForBank($iinEntity->getIssuer(), $input['card']['number'])))
+            (IIN\IIN::isValidCardForBank($iinEntity->getIssuer(), $input['card']['number'])) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
