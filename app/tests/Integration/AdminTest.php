@@ -45,11 +45,11 @@ class AdminTest extends TestCase
             $user = $this->createEntity('user');
             $user->saveOrFail();
 
-            $this->merchant = Models\Merchant\Entity::createFromUserWithBusinessName($user, 'Razorpay');
+            $this->merchant = Models\Merchant\Entity::createFromUser($user, 'Razorpay');
             $this->merchant->saveOrFail();
 
             $this->merchant_details = $this->createEntity('merchant_details',
-                array('merchant_id'=>$this->merchant->id)
+                ['merchant_id'=>$this->merchant->id]
             );
 
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
