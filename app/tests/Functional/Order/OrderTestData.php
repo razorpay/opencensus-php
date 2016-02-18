@@ -8,7 +8,7 @@ return [
     'testCreateOrder' => [
         'request' => [
             'content' => [
-                'amount'        => 500,
+                'amount'        => 50000,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
                 // 'method'     => 'netbanking',
@@ -19,7 +19,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'        => 500,
+                'amount'        => 50000,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
                 // 'method'     => 'netbanking',
@@ -29,7 +29,7 @@ return [
     ],
 
     'testGetOrder' => [
-        'amount'        => 500,
+        'amount'        => 50000,
         'currency'      => 'INR',
         'receipt'       => 'rcptid42',
     ],

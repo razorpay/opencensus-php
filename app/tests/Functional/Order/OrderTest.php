@@ -3,11 +3,11 @@
 namespace Tests\Functional\Order;
 
 use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -44,5 +44,24 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = $array;
 
         $this->startTest();
+    }
+
+    public function testStatusAfterPayment()
+    {
+        $order = $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'attempted');
+
+        $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
     }
 }
