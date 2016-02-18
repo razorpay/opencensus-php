@@ -16,6 +16,14 @@ class Service extends Base\Service
     const ALREADY_INVITED = 'An invitation has already been sent to the user.';
     const INVALID_INVITE = 'The invitation is invalid.';
 
+    public function __construct()
+    {
+        if ($user = Auth::user())
+        {
+            $this->loggedInUser = $user->user();
+        }
+    }
+
     /**
      * Send an invitation for the given merchant.
      *
@@ -33,10 +41,8 @@ class Service extends Base\Service
             return array($validation->messages(), null);
         }
 
-        $loggedInUser = Auth::user()->user();
-
         // We need to change this to currentLoggedInMerchant later
-        $merchant = $loggedInUser->getOwnerMerchant();
+        $merchant = $this->loggedInUser->getOwnerMerchant();
 
         if ($merchant === false)
         {
@@ -50,7 +56,7 @@ class Service extends Base\Service
         // This is a double check because going ahead once we have roles
         // Users can invite others as well, meaning user->email check would
         // become important.
-        if ($merchant->email === $input['email'] or $loggedInUser->email === $input['email'])
+        if ($merchant->email === $input['email'] or $this->loggedInUser->email === $input['email'])
         {
             $errors[] = static::SELF_INVITE_NOT_ALLOWED;
         }
@@ -61,7 +67,7 @@ class Service extends Base\Service
 
         if (empty($errors))
         {
-            $this->createInviteAndSendEmail($input['email'], $input['role']);
+            $this->createInviteAndSendEmail($merchant, $input['email'], $input['role']);
         }
 
         return [$errors, $data];
@@ -73,8 +79,9 @@ class Service extends Base\Service
      * @param  string $role  role of the user in the tea
      * @return null
      */
-    protected function createInviteAndSendEmail($email, $role = 'manager')
+    protected function createInviteAndSendEmail(Merchant\Entity $merchant, $email, $role = 'manager')
     {
+        // This only creates a new invitation entity
         $invitation = $merchant->inviteUserByEmailWithRole($email, $role);
 
         $this->sendInvitationEmail($invitation);
@@ -242,9 +249,13 @@ class Service extends Base\Service
 
     protected function sendInvitationEmail($invitation)
     {
-        $view = $invitation->user_id ? 'emails.invitations.existing' : 'emails.invitations.new';
+        $loggedInUser = $this->loggedInUser->toArray();
+        $invitation_array   = $invitation->toArray();
+        $invitation_array['merchant']   = $invitation->merchant->toArray();
 
-        Mail::queue($view, compact('invitation'), function ($m) use ($invitation)
+        $view = $invitation_array['user_id'] ? 'emails.invitations.existing' : 'emails.invitations.new';
+
+        Mail::queue($view, compact('invitation_array', 'loggedInUser'), function ($m) use ($invitation)
         {
             $m->to($invitation->email)->subject('Invitation to join a team | Razorpay');
         });

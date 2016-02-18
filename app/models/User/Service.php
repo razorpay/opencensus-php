@@ -36,12 +36,12 @@ class Service extends Base\Service
     }
 
     /**
-     * gets the email for a given invitation token
+     * Gets the email for a given invitation token
      * Throws a recoverable exception otherwise
      * @param  string $token invitation token
      * @return string $email
      */
-    protected function getEmailFromInvitationToken($token)
+    protected function getInvitationFromToken($token)
     {
         list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($token);
 
@@ -51,14 +51,14 @@ class Service extends Base\Service
             throw new RecoverableException($error);
         }
 
-        $user = User\Entity::where('email',$email)->first();
+        $user = User\Entity::where('email', $invitation->email)->first();
 
         if ($user)
         {
             throw new RecoverableException(static::ACCOUNT_ALREADY_EXISTS);
         }
 
-        return $invitation->email;
+        return $invitation;
     }
 
     /**
@@ -78,7 +78,8 @@ class Service extends Base\Service
 
         if ($invitationToken)
         {
-            $input['email'] = $this->getEmailFromInvitationToken($invitationToken);
+            $invitation     = $this->getInvitationFromToken($invitationToken);
+            $input['email'] = $invitation->email;
         }
 
         $user = $this->buildUserEntity($input);
@@ -93,7 +94,7 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($user, $input['business_name'], $referer);
         }
 
-        elseif (isset($invitation))
+        elseif ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
             $data['login'] = true;
@@ -106,7 +107,7 @@ class Service extends Base\Service
     /**
      * Attach a user to a merchant using an invitation
      */
-    protected function attachUserToInvite(User\Entity $user, $invitation)
+    protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
     {
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 

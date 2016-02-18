@@ -41,11 +41,7 @@ class UserController extends BaseController
         {
             $error = [$e->getMessage()];
         }
-
-        finally
-        {
-            return AppResponse::jsonResponse($error, $data);
-        }
+        return AppResponse::jsonResponse($error, $data);
     }
 
     /**

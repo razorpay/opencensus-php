@@ -187,9 +187,6 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         // First try to find if a user account exists for the user
         $invitedUser = (new User\Entity)->where('email', $email)->first();
-        $existingInvite = $this->invitations()
-            ->where('email', $email)
-            ->first();
 
         $invitation = $this->invitations()->create([
             'user_id' => $invitedUser ? $invitedUser->id : null,

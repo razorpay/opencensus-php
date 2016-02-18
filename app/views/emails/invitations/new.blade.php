@@ -2,13 +2,13 @@ Hi!
 
 <br><br>
 
-{{ $invitation->merchant->primaryOwner()->name }} has invited you to join their team ({{$invitation->merchant->name}}).
+{{ $loggedInUser['name'] }} has invited you to join their team ({{$invitation_array['merchant']['name']}}).
 
 If you do not already have an account, you may click the following link to get started:
 
 <br><br>
 
-<a href="{{ url('/#/access/signup?invitation='.$invitation->token) }}">{{ URL::to('/#/access/signup?invitation='.$invitation->token) }}</a>
+<a href="{{ url('/#/access/signup?invitation='.$invitation_array['token']) }}">{{ URL::to('/#/access/signup?invitation='.$invitation_array['token']) }}</a>
 
 <br><br>
 
