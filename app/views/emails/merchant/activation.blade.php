@@ -63,10 +63,14 @@
 is now active. The pricing details associated with your account are:
 
 </p><ul align="left">
-  @foreach ($rules as $pricing => $methodDisplay)
+  @if(isset($rules['amountRangeRules']))
+    <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['low']}}</li>
+    <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['high']}}</li>
+  @endif
+  @foreach ($rules['otherRules'] as $pricing => $methodDisplay)
     <li style="text-align:left;" align="left">{{implode(' ,', $methodDisplay)}} - {{$pricing}}</li>
   @endforeach
-  @if ($merchant['international'])
+  @if ($merchant['international'] === true)
   <li style="text-align:left;" align="left">3% on International Transactions</li>
   @endif
 </ul><p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;"><i> Service Taxes Extra (14.5%)</i></p>

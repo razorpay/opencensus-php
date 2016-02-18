@@ -589,7 +589,7 @@ class Service extends Base\Service
      */
     protected function formatPricingRules($rules)
     {
-        $newRules = [];
+        $newRules = $amountRangeRules = [];
 
         $rules = $this->rearrangeRules($rules);
 
@@ -609,10 +609,33 @@ class Service extends Base\Service
                 // This becomes "American Express Cards"
                 $display = $rule['payment_network_name'] . ' Cards';
             }
+            elseif ($method !== null and $rule['payment_method'] === 'card' and $rule[Pricing\Entity::INTERNATIONAL] === true)
+            {
+                // This is Credit/Debit/[ Visa/Master Card/Diners ] Cards
+                $display = ucfirst($method) . ' International Cards';
+            }
             elseif ($method !== null and $rule['payment_method'] === 'card')
             {
                 // This is Credit/Debit/[ Visa/Master Card/Diners ] Cards
                 $display = ucfirst($method) . ' Cards';
+            }
+
+            // Passing amount range rules seperately
+            // Support currently for only one set of amountRangeRules
+            if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
+            {
+                $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN]/100;
+                $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX]/100;
+
+                if ($amountRangeMin === 0)
+                {
+                    $amountRangeRules['low'] = $display.' Below INR '.$amountRangeMax.' - '.$rule['pricing_display'];
+                }
+                else
+                {
+                    $amountRangeRules['high'] = $display.' Over INR '.$amountRangeMin.' - '.$rule['pricing_display'];
+                }
+                continue;
             }
 
             // We flip this around to store the rules as an array with the
@@ -626,7 +649,8 @@ class Service extends Base\Service
             $newRules[$rule['pricing_display']][] = $display;
         }
 
-        return $newRules;
+        return [ 'amountRangeRules' => $amountRangeRules,
+                     'otherRules'   => $newRules];
     }
 
     /**
@@ -643,9 +667,9 @@ class Service extends Base\Service
     {
         $arrangedRules = array();
 
-        $orderOfRules = array('card', 'netbanking', 'wallet', 'exceptional');
+        $orderOfRules = array('card', 'netbanking', 'wallet', 'emi', 'exceptional');
 
-        $exceptionalRules = $cardRules = $netbankingRules = $walletRules = [];
+        $exceptionalRules = $emiRules = $cardRules = $netbankingRules = $walletRules = [];
 
         foreach ($rules as $rule)
         {
@@ -669,6 +693,10 @@ class Service extends Base\Service
 
                 case 'wallet':
                     $walletRules[] = $rule;
+                    break;
+
+                case 'emi':
+                    $emiRules[] = $rule;
                     break;
 
                 default:

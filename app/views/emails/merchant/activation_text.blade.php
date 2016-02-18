@@ -4,7 +4,11 @@ Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You ca
 
 The pricing details associated with your account are:
 
-@foreach ($rules as $pricing => $methodDisplay)
+@if(isset($rules['amountRangeRules']))
+- {{$rules['amountRangeRules']['low']}}
+- {{$rules['amountRangeRules']['high']}}
+@endif
+@foreach ($rules['otherRules'] as $pricing => $methodDisplay)
 - {{implode(',', $methodDisplay)}} - {{$pricing}}
 @endforeach
 @if ($merchant['international'] === true)
@@ -13,6 +17,7 @@ The pricing details associated with your account are:
 - Service Taxes Extra (14.5%)
 
 In case you haven't integrated our API in your application, the instructions can be found at https://docs.razorpay.com.
+Please ensure you use live mode keys for your production application.
 
 If you face any issues while implementing this, feel free to drop us an email at support@razorpay.com.
 
