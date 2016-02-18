@@ -163,11 +163,13 @@ class Activate
 
                 if ($amountRangeMin === 0)
                 {
-                    $amountRangeRules['low'] = $display.' Below INR '.$amountRangeMax.' - '.$rule['pricing_display'];
+                    $amountRangeRules['low'] = $display.' Below INR '.
+                                $amountRangeMax.' - '.$rule['pricing_display'];
                 }
                 else
                 {
-                    $amountRangeRules['high'] = $display.' Over INR '.$amountRangeMin.' - '.$rule['pricing_display'];
+                    $amountRangeRules['high'] = $display.' Over INR '.
+                                $amountRangeMin.' - '.$rule['pricing_display'];
                 }
 
                 continue;
