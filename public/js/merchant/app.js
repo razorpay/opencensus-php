@@ -32,8 +32,10 @@ var app = angular.module('app', [
       $rootScope.toStateParams = toStateParams;
       // if the user is resolved, do an authorization check immediately. otherwise,
       // it'll be done when the state it resolved.
-      if (user.isIdentityResolved())
+      if (user.isIdentityResolved()) {
+        console.debug(user);
         authorization.authorize();
+      }
     });
     $rootScope.$on('$stateChangeError', function (event) {
       $state.go('500');

@@ -6,13 +6,13 @@
 </div>
 <div class="wrapper-md profile-wrapper" ng-init="getPendingInvitations()">
   <div class="panel panel-default col-sm-6 col-sm-offset-3">
-    <div class="panel-heading m-t m-b">
+    <div class="panel-heading m-t m-b" ng-show="user.current">
       Merchant Id: <strong>{{user.id}}</strong>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
-    <div class="row wrapper">
+    <div class="row wrapper" ng-show="user.current">
       <div class="list-group">
         <a href class="list-group-item">
           <span class="pull-right">{{user.name | titlecase}}</span>
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <div class="panel-heading m-t m-b" ng-show="invitations">
+    <div class="panel-heading m-t m-b" ng-show="user.current && invitations">
       Pending Invitations
     </div>
     <div class="row wrapper">

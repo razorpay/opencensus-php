@@ -1,26 +1,26 @@
-<ul class="nav">
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+<ul class="nav" ng-init="merchant = !!user.current">
+  <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Features</span>
   </li>
-  <li class="active">
+  <li class="active" ng-show="merchant">
     <a id="dashboardNav" ui-sref="app.dashboard">
       <i class="fa fa-area-chart text-info"></i>
       <span>Dashboard</span>
     </a>
   </li>
-  <li>
+  <li ng-show="merchant">
     <a id="paymentsNav" ui-sref="app.payments.list">
       <i class="fa fa-inr text-primary-lter"></i>
       <span>Payments</span>
     </a>
   </li>
-  <li>
+  <li ng-show="merchant">
     <a id="refundsNav" ui-sref="app.refunds.list">
       <i class="fa fa-mail-reply icon text-warning-lter"></i>
       <span>Refunds</span>
     </a>
   </li>
-  <li>
+  <li ng-show="merchant">
     <a id="settlementsNav" ui-sref="app.settlements.list">
       <i class="fa  fa-check-square-o icon text-success"></i>
       <span>Settlements</span>
@@ -33,20 +33,20 @@
       <span>Transaction</span>
     </a>
   </li> -->
-  <li>
+  <li ng-show="merchant">
     <a id="addFundsNav" ui-sref="app.addfunds">
       <i class="icon icon-wallet text-info-lter"></i>
       <span>Add Funds</span>
     </a>
   </li>
-  <li>
+  <li ng-show="merchant">
     <a id="generateReportNav" ui-sref="app.generatereport">
       <i class="fa fa-file-excel-o icon text-danger-lter"></i>
       <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
       <span>Reports</span>
     </a>
   </li>
-  <li ng-show="user.primaryOwner && user.tags.indexOf('Team') != -1">
+  <li ng-show="merchant && user.primaryOwner && user.tags.indexOf('Team') != -1">
     <a id="manageTeamNav" ui-sref="app.teammanagement">
       <i class="fa fa-users icon text-info-lter"></i>
       <b class="badge bg-success dk pull-right ng-binding">beta</b>
@@ -54,7 +54,7 @@
       </a>
   </li>
 
-  <li ng-show="user.tags.indexOf('Referral') != -1">
+  <li ng-show="merchant && user.tags.indexOf('Referral') != -1">
     <a id="referredNav" ui-sref="app.referrals">
       <i class="fa fa-gift icon text-danger-lter"></i>
       <b class="badge bg-success dk pull-right ng-binding">beta</b>
@@ -66,20 +66,20 @@
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Settings</span>
   </li>
-  <li>
+  <li ng-show="merchant">
     <a id="keysNav" ui-sref="app.keys">
       <i class="icon-key icon text-success-lter"></i>
       <span>Api Keys</span>
     </a>
   </li>
-  <li>
+  <li ng-show="merchant">
     <a id="activationNav" ui-sref="app.activation">
       <i class="icon-question icon text-success-lter"></i>
       <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
       <span>Activation</span>
     </a>
   </li>
-  <li ng-show="user.tags.indexOf('Webhooks') != -1">
+  <li ng-show="merchant && user.tags.indexOf('Webhooks') != -1">
     <a id="webhookNav" ui-sref="app.webhooks">
       <i class="icon-share icon text-success-lter"></i>
       Webhook

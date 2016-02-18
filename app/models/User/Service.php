@@ -243,7 +243,7 @@ class Service extends Base\Service
     {
         $user = Auth::user()->user();
 
-        if ($user->currentMerchant->isTestAccount())
+        if ($user->currentMerchant and $user->currentMerchant->isTestAccount())
         {
             return [["Password change forbidden on this account"], null];
         }
@@ -260,7 +260,8 @@ class Service extends Base\Service
             if($user->hasMerchants())
             {
                 $merchant = $user->merchants()
-                                 ->where('email',$user->email)->first();
+                    ->where('email',$user->email)->first();
+
                 if($merchant)
                 {
                     $merchant->password = $user->password;
@@ -305,19 +306,21 @@ class Service extends Base\Service
 
         if($merchants->count() < 0)
         {
-            $error = array('There are no merchants.');
-            return array($error, null);
+            $merchants = [];
         }
-
-        $currentMerchantId = $user->getCurrentMerchantId();
-
-        foreach ($merchants as $merchant)
+        else
         {
-            $merchant->current = $merchant->id == $currentMerchantId;
-            $merchant->setVisible(['id','name','email','current']);
+            $currentMerchantId = $user->getCurrentMerchantId();
+
+            foreach ($merchants as $merchant)
+            {
+                // Set current to a boolean
+                $merchant->current = ($merchant->id == $currentMerchantId);
+                $merchant->setVisible(['id','name','email','current']);
+            }
         }
 
-        return array(null, $merchants);
+        return $merchants;
     }
 
     /**

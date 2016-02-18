@@ -138,7 +138,14 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      */
     public function getCurrentMerchantId()
     {
-        return $this->currentMerchant->id;
+        if ($this->currentMerchant)
+        {
+            return $this->currentMerchant->id;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
