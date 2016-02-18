@@ -179,7 +179,7 @@ class Reconciler2
         if (($status === 'Account Debited') or
             ($status === 'Presented and Paid'))
         {
-            $setl->setStatus(Settlement\Status::TRANSFERRED);
+            $setl->setStatus(Settlement\Status::PROCESSED);
             $this->setlRepo->save($setl);
         }
         else
