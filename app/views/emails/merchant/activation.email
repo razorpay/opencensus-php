@@ -117,7 +117,7 @@
 is now active. The pricing details associated with your account are:
 
 <ul align="left">
-  @if(isset($rules['amountRangeRules']))
+  @if(count($rules['amountRangeRules']) === 2)
     <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['low']}}</li>
     <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['high']}}</li>
   @endif

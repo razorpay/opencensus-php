@@ -4,7 +4,7 @@ Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You ca
 
 The pricing details associated with your account are:
 
-@if(isset($rules['amountRangeRules']))
+@if(count($rules['amountRangeRules']) === 2)
 - {{$rules['amountRangeRules']['low']}}
 - {{$rules['amountRangeRules']['high']}}
 @endif

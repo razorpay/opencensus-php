@@ -63,7 +63,7 @@
 is now active. The pricing details associated with your account are:
 
 </p><ul align="left">
-  @if(isset($rules['amountRangeRules']))
+  @if(count($rules['amountRangeRules']) === 2)
     <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['low']}}</li>
     <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['high']}}</li>
   @endif
@@ -74,7 +74,7 @@ is now active. The pricing details associated with your account are:
   <li style="text-align:left;" align="left">3% on International Transactions</li>
   @endif
 </ul><p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;"><i> Service Taxes Extra (14.5%)</i></p>
-<p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>.</p>
+<p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>. Please ensure that your production website/app is using the live keys generated from the dashboard.</p>
 
 <p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com" style="color: #2ba6cb; text-decoration: none;">email</a>.</p>
 
