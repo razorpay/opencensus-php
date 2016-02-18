@@ -57,7 +57,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('Models\Order\Entity');
+        return $this->belongsTo('Models\Merchant\Entity');
     }
 
     public function payment()
