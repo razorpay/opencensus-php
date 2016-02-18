@@ -42,11 +42,13 @@
             <a href class="dropdown-toggle" data-toggle="dropdown">
               Switch Merchant<b class="caret"></b>
             </a>
-            <ul class="dropdown-menu animated fadeInRight w">
+            <ul class="dropdown-menu animated fadeInRight">
               <li ng-repeat="merchant in merchants">
                 <a ng-click="switchMerchant(merchant)" class="dropdown-toggle" href>
-                <span ng-show="merchant.current" class="label bg-info pull-right">current</span>
-                {{merchant.name | titlecase}}</a>
+                  <span ng-show="merchant.current"><i class="fa fa-check text-success"></i></span>
+                  <span ng-show="!merchant.current"><i class="fa fa-fw">&nbsp;</i></span>
+                  <span>{{merchant.name | titlecase}}</span>
+                </a>
               </li>
             </ul>
           </li>
