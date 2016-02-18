@@ -230,11 +230,6 @@ class Service extends Base\Service
         }
 
         $user = Auth::user()->user();
-        if($user && $user->hasMerchants() == false)
-        {
-            Auth::user()->logout();
-            $error[] = "You don't have any associated merchants or a merchant account. Contact razorpay support.";
-        }
 
         return array($error, null);
     }

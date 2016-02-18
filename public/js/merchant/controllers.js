@@ -89,7 +89,6 @@ angular.module('app.controllers', [
 
     $user.identity(true).then(function (data) {
       $scope.merchants = $.map(data.merchants || [], function(v) { return v; });
-      console.log($scope.merchants);
     });
 
     $scope.switchMerchant = function (merchant){

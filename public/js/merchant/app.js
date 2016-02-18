@@ -33,7 +33,6 @@ var app = angular.module('app', [
       // if the user is resolved, do an authorization check immediately. otherwise,
       // it'll be done when the state it resolved.
       if (user.isIdentityResolved()) {
-        console.debug(user);
         authorization.authorize();
       }
     });

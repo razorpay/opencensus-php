@@ -94,7 +94,15 @@ app.controller('DashboardAggregationsCtrl', [
   '$scope',
   '$http',
   'dateFactory',
-  function ($scope, $http, dateFactory) {
+  'user',
+  '$state',
+  function ($scope, $http, dateFactory, $user, $state) {
+
+    $user.identity(true).then(function(user) {
+      if (!user.current) {
+        $state.go('app.profile');
+      }
+    })
     initialiseStatType();
     initialiseGraphs();
     //Watches changes in parameters and trigger regeneration fo graph if any changes
