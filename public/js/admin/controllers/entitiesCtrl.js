@@ -185,6 +185,7 @@ app.controller('EntitiesCtrl', [
         method: [
           'all',
           'card',
+          'emi',
           'netbanking',
           'wallet'
         ],
@@ -415,6 +416,7 @@ app.controller('EntitiesCtrl', [
         var methods = {}, validMethods = [
             'amex',
             'card',
+            'emi',
             'paytm',
             'mobikwik',
             'payzapp'
