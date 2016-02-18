@@ -214,42 +214,8 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        if ($merchant->isActivated())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
-
-        $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
-
-        // $terminal = (new Terminal\Repository)->getByMerchantId($id);
-
-        // if ($terminal === null)
-        // {
-        //     throw new Exception\BadRequestException(
-        //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
-        // }
-
-        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
-
-        if ($ba === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
-
-        (new Merchant\Validator)->validateBeforeActivate($merchant);
-
-        (new Merchant\Core)->createBalance($merchant, 'live');
-
-        $merchant->enableReceiptEmails();
-
-        $merchant->activate();
-
-        $this->repo->saveOrFail($merchant);
-
-        $actEmail = new ActivationEmail($this->app);
-        $actEmail->sendActivationEmail($merchant);
+        $act = new Activate($this->app);
+        $act->activate($merchant);
 
         return $merchant->toArrayPublic();
     }

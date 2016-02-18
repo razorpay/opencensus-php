@@ -18,12 +18,55 @@ use EE\Error\ErrorCode;
 
 use Trace\TraceCode;
 
-class ActivationEmail
+class Activate
 {
-	public function __construct($app)
-	{
-		$this->app = $app;
-	}
+    public function __construct($app)
+    {
+        $this->app = $app;
+
+        $this->repo = new Merchant\Repository;
+    }
+
+    public function activate($merchant)
+    {
+        if ($merchant->isActivated())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
+
+        // $terminal = (new Terminal\Repository)->getByMerchantId($id);
+
+        // if ($terminal === null)
+        // {
+        //     throw new Exception\BadRequestException(
+        //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
+        // }
+
+        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
+
+        (new Merchant\Core)->createBalance($merchant, 'live');
+
+        $merchant->enableReceiptEmails();
+
+        $merchant->activate();
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->sendActivationEmail($merchant);
+
+        return $merchant->toArrayPublic();
+    }
 
     /**
      * Sends activation email to the merchant, cc's notifications
@@ -31,7 +74,7 @@ class ActivationEmail
      * @param  Models\Merchant\Entity $merchant merchant entity
      * @return null
      */
-    public function sendActivationEmail($merchant)
+    protected function sendActivationEmail($merchant)
     {
         $plan = $merchant->getPricingPlan();
 
