@@ -30,10 +30,22 @@ class UserController extends BaseController
     public function postRegister()
     {
         $input = Input::all();
+        $data = null;
+        $error = [];
+        try
+        {
 
-        list($error, $data) = (new User\Service)->register($input);
+            list($error, $data) = (new User\Service)->register($input);
+        }
+        catch (User\RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+        }
 
-        return AppResponse::jsonResponse($error, $data);
+        finally
+        {
+            return AppResponse::jsonResponse($error, $data);
+        }
     }
 
     /**

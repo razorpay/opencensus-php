@@ -11,6 +11,11 @@ use Models\Invitation;
 
 class Service extends Base\Service
 {
+    const NO_MERCHANTS_OWNED_BY_USER = "You don't own any merchants";
+    const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
+    const ALREADY_INVITED = 'An invitation has already been sent to the user.';
+    const INVALID_INVITE = 'The invitation is invalid.';
+
     /**
      * Send an invitation for the given merchant.
      *
@@ -28,13 +33,14 @@ class Service extends Base\Service
             return array($validation->messages(), null);
         }
 
-        $user = Auth::user()->user();
+        $loggedInUser = Auth::user()->user();
 
-        $merchant = $user->getOwnerMerchant();
+        // We need to change this to currentLoggedInMerchant later
+        $merchant = $loggedInUser->getOwnerMerchant();
 
         if ($merchant === false)
         {
-            $errors[] = "You don't own any merchants";
+            $errors[] = static::NO_MERCHANTS_OWNED_BY_USER;
         }
         else
         {
@@ -44,22 +50,34 @@ class Service extends Base\Service
         // This is a double check because going ahead once we have roles
         // Users can invite others as well, meaning user->email check would
         // become important.
-        if ($merchant->email === $input['email'] or $user->email === $input['email'])
+        if ($merchant->email === $input['email'] or $loggedInUser->email === $input['email'])
         {
-            $errors[] = "You can't invite yourself";
+            $errors[] = static::SELF_INVITE_NOT_ALLOWED;
         }
         else if ($merchant->hasInvitiationForEmail($input['email']))
         {
-            $errors[] = 'An invitation has already been sent to the user.';
+            $errors[] = static::ALREADY_INVITED;
         }
 
         if (empty($errors))
         {
-            $invitation = $merchant->inviteUserByEmailWithRole(
-                $input['email'], $input['role']);
+            $this->createInviteAndSendEmail($input['email'], $input['role']);
         }
 
         return [$errors, $data];
+    }
+
+    /**
+     * This is the final method that sends out the invite
+     * @param  string $email Email Address of the person to send the invite to
+     * @param  string $role  role of the user in the tea
+     * @return null
+     */
+    protected function createInviteAndSendEmail($email, $role = 'manager')
+    {
+        $invitation = $merchant->inviteUserByEmailWithRole($email, $role);
+
+        $this->sendInvitationEmail($invitation);
     }
 
     /**
@@ -75,21 +93,14 @@ class Service extends Base\Service
 
         if ($invitation === false)
         {
-            $error = 'The invitation is invalid.';
+            $error = static::INVALID_INVITE;
 
             return array($error, null);
         }
 
-        $view = $invitation->user_id
-                        ? 'emails.invitations.existing'
-                        : 'emails.invitations.new';
+        $this->sendInvitationEmail($invitation);
 
-        Mail::send($view, compact('invitation'), function ($m) use ($invitation)
-        {
-            $m->to($invitation->email)->subject('New Invitation!');
-        });
-
-        return array($error, $invitation->toArray());
+        return [$error, $invitation->toArray()];
     }
 
     /**
@@ -105,7 +116,7 @@ class Service extends Base\Service
 
         if ($invitation === false)
         {
-            $error[] = 'The invitation is invalid.';
+            $error[] = static::INVALID_INVITE;
         }
         else
         {
@@ -128,7 +139,7 @@ class Service extends Base\Service
 
         if ($invitation === false)
         {
-            return ['The invitation is invalid.'];
+            return [static::INVALID_INVITE];
         }
 
         $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
@@ -158,7 +169,7 @@ class Service extends Base\Service
 
         if ($invitation === false)
         {
-            $error[] = ['The invitation is invalid.'];
+            $error[] = [static::INVALID_INVITE];
 
             return $error;
         }
@@ -181,7 +192,7 @@ class Service extends Base\Service
 
         if ($invitation === false)
         {
-            return ['The invitation is invalid.'];
+            return [static::INVALID_INVITE];
         }
 
         $invitation->delete();
@@ -204,7 +215,7 @@ class Service extends Base\Service
             return array($error, $invitation);
         }
 
-        $error = array('The invitation is invalid.');
+        $error = [static::INVALID_INVITE];
 
         return array($error, null);
     }
@@ -227,5 +238,15 @@ class Service extends Base\Service
         }
 
         return array(null, $invitations);
+    }
+
+    protected function sendInvitationEmail($invitation)
+    {
+        $view = $invitation->user_id ? 'emails.invitations.existing' : 'emails.invitations.new';
+
+        Mail::queue($view, compact('invitation'), function ($m) use ($invitation)
+        {
+            $m->to($invitation->email)->subject('Invitation to join a team | Razorpay');
+        });
     }
 }

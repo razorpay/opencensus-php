@@ -56,9 +56,9 @@
     </div>
     <div class="row wrapper">
       <a href class="list-group-item" ng-repeat="invite in invitations">
-        <span class="pull-right"><button class="btn btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
-        <span class="pull-right"><button class="btn btn-danger" ng-click="rejectInvitation(invite)">Reject</button></span>
-        Invitation from {{ invite.merchant.name }} for the {{ invite.role | titlecase }} role
+        <span class="pull-right"><button class="btn btn-xs btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
+        <span class="pull-right"><button class="btn btn-xs btn-danger" ng-click="rejectInvitation(invite)">Reject</button></span>
+        Invitation to join {{ invite.merchant.name }}
       </a>
     </div>
     <div class="text-center m-b">

@@ -14,3 +14,4 @@ app/config/**/dev/*
 !app/config/dev/session.php
 apigen
 docs/
+public/docs
