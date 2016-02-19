@@ -22,6 +22,8 @@ class Fee
     public function __construct()
     {
         $this->repo = new Pricing\Repository;
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
