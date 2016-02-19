@@ -39,7 +39,7 @@
         </a>
       </div>
     </div>
-    <div class="row wrapper" ng-show="merchantCount > 1">
+    <div class="row wrapper" ng-show="merchantCount > 1 || loggedInUser.email != user.email">
       <div class="panel panel-default">
         <div class="list-group">
           <a href class="list-group-item">

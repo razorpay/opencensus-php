@@ -41,24 +41,24 @@ class Service extends Base\Service
      * @param  string $token invitation token
      * @return string $email
      */
-    protected function getInvitationFromToken($token)
+    protected function getInvitationAndUserFromToken($token)
     {
         list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($token);
 
         if ($error)
         {
             // This error is a string
-            throw new RecoverableException($error);
+            throw new RecoverableException($error[0]);
         }
 
         $user = User\Entity::where('email', $invitation->email)->first();
 
         if ($user)
         {
-            throw new RecoverableException(static::ACCOUNT_ALREADY_EXISTS);
+            return [$invitation, $user];
         }
 
-        return $invitation;
+        return [$invitation, null];
     }
 
     /**
@@ -75,14 +75,28 @@ class Service extends Base\Service
         $referer = $this->getRef($input);
 
         $invitationToken = Input::get('invitation', null);
+        $invitation = $user = null;
 
+        // If we have an invitation token, the user may have created an account
+        // in the meantime. $user will be equal to the user with the same email
+        // as the invited user
         if ($invitationToken)
+
         {
-            $invitation     = $this->getInvitationFromToken($invitationToken);
+            list($invitation, $user)    = $this->getInvitationAndUserFromToken($invitationToken);
+            // Since input would be lacking an email in case registration is via
+            // the invitation
             $input['email'] = $invitation->email;
         }
 
-        $user = $this->buildUserEntity($input);
+        // $user would not be null in a very rare edge case here
+        // Which is two subsequent invitations without either being
+        // accepted. Once the second one is accepted, this block
+        // is ignored and the $user found above will be used
+        if (! $user)
+        {
+            $user = $this->buildUserEntity($input);
+        }
 
         // These two branches are exclusive
         // You cannot accept an invite and create a merchant account
