@@ -306,42 +306,51 @@ class Processor
 
     protected function setOrderDetails($payment, $input)
     {
-        if (empty($input['order_id']) === false)
+        if (empty($input['order_id']) === true)
         {
-            $order_id = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
-
-            $this->order = $this->orderRepo->findOrFail($order_id);
-
-            if ($this->order->getAmount() !== $payment->getAmount())
-            {
-                // Order and Payment amount mismatch
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order and Payment Amount Mismatch Error');
-            }
-
-            if ($this->order->getMerchantId() !== $payment->getMerchantId())
-            {
-                // Merchant mismatch
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order id not found');
-            }
-
-            if (($this->order->getStatus() === Order\Status::PAID) or
-                ($this->order->isAuthorized()))
-            {
-                // Order already paid for
-                throw new Exception\BadRequestValidationFailureException(
-                    'Order already paid for');
-            }
-
-            $this->order->setStatus(Order\Status::ATTEMPTED);
-
-            $this->order->incrementAttempts();
-
-            $this->order->saveOrFail();
-
-            $payment->order()->associate($this->order);
+            return;
         }
+
+        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
+
+        $this->order = $this->orderRepo->find($orderId);
+
+        if ($this->order === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id provided not found.',
+                'order_id');
+        }
+
+        if ($this->order->getAmount() !== $payment->getAmount())
+        {
+            // Order and Payment amount mismatch
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+        }
+
+        if ($this->order->getMerchantId() !== $payment->getMerchantId())
+        {
+            // Merchant mismatch
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id not found');
+        }
+
+        if (($this->order->getStatus() === Order\Status::PAID) or
+            ($this->order->isAuthorized()))
+        {
+            // Order already paid for
+            throw new Exception\BadRequestValidationFailureException(
+                'Order already paid for');
+        }
+
+        $this->order->setStatus(Order\Status::ATTEMPTED);
+
+        $this->order->incrementAttempts();
+
+        $this->order->saveOrFail();
+
+        $payment->order()->associate($this->order);
     }
 
     protected function tracePaymentFailed($error, $traceCode)

@@ -16,6 +16,8 @@ class Verify
 {
     use SlackPoster;
 
+    const MIN_TIME_BEFORE_VERIFY = 600; // 10 minutes
+
     public function __construct($mode, $trace, $exceptionHandler)
     {
         $this->mode = $mode;
@@ -60,7 +62,7 @@ class Verify
 
     public function verifyAllPayments()
     {
-        $ts = time() - 15 * 60;
+        $ts = time() - self::MIN_TIME_BEFORE_VERIFY;
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 

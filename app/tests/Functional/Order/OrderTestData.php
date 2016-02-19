@@ -8,7 +8,7 @@ return [
     'testCreateOrder' => [
         'request' => [
             'content' => [
-                'amount'        => 500,
+                'amount'        => 50000,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
                 // 'method'     => 'netbanking',
@@ -19,7 +19,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'        => 500,
+                'amount'        => 50000,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
                 // 'method'     => 'netbanking',
@@ -29,7 +29,7 @@ return [
     ],
 
     'testGetOrder' => [
-        'amount'        => 500,
+        'amount'        => 50000,
         'currency'      => 'INR',
         'receipt'       => 'rcptid42',
     ],
@@ -43,4 +43,19 @@ return [
             'content' => []
         ]
     ],
+
+    'testOrderAndPaymentAmountMismatch' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH
+        ],
+    ]
 ];

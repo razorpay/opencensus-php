@@ -95,6 +95,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT];
     }
 
+    protected function getAuthorizedAttribute()
+    {
+        return (bool) $this->attributes[self::AUTHORIZED];
+    }
+
     protected function getAttemptsAttribute()
     {
         return (int) $this->attributes[self::ATTEMPTS];

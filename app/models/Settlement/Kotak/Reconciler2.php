@@ -107,6 +107,20 @@ class Reconciler2
             $data = $data[0];
         }
 
+        $rows = count($data);
+
+        for ($ix = $rows - 1; $ix > 0; $ix--)
+        {
+            if (strlen(implode($data[$ix])) === 0)
+            {
+                unset($data[$ix]);
+            }
+            else
+            {
+                break;
+            }
+        }
+
         return $data;
     }
 
@@ -179,7 +193,7 @@ class Reconciler2
         if (($status === 'Account Debited') or
             ($status === 'Presented and Paid'))
         {
-            $setl->setStatus(Settlement\Status::TRANSFERRED);
+            $setl->setStatus(Settlement\Status::PROCESSED);
             $this->setlRepo->save($setl);
         }
         else
@@ -213,6 +227,15 @@ class Reconciler2
     {
         $setlId = $row['reference_number'];
         $setlId = str_replace(' ', '_', $setlId);
+
+        if ($setlId === '')
+        {
+            // Check if row is empty.
+            if (strlen(implode($row)) === 0)
+            {
+                return;
+            }
+        }
 
         Settlement\Entity::verifyIdAndStripSign($setlId);
 

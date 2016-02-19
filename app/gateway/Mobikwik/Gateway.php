@@ -133,6 +133,7 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
+        $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
@@ -142,9 +143,15 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = false;
 
             // Could be the case where the transaction didn't even hit mobikwik
-            if (($payment['received'] === false) and
-                (($payment['statuscode'] === null) or
-                    ($payment['statuscode'] !== Status::SUCCESS)))
+            if (($payment === null) and
+                (($input['payment']['status'] === 'failed') or
+                 ($input['payment']['status'] === 'created')))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if (($payment['received'] === false) and
+                     (($payment['statuscode'] === null) or
+                      ($payment['statuscode'] !== Status::SUCCESS)))
             {
                 $verify->apiSuccess = false;
             }
@@ -158,11 +165,12 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
 
-            if ($payment['statuscode'] === Status::SUCCESS)
+            if (($input['payment']['status'] !== 'created') and
+                ($input['payment']['status'] !== 'failed'))
             {
                 $verify->apiSuccess = true;
             }
-            else if ($payment['statuscode'] !== Status::SUCCESS)
+            else
             {
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
@@ -171,7 +179,8 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($payment['received'] === false)
+        if (($payment !== null) and
+            ($payment['received'] === false))
         {
             $payment->fill($content);
             $payment->saveOrFail();
@@ -336,11 +345,11 @@ class Gateway extends Base\Gateway
 
         $this->addTestMerchantIdIfTestMode($content);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-                                $input['payment']['id'], Action::AUTHORIZE);
+        // $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        //                         $input['payment']['id'], Action::AUTHORIZE);
 
         $content['txid'] = $input['payment']['id'];
-        $content['email'] = $payment['email'];
+        $content['email'] = $input['payment']['email'];
         $content['amount'] = (string) ($input['refund']['amount'] / 100);
 
         $content['checksum'] = $this->getHashForRefundRequest(
