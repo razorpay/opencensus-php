@@ -60,10 +60,26 @@ class OrderTest extends TestCase
         $this->assertEquals($order['status'], 'attempted');
         $this->assertEquals($order['authorized'], true);
 
+        // If a payment is requested for an already authorised order
+        // That will fail with a BadRequestValidationFailureException
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
         $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
 
         $order = $this->getLastEntity('order');
         $this->assertEquals($order['status'], 'paid');
+
+        // If a payment is requested for an already paid order
+        // That will fail with a BadRequestValidationFailureException
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testOrderAndPaymentAmountMismatch()
