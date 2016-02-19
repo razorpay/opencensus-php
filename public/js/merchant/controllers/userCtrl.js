@@ -167,7 +167,7 @@ app.controller('UserCtrl', [
     });
     $scope.$on('$idleTimeout', function () {
       logoutRequest().finally(function () {
-        $state.go('access.lockme', { 'email': $scope.user.email }).finally(function () {
+        $state.go('access.lockme', { 'email': $scope.user.user.email }).finally(function () {
           closeModals();
         });
       });
