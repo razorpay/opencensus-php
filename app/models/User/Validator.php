@@ -17,6 +17,11 @@ class Validator extends Base\Validator
         'ref'                   => 'sometimes|max:255'
     );
 
+    protected static $upgradeRules = [
+        'business_name'         =>  'required|min:4|alpha_space|max:200'
+    ];
+
+
     protected static $createValidators = array('captcha');
 
     protected static $unsetCreateInput = array(

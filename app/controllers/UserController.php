@@ -155,4 +155,14 @@ class UserController extends BaseController
 
         return AppResponse::jsonResponse(null, $data);
     }
+
+
+    public function postUpgradeUserToMerchant()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->upgradeUserToMerchant($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

@@ -12,40 +12,43 @@
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
+    <alert type="danger" class="text-center" ng-show="!user.current">
+      Your user account is not associated at present with any merchant account.
+    </alert>
     <div class="row wrapper" ng-show="user.current">
       <div class="list-group">
-        <a href class="list-group-item">
+        <a class="list-group-item">
           <span class="pull-right">{{user.name | titlecase}}</span>
           Merchant Name
         </a>
-        <a href class="list-group-item">
+        <a href="mailto:{{user.email}}" class="list-group-item">
           <span class="pull-right">{{user.email}}</span>
-          Merchant Email Id
+          Merchant Email
         </a>
-        <a href class="list-group-item">
+        <a class="list-group-item">
           <span class="pull-right" tooltip="{{user.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': user.activated == 1, 'fa-times text-danger':user.activated == 0}"></i></span>
           Activation Status
         </a>
-        <a href class="list-group-item">
+        <a class="list-group-item">
           <span class="pull-right">{{user.created_at*1000 | date:'medium'}}</span>
           Registration Date
         </a>
-        <a href class="list-group-item">
+        <a class="list-group-item">
           <span class="pull-right">{{user.activation_progress}}%</span>
-          Activation Form Progress
+          Activation Form Progress {{Object.keys(user)}}
         </a>
       </div>
     </div>
-    <div class="row wrapper" ng-show="user.tags.indexOf('Team') != -1">
+    <div class="row wrapper" ng-show="merchantCount > 1">
       <div class="panel panel-default">
         <div class="list-group">
           <a href class="list-group-item">
             <span class="pull-right">{{loggedInUser.name | titlecase}}</span>
             User Name
           </a>
-          <a href class="list-group-item">
+          <a href="mailto:{{loggedInUser.email}}" class="list-group-item">
             <span class="pull-right">{{loggedInUser.email}}</span>
-            Login Email Id
+            Login Email
           </a>
         </div>
       </div>
@@ -54,12 +57,23 @@
     <div class="panel-heading m-t m-b" ng-show="invitations">
       Pending Invitations
     </div>
-    <div class="row wrapper">
+    <div class="row wrapper" ng-show="invitations">
       <a href class="list-group-item" ng-repeat="invite in invitations">
         <span class="pull-right"><button class="btn btn-xs btn-default" ng-click="acceptInvitation(invite)">Accept</button></span>
         <span class="pull-right"><button class="btn btn-xs btn-danger" ng-click="rejectInvitation(invite)">Reject</button></span>
         Invitation to join {{ invite.merchant.name }}
       </a>
+    </div>
+    <div class="text-center m-b" ng-show="!hasMerchant">
+      You can upgrade your account to a Merchant Account by giving us your business name:
+      <form class="form-inline" role="form">
+        <div class="form-group">
+          <label class="sr-only" for="business_name">Business Name</label>
+          <input type="text" class="form-control" ng-model="business_name" placeholder="Acme Inc." autocomplete="off" required>
+        </div>
+        <button ng-click="upgradeAcount(business_name)" type="submit" class="btn btn-info btn-rounded" ng-confirm-click="This will create a merchant account in your business name. Are you sure?">Upgrade</button>
+      </form>
+      <hr>
     </div>
     <div class="text-center m-b">
       <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>

@@ -146,13 +146,17 @@ class Service extends Base\Service
      * @param  string $referer      Could be false as well
      * @return array containing some minor details
      */
-    protected function createMerchantFromUser(User\Entity $user, $businessName, $referer)
+    protected function createMerchantFromUser(User\Entity $user, $businessName, $referer = false)
     {
         $merchant = Merchant\Service::register($user, $businessName, $referer);
 
         $user->merchants()->attach($merchant, ['role' => 'owner']);
 
-        (new UserMailer($user))->accountVerification()->queueAndDeliver();
+        // Only send the confirmation email if the user isn't already confirmed
+        if ($user->confirm_token != NULL)
+        {
+            (new UserMailer($user))->accountVerification()->queueAndDeliver();
+        }
 
         return $this->slackSignupPost($merchant, $user, $referer);
     }
@@ -335,5 +339,27 @@ class Service extends Base\Service
         }
 
         return array(null, $merchant);
+    }
+
+    public function upgradeUserToMerchant($input)
+    {
+        $user = Auth::user()->user();
+
+        $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
+
+        if (! empty($error))
+        {
+            return [$error, null];
+        }
+
+        // We don't have a referrer for the upgrade
+        $data = $this->createMerchantFromUser($user, $input['business_name']);
+
+        // $data['id'] is the newly created merchant Id
+        // This confirmation creates the Merchant Account on the API Side
+        // Make sure that the id is not submitted ever by the user
+        (new Merchant\Service)->confirmMerchantById($data['id']);
+
+        return [$error, $data];
     }
 }
