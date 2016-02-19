@@ -15,11 +15,11 @@ Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
 Route::group(array('before' => 'auth.user'), function()
 {
-    Route::get('/user', 'MerchantController@getMerchant');
     Route::get('/user/keepalive', 'UserController@getKeepAlive');
     Route::get('/user/logout', 'UserController@getLogout');
 
-    // This returns the current logged in user details
+    // This returns all the needed information
+    Route::get('/user', 'UserController@getUserDetails');
     Route::get('user/details', 'UserController@getUserDetails');
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
     Route::get('/{mode}/payments', 'TransactionController@getPayments');
@@ -61,8 +61,6 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
     Route::delete('settings/merchants/{merchant}/membership', 'InvitationsController@leaveMerchant');
 
-    Route::get('settings/merchants', 'UserController@getAllMerchantsForUser');
-
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/password', 'UserController@postPassword');
@@ -77,6 +75,9 @@ Route::group(array('before' => 'auth.user'), function()
         Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
         Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
         Route::get('/{mode}/reports', 'TransactionController@getGenerateReport');
+
+        // Upgrades a standard invited user to a merchant
+        Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
     });
 });
 Route::group(array('before' => 'guest.user'), function()

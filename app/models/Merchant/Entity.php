@@ -75,10 +75,10 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Generate the user instance from the merchant instance
      *
-     * @param \Models\User\Entity $user
-     * @return \Models\Merchant\Entity $merchant
+     * @param Models\User\Entity $user
+     * @return Models\Merchant\Entity $merchant
      */
-    public static function createFromUserWithBusinessName($user, $businessName)
+    public static function createFromUser(User\Entity $user, $businessName)
     {
         $merchant = new static();
         $merchant->timestamps = false;
@@ -159,6 +159,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     /**
      * Get all of the users that belong to the merchant.
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function users()
     {
@@ -180,33 +181,19 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * Invite a user to the merchants by e-mail address.
      *
      * @param  string  $email
-     * @return \Models\Merchant\Entity
+     * @return Models\Merchant\Entity
      */
     public function inviteUserByEmailWithRole($email, $role)
     {
+        // First try to find if a user account exists for the user
         $invitedUser = (new User\Entity)->where('email', $email)->first();
 
-        $invitation = $this->invitations()
-                           ->where('email', $email)->first();
-
-        if (! $invitation)
-        {
-            $invitation = $this->invitations()->create([
-                'user_id' => $invitedUser ? $invitedUser->id : null,
-                'email' => $email,
-                'token' => str_random(40),
-                'role' => $role,
-            ]);
-        }
-
-        $view = $invitation->user_id
-                        ? 'emails.invitations.existing'
-                        : 'emails.invitations.new';
-
-        Mail::send($view, compact('invitation'), function ($m) use ($invitation)
-        {
-            $m->to($invitation->email)->subject('New Invitation!');
-        });
+        $invitation = $this->invitations()->create([
+            'user_id' => $invitedUser ? $invitedUser->id : null,
+            'email' => $email,
+            'token' => str_random(40),
+            'role' => $role,
+        ]);
 
         return $invitation;
     }
@@ -214,11 +201,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Attach a user to a given merchant based on their invitation.
      *
-     * @param  \Models\Invitation\Entity  $invitation
-     * @param  \Models\User\Entity  $user
+     * @param  Models\Invitation\Entity  $invitation
+     * @param  Models\User\Entity  $user
      * @return void
      */
-    public static function attachUserToMerchantByInvitation($invitation, $user)
+    public static function attachUserToMerchantByInvitation(Invitation\Entity $invitation, User\Entity $user)
     {
         $user->joinMerchantByIdWithRole($invitation->merchant->id, $invitation->role);
         $user->switchToMerchant($invitation->merchant);
@@ -239,7 +226,9 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $removedUser = (new User\Entity)->find($userId);
 
         if($removedUser)
+        {
             $removedUser->refreshCurrentMerchant();
+        }
     }
 
     /**

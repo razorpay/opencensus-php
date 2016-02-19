@@ -2,141 +2,225 @@
 
 namespace Models\User;
 
+use Config;
 use DB;
 use Auth;
 use Hash;
 use Input;
+
 use Models\Base;
-use Models\User;
-use Models\Merchant;
 use Models\Invitation;
+use Models\Merchant;
 use Models\MerchantDetails;
-use Razorpay\Mailers\UserMailer;
+use Models\User;
+
 use Requests;
+use Razorpay\Mailers\UserMailer;
 
 class Service extends Base\Service
 {
-    /**
-     * TODO: This function is horribly long. Break it down
-     * @param  array  $input [description]
-     * @return [type]        [description]
-     */
-    public function register(array $input)
+    const ACCOUNT_ALREADY_EXISTS = 'You already have an account. Log in and accept the invite in you account settings page.';
+
+    protected function getRef(array &$input)
     {
         $referer = false;
 
+        // Unset because we fail the build step otherwise
         if (isset($input['ref']))
         {
             $referer = $input['ref'];
             unset($input['ref']);
         }
 
-        $invitationToken = Input::get('invitation', null);
+        return $referer;
+    }
 
-        if ($invitationToken)
+    /**
+     * Gets the email for a given invitation token
+     * Throws a recoverable exception otherwise
+     * @param  string $token invitation token
+     * @return string $email
+     */
+    protected function getInvitationAndUserFromToken($token)
+    {
+        list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($token);
+
+        if ($error)
         {
-            User\Validator::$createRules['email'] = 'email|unique:merchants';
-
-            list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($invitationToken);
-
-            if($error)
-            {
-                return array($error, null);
-            }
-            $email = $invitation->email;
-            $user = User\Entity::where('email',$email)->first();
-            if($user)
-            {
-                $error = ['You already have an account. Log in and accept the invite in you account settings page.'];
-                return [$error, null];
-            }
-            $input['email'] = $email;
+            // This error is a string
+            throw new RecoverableException($error[0]);
         }
 
+        $user = User\Entity::where('email', $invitation->email)->first();
+
+        if ($user)
+        {
+            return [$invitation, $user];
+        }
+
+        return [$invitation, null];
+    }
+
+    /**
+     * Main registration method. Contains most business logic for deciding what to
+     * register and as what (user|merchant) and with what details. See
+     * HACKING.md for a bit more details.
+     *
+     * @param  array  $input [description]
+     */
+    public function register(array $input)
+    {
+        $data = [];
+        $error = null;
+        $referer = $this->getRef($input);
+
+        $invitationToken = Input::get('invitation', null);
+        $invitation = $user = null;
+
+        // If we have an invitation token, the user may have created an account
+        // in the meantime. $user will be equal to the user with the same email
+        // as the invited user
+        if ($invitationToken)
+
+        {
+            list($invitation, $user)    = $this->getInvitationAndUserFromToken($invitationToken);
+            // Since input would be lacking an email in case registration is via
+            // the invitation
+            $input['email'] = $invitation->email;
+        }
+
+        // $user would not be null in a very rare edge case here
+        // Which is two subsequent invitations without either being
+        // accepted. Once the second one is accepted, this block
+        // is ignored and the $user found above will be used
+        if (! $user)
+        {
+            $user = $this->buildUserEntity($input);
+        }
+
+        // These two branches are exclusive
+        // You cannot accept an invite and create a merchant account
+        // at the same time
+        if (isset($input['business_name']))
+        {
+            // See HACKING.md in the root of the repo for a detailed note
+            assert(! $invitationToken);
+            $data = $this->createMerchantFromUser($user, $input['business_name'], $referer);
+        }
+
+        elseif ($invitationToken)
+        {
+            $this->attachUserToInvite($user, $invitation);
+            $data['login'] = true;
+        }
+
+        // We would never really reach this with an error because we are using exceptions here
+        return [$error, $data];
+    }
+
+    /**
+     * Attach a user to a merchant using an invitation
+     */
+    protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
+    {
+        Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+
+        $user->confirm_token = null;
+        $user->save();
+
+        Auth::user()->login($user);
+    }
+
+    /**
+     * Builds a new user entity from the input
+     * @param  array  $input array build for the user entity
+     * @return Models\User\Entity
+     */
+    protected function buildUserEntity(array $input)
+    {
+        // Now we can build a new user using the entire input
         $user = new User\Entity;
         $error = $user->build($input);
 
-        if (!empty($error))
+        if (! empty($error))
         {
-            return array($error, null);
+            throw new RecoverableException($error[0]);
         }
 
         $user->password = Hash::make($user->password);
         $user->save();
 
-        $businessName = isset($input['business_name']) ? $input['business_name'] : null;
-
-        if ($businessName)
-        {
-            $merchant = Merchant\Entity::createFromUserWithBusinessName($user,$businessName);
-            $merchant->save();
-
-            if ($referer)
-            {
-                $merchant->tag('ref-'.$referer);
-            }
-
-            // This is called for certain special email addresses
-            $merchant->setCustomId();
-
-            $user->merchants()->attach($merchant, ['role' => 'owner']);
-
-            $details = array('merchant_id' => $merchant->id,'contact_email' => $merchant->email);
-
-            MerchantDetails\Entity::createOrFail($details);
-
-            (new UserMailer($user))->accountVerification()->queueAndDeliver();
-
-            $data = [
-                'id'        => $merchant->id,
-                'name'      => $merchant->name,
-                'email'     => $user->email,
-                'user_name' => $user->name,
-            ];
-
-            $this->slackSignupPost($data, $referer);
-        }
-
-        if(isset($invitation))
-        {
-            Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
-
-            $user->confirm_token = null;
-            $user->save();
-
-            Auth::user()->login($user);
-            $data['login'] = true;
-
-        }
-
-        return array($error, $data);
+        return $user;
     }
 
-    protected function slackSignupPost($slackData, $referer = false)
+    /**
+     * Create a merchant entity from a user entity
+     * @param  Models\User\Entity $user
+     * @param  string $businessName business name
+     * @param  string $referer      Could be false as well
+     * @return array containing some minor details
+     */
+    protected function createMerchantFromUser(User\Entity $user, $businessName, $referer = false)
     {
+        $merchant = Merchant\Service::register($user, $businessName, $referer);
+
+        $user->merchants()->attach($merchant, ['role' => 'owner']);
+
+        // Only send the confirmation email if the user isn't already confirmed
+        if ($user->confirm_token != NULL)
+        {
+            (new UserMailer($user))->accountVerification()->queueAndDeliver();
+        }
+
+        return $this->slackSignupPost($merchant, $user, $referer);
+    }
+
+    /**
+     * Makes a call to sorting hat to post on Slack that a new merchant
+     * signed up
+     */
+    protected function slackSignupPost($merchant, $user, $referer = false)
+    {
+        $data = [
+            'id'        => $merchant->id,
+            'name'      => $merchant->name,
+            'email'     => $user->email,
+            'user_name' => $user->name,
+        ];
+
+        $config = Config::get('razorpay.sorting_hat');
+        $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$data['id']}/detail";
+        $message = "[New Signup]($merchantLink) as {$data['user_name']}";
+
+        if ($referer)
+        {
+            $message .= " | REF: $referer";
+        }
+
+        $postData = [
+            'email'         => $data['email'],
+            'name'          => $data['name'],
+            'message'       => $message,
+            'token'         => $config['token']
+        ];
+
+        // We want to keep environment conditional checks as late as possible
         if ($_ENV['SLACK_ENABLE'] === true)
         {
-            $config = \Config::get('razorpay.sorting_hat');
-            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
-            $message = "[New Signup]($merchantLink) as {$slackData['user_name']}";
-
-            if ($referer)
-            {
-                $message .= " | REF: $referer";
-            }
-
-            $postData = [
-                'email'         => $slackData['email'],
-                'name'          => $slackData['name'],
-                // This is in slack formatting
-                'message'       => $message,
-                'token'         => $config['token']
-            ];
-
+            /**
+             * TODO: Move this to queue perhaps
+             */
             Requests::post($config['url'], [], $postData);
         }
+
+        return $data;
     }
 
+    /**
+     * TODO: Cleanup this method
+     * @param  array  $input [description]
+     * @return [type]        [description]
+     */
     public function login(array $input)
     {
         $error = (new Validator)->validateInput('login', $input)->messages();
@@ -164,11 +248,6 @@ class Service extends Base\Service
         }
 
         $user = Auth::user()->user();
-        if($user && $user->hasMerchants() == false)
-        {
-            Auth::user()->logout();
-            $error[] = "You don't have any associated merchants or a merchant account. Contact razorpay support.";
-        }
 
         return array($error, null);
     }
@@ -177,7 +256,7 @@ class Service extends Base\Service
     {
         $user = Auth::user()->user();
 
-        if ($user->currentMerchant->isTestAccount())
+        if ($user->currentMerchant and $user->currentMerchant->isTestAccount())
         {
             return [["Password change forbidden on this account"], null];
         }
@@ -194,7 +273,8 @@ class Service extends Base\Service
             if($user->hasMerchants())
             {
                 $merchant = $user->merchants()
-                                 ->where('email',$user->email)->first();
+                    ->where('email',$user->email)->first();
+
                 if($merchant)
                 {
                     $merchant->password = $user->password;
@@ -212,7 +292,7 @@ class Service extends Base\Service
      * @param  string  $merchantId
      * @return \Illuminate\Http\Response
      */
-    public function switchCurrentMerchantForUser($merchantId, $user)
+    public function switchCurrentMerchantForUser($merchantId, User\Entity $user)
     {
         $merchant = $user->merchants()->find($merchantId);
 
@@ -228,10 +308,10 @@ class Service extends Base\Service
     /**
      * Get all the merchants for the given user.
      *
-     * @param  \Models\User\Entity  $user
-     * @return \Models\Merchant\Entity[]
+     * @param  User\Entity  $user
+     * @return Merchant\Entity[]
      */
-    public function getAllMerchantsForUser($user)
+    public function getAllMerchantsForUser(User\Entity $user)
     {
         $error = array();
 
@@ -239,28 +319,30 @@ class Service extends Base\Service
 
         if($merchants->count() < 0)
         {
-            $error = array('There are no merchants.');
-            return array($error, null);
+            $merchants = [];
         }
-
-        $currentMerchantId = $user->getCurrentMerchantId();
-
-        foreach ($merchants as $merchant)
+        else
         {
-            $merchant->current = $merchant->id == $currentMerchantId;
-            $merchant->setVisible(['id','name','email','current']);
+            $currentMerchantId = $user->getCurrentMerchantId();
+
+            foreach ($merchants as $merchant)
+            {
+                // Set current to a boolean
+                $merchant->current = ($merchant->id == $currentMerchantId);
+                $merchant->setVisible(['id','name','email','current']);
+            }
         }
 
-        return array(null, $merchants);
+        return $merchants;
     }
 
     /**
      * Get the current merchant for the authenticated user.
      *
-     * @param  \Models\User\Entity  $user
+     * @param  User\Entity  $user
      * @return \Illuminate\Http\Response
      */
-    public function getOwnedMerchantForUser($user)
+    public function getOwnedMerchantForUser(User\Entity $user)
     {
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
 
@@ -271,5 +353,27 @@ class Service extends Base\Service
         }
 
         return array(null, $merchant);
+    }
+
+    public function upgradeUserToMerchant($input)
+    {
+        $user = Auth::user()->user();
+
+        $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
+
+        if (! empty($error))
+        {
+            return [$error, null];
+        }
+
+        // We don't have a referrer for the upgrade
+        $data = $this->createMerchantFromUser($user, $input['business_name']);
+
+        // $data['id'] is the newly created merchant Id
+        // This confirmation creates the Merchant Account on the API Side
+        // Make sure that the id is not submitted ever by the user
+        (new Merchant\Service)->confirmMerchantById($data['id']);
+
+        return [$error, $data];
     }
 }

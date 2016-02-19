@@ -2,7 +2,7 @@ Hi!
 
 <br><br>
 
-{{ $invitation->merchant->primaryOwner()->name }} has invited you to join their team ({{$invitation->merchant->name}}).
+{{ $loggedInUser['name'] }} has invited you to join their team ({{$invitation_array['merchant']['name']}}).
 
 <br><br>
 

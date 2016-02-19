@@ -9,13 +9,18 @@ class Validator extends Base\Validator
     public static $createRules = array(
         'name'                  => 'required|alpha_space|max:200',
         'business_name'         => 'alpha_space|max:200',
-        'email'                 => 'required|email|unique:merchants',
+        'email'                 => 'required|email|unique:users',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
         'captcha'               => 'required',
         'invitation'            => 'max:40',
         'ref'                   => 'sometimes|max:255'
     );
+
+    protected static $upgradeRules = [
+        'business_name'         =>  'required|min:4|alpha_space|max:200'
+    ];
+
 
     protected static $createValidators = array('captcha');
 

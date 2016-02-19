@@ -30,9 +30,17 @@ class UserController extends BaseController
     public function postRegister()
     {
         $input = Input::all();
+        $data = null;
+        $error = [];
+        try
+        {
 
-        list($error, $data) = (new User\Service)->register($input);
-
+            list($error, $data) = (new User\Service)->register($input);
+        }
+        catch (User\RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+        }
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -94,21 +102,6 @@ class UserController extends BaseController
     }
 
     /**
-     * Get all the merchants for the given user.
-     *
-     * @param  \Models\User\Entity  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function getAllMerchantsForUser()
-    {
-        $user = Auth::user()->user();
-
-        list($error, $data) = (new User\Service)->getAllMerchantsForUser($user);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
      * Get the current merchant for the authenticated user.
      *
      * @return \Illuminate\Http\Response
@@ -122,10 +115,54 @@ class UserController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    /**
+     * This is the one true method for all information
+     * @return [type] [description]
+     */
     public function getUserDetails()
     {
-        $userdata = Auth::user()->user();
+        $data = [
+            // Current merchant
+            'current'   =>  null
+        ];
+        $user = Auth::user()->user();
 
-        return AppResponse::jsonResponse(null, $userdata);
+        $merchants = $user->merchants->toArray();
+
+        $currentMerchantId = $user->getCurrentMerchantId();
+
+        // If the user is logged in as someone
+        if ($currentMerchantId)
+        {
+            // Fetch merchant details for current merchant
+            $data = $data + (new MerchantDetails\Service)->fetchDetails();
+
+            foreach ($merchants as $merchant) {
+                $data['merchants'][$merchant['id']] = $merchant;
+
+                if ($merchant['id'] === $currentMerchantId)
+                {
+                    $data['current'] = $currentMerchantId;
+                }
+            }
+
+            // And finally, for backwards compatibility
+            $merchant = (new Merchant\Service)->fetchCurrentMerchantForUser($user);
+            $data = $data + $merchant;
+        }
+
+        $data['user'] = $user->toArray();
+
+        return AppResponse::jsonResponse(null, $data);
+    }
+
+
+    public function postUpgradeUserToMerchant()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->upgradeUserToMerchant($input);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 }

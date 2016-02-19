@@ -9,7 +9,8 @@ app.controller('UserCtrl', [
   '$idle',
   '$keepalive',
   'modeFactory',
-  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
+  'transformRequestAsFormPost',
+  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
 
@@ -25,21 +26,6 @@ app.controller('UserCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-
-    $scope.getLoggedInUser = function ()
-    {
-      var request = $http.get('/user/details');
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.loggedInUser = data.data;
-        } else {
-          $scope.alerts.addAlert('danger', null, true);
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    }
 
     $scope.acceptInvitation = function(invite) {
       var request = $http.post('settings/invitations/' + invite.id + '/accept');
@@ -67,10 +53,44 @@ app.controller('UserCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+
+    $scope.upgradeAcount = function(business_name) {
+      var request = $http({
+        method: 'post',
+        url: '/merchants/register',
+        transformRequest: transformRequestAsFormPost,
+        data: {
+          business_name: business_name
+        }
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant Account Created', true);
+          $state.reload();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
     $scope.refreshUser = function (force) {
-      $scope.getLoggedInUser();
       user.identity(force).then(function (data) {
         $scope.user = data;
+        $scope.merchantCount = Object.keys(data.merchants).length;
+        $scope.loggedInUser = data.user;
+        $scope.hasMerchant = false;
+
+        // Does the user have an associated merchant account
+        for(var i in data.user.merchants) {
+          var merchant = data.user.merchants[i];
+          if (merchant.email === data.user.email) {
+            $scope.hasMerchant = true;
+          }
+        }
         Rollbar.configure({
           payload: {
             person: {
@@ -147,7 +167,7 @@ app.controller('UserCtrl', [
     });
     $scope.$on('$idleTimeout', function () {
       logoutRequest().finally(function () {
-        $state.go('access.lockme', { 'email': $scope.user.email }).finally(function () {
+        $state.go('access.lockme', { 'email': $scope.user.user.email }).finally(function () {
           closeModals();
         });
       });

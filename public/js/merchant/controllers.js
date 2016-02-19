@@ -83,16 +83,12 @@ angular.module('app.controllers', [
   '$scope',
   '$http',
   '$state',
-  function ($scope, $http, $state) {
+  'user',
+  function ($scope, $http, $state, $user) {
     var request = $http.get('/settings/merchants');
-    request.success(function (data) {
-      if (data.success) {
-        $scope.merchants = data.data;
-      } else {
-        $scope.alerts.addAlert('danger', null, true);
-      }
-    }).error(function () {
-      $scope.alerts.addAlert('danger', null, true);
+
+    $user.identity(true).then(function (data) {
+      $scope.merchants = $.map(data.merchants || [], function(v) { return v; });
     });
 
     $scope.switchMerchant = function (merchant){

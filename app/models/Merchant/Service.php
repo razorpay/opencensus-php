@@ -15,31 +15,56 @@ use Razorpay\Api\Errors\BadRequestError;
 
 class Service extends Base\Service
 {
-    protected function slackSignupPost($slackData, $referer)
+
+    const INVALID_EMAIL_OR_PASSWORD = 'Email or password is invalid.';
+    const EMAIL_CHANGE_FORBIDDEN    = "Email change forbidden on this account";
+    const NAME_CHANGE_FORBIDDEN     = "Name change forbidden on this account";
+    const INVALID_CONFIRMATION_TOKEN= 'Invalid confirmation token or the merchant is already confirmed.';
+    const ROLL_KEY_FORBIDDEN        = "Roll key forbidden on this account";
+    const SELF_REMOVE_FORBIDDEN     = "You cannot remove yourself.";
+    const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
+
+
+    public static function register(User\Entity $user, $businessName, $referer = false)
     {
-        if ($_ENV['SLACK_ENABLE'] === true)
+        $data = [
+            'name'  =>  $businessName,
+            'email' =>  $user->email,
+        ];
+        $error = (new Merchant\Validator)
+            ->validateInput('create', $data)->messages();
+
+        // This makes sure that the User and Merchant entities are in sync for now
+        // We can drop the extra fields sometime since they aren't really used
+        if (empty($error))
         {
-            $config = \Config::get('razorpay.sorting_hat');
-            $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$slackData['id']}/detail";
-            $message = "[New Signup]($merchantLink)";
+            $merchant = Entity::createFromUser($user, $businessName);
+
+            // This is called for certain special email addresses
+            $merchant->setCustomId();
+
 
             if ($referer)
             {
-                $message .= " | REF: $referer";
+                $merchant->tag('ref-'.$referer);
             }
 
-            $postData = [
-                'email'         => $slackData['email'],
-                'name'          => $slackData['name'],
-                // This is in slack formatting
-                'message'       => $message,
-                'token'         => $config['token']
+            $merchant->save();
+
+            $details = [
+                'merchant_id'   => $merchant->id,
+                'contact_email' => $merchant->email
             ];
 
-            Requests::post($config['url'], [], $postData);
+            MerchantDetails\Entity::createOrFail($details);
+            return $merchant;
         }
-    }
+        else
+        {
+            throw new \Exception($error[0]);
+        }
 
+    }
     /**
      * take care when calling this function
      * This is only called from the admin service
@@ -51,7 +76,7 @@ class Service extends Base\Service
         $merchant = Merchant\Entity::findorfail($id);
 
         if ($merchant->isTestAccount()) {
-            return [["Email change forbidden on this account"], null];
+            return [[static::EMAIL_CHANGE_FORBIDDEN], null];
         }
 
         $originalEmail = $merchant->email;
@@ -89,7 +114,7 @@ class Service extends Base\Service
         $merchant = Merchant\Entity::findorfail($id);
 
         if ($merchant->isTestAccount()) {
-            return [["Name change forbidden on this account"], null];
+            return [[static::NAME_CHANGE_FORBIDDEN], null];
         }
 
         $error = $merchant->changeName($input);
@@ -108,7 +133,7 @@ class Service extends Base\Service
 
         if (is_null($merchant))
         {
-            return array('Invalid confirmation token or the merchant is already confirmed.');
+            return array(static::INVALID_CONFIRMATION_TOKEN);
         }
 
         return $this->confirmMerchantById($merchant->id);
@@ -164,7 +189,7 @@ class Service extends Base\Service
                 if ($user->confirm_token === null)
                 {
                     return [['User already confirmed. You can login ' .
-                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
+                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
                 }
 
                 (new UserMailer($user))->accountVerification()->queueAndDeliver();
@@ -173,7 +198,7 @@ class Service extends Base\Service
             }
         }
 
-        return array(array('Email or password is invalid.'), array());
+        return array(array(static::INVALID_EMAIL_OR_PASSWORD), array());
     }
 
     public function fetch($merchant_id)
@@ -224,7 +249,7 @@ class Service extends Base\Service
     public function rollKeys(array $input, $mode)
     {
         if (Auth::user()->user()->currentMerchant->isTestAccount()) {
-            return [["Roll key forbidden on this account"], null];
+            return [[static::ROLL_KEY_FORBIDDEN], null];
         }
 
         $error = (new Merchant\Validator)->validateInput('key', $input)->messages();
@@ -368,14 +393,14 @@ class Service extends Base\Service
 
         if ($userId === $user->id)
         {
-            return array("You cannot remove yourself.");
+            return array(static::SELF_REMOVE_FORBIDDEN);
         }
 
         $merchant = $user->merchants()->with('users', 'invitations')->where('role','owner')->first();
 
         if (is_null($merchant))
         {
-            return array("We couldn't find the merchant that you own.");
+            return array(static::NO_OWNED_MERCHANT);
         }
 
         $merchant->users()->detach($userId);
@@ -412,7 +437,7 @@ class Service extends Base\Service
 
         if (is_null($merchant))
         {
-            $error[] = "We couldn't find the merchant that you own.";
+            $error[] = static::NO_OWNED_MERCHANT;
             return array($error, null);
         }
 
