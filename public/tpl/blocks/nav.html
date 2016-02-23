@@ -14,6 +14,12 @@
       <span>Payments</span>
     </a>
   </li>
+  <li ng-show="merchant && user.tags.indexOf('Orders') != -1">
+    <a id="paymentsNav" ui-sref="app.orders">
+      <i class="fa fa-archive text-success-lter"></i>
+      <span>Orders</span>
+    </a>
+  </li>
   <li ng-show="merchant">
     <a id="refundsNav" ui-sref="app.refunds.list">
       <i class="fa fa-mail-reply icon text-warning-lter"></i>
