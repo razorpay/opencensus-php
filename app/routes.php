@@ -24,6 +24,7 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
     Route::get('/{mode}/payments', 'TransactionController@getPayments');
     Route::get('/{mode}/orders', 'TransactionController@getOrders');
+    Route::get('/{mode}/orders/{id}', 'TransactionController@getOrder');
     Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
     Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds');
     Route::get('/{mode}/refunds', 'TransactionController@getRefunds');

@@ -113,6 +113,15 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getOrder($mode, $id = null)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'order');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getPaymentRefunds($mode, $id = null)
     {
         $this->checkMode($mode);
