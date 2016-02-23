@@ -27,13 +27,13 @@
             <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
             Status
           </a>
-          <a href class="list-group-item" ng-init="isCollapsed = true">
+          <!-- <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.payments.length != 0">Show/Hide</button>
               <span ng-hide="entity.payments.length != 0">No Payments</span>
             </span>
             Payments
-          </a>
+          </a> -->
           <a href class="list-group-item">
             <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At

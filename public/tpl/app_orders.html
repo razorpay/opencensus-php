@@ -67,7 +67,6 @@
             <th>Status</th>
             <th>Receipt</th>
             <th data-hide="phone">Created At</th>
-            <th>Authorized</th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +78,6 @@
             <td><span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>
             <td>{{row.receipt}}</a></td>
             <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
-            <td><i class="fa" ng-class="{'fa-check text-success': row.authorized, 'fa-times text-danger':!row.authorized}"></i></td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="6" class="text-center">
