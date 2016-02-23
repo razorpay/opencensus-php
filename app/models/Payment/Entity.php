@@ -5,6 +5,7 @@ namespace Models\Payment;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
+use Models\Order;
 use Models\Payment;
 use Models\Payment\Refund;
 use Models\Payment\Processor\Netbanking;
@@ -105,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::TRANSACTION_ID,
+        self::ORDER_ID,
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
@@ -128,11 +130,15 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::ORDER_ID,
         self::FEE,
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
+
+    protected $publicSetters = array(
+        self::ID, self::ENTITY, self::ORDER_ID);
 
     protected $guarded = array(self::ID);
 
@@ -723,6 +729,13 @@ class Entity extends Base\PublicEntity
         }
         return false;
     }
+
+    public function setPublicOrderIdAttribute(Array & $array)
+    {
+        $array[self::ORDER_ID] =
+            Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+    }
+
 
 // ----------------------- Getters Ends-----------------------------------------
 
