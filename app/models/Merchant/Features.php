@@ -4,7 +4,7 @@ namespace Models\Merchant;
 
 class Features
 {
-    public static $allowedFeatures = array('dummy', 'webhooks');
+    public static $allowedFeatures = array('dummy', 'webhooks','orders');
 
     public static function validateFeatures($input)
     {
