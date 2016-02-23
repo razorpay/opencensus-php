@@ -88,7 +88,7 @@ return [
     'testContactTooLong' => [
         'request' => [
             'content' => [
-                'contact' => '1234567890110',
+                'contact' => '1234567890110044',
             ],
         ],
         'response' => [
@@ -102,7 +102,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_FIFTEEN_DIGITS,
         ],
     ],
 
@@ -190,22 +190,22 @@ return [
     'testAmountVeryHigh' => [
         'request' => [
             'content' => [
-                'contact' => '1000000000000000000000000',
+                'amount' => '10000000000',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'contact',
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS
+                    'field' => 'amount',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
+            'class' => 'EE\Exception\BadRequestValidationFailureException:',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH,
         ],
     ],
 

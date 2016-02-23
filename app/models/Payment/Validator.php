@@ -148,10 +148,14 @@ class Validator extends Base\Validator
                 $field);
         }
 
-        if (strlen($contact) > 12)
+        /**
+         * See https://en.wikipedia.org/wiki/Telephone_numbering_plan#International_numbering_plan
+         * for why 15
+         */
+        if (strlen($contact) > 15)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_FIFTEEN_DIGITS,
                 $field);
         }
     }
