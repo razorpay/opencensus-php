@@ -9,11 +9,8 @@ app.controller('OrderListCtrl', [
     $scope.getStatusClass = function (status) {
       var mapper = {
         created: 'bg-light',
-        authorized: 'bg-info',
-        captured: 'bg-success',
-        failed: 'bg-danger',
-        refunded: 'bg-primary',
-        attempted: 'bg-info'
+        attempted: 'bg-info',
+        paid: 'bg-success'
       };
       return mapper[status];
     };
