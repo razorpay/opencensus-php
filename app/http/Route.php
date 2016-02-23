@@ -390,12 +390,7 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'dummy_feature'     => 'dummy',
-        'order_create'      => 'orders',
-        'order_fetch'       => 'orders',
-        'order_fetch_by_id' => 'orders',
-        'order_update'      => 'orders',
-        'order_payments'    => 'orders',
+        'dummy_feature' =>  'dummy'
     );
 
     protected static $router;
