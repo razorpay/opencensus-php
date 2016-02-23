@@ -163,6 +163,7 @@ app.controller('ActionsCtrl', [
       });
       req.success(function (data) {
         if (data.success) {
+          $scope.alerts.resetAlerts();
           $scope.response = data;
           $scope.alerts.addAlert('success', 'API Request successful', true);
         } else {
@@ -173,6 +174,7 @@ app.controller('ActionsCtrl', [
           });
         }
       }).error(function () {
+        $scope.alerts.resetAlerts();
         $scope.alerts.addAlert('danger', 'The API request failed on the dashboard side.', true);
       });
     };
@@ -220,6 +222,16 @@ app.controller('ActionsCtrl', [
         controller: 'initiateSetlModalCtrl'
       });
       modalInstance.result.then($scope.initiateSetl, $.noop);
+    };
+
+    $scope.openSetlUpload = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'uploadSetlRecon.html',
+        controller: 'ApiRequestCtrl'
+      });
+      modalInstance.result.then(function (data) {
+        $scope.apiRequest(data)
+      }, $.noop);
     };
     $scope.openApiRequest = function () {
       var modalInstance = $modal.open({
