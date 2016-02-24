@@ -141,6 +141,27 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function fetchOrderPayments($id, $mode)
+    {
+        $data = $error = [];
+        $this->setApiCredentials($this->merchantId, $mode);
+        try
+        {
+            $collection = $this->api->order
+                ->setId($id)
+                ->payments()
+                ->toArray();
+
+            $data = $collection['items'];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     public function capturePayment($id, $amount, $mode)
     {
         $error = array();

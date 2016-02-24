@@ -27,21 +27,23 @@
             <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
             Status
           </a>
-          <!-- <a href class="list-group-item" ng-init="isCollapsed = true">
+          <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
-              <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.payments.length != 0">Show/Hide</button>
-              <span ng-hide="entity.payments.length != 0">No Payments</span>
+              <button class="btn btn-default btn-xs pull-right"  ng-click="toggleShowPayments()">Show/Hide</button>
+              <span ng-show="paymentsdFetched && payments.length == 0">No Payments</span>
             </span>
             Payments
-          </a> -->
+          </a>
           <a href class="list-group-item">
             <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At
           </a>
           <div collapse="isCollapsed" class="panel-body">
-            <a class="list-group-item" ng-repeat="payment in entity.payments" ui-sref="app.payments.detail({id:payment.id})">
+            <a class="list-group-item" ng-repeat="payment in payments" ui-sref="app.payments.detail({id:payment.id})">
               <span class="pull-right">{{payment.created_at*1000 | fromNow}} ({{payment.created_at*1000 | date:'medium'}})</span>
               {{payment.id}}
+              <span class="label text-base" title="{{payment.status}}" ng-class="getStatusClass(payment.status)">{{payment.status | titlecase}}
+              </span>
             </a>
           </div>
         </div>
