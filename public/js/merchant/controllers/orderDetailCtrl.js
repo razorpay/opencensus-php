@@ -9,7 +9,6 @@ app.controller('OrderDetailCtrl', [
   'transformRequestAsFormPost',
   function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost) {
     $scope.payments = [];
-    $scope.paymentsFetched = false;
     $scope.getStatusClass = function (status) {
       var mapper = {
         // Common to both payments and order
@@ -40,7 +39,6 @@ app.controller('OrderDetailCtrl', [
         if (data.success) {
           $scope.payments = data.data;
           $scope.isCollapsed = false;
-          $scope.paymentsFetched = true;
         } else {
           angular.forEach(data.errors, function (error, key) {
             $scope.alerts.addAlert('danger', error);
