@@ -732,7 +732,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicOrderIdAttribute(Array & $array)
     {
-        if ($array[self::ORDER_ID] !== null)
+        if (isset($array[self::ORDER_ID]))
         {
             $array[self::ORDER_ID] =
                 Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
