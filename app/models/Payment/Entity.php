@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT);
 
     protected $publicSetters = array(
-        self::ID, self::ENTITY);
+        self::ID, self::ENTITY, self::ORDER_ID);
 
     protected $guarded = array(self::ID);
 
@@ -732,8 +732,11 @@ class Entity extends Base\PublicEntity
 
     public function setPublicOrderIdAttribute(Array & $array)
     {
-        $array[self::ORDER_ID] =
-            Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+        if ($array[self::ORDER_ID] !== null)
+        {
+            $array[self::ORDER_ID] =
+                Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+        }
     }
 
 
