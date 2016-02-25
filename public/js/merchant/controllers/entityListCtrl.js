@@ -39,7 +39,7 @@ app.controller('EntityListCtrl', [
 
     $scope.prev = function () {
       clear('id');
-      $scope.entity.skip -= 10;
+      $scope.entity.skip = Math.max($scope.entity.skip - 10, 0);
       generateTable();
     };
 
