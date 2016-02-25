@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT);
 
     protected $publicSetters = array(
-        self::ID, self::ENTITY, self::ORDER_ID);
+        self::ID, self::ENTITY);
 
     protected $guarded = array(self::ID);
 
