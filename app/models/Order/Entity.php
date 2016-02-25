@@ -51,7 +51,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CREATED_AT);
 
-    protected static $sign = 'ordr';
+    protected static $sign = 'order';
 
     protected static $delimiter = '_';
 

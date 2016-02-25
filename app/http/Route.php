@@ -172,6 +172,7 @@ final class Route
         'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
         'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
+        'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
     );
 
     public static $public = array(
@@ -220,6 +221,7 @@ final class Route
         'order_create',
         'order_fetch',
         'order_fetch_by_id',
+        'order_payments',
         'dummy_feature',
     );
 
