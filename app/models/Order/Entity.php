@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -54,6 +55,8 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'order';
 
     protected static $delimiter = '_';
+
+    protected $entity           = 'order';
 
     public function merchant()
     {
