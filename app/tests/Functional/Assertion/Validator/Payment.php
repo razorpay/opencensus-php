@@ -20,6 +20,7 @@ class Payment extends Validator
         Entity::EMAIL               => 'sometimes|email',
         Entity::CONTACT             => 'sometimes|',
         Entity::NOTES               => 'sometimes|',
+        Entity::ORDER_ID            => 'sometimes|',
         Entity::ERROR_CODE          => 'sometimes|',
         Entity::ERROR_DESCRIPTION   => 'sometimes|',
         Entity::FEE                 => 'required_if:status,captured,refunded|integer',
