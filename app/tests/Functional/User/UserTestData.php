@@ -11,16 +11,16 @@ return [
             'url' => '/users',
             'method' => 'post',
             'content' => [
-                'name'    => 'test',
-                'email'   => 'test@razorpay.com',
-                'contact' => '1234567890',
+                'name'    => 'testc',
+                'email'   => 'testc@razorpay.com',
+                'contact' => '1234567899',
             ],
         ],
         'response' => [
             'content' => [
-                'name'    => 'test',
-                'email' => 'test@razorpay.com',
-                'contact' => '1234567890',
+                'name'    => 'testc',
+                'email' => 'testc@razorpay.com',
+                'contact' => '1234567899',
             ],
         ],
     ],
