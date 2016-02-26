@@ -1,0 +1,45 @@
+<?php
+
+namespace Models\User;
+
+use Models\Base;
+
+class Entity extends Base\PublicEntity
+{
+        const NAME              =>      'name';
+        const EMAIL             =>      'email';
+        const CONTACT           =>      'contact';
+        const MERCHANT_ID       =>      'merchant_id';
+
+        protected static $sign      = '';
+
+        protected $entity           = 'user';
+
+        protected $table            = \Constants\Table::USER;
+
+        protected $genereateIdOnCreate = true;
+
+        protected $fillable = array(
+            self::ID,
+            self::NAME,
+            self::EMAIL,
+            self::CONTACT,
+            self::MERCHANT_ID,
+        );
+
+        protected $visible = array(
+            self::ID,
+            self::NAME,
+            self::EMAIL,
+            self::CONTACT
+        );
+
+        protected $public = array(
+            self::ID,
+            self::NAME,
+            self::EMAIL,
+            self::CONTACT
+        );
+}
+
+

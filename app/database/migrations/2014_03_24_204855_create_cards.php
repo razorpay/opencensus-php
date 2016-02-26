@@ -19,7 +19,6 @@ class CreateCards extends Migration
     {
         Schema::create(Table::CARD, function(Blueprint $table)
         {
-
             $table->engine = 'InnoDB';
 
             $table->char(Card::ID, Card::ID_LENGTH)
@@ -47,6 +46,12 @@ class CreateCards extends Migration
                   ->nullable();
 
             $table->boolean(Card::INTERNATIONAL)
+                  ->nullable();
+
+            $table->char(Card::TOKEN)
+                  ->nullable();
+
+            $table->char(Card::SERVICE)
                   ->nullable();
 
             $table->string(Card::TRIVIA)

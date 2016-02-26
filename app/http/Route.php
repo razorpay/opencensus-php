@@ -168,6 +168,15 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+        'create_user'                           => ['post',     'users',                                    'UserController@createUser'                                         ],
+        'update_user'                           => ['put',      'users/{id}',                               'UserController@updateUser'                                         ],
+        'get_user'                              => ['get',      'users/{id}',                               'UserController@getUser'                                            ],
+        'delete_user'                           => ['delete',   'users/{id}',                               'UserController@deleteUser'                                         ],
+        'create_user_method'                    => ['post',     'users/{uid}/methods',                      'UserController@addMethod'                                          ],
+        'update_user_method'                    => ['put',      'users/{uid}/methods/{mid}',                'UserController@updateMethod'                                       ],
+        'fetch_user_method'                     => ['get',      'users/{uid}/methods/{mid}',                'UserController@fetchMethod'                                        ],
+        'fetch_multiple_user_methods'           => ['get',      'users/{uid}/methods',                      'UserController@fetchMethods'                                       ],
+        'delete_user_method'                    => ['delete',   'users/{uid}/methods/{mid}',                'UserController@deleteMethod'                                       ],
     );
 
     public static $public = array(
@@ -214,6 +223,15 @@ final class Route
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
         'dummy_feature',
+        'create_user',
+        'update_user',
+        'get_user',
+        'delete_user',
+        'create_user_method',
+        'update_user_method',
+        'fetch_user_method',
+        'fetch_multiple_user_methods',
+        'delete_user_method',
     );
 
     public static $internal = array(

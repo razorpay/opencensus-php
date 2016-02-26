@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
+    const SCOPE                     = 'scope';
 
     /**
      * Refers to methods relation and not a property;
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::FEATURES,
+        self::SCOPE,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -83,7 +85,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES         => null,
+        self::FEATURES              => null,
     );
 
     protected function generateTransactionReportEmail($input)

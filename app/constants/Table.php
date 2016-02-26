@@ -9,6 +9,7 @@ class Table
     const IIN               = 'iins';
     const KEY               = 'keys';
     const CARD              = 'cards';
+    const USER              = 'users';
     const REFUND            = 'refunds';
     const BALANCE           = 'balance';
     const METHODS           = 'merchant_banks';
@@ -21,6 +22,7 @@ class Table
     const SETTLEMENT        = 'settlements';
     const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
+    const USER_METHODS      = 'user_methods';
     const BANK_ACCOUNT      = 'bank_accounts';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 
