@@ -157,6 +157,11 @@ class Gateway extends Base\Gateway
             unset($content['vpc_SecureHash']);
         }
 
+        if (isset($content['vpc_Command']))
+        {
+            unset($content['vpc_Command']);
+        }
+
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;

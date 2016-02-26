@@ -2,8 +2,11 @@
 
 namespace Models\Payment\Processor;
 
+use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Merchant;
 use Models\Payment;
+use Models\Order;
 use Models\Transaction;
 use Trace\TraceCode;
 
@@ -71,7 +74,7 @@ trait Capture
             'payment' => $payment->toArray(),
             'amount' => $amount);
 
-        if (($payment->getMethod() === Payment\Method::CARD) or 
+        if (($payment->getMethod() === Payment\Method::CARD) or
             ($payment->getMethod() === Payment\Method::EMI))
         {
             $data['card'] = $payment->card->toArray();
@@ -89,6 +92,8 @@ trait Capture
         try
         {
             $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+            $this->verifyOrderUnpaid($this->payment);
 
             $this->recordCapture();
         }
@@ -111,6 +116,8 @@ trait Capture
             $this->updatePaymentCaptured();
 
             $this->createTransactionFromCapturedPayment($this->payment);
+
+            $this->updatePaidOrderStatus($this->payment);
 
             $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -152,5 +159,28 @@ trait Capture
 
         $txn->saveOrFail();
         $payment->saveOrFail();
+    }
+
+    protected function verifyOrderUnpaid($payment)
+    {
+        $order = $payment->order;
+
+        if (isset($order) and ($order->getStatus() === Order\Status::PAID))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+            'Corresponding order already has a captured payment.');
+        }
+    }
+
+    protected function updatePaidOrderStatus($payment)
+    {
+        $order = $payment->order;
+
+        if (isset($order))
+        {
+            $order->setStatus(Order\Status::PAID);
+
+            $order->saveOrFail();
+        }
     }
 }

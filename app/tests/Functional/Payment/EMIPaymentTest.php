@@ -34,10 +34,29 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
-        $this->assertEquals($content['emi_plan_id'], $emiPlan[0]['id']);
-        $this->assertEquals($content['method'], 'emi');
-        $this->assertEquals($content['status'], 'captured');
-        
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
+        $this->assertEquals($payment['method'], 'emi');
+        $this->assertEquals($payment['status'], 'captured');
+
         $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testEmiPaymentEmiNotSupported()
+    {
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '4000400000000004';
+
+        $this->changeEnvToNonTest();
+        $content = $this->doAuthPayment($this->payment);
+
+        $this->assertEquals($content['error']['http_status_code'], 400);
+        $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD');
     }
 }

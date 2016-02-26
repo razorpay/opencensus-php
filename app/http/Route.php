@@ -11,7 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
-        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
+        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getcheckout'                                    ],
         'merchant_methods'                      => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
         'payment_create'                        => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'               => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
@@ -168,6 +168,11 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+        'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
+        'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
+        'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
+        'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
+        'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'create_user'                           => ['post',     'users',                                    'UserController@createUser'                                         ],
         'update_user'                           => ['put',      'users/{id}',                               'UserController@updateUser'                                         ],
         'get_user'                              => ['get',      'users/{id}',                               'UserController@getUser'                                            ],
@@ -222,6 +227,10 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'order_create',
+        'order_fetch',
+        'order_fetch_by_id',
+        'order_payments',
         'dummy_feature',
         'create_user',
         'update_user',
@@ -323,7 +332,8 @@ final class Route
         'get_features',
         'add_emi_plan',
         'delete_emi_plan',
-        'get_emi_plan_by_id'
+        'get_emi_plan_by_id',
+        'order_update',
     );
 
     public static $proxy = array(

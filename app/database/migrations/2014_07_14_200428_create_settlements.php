@@ -110,5 +110,4 @@ class CreateSettlements extends Migration {
 
         Schema::drop(Table::SETTLEMENT);
     }
-
 }

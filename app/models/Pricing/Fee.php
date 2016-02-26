@@ -22,6 +22,8 @@ class Fee
     public function __construct()
     {
         $this->repo = new Pricing\Repository;
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
@@ -255,7 +257,13 @@ class Fee
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment');
+                'Failed to find a valid pricing rule for the payment',
+                [
+                    'rules' => $rules->toArray(),
+                    'amount' => $amount,
+                    'network' => $network,
+                    'type', $cardType
+                ]);
         }
 
         return $rule;
@@ -324,18 +332,13 @@ class Fee
 
         }
         // If only one other possible rule, return it.
-        else if(count($rules) === 1)
+        else if (count($rules) === 1)
         {
             return $rules[0];
         }
-        // Ideally should not reach this case, ever.
         else
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_PRICING_RULE_NOT_FOUND,
-                ['amount' => $amount, 'plan_id' => $rules[0]->getPlanId()]);
-
-            return $rules[0];
+            // Ideally should not reach this case, ever.
         }
 
         return $relevantRule;

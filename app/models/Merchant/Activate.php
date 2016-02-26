@@ -8,6 +8,7 @@ use Mail;
 
 use Models\Base;
 use Models\Merchant;
+use Models\Card;
 use Models\Key;
 use Models\Payment;
 use Models\Pricing;
@@ -82,10 +83,12 @@ class Activate
 
         $subject = "Razorpay | Account activated for $subjectName";
 
+        $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
+
         $data = [
             'merchant'  =>  $merchant->toArray(),
             'plan'      =>  $plan,
-            'rules'     =>  $this->formatPricingRules($plan['rules']),
+            'rules'     =>  $this->formatPricingRules($rules),
             'subject'   =>  $subject,
         ];
 
@@ -248,5 +251,51 @@ class Activate
         }
 
         return $arrangedRules;
+    }
+
+    /**
+     * Remove rules in the merchant's pricing plan
+     * for methods not enabled for the merchant
+     * Current checks for International, Emi and Amex
+     *
+     * @param array $rules Array of rules
+     * @param entity $merchant Merchant entity
+     * @return array Array of rules
+     **/
+    protected function filterActiveRulesForMerchant($rules, $merchant)
+    {
+        $returnRules = [];
+
+        $merchantMethods = (new Methods\Core)->getMethods($merchant);
+
+        foreach ($rules as $rule) {
+
+            // Don't add international rule if merchant international not active
+            if (($merchant->isInternational() === false) and
+                 ($rule[Pricing\Entity::INTERNATIONAL] === true))
+            {
+                continue;
+            }
+
+            // Don't add emi rule if merchant emi not active
+            if (($merchantMethods->isEmiEnabled() === false) and
+                 ($rule[Pricing\Entity::PAYMENT_METHOD] === Methods\Entity::EMI))
+            {
+                continue;
+            }
+
+            // Don't add amex rule if merchant amex not active
+            if (($merchantMethods->isAmexEnabled() === false) and
+                 ($rule[Pricing\Entity::PAYMENT_NETWORK] === Card\Network::AMEX))
+            {
+                continue;
+            }
+
+            // If none of the above rule exceptions are valid, add the rule to
+            // be returned.
+            $returnRules[] = $rule;
+        }
+
+        return $returnRules;
     }
 }

@@ -14,6 +14,7 @@ use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
 use Models\Transaction;
+use Models\Order;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
@@ -221,6 +222,13 @@ trait Authorize
 
         $iinEntity = (new IIN\Repository)->findOrFail($iin);
 
+        if (($iinEntity->isEmiAvailable() === false) or
+            (IIN\IIN::isValidCardForBank($iinEntity->getIssuer(), $input['card']['number'])) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
+        }
+
         $payment->setBank($iinEntity->getIssuer());
 
         // Set emi plan id
@@ -273,6 +281,18 @@ trait Authorize
         $this->eventPaymentAuthorized($payment);
 
         $this->notifyAuthorized($payment, $wasFailed);
+    }
+
+    protected function updateAuthorizedOrderStatus($payment)
+    {
+        $order = $payment->order;
+
+        if (isset($order))
+        {
+            $order->setAuthorized(true);
+
+            $order->saveOrFail();
+        }
     }
 
     protected function postPaymentAuthorizeProcessing($payment)
@@ -607,6 +627,10 @@ trait Authorize
             }
 
             $payment->saveOrFail();
+
+            // If payment has an associated order
+            // set the order to be paid
+            $this->updateAuthorizedOrderStatus($payment);
 
             $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
