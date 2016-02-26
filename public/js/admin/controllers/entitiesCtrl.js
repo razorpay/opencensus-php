@@ -176,6 +176,11 @@ app.controller('EntitiesCtrl', [
         bank_payment_id: ['Bank Reference Id'],
         int_payment_id: ['Int Payment Id']
       },
+      order:{
+        merchant_id: ['Merchant Id'],
+        status: ['Status'],
+        receipt: ['Receipt Id']
+      },
       payment: {
         bank: ['Bank Code'],
         email: ['Contact Email'],
@@ -377,7 +382,10 @@ app.controller('EntitiesCtrl', [
         authorized: 'bg-info',
         captured: 'bg-success',
         refunded: 'bg-primary',
-        failed: 'bg-danger'
+        failed: 'bg-danger',
+      // For orders
+        attempted: 'bg-info',
+        paid: 'bg-success',
       };
       return mapper[status] || 'bg-light';
     };
