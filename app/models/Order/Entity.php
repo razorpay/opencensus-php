@@ -39,8 +39,9 @@ class Entity extends Base\PublicEntity
     protected $genereateIdOnCreate = true;
 
     protected $defaults = array(
-        self::ATTEMPTS  => 0,
-        self::STATUS    => Status::CREATED);
+        self::ATTEMPTS   => 0,
+        self::STATUS     => Status::CREATED,
+        self::AUTHORIZED => 0);
 
     protected $public = array(
         self::ID,

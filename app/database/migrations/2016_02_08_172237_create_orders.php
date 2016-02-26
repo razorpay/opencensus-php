@@ -63,6 +63,7 @@ class CreateOrders extends Migration {
             $table->index(Order::CREATED_AT);
             $table->index(Order::STATUS);
             $table->index(Order::RECEIPT);
+            $table->index(Order::AUTHORIZED);
 
             // Commented parts to be added incrementally
 
