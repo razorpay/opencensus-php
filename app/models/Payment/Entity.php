@@ -120,7 +120,6 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::METHOD,
-        self::EMI_PLAN_ID,
         self::AMOUNT_REFUNDED,
         self::REFUND_STATUS,
         self::CAPTURED,

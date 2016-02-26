@@ -34,10 +34,12 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
-        $this->assertEquals($content['emi_plan_id'], $emiPlan[0]['id']);
-        $this->assertEquals($content['method'], 'emi');
-        $this->assertEquals($content['status'], 'captured');
-        
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
+        $this->assertEquals($payment['method'], 'emi');
+        $this->assertEquals($payment['status'], 'captured');
+
         $this->fixtures->merchant->disableEmi();
     }
 

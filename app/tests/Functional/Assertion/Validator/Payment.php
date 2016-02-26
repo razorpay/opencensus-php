@@ -14,7 +14,6 @@ class Payment extends Validator
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
         Entity::METHOD              => 'required|in:card,netbanking,wallet,emi',
         Entity::CAPTURED            => 'required|boolean',
-        Entity::EMI_PLAN_ID         => 'required_if:method,emi',
         Entity::AMOUNT_REFUNDED     => 'sometimes|',
         Entity::REFUND_STATUS       => 'sometimes|',
         Entity::DESCRIPTION         => 'sometimes|',
