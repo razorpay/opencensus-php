@@ -178,7 +178,17 @@ app.controller('EntitiesCtrl', [
       },
       order:{
         merchant_id: ['Merchant Id'],
-        status: ['Status'],
+        status: [
+          'all',
+          'created',
+          'attempted',
+          'paid',
+        ],
+        authorized: [
+          'all',
+          0,
+          1,
+        ],
         receipt: ['Receipt Id']
       },
       payment: {
