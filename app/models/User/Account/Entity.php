@@ -6,10 +6,10 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-        const NAME              =>      'name';
-        const EMAIL             =>      'email';
-        const CONTACT           =>      'contact';
-        const MERCHANT_ID       =>      'merchant_id';
+        const NAME              =       'name';
+        const EMAIL             =       'email';
+        const CONTACT           =       'contact';
+        const MERCHANT_ID       =       'merchant_id';
 
         protected static $sign      = '';
 

@@ -6,11 +6,11 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-        const USER_ID           =>      'user_id';
-        const METHOD            =>      'contact';
-        const CARD_ID           =>      'card_id';
-        const BANK              =>      'bank';
-        const WALLET            =>      'wallet';
+        const USER_ID           =       'user_id';
+        const METHOD            =       'contact';
+        const CARD_ID           =       'card_id';
+        const BANK              =       'bank';
+        const WALLET            =       'wallet';
  
         protected static $sign      = '';
 

@@ -27,7 +27,7 @@ class CreateUsersMethods extends Migration {
 
             $table->char(Methods::USER_ID, 14);
 
-            $table->char(Methods::TYPE, 10);
+            $table->char(Methods::METHOD, 10);
   
             $table->char(Methods::CARD_ID, 14);
 
