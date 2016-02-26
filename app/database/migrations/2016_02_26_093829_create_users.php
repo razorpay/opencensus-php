@@ -25,7 +25,8 @@ class CreateUsers extends Migration {
 
             $table->char(User::MERCHANT_ID, 14);
 
-            $table->char(User::NAME, 50);
+            $table->char(User::NAME, 50)
+                  ->nullable();
 
             $table->char(User::EMAIL, 50);
 
@@ -55,7 +56,7 @@ class CreateUsers extends Migration {
     {
         Schema::table(Table::USER, function($table)
         {
-            $table->dropForemign(Table::USER.'_'.User::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::USER.'_'.User::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::USER);

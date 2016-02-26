@@ -230,3 +230,11 @@ $factory(Models\Order\Entity::class, [
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,
 ]);
+
+$factory(Models\User\Entity::class, [
+    'id' => $faker->uniqueid,
+    'merchant_id' => 10000000000000,
+    'name' => 'name',
+    'contact' => '1234567890',
+    'email' => 'test@razorpay.com'
+]);

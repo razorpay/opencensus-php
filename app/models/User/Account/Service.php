@@ -18,6 +18,8 @@ class Service extends Base\Service
 
     public function create($input)
     {
+        $input['merchant_id'] = $this->merchant->getId();
+
         $user = (new User\Core)->create($input);
 
         return $user->toArrayPublic();
@@ -41,6 +43,13 @@ class Service extends Base\Service
 
     public function delete($id)
     {
+        $user = $this->repo->findOrFail($id);
 
+        $user = $this->repo->deleteOrFail($user);
+
+        if ($user === null)
+            return [];
+
+        return $user->toArrayPublic();
     }
 }

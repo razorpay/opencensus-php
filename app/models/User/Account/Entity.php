@@ -31,7 +31,8 @@ class Entity extends Base\PublicEntity
             self::ID,
             self::NAME,
             self::EMAIL,
-            self::CONTACT
+            self::CONTACT,
+            self::MERCHANT_ID,
         );
 
         protected $public = array(

@@ -27,6 +27,7 @@ class Base
         'atom'          => Gateway\Atom\Entity::class,
         'card'          => Models\Card\Entity::class,
         'hdfc'          => Gateway\Hdfc\Entity::class,
+        'user'          => Models\User\Entity::class,
         'order'         => Models\Order\Entity::class,
         'refund'        => Models\Payment\Refund\Entity::class,
         'webhook'       => Models\Merchant\Webhook\Entity::class,

@@ -32,7 +32,7 @@ class Core extends Base\Core
         $this->validateExistingMethod($method);
 
         $this->trace->info(
-            TraceCode::TERMINAL_EDIT,
+            TraceCode::USER_METHODS_EDIT,
             [
                 'method_id' => $method->getId(),
                 'fields' => array_keys($input),

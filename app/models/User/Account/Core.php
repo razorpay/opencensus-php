@@ -25,13 +25,13 @@ class Core extends Base\Core
     }
 
     public function edit($user, $input)
-    {
+    {        
         $user->edit($input);
 
         $this->repo->saveOrFail($user);
 
         $this->trace->info(
-            TraceCode::User_EDIT,
+            TraceCode::USER_EDIT,
             [$input]);
 
         return $user;

@@ -35,6 +35,9 @@ class TraceCode
 
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const USER_EDIT                                 = 'USER_EDIT';
+    const USER_METHODS_EDIT                         = 'USER_METHODS_EDIT';
+
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
