@@ -518,6 +518,7 @@ trait PaymentTrait
             'amount_refunded'   => 0,
             'error_code'        => null,
             'error_description' => null,
+            'order_id'          => null,
             'currency'          => 'INR',
             'entity'            => 'payment');
 

@@ -2,6 +2,8 @@
 
 namespace Models\Payment\Processor;
 
+use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Merchant;
 use Models\Payment;
 use Models\Order;
@@ -91,6 +93,8 @@ trait Capture
         {
             $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
 
+            $this->verifyOrderUnpaid($this->payment);
+
             $this->recordCapture();
         }
         catch (BaseException $e)
@@ -155,6 +159,17 @@ trait Capture
 
         $txn->saveOrFail();
         $payment->saveOrFail();
+    }
+
+    protected function verifyOrderUnpaid($payment)
+    {
+        $order = $payment->order;
+
+        if (isset($order) and ($order->getStatus() === Order\Status::PAID))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+            'Corresponding order already has a captured payment.');
+        }
     }
 
     protected function updatePaidOrderStatus($payment)

@@ -48,5 +48,14 @@ class OrderController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function fetchPayments($id)
+    {
+        $input = Input::all();
+
+        $payments = $this->order->fetchPaymentsFor($id);
+
+        return ApiResponse::json($payments);
+    }
 }
 

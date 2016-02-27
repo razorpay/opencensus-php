@@ -56,6 +56,9 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $payment['order_id']);
+
         $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'attempted');
         $this->assertEquals($order['authorized'], true);

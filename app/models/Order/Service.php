@@ -4,6 +4,7 @@ namespace Models\Order;
 
 use Models\Base;
 use Models\Order;
+use Models\Payment;
 
 class Service extends Base\Service
 {
@@ -39,5 +40,16 @@ class Service extends Base\Service
         $orders = (new Repository)->fetch($input, $this->merchant->getId());
 
         return $orders->toArrayPublic();
+    }
+
+    public function fetchPaymentsFor($id)
+    {
+        $options = [
+            'order_id' => $id,
+        ];
+
+        $payments = (new Payment\Repository)->fetch($options, $this->merchant->getKey());
+
+        return $payments->toArrayPublic();
     }
 }

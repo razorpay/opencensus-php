@@ -43,11 +43,32 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function checkExistingUser(array $input)
+    {
+        ;
+    }
+
+    public function otpGenerate(array $input)
+    {
+        ;
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
 
+        if ((isset($input['gateway']['type'])) and
+            ($input['gateway']['type'] === 'otp'))
+        {
+            return $this->callbackOtpSubmit($input);
+        }
+
         $this->verifyPaymentCreateResponse($input);
+    }
+
+    protected function callbackOtpSubmit($input)
+    {
+        ;
     }
 
     public function capture(array $input)

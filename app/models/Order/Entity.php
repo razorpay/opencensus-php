@@ -39,11 +39,13 @@ class Entity extends Base\PublicEntity
     protected $genereateIdOnCreate = true;
 
     protected $defaults = array(
-        self::ATTEMPTS  => 0,
-        self::STATUS    => Status::CREATED);
+        self::ATTEMPTS   => 0,
+        self::STATUS     => Status::CREATED,
+        self::AUTHORIZED => 0);
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -51,9 +53,11 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CREATED_AT);
 
-    protected static $sign = 'ordr';
+    protected static $sign = 'order';
 
     protected static $delimiter = '_';
+
+    protected $entity           = 'order';
 
     public function merchant()
     {

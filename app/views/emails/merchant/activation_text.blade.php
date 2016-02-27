@@ -11,9 +11,6 @@ The pricing details associated with your account are:
 @foreach ($rules['otherRules'] as $pricing => $methodDisplay)
 - {{implode(',', $methodDisplay)}} - {{$pricing}}
 @endforeach
-@if ($merchant['international'] === true)
-- 3% on International Transactions
-@endif
 - Service Taxes Extra (14.5%)
 
 In case you haven't integrated our API in your application, the instructions can be found at https://docs.razorpay.com.
