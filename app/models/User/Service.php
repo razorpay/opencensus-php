@@ -144,6 +144,7 @@ class Service extends Base\Service
 
         if (! empty($error))
         {
+            $error = array_values($error);
             throw new RecoverableException($error[0]);
         }
 
