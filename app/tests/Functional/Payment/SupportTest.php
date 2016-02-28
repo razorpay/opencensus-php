@@ -77,6 +77,7 @@ class SupportTest extends TestCase
 
         $this->assertEquals(
             [
+                'filter'        => 'all',
                 'verified'      => 1,
                 'failed'        => 0,
                 'authorized'    => 0,
