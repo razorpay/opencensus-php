@@ -40,6 +40,10 @@ class Verify
         {
             return $this->verifyPaymentsWithErrorVerifyResult();
         }
+        else if ($filter === 'created')
+        {
+            return $this->verifyPaymentsWithCreatedStatus();
+        }
         else
         {
             ;
@@ -58,6 +62,15 @@ class Verify
         $payments = (new Payment\Repository)->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
 
         return $this->verifyMultiplePayments($payments);
+    }
+
+    public function verifyPaymentsWithCreatedStatus()
+    {
+        $ts = time() - 5 * 60;
+
+        $payments = (new Payment\Repository)->getPaymentsWithCreatedStatus($ts);
+
+        $this->verifyMultiplePayments($payments);
     }
 
     public function verifyAllPayments()
