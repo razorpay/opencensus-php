@@ -164,7 +164,7 @@ class Verify
         $total = $timedOut + $verified + $failed + $authorized + $error;
 
         if (($total !== 0) and
-            (($verified > 2) or
+            (($verified > 4) or
              ($total !== $verified)))
         {
             // Drop all false values (NULL, 0, "")
