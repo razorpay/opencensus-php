@@ -148,7 +148,9 @@ class Verify
 
         $total = $timedOut + $verified + $failed + $authorized + $error;
 
-        if ($total !== 0)
+        if (($total !== 0) and
+            (($verified > 2) or
+             ($total !== $verified)))
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($results);
