@@ -17,7 +17,7 @@
     <body onload="document.form1.submit()" style="text-align: center; height: 100%">
     <div style="position: relative; top: 50%; margin-top: -100px;">
         <div>Please wait while your transaction is processed...</div>
-        <div id="powered" style="font-size: 13px; position: absolute; right: 50%; bottom: 35px; letter-spacing: 0.25px; color: #888; margin-right: -96px;">powered by</div>
+        <div id="powered" style="display: none; font-size: 13px; position: absolute; right: 50%; bottom: 35px; letter-spacing: 0.25px; color: #888; margin-right: -96px;">powered by</div>
         <script>
             try{
                 var parent = document.currentScript.parentNode;
