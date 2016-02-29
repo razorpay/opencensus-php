@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const ISSUER        = 'issuer';
     const ISSUER_NAME   = 'issuer_name';
     const EMI           = 'emi';
+    const OTP_READ      = 'otp_read';
     const TRIVIA        = 'trivia';
 
     const INTERNATIONAL = 'international';
@@ -91,6 +92,11 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    protected function getOtpReadAttribute()
+    {
+        return (bool) $this->attributes[self::OTP_READ];
     }
 
     public function getIssuerAttribute()

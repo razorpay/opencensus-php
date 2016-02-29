@@ -162,6 +162,11 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    public function addPaymentMetadata($id, $input)
+    {
+        $otpRead = (bool) $input['otp_read'];
+    }
+
     public function refundOldAuthorizedPayments()
     {
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
