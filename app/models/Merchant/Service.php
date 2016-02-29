@@ -31,8 +31,11 @@ class Service extends Base\Service
             'name'  =>  $businessName,
             'email' =>  $user->email,
         ];
+
         $error = (new Merchant\Validator)
             ->validateInput('create', $data)->messages();
+
+        $merchant = null;
 
         // This makes sure that the User and Merchant entities are in sync for now
         // We can drop the extra fields sometime since they aren't really used
@@ -57,12 +60,9 @@ class Service extends Base\Service
             ];
 
             MerchantDetails\Entity::createOrFail($details);
-            return $merchant;
         }
-        else
-        {
-            throw new \Exception($error[0]);
-        }
+
+        return [$error, $merchant];
 
     }
     /**

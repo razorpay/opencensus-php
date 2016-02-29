@@ -105,7 +105,7 @@ class Service extends Base\Service
         {
             // See HACKING.md in the root of the repo for a detailed note
             assert(! $invitationToken);
-            $data = $this->createMerchantFromUser($user, $input['business_name'], $referer);
+            list($error, $data) = $this->createMerchantFromUser($user, $input['business_name'], $referer);
         }
 
         elseif ($invitationToken)
@@ -163,7 +163,12 @@ class Service extends Base\Service
      */
     protected function createMerchantFromUser(User\Entity $user, $businessName, $referer = false)
     {
-        $merchant = Merchant\Service::register($user, $businessName, $referer);
+        list($error, $merchant) = Merchant\Service::register($user, $businessName, $referer);
+
+        if (! empty($error))
+        {
+            return [$error, null];
+        }
 
         $user->merchants()->attach($merchant, ['role' => 'owner']);
 
@@ -173,7 +178,7 @@ class Service extends Base\Service
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 
-        return $this->slackSignupPost($merchant, $user, $referer);
+        return [null, $this->slackSignupPost($merchant, $user, $referer)];
     }
 
     /**
@@ -368,12 +373,15 @@ class Service extends Base\Service
         }
 
         // We don't have a referrer for the upgrade
-        $data = $this->createMerchantFromUser($user, $input['business_name']);
+        list($error, $data) = $this->createMerchantFromUser($user, $input['business_name']);
 
-        // $data['id'] is the newly created merchant Id
-        // This confirmation creates the Merchant Account on the API Side
-        // Make sure that the id is not submitted ever by the user
-        (new Merchant\Service)->confirmMerchantById($data['id']);
+        if (empty($error))
+        {
+            // $data['id'] is the newly created merchant Id
+            // This confirmation creates the Merchant Account on the API Side
+            // Make sure that the id is not submitted ever by the user
+            (new Merchant\Service)->confirmMerchantById($data['id']);
+        }
 
         return [$error, $data];
     }
