@@ -9,7 +9,7 @@ use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
 
 use Razorpay\Api\Request as ApiRequest;
-
+use Razorpay\Api\Errors as RZPErrors;
 // This is the default class we use for making requests
 use RZP\Api as Api;
 
@@ -91,6 +91,26 @@ class RawApiRequest
     }
 
     /**
+     * This only gets called if it's a multipart file upload
+     */
+    protected function parseBody()
+    {
+        $postArray = [];
+        // @note: The second parameter is crucial and a huge
+        // security risk if not added because otherwise it
+        // replicates register_globals
+        mb_parse_str(Input::get('body', ''), $postArray);
+        $body = [];
+
+        foreach ($postArray as $key => $value)
+        {
+            $body[$key] = $value;
+        }
+
+        return $body;
+    }
+
+    /**
      * Sets the body and content type of the request as
      * per the guzzle input format
      * @return null
@@ -100,18 +120,9 @@ class RawApiRequest
         // If we need to add the file to the body
         if ($this->input['file'] instanceof \SplFileInfo)
         {
-            // @note: The second parameter is crucial and a huge
-            // security risk if not added because otherwise it
-            // replicates register_globals
-            mb_parse_str($this->input['body'], $postArray);
-            $this->params['body'] = [];
-
-            foreach ($postArray as $key => $value)
-            {
-                $this->params['body'][$key] = $value;
-            }
-
             $file = Input::file('file');
+
+            $this->params['body'] = $this->parseBody();
 
             // Now that we have added all POST params, we add the file itself
             // This contains the field name to be used for the file field
@@ -127,7 +138,6 @@ class RawApiRequest
         // We just pass the body as it is
         else
         {
-            // Uses one if available in the input, else defaults to this
             $this->setContentType('application/x-www-form-urlencoded');
             $this->params['body'] = Input::get('body', '');
         }
@@ -163,9 +173,14 @@ class RawApiRequest
             $json = $e->getResponse()->json();
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
-        finally
+        catch(\GuzzleHttp\Exception\ServerException $e)
         {
-            return [$errors, $response];
+            $errors = [$e->getMessage()];
         }
+        catch(RZPErrors\Error $e)
+        {
+            $errors = [$e->getMessage()];
+        }
+        return [$errors, $response];
     }
 }

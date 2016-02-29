@@ -161,6 +161,7 @@ app.controller('ActionsCtrl', [
           'Content-Type': undefined
         }
       });
+
       req.success(function (data) {
         if (data.success) {
           $scope.alerts.resetAlerts();
@@ -177,7 +178,9 @@ app.controller('ActionsCtrl', [
         $scope.alerts.resetAlerts();
         $scope.alerts.addAlert('danger', 'The API request failed on the dashboard side.', true);
       });
+
     };
+
     $scope.verifyPayment = function (payment_id) {
       var request = $http({
         method: 'get',
