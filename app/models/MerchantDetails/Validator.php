@@ -57,7 +57,7 @@ class Validator extends Base\Validator
 
     protected static $step4Rules = array(
         'bank_name'             => 'required|alpha_space|max:255',
-        'bank_account_number'   => 'required|numeric|digits_between:1,20',
+        'bank_account_number'   => 'required|alpha_num|between:5,20',
         'bank_account_name'     => 'required|alpha_space_num|max:40',
         'bank_account_type'     => 'required|alpha_space|max:20',
         'bank_branch'           => 'required|max:255',

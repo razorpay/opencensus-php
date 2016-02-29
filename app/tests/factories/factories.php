@@ -55,7 +55,7 @@ $factory('Models\MerchantDetails\Entity', [
     'promoter_pan'  => $faker->word,
     'promoter_pan_name' => $faker->word,
     'bank_name' => $faker->word,
-    'bank_account_number'   => '100000000',
+    'bank_account_number'   => 'RZP100000000',
     'bank_account_name' => substr(md5(time()), 0, 5),
     'bank_account_type' => $faker->word,
     'bank_branch'   => $faker->word,
