@@ -17,16 +17,14 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::withTrashed()
-                    ->findOrFailPublic($id);
+        return $repo::findOrFailPublic($id);
     }
 
     public function getByUserId($uid)
     {
         $repo = $this->repo;
 
-        return $repo::withTrashed()
-                    ->where(Methods\Entity::USER_ID, '=', $uid)
+        return $repo::where(Methods\Entity::USER_ID, '=', $uid)
                     ->get();
     }
 
@@ -34,8 +32,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::withTrashed()
-                    ->where(Methods\Entity::USER_ID, '=', $uid)
+        return $repo::where(Methods\Entity::USER_ID, '=', $uid)
                     ->findOrFailPublic($mid);
     }
 }

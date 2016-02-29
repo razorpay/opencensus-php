@@ -73,4 +73,64 @@ return [
             ],
         ],
     ],
+
+    'testGetUserMethods' => [
+        'request' => [
+            'url' => '/users/1000000000user/methods',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'id'            => '100000userbank',
+                        'user_id'       => '1000000000user',
+                        'method'        => 'netbanking',
+                        'bank'          => 'HDFC',
+                    ],
+                    [
+                        'id'            => '1000userwallet',
+                        'user_id'       => '1000000000user',
+                        'method'        => 'wallet',
+                        'wallet'        => 'paytm',
+                    ],
+
+                ]
+
+            ],
+        ],
+    ],
+
+    'testGetUserMethod' => [
+        'request' => [
+            'url' => '/users/1000000000user/methods/1000userwallet',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => '1000userwallet',
+                'user_id'       => '1000000000user',
+                'method'        => 'wallet',
+                'wallet'        => 'paytm',
+            ],
+        ],
+    ],
+
+    'testDeleteUserMethod' => [
+        'request' => [
+            'url' => '/users/1000000000user/methods/1000userwallet',
+            'method' => 'delete',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    
 ];

@@ -39,11 +39,12 @@ class Base
         'webhook'       => Models\Merchant\Webhook\Entity::class,
         'merchant'      => Models\Merchant\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
+        'emi_plan'      => Models\Emi\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,
         'settlement'    => Models\Settlement\Entity::class,
         'transaction'   => Models\Transaction\Entity::class,
+        'user_method'   => Models\User\Methods\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
-        'emi_plan'      => Models\Emi\Entity::class
     );
 
     protected static $liveAndTest = array(

@@ -18,7 +18,7 @@ class CreateUsersMethods extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::USER_METHODS, function(Blueprint $table)
+        Schema::create(Table::USER_METHOD, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -29,17 +29,22 @@ class CreateUsersMethods extends Migration {
 
             $table->char(Methods::METHOD, 10);
   
-            $table->char(Methods::CARD_ID, 14);
+            $table->char(Methods::CARD_ID, 14)
+                  ->nullable();
 
-            $table->char(Methods::BANK, 4);
+            $table->char(Methods::BANK, 6)
+                  ->nullable();
 
-            $table->char(Methods::WALLET, 15);
+            $table->char(Methods::WALLET, 15)
+                  ->nullable();
 
             $table->integer(Methods::CREATED_AT);
             
             $table->integer(Methods::UPDATED_AT);
 
             $table->index(Methods::USER_ID);
+
+            $table->index(Methods::CREATED_AT);
 
             $table->foreign(Methods::USER_ID)
                   ->references(User\Entity::ID)
@@ -60,13 +65,13 @@ class CreateUsersMethods extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::USER_METHODS, function($table)
+        Schema::table(Table::USER_METHOD, function($table)
         {
-            $table->dropForeign(Table::USER_METHODS.'_'.User::USER_ID.'_foreign');
+            $table->dropForeign(Table::USER_METHOD.'_'.User::USER_ID.'_foreign');
 
-            $table->dropForeign(Table::USER_METHODS.'_'.User::CARD_ID.'_foreign');
+            $table->dropForeign(Table::USER_METHOD.'_'.User::CARD_ID.'_foreign');
         });
 
-        Schema::drop(Table::USER_METHODS);
+        Schema::drop(Table::USER_METHOD);
     }
 }

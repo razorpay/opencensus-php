@@ -34,7 +34,7 @@ class Service extends Base\Service
     {
         $user = $this->repo->findOrFailPublic($uid);
 
-        $method = $methodsRepo->getByIdAndUserId($uid, $mid);
+        $method = $this->methodsRepo->getByIdAndUserId($uid, $mid);
 
         $method = (new Methods\Core)->edit($method, $input);
 
@@ -45,7 +45,7 @@ class Service extends Base\Service
     {
         $user = $this->repo->findOrFailPublic($uid);
 
-        $method = $methodsRepo->getByIdAndUserId($uid, $mid);
+        $method = $this->methodsRepo->getByIdAndUserId($uid, $mid);
 
         return $method->toArrayPublic();
 
@@ -55,16 +55,16 @@ class Service extends Base\Service
     {
         $user = $this->repo->findOrFailPublic($uid);
 
-        $methods = $methodsRepo->getByUserId($uid);
+        $methods = $this->methodsRepo->getByUserId($uid);
 
         return $methods->toArrayPublic();
     }
 
     public function delete($uid, $mid)
     {
-        $method = $methodsRepo->findOrFailPublic($mid);
+        $method = $this->methodsRepo->findOrFailPublic($mid);
 
-        $method = $methodsRepo->deleteOrFail($method);
+        $method = $this->methodsRepo->deleteOrFail($method);
 
         if ($method === null)
             return [];

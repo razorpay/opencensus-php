@@ -238,3 +238,12 @@ $factory(Models\User\Entity::class, [
     'contact' => '1234567890',
     'email' => 'test@razorpay.com'
 ]);
+
+$factory(Models\User\Methods\Entity::class, [
+    'id' => $faker->uniqueid,
+    'user_id' => '1000000000user',
+    'wallet' => 'paytm',
+    'method' => 'wallet',
+    'bank'   => null,
+    'card_id' => null
+]);

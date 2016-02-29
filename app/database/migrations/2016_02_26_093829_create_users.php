@@ -28,8 +28,7 @@ class CreateUsers extends Migration {
             $table->char(User::NAME, 50)
                   ->nullable();
 
-            $table->char(User::EMAIL, 50);
-
+            $table->char(User::EMAIL, 255);
             
             $table->char(User::CONTACT, 15);
 
@@ -38,7 +37,7 @@ class CreateUsers extends Migration {
 
             $table->index(User::EMAIL);
 
-            $table->index(User::CONTACT);
+            $table->index(User::CREATED_AT);
 
             $table->foreign(User::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

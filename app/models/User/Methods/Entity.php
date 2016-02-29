@@ -7,7 +7,7 @@ use Models\Base;
 class Entity extends Base\PublicEntity
 {
         const USER_ID           =       'user_id';
-        const METHOD            =       'contact';
+        const METHOD            =       'method';
         const CARD_ID           =       'card_id';
         const BANK              =       'bank';
         const WALLET            =       'wallet';
@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
         );
 
         protected $visible = array(
+            self::ID,
             self::USER_ID,
             self::METHOD,
             self::CARD_ID,
@@ -38,6 +39,7 @@ class Entity extends Base\PublicEntity
         );
 
         protected $public = array(
+            self::ID,
             self::USER_ID,
             self::METHOD,
             self::CARD_ID,

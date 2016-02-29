@@ -23,7 +23,7 @@ class Table
     const SETTLEMENT        = 'settlements';
     const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
-    const USER_METHODS      = 'user_methods';
+    const USER_METHOD       = 'user_methods';
     const BANK_ACCOUNT      = 'bank_accounts';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 
