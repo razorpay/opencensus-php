@@ -850,12 +850,19 @@ class Service extends Base\Service
         $error = array();
         $data = array();
 
+        $originalInput = $input;
+
+        if (isset($input['pricing_plan_name']))
+        {
+            unset($input['pricing_plan_name']);
+        }
+
         $this->setApiCredentials();
 
         try
         {
             $data = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
-            $this->logActionToSlack($id, 'pricing plan set', $input);
+            $this->logActionToSlack($id, 'pricing plan set', $originalInput);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

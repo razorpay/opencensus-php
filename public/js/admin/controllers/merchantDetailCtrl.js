@@ -269,8 +269,9 @@ app.controller('MerchantDetailCtrl', [
       var editMerchant = { 'receipt_email_enabled': value };
       $scope.editMerchant(editMerchant);
     };
-    $scope.assignPricing = function (plan_id) {
-      var data = { pricing_plan_id: plan_id };
+    $scope.assignPricing = function (data) {
+      var data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
+
       var request = $http({
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/pricing',
@@ -529,8 +530,8 @@ app.controller('MerchantDetailCtrl', [
           }
         }
       });
-      modalInstance.result.then(function (plan_id) {
-        $scope.assignPricing(plan_id);
+      modalInstance.result.then(function (data) {
+        $scope.assignPricing(data);
       }, $.noop);
     };
 
@@ -789,22 +790,25 @@ app.controller('MerchantDetailCtrl', [
   'current',
   function ($scope, $modalInstance, $http, current) {
     $scope.loading = true;
-    $scope.pricing_plans = [];
+    $scope.pricing_plans = {};
     $scope.pricing_plan_id = current;
     var request = $http.get('/admin/pricing/list');
     request.success(function (data) {
       if (data.success) {
-        angular.forEach(data.data, function (value, key) {
-          $scope.pricing_plans.push({
-            'id': value.id,
-            'name': value.name
-          });
-        });
+        for (var key in data.data) {
+          var value  = data.data[key];
+          $scope.pricing_plans[value.id] = value.name;
+        }
         $scope.loading = false;
       }
     });
+
+    $scope.pricingPlansLength = function() {
+      return Object.keys($scope.pricing_plans).length;
+    }
     $scope.ok = function (pricing_plan_id) {
-      $modalInstance.close(pricing_plan_id);
+      var pricingPlanName = $scope.pricing_plans[pricing_plan_id];
+      $modalInstance.close({id: pricing_plan_id, name: pricingPlanName});
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
