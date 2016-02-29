@@ -155,7 +155,6 @@ return [
     'testWebhookEventData' => [
         'event' => [
             'event' => 'payment.authorized',
-            'merchant_id' => null,
             'contains' => ['payment'],
             'payload' => [
                 'payment' => [
@@ -189,7 +188,6 @@ return [
         'content' => [
             'entity' => 'event',
             'event' => 'payment.authorized',
-            'merchant_id' => null,
             'contains' => ['payment'],
             'payload' => [
                 'payment' => [

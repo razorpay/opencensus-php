@@ -870,4 +870,18 @@ class Entity extends Base\PublicEntity
 
         return $relevantData;
     }
+
+// --------------------- Query scopes section begin ----------------------------
+
+    public function scopeStatus($query, $status)
+    {
+        return $query->where(Payment\Entity::STATUS, '=', $status);
+    }
+
+    public function scopeCreatedAtLessThan($query, $ts)
+    {
+        return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
+    }
+
+// --------------------- Query scopes section ends -----------------------------
 }

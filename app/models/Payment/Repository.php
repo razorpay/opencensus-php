@@ -42,7 +42,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
-                    ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
+                    ->status(Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
     }
@@ -82,7 +82,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::CREATED)
+        return $repo::status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->update(
                         array(
@@ -96,7 +96,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
+        return $repo::status(Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->orderBy(Payment\Entity::MERCHANT_ID)
                     ->get();
@@ -106,7 +106,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
+        return $repo::status(Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
                     ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
                     ->get();
@@ -116,7 +116,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
+        return $repo::status(Payment\Status::CAPTURED)
                     ->where(Payment\Entity::AUTO_CAPTURED, '=', true)
                     ->where(Payment\Entity::CAPTURED_AT, '<=', $timeUpperLimit)
                     ->where(Payment\Entity::CAPTURED_AT, '>', $timeLowerLimit)
@@ -134,6 +134,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPaymentsWithCreatedStatusForVerification($ts)
+    {
+        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+
+        return $this->newQuery()
+                    ->whereNull(Payment\Entity::VERIFIED)
+                    ->status(Payment\Status::CREATED)
+                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
+                    ->createdAtLessThan($ts)
+                    ->get();
+    }
+
     public function getUnverifiedPayments($ts)
     {
         $repo = $this->repo;
@@ -141,9 +153,9 @@ class Repository extends Base\Repository
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
         return $repo::whereNull(Payment\Entity::VERIFIED)
-                    ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->status(Payment\Status::FAILED)
                     ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
-                    ->where(Payment\Entity::CREATED_AT, '<', $ts)
+                    ->createdAtLessThan($ts)
                     ->take(50)
                     ->get();
     }
