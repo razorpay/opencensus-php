@@ -16,8 +16,6 @@ class UserTest extends TestCase
         parent::setUp();
 
         $user = $this->fixtures->create('user:default_users');
-
-        $userMethods = $this->fixtures->create('user_method:default_user_methods');
     }
 
     public function testCreateUser()
@@ -46,55 +44,6 @@ class UserTest extends TestCase
     }
 
     public function testDeleteUser()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-/*
-    public function testAddUserMethodCard()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testAddUserMethodWallet()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testAddUserMethodNetbanking()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testUpdateUserMethodCard()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-*/
-    public function testGetUserMethods()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetUserMethod()
-    {
-        $this->ba->privateAuth();
-
-        return $this->startTest();
-    }
-
-    public function testDeleteUserMethod()
     {
         $this->ba->privateAuth();
 
