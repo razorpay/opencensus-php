@@ -8,12 +8,24 @@ app.controller('RegisterCtrl', [
   'transformRequestAsFormPost',
   '$analytics',
   '$location',
-  function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location) {
-
+  '$window',
+  function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location, $window) {
     $scope.data = {};
 
-    if($location.search().invitation)
+    if($location.search().invitation) {
       $scope.data.invitation = $location.search().invitation;
+    }
+    // We only track referers if they are registering a business
+    else {
+      $window.google_trackConversion({
+        google_conversion_id : 928471290,
+        google_conversion_language : "en",
+        google_conversion_format : "3",
+        google_conversion_color : "ffffff",
+        google_conversion_label : "CM9fCLm40GMQ-rHdugM",
+        google_remarketing_only : false
+      });
+    }
 
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
