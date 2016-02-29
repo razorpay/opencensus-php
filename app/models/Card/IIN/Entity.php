@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::EMI       =>  0,
+        self::EMI       =>  false,
     );
 
     public function getIin()
@@ -108,5 +108,10 @@ class Entity extends Base\PublicEntity
     public function isEmiAvailable()
     {
         return (bool) $this->getAttribute(self::EMI);
+    }
+
+    protected function getEmiAttribute()
+    {
+        return (bool) $this->attributes[self::EMI];
     }
 }
