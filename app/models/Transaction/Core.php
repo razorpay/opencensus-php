@@ -406,32 +406,22 @@ class Core extends Base\Core
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
     {
-        $currentDay = (int) $timestamp->format('w');
+        $currentDay = $timestamp->dayOfWeek;
 
-        $day = $currentDay + $addDays;
+        $daysToSettle = $currentDay + $addDays;
 
-        if ($day % 7 === 6)
+        if (($daysToSettle % Carbon::DAYS_PER_WEEK === Carbon::SATURDAY) or
+            ($daysToSettle % Carbon::DAYS_PER_WEEK === Carbon::SUNDAY) or
+             ($daysToSettle > Carbon::DAYS_PER_WEEK))
         {
-            $addDays += 2;
-        }
-        else if ($day % 7 === 0)
-        {
-            if ($addDays === 1)
-            {
-                $addDays += 1;
-            }
-            else
-            {
-                $addDays += 2;
-            }
-        }
-        else if ($day > 7)
-        {
+            // Adding a two day weekend
             $addDays += 2;
         }
 
-        if (($currentDay === 6) and
-            ($addDays !== 2))
+        // transaction was on saturday
+        // we added two day weekend
+        // remove one day for that
+        if ($currentDay === Carbon::SATURDAY)
         {
             $addDays -= 1;
         }
