@@ -24,7 +24,7 @@ class Service extends Base\Service
     {
         $user = $this->repo->findOrFailPublic($uid);
 
-        $method = (new Methods\Core)->create($uid, $input);
+        $method = (new Methods\Core)->create($user, $input);
 
         return $method->toArrayPublic();
 

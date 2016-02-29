@@ -13,6 +13,20 @@ class Repository extends Base\Repository
 
     protected $entity = 'UserMethods';
 
+    public function getByParams($params)
+    {
+        $repo = $this->repo;
+
+        $query = (new $repo)->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query = $query->where($key, '=', $value);
+        }
+
+        return $query->get();
+    }
+
     public function getById($id)
     {
         $repo = $this->repo;

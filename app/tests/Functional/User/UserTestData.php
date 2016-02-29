@@ -132,5 +132,61 @@ return [
             ],
         ],
     ],
-    
+
+    'testAddUserMethodCard' => [
+        'request' => [
+            'url' => '/users/1000000000user/methods',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card_id' => '10000savedcard',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'card',
+                'card_id' => '10000savedcard',
+                'wallet' => null,
+                'bank' => null
+            ],
+        ],
+    ],
+
+    'testAddUserMethodWallet' => [
+        'request' => [
+            'url' => '/users/1000000000user/methods',
+            'method' => 'post',
+            'content' => [
+                'method' => 'wallet',
+                'wallet' => 'paytm',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'wallet',
+                'card_id' => null,
+                'wallet' => 'paytm',
+                'bank' => null,
+            ],
+        ],
+    ],
+
+    'testAddUserMethodNetbanking' => [
+        'request' => [
+            'url' => '/users/1000000000user/methods',
+            'method' => 'post',
+            'content' => [
+                'method' => 'netbanking',
+                'bank' => 'HDFC',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'netbanking',
+                'card_id' => null,
+                'wallet' => null,
+                'bank' => 'HDFC',
+            ],
+        ],
+    ]
 ];

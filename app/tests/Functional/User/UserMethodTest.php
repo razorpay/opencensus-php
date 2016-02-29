@@ -17,10 +17,12 @@ class UserMethodTest extends TestCase
 
         $user = $this->fixtures->create('user:default_users');
 
+        $card = $this->fixtures->create('card', ['id' => '10000savedcard']);
+
         $userMethods = $this->fixtures->create('user_method:default_user_methods');
     }
-    
-/*
+
+
     public function testAddUserMethodCard()
     {
         $this->ba->privateAuth();
@@ -42,13 +44,6 @@ class UserMethodTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateUserMethodCard()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-*/
     public function testGetUserMethods()
     {
         $this->ba->privateAuth();

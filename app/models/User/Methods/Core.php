@@ -14,13 +14,13 @@ class Core extends Base\Core
         $this->repo = new Methods\Repository;
     }
     
-    public function create($uid, $input)
+    public function create($user, $input)
     {
         $input['user_id'] = $user->getKey();
 
         $method = (new Methods\Entity)->build($input);
 
-        $this->validateExistingMethod($method);
+        //$this->validateExistingMethod($method);
 
         $this->repo->saveOrFail($method);
 
@@ -29,7 +29,7 @@ class Core extends Base\Core
 
     public function edit($method, $input)
     {
-        $this->validateExistingMethod($method);
+        //$this->validateExistingMethod($method);
 
         $this->trace->info(
             TraceCode::USER_METHODS_EDIT,
@@ -43,5 +43,34 @@ class Core extends Base\Core
         $this->repo->saveOrFail($method);
     
         return $method;
+    }
+
+    protected function validateExistingMethod($method)
+    {
+        $params = array(
+            Methods\Entity::USER_ID => $method->getUserId(),
+            Methods\Entity::METHOD  => $method->getMethod()
+        );
+
+        $existingMethods = $this->repo->getByParams($params);
+
+        $func = 'validateExistingMethod'.$method->getId();
+
+        $this->$func($existingMethods, $method);
+    }
+
+    protected function validateExistingMethodCard($existingMethods, $method)
+    {
+
+    }
+
+    protected function validateExistingMethodNetbanking($existingMethods, $method)
+    {
+        
+    }
+
+    protected function validateExistingMethodWallet($existingMethods, $method)
+    {
+        
     }
 }
