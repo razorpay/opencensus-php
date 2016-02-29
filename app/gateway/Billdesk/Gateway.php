@@ -43,7 +43,11 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
+        // We should ensure once that AuthStatus is 0300 and
+        // RefundStatus is null.
+
         assert ($payment['RefundStatus'] === null);
+        assert ($payment['AuthStatus'] === AuthStatus::SUCCESS);
     }
 
     public function callback(array $input)
