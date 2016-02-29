@@ -28,15 +28,15 @@ class CreateUsers extends Migration {
             $table->char(User::NAME, 50)
                   ->nullable();
 
-            $table->char(User::EMAIL, 50);
+            $table->char(User::EMAIL, 255);
 
-            
             $table->char(User::CONTACT, 15);
 
             $table->integer(User::CREATED_AT);
             $table->integer(User::UPDATED_AT);
 
             $table->index(User::EMAIL);
+            $table->index(User::CREATED_AT);
 
             $table->index(User::CONTACT);
 
