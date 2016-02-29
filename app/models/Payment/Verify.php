@@ -69,7 +69,7 @@ class Verify
     {
         $ts = time() - 5 * 60;
 
-        $payments = $this->repo->getPaymentsWithCreatedStatus($ts);
+        $payments = $this->repo->getPaymentsWithCreatedStatusForVerification($ts);
 
         $this->verifyMultiplePayments($payments, 'created');
     }
