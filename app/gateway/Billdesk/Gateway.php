@@ -36,6 +36,16 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function capture(array $input)
+    {
+        parent::callback($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                        $input['payment']['id'], Action::AUTHORIZE);
+
+        assert ($payment['RefundStatus'] === null);
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
@@ -90,6 +100,19 @@ class Gateway extends Base\Gateway
 
         if ($content['ProcessStatus'] !== 'Y')
         {
+            //
+            // For very very few transactions, the payment status on billdesk changes
+            // after 1 whole day. These are automatically refunded by billdesk.
+            // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
+            // In that case, we need to let the refund go ahead.
+
+            if (($content['ErrorCode'] === 'ERR_REF009') and
+                ($payment['TotalRefundAmount'] * 100 === $input['payment']['amount']) and
+                ($payment['RefundStatus'] === RefundStatus::CANCELLED))
+            {
+                return;
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
                 [$content]);
