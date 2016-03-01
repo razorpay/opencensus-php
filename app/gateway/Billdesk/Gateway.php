@@ -111,8 +111,8 @@ class Gateway extends Base\Gateway
             // In that case, we need to let the refund go ahead.
 
             if (($content['ErrorCode'] === 'ERR_REF009') and
-                ($payment['TotalRefundAmount'] * 100 === $input['payment']['amount']) and
-                ($payment['RefundStatus'] === RefundStatus::CANCELLED))
+                ($payment['RefundStatus'] === RefundStatus::CANCELLED) and
+                ((int) $payment['TotalRefundAmount'] * 100 === $input['payment']['amount']))
             {
                 return;
             }
