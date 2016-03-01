@@ -14,6 +14,8 @@ use Models\Merchant;
 use Models\MerchantDetails;
 use Models\User;
 
+use Queue;
+
 use Requests;
 use Razorpay\Mailers\UserMailer;
 
@@ -216,10 +218,21 @@ class Service extends Base\Service
             /**
              * TODO: Move this to queue perhaps
              */
-            Requests::post($config['url'], [], $postData);
+            Queue::push('Models\User\Service@postToSortingHat', $postData);
         }
 
         return $data;
+    }
+
+    /**
+     * This method needs to be public because it's called
+     * on a Queue
+     * @param  array $data data to send to Sorting Hat
+     */
+    public function postToSortingHat($job, $data)
+    {
+        $config = Config::get('razorpay.sorting_hat');
+        Requests::post($config['url'], [], $data);
     }
 
     /**
