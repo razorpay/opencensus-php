@@ -17,14 +17,16 @@ app.controller('RegisterCtrl', [
     }
     // We only track referers if they are registering a business
     else {
-      $window.google_trackConversion({
-        google_conversion_id : 928471290,
-        google_conversion_language : "en",
-        google_conversion_format : "3",
-        google_conversion_color : "ffffff",
-        google_conversion_label : "CM9fCLm40GMQ-rHdugM",
-        google_remarketing_only : false
-      });
+      if (typeof $window.google_trackConversion === 'function') {
+        $window.google_trackConversion({
+          google_conversion_id : 928471290,
+          google_conversion_language : "en",
+          google_conversion_format : "3",
+          google_conversion_color : "ffffff",
+          google_conversion_label : "CM9fCLm40GMQ-rHdugM",
+          google_remarketing_only : false
+        });
+      }
     }
 
     //Intialise alerts and scope functions
