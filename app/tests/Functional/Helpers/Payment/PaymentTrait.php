@@ -308,6 +308,18 @@ trait PaymentTrait
         $this->assertEquals($content['success'], true);
     }
 
+    protected function addPaymentMetadata($id, $content)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/metadata',
+            'content' => $content);
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function verifyPayment($id)
     {
         $request = array(
