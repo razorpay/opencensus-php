@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "67e07fedc7939e9efa217f199049c797",
-    "content-hash": "d14220417cf7f9b808ac5e9d2f221751",
+    "hash": "2d554858be5f0de912f6a0d44e9a4359",
+    "content-hash": "6866dbab4debb6befb0d31538262ce56",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -373,6 +373,48 @@
                 "caching"
             ],
             "time": "2015-12-31 16:37:02"
+        },
+        {
+            "name": "drewm/mailchimp-api",
+            "version": "v2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/drewm/mailchimp-api.git",
+                "reference": "a9bf617afb5a9bcb2601f5cc23b01a7b581d5659"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/drewm/mailchimp-api/zipball/a9bf617afb5a9bcb2601f5cc23b01a7b581d5659",
+                "reference": "a9bf617afb5a9bcb2601f5cc23b01a7b581d5659",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.0.*",
+                "vlucas/phpdotenv": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DrewM\\MailChimp\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Drew McLellan",
+                    "email": "drew.mclellan@gmail.com",
+                    "homepage": "http://allinthehead.com/"
+                }
+            ],
+            "description": "Super-simple, minimum abstraction MailChimp API v3 wrapper",
+            "homepage": "https://github.com/drewm/mailchimp-api",
+            "time": "2016-01-30 16:12:54"
         },
         {
             "name": "filp/whoops",
@@ -1212,7 +1254,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/marlek/laravel-automigrate/zipball/ba1f781bf269ffb65fbd3103a341de24d19022c9",
+                "url": "https://api.github.com/repos/marlek/laravel-automigrate/zipball/7a6d3ec46367f88276df113bfe0239ffe5a62270",
                 "reference": "ba1f781bf269ffb65fbd3103a341de24d19022c9",
                 "shasum": ""
             },
@@ -1828,7 +1870,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/fa3f849333f6954cd8c56d88afef6d98348efa7d",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/f846b7aadbbd265325f610fd2ae8afb40bcd74fa",
                 "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d",
                 "shasum": ""
             },
@@ -3429,7 +3471,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/791ca92e112f64af3ce5833e05bb10ab2578a626",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/d173b9a3c6d3dcf52d7f8f70ac591ba11c475e8c",
                 "reference": "791ca92e112f64af3ce5833e05bb10ab2578a626",
                 "shasum": ""
             },
