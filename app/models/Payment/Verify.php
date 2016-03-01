@@ -71,7 +71,7 @@ class Verify
 
         $payments = $this->repo->getPaymentsWithCreatedStatusForVerification($ts);
 
-        $this->verifyMultiplePayments($payments, 'created');
+        return $this->verifyMultiplePayments($payments, 'created');
     }
 
     public function verifyAllPayments()
