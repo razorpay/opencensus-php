@@ -20,7 +20,8 @@
         "league/csv": "7.1.2",
         "rtconner/laravel-tagging": "~0.5",
         "marlek/laravel-automigrate": "dev-master",
-        "ircmaxell/random-lib": "^1.1"
+        "ircmaxell/random-lib": "^1.1",
+        "drewm/mailchimp-api": "^2.1"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
