@@ -167,12 +167,6 @@
             </span>
             {{key|titlecase}}
           </a>
-          <a href class="list-group-item" ng-repeat="key in keysNotShown()">
-            <span class="pull-right" ng-class="displayClass(entity[key])" tooltip="{{key}}">
-              {{displayValue(entity[key])}}
-            </span>
-            {{key}}
-          </a>
           <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status">Show/Hide</button>
