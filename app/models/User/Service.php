@@ -4,6 +4,7 @@ namespace Models\User;
 
 use Config;
 use DB;
+use DrewM\MailChimp\MailChimp;
 use Auth;
 use Hash;
 use Input;
@@ -127,10 +128,59 @@ class Service extends Base\Service
     {
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
-        $user->confirm_token = null;
-        $user->save();
+        $user->confirm();
+
+        $this->subscribeToMailingList($user);
 
         Auth::user()->login($user);
+    }
+
+    public function subscribeToMailingList(User\Entity $user)
+    {
+        $data = [
+            'name'  =>  $user->name,
+            'email' =>  $user->email
+        ];
+
+        Queue::push('Models\User\Service@postToMailchimp', $data);
+    }
+
+    /**
+     * This method needs to be public
+     * Posts data to mailchimp
+     */
+    public function postToMailchimp($job, $data)
+    {
+        $config = Config::get('razorpay.mailchimp');
+
+        $apiKey = $config['api_key'];
+        $listId = $config['list_id'];
+
+        $mailchimp = new MailChimp($apiKey);
+
+        // TODO: Break down the name in 2 parts and send
+        // LNAME separately
+
+        $mailchimp->post("lists/$listId/members", [
+            'email_address' => $data['email'],
+            'status'        => 'subscribed',
+            'merge_fields'  => $this->breakName($data['name']),
+        ]);
+    }
+
+    protected function breakName($name)
+    {
+        $data = ['FNAME' => $name];
+
+        $index = strpos($name, ' ');
+
+        if ($index !== false)
+        {
+            $data['FNAME'] = substr($name, 0, $index);
+            $data['LNAME'] = substr($name, $index + 1);
+        }
+
+        return $data;
     }
 
     /**
@@ -215,9 +265,6 @@ class Service extends Base\Service
         // We want to keep environment conditional checks as late as possible
         if ($_ENV['SLACK_ENABLE'] === true)
         {
-            /**
-             * TODO: Move this to queue perhaps
-             */
             Queue::push('Models\User\Service@postToSortingHat', $postData);
         }
 

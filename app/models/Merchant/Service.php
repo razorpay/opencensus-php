@@ -5,11 +5,13 @@ namespace Models\Merchant;
 use Auth;
 use Hash;
 use Requests;
+
 use Models\Base;
 use Models\Merchant;
 use Models\User;
 use Models\Invitation;
 use Models\MerchantDetails;
+
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 
@@ -152,18 +154,21 @@ class Service extends Base\Service
         try
         {
             $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
+
             // Only create the merchant if it doesn't exist on the API
             if ($merchantOnApi === null)
             {
                 $response = $this->api->merchant->create($merchantApiData);
             }
         }
+
         catch(BadRequestError $e)
         {
             return array($e->getMessage());
         }
 
         // Confirm the merchant and associated users (with same email)
+        // This also calls the mailing list subscription for the user email
         $merchant->confirm();
 
         return array();

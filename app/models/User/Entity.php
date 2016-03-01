@@ -299,4 +299,16 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     {
         return $this->email;
     }
+
+    /**
+     * Confirm a user account
+     * @return self
+     */
+    public function confirm()
+    {
+        $this->confirm_token = null;
+        $this->save();
+
+        return $this;
+    }
 }

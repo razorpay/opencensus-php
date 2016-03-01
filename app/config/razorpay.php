@@ -31,5 +31,10 @@ return array(
 
         // This is used by the /v query command on slack
         'command_token' =>  'By9i0lp0y0T4mvgUn0Ljj1Rt'
-    ]
+    ],
+
+    'mailchimp' => [
+        'list_id'   =>  $_ENV['MAILCHIMP_LIST_ID'],
+        'api_key'   =>  $_ENV['MAILCHIMP_API_TOKEN']
+    ],
 );

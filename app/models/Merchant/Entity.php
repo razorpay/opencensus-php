@@ -471,8 +471,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
             $user = $this->users()->where('email', $email)->first();
             if($user)
             {
-                $user->confirm_token = $this->confirm_token;
-                $user->save();
+                $user->confirm();
+                (new User\Service)->subscribeToMailingList($user);
             }
         }
     }

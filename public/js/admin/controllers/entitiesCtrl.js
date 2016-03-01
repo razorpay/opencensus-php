@@ -356,6 +356,7 @@ app.controller('EntitiesCtrl', [
           if (entity in stateArray) {
             state = stateArray[entity];
           }
+          console.debug([$scope.mode, data, entity]);
           $state.go(state, {
             mode: $scope.mode,
             id: data.data.id,
