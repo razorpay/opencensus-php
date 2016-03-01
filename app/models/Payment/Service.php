@@ -165,6 +165,15 @@ class Service extends Base\Service
     public function addPaymentMetadata($id, $input)
     {
         $otpRead = (bool) $input['otp_read'];
+
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+
+        if ($otpRead === '1')
+        {
+            $card = $payment->card;
+            $iin = $card->iin;
+            sd($iin);
+        }
     }
 
     public function refundOldAuthorizedPayments()
