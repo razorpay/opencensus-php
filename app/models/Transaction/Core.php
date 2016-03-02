@@ -406,24 +406,69 @@ class Core extends Base\Core
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
     {
+        $currentCarbonDay = $timestamp->copy();
+
         $currentDay = $timestamp->dayOfWeek;
 
         $daysToSettle = $currentDay + $addDays;
 
-        if (($daysToSettle % Carbon::DAYS_PER_WEEK === Carbon::SATURDAY) or
-            ($daysToSettle % Carbon::DAYS_PER_WEEK === Carbon::SUNDAY) or
-             ($daysToSettle > Carbon::DAYS_PER_WEEK))
+        $settleDay = $timestamp->copy()->addDays($addDays);
+
+        if ($settleDay->dayOfWeek === Carbon::SATURDAY and
+            ($settleDay->weekOfMonth % 2 === 0))
         {
             // Adding a two day weekend
             $addDays += 2;
+            s("sat");
         }
-
-        // transaction was on saturday
-        // we added two day weekend
-        // remove one day for that
-        if ($currentDay === Carbon::SATURDAY)
+        else if($settleDay->dayOfWeek === Carbon::SUNDAY)
         {
-            $addDays -= 1;
+            if ($currentDay === Carbon::SATURDAY)
+            {
+                s("settle on sunday and today was saturday");
+                $addDays += 1;
+            }
+            else
+            {
+                if($settleDay->weekOfMonth % 2 !== 0)
+                {
+                    s("settle on sunday and this week was working");
+                    $addDays += 1;
+                }
+                else
+                {
+                    s("settle on sunday and this week was not working");
+                    $addDays += 2;
+                }
+            }
+        }
+        else if($daysToSettle > Carbon::DAYS_PER_WEEK)
+        {
+            if ($settleDay->subWeek()->weekOfMonth % 2 !== 0) // Previous sat working
+            {
+                s("last weekend was working");
+                if (($currentDay === Carbon::SATURDAY) or
+                    ($currentCarbonDay->weekOfMonth % 2 !== 0))
+                {
+                    $addDays += 1;
+                }
+                else
+                {
+                    $addDays += 2;
+                }
+            }
+            else        // Previous sat not working
+            {
+                s("last weekend was not working");
+                if ($currentDay === Carbon::SATURDAY)
+                {
+                    $addDays += 1;
+                }
+                else
+                {
+                    $addDays += 2;
+                }
+            }
         }
 
         return $addDays;
