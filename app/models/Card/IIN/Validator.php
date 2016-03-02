@@ -106,7 +106,7 @@ class Validator extends Base\Validator
         if(!Bank\IFSC::exists($input[Entity::ISSUER]))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid bank name in input: '. $bank);
+                'Invalid bank name in input: '. $input[Entity::ISSUER]);
         }
     }
 }

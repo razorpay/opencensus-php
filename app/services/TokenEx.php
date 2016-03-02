@@ -1,0 +1,125 @@
+<?php
+
+namespace Services;
+
+use EE\Exception;
+use Requests;
+
+class TokenEx
+{
+    const API_KEY           = 'APIKey';
+    const TOKENEX_ID        = 'TokenExID';
+    const TOKEN             = 'Token';
+    const DATA              = 'Data';
+    const TOKEN_SCHEME      = 'TokenScheme';
+    const SUCCESS           = 'Success';
+    const REFERENCE_NUMBER  = 'ReferenceNumber';
+    const ERROR             = 'Error';
+    const VALID             = 'Valid';
+
+    protected $tokenScheme;
+
+    protected $apiKey;
+
+    protected $tokenExId;
+
+    protected $baseUrl;
+
+    protected $config;
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->config = $app['config']->get('applications.card.tokenex');
+
+        $this->apiKey = $this->config['key'];
+
+        $this->tokenExId = $this->config['id'];
+
+        $this->tokenScheme = $this->config['scheme'];
+
+        $this->baseUrl = $this->config['url'];
+    }
+
+    public function tokenize($data)
+    {
+        $input = array(
+            self::API_KEY       => $this->apiKey,
+            self::TOKENEX_ID    => $this->tokenExId,
+            self::DATA          => $data,
+            self::TOKEN_SCHEME  => (int)$this->tokenScheme 
+        );
+
+        $response = $this->sendRequest('REST/Tokenize', 'POST', $input);
+
+        return $response[self::TOKEN];
+    }
+
+    public function validateToken($token)
+    {
+        $input = array(
+            self::API_KEY       => $this->apiKey,
+            self::TOKENEX_ID    => $this->tokenExId,
+            self::TOKEN         => $token
+        );
+
+        $response = $this->sendRequest('REST/ValidateToken', 'POST', $input);
+
+        return $response;
+    }
+
+    public function detokenize($token)
+    {
+        $input = array(
+            self::API_KEY       => $this->apiKey,
+            self::TOKENEX_ID    => $this->tokenExId,
+            self::TOKEN         => $token,
+        );
+
+        $response = $this->sendRequest('REST/Detokenize', 'POST', $input);
+
+        return $response;
+    }
+
+    public function deleteToken($token)
+    {
+        $input = array(
+            self::API_KEY       => $this->apiKey,
+            self::TOKENEX_ID    => $this->tokenExId,
+            self::TOKEN         => $token,
+        );
+
+        $response = $this->sendRequest('REST/DeleteToken', 'POST', $input);
+
+        return $response;        
+    }
+
+    protected function sendRequest($url, $method, $data = null)
+    {
+        $url = $this->baseUrl . $url;
+
+        if ($data === null)
+            $data = '';
+
+        $headers['Content-Type'] = 'application/json';
+        $headers['Accept'] = 'application/json';
+
+        $response = \Requests::request($url, $headers, json_encode($data), $method, array());
+
+        $this->checkErrors(json_decode($response->body, true));
+
+        return json_decode($response->body, true);
+    }
+
+    protected function checkErrors($response)
+    {
+        $referenceNumber = $response[self::REFERENCE_NUMBER];
+        $success = $response[self::SUCCESS];
+
+        if($success === false)
+        {
+            throw new Exception\RuntimeException('tokenex request: '. $referenceNumber . ' failed');
+        }
+    }
+}

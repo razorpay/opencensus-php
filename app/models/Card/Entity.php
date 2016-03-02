@@ -21,6 +21,9 @@ class Entity extends Base\PublicEntity
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
     const INTERNATIONAL     = 'international';
+    const TOKEN             = 'token';
+    const SERVICE           = 'service';
+
     const TRIVIA            = 'trivia';
 
     const COUNTRY_LENGTH = 2;
@@ -41,7 +44,10 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::COUNTRY,
         self::TYPE,
-        self::ISSUER);
+        self::ISSUER,
+        self::TOKEN,
+        self::SERVICE,
+    );
 
     protected $guarded = array(self::ID);
 

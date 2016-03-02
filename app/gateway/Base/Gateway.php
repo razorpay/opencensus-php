@@ -432,7 +432,7 @@ class Gateway
             if (isset($content[$key]))
             {
                 $orderedData[$key] = $content[$key];
-            }
+            }   
         }
 
         return $orderedData;

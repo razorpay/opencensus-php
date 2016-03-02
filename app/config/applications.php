@@ -35,4 +35,11 @@ return array(
     'hosted' => array(
         'secret'    => $_ENV['APP_HOSTED_SECRET'],
     ),
+
+    'card.tokenex' => array(
+        'id'        => $_ENV['TOKENEX_ID'],
+        'key'       => $_ENV['TOKENEX_API_KEY'],
+        'url'       => $_ENV['TOKENEX_API_URL'],
+        'scheme'    => $_ENV['TOKENEX_TOKEN_SCHEME'],
+    ),
 );

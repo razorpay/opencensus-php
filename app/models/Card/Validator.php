@@ -13,7 +13,10 @@ class Validator extends Base\Validator
         'expiry_month'      => 'required|integer|digits_between:1,2|max:12|min:1',
         'expiry_year'       => 'required|integer|digits:4|non_past_year',
         'cvv'               => 'required|numeric|digits_between:3,4',
-        'name'              => 'required|alpha_space|max:100');
+        'name'              => 'required|alpha_space|max:100',
+        'token'             => 'sometimes|alphanum',
+        'service'           => 'required_with:token|in:tokenex'
+    );
 
     protected static $createValidators = array('expiry_date');
 
