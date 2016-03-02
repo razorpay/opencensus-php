@@ -200,8 +200,6 @@ class Newsletter
             ]);
         }
 
-        )
-
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['post_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
@@ -259,7 +257,7 @@ class Newsletter
         if ($this->testListMemberAdd)
         {
             return [
-                'email' =>  $this->email.' created and timestamps recorded';
+                'email' =>  $this->email.' created and timestamps recorded'
             ];
         }
 
