@@ -9,6 +9,8 @@ use Models\Merchant;
 use Mail;
 use Mailgun\Mailgun;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
+use Trace\Trace;
+use Trace\TraceCode;
 
 /**
  * Class used for mass mailing
@@ -16,6 +18,10 @@ use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 class Newsletter
 {
     protected $email;
+    protected $listName;
+    protected $testListMemberAdd;
+    // 30 seconds
+    const WAIT_BEFORE_RETRY = 30;
 
     function __construct($recipient,
         $subject = "Razorpay Newsletter",
@@ -30,7 +36,6 @@ class Newsletter
             $this->email = $recipient;
             $this->count = 1;
         }
-
         else
         {
             $this->lists = $recipient;
@@ -142,15 +147,47 @@ class Newsletter
     }
 
     /**
+     * Creates a new mailing list on mailgun and returns the
+     * generated mailing list address
+     * @return string generated email address of mailing list
+     */
+    protected function createListOnMailgun($listName)
+    {
+        $listAddress = $listName.'@'.$this->config['url'];
+
+        return $listAddress;
+    }
+
+    /**
+     * Set the mailing list name.
+     * This is used to create the mailing list address if set.
+     */
+    public function setMailingListName($listName)
+    {
+        $this->listName = $listName;
+    }
+
+    /**
      * Uploads additional merchants to the mailing list
      * @param  string $lists list of applied filters in csv
      * @return null
      */
     protected function createMailingList($lists)
     {
-        $listAddress = $this->createNewListOnMailgun();
+        if (isset($this->listName))
+        {
+            $listAddress = $this->createListOnMailgun($this->listName);
+        }
+        else
+        {
+            $listAddress = $this->createNewListOnMailgun();
+        }
 
         $chunks = $this->getMerchantListChunks($lists);
+
+        $this->app['trace']->info(
+            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
+            ['pre_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
 
         foreach ($chunks as $merchants) {
             // We take this list and push it to mailgun
@@ -163,7 +200,36 @@ class Newsletter
             ]);
         }
 
+        )
+
+        $this->app['trace']->info(
+            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
+            ['post_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
+
+        do
+        {
+            $relativeUrl = "lists/$listAddress";
+
+            $listInfo = $this->getMailgunInstance()->get($relativeUrl);
+
+            $count =  $listInfo['list']['members_count'];
+
+            // Wait here till the count of the members in list
+            // matches the internal count
+            sleep(self::WAIT_BEFORE_RETRY);
+        }
+        while ($count < $this->count);
+
+        $this->app['trace']->info(
+            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
+            ['count_match_timestamp' => Carbon::now('Asia\Kolkata')]);
+
         return $listAddress;
+    }
+
+    public function setTestListMembersAdd()
+    {
+        $this->testListMemberAdd = true;
     }
 
     protected function getMailgunInstance()
@@ -174,7 +240,7 @@ class Newsletter
     public function send()
     {
         //No need to do anything if we are mocking
-        if($this->config['mock'] === true)
+        if ($this->config['mock'] === true)
         {
             return [
                 'email' =>  'nobody, mocked'
@@ -184,10 +250,17 @@ class Newsletter
         $data = $this->data;
         $config = $this->config;
 
-        if(isset($this->lists))
+        if (isset($this->lists))
         {
             // This also sets the count internally
             $this->email = $this->createMailingList($this->lists);
+        }
+
+        if ($this->testListMemberAdd)
+        {
+            return [
+                'email' =>  $this->email.' created and timestamps recorded';
+            ];
         }
 
         return $this->sendEmail();

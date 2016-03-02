@@ -13,6 +13,8 @@ use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
 use Models\Merchant\Webhook;
+use Models\Admin\Newsletter;
+use Models\Settlement\Holidays;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -574,5 +576,95 @@ class Service extends Base\Service
             $message->to($data['email'], $data['name'])
                 ->subject($subject);
         });
+    }
+
+    public function notifyMerchantsHoliday($input)
+    {
+        if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+        {
+            return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+        }
+
+        if ($input['test'] === 'true')
+        {
+            $response = $this->sendTestHolidayNotificationMail($input);
+        }
+        else
+        {
+            $response = $this->sendHolidayNotificationMail($input);
+        }
+
+
+        // Log just the result of the settlement reports
+        $this->trace->info(
+            TraceCode::MERCHANT_NOTIFY_HOLIDAY,
+            $response
+        );
+
+        return $response;
+    }
+
+    protected function sendHolidayNotificationMail($input)
+    {
+        $msg = $this->getHolidayNotificationMsg();
+
+        if (empty($errors))
+        {
+            $mailer = new Newsletter(
+                $input['lists'],
+                'Notification of Bank Holiday',
+                $msg,
+                'newsletter'
+                );
+
+            $mailer->setMailingListName('bank-holiday-notification');
+
+            if ($input['test_list_add'] === 'true')
+            {
+                $mailer->setTestListMembersAdd();
+            }
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
+
+    protected function sendTestHolidayNotificationMail($input)
+    {
+        $msg = $this->getHolidayNotificationMsg();
+
+        if (empty($errors))
+        {
+            $mailer = new Newsletter(
+                $input['lists'],
+                'Notification of Bank Holiday',
+                $msg,
+                'newsletter',
+                true
+                );
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
+
+    protected function getHolidayNotificationMsg()
+    {
+        $date = Carbon::tomorrow('Asia/Kolkata')->toFormattedDateString();
+
+        $msg  = <<<EOT
+<b>As $date is a bank holiday, settlements will not be processed tomorrow.</b>
+Settlements expected on this date will be processed on the next working day.
+Regret the inconvenience caused due to the same.
+<p>Thank you for partnering with Razorpay.</p>
+EOT;
+
+        return $msg;
     }
 }
