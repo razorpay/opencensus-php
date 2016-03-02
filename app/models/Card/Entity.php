@@ -83,9 +83,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function iin()
+    public function iinRelation()
     {
-        return $this->belongs('Models\Card\IIN\Entity', 'iin', 'iin');
+        return $this->belongsTo('Models\Card\IIN\Entity', 'iin', 'iin');
     }
 
     public function generateLast4($input)

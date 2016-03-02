@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::ISSUER_NAME,
         self::EMI,
+        self::OTP_READ,
         self::TRIVIA,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -92,6 +93,16 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getOtpRead()
+    {
+        return $this->getAttribute(self::OTP_READ);
+    }
+
+    public function setOtpRead($flag)
+    {
+        $this->setAttribute(self::OTP_READ, $flag);
     }
 
     protected function getOtpReadAttribute()

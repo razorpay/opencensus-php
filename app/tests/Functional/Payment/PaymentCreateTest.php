@@ -60,14 +60,4 @@ class PaymentCreateTest extends TestCase
         $payment = $this->doAuthPayment();
         $id = $payment['razorpay_payment_id'];
     }
-
-    public function testPaymentMetadataRoute()
-    {
-        $payment = $this->doAuthPayment();
-
-        $content = ['otp_read' => '1'];
-
-        $content = $this->addPaymentMetadata($payment['id'], $contnet);
-        sd($content);
-    }
 }
