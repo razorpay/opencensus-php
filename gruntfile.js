@@ -35,6 +35,7 @@ module.exports = function(grunt){
     },
 
     postcss: {
+      beta: {},
       development: {},
       production: {
         options: {
@@ -89,6 +90,7 @@ module.exports = function(grunt){
     },
 
     uglify: {
+      beta: {},
       development: {},
       production: {
         files: [{
