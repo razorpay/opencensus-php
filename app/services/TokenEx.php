@@ -95,7 +95,7 @@ class TokenEx
         return $response;        
     }
 
-    protected function sendRequest($url, $method, $data = null)
+    public function sendRequest($url, $method, $data = null)
     {
         $url = $this->baseUrl . $url;
 
