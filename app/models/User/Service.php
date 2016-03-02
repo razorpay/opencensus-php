@@ -158,14 +158,18 @@ class Service extends Base\Service
 
         $mailchimp = new MailChimp($apiKey);
 
-        // TODO: Break down the name in 2 parts and send
-        // LNAME separately
-
-        $mailchimp->post("lists/$listId/members", [
-            'email_address' => $data['email'],
-            'status'        => 'subscribed',
-            'merge_fields'  => $this->breakName($data['name']),
-        ]);
+        // Mock can be false or null for falsy cases
+        // Unset mock is considered true
+        if (! $config['mock'])
+        {
+            // TODO: Break down the name in 2 parts and send
+            // LNAME separately
+            $mailchimp->post("lists/$listId/members", [
+                'email_address' => $data['email'],
+                'status'        => 'subscribed',
+                'merge_fields'  => $this->breakName($data['name']),
+            ]);
+        }
     }
 
     protected function breakName($name)
