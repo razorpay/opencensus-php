@@ -79,7 +79,7 @@ class Iin extends Base
             'iin'           => '401200',
             'category'      => 'STANDARD',
             'network'       => 'Visa',
-            'type'          => 'debit',
+            'type'          => 'credit',
             'country'       => 'IN',
             'issuer_name'   => 'KOTAK',
             'issuer'        => 'HDFC',
