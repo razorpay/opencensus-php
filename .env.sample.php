@@ -73,6 +73,7 @@
     // Creevey is the creenshot service
     'CREEVEY_TOKEN'     => 'token_for_creevey',
     'CREEVEY_MOCK'      => true,
+    'MAILCHIMP_MOCK'    => true,
 
     'CRON_PASS'         => 'RANDOM_CRON_PASS'
     );
