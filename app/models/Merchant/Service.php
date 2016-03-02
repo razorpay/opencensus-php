@@ -511,6 +511,9 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
         $filter = [];
 
         // In test, none of the merchants are activated
