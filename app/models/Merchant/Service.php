@@ -661,7 +661,6 @@ class Service extends Base\Service
         $msg  = <<<EOT
 <b>As $date is a bank holiday, settlements will not be processed tomorrow.</b>
 Settlements expected on this date will be processed on the next working day.
-Regret the inconvenience caused due to the same.
 <p>Thank you for partnering with Razorpay.</p>
 EOT;
 
