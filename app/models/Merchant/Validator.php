@@ -35,6 +35,10 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
     );
 
+    protected static $editConfigRules = array(
+        Entity::BRAND_COLOR                 => 'sometimes|regex:([0-9a-fA-F]{6})'
+    );
+
     protected static $editValidators = [
         'csv_email', 'features'
     ];
