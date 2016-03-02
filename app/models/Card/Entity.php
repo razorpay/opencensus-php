@@ -83,6 +83,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function iinRelation()
+    {
+        return $this->belongsTo('Models\Card\IIN\Entity', 'iin', 'iin');
+    }
+
     public function generateLast4($input)
     {
         $last4 = substr($input['number'], -4);

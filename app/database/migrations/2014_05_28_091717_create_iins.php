@@ -40,8 +40,14 @@ class CreateIins extends Migration {
             $table->boolean(IIN\Entity::EMI)
                   ->default(0);
 
+            $table->boolean(IIN\Entity::OTP_READ)
+                  ->default(0);
+
             $table->string(IIN\Entity::TRIVIA)
                   ->nullable();
+
+            $table->index(IIN\Entity::OTP_READ);
+            $table->index(IIN\Entity::EMI);
         });
     }
 

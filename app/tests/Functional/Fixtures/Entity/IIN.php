@@ -75,6 +75,17 @@ class Iin extends Base
             'emi'           => 1,
             'trivia'        => 'random trivia'
             ),
+        array(
+            'iin'           => '401200',
+            'category'      => 'STANDARD',
+            'network'       => 'Visa',
+            'type'          => 'credit',
+            'country'       => 'IN',
+            'issuer_name'   => 'KOTAK',
+            'issuer'        => 'HDFC',
+            'emi'           => 1,
+            'trivia'        => 'random trivia'
+            ),
         );
 
     public function createDefaultIins()
