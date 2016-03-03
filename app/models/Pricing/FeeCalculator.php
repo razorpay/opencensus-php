@@ -127,8 +127,7 @@ class FeeCalculator
                 $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
         }
 
-        $amount = $payment->getAmount();
-        $rule = $this->chooseRuleWithAmount($rules, $amount, $payment);
+        $rule = $this->chooseRuleWithAmount($rules, $payment);
 
         if ($rule === null)
         {
@@ -187,13 +186,31 @@ class FeeCalculator
         return $matchRules;
     }
 
+    protected function chooseRuleWithAmount($rules, $payment)
+    {
+        $amount = $payment->getAmount();
+
+        $tdrClient = $payment->merchant->isTdrClient();
+
+        if ($tdrClient)
+        {
+            return $this->chooseRuleWithAmountForCustomerSubvention($rules, $amount);
+        }
+        else
+        {
+            return $this->chooseRuleWithAmount($rules, $amount);
+        }
+    }
+
     /**
      * If the rules are amount range active rules,
      * choose rule based on amount
      * else return first available rule.
      */
-    protected function chooseRuleWithAmount($rules, $amount, $payment)
+    protected function chooseRuleWithAmount($rules, $payment)
     {
+        $amount = $payment->getAmount();
+
         $relevantRule = null;
 
         // Either all the rules will be amount range active,
@@ -222,6 +239,25 @@ class FeeCalculator
         }
 
         return $relevantRule;
+    }
+
+    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount)
+    {
+        $fees = []
+
+        foreach ($rules as $rule)
+        {
+            list($fee, ~) = $this->getFees($rule, $amount);
+
+            $newAmount = $amount + $fee;
+
+            $newRule = $this->chooseRuleWithAmount($rules, $newAmount);
+
+            if ($rule === $newRule)
+            {
+                return $rule;
+            }
+        }
     }
 
     protected function getCardType($payment)
