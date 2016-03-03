@@ -97,7 +97,7 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForMethod($pricing, $payment)
     {
-        return $this->validateHasOnePricingRule($pricing);
+        return $this->validateAndGetOnePricingRule($pricing);
     }
 
     protected function getRelevantPricingRuleForCard($pricing, $payment)
