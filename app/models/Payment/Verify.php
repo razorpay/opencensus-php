@@ -24,6 +24,7 @@ class Verify
         $this->trace = $trace;
         $this->core = new Payment\Core;
         $this->exceptionHandler = $exceptionHandler;
+        $this->repo = new Payment\Repository;
     }
 
     public function verifyPaymentsWithFilter($filter)
@@ -40,6 +41,10 @@ class Verify
         {
             return $this->verifyPaymentsWithErrorVerifyResult();
         }
+        else if ($filter === 'created')
+        {
+            return $this->verifyPaymentsWithCreatedStatus();
+        }
         else
         {
             ;
@@ -48,28 +53,37 @@ class Verify
 
     public function verifyPaymentsWithFailedVerifyResult()
     {
-        $payments = (new Payment\Repository)->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
+        $payments = $this->repo->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
 
-        return $this->verifyMultiplePayments($payments);
+        return $this->verifyMultiplePayments($payments, 'failed');
     }
 
     public function verifyPaymentsWithErrorVerifyResult()
     {
-        $payments = (new Payment\Repository)->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
+        $payments = $this->repo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
 
-        return $this->verifyMultiplePayments($payments);
+        return $this->verifyMultiplePayments($payments, 'error');
+    }
+
+    public function verifyPaymentsWithCreatedStatus()
+    {
+        $ts = time() - 5 * 60;
+
+        $payments = $this->repo->getPaymentsWithCreatedStatusForVerification($ts);
+
+        return $this->verifyMultiplePayments($payments, 'created');
     }
 
     public function verifyAllPayments()
     {
         $ts = time() - self::MIN_TIME_BEFORE_VERIFY;
 
-        $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
+        $payments = $this->repo->getUnverifiedPayments($ts);
 
-        return $this->verifyMultiplePayments($payments);
+        return $this->verifyMultiplePayments($payments, 'all');
     }
 
-    public function verifyMultiplePayments($payments)
+    public function verifyMultiplePayments($payments, $filter)
     {
         $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
         $time = time();
@@ -136,6 +150,7 @@ class Verify
         }
 
         $results = array(
+            'filter'            => $filter,
             'verified'          => $verified,
             'failed'            => $failed,
             'authorized'        => $authorized,
@@ -148,7 +163,9 @@ class Verify
 
         $total = $timedOut + $verified + $failed + $authorized + $error;
 
-        if ($total !== 0)
+        if (($total !== 0) and
+            (($verified > 4) or
+             ($total !== $verified)))
         {
             // Drop all false values (NULL, 0, "")
             $slackArray = array_filter($results);

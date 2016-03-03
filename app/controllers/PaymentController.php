@@ -221,4 +221,13 @@ class PaymentController extends BaseController
             \Trace\TraceCode::PAYMENT_WEBHOOK,
             $input);
     }
+
+    public function postPaymentMetadata($id)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->addPaymentMetadata($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

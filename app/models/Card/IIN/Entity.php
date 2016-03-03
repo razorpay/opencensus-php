@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const ISSUER        = 'issuer';
     const ISSUER_NAME   = 'issuer_name';
     const EMI           = 'emi';
+    const OTP_READ      = 'otp_read';
     const TRIVIA        = 'trivia';
 
     const INTERNATIONAL = 'international';
@@ -54,13 +55,14 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::ISSUER_NAME,
         self::EMI,
+        self::OTP_READ,
         self::TRIVIA,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
 
     protected $defaults = array(
-        self::EMI       =>  0,
+        self::EMI       =>  false,
     );
 
     public function getIin()
@@ -93,6 +95,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ISSUER);
     }
 
+    public function getOtpRead()
+    {
+        return $this->getAttribute(self::OTP_READ);
+    }
+
+    public function setOtpRead($flag)
+    {
+        $this->setAttribute(self::OTP_READ, $flag);
+    }
+
+    protected function getOtpReadAttribute()
+    {
+        return (bool) $this->attributes[self::OTP_READ];
+    }
+
     public function getIssuerAttribute()
     {
         return $this->attributes[self::ISSUER];
@@ -108,5 +125,10 @@ class Entity extends Base\PublicEntity
     public function isEmiAvailable()
     {
         return (bool) $this->getAttribute(self::EMI);
+    }
+
+    protected function getEmiAttribute()
+    {
+        return (bool) $this->attributes[self::EMI];
     }
 }

@@ -47,7 +47,7 @@ return [
                 'country' => 'IN',
                 'issuer' => 'HDFC',
                 'issuer_name' => 'HDFC',
-                'emi' => '1'
+                'emi' => true,
             ],
         ],
     ],
@@ -79,7 +79,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 8,
+                'count' => 9,
                 'items' => [
                     [
                     ]
