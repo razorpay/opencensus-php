@@ -399,7 +399,10 @@ class BasicAuth
 
     public function verifyHttps()
     {
-        if (($this->request->getHttpHost() === 'api.razorpay.com') and
+        $host = $this->request->getHttpHost();
+        $rootDomain = substr($host, -12);
+
+        if (( $rootDomain=== 'razorpay.com') and
             ($this->request->secure() === false))
         {
             return ApiResponse::generateErrorResponse(
