@@ -297,6 +297,15 @@ class Processor
 
         $payment->merchant()->associate($this->merchant);
 
+        if ($this->merchant->isTdrClient())
+        {
+
+            $amountBeforeFees = $payment->getAmount() - $payment->getFee();
+
+
+
+        }
+
         $this->setOrderDetails($payment, $input);
 
         $this->payment = $payment;
@@ -328,7 +337,7 @@ class Processor
         // match order amount.
         if ($this->merchant->isTdrClient())
         {
-            $amount = $amount + $payment->getFee() + $payment->getServiceTax();
+            $amount = $amount - $payment->getFee();
         }
 
         if ($this->order->getAmount() !== $amount)

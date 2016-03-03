@@ -126,7 +126,7 @@ class Core extends Base\Core
 
         //If the merchant is tdrClient
         //use the fees and service tax from both
-        if ($txn->merchant()->isTdrClient())
+        if (isset($this->merchant) and ($this->merchant->isTdrClient()))
         {
             $fee        = $payment->getFee();
             $serviceTax = $payment->getServiceTax();
