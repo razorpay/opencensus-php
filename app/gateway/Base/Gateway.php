@@ -204,13 +204,15 @@ class Gateway
         $payment = $this->getPaymentToVerify($verify->input, $verify);
 
         if (($payment === null) and
-            ($verify->input['payment']['status'] === 'failed'))
+            (($verify->input['payment']['status'] === 'failed') or
+             ($verify->input['payment']['status'] === 'created')))
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
                 ['payment_id' => $verify->input['payment']['id'],
                  'message' => 'payment id not found in the gateway database',
                  'gateway' => $this->gateway]);
+
             return;
         }
 
