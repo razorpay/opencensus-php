@@ -322,13 +322,10 @@ class Processor
 
         $payment->merchant()->associate($this->merchant);
 
+        // Verify if the provided fee is within 5 p of our original fee
         if ($this->merchant->isTdrClient())
         {
-
-            $amountBeforeFees = $payment->getAmount() - $payment->getFee();
-
-
-
+            $this->verifyProvidedFee($payment, $input);
         }
 
         $this->setOrderDetails($payment, $input);
@@ -349,6 +346,62 @@ class Processor
         return $payment;
     }
 
+    protected function verifyProvidedFee($payment, $input)
+    {
+        $inputCopy = $this->input;
+        // Get to original state and get back fee and tax
+        // modifying input to be from old state
+
+        $input['amount'] = $payment->getAmount() - $payment->getFee();
+
+        $feesArray = $this->processAndReturnFees($input['amount']);
+
+        $feeDifference = $feesArray['fees'] - $payment->getFee();
+
+        $serviceTaxDifference = $feesArray['service_tax'] - $payment->getServiceTax();
+
+        assert($this->getModValue($feeDifference) < 5);
+
+        assert($this->getModValue($serviceTaxDifference) < 5);
+
+        $this->input = $inputCopy;
+    }
+
+    protected function getModValue($val)
+    {
+        if ($val > 0)
+        {
+            return $val;
+        }
+        else
+        {
+            return (-1 * $val);
+        }
+    }
+
+    protected function fetchOrderFromInput($input)
+    {
+        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
+
+        $order = $this->orderRepo->find($orderId);
+
+        if ($order === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id provided not found.',
+                'order_id');
+        }
+
+        if ($order->getMerchantId() !== $this->merchant->id)
+        {
+            // Merchant mismatch
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id not found');
+        }
+
+        return $order;
+    }
+
     protected function setOrderDetails($payment, $input)
     {
         if (empty($input['order_id']) === true)
@@ -356,16 +409,7 @@ class Processor
             return;
         }
 
-        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
-
-        $this->order = $this->orderRepo->find($orderId);
-
-        if ($this->order === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id provided not found.',
-                'order_id');
-        }
+        $this->order = $this->fetchOrderFromInput($input);
 
         $amount = $payment->getAmount();
 
@@ -376,27 +420,9 @@ class Processor
             $amount = $amount - $payment->getFee();
         }
 
-        if ($this->order->getAmount() !== $amount)
-        {
-            // Order and Payment amount mismatch
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
-        }
+        (new Order\Validator)->validateOrderAmount($this->order, $amount);
 
-        if ($this->order->getMerchantId() !== $payment->getMerchantId())
-        {
-            // Merchant mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id not found');
-        }
-
-        if (($this->order->getStatus() === Order\Status::PAID) or
-            ($this->order->isAuthorized()))
-        {
-            // Order already paid for
-            throw new Exception\BadRequestValidationFailureException(
-                'Order already paid for');
-        }
+        (new Order\Validator)->validateOrderPaidFor($this->order);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
