@@ -14,10 +14,23 @@ use Trace\TraceCode;
 class Fee
 {
     use SlackPoster;
+    use AtomFeeTrait;
 
     const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
+
+    /**
+     * Pricing collection for merchant
+     * @var Pricing\Plan
+     */
+    protected $plan;
+
+    /**
+     * Pricing rule currently selected for calculating fees
+     * @var Pricing\Entity
+     */
+    protected $rule;
 
     public function __construct()
     {
@@ -107,19 +120,6 @@ class Fee
         $fee += $serviceTax;
 
         return array($fee, $serviceTax);
-    }
-
-    protected function getFeesByPercentAndFixedRatesForAtom($amount, $percent, $fixed)
-    {
-        $fee = (float) $this->getUnroundedFees($amount, $percent, $fixed);
-
-        $serviceTax = $fee * self::SERVICE_TAX_PERCENT / 100;
-
-        $fee += $serviceTax;
-
-        $fee = (int) round($fee);
-
-        return $fee;
     }
 
     protected function getUnroundedFees($amount, $percent, $fixed)
@@ -342,51 +342,5 @@ class Fee
         }
 
         return $relevantRule;
-    }
-
-    public function getGatewayFeeForAtomSharedTerminal($payment)
-    {
-        $amount = $payment->getAmount();
-        $method = $payment->getMethod();
-
-        $percent = 0;
-
-        if ($method === Payment\Method::NETBANKING)
-        {
-            $percent = 175;
-        }
-        else if ($method === Payment\Method::CARD)
-        {
-            $card = $payment->card;
-            $type = $card->getType();
-
-            $type = Card\Type::DEBIT;
-
-            if ($type === Card\Type::CREDIT)
-            {
-                $percent = 200;
-            }
-            else if ($type === Card\Type::DEBIT)
-            {
-                // Percent changes at Rs 2000
-                if ($amount <= 200000)
-                {
-                    $percent = 85;
-                }
-                else
-                {
-                    $percent = 110;
-                }
-            }
-        }
-
-        if ($percent === 0)
-        {
-            throw new Exception\LogicException('Percent should not be 0');
-        }
-
-        $gatewayFee = $this->getFeesByPercentAndFixedRatesForAtom($amount, $percent, 0);
-
-        return $gatewayFee;
     }
 }
