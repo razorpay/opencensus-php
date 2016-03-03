@@ -22,29 +22,20 @@ class FeeCalculator
      */
     protected $payment;
 
-    /**
-     * Pricing repository
-     */
-    protected $repo;
-
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
-    public function __construct($payment, $repo)
+    public function __construct($payment)
     {
         $this->payment = $payment;
-
-        $this->repo = $repo;
 
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate()
+    public function calculate($pricing)
     {
         $payment = $this->payment;
 
-        $pricingPlanId = $this->getPricingPlanId($payment->merchant);
-
-        $rule = $this->getRelevantPricingRule($pricingPlanId, $payment);
+        $rule = $this->getRelevantPricingRule($pricing, $payment);
 
         list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount());
 
@@ -71,19 +62,20 @@ class FeeCalculator
         return  array($fee, $serviceTax);
     }
 
-    protected function getRelevantPricingRule($pricingPlanId, $payment)
+    protected function getRelevantPricingRule($pricing, $payment)
     {
         $method = $payment->getMethod();
 
-        $pricing = $this->repo->getPricingRulesForMethod($pricingPlanId, $method);
+        $rules = $this->filterRulesOnFieldByValue(
+                $pricing, Pricing\Entity::PAYMENT_METHOD, $method, false);
 
         if ($method === Payment\Method::CARD)
         {
-            $rule = $this->getRelevantPricingRuleForCard($pricing, $payment);
+            $rule = $this->getRelevantPricingRuleForCard($rules, $payment);
         }
         else
         {
-            $rule = $this->getRelevantPricingRuleForMethod($pricing, $payment);
+            $rule = $this->getRelevantPricingRuleForMethod($rules, $payment);
         }
 
         if ($rule === null)
@@ -95,17 +87,16 @@ class FeeCalculator
         return $rule;
     }
 
-    protected function getRelevantPricingRuleForMethod($pricing, $payment)
+    protected function getRelevantPricingRuleForMethod($rules, $payment)
     {
-        return $this->validateAndGetOnePricingRule($pricing);
+        return $this->validateAndGetOnePricingRule($rules);
     }
 
-    protected function getRelevantPricingRuleForCard($pricing, $payment)
+    protected function getRelevantPricingRuleForCard($rules, $payment)
     {
         // All the rules for the current pricing plan will be put
         // through various filters till the right pricing rule
         // for the current case remains.
-        $rules = $pricing->all();
 
         // Fee based on the method type
         $cardType = $this->getCardType($payment);
@@ -137,7 +128,7 @@ class FeeCalculator
         }
 
         $amount = $payment->getAmount();
-        $rule = $this->chooseRuleWithAmount($rules, $amount);
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $payment);
 
         if ($rule === null)
         {
@@ -201,7 +192,7 @@ class FeeCalculator
      * choose rule based on amount
      * else return first available rule.
      */
-    protected function chooseRuleWithAmount($rules, $amount)
+    protected function chooseRuleWithAmount($rules, $amount, $payment)
     {
         $relevantRule = null;
 
@@ -270,34 +261,6 @@ class FeeCalculator
         $rule = $pricing[0];
 
         return $rule;
-    }
-
-
-    protected function getPricingPlanId($merchant)
-    {
-        $pricingPlanId = $merchant->getPricingPlanId();
-
-        if ($pricingPlanId !== null)
-        {
-            return $pricingPlanId;
-        }
-
-        return $this->getDefaultPricingPlan();
-    }
-
-    protected function getDefaultPricingPlan()
-    {
-        $mode = \BasicAuth::getMode();
-
-        // In live, pricing plan for merchant cannot be null.
-        if ($mode === Mode::LIVE)
-        {
-            throw new Exception\LogicException(
-                'No pricing plan assigned for merchant id: ' . $merchant->getKey());
-        }
-
-        // In test, we can return a default pricing plan if it's not set for merchant.
-        return $this->defaultPricingPlan;
     }
 
     protected function getUnroundedFees($amount, $percent, $fixed)

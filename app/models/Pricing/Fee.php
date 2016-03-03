@@ -49,7 +49,11 @@ class Fee
     {
         $calculator = new FeeCalculator($payment, $this->repo);
 
-        return $calculator->calculate();
+        $pricingPlanId = $this->getPricingPlanId($payment->merchant);
+
+        $pricing = $this->repo->getPricingPlanById($pricingPlanId);
+
+        return $calculator->calculate($pricing);
     }
 
     public function calculateServiceTax($txn, $payment)
@@ -78,6 +82,33 @@ class Fee
         assert($serviceTax > 0);
 
         return $serviceTax;
+    }
+
+    protected function getPricingPlanId($merchant)
+    {
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        if ($pricingPlanId !== null)
+        {
+            return $pricingPlanId;
+        }
+
+        return $this->getDefaultPricingPlan();
+    }
+
+    protected function getDefaultPricingPlan()
+    {
+        $mode = \BasicAuth::getMode();
+
+        // In live, pricing plan for merchant cannot be null.
+        if ($mode === Mode::LIVE)
+        {
+            throw new Exception\LogicException(
+                'No pricing plan assigned for merchant id: ' . $merchant->getKey());
+        }
+
+        // In test, we can return a default pricing plan if it's not set for merchant.
+        return $this->defaultPricingPlan;
     }
 
     protected function getUnroundedFees($amount, $percent, $fixed)
