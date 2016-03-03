@@ -412,27 +412,30 @@ class Core extends Base\Core
 
         $settleDay = $timestamp->copy()->addDays($addDays);
 
-        // For a working saturday - No more days to be added
-        // For a non working saturday - Add a two day weekend
+        // For a working saturday
+        //  - No more days to be added
+
+        // For a non working saturday
+        //  - Add a two day weekend
         if (($settleDay->dayOfWeek === Carbon::SATURDAY) and
-            ($this->isWorkingSaturdayWeekend($settleDay) === false))
+            ($this->isWorkingSaturday($settleDay) === false))
         {
             $addDays += 2;
         }
         // For settlement on sundays or beyond this week :
-        // If the transaction was done on a saturday or
-        // the saturday before the settle day was a working saturday
-        //       add a one day weekend.
-        // Else
-        //       add a two day weekend.
         else if (($settleDay->dayOfWeek === Carbon::SUNDAY) or
                  ($daysToSettlement > Carbon::DAYS_PER_WEEK))
         {
+            // If the transaction was done on a saturday or
+            // the saturday before the settle day was a working saturday
+            //   - Add a one day weekend.
             if (($currentDay === Carbon::SATURDAY) or
-                ($this->isWorkingSaturdayWeekend($settleDay->previous(Carbon::SATURDAY)) === true))
+                ($this->isWorkingSaturday($settleDay->previous(Carbon::SATURDAY)) === true))
             {
                 $addDays += 1;
             }
+            // Else
+            //  - Add a two day weekend
             else
             {
                 $addDays += 2;
@@ -444,14 +447,15 @@ class Core extends Base\Core
 
     /**
      * Given a carbon day instance,
-     * returns whether that weekend was working or not
+     * returns whether that saturday was working or not
      * Bank logic: Every non even week of the month is a working saturday
      * @param Carbon\Carbon $day Any Carbon Day
      * return boolean;
      */
-    protected function isWorkingSaturdayWeekend($day)
+    protected function isWorkingSaturday($day)
     {
+        assert($day->dayOfWeek === Carbon::SATURDAY);
+
         return ($day->weekOfMonth % 2 !== 0);
     }
-
 }
