@@ -169,6 +169,8 @@ class Service extends Base\Service
                 'status'        => 'subscribed',
                 'merge_fields'  => $this->breakName($data['name']),
             ]);
+
+            Requests::post($config['zapier_url'], [], $data);
         }
     }
 
