@@ -47,26 +47,31 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
 
+    // Invitation and Team Support
     Route::get('settings/merchants/owned', 'UserController@getOwnedMerchantForUser');
-    Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
-    Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
-
     Route::get('settings/invitations', 'InvitationsController@getPendingInvitationsForUser');
-    Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
-
     Route::get('settings/invitations/{invite}/resend', 'InvitationsController@getResendMerchantInvitation');
-    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitation');
-
-    Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
-    Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
-    Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
-    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
-
     Route::get('settings/invitations/pending', 'InvitationsController@switchCurrentMerchant');
+
+    // This is a sensitive route
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
 
     Route::group(array('before' => 'csrf'), function()
     {
+        // Team Administration
+        Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
+        Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
+
+        // Invite Administration (Owners)
+        Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
+        Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitation');
+        Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
+        Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
+
+        // Invitation related (User side)
+        Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
+        Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
+
         Route::post('/password', 'UserController@postPassword');
         Route::post('/activation', 'MerchantController@postActivation');
         Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
