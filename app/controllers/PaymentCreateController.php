@@ -148,6 +148,19 @@ class PaymentCreateController extends BaseController
         return $response->header('Access-Control-Allow-Origin', '*');
     }
 
+    /**
+     * Creates a dummy payments and
+     * return corresponding fees and service_tax
+     */
+    public function postCreatePaymentFees()
+    {
+        $input = Input::all();
+
+        $data = $this->payment->processAndReturnFees($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();

@@ -118,20 +118,21 @@ class Core extends Base\Core
 
             $txn->setGratis(true);
         }
+        //If the merchant is tdrClient
+        //use the fees and service tax from both
+        else if (isset($this->merchant) and ($this->merchant->isTdrClient()))
+        {
+            $fee            = $payment->getFee();
+            $serviceTax     = $payment->getServiceTax();
+            $credit         = $amount - $fee;
+        }
         else
         {
             list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
             $credit = $amount - $fee;
         }
 
-        //If the merchant is tdrClient
-        //use the fees and service tax from both
-        if (isset($this->merchant) and ($this->merchant->isTdrClient()))
-        {
-            $fee        = $payment->getFee();
-            $serviceTax = $payment->getServiceTax();
-            $credit     = $amount + $fee; // To adjust changes from previous
-        }
+
 
         $txn->setPricingRule($pricingRuleId);
         $txn->setAmount($amount);

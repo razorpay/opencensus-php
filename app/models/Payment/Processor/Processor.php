@@ -92,6 +92,30 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
+    public function processAndReturnFees($input)
+    {
+        if (isset($input['method']) === false)
+        {
+            $input['method'] = Payment\Method::CARD;
+        }
+        else if (empty($input['method']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide appropriate payment method',
+                Payment\Entity::METHOD);
+        }
+
+        $payment = $this->createDummyPaymentEntity($input);
+
+        // Performing dummy set of processing for the same
+        $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+        list($fee, $serviceTax, $ruleKey) =
+                            (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        return ['fees' => $fee, 'service_tax'  => $serviceTax];
+    }
+
     protected function checkSignature($input, $payment)
     {
         if (isset($input['signature']) === false)
@@ -307,6 +331,17 @@ class Processor
         }
 
         $this->setOrderDetails($payment, $input);
+
+        $this->payment = $payment;
+
+        return $payment;
+    }
+
+    protected function createDummyPaymentEntity($input)
+    {
+        $payment = (new Payment\Entity)->build($input);
+
+        $payment->merchant()->associate($this->merchant);
 
         $this->payment = $payment;
 
