@@ -131,20 +131,22 @@ class Fee
     {
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $mode = \BasicAuth::getMode();
-
-        if ($pricingPlanId === null)
+        if ($pricingPlanId !== null)
         {
-            if ($mode === Mode::LIVE)
-            {
-                throw new Exception\LogicException(
-                    'No pricing plan assigned for merchant id: ' . $merchant->getKey());
-            }
-
-            $pricingPlanId = $this->defaultPricingPlan;
+            return $pricingPlanId;
         }
 
-        return $pricingPlanId;
+        $mode = \BasicAuth::getMode();
+
+        // In live, pricing plan for merchant cannot be null.
+        if ($mode === Mode::LIVE)
+        {
+            throw new Exception\LogicException(
+                'No pricing plan assigned for merchant id: ' . $merchant->getKey());
+        }
+
+        // In test, we can return a default pricing plan if it's not set for merchant.
+        return $this->defaultPricingPlan;
     }
 
     protected function getRelevantPricingRule($pricingPlanId, $payment)
