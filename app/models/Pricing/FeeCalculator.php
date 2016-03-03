@@ -107,7 +107,6 @@ class FeeCalculator
         // for the current case remains.
         $rules = $pricing->all();
 
-
         // Fee based on the method type
         $cardType = $this->getCardType($payment);
 
@@ -269,6 +268,8 @@ class FeeCalculator
         }
 
         $rule = $pricing[0];
+
+        return $rule;
     }
 
 
