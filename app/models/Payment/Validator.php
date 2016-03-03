@@ -25,6 +25,8 @@ class Validator extends Base\Validator
         'notes'         =>  'sometimes',
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
+        'fees'          =>  'sometimes|integer|max:50000000',
+        'service_tax'   =>  'sometimes|integer|max:50000000',
         '_'             =>  'sometimes');
 
     protected static $captureRules = array(

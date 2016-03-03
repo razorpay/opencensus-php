@@ -118,6 +118,14 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
     </tr>
     <tr>
+        <td colspan='40'>Fees:</td>
+        <td><input type="text" name="fees" size="25" value=""></td>
+    </tr>
+    <tr>
+        <td colspan='40'>Service Tax:</td>
+        <td><input type="text" name="service_tax" size="25" value=""></td>
+    </tr>
+    <tr>
         <td colspan="100" align="center"><input type="submit" value="  Submit  "></td>
     </tr>
     <tr>

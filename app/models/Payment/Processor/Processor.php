@@ -322,7 +322,16 @@ class Processor
                 'order_id');
         }
 
-        if ($this->order->getAmount() !== $payment->getAmount())
+        $amount = $payment->getAmount();
+
+        // If the merchant is a tdr client, use the adjusted amount to
+        // match order amount.
+        if ($this->merchant->isTdrClient())
+        {
+            $amount = $amount + $payment->getFee() + $payment->getServiceTax();
+        }
+
+        if ($this->order->getAmount() !== $amount)
         {
             // Order and Payment amount mismatch
             throw new Exception\BadRequestException(

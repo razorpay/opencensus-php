@@ -124,6 +124,15 @@ class Core extends Base\Core
             $credit = $amount - $fee;
         }
 
+        //If the merchant is tdrClient
+        //use the fees and service tax from both
+        if ($txn->merchant()->isTdrClient())
+        {
+            $fee        = $payment->getFee();
+            $serviceTax = $payment->getServiceTax();
+            $credit     = $amount + $fee; // To adjust changes from previous
+        }
+
         $txn->setPricingRule($pricingRuleId);
         $txn->setAmount($amount);
         $txn->setCredit($credit);

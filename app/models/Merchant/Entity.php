@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
+    const TDR_CLIENT                = 'tdr_client';
 
     /**
      * Refers to methods relation and not a property;
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::FEATURES,
+        self::TDR_CLIENT,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -65,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::INTERNATIONAL,
+        self::TDR_CLIENT,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -83,7 +86,8 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES         => null,
+        self::FEATURES              => null,
+        self::TDR_CLIENT            => false,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -99,6 +103,11 @@ class Entity extends Base\PublicEntity
     public function isInternational()
     {
         return (boolean) $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isTdrClient()
+    {
+        return (boolean) $this->getAttribute(self::TDR_CLIENT);
     }
 
     public function isLive()
