@@ -66,9 +66,11 @@ class OrderTest extends TestCase
         // If a payment is requested for an already authorised order
         // That will fail with a BadRequestValidationFailureException
         $testData = $this->testData[__FUNCTION__];
-        $this->runRequestResponseFlow($testData, function() use ($payment)
+        $payment1 = $this->getDefaultPaymentArray();
+        $payment1['order_id'] = $order['id'];
+        $this->runRequestResponseFlow($testData, function() use ($payment1)
         {
-            $this->doAuthPayment($payment);
+            $this->doAuthPayment($payment1);
         });
 
         $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
@@ -79,9 +81,9 @@ class OrderTest extends TestCase
         // If a payment is requested for an already paid order
         // That will fail with a BadRequestValidationFailureException
         $testData = $this->testData[__FUNCTION__];
-        $this->runRequestResponseFlow($testData, function() use ($payment)
+        $this->runRequestResponseFlow($testData, function() use ($payment1)
         {
-            $this->doAuthPayment($payment);
+            $this->doAuthPayment($payment1);
         });
     }
 
