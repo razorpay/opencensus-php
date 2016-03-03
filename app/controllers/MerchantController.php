@@ -420,4 +420,13 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($input);
     }
+
+    public function postMerchantsNotifyHoliday()
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->notifyMerchantsHoliday($input);
+
+        return ApiResponse::json($data);
+    }
 }

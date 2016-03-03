@@ -15,16 +15,48 @@ class Holidays
         [24, 12, 2015],
         [25, 12, 2015],
         [26,  1, 2016],
+        [19,  2, 2016],
+        [7,   3, 2016],
+        [24,  3, 2016],
+        [25,  3, 2016],
+        [1,   4, 2016], // On Account of Annual Closing of Bank Accounts
+        [8,   4, 2016],
+        [14,  4, 2016],
+        [15,  4, 2016],
+        [19,  4, 2016],
+        [1,   5, 2016], // Sunday
+        [21,  5, 2016], // working saturday
+        [6,   7, 2016],
+        [15,  8, 2016],
+        [17,  8, 2016],
+        [5,   9, 2016],
+        [13,  9, 2016],
+        [2,  10, 2016], // Sunday
+        [11, 10, 2016],
+        [12, 10, 2016],
+        [30, 10, 2016], // Sunday
+        [31, 10, 2016],
+        [14, 11, 2016],
+        [12, 12, 2016],
+        [25, 12, 2016], // Sunday
     );
 
-    public static function isTodayHoliday($mode)
+    public static function isThisDayHoliday($mode, $thisDay = 'today')
     {
+
         if ($mode === 'test')
         {
             return false;
         }
 
-        $date = Carbon::today('Asia/Kolkata');
+        if ($thisDay === 'today')
+        {
+            $date = Carbon::today('Asia/Kolkata');
+        }
+        else if ($thisDay === 'tomorrow')
+        {
+            $date = Carbon::tomorrow('Asia/Kolkata');
+        }
 
         $flag = false;
 

@@ -119,6 +119,9 @@ class TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
+    const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
+    const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
         self::PAYMENT_CREATED                       => 'New payment created',
