@@ -414,63 +414,46 @@ class Core extends Base\Core
 
         $settleDay = $timestamp->copy()->addDays($addDays);
 
+        // For a working saturday - No more days to be added
+        // For a non working saturday - Add a two day weekend
         if ($settleDay->dayOfWeek === Carbon::SATURDAY and
-            ($settleDay->weekOfMonth % 2 === 0))
+            ($this->isWorkingSaturdayWeekend($settleDay) === false))
         {
-            // Adding a two day weekend
             $addDays += 2;
-            s("sat");
         }
-        else if($settleDay->dayOfWeek === Carbon::SUNDAY)
+        // For other days - That have crosed beyond this week :
+        // If the transaction was done on a saturday or
+        // the saturday just before the settle day was a working saturday
+        // add a one day weekend.
+        // Else
+        // Add a two day weekend.
+        else if(($settleDay->dayOfWeek === Carbon::SUNDAY) or
+                 ($daysToSettle > Carbon::DAYS_PER_WEEK))
         {
-            if ($currentDay === Carbon::SATURDAY)
+            if (($currentDay === Carbon::SATURDAY) or
+                ($this->isWorkingSaturdayWeekend($settleDay->previous(Carbon::SATURDAY)) === true))
             {
-                s("settle on sunday and today was saturday");
                 $addDays += 1;
             }
             else
             {
-                if($settleDay->weekOfMonth % 2 !== 0)
-                {
-                    s("settle on sunday and this week was working");
-                    $addDays += 1;
-                }
-                else
-                {
-                    s("settle on sunday and this week was not working");
-                    $addDays += 2;
-                }
-            }
-        }
-        else if($daysToSettle > Carbon::DAYS_PER_WEEK)
-        {
-            if ($settleDay->subWeek()->weekOfMonth % 2 !== 0) // Previous sat working
-            {
-                s("last weekend was working");
-                if (($currentDay === Carbon::SATURDAY) or
-                    ($currentCarbonDay->weekOfMonth % 2 !== 0))
-                {
-                    $addDays += 1;
-                }
-                else
-                {
-                    $addDays += 2;
-                }
-            }
-            else        // Previous sat not working
-            {
-                s("last weekend was not working");
-                if ($currentDay === Carbon::SATURDAY)
-                {
-                    $addDays += 1;
-                }
-                else
-                {
-                    $addDays += 2;
-                }
+                $addDays += 2;
             }
         }
 
         return $addDays;
     }
+
+    /**
+     * Given a carbon day instance,
+     * returns whether that weekend was working or not
+     * Bank logic: Every non even week of the month is a working saturday
+     * @param Carbon\Carbon $day Any Carbon Day
+     * return boolean;
+     */
+    protected function isWorkingSaturdayWeekend($day)
+    {
+        return ($day->weekOfMonth % 2 !== 0);
+    }
+
 }

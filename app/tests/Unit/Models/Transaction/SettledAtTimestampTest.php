@@ -133,7 +133,7 @@ class SettledAtTimestampTest extends TestCase
 
             if ($workingSaturdayWeek === true)
             {
-                $capturedAt = Carbon::parse('first saturday of this month','Asia/Kolkata');
+                $capturedAt = Carbon::parse('third saturday of this month','Asia/Kolkata');
             }
             else
             {
