@@ -202,7 +202,7 @@ class Entity extends Base\PublicEntity
 
     public function setBrandColorAttribute($brandColor)
     {
-        $this->attributes[self::BRAND_COLOR] = $brandColor?strtoupper($brandColor):null;
+        $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
     }
 
     public function getBillingLabelElseName()
