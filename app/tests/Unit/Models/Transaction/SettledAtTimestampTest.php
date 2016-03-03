@@ -10,6 +10,9 @@ use Tests\TestCase;
 
 class SettledAtTimestampTest extends TestCase
 {
+    protected $method;
+    protected $core;
+
     public function testSettledAtTimestampForNonWorkingSaturdayTxn()
     {
         // Mapping of Payment day to Settlement day
@@ -122,37 +125,48 @@ class SettledAtTimestampTest extends TestCase
     protected function runSettledAtFunc($map, $addDays, $workingSaturdayWeek)
     {
         $class = new ReflectionClass('Models\Transaction\Core');
-        $method = $class->getMethod('calculateSettledAtTimestamp');
-        $method->setAccessible(true);
+        $this->method = $class->getMethod('calculateSettledAtTimestamp');
+        $this->method->setAccessible(true);
 
-        $core = new Transaction\Core;
+        $this->core = new Transaction\Core;
 
         foreach ($map as $key => $value)
         {
-            $capturedAt = Carbon::now('Asia/Kolkata');
-
             if ($workingSaturdayWeek === true)
             {
-                $capturedAt = Carbon::parse('third saturday of this month','Asia/Kolkata');
+                foreach (['first','third','fifth'] as $ordinal)
+                {
+                    $capturedAt = Carbon::parse($ordinal.' saturday of october 2016','Asia/Kolkata');
+
+                    $this->runTestWith($capturedAt, $addDays, $key, $value);
+                }
             }
             else
             {
-                $capturedAt = Carbon::parse('second saturday of this month','Asia/Kolkata');
+                foreach (['second','fourth'] as $ordinal)
+                {
+                    $capturedAt = Carbon::parse($ordinal.' saturday of october 2016','Asia/Kolkata');
+
+                    $this->runTestWith($capturedAt, $addDays, $key, $value);
+                }
             }
-
-            $day = (int) $capturedAt->format('w');
-            $capturedAddDays = $key - $day;
-            $capturedAt->addDays($capturedAddDays);
-
-            $day = (int) $capturedAt->format('w');
-
-            $settledAt = $method->invokeArgs($core, array($capturedAt->timestamp, $addDays));
-            $settledAt = Carbon::createFromTimestamp($settledAt, 'Asia/Kolkata');
-
-            $diff = $settledAt->diffInDays($capturedAt);
-            $day  += $diff;
-
-            $this->assertEquals($value, $day);
         }
+    }
+
+    protected function runTestWith($capturedAt, $addDays, $key, $value)
+    {
+        $day = (int) $capturedAt->format('w');
+        $capturedAddDays = $key - $day;
+        $capturedAt->addDays($capturedAddDays);
+
+        $day = (int) $capturedAt->format('w');
+
+        $settledAt = $this->method->invokeArgs($this->core, array($capturedAt->timestamp, $addDays));
+        $settledAt = Carbon::createFromTimestamp($settledAt, 'Asia/Kolkata');
+
+        $diff = $settledAt->diffInDays($capturedAt);
+        $day  += $diff;
+
+        $this->assertEquals($value, $day);
     }
 }

@@ -406,29 +406,27 @@ class Core extends Base\Core
 
     protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
     {
-        $currentCarbonDay = $timestamp->copy();
-
         $currentDay = $timestamp->dayOfWeek;
 
-        $daysToSettle = $currentDay + $addDays;
+        $daysToSettlement = $currentDay + $addDays;
 
         $settleDay = $timestamp->copy()->addDays($addDays);
 
         // For a working saturday - No more days to be added
         // For a non working saturday - Add a two day weekend
-        if ($settleDay->dayOfWeek === Carbon::SATURDAY and
+        if (($settleDay->dayOfWeek === Carbon::SATURDAY) and
             ($this->isWorkingSaturdayWeekend($settleDay) === false))
         {
             $addDays += 2;
         }
-        // For other days - That have crosed beyond this week :
+        // For settlement on sundays or beyond this week :
         // If the transaction was done on a saturday or
-        // the saturday just before the settle day was a working saturday
-        // add a one day weekend.
+        // the saturday before the settle day was a working saturday
+        //       add a one day weekend.
         // Else
-        // Add a two day weekend.
-        else if(($settleDay->dayOfWeek === Carbon::SUNDAY) or
-                 ($daysToSettle > Carbon::DAYS_PER_WEEK))
+        //       add a two day weekend.
+        else if (($settleDay->dayOfWeek === Carbon::SUNDAY) or
+                 ($daysToSettlement > Carbon::DAYS_PER_WEEK))
         {
             if (($currentDay === Carbon::SATURDAY) or
                 ($this->isWorkingSaturdayWeekend($settleDay->previous(Carbon::SATURDAY)) === true))
