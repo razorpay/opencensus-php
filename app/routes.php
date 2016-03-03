@@ -63,9 +63,7 @@ Route::group(array('before' => 'auth.user'), function()
     Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
 
     Route::get('settings/invitations/pending', 'InvitationsController@switchCurrentMerchant');
-
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
-    Route::delete('settings/merchants/{merchant}/membership', 'InvitationsController@leaveMerchant');
 
     Route::group(array('before' => 'csrf'), function()
     {
@@ -106,6 +104,10 @@ Route::group(['before' => 'slack'], function ()
 
 Route::group(array('before' => 'auth.admin'), function()
 {
+
+    // Warning: Anything added to this list is vulnerable to CSRF
+    // So Make sure that you do not take any actions that are not
+    // just FETCH operations
     Route::get('/admin/user', 'AdminController@getAdmin');
     Route::get('/admin/user/logout', 'AdminController@getLogout');
     Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
@@ -119,22 +121,24 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
     Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
     Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
-    Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
-    Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
+
     // Might delete this route later if its not used
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
     Route::group(array('before' => 'csrf'), function()
     {
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
+
         // Pricing Plan Routes
         Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
         Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
+
         // EMI Routes
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
         Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
+
         // Admin merchant actions
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
         Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
@@ -153,6 +157,11 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
+
+        // Creevey Related routes
+        Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
+        Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
+
         // IIN Routes
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
@@ -181,6 +190,7 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
         Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
     });
+
     Route::group(array('before' => 'auth.superadmin'), function()
     {
         // This is the RAW API route which processes api calls
