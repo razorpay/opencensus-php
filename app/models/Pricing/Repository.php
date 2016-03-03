@@ -58,32 +58,13 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingRulesForCard($id, $isInternational = false, $network = null, $methodType = null)
+    public function getPricingRulesForCard($id)
     {
         $repo = $this->repo;
 
         // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
-                    ->where(Pricing\Entity::INTERNATIONAL, '=', $isInternational)
-                    ->where(function($query) use ($network)
-                    {
-                        $query->whereNull(Pricing\Entity::PAYMENT_NETWORK);
-
-                        if ($network !== null)
-                        {
-                            $query->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
-                        }
-                    })
-                    ->where(function($query) use ($methodType)
-                    {
-                        $query->whereNull(Pricing\Entity::PAYMENT_METHOD_TYPE);
-
-                        if ($methodType !== null)
-                        {
-                            $query->orWhere(Pricing\Entity::PAYMENT_METHOD_TYPE, '=', $methodType);
-                        }
-                    })
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
