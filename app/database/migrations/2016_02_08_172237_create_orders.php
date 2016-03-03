@@ -26,6 +26,7 @@ class CreateOrders extends Migration {
             $table->char(Order::ID, 14)
                   ->primary();
 
+
             $table->char(Order::MERCHANT_ID, 14);
 
             $table->integer(Order::AMOUNT)
