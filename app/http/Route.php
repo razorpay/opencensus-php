@@ -184,6 +184,7 @@ final class Route
         'payment_create_checkout',
         'payment_create_jsonp',
         'payment_create_ajax',
+        'payment_create_fees',
         'payment_otp_submit',
         'payment_cancel',
         'payment_add_metadata',

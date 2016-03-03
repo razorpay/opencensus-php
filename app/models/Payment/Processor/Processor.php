@@ -15,6 +15,7 @@ use Models\Merchant\BankAccount;
 use Models\Terminal;
 use Models\Payment;
 use Models\Order;
+use Models\Pricing;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
