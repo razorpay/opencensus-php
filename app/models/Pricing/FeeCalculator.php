@@ -198,7 +198,7 @@ class FeeCalculator
         }
         else
         {
-            return $this->chooseRuleWithAmount($rules, $amount);
+            return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
         }
     }
 
@@ -207,10 +207,8 @@ class FeeCalculator
      * choose rule based on amount
      * else return first available rule.
      */
-    protected function chooseRuleWithAmount($rules, $payment)
+    protected function chooseRuleWithAmountForMerchantSubvention($rules, $amount)
     {
-        $amount = $payment->getAmount();
-
         $relevantRule = null;
 
         // Either all the rules will be amount range active,
@@ -243,11 +241,11 @@ class FeeCalculator
 
     protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount)
     {
-        $fees = []
+        $fees = [];
 
         foreach ($rules as $rule)
         {
-            list($fee, ~) = $this->getFees($rule, $amount);
+            list($fee, $st) = $this->getFees($rule, $amount);
 
             $newAmount = $amount + $fee;
 
