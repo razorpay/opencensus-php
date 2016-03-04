@@ -30,10 +30,6 @@ class Handler
         {
             return $this->genericExceptionHandler($e, $code);
         });
-        $this->app->error(function(\Throwable $e, $code)
-        {
-            sd($e);
-        });
 
         $this->app->error(function(MethodNotAllowedHttpException $e)
         {
