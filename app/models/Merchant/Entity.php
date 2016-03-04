@@ -278,6 +278,17 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $data;
     }
 
+    public static function getAllAggregations($mode, $resource)
+    {
+        $data = \DB::table('aggregations')
+                    ->where('resource','=',$resource)
+                    ->where('mode','=',$mode)
+                    ->where('total_amount' , '>', 0)
+                    ->orderBy('total_amount', 'DESC')
+                    ->get();
+        return $data;
+    }
+
     public static function getPaymentAggregations($data, $mode)
     {
         $data = \DB::table('payment_aggregations')
