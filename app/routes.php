@@ -127,6 +127,7 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
     Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
+    Route::get('admin/{mode}/merchants/aggregations/{resource}', 'AdminController@getMerchantAggregations');
 
     // Might delete this route later if its not used
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
@@ -224,6 +225,7 @@ Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');
 });
+
 Route::group(array('before' => 'auth.cron'), function()
 {
     Route::post('/{mode}/analytics/aggregations', 'TransactionController@updateAggregations');

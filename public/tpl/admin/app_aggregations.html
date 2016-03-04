@@ -1,0 +1,87 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Merchant Stats
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="MerchantStatsCtrl">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
+        <li ng-click="allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!allowPrev"></button></li>
+        <li ng-click="allowNext && next()"><button class="btn btn-default  fa fa-chevron-right" ng-disabled="!allowNext"></button></li>
+      </ul>
+
+      Mode: ({{mode | titlecase}})
+    </div>
+    <div class="row wrapper">
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="col-sm-2 m-b-xs">
+        Resource:
+        <select class="form-control input-sm w-sm inline " name="resource" ng-model="resource">
+          <option value="payment">Payment</option>
+          <option value="refund">Refund</option>
+          <option value="settlement">Settlement</option>
+        </select>
+      </div>
+      <div class="col-xs-2">
+        Mode:
+        <select class="form-control input-sm w-xs inline" name="mode" ng-model="mode">
+          <option value="live">Live</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <div class="input-group">
+          <input type="text" class="input-sm form-control" placeholder="Search Merchant Id" ng-model="merchant_id">
+          <span class="input-group-btn">
+            <button class="btn btn-sm btn-default" type="button" ng-click="search(merchant_id)" >Go!</button>
+          </span>
+        </div>
+      </div>
+      <!-- <div class="col-sm-1">
+        <button class="btn btn-primary" ng-click="generateTable(true);">Download</button>
+      </div> -->
+    </div>
+
+    <div class="table-responsive">
+      <table id="merchants-table" class="table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th>Merchant Id</th>
+            <th>Total Amount</th>
+            <th>Successful</th>
+            <th>Total</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in data">
+            <td>{{row.merchant_id}}</td>
+            <td>{{row.total_amount}}</td>
+            <td>{{row.successful_txn_count}}</td>
+            <td>{{row.txn_count}}</td>
+            <td>{{row.updated_at | date:'medium'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- <footer class="panel-footer">
+      <div class="row">
+        <div class="col-sm-4 hidden-xs">
+        </div>
+        <div class="col-sm-4 text-center">
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
+        </div>
+        <div class="col-sm-4 text-right text-center-xs">
+          <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
+            <li ng-click="allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!allowPrev"></button></li>
+            <li ng-click="allowNext && next()"><button class="btn btn-default  fa fa-chevron-right" ng-disabled="!allowNext"></button></li>
+          </ul>
+        </div>
+      </div>
+    </footer> -->
+  </div>
+</div>
