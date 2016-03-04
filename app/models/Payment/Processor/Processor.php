@@ -202,7 +202,7 @@ class Processor
      */
     public function cancel($id, $input)
     {
-        return $this->repo->transaction(function() use ($payment)
+        return $this->repo->transaction(function() use ($id, $input)
         {
             $payment = $this->retrieve($id);
 
@@ -211,7 +211,7 @@ class Processor
             (new Payment\Validator)->cancelValidate($payment);
 
             return $this->cancelPayment($payment, $input);
-        }
+        });
     }
 
     protected function cancelPayment($payment)
