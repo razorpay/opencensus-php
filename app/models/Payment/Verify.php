@@ -16,7 +16,7 @@ class Verify
 {
     use SlackPoster;
 
-    const MIN_TIME_BEFORE_VERIFY = 600; // 10 minutes
+    const MIN_TIME_BEFORE_VERIFY = 120; // 1 minute
 
     public function __construct($mode, $trace, $exceptionHandler)
     {
