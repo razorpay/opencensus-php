@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
+    const BRAND_COLOR               = 'brand_color';
 
     /**
      * Refers to methods relation and not a property;
@@ -44,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::HOLD_FUNDS,
+        self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::FEATURES,
@@ -70,11 +72,14 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
         self::METHODS,
+        self::BRAND_COLOR,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    );
 
     protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL);
+        self::TRANSACTION_REPORT_EMAIL
+    );
 
     protected $defaults = array(
         self::LIVE                  => false,
@@ -83,7 +88,8 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES         => null,
+        self::FEATURES              => null,
+        self::BRAND_COLOR           => null,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -194,6 +200,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
+    public function setBrandColorAttribute($brandColor)
+    {
+        $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
+    }
+
     public function getBillingLabelElseName()
     {
         $label = $this->getBillingLabel();
@@ -288,6 +299,11 @@ class Entity extends Base\PublicEntity
     public function getFeatures()
     {
         return $this->getAttribute(self::FEATURES);
+    }
+
+    public function getBrandColor()
+    {
+        return $this->getAttribute(self::BRAND_COLOR);
     }
 
     public function getTransactionReportEmailAttribute()

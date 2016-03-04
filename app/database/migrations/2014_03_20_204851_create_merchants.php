@@ -67,6 +67,10 @@ class CreateMerchants extends Migration
             $table->string(Merchant::FEATURES)
                   ->nullable();
 
+            $table->char(Merchant::BRAND_COLOR, 6)
+                  ->nullable()
+                  ->default(null);
+
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
 

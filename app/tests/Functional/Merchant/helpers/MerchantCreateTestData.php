@@ -25,6 +25,7 @@ return [
                 'live' => false,
                 'activated' => false,
                 'hold_funds' => false,
+                'brand_color' => null,
                 'activated_at' => null,
                 'receipt_email_enabled' => true,
                 'transaction_report_email' => [

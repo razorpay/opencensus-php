@@ -59,6 +59,7 @@ final class Route
         'merchant_create'                       => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                             ],
         'merchant_fetch'                        => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                    ],
         'merchant_edit'                         => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                    ],
+        'merchant_edit_config'                  => ['put',      'merchants/{id}/config',                    'MerchantController@putMerchantConfig'                              ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'               => ['get',      'merchants',                                'MerchantController@getMerchants'                                   ],
         'merchant_create_key'                   => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                                 ],
@@ -342,6 +343,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'merchant_fetch_balance',
+        'merchant_edit_config',
     );
 
     public static $direct = array(
