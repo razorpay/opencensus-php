@@ -27,6 +27,16 @@ app.controller('MerchantStatsCtrl', [
       });
     }
 
+    $scope.fetchAllAggregationsForMerchant = function(mid, mode, resource) {
+      var request = $http.get('/admin/'+mode + '/merchants/'+mid+'/aggregations/' + resource);
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.data = [data.data];
+        }
+      });
+    }
+
     $scope.$watch('mode + sort + resource', function() {
       $scope.go('');
     })
@@ -35,6 +45,9 @@ app.controller('MerchantStatsCtrl', [
       if (merchant_id === "") {
         // We get all aggregations
         $scope.fetchAllAggregations($scope.mode, $scope.resource, $scope.sort);
+      }
+      else {
+        $scope.fetchAllAggregationsForMerchant(merchant_id, $scope.mode, $scope.resource);
       }
     }
 

@@ -672,4 +672,12 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function getSingleMerchantAggregations($mode, $merchant, $resource)
+    {
+        list($error, $data) = (new Admin\Service)
+            ->getSingleMerchantAggregations($merchant, $mode, $resource);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

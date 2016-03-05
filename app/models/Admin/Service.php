@@ -1704,5 +1704,17 @@ class Service extends Base\Service
         }
 
     }
+
+    public function getSingleMerchantAggregations($merchantId, $mode, $resource)
+    {
+        $data = [
+            'merchant_id'   =>  $merchantId,
+            'resource'      =>  $resource
+        ];
+
+        $response = Merchant\Entity::getAggregations($data, $mode);
+
+        return [null, $response];
+    }
 }
 
