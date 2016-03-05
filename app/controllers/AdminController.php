@@ -665,9 +665,11 @@ class AdminController extends BaseController
 
     public function getMerchantAggregations($mode, $resource)
     {
-        $data = (new Admin\Service)
-            ->getMerchantAggregations($mode, $resource);
+        $input = Input::all();
 
-        return AppResponse::jsonResponse(null, $data);
+        list($error, $data) = (new Admin\Service)
+            ->getMerchantAggregations($mode, $resource, $input);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 }

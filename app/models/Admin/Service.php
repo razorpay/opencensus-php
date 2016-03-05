@@ -1689,9 +1689,20 @@ class Service extends Base\Service
         return $slack->getResponse();
     }
 
-    public function getMerchantAggregations($mode, $resource)
+    public function getMerchantAggregations($mode, $resource, $input)
     {
-        return (new Transaction\Service)->getAllAggregations($mode, $resource);
+        $error = (new Admin\Validator)->validateInput('merchant_stats', $input)->messages();
+
+        if (empty($error))
+        {
+            $sort = \Input::get('sort', 'total_amount');
+            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort)];
+        }
+        else
+        {
+            return [$error, null];
+        }
+
     }
 }
 
