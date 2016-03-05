@@ -45,7 +45,9 @@ class AdminTest extends TestCase
             $user = $this->createEntity('user');
             $user->saveOrFail();
 
-            $this->merchant = Models\Merchant\Entity::createFromUser($user, 'Razorpay');
+            $businessName = substr(strtoupper(md5('Razorpay' . microtime())), 0, 20);
+
+            $this->merchant = Models\Merchant\Entity::createFromUser($user, $businessName);
             $this->merchant->saveOrFail();
 
             $this->merchant_details = $this->createEntity('merchant_details',
