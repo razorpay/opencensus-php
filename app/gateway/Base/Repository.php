@@ -42,4 +42,17 @@ class Repository extends Base\Repository
                     ->where('action', '=', 'refund')
                     ->get();
     }
+
+    protected function addQueryParamPaymentId($query, $params)
+    {
+        $paymentId = $params[Entity::PAYMENT_ID];
+        $ix = strpos($paymentId, '_');
+
+        if ($ix !== false)
+        {
+            $paymentId = substr($paymentId, $ix+1);
+        }
+
+        $query->where(Entity::PAYMENT_ID, '=', $paymentId);
+    }
 }
