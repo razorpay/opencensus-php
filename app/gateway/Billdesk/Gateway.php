@@ -46,7 +46,7 @@ class Gateway extends Base\Gateway
         // We should ensure once that AuthStatus is 0300 and
         // RefundStatus is null.
 
-        assert ($payment['RefStatus'] === null);
+        // assert ($payment['RefStatus'] === null);
         assert ($payment['AuthStatus'] === AuthStatus::SUCCESS);
     }
 
