@@ -31,7 +31,6 @@ class Handler
             return $this->genericExceptionHandler($e, $code);
         });
 
-
         $this->app->error(function(MethodNotAllowedHttpException $e)
         {
             return Response::json(array('success' => false, 'errors' => ['Method not allowed']));
