@@ -98,9 +98,9 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
-        if ($invitation === false)
+        if (! $invitation)
         {
-            $error = static::INVALID_INVITE;
+            $error[] = static::INVALID_INVITE;
 
             return array($error, null);
         }
@@ -121,7 +121,7 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant->invitations()->find($inviteId);
 
-        if ($invitation === false)
+        if (! $invitation)
         {
             $error[] = static::INVALID_INVITE;
         }
@@ -144,7 +144,7 @@ class Service extends Base\Service
     {
         $invitation = $user->invitations()->find($inviteId);
 
-        if ($invitation === false)
+        if (! $invitation)
         {
             return [static::INVALID_INVITE];
         }
@@ -174,7 +174,7 @@ class Service extends Base\Service
 
         $invitation = $user->currentMerchant()->invitations()->find($inviteId);
 
-        if ($invitation === false)
+        if (! $invitation)
         {
             $error[] = [static::INVALID_INVITE];
 
@@ -197,7 +197,7 @@ class Service extends Base\Service
     {
         $invitation = $user->invitations()->find($inviteId);
 
-        if ($invitation === false)
+        if (! $invitation)
         {
             return [static::INVALID_INVITE];
         }

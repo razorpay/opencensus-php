@@ -99,7 +99,9 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger', "There was an error in changing the team member's role");
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
@@ -118,7 +120,9 @@ app.controller('TeamManagementCtrl', [
           $scope.getTeamMembers();
         } else {
           $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger', "There was an error in removing the team member's invitation");
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
@@ -133,10 +137,13 @@ app.controller('TeamManagementCtrl', [
       .success(function (data) {
         if (data.success) {
           $scope.alerts
-                .addAlert('success', 'Invitation has been successfully resent to ' + invite.email, true);
+            .addAlert('success', 'Invitation has been successfully resent to ' + invite.email, true);
           $scope.getTeamMembers();
         } else {
-          $scope.alerts.addAlert('danger', "We couldn't send the invitation to the team member");
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       })
       .error(function () {

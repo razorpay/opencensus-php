@@ -35,10 +35,28 @@ class Handler
             sd($e);
         });
 
+
         $this->app->error(function(MethodNotAllowedHttpException $e)
         {
             return Response::json(array('success' => false, 'errors' => ['Method not allowed']));
         });
+
+        $this->app->error(function(\Throwable $e, $code)
+        {
+            return $this->PHP7ExceptionHandler($e, $code);
+        });
+
+    }
+    public function PHP7ExceptionHandler(\Throwable $e, $code)
+    {
+        if ($this->debug === false)
+        {
+            return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
+        }
+        else
+        {
+            sd($e);
+        }
     }
 
     public function genericExceptionHandler(\Exception $exception, $code)

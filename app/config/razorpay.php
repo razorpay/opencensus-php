@@ -36,6 +36,7 @@ return array(
     'mailchimp' => [
         'list_id'   =>  $_ENV['MAILCHIMP_LIST_ID'],
         'api_key'   =>  $_ENV['MAILCHIMP_API_TOKEN'],
-        'mock'      =>  getenv('MAILCHIMP_MOCK')
-    ],
+        'mock'      =>  getenv('MAILCHIMP_MOCK'),
+        'zapier_url'=>  'https://zapier.com/hooks/catch/2k883w'
+    ]
 );
