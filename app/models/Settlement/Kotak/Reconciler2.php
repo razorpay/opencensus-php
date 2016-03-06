@@ -180,7 +180,7 @@ class Reconciler2
 
         if ($setl->isStatusCreated() === false)
         {
-            throw Exception\BadRequestValidationFailure(
+            throw new Exception\BadRequestValidationFailure(
                 'Settlement status should be created for reconciliation. ' .
                 'Current status: ' . $setl->getStatus());
         }
