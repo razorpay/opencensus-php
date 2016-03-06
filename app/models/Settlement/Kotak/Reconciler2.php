@@ -52,7 +52,6 @@ class Reconciler2
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->dailySetlRepo = new Settlement\Daily\Repository;
-
         $this->trace = \App::make('trace');
     }
 
@@ -179,6 +178,13 @@ class Reconciler2
     {
         $status = $row['status'];
 
+        if ($setl->isStatusCreated() === false)
+        {
+            throw Exception\BadRequestValidationFailure(
+                'Settlement status should be created for reconciliation. ' .
+                'Current status: ' . $setl->getStatus());
+        }
+
         if (isset($row['utr_no']))
         {
             $utr = $row['utr_no'];
@@ -198,23 +204,8 @@ class Reconciler2
         }
         else
         {
-            $failureReason = $row['Failure_Reason'];
-
-            throw new Exception\BadRequestValidationFailureException(
-                'Something going wrong. ' . $status);
-
-            if ($failureReason !== '')
-            {
-                $failureReason = 'Reconciliation: ' . $failureReason;
-            }
-
-            (new Failure)->markFailed($setl, $reason);
-
-            if (($status !== 'C') or
-                ($failureReason === ''))
-            {
-                Trace::error(TraceCode::SETTLEMENT_KOTAK_FAILURE_DATA_MISSING);
-            }
+            $setl->setStatus(Settlement\Status::FAILED);
+            $this->setlRepo->save($setl);
         }
 
         $setl->transaction->setReconciledAt($this->reconciledAt);
