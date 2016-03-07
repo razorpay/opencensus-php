@@ -45,7 +45,7 @@ class Fee
         return $this->repo->getZeroPricingPlanRuleForMethod($method)->getId();
     }
 
-    public function calculateMerchantFees($payment)
+    public function calculateMerchantFees($payment, $preCalculationOfFees = false)
     {
         $calculator = new FeeCalculator($payment, $this->repo);
 
@@ -53,7 +53,7 @@ class Fee
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
-        return $calculator->calculate($pricing);
+        return $calculator->calculate($pricing, $preCalculationOfFees);
     }
 
     public function calculateServiceTax($txn, $payment)
@@ -84,6 +84,22 @@ class Fee
         return $serviceTax;
     }
 
+    public function calculateServiceTaxFromFees($fee)
+    {
+        // Solving these
+        // rzpFee + servTax = totFee;
+        // servTax = ST_PERC * rzpFee;
+        //         = ST_PERC * (totFee - servTax);
+
+        // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
+
+        $numerator = self::SERVICE_TAX_PERCENT * $fee ;
+
+        $denominator = 100 + self::SERVICE_TAX_PERCENT ;
+
+        return ($numerator / $denominator);
+    }
+
     protected function getPricingPlanId($merchant)
     {
         $pricingPlanId = $merchant->getPricingPlanId();
@@ -109,10 +125,5 @@ class Fee
 
         // In test, we can return a default pricing plan if it's not set for merchant.
         return $this->defaultPricingPlan;
-    }
-
-    protected function getUnroundedFees($amount, $percent, $fixed)
-    {
-        return (($amount * $percent) / 10000) + $fixed;
     }
 }

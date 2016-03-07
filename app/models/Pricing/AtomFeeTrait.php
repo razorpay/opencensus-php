@@ -72,4 +72,10 @@ trait AtomFeeTrait
         return $fee;
     }
 
+    protected function getUnroundedFees($amount, $percent, $fixed)
+    {
+        return (($amount * $percent) / 10000) + $fixed;
+    }
+
+
 }

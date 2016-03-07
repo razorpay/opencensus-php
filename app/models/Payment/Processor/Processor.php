@@ -108,11 +108,17 @@ class Processor
 
         $payment = $this->createDummyPaymentEntity($input);
 
+        // While calculating the first time around
+        // let's pretend it's a normal transaction
+        // $payment->merchant->tdr_client = 0;
+
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
+        $preCalculationOfFees = true;
+
         list($fee, $serviceTax, $ruleKey) =
-                            (new Pricing\Fee)->calculateMerchantFees($payment);
+                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
 
         return ['fees' => $fee, 'service_tax'  => $serviceTax];
     }
@@ -348,23 +354,25 @@ class Processor
 
     protected function verifyProvidedFee($payment, $input)
     {
-        $inputCopy = $this->input;
         // Get to original state and get back fee and tax
         // modifying input to be from old state
-
         $input['amount'] = $payment->getAmount() - $payment->getFee();
 
-        $feesArray = $this->processAndReturnFees($input['amount']);
+        $feesArray = $this->processAndReturnFees($input);
 
         $feeDifference = $feesArray['fees'] - $payment->getFee();
 
-        $serviceTaxDifference = $feesArray['service_tax'] - $payment->getServiceTax();
+        $serviceTax = (new Pricing\Fee)->calculateServiceTaxFromFees($payment->getFee());
 
-        assert($this->getModValue($feeDifference) < 5);
+        $serviceTaxDifference = $feesArray['service_tax'] - $serviceTax;
 
-        assert($this->getModValue($serviceTaxDifference) < 5);
+        if (($this->getModValue($feeDifference) > 5)
+            or ($this->getModValue($serviceTaxDifference) > 5))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Fees or service tax fields have been tampered with.');
+        }
 
-        $this->input = $inputCopy;
     }
 
     protected function getModValue($val)

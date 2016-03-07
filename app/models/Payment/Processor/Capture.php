@@ -153,10 +153,11 @@ trait Capture
             $txn = $txnCore->updateOnCapture($payment);
         }
 
+        $payment->setServiceTax($txn->getServiceTax());
+
         if ($this->merchant->isTdrClient() === false)
         {
-            //set the service tax and fee values from txn
-            $payment->setServiceTax($txn->getServiceTax());
+            //set and fee values from txn
             $payment->setFee($txn->getFee());
         }
 

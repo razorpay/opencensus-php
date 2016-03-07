@@ -392,7 +392,7 @@ class Entity extends Base\PublicEntity
         return ($this->attributes[self::CREATED_AT] !== null);
     }
 
-        public function getFeeAttribute()
+    public function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
     }

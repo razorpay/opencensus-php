@@ -31,25 +31,25 @@ class FeeCalculator
         $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function calculate($pricing)
+    public function calculate($pricing, $preCalculationOfFees = false)
     {
         $payment = $this->payment;
 
         $rule = $this->getRelevantPricingRule($pricing, $payment);
 
-        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount());
+        list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $preCalculationOfFees);
 
         return array($fee, $serviceTax, $rule->getKey());
     }
 
 
-    protected function getFees($rule, $amount)
+    protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
         $serviceTaxPercentage = self::SERVICE_TAX_PERCENT;
 
         list($percent, $fixed) = $rule->getRates();
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees);
 
         $fee = (int) ceil($fee);
 
@@ -188,17 +188,15 @@ class FeeCalculator
 
     protected function chooseRuleWithAmount($rules, $payment)
     {
-        $amount = $payment->getAmount();
-
         $tdrClient = $payment->merchant->isTdrClient();
 
         if ($tdrClient)
         {
-            return $this->chooseRuleWithAmountForCustomerSubvention($rules, $amount);
+            return $this->chooseRuleWithAmountForCustomerSubvention($rules, $payment);
         }
         else
         {
-            return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
+            return $this->chooseRuleWithAmountForMerchantSubvention($rules, $payment);
         }
     }
 
@@ -207,9 +205,11 @@ class FeeCalculator
      * choose rule based on amount
      * else return first available rule.
      */
-    protected function chooseRuleWithAmountForMerchantSubvention($rules, $amount)
+    protected function chooseRuleWithAmountForMerchantSubvention($rules, $payment)
     {
         $relevantRule = null;
+
+        $amount = $payment->getAmount();
 
         // Either all the rules will be amount range active,
         // Else none will be, so test against only one.
@@ -239,9 +239,11 @@ class FeeCalculator
         return $relevantRule;
     }
 
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount)
+    protected function chooseRuleWithAmountForCustomerSubvention($rules, $payment)
     {
         $fees = [];
+
+        $amount = $payment->getAmount();
 
         foreach ($rules as $rule)
         {
@@ -249,7 +251,15 @@ class FeeCalculator
 
             $newAmount = $amount + $fee;
 
-            $newRule = $this->chooseRuleWithAmount($rules, $newAmount);
+            $payment->amount = $newAmount;
+
+            $payment->merchant->tdr_client = false;
+
+            $newRule = $this->chooseRuleWithAmount($rules, $payment);
+
+            $payment->amount = $amount;
+
+            $payment->merchant->tdr_client = true;
 
             if ($rule === $newRule)
             {
@@ -297,8 +307,19 @@ class FeeCalculator
         return $rule;
     }
 
-    protected function getUnroundedFees($amount, $percent, $fixed)
+    protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
     {
-        return (($amount * $percent) / 10000) + $fixed;
+        if ($preCalculationOfFees)
+        {
+            $numerator =   (100 * ( $fixed * 100 + ($percent * $amount) / 100 ));
+
+            $denominator = (10000 - ($percent) - ($percent * $serviceTaxPercentage / 100));
+
+            return $numerator / $denominator;
+        }
+        else
+        {
+            return (($amount * $percent) / 10000) + $fixed;
+        }
     }
 }
