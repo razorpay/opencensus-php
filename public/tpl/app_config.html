@@ -1,0 +1,40 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Configuration
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="ConfigCtrl">
+    <div class="panel-heading">
+      Merchant Configuration
+    </div>
+    <div class="panel-body">
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Transaction Report Email</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" maxlength="255">
+            <span class="help-block m-b-none">Comma-separated email addresses that will receive notifications regarding payments.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Checkout Theme Color</label>
+          <div class="col-sm-10">
+            <input type="color" class="form-control">
+            <span class="help-block m-b-none">Default theme color which will be used if none
+            is specified at the time of payment.</span>
+          </div>
+        </div>
+        <div class="m-t m-b text-center prev-next">
+          <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        </div>
+      </form>
+    </div>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+    </footer>
+  </div>
+</div>
