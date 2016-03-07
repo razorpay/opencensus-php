@@ -7,17 +7,9 @@ app.controller('PaymentDetailCtrl', [
   '$modal',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost) {
-    $scope.getStatusClass = function (status) {
-      var mapper = {
-        created: 'bg-light',
-        authorized: 'bg-info',
-        captured: 'bg-success',
-        refunded: 'bg-primary',
-        failed: 'bg-danger'
-      };
-      return mapper[status];
-    };
+  'statusClass',
+  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass) {
+    $scope.getStatusClass = getStatusClass;
     $scope.openRefundModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundModalContent.html',

@@ -19,7 +19,9 @@
           Amount
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{entity.status | titlecase}}</span>
+          <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">
+            {{entity.status | titlecase}}
+          </span>
           Status
         </a>
         <a href class="list-group-item">

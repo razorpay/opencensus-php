@@ -4,7 +4,9 @@ app.controller('EntityDetailCtrl', [
   '$http',
   '$stateParams',
   'alertsFactory',
-  function ($scope, $http, $stateParams, alertsFactory) {
+  'statusClass',
+  function ($scope, $http, $stateParams, alertsFactory, getStatusClass) {
+    $scope.getStatusClass = getStatusClass;
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity = { id: $stateParams.id };
@@ -12,6 +14,7 @@ app.controller('EntityDetailCtrl', [
       $scope.entity.type = entity;
       fetchEntity();
     };
+
     function fetchEntity() {
       var request = $http.get('/' + $scope.mode + '/' + $scope.entity.type + 's/' + $scope.entity.id);
       request.success(function (data) {

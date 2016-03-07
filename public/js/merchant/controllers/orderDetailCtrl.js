@@ -7,25 +7,10 @@ app.controller('OrderDetailCtrl', [
   '$modal',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost) {
+  'statusClass',
+  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass) {
+    $scope.getStatusClass = getStatusClass;
     $scope.payments = [];
-    $scope.getStatusClass = function (status) {
-      var mapper = {
-        // Common to both payments and order
-        created: 'bg-light',
-
-        // Only for orders
-        attempted: 'bg-info',
-        paid: 'bg-success',
-
-        // Only for payments
-        authorized: 'bg-info',
-        captured: 'bg-success',
-        refunded: 'bg-primary',
-        failed: 'bg-danger'
-      };
-      return mapper[status];
-    };
 
     $scope.toggleShowPayments = function () {
       // If it was shown, just toggle it

@@ -6,8 +6,10 @@ app.controller('EntityListCtrl', [
   '$http',
   'alertsFactory',
   '$state',
-  function ($scope, $http, alertsFactory, $state) {
+  'statusClass',
+  function ($scope, $http, alertsFactory, $state, getStatusClass) {
     //Intialise alerts and scope functions
+    $scope.getStatusClass = getStatusClass;
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity = {
       items: {},

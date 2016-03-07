@@ -269,4 +269,27 @@ angular.module('app.services', [])
       }
     };
   }
-]);
+])
+.factory('statusClass', [function() {
+  return function (status) {
+    var mapper = {
+      // Common
+      created: 'bg-light',
+      failed: 'bg-danger',
+
+      // payment
+      authorized: 'bg-info',
+      captured: 'bg-success',
+      refunded: 'bg-primary',
+
+      // order
+      attempted: 'bg-info',
+      paid: 'bg-success',
+
+      // settlement
+      processed: 'bg-success'
+    };
+
+    return mapper[status];
+  };
+}])

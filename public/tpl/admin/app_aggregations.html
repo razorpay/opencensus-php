@@ -33,6 +33,17 @@
           <option value="test">Test</option>
         </select>
       </div>
+      <div class="col-xs-2">
+        For Last:
+        <input type="number" min="0" max="180" name="duration_count" ng-model="duration_count">
+      </div>
+      <div class="col-xs-1">
+        <select class="form-control input-sm w-xs inline" name="period" ng-model="period">
+          <option value="day">Day</option>
+          <option value="week">Week</option>
+          <option value="month">Month</option>
+        </select>
+      </div>
       <div class="col-xs-3">
         Sort:
         <select class="form-control w-sm inline" name="sort" ng-model="sort">

@@ -5,17 +5,9 @@ app.controller('PaymentListCtrl', [
   '$http',
   'alertsFactory',
   '$state',
-  function ($scope, $http, alertsFactory, $state) {
-    $scope.getStatusClass = function (status) {
-      var mapper = {
-        created: 'bg-light',
-        authorized: 'bg-info',
-        captured: 'bg-success',
-        failed: 'bg-danger',
-        refunded: 'bg-primary'
-      };
-      return mapper[status];
-    };
+  'statusClass',
+  function ($scope, $http, alertsFactory, $state, getStatusClass) {
+    $scope.getStatusClass = getStatusClass;
 
     // This stores the orderIds, since we can't maintain that
     // inside items itself

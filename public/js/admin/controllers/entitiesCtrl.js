@@ -7,7 +7,9 @@ app.controller('EntitiesCtrl', [
   '$modal',
   '$stateParams',
   'admin',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
+  'statusClass',
+  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin, getStatusClass) {
+    $scope.getStatusClass = getStatusClass;
     $scope.entity_type = $stateParams.type || 'payment';
     $scope.mode = $stateParams.mode;
     //Intialise alerts and scope functions
@@ -386,19 +388,6 @@ app.controller('EntitiesCtrl', [
       clear('id');
       clear('skip');
       $scope.generateTable();
-    };
-    $scope.getStatusClass = function (status) {
-      var mapper = {
-        created: 'bg-light',
-        authorized: 'bg-info',
-        captured: 'bg-success',
-        refunded: 'bg-primary',
-        failed: 'bg-danger',
-      // For orders
-        attempted: 'bg-info',
-        paid: 'bg-success',
-      };
-      return mapper[status] || 'bg-light';
     };
     $scope.getState = function (type, force) {
       switch (type) {
