@@ -25,6 +25,9 @@ class Entity extends Base\PublicEntity
     const FEATURES                  = 'features';
     const TDR_CLIENT                = 'tdr_client';
 
+
+    const SUBVENTION_TYPE_CUSTOMER  = 'customer';
+    const SUBVENTION_TYPE_MERCHANT  = 'merchant';
     /**
      * Refers to methods relation and not a property;
      */
@@ -363,6 +366,17 @@ class Entity extends Base\PublicEntity
     public function isReceiptEmailsEnabled()
     {
         return $this->getReceiptEmailEnabledAttribute();
+    }
+
+    public function getSubventionType()
+    {
+        // Move to subvention type if ever.
+        if ($this->isTdrClient())
+        {
+            return self::SUBVENTION_TYPE_CUSTOMER;
+        }
+
+        return self::SUBVENTION_TYPE_MERCHANT;
     }
 
     public function getRedactedAccountNumber()

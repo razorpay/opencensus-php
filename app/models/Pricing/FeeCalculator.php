@@ -7,6 +7,7 @@ use EE\Exception;
 use Models\Card;
 use Models\Payment;
 use Models\Pricing;
+use Models\Merchant;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -113,7 +114,7 @@ class FeeCalculator
         // * Choose based on Amount
 
         // Structure is as follows:
-        // Field name, Filed value, Choose default (true/false), default value
+        // Field name, Field value, Choose default (true/false), default value
         $filters = array(
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
@@ -127,7 +128,11 @@ class FeeCalculator
                 $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
         }
 
-        $rule = $this->chooseRuleWithAmount($rules, $payment);
+        $amount = $payment->getAmount();
+
+        $subventionType = $payment->merchant->getSubventionType();
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 
         if ($rule === null)
         {
@@ -186,17 +191,15 @@ class FeeCalculator
         return $matchRules;
     }
 
-    protected function chooseRuleWithAmount($rules, $payment)
+    protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
-        $tdrClient = $payment->merchant->isTdrClient();
-
-        if ($tdrClient)
+        if ($subventionType === Merchant\Entity::SUBVENTION_TYPE_CUSTOMER)
         {
-            return $this->chooseRuleWithAmountForCustomerSubvention($rules, $payment);
+            return $this->chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType);
         }
         else
         {
-            return $this->chooseRuleWithAmountForMerchantSubvention($rules, $payment);
+            return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
         }
     }
 
@@ -205,11 +208,9 @@ class FeeCalculator
      * choose rule based on amount
      * else return first available rule.
      */
-    protected function chooseRuleWithAmountForMerchantSubvention($rules, $payment)
+    protected function chooseRuleWithAmountForMerchantSubvention($rules, $amount)
     {
         $relevantRule = null;
-
-        $amount = $payment->getAmount();
 
         // Either all the rules will be amount range active,
         // Else none will be, so test against only one.
@@ -239,27 +240,23 @@ class FeeCalculator
         return $relevantRule;
     }
 
-    protected function chooseRuleWithAmountForCustomerSubvention($rules, $payment)
+    protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
     {
         $fees = [];
 
-        $amount = $payment->getAmount();
-
+        // In customer subvention,
+        //  If the rule before applying the amount
+        // and the new amount after using merchant
+        // subvention is same then use the given rule
         foreach ($rules as $rule)
         {
             list($fee, $st) = $this->getFees($rule, $amount);
 
             $newAmount = $amount + $fee;
 
-            $payment->amount = $newAmount;
+            $newSubventionType = Merchant\Entity::SUBVENTION_TYPE_MERCHANT;
 
-            $payment->merchant->tdr_client = false;
-
-            $newRule = $this->chooseRuleWithAmount($rules, $payment);
-
-            $payment->amount = $amount;
-
-            $payment->merchant->tdr_client = true;
+            $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
 
             if ($rule === $newRule)
             {
@@ -309,8 +306,13 @@ class FeeCalculator
 
     protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
     {
-        if ($preCalculationOfFees)
+        if ($preCalculationOfFees === true)
         {
+            // Using the following :
+            // amount + rzpFees + serviceTax = totalAmount
+            //                       rzpFees = percent * totalAmount + fixed
+            //                    serviceTax = serviceTaxPercentage * rzpFees
+
             $numerator =   (100 * ( $fixed * 100 + ($percent * $amount) / 100 ));
 
             $denominator = (10000 - ($percent) - ($percent * $serviceTaxPercentage / 100));
