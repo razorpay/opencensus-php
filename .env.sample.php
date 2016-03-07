@@ -114,8 +114,8 @@ return array(
 
     'CRON_PASSWORD'                                     => 'RANDOM_CRON_PASSWORD',
 
-    'TOKENEX_ID'                                        => '9735229783930013',
-    'TOKENEX_API_KEY'                                   => 'LQV7tcZjrCJ91hxvZ9zy',
+    'TOKENEX_ID'                                        => '',
+    'TOKENEX_API_KEY'                                   => '',
     'TOKENEX_API_URL'                                   => 'https://test-api.tokenex.com/TokenServices.svc/',
     'TOKENEX_TOKEN_SCHEME'                              => '12',
 );
