@@ -231,7 +231,7 @@ $factory(Models\Order\Entity::class, [
     'updated_at' => $faker->timestamp,
 ]);
 
-$factory(Models\User\Entity::class, [
+$factory(Models\Customer\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 10000000000000,
     'name' => 'name',
@@ -239,9 +239,9 @@ $factory(Models\User\Entity::class, [
     'email' => 'test@razorpay.com'
 ]);
 
-$factory(Models\User\Methods\Entity::class, [
+$factory(Models\Customer\Methods\Entity::class, [
     'id' => $faker->uniqueid,
-    'user_id' => '1000000000user',
+    'customer_id' => '100000customer',
     'wallet' => 'paytm',
     'method' => 'wallet',
     'bank'   => null,

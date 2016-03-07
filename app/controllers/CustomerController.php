@@ -1,39 +1,39 @@
 <?php
 
 use Http\ApiResponse;
-use Models\User;
-use Models\User\Account;
+use Models\Customer;
+use Models\Customer\Account;
 
-class UserController extends BaseController
+class CustomerController extends BaseController
 {
-    public function createUser()
+    public function createCustomer()
     {
         $input = Input::all();
 
-        $data = (new User\Service)->create($input);
+        $data = (new Customer\Service)->create($input);
 
         return ApiResponse::json($data);
     }
 
-    public function updateUser($id)
+    public function updateCustomer($id)
     {
         $input = Input::all();
 
-        $data = (new User\Service)->edit($id, $input);
+        $data = (new Customer\Service)->edit($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getUser($id)
+    public function getCustomer($id)
     {
-        $data = (new User\Service)->fetch($id);
+        $data = (new Customer\Service)->fetch($id);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteUser($id)
+    public function deleteCustomer($id)
     {
-        $data = (new User\Service)->delete($id);
+        $data = (new Customer\Service)->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -42,7 +42,7 @@ class UserController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new User\Methods\Service)->add($id, $input);
+        $data = (new Customer\Methods\Service)->add($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -51,28 +51,28 @@ class UserController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new User\Methods\Service)->edit($uid, $mid, $input);
+        $data = (new Customer\Methods\Service)->edit($uid, $mid, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteMethod($uid, $mid)
     {
-        $data = (new User\Methods\Service)->delete($uid, $mid);
+        $data = (new Customer\Methods\Service)->delete($uid, $mid);
 
         return ApiResponse::json($data);
     }
 
     public function fetchMethod($uid, $mid)
     {
-        $data = (new User\Methods\Service)->fetch($uid, $mid);
+        $data = (new Customer\Methods\Service)->fetch($uid, $mid);
 
         return ApiResponse::json($data);
     }
 
     public function fetchMethods($uid)
     {
-        $data = (new User\Methods\Service)->fetchMultiple($uid);
+        $data = (new Customer\Methods\Service)->fetchMultiple($uid);
 
         return ApiResponse::json($data);
     }

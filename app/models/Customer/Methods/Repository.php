@@ -1,17 +1,17 @@
 <?php
 
-namespace Models\User\Methods;
+namespace Models\Customer\Methods;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
-use Models\User\Methods;
+use Models\Customer\Methods;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'UserMethods';
+    protected $entity = 'CustomerMethods';
 
     public function getByParams($params)
     {
@@ -34,19 +34,19 @@ class Repository extends Base\Repository
         return $repo::findOrFailPublic($id);
     }
 
-    public function getByUserId($uid)
+    public function getByCustomerId($uid)
     {
         $repo = $this->repo;
 
-        return $repo::where(Methods\Entity::USER_ID, '=', $uid)
+        return $repo::where(Methods\Entity::CUSTOMER_ID, '=', $uid)
                     ->get();
     }
 
-    public function getByIdAndUserId($uid, $mid)
+    public function getByIdAndCustomerId($uid, $mid)
     {
         $repo = $this->repo;
 
-        return $repo::where(Methods\Entity::USER_ID, '=', $uid)
+        return $repo::where(Methods\Entity::CUSTOMER_ID, '=', $uid)
                     ->findOrFailPublic($mid);
     }
 }

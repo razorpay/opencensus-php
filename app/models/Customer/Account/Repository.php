@@ -1,15 +1,15 @@
 <?php
 
-namespace Models\User;
+namespace Models\Customer;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
-use Models\User;
+use Models\Customer;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'user';
+    protected $entity = 'customer';
 }

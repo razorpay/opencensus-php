@@ -6,9 +6,9 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
-    'testCreateUser' => [
+    'testCreateCustomer' => [
         'request' => [
-            'url' => '/users',
+            'url' => '/customers',
             'method' => 'post',
             'content' => [
                 'name'    => 'testc',
@@ -25,9 +25,9 @@ return [
         ],
     ],
 
-    'testUpdateUser' => [
+    'testUpdateCustomer' => [
         'request' => [
-            'url' => '/users/1000000000user',
+            'url' => '/customers/100000customer',
             'method' => 'put',
             'content' => [
                 'name'    => 'test1',
@@ -44,16 +44,16 @@ return [
         ],
     ],
 
-    'testGetUser' => [
+    'testGetCustomer' => [
         'request' => [
-            'url' => '/users/1000000000user',
+            'url' => '/customers/100000customer',
             'method' => 'get',
             'content' => [
             ],
         ],
         'response' => [
             'content' => [
-                'id' => '1000000000user',
+                'id' => '100000customer',
                 'name'    => 'test',
                 'email' => 'test@razorpay.com',
                 'contact' => '1234567890',
@@ -61,9 +61,9 @@ return [
         ],
     ],
 
-    'testDeleteUser' => [
+    'testDeleteCustomer' => [
         'request' => [
-            'url' => '/users/1000000000user',
+            'url' => '/customers/100000customer',
             'method' => 'delete',
             'content' => [
             ],
@@ -74,9 +74,9 @@ return [
         ],
     ],
 
-    'testGetUserMethods' => [
+    'testGetCustomerMethods' => [
         'request' => [
-            'url' => '/users/1000000000user/methods',
+            'url' => '/customers/100000customer/methods',
             'method' => 'get',
             'content' => [
             ],
@@ -85,14 +85,14 @@ return [
             'content' => [
                 'items' => [
                     [
-                        'id'            => '100000userbank',
-                        'user_id'       => '1000000000user',
+                        'id'            => '100000custbank',
+                        'customer_id'   => '100000customer',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
                     ],
                     [
-                        'id'            => '1000userwallet',
-                        'user_id'       => '1000000000user',
+                        'id'            => '1000custwallet',
+                        'customer_id'   => '100000customer',
                         'method'        => 'wallet',
                         'wallet'        => 'paytm',
                     ],
@@ -103,26 +103,26 @@ return [
         ],
     ],
 
-    'testGetUserMethod' => [
+    'testGetCustomerMethod' => [
         'request' => [
-            'url' => '/users/1000000000user/methods/1000userwallet',
+            'url' => '/customers/100000customer/methods/1000custwallet',
             'method' => 'get',
             'content' => [
             ],
         ],
         'response' => [
             'content' => [
-                'id'            => '1000userwallet',
-                'user_id'       => '1000000000user',
+                'id'            => '1000custwallet',
+                'customer_id'   => '100000customer',
                 'method'        => 'wallet',
                 'wallet'        => 'paytm',
             ],
         ],
     ],
 
-    'testDeleteUserMethod' => [
+    'testDeleteCustomerMethod' => [
         'request' => [
-            'url' => '/users/1000000000user/methods/1000userwallet',
+            'url' => '/customers/100000customer/methods/1000custwallet',
             'method' => 'delete',
             'content' => [
             ],
@@ -133,9 +133,9 @@ return [
         ],
     ],
 
-    'testAddUserMethodCard' => [
+    'testAddCustomerMethodCard' => [
         'request' => [
-            'url' => '/users/1000000000user/methods',
+            'url' => '/customers/100000customer/methods',
             'method' => 'post',
             'content' => [
                 'method' => 'card',
@@ -152,9 +152,9 @@ return [
         ],
     ],
 
-    'testAddUserMethodWallet' => [
+    'testAddCustomerMethodWallet' => [
         'request' => [
-            'url' => '/users/1000000000user/methods',
+            'url' => '/customers/100000customer/methods',
             'method' => 'post',
             'content' => [
                 'method' => 'wallet',
@@ -171,9 +171,9 @@ return [
         ],
     ],
 
-    'testAddUserMethodNetbanking' => [
+    'testAddCustomerMethodNetbanking' => [
         'request' => [
-            'url' => '/users/1000000000user/methods',
+            'url' => '/customers/100000customer/methods',
             'method' => 'post',
             'content' => [
                 'method' => 'netbanking',

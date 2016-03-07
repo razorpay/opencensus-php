@@ -1,49 +1,49 @@
 <?php
 
-namespace Tests\Functional\User;
+namespace Tests\Functional\Customer;
 
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
-class UserTest extends TestCase
+class CustomerTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/UserTestData.php';
+        $this->testDataFilePath = __DIR__.'/CustomerTestData.php';
 
         parent::setUp();
 
-        $user = $this->fixtures->create('user:default_users');
+        $customer = $this->fixtures->create('customer:default_customers');
     }
 
-    public function testCreateUser()
+    public function testCreateCustomer()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
 
-        $user = $this->getLastEntity('user', true);
+        $customer = $this->getLastEntity('customer', true);
 
-        assert($user !== null);
+        assert($customer !== null);
     }
 
-    public function testUpdateUser()
+    public function testUpdateCustomer()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    public function testGetUser()
+    public function testGetCustomer()
     {
         $this->ba->privateAuth();
 
         $this->startTest();        
     }
 
-    public function testDeleteUser()
+    public function testDeleteCustomer()
     {
         $this->ba->privateAuth();
 

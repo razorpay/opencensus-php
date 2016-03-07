@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\User\Methods;
+namespace Models\Customer\Methods;
 
 use Models\Base;
-use Models\User;
-use Models\User\Methods;
+use Models\Customer;
+use Models\Customer\Methods;
 
 class Service extends Base\Service
 {
@@ -15,16 +15,16 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->repo = new User\Repository;
+        $this->repo = new Customer\Repository;
 
         $this->methodsRepo = new Methods\Repository;
     }
 
     public function add($uid, $input)
     {
-        $user = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($uid);
 
-        $method = (new Methods\Core)->create($user, $input);
+        $method = (new Methods\Core)->create($customer, $input);
 
         return $method->toArrayPublic();
 
@@ -32,9 +32,9 @@ class Service extends Base\Service
 
     public function edit($uid, $mid, $input)
     {
-        $user = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($uid);
 
-        $method = $this->methodsRepo->getByIdAndUserId($uid, $mid);
+        $method = $this->methodsRepo->getByIdAndCustomerId($uid, $mid);
 
         $method = (new Methods\Core)->edit($method, $input);
 
@@ -43,9 +43,9 @@ class Service extends Base\Service
 
     public function fetch($uid, $mid)
     {
-        $user = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($uid);
 
-        $method = $this->methodsRepo->getByIdAndUserId($uid, $mid);
+        $method = $this->methodsRepo->getByIdAndCustomerId($uid, $mid);
 
         return $method->toArrayPublic();
 
@@ -53,9 +53,9 @@ class Service extends Base\Service
 
     public function fetchMultiple($uid)
     {
-        $user = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($uid);
 
-        $methods = $this->methodsRepo->getByUserId($uid);
+        $methods = $this->methodsRepo->getByCustomerId($uid);
 
         return $methods->toArrayPublic();
     }

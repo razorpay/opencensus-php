@@ -1,12 +1,12 @@
 <?php
 
-namespace Models\User\Methods;
+namespace Models\Customer\Methods;
 
 use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const USER_ID       =       'user_id';
+    const CUSTOMER_ID   =       'customer_id';
     const METHOD        =       'method';
     const CARD_ID       =       'card_id';
     const BANK          =       'bank';
@@ -14,15 +14,15 @@ class Entity extends Base\PublicEntity
 
     protected static $sign      = '';
 
-    protected $entity           = 'user_method';
+    protected $entity           = 'customer_method';
 
-    protected $table            = \Constants\Table::USER_METHOD;
+    protected $table            = \Constants\Table::CUSTOMER_METHOD;
 
     protected $genereateIdOnCreate = true;
 
     protected $fillable = array(
         self::ID,
-        self::USER_ID,
+        self::CUSTOMER_ID,
         self::METHOD,
         self::CARD_ID,
         self::BANK,
@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
-        self::USER_ID,
+        self::CUSTOMER_ID,
         self::METHOD,
         self::CARD_ID,
         self::BANK,
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
-        self::USER_ID,
+        self::CUSTOMER_ID,
         self::METHOD,
         self::CARD_ID,
         self::BANK,

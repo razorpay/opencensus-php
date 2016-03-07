@@ -6,10 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Card;
 use Models\Merchant;
-use Models\User;
-use Models\User\Methods\Entity as Methods;
+use Models\Customer;
+use Models\Customer\Methods\Entity as Methods;
 
-class CreateUsersMethods extends Migration {
+class CreateCustomersMethods extends Migration {
 
     /**
      * Run the migrations.
@@ -18,14 +18,14 @@ class CreateUsersMethods extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::USER_METHOD, function(Blueprint $table)
+        Schema::create(Table::CUSTOMER_METHOD, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(Methods::ID, 14)
                   ->primary();
 
-            $table->char(Methods::USER_ID, 14);
+            $table->char(Methods::CUSTOMER_ID, 14);
 
             $table->char(Methods::METHOD, 10);
   
@@ -42,13 +42,11 @@ class CreateUsersMethods extends Migration {
             
             $table->integer(Methods::UPDATED_AT);
 
-            $table->index(Methods::USER_ID);
-
             $table->index(Methods::CREATED_AT);
 
-            $table->foreign(Methods::USER_ID)
-                  ->references(User\Entity::ID)
-                  ->on(Table::USER)
+            $table->foreign(Methods::CUSTOMER_ID)
+                  ->references(Customer\Entity::ID)
+                  ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
 
             $table->foreign(Methods::CARD_ID)
@@ -65,13 +63,13 @@ class CreateUsersMethods extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::USER_METHOD, function($table)
+        Schema::table(Table::CUSTOMER_METHOD, function($table)
         {
-            $table->dropForeign(Table::USER_METHOD.'_'.User::USER_ID.'_foreign');
+            $table->dropForeign(Table::CUSTOMER_METHOD.'_'.Customer::CUSTOMER_ID.'_foreign');
 
-            $table->dropForeign(Table::USER_METHOD.'_'.User::CARD_ID.'_foreign');
+            $table->dropForeign(Table::CUSTOMER_METHOD.'_'.Customer::CARD_ID.'_foreign');
         });
 
-        Schema::drop(Table::USER_METHOD);
+        Schema::drop(Table::CUSTOMER_METHOD);
     }
 }

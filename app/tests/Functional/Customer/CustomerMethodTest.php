@@ -1,64 +1,64 @@
 <?php
 
-namespace Tests\Functional\UserMethod;
+namespace Tests\Functional\CustomerMethod;
 
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
-class UserMethodTest extends TestCase
+class CustomerMethodTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/UserTestData.php';
+        $this->testDataFilePath = __DIR__.'/CustomerTestData.php';
 
         parent::setUp();
 
-        $user = $this->fixtures->create('user:default_users');
+        $customer = $this->fixtures->create('customer:default_customers');
 
         $card = $this->fixtures->create('card', ['id' => '10000savedcard']);
 
-        $userMethods = $this->fixtures->create('user_method:default_user_methods');
+        $customerMethods = $this->fixtures->create('customer_method:default_customer_methods');
     }
 
 
-    public function testAddUserMethodCard()
+    public function testAddCustomerMethodCard()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    public function testAddUserMethodWallet()
+    public function testAddCustomerMethodWallet()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    public function testAddUserMethodNetbanking()
+    public function testAddCustomerMethodNetbanking()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    public function testGetUserMethods()
+    public function testGetCustomerMethods()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    public function testGetUserMethod()
+    public function testGetCustomerMethod()
     {
         $this->ba->privateAuth();
 
         return $this->startTest();
     }
 
-    public function testDeleteUserMethod()
+    public function testDeleteCustomerMethod()
     {
         $this->ba->privateAuth();
 

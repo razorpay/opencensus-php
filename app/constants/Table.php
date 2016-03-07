@@ -9,7 +9,6 @@ class Table
     const IIN               = 'iins';
     const KEY               = 'keys';
     const CARD              = 'cards';
-    const USER              = 'users';
     const ORDER             = 'orders';
     const REFUND            = 'refunds';
     const BALANCE           = 'balance';
@@ -19,12 +18,13 @@ class Table
     const WEBHOOK           = 'webhooks';
     const MERCHANT          = 'merchants';
     const TERMINAL          = 'terminals';
+    const CUSTOMER          = 'customers';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlements';
     const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
-    const USER_METHOD       = 'user_methods';
     const BANK_ACCOUNT      = 'bank_accounts';
+    const CUSTOMER_METHOD   = 'customer_methods';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 
     // Gateway related

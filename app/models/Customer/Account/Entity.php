@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\User;
+namespace Models\Customer;
 
 use Models\Base;
 
@@ -13,9 +13,9 @@ class Entity extends Base\PublicEntity
 
         protected static $sign      = '';
 
-        protected $entity           = 'user';
+        protected $entity           = 'customer';
 
-        protected $table            = \Constants\Table::USER;
+        protected $table            = \Constants\Table::CUSTOMER;
 
         protected $genereateIdOnCreate = true;
 

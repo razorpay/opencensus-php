@@ -1,9 +1,9 @@
 <?php
 
-namespace Models\User\Methods;
+namespace Models\Customer\Methods;
 
 use Models\Base;
-use Models\User\Methods;
+use Models\Customer\Methods;
 
 class Core extends Base\Core
 {
@@ -14,9 +14,9 @@ class Core extends Base\Core
         $this->repo = new Methods\Repository;
     }
     
-    public function create($user, $input)
+    public function create($customer, $input)
     {
-        $input['user_id'] = $user->getKey();
+        $input['customer_id'] = $customer->getKey();
 
         $method = (new Methods\Entity)->build($input);
 
@@ -32,7 +32,7 @@ class Core extends Base\Core
         //$this->validateExistingMethod($method);
 
         $this->trace->info(
-            TraceCode::USER_METHODS_EDIT,
+            TraceCode::CUSTOMER_METHODS_EDIT,
             [
                 'method_id' => $method->getId(),
                 'fields' => array_keys($input),
@@ -48,8 +48,8 @@ class Core extends Base\Core
     protected function validateExistingMethod($method)
     {
         $params = array(
-            Methods\Entity::USER_ID => $method->getUserId(),
-            Methods\Entity::METHOD  => $method->getMethod()
+            Methods\Entity::CUSTOMER_ID => $method->getCustomerId(),
+            Methods\Entity::METHOD      => $method->getMethod()
         );
 
         $existingMethods = $this->repo->getByParams($params);
