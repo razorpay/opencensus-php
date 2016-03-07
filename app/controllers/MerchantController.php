@@ -231,4 +231,13 @@ class MerchantController extends BaseController
 
         return AppResponse::jsonResponse([], $data);
     }
+
+    public function getMerchantConfig()
+    {
+        $id = Auth::user()->user()->getCurrentMerchantId();
+
+        list($error, $data) = (new Merchant\Service)->fetchMerchantConfig($id);
+
+        return AppResponse::jsonResponse([], $data);
+    }
 }

@@ -176,4 +176,11 @@ class Merchant extends Entity
 
         return $this;
     }
+
+    public function fetchConfig()
+    {
+        $relativeUrl = '/v1/merchants/config';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }
