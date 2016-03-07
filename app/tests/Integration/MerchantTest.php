@@ -35,7 +35,7 @@ class MerchantTest extends TestCase
         }
         catch(Exception $e)
         {
-            $businessName = substr(strtoupper(md5('Razorpay' . microtime())), 0, 20);
+            $businessName = random_alpha_string(10);
 
             $this->merchant = $this->buildEntity('merchant', array(
                 'id'    => Uuid::generate(),
