@@ -24,6 +24,12 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddInvalidFeatureToMerchant()
+    {
+        $this->ba->appAuth();
+        $this->startTest();
+    }
+
     public function testGetFeatureListForMerchant()
     {
         $this->testAddFeatureToMerchant();
