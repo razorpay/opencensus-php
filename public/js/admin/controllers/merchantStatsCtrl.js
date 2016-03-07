@@ -9,7 +9,7 @@ app.controller('MerchantStatsCtrl', [
 
     $scope.data = [];
     $scope.resource = 'payment';
-    $scope.mode = 'test';
+    $scope.mode = 'live';
     $scope.merchant_id = '';
     $scope.sort = 'total_amount';
 
