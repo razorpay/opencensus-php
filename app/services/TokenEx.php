@@ -4,6 +4,8 @@ namespace Services;
 
 use EE\Exception;
 use Requests;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class TokenEx
 {
@@ -27,8 +29,12 @@ class TokenEx
 
     protected $config;
 
+    protected $trace;
+
     public function __construct($app)
     {
+        $this->trace = $app['trace'];
+
         $this->config = $app['config']->get('applications.card.tokenex');
 
         $this->apiKey = $this->config['key'];
@@ -114,6 +120,12 @@ class TokenEx
     {
         $referenceNumber = $response[self::REFERENCE_NUMBER];
         $success = $response[self::SUCCESS];
+
+        $this->trace->info(
+            TraceCode::TOKENEX_REQUEST,
+            [
+                'response' => $response
+            ]);
 
         if($success === false)
         {

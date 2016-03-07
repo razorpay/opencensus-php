@@ -119,6 +119,8 @@ class TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
+    const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
         self::PAYMENT_CREATED                       => 'New payment created',
