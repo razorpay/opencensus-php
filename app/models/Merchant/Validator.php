@@ -36,13 +36,18 @@ class Validator extends Base\Validator
     );
 
     protected static $editConfigRules = array(
-        Entity::BRAND_COLOR                 => 'sometimes|regex:([0-9a-fA-F]{6})'
+        Entity::BRAND_COLOR                 => 'sometimes|regex:([0-9a-fA-F]{6})',
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255'
     );
+
+    protected static $editConfigValidators = [
+        'csv_email'
+    ];
 
     protected static $editValidators = [
         'csv_email', 'features'
     ];
-    
+
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
