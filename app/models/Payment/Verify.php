@@ -16,7 +16,7 @@ class Verify
 {
     use SlackPoster;
 
-    const MIN_TIME_BEFORE_VERIFY = 600; // 10 minutes
+    const MIN_TIME_BEFORE_VERIFY = 120; // 1 minute
 
     public function __construct($mode, $trace, $exceptionHandler)
     {
@@ -67,11 +67,11 @@ class Verify
 
     public function verifyPaymentsWithCreatedStatus()
     {
-        $ts = time() - 5 * 60;
+        $ts = time() - 4 * 60;
 
-        $payments = $this->repo->getPaymentsWithCreatedStatus($ts);
+        $payments = $this->repo->getPaymentsWithCreatedStatusForVerification($ts);
 
-        $this->verifyMultiplePayments($payments, 'created');
+        return $this->verifyMultiplePayments($payments, 'created');
     }
 
     public function verifyAllPayments()

@@ -38,6 +38,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putMerchantConfig($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editConfig($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
@@ -419,5 +428,14 @@ class MerchantController extends BaseController
         $input = Input::all();
 
         return ApiResponse::json($input);
+    }
+
+    public function postMerchantsNotifyHoliday()
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->notifyMerchantsHoliday($input);
+
+        return ApiResponse::json($data);
     }
 }

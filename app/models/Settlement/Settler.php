@@ -54,7 +54,7 @@ class Settler
 
         $data = [];
 
-        if (Holidays::isTodayHoliday($this->mode))
+        if (Holidays::isThisDayHoliday($this->mode, 'today'))
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }

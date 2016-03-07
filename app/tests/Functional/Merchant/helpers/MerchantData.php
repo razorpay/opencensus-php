@@ -267,6 +267,22 @@ return [
         ]
     ],
 
+    'testEditMerchantConfig' => [
+        'request' => [
+            'content' => [
+                'brand_color' => '00bcd4',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/config',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'brand_color' => '00BCD4'
+            ]
+        ]
+    ],
+
     'testAttemptPaymentOnNonLiveMerchant' => [
         'request' => [
             'content' => [
