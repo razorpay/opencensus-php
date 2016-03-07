@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255',
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::FEATURES                    => 'sometimes|max:255',
@@ -37,7 +37,7 @@ class Validator extends Base\Validator
 
     protected static $editConfigRules = array(
         Entity::BRAND_COLOR                 => 'sometimes|regex:([0-9a-fA-F]{6})',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255'
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array'
     );
 
     protected static $editConfigValidators = [
