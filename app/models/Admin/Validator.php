@@ -34,6 +34,10 @@ class Validator extends Base\Validator
         'features'    =>    'required|max:255',
     ];
 
+    protected static $merchantStatsRules = [
+        'sort'      =>  'sometimes|in:total_amount,successful_txn_count,txn_count'
+    ];
+
     protected static $addTagsValidators = [
         'addTags'
     ];

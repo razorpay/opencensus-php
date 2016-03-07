@@ -10,6 +10,7 @@ use Models\Base;
 use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
+use Models\Transaction;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
@@ -1686,6 +1687,34 @@ class Service extends Base\Service
         $slack = new Slack($input['text'], $input['user_name'], $input['channel_name']);
 
         return $slack->getResponse();
+    }
+
+    public function getMerchantAggregations($mode, $resource, $input)
+    {
+        $error = (new Admin\Validator)->validateInput('merchant_stats', $input)->messages();
+
+        if (empty($error))
+        {
+            $sort = \Input::get('sort', 'total_amount');
+            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort)];
+        }
+        else
+        {
+            return [$error, null];
+        }
+
+    }
+
+    public function getSingleMerchantAggregations($merchantId, $mode, $resource)
+    {
+        $data = [
+            'merchant_id'   =>  $merchantId,
+            'resource'      =>  $resource
+        ];
+
+        $response = Merchant\Entity::getAggregations($data, $mode);
+
+        return [null, $response];
     }
 }
 

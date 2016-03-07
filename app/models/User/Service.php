@@ -172,6 +172,8 @@ class Service extends Base\Service
 
             Requests::post($config['zapier_url'], [], $data);
         }
+
+        $job->delete();
     }
 
     protected function breakName($name)
@@ -286,6 +288,7 @@ class Service extends Base\Service
     {
         $config = Config::get('razorpay.sorting_hat');
         Requests::post($config['url'], [], $data);
+        $job->delete();
     }
 
     /**
