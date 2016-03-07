@@ -38,11 +38,11 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function putMerchantConfig($id)
+    public function putMerchantConfig()
     {
         $input = Input::all();
 
-        $data = (new Merchant\Service)->editConfig($id, $input);
+        $data = (new Merchant\Service)->editConfig($input);
 
         return ApiResponse::json($data);
     }

@@ -272,12 +272,12 @@ return [
             'content' => [
                 'brand_color' => '00bcd4',
             ],
-            'url' => '/merchants/1X4hRFHFx4UiXt/config',
+            'url' => '/accounts',
             'method' => 'put',
         ],
         'response' => [
             'content' => [
-                'id' => '1X4hRFHFx4UiXt',
+                'id' => '10000000000000',
                 'brand_color' => '00BCD4'
             ]
         ]
