@@ -91,6 +91,18 @@ trait PaymentTrait
         return $this->getAndMatchPayment($id, $paymentResponse);
     }
 
+    protected function createAndGetFeesForPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $content = $this->getFeesForPayment($payment);
+
+        return $content;
+    }
+
     protected function runTestForAuthPayment($payment = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -275,6 +287,20 @@ trait PaymentTrait
         $this->ba->publicAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getFeesForPayment($payment)
+    {
+        $request = array(
+                'method'  => 'POST',
+                'url'     =>  '/payments/create/fees',
+                'content' =>  $payment);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 
     protected function capturePayment($id, $amount)

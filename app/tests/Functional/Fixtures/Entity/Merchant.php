@@ -195,4 +195,14 @@ class Merchant extends Base
     {
         return $this->editCredits($credits, '10NodalAccount');
     }
+
+    public function enableConvenienceFeeModel($id = '10000000000000')
+    {
+        return $this->edit($id, ['tdr_client' => 1]);
+    }
+
+    public function disableConvenienceFeeModel($id = '10000000000000')
+    {
+        return $this->edit($id, ['tdr_client' => 0]);
+    }
 }
