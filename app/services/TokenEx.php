@@ -27,10 +27,8 @@ class TokenEx
 
     protected $config;
 
-    public function __construct()
+    public function __construct($app)
     {
-        $app = \App::getFacadeRoot();
-
         $this->config = $app['config']->get('applications.card.tokenex');
 
         $this->apiKey = $this->config['key'];

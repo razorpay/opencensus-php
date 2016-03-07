@@ -185,7 +185,7 @@ trait Authorize
     {
         $save = false;
 
-        if($payment->isMethod(Payment\Method::EMI))
+        if ($payment->isMethod(Payment\Method::EMI))
         {
             $save = true;
         }

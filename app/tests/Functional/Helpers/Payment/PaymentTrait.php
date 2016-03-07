@@ -1139,7 +1139,8 @@ trait PaymentTrait
                             "Success" => true,
                         );
 
-                        switch ($route) {
+                        switch ($route) 
+                        {
                             case 'REST/Tokenize':
                                 $response['Token'] = '1a2b3c4b5e';
                                 break;
