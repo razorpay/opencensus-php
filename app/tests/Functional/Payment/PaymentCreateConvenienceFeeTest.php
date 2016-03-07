@@ -24,15 +24,30 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
-    public function testPayment()
+    public function testFees($payment = null)
     {
-        $payment           = $this->getDefaultPaymentArray();
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
 
         $feesArray         = $this->createAndGetFeesForPayment($payment);
 
-        assert($feesArray['fees'] === 1173);
+        if ($payment['amount'] === 5000)
+        {
+            assert($feesArray['fees'] === 1173);
 
-        assert($feesArray['service_tax'] === 149);
+            assert($feesArray['service_tax'] === 149);
+        }
+
+        return $feesArray;
+    }
+
+    public function testPaymentWithConvenienceFees()
+    {
+        $payment   = $this->getDefaultPaymentArray();
+
+        $feesArray = $this->testFees($payment);
 
         $payment['amount'] = $payment['amount'] + $feesArray['fees'];
 
@@ -51,7 +66,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
     {
         $payment           = $this->getDefaultPaymentArray();
 
-        $feesArray         = $this->createAndGetFeesForPayment($payment);
+        $feesArray = $this->testFees($payment);
 
         $feesArray['fees'] = 0;
 
@@ -61,9 +76,14 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment['fee']    = $feesArray['fees'];
 
-        try {
+        try
+        {
             $this->doAuthAndCapturePayment($payment);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
+            assert($e->getError()->internal_error_code
+                            === 'BAD_REQUEST_VALIDATION_FAILURE');
             assert($e->getMessage()
                 === 'Fees or service tax fields have been tampered with.');
         }
@@ -72,6 +92,68 @@ class PaymentCreateConvenienceFeeTest extends TestCase
     // TODO Add tests for create with order
     public function testPaymentWithOrder()
     {
-        $this->markTestIncomplete();
+        $orderInput = $this->testData['testCreateOrder'];
+
+        $this->ba->privateAuth();
+
+        $order = $this->runRequestResponseFlow($orderInput);
+
+        $this->ba->publicAuth();
+
+        $payment   = $this->getDefaultPaymentArray();
+
+        $feesArray = $this->testFees($payment);
+
+        $payment['order_id'] = $order['id'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['fees'];
+
+        $payment['fee']    = $feesArray['fees'];
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastPayment();
+
+        assert($payment['order_id'] === $order['id']);
+
+        assert($payment['fee'] === 1173);
+
+        assert($payment['service_tax'] === 149);
+    }
+
+    // TODO Fail tests for create with order
+    public function testFailedPaymentWithOrder()
+    {
+        $orderInput = $this->testData['testCreateOrder'];
+
+        $this->ba->privateAuth();
+
+        $order = $this->runRequestResponseFlow($orderInput);
+
+        $this->ba->publicAuth();
+
+        $payment   = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 30000;
+
+        $feesArray = $this->testFees($payment);
+
+        $payment['order_id'] = $order['id'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['fees'];
+
+        $payment['fee']    = $feesArray['fees'] + 100;
+
+        try
+        {
+            $this->doAuthAndCapturePayment($payment);
+        }
+        catch (\Exception $e)
+        {
+            assert($e->getError()->internal_error_code
+                === 'BAD_REQUEST_VALIDATION_FAILURE');
+            assert($e->getMessage()
+                === 'Fees or service tax fields have been tampered with.');
+        }
     }
 }
