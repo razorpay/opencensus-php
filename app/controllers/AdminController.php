@@ -662,4 +662,22 @@ class AdminController extends BaseController
 
         return SlackResponse::jsonResponse($message, $data);
     }
+
+    public function getMerchantAggregations($mode, $resource)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)
+            ->getMerchantAggregations($mode, $resource, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getSingleMerchantAggregations($mode, $merchant, $resource)
+    {
+        list($error, $data) = (new Admin\Service)
+            ->getSingleMerchantAggregations($merchant, $mode, $resource);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

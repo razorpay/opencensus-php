@@ -109,6 +109,10 @@ var app = angular.module('app', [
       url: '/admins',
       templateUrl: 'tpl/admin/app_admins.html',
       data: { superadmin: true }
+    }).state('app.aggregations', {
+      url: '/aggregations',
+      templateUrl: 'tpl/admin/app_aggregations.html',
+      data: { superadmin: true }
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/admin/app_profile.html'

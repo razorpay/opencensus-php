@@ -130,6 +130,11 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getAllAggregations($mode, $resource, $sort)
+    {
+        return Merchant\Entity::getAllAggregations($mode, $resource, $sort);
+    }
+
     public function getPaymentAggregations($merchantId, $mode)
     {
         $data = array('merchant_id' => $merchantId);
