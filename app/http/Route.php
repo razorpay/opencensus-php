@@ -224,6 +224,8 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'refund_fetch_by_id',
+        'refund_fetch_multiple',
         'order_create',
         'order_fetch',
         'order_fetch_by_id',
@@ -326,8 +328,6 @@ final class Route
     );
 
     public static $proxy = array(
-        'refund_fetch_by_id',
-        'refund_fetch_multiple',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
