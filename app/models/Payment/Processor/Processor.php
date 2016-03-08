@@ -93,7 +93,7 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    public function processAndReturnFees($input)
+    public function processAndReturnFees(array & $input)
     {
         if (isset($input['method']) === false)
         {
@@ -120,10 +120,18 @@ class Processor
         list($fee, $serviceTax, $ruleKey) =
                             (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
 
-        return ['originalAmount' => $input['amount'],
-                          'fees' => $fee,
-                   'serviceTax'  => $serviceTax,
-                      'amount'   => $input['amount'] + $fee];
+        $input['fees'] = $fee;
+        $input['amount'] = $input['amount'] + $fee;
+
+        $data = array(
+            'originalAmount'    => $input['amount'],
+            'fees'              => $fee,
+            'razorpay_fee'      => $fee - $serviceTax,
+            'serviceTax'        => $serviceTax,
+            'amount'            => $input['amount'] + $fee
+        );
+
+        return $data;
     }
 
     protected function checkSignature($input, $payment)

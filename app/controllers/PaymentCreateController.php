@@ -172,7 +172,7 @@ class PaymentCreateController extends BaseController
             return ApiResponse::json($data);
         }
 
-        return $this->returnConvenienceFeesView($data);
+        return $this->returnConvenienceFeesView($input, $data);
     }
 
     public function postAutoCapture()
@@ -234,8 +234,10 @@ class PaymentCreateController extends BaseController
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
     }
 
-    protected function returnConvenienceFeesView($data)
+    protected function returnConvenienceFeesView($input, $data)
     {
-        return View::make('gateway.gatewayFeesForm')->with('data', $data);
+        return View::make('gateway.gatewayFeesForm')
+                   ->with('data', $data)
+                   ->with('input', $input);
     }
 }
