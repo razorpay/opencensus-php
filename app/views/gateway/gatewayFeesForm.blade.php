@@ -19,7 +19,8 @@
 				background-color: #f8f8f8;
 			}
 			h2{
-				margin: 60px 0 25px;
+				padding: 60px 0 25px;
+				margin: 0;
 			}
 			table{
 				border-collapse: collapse;
@@ -58,6 +59,12 @@
 				width: 100%;
 				left: 0;
 				text-align: center;
+			}
+			body{
+				height: 100%;
+				min-height: 460px;
+				position: relative;
+				margin: 0;
 			}
 		</style>
 	</head>
