@@ -279,6 +279,20 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getAccountBalance()
+    {
+        $data = (new Merchant\Service)->fetchBalance();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAccountConfig()
+    {
+        $data = (new Merchant\Service)->fetchConfig();
+
+        return ApiResponse::json($data);
+    }
+
     public function postFreeCredits($id)
     {
         $input = Input::all();

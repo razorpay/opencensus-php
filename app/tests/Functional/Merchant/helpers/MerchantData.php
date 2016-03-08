@@ -67,13 +67,25 @@ return [
 
     'testGetBalance' => [
         'request' => [
-            'url' => '/merchants/10000000000000/balance',
+            'url' => '/me/balance',
             'method' => 'GET',
         ],
         'response' => [
             'content' => [
                 'id'    => '10000000000000',
                 'balance' => 1000000,
+            ],
+        ],
+    ],
+
+    'testGetAccountConfig' => [
+        'request' => [
+            'url' => '/me/config',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'brand_color' => null,
             ],
         ],
     ],

@@ -116,8 +116,23 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
-    public function fetchBalance($merchantId)
+    public function fetchConfig($merchantId = null)
     {
+        if(null === $merchantId)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
+        return $this->repo->findOrFailPublic($merchantId, [ENTITY::BRAND_COLOR]);
+    }
+
+    public function fetchBalance($merchantId = null)
+    {
+        if(null === $merchantId)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
         //

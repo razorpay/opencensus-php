@@ -55,10 +55,12 @@ final class Route
         'merchant_set_banks'                    => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                                       ],
         'merchant_set_all_banks'                => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'                        ],
         'merchant_daily_report'                 => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                                ],
-        'merchant_create'                       => ['post',     'merchants','MerchantController@postCreateMerchant'                             ],
+        'merchant_create'                       => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                             ],
         'merchant_fetch'                        => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                    ],
         'merchant_edit'                         => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                    ],
         'merchant_edit_config'                  => ['put',      'accounts',                                 'MerchantController@putMerchantConfig'                              ],
+        'account_fetch_balance'                 => ['get',      'me/balance',                               'MerchantController@getAccountBalance'                              ],
+        'account_fetch_config'                  => ['get',      'me/config',                                'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'               => ['get',      'merchants',                                'MerchantController@getMerchants'                                   ],
         'merchant_create_key'                   => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                                 ],
@@ -340,6 +342,8 @@ final class Route
         'webhook_fetch_multiple',
         'merchant_fetch_balance',
         'merchant_edit_config',
+        'account_fetch_balance',
+        'account_fetch_config',
     );
 
     public static $direct = array(
