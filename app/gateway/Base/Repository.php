@@ -9,7 +9,7 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID          => 'sometimes|string|size:14');
+        Entity::PAYMENT_ID          => 'sometimes|string|min:14|max:18');
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
