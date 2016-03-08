@@ -83,8 +83,13 @@ class Entity extends Base\PublicEntity
         return $this->getCardAttribute();
     }
 
-    public function isWalletEnabled($wallet)
+    public function isWalletEnabled($wallet = null)
     {
+        if ($wallet === null)
+        {
+            return $this->isAnyWalletEnabled();
+        }
+
         return $this->{'is'.ucfirst($wallet).'Enabled'}();
     }
 
@@ -124,6 +129,13 @@ class Entity extends Base\PublicEntity
     public function isEmiEnabled()
     {
         return $this->getEmiAttribute();
+    }
+
+    public function isMethodEnabled($method)
+    {
+        $func = 'is'.ucfirst($method).'Enabled';
+
+        return $this->$func();
     }
 
     public function getEnabledWallets()
@@ -229,7 +241,7 @@ class Entity extends Base\PublicEntity
     public function setEmi($emi)
     {
         assert($this->isCardEnabled(), "Cannot enable emi without Card method");
-        
+
         $this->setAttribute(self::EMI, $emi);
     }
 

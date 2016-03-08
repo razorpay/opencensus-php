@@ -104,7 +104,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isLive()
@@ -151,6 +151,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'Models\Key\Entity');
+    }
+
+    public function pricing()
+    {
+        return $this->belongsTo(
+            'Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
     public function payments()
@@ -220,11 +226,6 @@ class Entity extends Base\PublicEntity
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
-    }
-
-    public function getPricingPlan()
-    {
-        return (new PricingService)->getPricingPlanById($this->getPricingPlanId());
     }
 
     public function getActivatedAttribute()

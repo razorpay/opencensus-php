@@ -36,7 +36,13 @@ class Activate
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
+        $plan = $this->repo->getPricingPlanOrFailPublic($merchant);
+
+        //
+        // Ensure that all payment methods enabled for the merchant
+        // has an associated pricing assigned
+        //
+        (new Methods\Core)->checkPricing($merchant);
 
         // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
@@ -64,7 +70,7 @@ class Activate
 
         $this->repo->saveOrFail($merchant);
 
-        $this->sendActivationEmail($merchant);
+        $this->sendActivationEmail($merchant, $plan);
 
         return $merchant->toArrayPublic();
     }
@@ -75,13 +81,13 @@ class Activate
      * @param  Models\Merchant\Entity $merchant merchant entity
      * @return null
      */
-    protected function sendActivationEmail($merchant)
+    protected function sendActivationEmail($merchant, $plan)
     {
-        $plan = $merchant->getPricingPlan();
-
         $subjectName = $merchant->getBillingLabelElseName();
 
         $subject = "Razorpay | Account activated for $subjectName";
+
+        $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 

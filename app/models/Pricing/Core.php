@@ -11,24 +11,4 @@ use Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function checkPricingForAmex($merchant)
-    {
-        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
-
-        return ($plan->hasNetworkAmex());
-    }
-
-    public function hasWalletPricing($merchant)
-    {
-        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
-
-        return ($plan->hasMethodWallet());
-    }
-
-    public function hasEmiPricing($merchant)
-    {
-        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
-
-        return $plan->hasMethod('emi');
-    }
 }

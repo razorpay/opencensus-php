@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Merchant;
 use Models\Merchant\Balance;
+use Models\Pricing;
 
 class Repository extends Base\Repository
 {
@@ -38,7 +39,7 @@ class Repository extends Base\Repository
                 ErrorCode::BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT);
         }
 
-        return $pricing;
+        return (new Pricing\Repository)->getPricingPlanById($pricing, true, true);
     }
 
     public function fetchMerchantsWithPositiveBalance()
