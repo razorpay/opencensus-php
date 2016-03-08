@@ -47,6 +47,11 @@ class Checkout
         $data['brand_color'] = $merchant->getBrandColor();
         $data['fee_bearer'] = false;
 
+        if ($merchant->isTdrClient())
+        {
+            $data['fee_bearer'] = true;
+        }
+
         return $data;
     }
 }
