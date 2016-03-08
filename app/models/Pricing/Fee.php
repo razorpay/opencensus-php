@@ -97,7 +97,7 @@ class Fee
 
         $denominator = 100 + self::SERVICE_TAX_PERCENT ;
 
-        return ($numerator / $denominator);
+        return ceil($numerator / $denominator);
     }
 
     protected function getPricingPlanId($merchant)

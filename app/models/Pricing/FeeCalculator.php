@@ -244,10 +244,12 @@ class FeeCalculator
     {
         $fees = [];
 
+        //
         // In customer subvention,
-        //  If the rule before applying the amount
+        // If the rule before applying the amount
         // and the new amount after using merchant
         // subvention is same then use the given rule
+        //
         foreach ($rules as $rule)
         {
             list($fee, $st) = $this->getFees($rule, $amount);
@@ -260,6 +262,7 @@ class FeeCalculator
 
             if ($rule === $newRule)
             {
+
                 return $rule;
             }
         }
