@@ -384,6 +384,13 @@ class Service extends Base\Service
         // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
+    public function getFeeBearer()
+    {
+        $feeBearer = $this->merchant->isTdrClient();
+
+        return $feeBearer;
+    }
+
     public function getPaymentMethods()
     {
         $data = array(

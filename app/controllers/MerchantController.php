@@ -345,7 +345,7 @@ class MerchantController extends BaseController
 
         $methods = (new Merchant\Service)->getPaymentMethods();
 
-        $feeBearer = $this->merchant->isTdrClient();
+        $feeBearer = (new Merchant\Service)->getFeeBearer();
 
         $app = \App::getFacadeRoot();
 
