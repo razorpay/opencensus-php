@@ -13,6 +13,7 @@ final class Route
     protected static $apiRoutes = array(
         'checkout'                              => ['get',      'checkout',                                 'MerchantController@getcheckout'                                    ],
         'merchant_methods'                      => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
+        'merchant_checkout_preferences'         => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                        => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'               => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                  => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
@@ -189,6 +190,7 @@ final class Route
         'payment_add_metadata',
         'merchant_public_get_banks',
         'merchant_methods',
+        'merchant_checkout_preferences',
         'mockatom_init_payment',
         'mockatom_choose_org',
         'mockatom_rzp_payment',

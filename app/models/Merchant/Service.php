@@ -470,6 +470,13 @@ class Service extends Base\Service
         return $file;
     }
 
+    public function getCheckoutPreferences()
+    {
+        $merchant = $this->merchant;
+
+        return (new Checkout)->getPreferences($merchant);
+    }
+
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since
