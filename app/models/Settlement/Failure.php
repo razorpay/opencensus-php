@@ -15,7 +15,7 @@ class Failure
 
     protected $merchant;
 
-    public function markFailed($setl, $reason)
+    public function markFailed($setl, $reason = null)
     {
         $setl->setStatus(Status::FAILED);
         $setl->setFailureReason($reason);

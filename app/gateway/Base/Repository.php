@@ -9,7 +9,7 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID          => 'sometimes|string|size:14');
+        Entity::PAYMENT_ID          => 'sometimes|string|min:14|max:18');
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
@@ -41,5 +41,18 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $paymentId)
                     ->where('action', '=', 'refund')
                     ->get();
+    }
+
+    protected function addQueryParamPaymentId($query, $params)
+    {
+        $paymentId = $params[Entity::PAYMENT_ID];
+        $ix = strpos($paymentId, '_');
+
+        if ($ix !== false)
+        {
+            $paymentId = substr($paymentId, $ix+1);
+        }
+
+        $query->where(Entity::PAYMENT_ID, '=', $paymentId);
     }
 }

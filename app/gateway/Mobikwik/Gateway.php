@@ -28,7 +28,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'email'       => $input['payment']['email'],
             'amount'      => $input['payment']['amount'] / 100,
-            'cell'        => $input['payment']['contact'],
+            'cell'        => $this->getFormattedContact($input['payment']['contact']),
             'orderid'     => $input['payment']['id'],
 //            'merchantname'  => $input['terminal']['gateway_terminal_id'],
             'mid'         => $input['terminal']['gateway_merchant_id'],
@@ -225,7 +225,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             'action'        => 'existingusercheck',
-            'cell'          => $input['payment']['contact'],
+            'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'merchantname'  => 'Razorpay',
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => '500',
@@ -264,7 +264,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             'amount'    => $input['payment']['amount'] / 100,
-            'cell'      => $input['payment']['contact'],
+            'cell'      => $this->getFormattedContact($input['payment']['contact']),
             'merchantname' => 'razorpay',
             'mid'       => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'   => MessageCode::OTP_GENERATE,
@@ -302,7 +302,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             'amount'        => (string) ($input['payment']['amount'] / 100),
-            'cell'          => $input['payment']['contact'],
+            'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
             'merchantname'  => 'razorpay',
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
@@ -624,6 +624,11 @@ class Gateway extends Base\Gateway
         }
 
         return (array) $res;
+    }
+
+    protected function getFormattedContact($contact)
+    {
+        return substr($contact, -10);
     }
 }
 

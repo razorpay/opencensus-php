@@ -62,6 +62,19 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    public function editConfig($merchant, $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [$input]);
+
+        $merchant->edit($input, 'editConfig');
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant;
+    }
+
     public function createBalance($merchant, $mode)
     {
         $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);

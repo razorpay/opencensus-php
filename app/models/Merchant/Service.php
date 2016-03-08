@@ -71,6 +71,13 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function editConfig(array $input)
+    {
+        $merchant = (new Merchant\Core)->editConfig($this->merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function addOrUpdateMerchantFeatures($id, array $input)
     {
         $merchant = $this->repo->findOrFailPublic($id);
@@ -470,6 +477,13 @@ class Service extends Base\Service
         return $file;
     }
 
+    public function getCheckoutPreferences()
+    {
+        $merchant = $this->merchant;
+
+        return (new Checkout)->getPreferences($merchant);
+    }
+
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since
@@ -520,6 +534,9 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
         $filter = [];
 
         // In test, none of the merchants are activated

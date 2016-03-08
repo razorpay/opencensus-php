@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
     const TDR_CLIENT                = 'tdr_client';
+    const BRAND_COLOR               = 'brand_color';
 
 
     const SUBVENTION_TYPE_CUSTOMER  = 'customer';
@@ -48,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::HOLD_FUNDS,
+        self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::FEATURES,
@@ -76,11 +78,14 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
         self::METHODS,
+        self::BRAND_COLOR,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    );
 
     protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL);
+        self::TRANSACTION_REPORT_EMAIL
+    );
 
     protected $defaults = array(
         self::LIVE                  => false,
@@ -91,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE   => 3,
         self::FEATURES              => null,
         self::TDR_CLIENT            => false,
+        self::BRAND_COLOR           => null,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -105,7 +111,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isTdrClient()
@@ -159,6 +165,12 @@ class Entity extends Base\PublicEntity
             'Models\Key\Entity');
     }
 
+    public function pricing()
+    {
+        return $this->belongsTo(
+            'Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
+    }
+
     public function payments()
     {
         return $this->hasMany(
@@ -206,6 +218,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
+    public function setBrandColorAttribute($brandColor)
+    {
+        $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
+    }
+
     public function getBillingLabelElseName()
     {
         $label = $this->getBillingLabel();
@@ -221,11 +238,6 @@ class Entity extends Base\PublicEntity
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
-    }
-
-    public function getPricingPlan()
-    {
-        return (new PricingService)->getPricingPlanById($this->getPricingPlanId());
     }
 
     public function getActivatedAttribute()
@@ -300,6 +312,11 @@ class Entity extends Base\PublicEntity
     public function getFeatures()
     {
         return $this->getAttribute(self::FEATURES);
+    }
+
+    public function getBrandColor()
+    {
+        return $this->getAttribute(self::BRAND_COLOR);
     }
 
     public function getTransactionReportEmailAttribute()

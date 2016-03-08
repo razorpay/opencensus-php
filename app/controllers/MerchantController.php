@@ -38,6 +38,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putMerchantConfig()
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editConfig($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
@@ -282,6 +291,13 @@ class MerchantController extends BaseController
     public function getPaymentMethods()
     {
         $data = (new Merchant\Service)->getPaymentMethods();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCheckoutPreferences()
+    {
+        $data = (new Merchant\Service)->getCheckoutPreferences();
 
         return ApiResponse::json($data);
     }

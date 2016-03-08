@@ -236,11 +236,16 @@ class Processor
      */
     public function cancel($id, $input)
     {
-        $payment = $this->retrieve($id);
+        return $this->repo->transaction(function() use ($id, $input)
+        {
+            $payment = $this->retrieve($id);
 
-        (new Payment\Validator)->cancelValidate($payment);
+            $this->repo->lockForUpdate($payment->getKey());
 
-        return $this->cancelPayment($payment, $input);
+            (new Payment\Validator)->cancelValidate($payment);
+
+            return $this->cancelPayment($payment, $input);
+        });
     }
 
     protected function cancelPayment($payment)
@@ -469,6 +474,7 @@ class Processor
                                     $id, $this->merchant->getKey());
 
         $card = $this->payment->card()->first();
+
         return $this->payment;
     }
 

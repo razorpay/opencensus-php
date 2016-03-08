@@ -13,6 +13,7 @@ final class Route
     protected static $apiRoutes = array(
         'checkout'                              => ['get',      'checkout',                                 'MerchantController@getcheckout'                                    ],
         'merchant_methods'                      => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
+        'merchant_checkout_preferences'         => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                        => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_checkout'               => ['post',     'payments/create/checkout',                 'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
         'payment_create_jsonp'                  => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
@@ -57,9 +58,10 @@ final class Route
         'merchant_set_banks'                    => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                                       ],
         'merchant_set_all_banks'                => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'                        ],
         'merchant_daily_report'                 => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                                ],
-        'merchant_create'                       => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                             ],
+        'merchant_create'                       => ['post',     'merchants','MerchantController@postCreateMerchant'                             ],
         'merchant_fetch'                        => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                    ],
         'merchant_edit'                         => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                    ],
+        'merchant_edit_config'                  => ['put',      'accounts',                                 'MerchantController@putMerchantConfig'                              ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'               => ['get',      'merchants',                                'MerchantController@getMerchants'                                   ],
         'merchant_create_key'                   => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                                 ],
@@ -190,6 +192,7 @@ final class Route
         'payment_add_metadata',
         'merchant_public_get_banks',
         'merchant_methods',
+        'merchant_checkout_preferences',
         'mockatom_init_payment',
         'mockatom_choose_org',
         'mockatom_rzp_payment',
@@ -344,6 +347,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'merchant_fetch_balance',
+        'merchant_edit_config',
     );
 
     public static $direct = array(
