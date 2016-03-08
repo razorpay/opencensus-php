@@ -133,7 +133,8 @@ app.controller('EntitiesCtrl', [
           'Unknown',
           'Discover'
         ],
-        status: statusList
+        status: statusList,
+        international: booleanList,
       },
       daily_settlement: {},
       emi_plan: {},
@@ -186,11 +187,7 @@ app.controller('EntitiesCtrl', [
           'attempted',
           'paid',
         ],
-        authorized: [
-          'all',
-          0,
-          1,
-        ],
+        authorized: booleanList,
         receipt: ['Receipt Id']
       },
       payment: {
