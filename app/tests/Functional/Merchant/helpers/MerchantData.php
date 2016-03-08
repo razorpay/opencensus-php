@@ -303,12 +303,12 @@ return [
                     'hello@razorpay.com'
                 ]
             ],
-            'url' => '/merchants/1X4hRFHFx4UiXt/config',
+            'url' => '/account/config',
             'method' => 'put',
         ],
         'response' => [
             'content' => [
-                'id' => '1X4hRFHFx4UiXt',
+                'id' => '10000000000000',
                 'transaction_report_email'  => [
                     'nemo@razorpay.com',
                     'hello@razorpay.com'
