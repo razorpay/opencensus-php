@@ -67,9 +67,12 @@ class ApiResponse
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
-    protected static function attachJsonpCallback($request, $response)
+    protected static function attachJsonpCallback($request, $response, $callback = null)
     {
-        $callback = $request->input('callback');
+        if ($callback === null)
+        {
+            $callback = $request->input('callback');
+        }
 
         $response->setCallback($callback);
     }
@@ -236,7 +239,14 @@ class ApiResponse
             $data['http_status_code'] = $status;
             $status = 200;
 
-            self::attachJsonpCallback($request, $response);
+            try
+            {
+                self::attachJsonpCallback($request, $response);
+            }
+            catch(\InvalidArgumentException $e)
+            {
+                self::attachJsonpCallback($request, $response, 'Razorpay.jsonp_callback');
+            }
         }
 
         $response->setData($data);
