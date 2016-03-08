@@ -172,7 +172,9 @@ class PaymentCreateController extends BaseController
             return ApiResponse::json($data);
         }
 
-        return $this->returnConvenienceFeesView($input, $data);
+        $url = Route::getUrlWithPublicAuth('payment_create_checkout');
+
+        return $this->returnConvenienceFeesView($input, $data, $url);
     }
 
     public function postAutoCapture()
@@ -234,10 +236,11 @@ class PaymentCreateController extends BaseController
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
     }
 
-    protected function returnConvenienceFeesView($input, $data)
+    protected function returnConvenienceFeesView($input, $data, $url)
     {
         return View::make('gateway.gatewayFeesForm')
                    ->with('data', $data)
-                   ->with('input', $input);
+                   ->with('input', $input)
+                   ->with('url', $url);
     }
 }

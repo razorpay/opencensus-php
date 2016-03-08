@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
 
     public function isTdrClient()
     {
-        return (boolean) $this->getAttribute(self::TDR_CLIENT);
+        return $this->getAttribute(self::TDR_CLIENT);
     }
 
     public function isLive()
@@ -248,6 +248,11 @@ class Entity extends Base\PublicEntity
     public function getLiveAttribute()
     {
         return (bool) $this->attributes[self::LIVE];
+    }
+
+    public function getTdrClientAttribute()
+    {
+        return (bool) $this->attributes[self::TDR_CLIENT];
     }
 
     public function getInternationalAttribute()

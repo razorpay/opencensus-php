@@ -62,7 +62,7 @@
 		</style>
 	</head>
 	<body style='height: 460px; position: relative;'>
-		<form action='/v1/payments/create/checkout' method='post'>
+		<form action='{{$url}}' method='post'>
 			@foreach ($input as $key=>$value)
 				@if (is_array($value))
 					@foreach ($value as $key2=>$value2)
