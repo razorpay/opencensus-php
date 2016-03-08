@@ -127,6 +127,8 @@ class Entity extends Base\PublicEntity
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
+        self::BANK,
+        self::WALLET,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
