@@ -340,9 +340,11 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
-        $payment = (new Payment\Entity)->build($input);
+        $payment = new Payment\Entity;
 
         $payment->merchant()->associate($this->merchant);
+
+        $payment->build($input);
 
         // Verify if the provided fee is within 5 p of our original fee
         if ($this->merchant->isTdrClient())
@@ -359,9 +361,11 @@ class Processor
 
     protected function createDummyPaymentEntity($input)
     {
-        $payment = (new Payment\Entity)->build($input);
+        $payment = new Payment\Entity;
 
         $payment->merchant()->associate($this->merchant);
+
+        $payment->build($input);
 
         $this->payment = $payment;
 

@@ -172,7 +172,7 @@ class PaymentCreateController extends BaseController
             return ApiResponse::json($data);
         }
 
-        $url = Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = Http\Route::getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }

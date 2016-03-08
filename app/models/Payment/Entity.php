@@ -156,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
+        self::FEE               => null,
     );
 
 // --------------------- Generators --------------------------------------------
