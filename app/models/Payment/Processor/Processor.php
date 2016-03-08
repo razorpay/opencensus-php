@@ -120,7 +120,10 @@ class Processor
         list($fee, $serviceTax, $ruleKey) =
                             (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
 
-        return ['fees' => $fee, 'service_tax'  => $serviceTax];
+        return ['originalAmount' => $input['amount'],
+                          'fees' => $fee,
+                   'serviceTax'  => $serviceTax,
+                      'amount'   => $input['amount'] + $fee];
     }
 
     protected function checkSignature($input, $payment)
@@ -364,7 +367,7 @@ class Processor
 
         $serviceTax = (new Pricing\Fee)->calculateServiceTaxFromFees($payment->getFee());
 
-        $serviceTaxDifference = $feesArray['service_tax'] - $serviceTax;
+        $serviceTaxDifference = $feesArray['serviceTax'] - $serviceTax;
 
         if (($this->getModValue($feeDifference) > 5)
             or ($this->getModValue($serviceTaxDifference) > 5))

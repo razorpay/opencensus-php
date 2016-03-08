@@ -156,9 +156,23 @@ class PaymentCreateController extends BaseController
     {
         $input = Input::all();
 
+        $retJson = false;
+
+        if (isset($input['view']) and ($input['view'] === 'json'))
+        {
+            unset($input['view']);
+
+            $retJson = true;
+        }
+
         $data = $this->payment->processAndReturnFees($input);
 
-        return ApiResponse::json($data);
+        if ($retJson)
+        {
+            return ApiResponse::json($data);
+        }
+
+        return $this->returnConvenienceFeesView($data);
     }
 
     public function postAutoCapture()
@@ -218,5 +232,10 @@ class PaymentCreateController extends BaseController
     protected function returnMerchantFullRedirectView($data)
     {
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
+    }
+
+    protected function returnConvenienceFeesView($data)
+    {
+        return View::make('gateway.gatewayFeesForm')->with('data', $data);
     }
 }

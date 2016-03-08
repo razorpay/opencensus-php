@@ -49,6 +49,7 @@ else
   </body>
   <script>
     var payment_methods = <?= $methods ?>;
+    var fee_bearer  = <?= $feeBearer ?>;
   </script>
   <script src="<?= $checkout ?>/v1/checkout-frame.js"></script>
 
