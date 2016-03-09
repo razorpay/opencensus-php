@@ -67,7 +67,7 @@ return [
 
     'testGetBalance' => [
         'request' => [
-            'url' => '/me/balance',
+            'url' => '/balance',
             'method' => 'GET',
         ],
         'response' => [
@@ -80,7 +80,7 @@ return [
 
     'testGetAccountConfig' => [
         'request' => [
-            'url' => '/me/config',
+            'url' => '/account/config',
             'method' => 'GET',
         ],
         'response' => [
@@ -284,7 +284,7 @@ return [
             'content' => [
                 'brand_color' => '00bcd4',
             ],
-            'url' => '/accounts',
+            'url' => '/account/config',
             'method' => 'put',
         ],
         'response' => [
