@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 
 use Models\Merchant\Entity as Merchant;
+use Models\Merchant\FeeBearer;
 
 class CreateMerchants extends Migration
 {
@@ -65,7 +66,7 @@ class CreateMerchants extends Migration
                   ->nullable();
 
             $table->boolean(Merchant::FEE_BEARER)
-                  ->default(0);
+                  ->default(FeeBearer::PLATFORM);
 
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable()
