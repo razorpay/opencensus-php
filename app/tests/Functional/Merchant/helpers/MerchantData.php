@@ -86,7 +86,9 @@ return [
         'response' => [
             'content' => [
                 'brand_color' => null,
-                'transaction_report_email' => 'test@razorpay.com'
+                'transaction_report_email' => [
+                    'test@razorpay.com'
+                ]
             ],
         ],
     ],

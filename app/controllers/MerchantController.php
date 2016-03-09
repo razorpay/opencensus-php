@@ -47,6 +47,7 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    // This is on Internal Auth
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
@@ -286,6 +287,7 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    // This is on proxy Auth
     public function getAccountConfig()
     {
         $data = (new Merchant\Service)->fetchConfig();

@@ -54,7 +54,9 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REPORT_EMAIL,
     );
 
+    // Requires PHP 5.6
     const CONFIG_LIST = [
+        Entity::ID,
         Entity::BRAND_COLOR,
         Entity::TRANSACTION_REPORT_EMAIL
     ];
@@ -409,10 +411,5 @@ class Entity extends Base\PublicEntity
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
-    }
-
-    public function getConfig()
-    {
-        return $this->getAttributes(self::CONFIG_LIST);
     }
 }

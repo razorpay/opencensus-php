@@ -101,6 +101,7 @@ class Service extends Base\Service
         return $features;
     }
 
+    // This is on internal auth
     public function fetch($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
@@ -117,16 +118,14 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
-    public function fetchConfig($merchantId = null)
+    // This is on proxy auth
+    public function fetchConfig()
     {
-        if(null === $merchantId)
-        {
-            $merchantId = $this->merchant->getId();
-        }
+        $merchantId = $this->merchant->getId();
 
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
 
-        return $merchant->getConfig();
+        return $merchant->toArray();
     }
 
     public function fetchBalance($merchantId = null)
@@ -194,13 +193,6 @@ class Service extends Base\Service
         $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
         return $keys->toArrayPublic();
-    }
-
-    public function retrieveById($id)
-    {
-        $merchant = $this->repo->findOrFailPublic($id);
-
-        return $merchant->toArrayPublic();
     }
 
     public function assignPricingPlan($id, $input)
