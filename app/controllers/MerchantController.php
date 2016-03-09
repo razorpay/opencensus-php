@@ -238,6 +238,6 @@ class MerchantController extends BaseController
 
         list($error, $data) = (new Merchant\Service)->fetchMerchantConfig($id);
 
-        return AppResponse::jsonResponse([], $data);
+        return AppResponse::jsonResponse($error, $data);
     }
 }

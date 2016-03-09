@@ -179,7 +179,7 @@ class Merchant extends Entity
 
     public function fetchConfig()
     {
-        $relativeUrl = '/v1/merchants/config';
+        $relativeUrl = 'account/config';
 
         return $this->request('GET', $relativeUrl);
     }

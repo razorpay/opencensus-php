@@ -43,7 +43,7 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
     Route::get('/keys/csv', 'MerchantController@getCsv');
     Route::get('/apihost', 'MerchantController@getApihost');
-    Route::get('/merchants/config', 'MerchantController@getMerchantConfig');
+    Route::get('/config', 'MerchantController@getMerchantConfig');
     Route::get('/referrals', 'MerchantController@getReferredMerchants');
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
