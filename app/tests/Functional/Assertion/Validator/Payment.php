@@ -26,7 +26,7 @@ class Payment extends Validator
         Entity::ERROR_CODE          => 'sometimes|',
         Entity::ERROR_DESCRIPTION   => 'sometimes|',
         Entity::FEE                 => 'required_if:status,captured,refunded|integer',
-        Entity::SERVICE_TAX         => 'required_with:fee|integer',
+        Entity::SERVICE_TAX         => 'sometimes|',
         Entity::CREATED_AT          => 'sometimes|',
     );
 }

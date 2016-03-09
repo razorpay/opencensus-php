@@ -399,6 +399,13 @@ class Service extends Base\Service
         // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
+    public function getFeeBearer()
+    {
+        $feeBearer = $this->merchant->isFeeBearerCustomer();
+
+        return $feeBearer;
+    }
+
     public function getPaymentMethods()
     {
         $data = array(
@@ -482,7 +489,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        return (new Checkout)->getPreferences($merchant);
+        return (new Checkout)->getPreferences($merchant, $this->mode);
     }
 
     /**

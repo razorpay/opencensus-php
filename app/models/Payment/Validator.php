@@ -25,6 +25,8 @@ class Validator extends Base\Validator
         'notes'         =>  'sometimes',
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
+        'fee'           =>  'sometimes|integer|max:50000000',
+        'service_tax'   =>  'sometimes|integer|max:50000000',
         '_'             =>  'sometimes');
 
     protected static $captureRules = array(
@@ -41,7 +43,8 @@ class Validator extends Base\Validator
         'currency',
         'contact',
         'description',
-        'notes');
+        'notes',
+        'fee');
 
     protected function validateCardKey($input)
     {
@@ -238,6 +241,30 @@ class Validator extends Base\Validator
         }
 
         return $code;
+    }
+
+    protected function validateFee($input)
+    {
+        if (isset($input['fee']))
+        {
+            $merchant = $this->entity->merchant;
+            $tdrClient = $merchant->isFeeBearerCustomer();
+
+            if ($tdrClient === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Attribute fee is not allowed and should not be sent');
+            }
+            else if (empty($input['fee']))
+            {
+                ;
+            }
+        }
+        if ((isset($input['fee'])) and
+            (empty($input['fee'])))
+        {
+            unset($input['fee']);
+        }
     }
 
     protected function validateCurrency($input)

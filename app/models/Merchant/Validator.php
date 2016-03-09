@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::FEATURES                    => 'sometimes|max:255',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
+        Entity::FEE_BEARER                  => 'sometimes|in:0,1',
     );
 
     protected static $editCreditsRules = array(

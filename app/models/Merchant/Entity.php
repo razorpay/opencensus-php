@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
+    const FEE_BEARER                = 'fee_bearer';
     const BRAND_COLOR               = 'brand_color';
     const RISK_RATING               = 'risk_rating';
 
@@ -54,6 +55,8 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::FEATURES,
+        self::FEE_BEARER,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -79,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::INTERNATIONAL,
+        self::FEE_BEARER,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -98,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
         self::FEATURES              => null,
+        self::FEE_BEARER            => FeeBearer::PLATFORM,
         self::BRAND_COLOR           => null,
         self::RISK_RATING           => 3,
     );
@@ -115,6 +120,11 @@ class Entity extends Base\PublicEntity
     public function isInternational()
     {
         return (bool) $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isFeeBearerCustomer()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
     }
 
     public function isLive()
@@ -248,6 +258,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::LIVE];
     }
 
+    public function getFeeBearerAttribute()
+    {
+        return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
     public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
@@ -368,6 +383,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setFeeBearerAttribute($bearer)
+    {
+        $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
     public function getSettlementSchedule()
     {
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
@@ -381,6 +401,17 @@ class Entity extends Base\PublicEntity
     public function isReceiptEmailsEnabled()
     {
         return $this->getReceiptEmailEnabledAttribute();
+    }
+
+    public function getSubventionType()
+    {
+        // Move to subvention type if ever.
+        if ($this->isFeeBearerCustomer())
+        {
+            return FeeBearer::CUSTOMER;
+        }
+
+        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()

@@ -18,9 +18,9 @@ use Trace\TraceCode;
 
 class Checkout
 {
-    public function getPreferences($merchant)
+    public function getPreferences($merchant, $mode)
     {
-        $methods = array(
+        $methodsArray = array(
             'entity'        => 'methods',
             'card'          => true,
             'netbanking'    => [],
@@ -28,24 +28,30 @@ class Checkout
             'emi'           => false
         );
 
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getMethods($merchant);
 
         if ($methods !== null)
         {
-            $methods['card'] = $methods->isCardEnabled();
-            $methods['netbanking'] = $methods->toArrayWithBankNames();
-            $methods['wallet'] = $methods->getEnabledWallets();
-            $methods['emi'] = $methods->isEmiEnabled();
+            $methodsArray['card'] = $methods->isCardEnabled();
+            $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
+            $methodsArray['wallet'] = $methods->getEnabledWallets();
+            $methodsArray['emi'] = $methods->isEmiEnabled();
         }
 
-        if ($this->mode === Mode::TEST)
+        if ($mode === Mode::TEST)
         {
             $methods['card'] = true;
         }
 
-        $data['methods'] = $methods;
-        $data['brand_color'] = $merchant->getBrandColor();
+        $data['methods'] = $methodsArray;
+        $data['options']['theme']['color'] = $merchant->getBrandColor();
         $data['fee_bearer'] = false;
+        $data['version'] = 1;
+
+        if ($merchant->isFeeBearerCustomer())
+        {
+            $data['fee_bearer'] = true;
+        }
 
         return $data;
     }

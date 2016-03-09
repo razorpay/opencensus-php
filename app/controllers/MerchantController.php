@@ -377,6 +377,8 @@ class MerchantController extends BaseController
 
         $methods = (new Merchant\Service)->getPaymentMethods();
 
+        $feeBearer = (new Merchant\Service)->getFeeBearer();
+
         $app = \App::getFacadeRoot();
 
         $context = $app['config']->get('app.context');
@@ -399,6 +401,8 @@ class MerchantController extends BaseController
         $data['checkout'] = $url;
 
         $data['methods'] = json_encode($methods);
+
+        $data['feeBearer'] = json_encode($feeBearer);
 
         return ApiResponse::generateResponse($data);
     }

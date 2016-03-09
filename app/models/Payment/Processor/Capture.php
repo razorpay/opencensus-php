@@ -153,9 +153,13 @@ trait Capture
             $txn = $txnCore->updateOnCapture($payment);
         }
 
-        //set the service tax and fee values from txn
         $payment->setServiceTax($txn->getServiceTax());
-        $payment->setFee($txn->getFee());
+
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            //set and fee values from txn
+            $payment->setFee($txn->getFee());
+        }
 
         $txn->saveOrFail();
         $payment->saveOrFail();

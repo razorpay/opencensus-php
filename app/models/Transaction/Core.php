@@ -100,6 +100,7 @@ class Core extends Base\Core
     protected function fillTxnFeesAndAmount($txn, $payment)
     {
         $credit = $fee = $serviceTax = 0;
+
         $pricingRuleId = null;
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
@@ -118,11 +119,21 @@ class Core extends Base\Core
 
             $txn->setGratis(true);
         }
+        //If the merchant is tdrClient
+        //use the fees and service tax from both
+        else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
+        {
+            $fee            = $payment->getFee();
+            $serviceTax     = (new Pricing\Fee)->calculateServiceTaxFromFees($fee);
+            $credit         = $amount - $fee;
+        }
         else
         {
             list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
             $credit = $amount - $fee;
         }
+
+
 
         $txn->setPricingRule($pricingRuleId);
         $txn->setAmount($amount);

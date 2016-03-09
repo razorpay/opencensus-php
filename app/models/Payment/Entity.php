@@ -158,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
+        self::FEE               => null,
     );
 
 // --------------------- Generators --------------------------------------------
@@ -394,7 +395,7 @@ class Entity extends Base\PublicEntity
         return ($this->attributes[self::CREATED_AT] !== null);
     }
 
-        public function getFeeAttribute()
+    public function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
     }
