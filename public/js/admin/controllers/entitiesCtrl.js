@@ -116,7 +116,8 @@ app.controller('EntitiesCtrl', [
           'NA'
         ],
         received: booleanList,
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        'TxnReferenceNo': ['Txn Reference No']
       },
       card: {
         merchant_id: ['Merchant Id'],
