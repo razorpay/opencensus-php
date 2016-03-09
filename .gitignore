@@ -15,3 +15,4 @@ app/config/**/dev/*
 apigen
 docs/
 public/docs
+notes.txt

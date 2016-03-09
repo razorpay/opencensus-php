@@ -6,7 +6,9 @@ app.controller('MerchantDetailCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal) {
+  'riskMap',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap) {
+    $scope.riskMap = riskMap;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
       id: $stateParams.id,
@@ -15,6 +17,7 @@ app.controller('MerchantDetailCtrl', [
         live: 0
       }
     };
+
     generateMerchant();
     $scope.lockForm = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/lock');
@@ -925,7 +928,11 @@ app.controller('MerchantDetailCtrl', [
   '$scope',
   '$modalInstance',
   'current',
-  function ($scope, $modalInstance, current) {
+  'riskMap',
+  function ($scope, $modalInstance, current, riskMap) {
+
+    $scope.riskMap = riskMap;
+
     // If these fields were not present in the API db, we copy them to the form from dashboard database
     if (!current.international)
       current.international = current.merchant_details.business_international;
