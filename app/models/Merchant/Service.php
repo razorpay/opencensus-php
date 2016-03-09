@@ -103,7 +103,6 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        // s(Merchant\Entity::all()->toArray());s($id);
         $merchant = $this->repo->findOrFailPublic($id);
 
         $methods = $merchant->methods;
@@ -125,7 +124,9 @@ class Service extends Base\Service
             $merchantId = $this->merchant->getId();
         }
 
-        return $this->repo->findOrFailPublic($merchantId, [ENTITY::BRAND_COLOR]);
+        $merchant = $this->repo->findOrFailPublic($merchantId);
+
+        return $merchant->getConfig();
     }
 
     public function fetchBalance($merchantId = null)

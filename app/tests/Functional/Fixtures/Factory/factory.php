@@ -11,7 +11,7 @@ $factory(Models\Merchant\Entity::class, [
     'website' => $faker->url,
     'billing_label' => $faker->word,
     'category' => 1100,
-    'transaction_report_email' => $faker->email,
+    'transaction_report_email' => 'test@razorpay.com',
     'receipt_email_enabled' => true,
     'settlement_schedule' => 3,
 ]);
