@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
-    const TDR_CLIENT                = 'tdr_client';
+    const FEE_BEARER               = 'fee_bearer';
     const BRAND_COLOR               = 'brand_color';
 
 
@@ -53,7 +53,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::FEATURES,
-        self::TDR_CLIENT,
+        self::FEE_BEARER,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -72,7 +72,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::INTERNATIONAL,
-        self::TDR_CLIENT,
+        self::FEE_BEARER,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -95,7 +95,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
         self::FEATURES              => null,
-        self::TDR_CLIENT            => false,
+        self::FEE_BEARER            => false,
         self::BRAND_COLOR           => null,
     );
 
@@ -114,9 +114,9 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
-    public function isTdrClient()
+    public function isFeeBearerClient()
     {
-        return $this->getAttribute(self::TDR_CLIENT);
+        return $this->getAttribute(self::FEE_BEARER);
     }
 
     public function isLive()
@@ -250,9 +250,9 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::LIVE];
     }
 
-    public function getTdrClientAttribute()
+    public function getFeeBearerAttribute()
     {
-        return (bool) $this->attributes[self::TDR_CLIENT];
+        return (bool) $this->attributes[self::FEE_BEARER];
     }
 
     public function getInternationalAttribute()
@@ -393,7 +393,7 @@ class Entity extends Base\PublicEntity
     public function getSubventionType()
     {
         // Move to subvention type if ever.
-        if ($this->isTdrClient())
+        if ($this->isFeeBearerClient())
         {
             return self::SUBVENTION_TYPE_CUSTOMER;
         }

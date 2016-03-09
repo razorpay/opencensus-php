@@ -48,7 +48,7 @@ class Checkout
         $data['fee_bearer'] = false;
         $data['version'] = 1;
 
-        if ($merchant->isTdrClient())
+        if ($merchant->isFeeBearerClient())
         {
             $data['fee_bearer'] = true;
         }

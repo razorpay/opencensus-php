@@ -67,7 +67,7 @@ class CreateMerchants extends Migration
             $table->string(Merchant::FEATURES)
                   ->nullable();
 
-            $table->boolean(Merchant::TDR_CLIENT)
+            $table->boolean(Merchant::FEE_BEARER)
                   ->default(0);
 
             $table->char(Merchant::BRAND_COLOR, 6)

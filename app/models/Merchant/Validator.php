@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::FEATURES                    => 'sometimes|max:255',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
-        Entity::TDR_CLIENT                  => 'sometimes|in:0,1',
+        Entity::FEE_BEARER                  => 'sometimes|in:0,1',
     );
 
     protected static $editCreditsRules = array(

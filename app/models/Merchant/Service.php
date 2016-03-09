@@ -393,7 +393,7 @@ class Service extends Base\Service
 
     public function getFeeBearer()
     {
-        $feeBearer = $this->merchant->isTdrClient();
+        $feeBearer = $this->merchant->isFeeBearerClient();
 
         return $feeBearer;
     }

@@ -248,7 +248,7 @@ class Validator extends Base\Validator
         if (isset($input['fee']))
         {
             $merchant = $this->entity->merchant;
-            $tdrClient = $merchant->isTdrClient();
+            $tdrClient = $merchant->isFeeBearerClient();
 
             if ($tdrClient === false)
             {
