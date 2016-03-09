@@ -109,10 +109,10 @@ class Fee
             return $pricingPlanId;
         }
 
-        return $this->getDefaultPricingPlan();
+        return $this->getDefaultPricingPlan($merchant);
     }
 
-    protected function getDefaultPricingPlan()
+    protected function getDefaultPricingPlan($merchant)
     {
         $mode = \BasicAuth::getMode();
 

@@ -198,11 +198,11 @@ class Merchant extends Base
 
     public function enableConvenienceFeeModel($id = '10000000000000')
     {
-        return $this->edit($id, ['fee_bearer' => 1]);
+        return $this->edit($id, ['fee_bearer' => 'customer']);
     }
 
     public function disableConvenienceFeeModel($id = '10000000000000')
     {
-        return $this->edit($id, ['fee_bearer' => 0]);
+        return $this->edit($id, ['fee_bearer' => 'platform']);
     }
 }

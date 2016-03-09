@@ -92,7 +92,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
         self::FEATURES              => null,
-        self::FEE_BEARER            => false,
+        self::FEE_BEARER            => FeeBearer::PLATFORM,
         self::BRAND_COLOR           => null,
     );
 
@@ -113,7 +113,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeeBearerCustomer()
     {
-        return $this->getAttribute(self::FEE_BEARER);
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
     }
 
     public function isLive()
@@ -249,7 +249,7 @@ class Entity extends Base\PublicEntity
 
     public function getFeeBearerAttribute()
     {
-        return (bool) $this->attributes[self::FEE_BEARER];
+        return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
     public function getInternationalAttribute()
@@ -370,6 +370,11 @@ class Entity extends Base\PublicEntity
             // of the merchant entity
             $this->attributes[self::TRANSACTION_REPORT_EMAIL] = $emails;
         }
+    }
+
+    public function setFeeBearerAttribute($bearer)
+    {
+        $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
     }
 
     public function getSettlementSchedule()
