@@ -36,7 +36,7 @@ class FeeCalculator
     {
         $payment = $this->payment;
 
-        $rule = $this->getRelevantPricingRule($pricing, $payment);
+        $rule = $this->getRelevantPricingRule($pricing);
 
         list($fee, $serviceTax) = $this->getFees($rule, $payment->getAmount(), $preCalculationOfFees);
 
@@ -63,8 +63,10 @@ class FeeCalculator
         return  array($fee, $serviceTax);
     }
 
-    protected function getRelevantPricingRule($pricing, $payment)
+    protected function getRelevantPricingRule($pricing)
     {
+        $payment = $this->payment;
+
         $method = $payment->getMethod();
 
         $rules = $this->filterRulesOnFieldByValue(
@@ -72,11 +74,11 @@ class FeeCalculator
 
         if ($method === Payment\Method::CARD)
         {
-            $rule = $this->getRelevantPricingRuleForCard($rules, $payment);
+            $rule = $this->getRelevantPricingRuleForCard($rules);
         }
         else
         {
-            $rule = $this->getRelevantPricingRuleForMethod($rules, $payment);
+            $rule = $this->getRelevantPricingRuleForMethod($rules);
         }
 
         if ($rule === null)
@@ -88,18 +90,20 @@ class FeeCalculator
         return $rule;
     }
 
-    protected function getRelevantPricingRuleForMethod($rules, $payment)
+    protected function getRelevantPricingRuleForMethod($rules)
     {
         return $this->validateAndGetOnePricingRule($rules);
     }
 
-    protected function getRelevantPricingRuleForCard($rules, $payment)
+    protected function getRelevantPricingRuleForCard($rules)
     {
         // All the rules for the current pricing plan will be put
         // through various filters till the right pricing rule
         // for the current case remains.
 
         // Fee based on the method type
+        $payment = $this->payment;
+
         $cardType = $this->getCardType($payment);
 
         $international = $payment->isInternational();

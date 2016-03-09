@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         {
             // Order already paid for
             throw new Exception\BadRequestValidationFailureException(
-                'Order already paid for');
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }
 

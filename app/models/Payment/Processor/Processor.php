@@ -390,7 +390,7 @@ class Processor
             or ($this->getModValue($serviceTaxDifference) > 5))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Fees or service tax fields have been tampered with.');
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
         }
 
     }

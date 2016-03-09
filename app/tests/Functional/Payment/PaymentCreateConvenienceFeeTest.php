@@ -2,6 +2,8 @@
 
 namespace Tests\Functional\Payment;
 
+use EE\Exception;
+use EE\Error\ErrorCode;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -85,7 +87,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
             assert($e->getError()->internal_error_code
                             === 'BAD_REQUEST_VALIDATION_FAILURE');
             assert($e->getMessage()
-                === 'Fees or service tax fields have been tampered with.');
+                === ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
         }
     }
 
@@ -153,7 +155,7 @@ class PaymentCreateConvenienceFeeTest extends TestCase
             assert($e->getError()->internal_error_code
                 === 'BAD_REQUEST_VALIDATION_FAILURE');
             assert($e->getMessage()
-                === 'Fees or service tax fields have been tampered with.');
+                === ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
         }
     }
 }
