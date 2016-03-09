@@ -155,7 +155,7 @@ trait Capture
 
         $payment->setServiceTax($txn->getServiceTax());
 
-        if ($this->merchant->isFeeBearerClient() === false)
+        if ($this->merchant->isFeeBearerCustomer() === false)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());

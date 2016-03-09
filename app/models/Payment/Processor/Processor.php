@@ -347,7 +347,7 @@ class Processor
         $payment->build($input);
 
         // Verify if the provided fee is within 5 p of our original fee
-        if ($this->merchant->isFeeBearerClient())
+        if ($this->merchant->isFeeBearerCustomer())
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -443,7 +443,7 @@ class Processor
 
         // If the merchant is a tdr client, use the adjusted amount to
         // match order amount.
-        if ($this->merchant->isFeeBearerClient())
+        if ($this->merchant->isFeeBearerCustomer())
         {
             $amount = $amount - $payment->getFee();
         }

@@ -48,7 +48,7 @@ class Checkout
         $data['fee_bearer'] = false;
         $data['version'] = 1;
 
-        if ($merchant->isFeeBearerClient())
+        if ($merchant->isFeeBearerCustomer())
         {
             $data['fee_bearer'] = true;
         }

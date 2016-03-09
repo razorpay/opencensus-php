@@ -114,7 +114,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
-    public function isFeeBearerClient()
+    public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER);
     }
@@ -393,7 +393,7 @@ class Entity extends Base\PublicEntity
     public function getSubventionType()
     {
         // Move to subvention type if ever.
-        if ($this->isFeeBearerClient())
+        if ($this->isFeeBearerCustomer())
         {
             return self::SUBVENTION_TYPE_CUSTOMER;
         }
