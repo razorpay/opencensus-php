@@ -46,7 +46,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
-                    'risk_rating'   => 3
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
                     )
                 );
 
@@ -68,7 +69,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
-                    'risk_rating'   => 3
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
                     )
                 );
 
@@ -90,7 +92,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'fees@razorpay.com',
                     'settlement_schedule' => 3,
-                    'risk_rating'   => 3
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
                     )
                 );
 
@@ -113,7 +116,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'test@razorpay.com',
                     'settlement_schedule' => 3,
-                    'risk_rating'   => 3
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
                     )
                 );
 
@@ -136,7 +140,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'shared@razorpay.com',
                     'settlement_schedule' => 3,
-                    'risk_rating'   => 3
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
                     )
                 );
 
@@ -159,7 +164,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time(),
                     'transaction_report_email'=>'demo@razorpay.com',
                     'settlement_schedule' => 3,
-                    'risk_rating'   => 3
+                    'risk_rating'   => 3,
+                    'fee_bearer'    => 0,
                     )
                 );
 
