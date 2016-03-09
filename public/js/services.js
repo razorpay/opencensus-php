@@ -293,3 +293,12 @@ angular.module('app.services', [])
     return mapper[status];
   };
 }])
+.factory('riskMap', [function() {
+  return {
+    1: ['Very Low', 'bg-success'],
+    2: ['Low', 'bg-success'],
+    3: ['Default', 'bg-info'],
+    4: ['High', 'bg-danger'],
+    5: ['Very High', 'bg-danger']
+  }
+}])

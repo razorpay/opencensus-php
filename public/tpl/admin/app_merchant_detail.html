@@ -257,6 +257,14 @@
           Funds on Hold
         </a>
         <a href class="list-group-item">
+          <span class="label text-base pull-right"
+            ng-class="riskMap[merchant.details.risk_rating][1]"
+          >
+            {{riskMap[merchant.details.risk_rating][0]}}
+          </span>
+          Risk Rating
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
           Settlement Schedule <i class="fa fa-clock-o"></i>
         </a>
@@ -652,7 +660,7 @@
     <h3 class="modal-title">Edit Merchant</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule}">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating}">
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
         <div class="col-lg-10" >
@@ -666,6 +674,16 @@
         <label for="category" class="col-lg-2 control-label">MCC:</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="category" ng-model="merchant.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="category" class="col-lg-2 control-label">Risk:</label>
+        <div class="col-lg-10">
+          <select name="risk_rating" class="form-control m-b" ng-model="merchant.risk_rating">
+            <option ng-repeat="(risk, display) in riskMap" value="{{risk}}" ng-selected="merchant.risk_rating==risk">
+            {{display[0]}}
+            </option>
+          </select>
         </div>
       </div>
       <div class="form-group">
