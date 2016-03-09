@@ -506,4 +506,21 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    public function updateMerchantConfig($merchantId, $input)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        try
+        {
+            $data = $this->api->merchant->updateConfig($input)->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }

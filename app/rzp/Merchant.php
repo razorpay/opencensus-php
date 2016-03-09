@@ -4,6 +4,7 @@ namespace RZP;
 
 class Merchant extends Entity
 {
+    const CONFIG_URL = 'account/config';
     public function create($params = null)
     {
         return parent::create($params);
@@ -179,8 +180,12 @@ class Merchant extends Entity
 
     public function fetchConfig()
     {
-        $relativeUrl = 'account/config';
+        return $this->request('GET', self::CONFIG_URL);
+    }
 
-        return $this->request('GET', $relativeUrl);
+    // This is on proxy auth, doesn't take merchant ID
+    public function updateConfig($input)
+    {
+        return $this->request('PUT', self::CONFIG_URL, $input);
     }
 }
