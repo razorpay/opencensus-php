@@ -295,6 +295,28 @@ return [
         ]
     ],
 
+    'testEditMerchantConfigWithEmail' => [
+        'request' => [
+            'content' => [
+                'transaction_report_email' => [
+                    'nemo@razorpay.com',
+                    'hello@razorpay.com'
+                ]
+            ],
+            'url' => '/account/config',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'transaction_report_email'  => [
+                    'nemo@razorpay.com',
+                    'hello@razorpay.com'
+                ]
+            ]
+        ]
+    ],
+
     'testAttemptPaymentOnNonLiveMerchant' => [
         'request' => [
             'content' => [
