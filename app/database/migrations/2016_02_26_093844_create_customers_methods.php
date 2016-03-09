@@ -38,6 +38,12 @@ class CreateCustomersMethods extends Migration {
             $table->char(Methods::WALLET, 15)
                   ->nullable();
 
+            $table->char(Methods::ACCOUNT_KEY)
+                  ->nullable();
+
+            $table->string(Methods::NOTES)
+                  ->nullable();
+
             $table->integer(Methods::CREATED_AT);
             
             $table->integer(Methods::UPDATED_AT);

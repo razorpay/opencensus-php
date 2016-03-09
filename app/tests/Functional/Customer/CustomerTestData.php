@@ -158,15 +158,17 @@ return [
             'method' => 'post',
             'content' => [
                 'method' => 'wallet',
-                'wallet' => 'paytm',
+                'wallet' => 'mobikwik',
+                'account_key' => "dj83hd9j4jd=="
             ],
         ],
         'response' => [
             'content' => [
                 'method' => 'wallet',
                 'card_id' => null,
-                'wallet' => 'paytm',
+                'wallet' => 'mobikwik',
                 'bank' => null,
+                'account_key' => "dj83hd9j4jd==",
             ],
         ],
     ],
@@ -177,7 +179,8 @@ return [
             'method' => 'post',
             'content' => [
                 'method' => 'netbanking',
-                'bank' => 'HDFC',
+                'bank' => 'KKBK',
+                'account_key' => '23881822'
             ],
         ],
         'response' => [
@@ -185,7 +188,8 @@ return [
                 'method' => 'netbanking',
                 'card_id' => null,
                 'wallet' => null,
-                'bank' => 'HDFC',
+                'bank' => 'KKBK',
+                'account_key' => '23881822',
             ],
         ],
     ]

@@ -6,41 +6,64 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-        const NAME              =       'name';
-        const EMAIL             =       'email';
-        const CONTACT           =       'contact';
-        const MERCHANT_ID       =       'merchant_id';
+    const NAME              =       'name';
+    const EMAIL             =       'email';
+    const CONTACT           =       'contact';
+    const MERCHANT_ID       =       'merchant_id';
 
-        protected static $sign      = '';
+    protected static $sign      = '';
 
-        protected $entity           = 'customer';
+    protected $entity           = 'customer';
 
-        protected $table            = \Constants\Table::CUSTOMER;
+    protected $table            = \Constants\Table::CUSTOMER;
 
-        protected $genereateIdOnCreate = true;
+    protected $genereateIdOnCreate = true;
 
-        protected $fillable = array(
-            self::ID,
-            self::NAME,
-            self::EMAIL,
-            self::CONTACT,
-            self::MERCHANT_ID,
-        );
+    protected $fillable = array(
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::CONTACT,
+        self::MERCHANT_ID,
+    );
 
-        protected $visible = array(
-            self::ID,
-            self::NAME,
-            self::EMAIL,
-            self::CONTACT,
-            self::MERCHANT_ID,
-        );
+    protected $visible = array(
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::CONTACT,
+        self::MERCHANT_ID,
+    );
 
-        protected $public = array(
-            self::ID,
-            self::NAME,
-            self::EMAIL,
-            self::CONTACT
-        );
+    protected $public = array(
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::CONTACT
+    );
+
+    public function merchant()
+    {
+        return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function getName()
+    {
+        return $this->attributes(self::NAME);
+    }
+
+    public function getEmail()
+    {
+        return $this->attributes(self::EMAIL);
+    }
+
+    public function getContact()
+    {
+        return $this->getAttribute(self::CONTACT);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
 }
-
-

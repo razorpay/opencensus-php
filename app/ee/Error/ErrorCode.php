@@ -219,4 +219,8 @@ class ErrorCode
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
+
+    const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
+    const BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS';
+    const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                                = 'BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS';
 }

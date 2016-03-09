@@ -14,6 +14,8 @@ class Validator extends Base\Validator
         Entity::CARD_ID         => 'required_only_if:method,card|alpha_num|size:14',
         Entity::BANK            => 'required_only_if:method,netbanking',
         Entity::WALLET          => 'required_only_if:method,wallet|in:paytm,mobikwik,payzapp',
+        Entity::ACCOUNT_KEY     => 'sometimes',
+        Entity::NOTES           => 'sometimes',
     );
 
     protected static $createValidators = array(

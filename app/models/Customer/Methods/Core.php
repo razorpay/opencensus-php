@@ -2,6 +2,8 @@
 
 namespace Models\Customer\Methods;
 
+use EE\Error\ErrorCode;
+use EE\Exception;
 use Models\Base;
 use Models\Customer\Methods;
 
@@ -16,11 +18,11 @@ class Core extends Base\Core
     
     public function create($customer, $input)
     {
-        $input['customer_id'] = $customer->getKey();
+        $input[Methods\Entity::CUSTOMER_ID] = $customer->getKey();
 
         $method = (new Methods\Entity)->build($input);
 
-        //$this->validateExistingMethod($method);
+        $this->validateExistingMethod($method);
 
         $this->repo->saveOrFail($method);
 
@@ -29,8 +31,6 @@ class Core extends Base\Core
 
     public function edit($method, $input)
     {
-        //$this->validateExistingMethod($method);
-
         $this->trace->info(
             TraceCode::CUSTOMER_METHODS_EDIT,
             [
@@ -40,6 +40,8 @@ class Core extends Base\Core
 
         $method->edit($input);
 
+        $this->validateExistingMethod($method);
+
         $this->repo->saveOrFail($method);
     
         return $method;
@@ -48,29 +50,52 @@ class Core extends Base\Core
     protected function validateExistingMethod($method)
     {
         $params = array(
+            Methods\Entity::METHOD      => $method->getMethod(),
             Methods\Entity::CUSTOMER_ID => $method->getCustomerId(),
-            Methods\Entity::METHOD      => $method->getMethod()
         );
 
         $existingMethods = $this->repo->getByParams($params);
 
-        $func = 'validateExistingMethod'.$method->getId();
+        $func = 'validateExistingMethod'.$method->getMethod();
 
         $this->$func($existingMethods, $method);
     }
 
-    protected function validateExistingMethodCard($existingMethods, $method)
+    protected function validateExistingMethodCard($existingMethods, $newMethod)
     {
-
+        foreach ($existingMethods as $method) 
+        {
+            if($method->getCardId() === $newMethod->getCardId())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS);
+            }
+        }
     }
 
-    protected function validateExistingMethodNetbanking($existingMethods, $method)
+    protected function validateExistingMethodNetbanking($existingMethods, $newMethod)
     {
-        
+        foreach ($existingMethods as $method) 
+        {
+            if(($method->getBank()  === $newMethod->getBank()) and
+                ($method->getAccountKey() === $newMethod->getAccountKey()))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS);
+            }
+        }
     }
 
-    protected function validateExistingMethodWallet($existingMethods, $method)
+    protected function validateExistingMethodWallet($existingMethods, $newMethod)
     {
-        
+        foreach ($existingMethods as $method) 
+        {
+            if(($method->getWallet()  === $newMethod->getWallet()) and
+                ($method->getAccountKey() === $newMethod->getAccountKey()))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
+            }
+        }   
     }
 }
