@@ -99,6 +99,12 @@
       <span>Profile</span>
     </a>
   </li>
+  <li ng-show="merchant && user.tags.indexOf('Config') != -1">
+    <a id="configNav" ui-sref="app.config">
+      <i class="icon-settings icon text-warning-lter"></i>
+      <span>Configuration</span>
+    </a>
+  </li>
 
   <li class="line dk"></li>
 </ul>

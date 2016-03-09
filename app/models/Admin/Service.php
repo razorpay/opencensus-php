@@ -376,11 +376,11 @@ class Service extends Base\Service
     {
         $this->setApiCredentials(null, 'test');
 
-        $test = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+        $test = $this->api->merchant->setId($id)->fetchBalance()->toArray();
 
         $this->setApiCredentials(null, 'live');
 
-        $live = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+        $live = $this->api->merchant->setId($id)->fetchBalance()->toArray();
 
         return compact('test', 'live');
     }
@@ -389,7 +389,7 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->fetchBanks()->toArray();
+        $response = $this->api->merchant->setId($id)->fetchBanks()->toArray();
 
         return $response;
     }
@@ -784,11 +784,11 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $liveTerminals = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
+        $liveTerminals = $this->api->merchant->setId($id)->fetchTerminals()->toArray();
 
         $this->setApiCredentials(null, 'test');
 
-        $testTerminals = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
+        $testTerminals = $this->api->merchant->setId($id)->fetchTerminals()->toArray();
 
         foreach ($testTerminals['items'] as &$item)
         {

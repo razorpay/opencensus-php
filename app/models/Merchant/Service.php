@@ -489,4 +489,38 @@ class Service extends Base\Service
         return Merchant\Entity::withAnyTag($tag)
             ->get(['id', 'name', 'activated', 'created_at']);
     }
+
+    public function fetchMerchantConfig($merchantId)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        try
+        {
+            $data = $this->api->merchant->fetchConfig()->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function updateMerchantConfig($merchantId, $input)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        try
+        {
+            $data = $this->api->merchant->updateConfig($input)->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }
