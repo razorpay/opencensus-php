@@ -4,8 +4,6 @@ namespace Models\Merchant;
 
 class FeeBearer
 {
-
-
     const PLATFORM = 'platform';
     const CUSTOMER = 'customer';
 
