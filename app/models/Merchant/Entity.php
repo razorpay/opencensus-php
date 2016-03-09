@@ -403,6 +403,11 @@ class Entity extends Base\PublicEntity
         return $this->getReceiptEmailEnabledAttribute();
     }
 
+    public function getRiskRating()
+    {
+        return $this->getAttribute(self::RISK_RATING);
+    }
+
     public function getSubventionType()
     {
         // Move to subvention type if ever.

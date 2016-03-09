@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
+use Config;
 use Constants\Mode;
 use Mail;
 use Models\Payment;
@@ -22,9 +23,15 @@ class Notify
     /**
      * The minimum amount for a transaction to be considered risky
      * This is used to decide low and high value transactions and pick
-     * the correct slack channel. Currently set to INR 1000
+     * the correct slack channel. Currently set to INR 3000
      */
-    const MIN_RISK_AMOUNT = 100000;
+    const MIN_RISK_AMOUNT = 300000;
+
+    /**
+     * This is the minimum risk rating for a merchant that prompts a
+     * post on the RISKY channel. The scale goes from 1-5
+     */
+    const MIN_HIGH_RISK_RATING = 4;
 
     /**
      * When are receipt emails sent to the customer
@@ -247,11 +254,18 @@ class Notify
      */
     protected function getSlackChannel()
     {
-        $channel = \Config::get('slack.channels.low');
+        $channel = $this->app['config']->get('slack.channels.low');
 
-        if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
+        $riskRating = $this->template['payment']['risk'];
+
+        // The priority order is important here
+        if ($riskRating >= self::MIN_HIGH_RISK_RATING)
         {
-            $channel = \Config::get('slack.channels.high');
+            $channel = $this->app['config']->get('slack.channels.risky');
+        }
+        else if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
+        {
+            $channel = $this->app['config']->get('slack.channels.high');
         }
 
         return $channel;
@@ -338,13 +352,16 @@ class Notify
         $website = $this->template['merchant']['website'];
         $text    = $this->template['merchant']['billing_label'];
 
-        if (empty($text))
+        $dashboardLink = $this->payment->merchant->getDashboardEntityLink();
+        $merchantId = $this->template['merchant']['id'];
+
+        // If we don't have billing label or website, just send to dashboard
+        if (empty($text) or empty($website))
         {
-            $text = $this->template['merchant']['id'];
-            $website = $this->payment->merchant->getDashboardEntityLink();
+            return "<$dashboardLink|$merchantId>";
         }
 
-        return "<$website|$text>";
+        return "<$website|$text> [<$dashboardLink|$merchantId>]";
     }
 
     /**
@@ -452,9 +469,11 @@ class Notify
                 'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
                 'timestamp' =>  $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
+
                 // note that payment method is unavailable to the merchant
                 'method'    =>  $this->payment->getMethodWithDetail(),
-                'orderId'   =>  $this->payment->getOrderId()
+                'orderId'   =>  $this->payment->getOrderId(),
+                'risk'      =>  $this->payment->merchant->getRiskRating()
             ]
         ];
 
