@@ -134,7 +134,7 @@ app.controller('EntitiesCtrl', [
           'Discover'
         ],
         status: statusList,
-        international: booleanList,
+        international: booleanList
       },
       daily_settlement: {},
       emi_plan: {},
