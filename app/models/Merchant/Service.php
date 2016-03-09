@@ -481,7 +481,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        return (new Checkout)->getPreferences($merchant);
+        return (new Checkout)->getPreferences($merchant, $this->mode);
     }
 
     /**

@@ -18,7 +18,7 @@ use Trace\TraceCode;
 
 class Checkout
 {
-    public function getPreferences($merchant)
+    public function getPreferences($merchant, $mode)
     {
         $methods = array(
             'entity'        => 'methods',
@@ -28,7 +28,7 @@ class Checkout
             'emi'           => false
         );
 
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getMethods($merchant);
 
         if ($methods !== null)
         {
@@ -38,14 +38,15 @@ class Checkout
             $methods['emi'] = $methods->isEmiEnabled();
         }
 
-        if ($this->mode === Mode::TEST)
+        if ($mode === Mode::TEST)
         {
             $methods['card'] = true;
         }
 
         $data['methods'] = $methods;
-        $data['brand_color'] = $merchant->getBrandColor();
+        $data['options']['theme']['color'] = $merchant->getBrandColor();
         $data['fee_bearer'] = false;
+        $data['version'] = 1;
 
         if ($merchant->isTdrClient())
         {
