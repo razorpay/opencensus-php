@@ -23,12 +23,9 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
-    const FEE_BEARER               = 'fee_bearer';
+    const FEE_BEARER                = 'fee_bearer';
     const BRAND_COLOR               = 'brand_color';
 
-
-    const SUBVENTION_TYPE_CUSTOMER  = 'customer';
-    const SUBVENTION_TYPE_MERCHANT  = 'merchant';
     /**
      * Refers to methods relation and not a property;
      */
@@ -395,10 +392,10 @@ class Entity extends Base\PublicEntity
         // Move to subvention type if ever.
         if ($this->isFeeBearerCustomer())
         {
-            return self::SUBVENTION_TYPE_CUSTOMER;
+            return FeeBearer::CUSTOMER;
         }
 
-        return self::SUBVENTION_TYPE_MERCHANT;
+        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()

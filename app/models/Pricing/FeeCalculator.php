@@ -193,7 +193,7 @@ class FeeCalculator
 
     protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
-        if ($subventionType === Merchant\Entity::SUBVENTION_TYPE_CUSTOMER)
+        if ($subventionType === Merchant\FeeBearer::CUSTOMER)
         {
             return $this->chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType);
         }
@@ -256,7 +256,7 @@ class FeeCalculator
 
             $newAmount = $amount + $fee;
 
-            $newSubventionType = Merchant\Entity::SUBVENTION_TYPE_MERCHANT;
+            $newSubventionType = Merchant\FeeBearer::PLATFORM;
 
             $newRule = $this->chooseRuleWithAmount($rules, $newAmount, $newSubventionType);
 
