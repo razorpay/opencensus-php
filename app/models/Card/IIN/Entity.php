@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::INTERNATIONAL);
 
+    protected static $modifiers = array('inputRemoveBlanks');
+
     protected $fillable = array(
         self::IIN,
         self::CATEGORY,

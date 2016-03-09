@@ -83,6 +83,11 @@ class Entity extends Base\PublicEntity
         return $this->getCardAttribute();
     }
 
+    public function isNetbankingEnabled()
+    {
+        return true;
+    }
+
     public function isWalletEnabled($wallet = null)
     {
         if ($wallet === null)
