@@ -47,6 +47,7 @@ class Core extends Base\Core
 
         $methodsToCheck = array(
             Payment\Method::CARD,
+            Payment\Method::NETBANKING,
             Payment\Method::WALLET,
             Payment\Method::EMI);
 
