@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
     const BRAND_COLOR               = 'brand_color';
+    const RISK_RATING               = 'risk_rating';
 
     /**
      * Refers to methods relation and not a property;
@@ -38,17 +39,21 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    protected static $generators = array(
+        self::TRANSACTION_REPORT_EMAIL);
+
     protected $fillable = array(
         self::ID,
         self::NAME,
         self::EMAIL,
         self::WEBSITE,
         self::CATEGORY,
+        self::FEATURES,
         self::HOLD_FUNDS,
+        self::RISK_RATING,
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
-        self::FEATURES,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -80,13 +85,10 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE,
         self::METHODS,
         self::BRAND_COLOR,
+        self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
-
-    protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL
-    );
+     );
 
     protected $defaults = array(
         self::LIVE                  => false,
@@ -97,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE   => 3,
         self::FEATURES              => null,
         self::BRAND_COLOR           => null,
+        self::RISK_RATING           => 3,
     );
 
     protected function generateTransactionReportEmail($input)

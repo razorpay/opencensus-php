@@ -14,6 +14,7 @@ $factory(Models\Merchant\Entity::class, [
     'transaction_report_email' => 'test@razorpay.com',
     'receipt_email_enabled' => true,
     'settlement_schedule' => 3,
+    'risk_rating' => 3,
 ]);
 
 $factory(Models\Terminal\Entity::class, [

@@ -58,9 +58,6 @@ class CreateMerchants extends Migration
 
             $table->integer(Merchant::SETTLEMENT_SCHEDULE);
 
-            $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)
-                  ->default(1);
-
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
@@ -70,6 +67,11 @@ class CreateMerchants extends Migration
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable()
                   ->default(null);
+
+            $table->tinyInteger(Merchant::RISK_RATING);
+
+            $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)
+                  ->default(1);
 
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
@@ -81,6 +83,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::CATEGORY);
             $table->index(Merchant::INTERNATIONAL);
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
+            $table->index(Merchant::RISK_RATING);
         });
     }
 
