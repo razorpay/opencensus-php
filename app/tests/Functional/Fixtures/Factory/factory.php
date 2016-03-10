@@ -14,7 +14,7 @@ $factory(Models\Merchant\Entity::class, [
     'transaction_report_email' => 'test@razorpay.com',
     'receipt_email_enabled' => true,
     'settlement_schedule' => 3,
-    'fee_bearer' => Models\Merchant\FeeBearer::getValueForBearerString(Models\Merchant\FeeBearer::PLATFORM),
+    'fee_bearer' => Models\Merchant\FeeBearer::PLATFORM,
     'risk_rating' => 3,
 ]);
 
