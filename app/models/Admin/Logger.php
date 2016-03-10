@@ -26,7 +26,7 @@ trait Logger
 
         $label = $merchant->merchantDetails->getBillingLabel();
 
-        return "<$link|$label>";
+        return "<$link|$label> ($id)";
     }
 
     protected function logActionToSlack($merchant, $action, $data = [])
@@ -48,6 +48,8 @@ trait Logger
 
         $channel = \Config::get('razorpay.slack.operations');
 
+        $data = $this->flatten($data);
+
         $this->slackPost($text, $data, $channel);
     }
 
@@ -61,5 +63,31 @@ trait Logger
         $postChannel = \Config::get('razorpay.slack.operations');
 
         $this->slackPost($text, [], $postChannel);
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten(array $array, $prefix = '')
+    {
+        $result = array();
+
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $result = $result + $this->flatten($value, $prefix . $key . '.');
+            }
+            else
+            {
+                $result[$prefix . $key] = $value;
+            }
+        }
+
+        return $result;
     }
 }

@@ -34,13 +34,18 @@ class Service
             $data['color'] = $color;
             $data['pretext'] = $pretext;
             $data['link_names'] = 1;
+
+            /**
+             * Attach all the extra fields
+             */
             foreach($postdata as $key => $value)
             {
+                //  Fallback text for plaintext clients, like IRC
                 $data['fallback'] .= $key . ': ' . $value . '\n';
                 $data['fields'][] = array(
                     'title' => $key,
                     'value' => $value,
-                    'short' => false
+                    'short' => true
                 );
             }
 
