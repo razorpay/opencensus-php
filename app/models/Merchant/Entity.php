@@ -451,4 +451,12 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
     }
+
+    /** Overridden from the PublicEntity */
+    public function getDashboardEntityLink()
+    {
+        $id = $this->getId();
+
+        return "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
+    }
 }
