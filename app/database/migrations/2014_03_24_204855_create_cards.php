@@ -47,13 +47,13 @@ class CreateCards extends Migration
 
             $table->boolean(Card::INTERNATIONAL)
                   ->nullable();
+            
+            $table->char(Card::SERVICE, 20)
+                   ->nullable();
 
-            $table->char(Card::TOKEN)
-                  ->nullable();
-
-            $table->char(Card::SERVICE)
-                  ->nullable();
-
+            $table->char(Card::TOKEN, 50)
+                   ->nullable();
+ 
             $table->string(Card::TRIVIA)
                   ->nullable();
 
@@ -67,6 +67,8 @@ class CreateCards extends Migration
             $table->index(Card::IIN);
             $table->index(Card::NETWORK);
             $table->index(Card::LAST4);
+            $table->index(Card::SERVICE);
+            $table->index(Card::TOKEN);
 
             $table->foreign(Card::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

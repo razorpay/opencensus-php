@@ -124,4 +124,10 @@ return array(
     'RUN_FIXTURES'                                  => true,
     'RUN_FIXTURES_ONCE'                             => true,
     'TRUNCATE_DATABASE'                             => false,
+
+
+    'TOKENEX_ID'                                    => getenv('TOKENEX_ID'),
+    'TOKENEX_API_KEY'                               => getenv('TOKENEX_API_KEY'),
+    'TOKENEX_API_URL'                               => getenv('TOKENEX_API_URL'),
+    'TOKENEX_TOKEN_SCHEME'                          => '12',
 );

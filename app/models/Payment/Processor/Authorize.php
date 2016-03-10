@@ -183,10 +183,17 @@ trait Authorize
 
     protected function runPaymentMethodRelatedPreProcessing($payment, $input, array & $gatewayInput)
     {
+        $save = false;
+
+        if ($payment->isMethod(Payment\Method::EMI))
+        {
+            $save = true;
+        }
+
         if (($payment->isMethod(Payment\Method::CARD)) or
             ($payment->isMethod(Payment\Method::EMI)))
         {
-            $gatewayInput['card'] = $this->createCardEntity($input);
+            $gatewayInput['card'] = $this->createCardEntity($input, $save);
         }
 
         if ($payment->isMethod(Payment\Method::EMI))
@@ -472,17 +479,30 @@ trait Authorize
      *                      Payment\Entity object and
      *                      card data array
      */
-    public function createCardEntity(array $input)
+    public function createCardEntity(array $input, $save = false)
     {
         //
-        // Creates card entity. But since we don't store
-        // number and cvv for now, we get back a card data
-        // array contianing Card\Entity with number and cvv
+        // Creates card entity. if save flag is set to true
+        // number is stored with tokenex, and token is stored
+        // in card entity. we do not store cvv for now.
+        // we get back a card data array contianing Card\Entity
+        // with number and cvv
         //
+        $cardInput = $input['card'];
+
+        if($save)
+        {
+            $app = \App::getFacadeRoot();
+        
+            $cardInput[Card\Entity::TOKEN] = $app['card.tokenex']->tokenize($cardInput['number']);
+        
+            $cardInput[Card\Entity::SERVICE] = 'tokenex';            
+        }
+
         $cardCore = new Card\Core();
-
-        $cardData = $cardCore->createAndReturnWithSensitiveData($input['card'], $this->merchant);
-
+        
+        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $this->merchant);
+        
         $card = $cardCore->getCard();
 
         if ($card->isUnsupported())

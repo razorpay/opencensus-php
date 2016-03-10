@@ -60,7 +60,7 @@ class IIN
     {
         if (in_array($bank, self::$emiBanks))
         {
-            foreach ($emiIins[$bank] as $iin)
+            foreach (self::$emiIins[$bank] as $iin)
             {
                 if (substr($cardNumber, 0, strlen($iin)) === $iin)
                 {

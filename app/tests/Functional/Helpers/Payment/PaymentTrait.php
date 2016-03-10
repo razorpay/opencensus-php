@@ -1121,4 +1121,45 @@ trait PaymentTrait
     {
         return $this->app['gateway']->resetDriver($this->gateway);
     }
+
+    protected function mockTokenex()
+    {
+        $tokenex = Mockery::mock('Services\TokenEx')->makePartial();
+
+        $this->app->instance('card.tokenex', $tokenex);
+
+        $tokenex->shouldReceive('sendRequest')
+              ->once()
+              ->with(Mockery::type('string'), 'POST', Mockery::type('array'))
+              ->andReturnUsing(function ($route, $method, $input)
+                    {
+                        $response = array(
+                            "Error" => "",
+                            "ReferenceNumber" => "15102913382030662954",
+                            "Success" => true,
+                        );
+
+                        switch ($route) 
+                        {
+                            case 'REST/Tokenize':
+                                $response['Token'] = '1a2b3c4b5e';
+                                break;
+
+                            case 'REST/Detokenize':
+                                $response['Value'] = '4111111111111111';
+                                break;
+
+                            case 'REST/ValidateToken':
+                                $response['Valid'] = true;
+                                break;
+                            
+                            case 'REST/DeleteToken':
+                                break;
+                        }
+
+                        return $response;
+                    });
+
+        $this->app->instance('card.tokenex', $tokenex);
+    }
 }

@@ -45,6 +45,11 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new \Models\Merchant\Webhook\Inferno;
         });
+
+        $this->app->bindShared('card.tokenex', function($app)
+        {
+            return new TokenEx($app);
+        });
     }
 
     /**
@@ -59,6 +64,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'instance',
             'exception.handler',
             'gateway',
-            'webhook.inferno');
+            'webhook.inferno',
+            'card.tokenex'
+        );
     }
 }

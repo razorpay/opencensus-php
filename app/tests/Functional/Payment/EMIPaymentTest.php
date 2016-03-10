@@ -20,6 +20,8 @@ class EmiPaymentTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockTokenex();
     }
 
     public function testEmiPaymentCreate()

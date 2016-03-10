@@ -125,6 +125,8 @@ class TraceCode
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
 
+    const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
         self::PAYMENT_CREATED                       => 'New payment created',
