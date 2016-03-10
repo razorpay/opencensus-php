@@ -24,6 +24,15 @@ trait Capture
     {
         $payment = $this->retrieve($id);
 
+        /*
+            If the fee bearer is customer then please to adjust input amount
+            with the available fee for the payment.
+         */
+        if ($this->merchant->isFeeBearerCustomer())
+        {
+            $input['amount'] = $input['amount'] + $payment->getFee();
+        }
+
         (new Payment\Validator)->captureValidate($payment, $input);
 
         return $this->capturePayment($payment, $input['amount']);

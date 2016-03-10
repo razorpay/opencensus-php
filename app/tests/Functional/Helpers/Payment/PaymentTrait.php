@@ -86,6 +86,7 @@ trait PaymentTrait
         $id = $payment['razorpay_payment_id'];
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
         $func = $trace[1]['function'];
 
         return $this->getAndMatchPayment($id, $paymentResponse);

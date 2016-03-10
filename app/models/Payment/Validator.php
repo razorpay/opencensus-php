@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
+use Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -248,9 +249,8 @@ class Validator extends Base\Validator
         if (isset($input['fee']))
         {
             $merchant = $this->entity->merchant;
-            $tdrClient = $merchant->isFeeBearerCustomer();
 
-            if ($tdrClient === false)
+            if ($merchant->isFeeBearerCustomer() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');
