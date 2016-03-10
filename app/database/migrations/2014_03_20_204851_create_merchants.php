@@ -18,6 +18,7 @@ class CreateMerchants extends Migration
      */
     public function up()
     {
+
         Schema::create(Table::MERCHANT, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
@@ -66,7 +67,7 @@ class CreateMerchants extends Migration
                   ->nullable();
 
             $table->boolean(Merchant::FEE_BEARER)
-                  ->default(FeeBearer::PLATFORM);
+                  ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable()
