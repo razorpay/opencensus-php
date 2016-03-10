@@ -51,11 +51,16 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->testFees($payment);
 
+        $amount = $payment['amount'];
+
         $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
 
         $payment['fee']    = $feesArray['input']['fee'];
 
-        $this->doAuthAndCapturePayment($payment);
+        // This is for simulating capture with the
+        // original amount
+
+        $this->doAuthAndCapturePayment($payment, $amount);
 
         $payment = $this->getLastPayment();
 
@@ -104,13 +109,15 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->testFees($payment);
 
+        $amount = $payment['amount'];
+
         $payment['order_id'] = $order['id'];
 
         $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
 
         $payment['fee']    = $feesArray['input']['fee'];
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment, $amount);
 
         $payment = $this->getLastPayment();
 
