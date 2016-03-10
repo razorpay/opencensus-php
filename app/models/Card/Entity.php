@@ -176,6 +176,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST4);
     }
 
+    public function getToken()
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
+
+    public function getService()
+    {
+        return $this->getAttribute(self::SERVICE);
+    }
+
+    public function getExpiryMonth()
+    {
+        return $this->getAttribute(self::EXPIRY_MONTH);
+    }
+
+    public function getExpiryYear()
+    {
+        return $this->getAttribute(self::EXPIRY_YEAR);
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);

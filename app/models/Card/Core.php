@@ -21,8 +21,21 @@ class Core extends Base\Core
 
         $this->fillNetworkDetails($card, $input);
 
+        $card->saveOrFail();
+
         return $card;
     }
+
+    public function edit($card, $input)
+    {
+        $card->edit($input);
+
+        $this->card = $card;
+
+        $card->saveOrFail();
+
+        return $card;
+    }    
 
     public function getCard()
     {
@@ -33,7 +46,23 @@ class Core extends Base\Core
     {
         Card\Entity::modifyNumber($input);
 
-        $card = $this->create($input, $merchant);
+        $card = null;
+        if (isset($input['token']))
+        {
+            $card = $this->findExistingCards($input, $merchant);
+        }
+
+        if ($card === null)
+        {
+            $card = $this->create($input, $merchant);
+        }
+        else
+        {
+
+            $editInput = array_diff($input, $card->toArray());
+
+            $card = $this->edit($card, $editInput);
+        }
 
         return array_merge(
             $card->toArray(),
@@ -89,8 +118,6 @@ class Core extends Base\Core
         }
 
         $this->checkCvvLength($card, $input);
-
-        $card->saveOrFail();
     }
 
     protected function checkCvvLength($card, $input)
@@ -111,5 +138,26 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE,
                 'cvv');
         }
+    }
+
+    protected function findExistingCards($input, $merchant)
+    {
+        $params = array(
+            Card\Entity::MERCHANT_ID     => $merchant->getId(),
+            Card\Entity::EXPIRY_MONTH    => $input['expiry_month'],
+            Card\Entity::EXPIRY_YEAR     => $input['expiry_year'],
+            Card\Entity::TOKEN           => $input['token'],
+            Card\Entity::SERVICE         => $input['service'],
+        );
+
+        $cards = (new Card\Repository)->getByParams($params);
+
+        if ($cards->count() > 0)
+        {
+            assert($cards->count() === 1);
+            return $cards[0];
+        } 
+
+        return null;
     }
 }

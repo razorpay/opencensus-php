@@ -18,6 +18,11 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::NETWORK         => 'sometimes|alpha_space',
         Payment\Entity::STATUS  => 'sometimes|string',
+        Entity::EXPIRY_MONTH    => 'sometimes|integer|digits_between:1,2|max:12|min:1',
+        ENTITY::EXPIRY_YEAR     => 'sometimes|integer|digits:4|non_past_year',
+        ENTITY::TOKEN           => 'sometimes|alphanum',
+        ENTITY::SERVICE         => 'required_with:token|in:tokenex'
+
     );
 
     public function retrieveIinDetails($iin)
@@ -31,6 +36,20 @@ class Repository extends Base\Repository
         // retrieve iin details
         //
         return Card\IIN\Entity::find($iin);
+    }
+
+    public function getByParams($params)
+    {
+        $repo = $this->repo;
+
+        $query = (new $repo)->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query = $query->where($key, '=', $value);
+        }
+
+        return $query->get();
     }
 
     protected function addQueryParamStatus($query, $params)

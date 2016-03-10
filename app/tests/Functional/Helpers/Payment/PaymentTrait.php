@@ -1129,7 +1129,6 @@ trait PaymentTrait
         $this->app->instance('card.tokenex', $tokenex);
 
         $tokenex->shouldReceive('sendRequest')
-              ->once()
               ->with(Mockery::type('string'), 'POST', Mockery::type('array'))
               ->andReturnUsing(function ($route, $method, $input)
                     {

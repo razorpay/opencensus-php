@@ -9,6 +9,8 @@ class EmiPaymentTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $emiPlan;
+
     public function setUp()
     {
         parent::setUp();
@@ -21,12 +23,15 @@ class EmiPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        
         $this->mockTokenex();
     }
 
     public function testEmiPaymentCreate()
     {
-        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $emiPlan = $this->emiPlan;
+
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;
@@ -45,9 +50,17 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    public function testMultipleEmiPayments()
+    {
+        $this->testEmiPaymentCreate();
+
+        $this->testEmiPaymentCreate();        
+    }
+
     public function testEmiPaymentEmiNotSupported()
     {
-        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $emiPlan = $this->emiPlan;
+        
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;
@@ -61,4 +74,4 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals($content['error']['http_status_code'], 400);
         $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD');
     }
-}
+}   
