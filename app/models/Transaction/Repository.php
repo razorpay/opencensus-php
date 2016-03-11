@@ -47,9 +47,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchTransactionsForTransactionReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to)
     {
-        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($from, $to, $merchantId);
+        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
         $setlIds = $setls->fetch(Settlement\Entity::ID)->all();
 

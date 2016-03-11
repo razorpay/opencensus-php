@@ -55,4 +55,17 @@ class Repository extends Base\Repository
 
         $query->where(Entity::PAYMENT_ID, '=', $paymentId);
     }
+
+    public function fetchEntitiesForReport($merchantId, $from, $to)
+    {
+        return $this->fetchBetweenTimestamp($merchantId, $from, $to);
+    }
+
+    public function fetchBetweenTimestamp($merchantId, $from, $to)
+    {
+        return $this->newQuery()
+                    ->betweenTime($from, $to)
+                    ->merchantId($merchantId)
+                    ->get();
+    }
 }

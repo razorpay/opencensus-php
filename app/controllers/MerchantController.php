@@ -407,6 +407,13 @@ class MerchantController extends BaseController
         return ApiResponse::generateResponse($data);
     }
 
+    public function getPublicEntityReport($entity)
+    {
+        $input = Input::all();
+
+        return (new Base\Report)->getReport($input, $entity);
+    }
+
     /**
      * Sends an email to every merchant
      * with all transactions from yesterday

@@ -61,6 +61,12 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CREATED_AT);
 
+    protected $amounts = array(
+        self::AMOUNT,
+        self::FEES,
+        self::SERVICE_TAX,
+    );
+
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');

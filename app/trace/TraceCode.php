@@ -41,6 +41,7 @@ class TraceCode
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
+
     /*
      * Gateway component error messages
      */
@@ -115,6 +116,7 @@ class TraceCode
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
+    const ERROR_INVALID_ARGUMENT                    = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';

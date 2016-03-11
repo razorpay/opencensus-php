@@ -43,4 +43,11 @@ class Entity extends \Models\Base\PublicEntity
     {
         $this->attributes['refund_id'] = $refundId;
     }
+
+    public function getDateInFormatDMY($attribute)
+    {
+        $value = $this->getAttribute($attribute);
+
+        return date('d/m/y', $value);
+    }
 }

@@ -781,6 +781,13 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function toArrayReport()
+    {
+        $data = $this->toArrayPublic();
+
+        $data['notes'] = $this->getNotesJson();
+    }
+
 // --------------- Relation to other entities ----------------------------------
 
     public function card()

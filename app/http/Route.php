@@ -180,6 +180,7 @@ final class Route
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
         'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
+        'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
     );
 
     public static $public = array(
@@ -349,6 +350,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'merchant_fetch_balance',
+        'reports_public_entity',
         'merchant_edit_config',
         'account_fetch_balance',
         'account_fetch_config',

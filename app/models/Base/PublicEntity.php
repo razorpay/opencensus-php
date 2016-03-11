@@ -52,6 +52,37 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    public function toArrayReport()
+    {
+        $array = $this->toArrayPublic();
+
+        unset($array[self::ENTITY]);
+
+        if (isset($this->amounts))
+        {
+            foreach ($this->amounts as $key => $value)
+            {
+                if (isset($array[$key]))
+                {
+                    $array[$key] = $array[$value] / 100;
+                }
+            }
+        }
+
+        $dates = $this->getDates();
+
+        foreach ($dates as $key => $value)
+        {
+            if ((isset($array[$key])) and
+                ($value !== null))
+            {
+                $array[$key] = $this->getDateInFormatDMY($value);
+            }
+        }
+
+        return $array;
+    }
+
     /**
      * Create a new Eloquent Collection instance.
      *

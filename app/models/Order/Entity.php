@@ -53,6 +53,10 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CREATED_AT);
 
+    protected $amounts = array(
+        self::AMOUNT
+    );
+
     protected static $sign = 'order';
 
     protected static $delimiter = '_';

@@ -17,15 +17,6 @@ class Repository extends Base\Repository
         Entity::STATUS          => 'sometimes|in:created,processed,failed',
     );
 
-    public function fetchBetweenTimestamp($from, $to, $merchantId)
-    {
-        $repo = $this->repo;
-
-        return $repo::betweenTime($from, $to)
-                    ->merchantId($merchantId)
-                    ->get();
-    }
-
     public function getSettlementWithFeesAsNullOrZero()
     {
         $repo = $this->repo;
