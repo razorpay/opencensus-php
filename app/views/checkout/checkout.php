@@ -14,7 +14,6 @@ $fonts = 'https://cdn.razorpay.com/lato2';
     <style>@font-face{font-family:'lato';src:url("<?= $fonts ?>.eot?#iefix") format('embedded-opentype'),url("<?= $fonts ?>.woff2") format('woff2'),url("<?= $fonts ?>.woff") format('woff'),url("<?= $fonts ?>.ttf") format('truetype'),url("<?= $fonts ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
  </head>
   <body>
-    <div id="loading"><div></div><div></div><div></div></div>
 <?php
 if (isset($error))
 {
