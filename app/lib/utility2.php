@@ -68,3 +68,33 @@ if (! function_exists('implode_assoc_array'))
         return $str;
     }
 }
+
+if (! function_exists('utf8_json_encode'))
+{
+    function utf8_array_encode(array $data)
+    {
+        $utf8Data = [];
+        foreach ($data as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $utf8Data[utf8_encode($key)] = utf8_array_encode($value);
+            }
+            else
+            {
+
+                $utf8Data[utf8_encode($key)] = utf8_encode($value);
+            }
+        }
+
+        return $utf8Data;
+    }
+    function utf8_json_encode(array $data, $depth = 512)
+    {
+        $utf8Data = utf8_array_encode($data);
+        $jsonOptions = JSON_UNESCAPED_UNICODE or JSON_FORCE_OBJECT;
+
+        // We can use JSON_UNESCAPED_UNICODE because our schema allows utf-8
+        return json_encode($utf8Data, $jsonOptions, $depth);
+    }
+}

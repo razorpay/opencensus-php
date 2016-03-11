@@ -22,7 +22,7 @@ You can safely close this tab
 // during tests for extracting callback data from js
 
 // Callback data //
-var data = {{json_encode($data);}};
+var data = {{utf8_json_encode($data);}};
 // Callback data //
 
 var s = 'razorpay_payment_id' in data;
