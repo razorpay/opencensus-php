@@ -84,6 +84,9 @@ class Entity extends Base\PublicEntity
     protected $appends = array(
         self::NETWORK_CODE);
 
+    protected $defaults = array(
+        self::INTERNATIONAL => null);
+
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
@@ -222,6 +225,18 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
+    public function getInternationalAttribute()
+    {
+        $intl = $this->attributes[self::INTERNATIONAL];
+
+        if ($intl === null)
+        {
+            return;
+        }
+
+        return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
     public function isUnsupported()
     {
         $network = Card\Network::getCode($this->getNetwork());
@@ -231,7 +246,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function getFormatted()

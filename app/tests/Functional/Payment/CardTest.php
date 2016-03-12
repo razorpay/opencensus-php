@@ -56,7 +56,7 @@ class CardTest extends TestCase
                 'iin' => substr(str_replace(' ' , '', $number), 0, 6),
                 'last4' => substr($number, -4, 4),
                 'network' => $cardData[1],
-                'international' => NULL,
+                // 'international' => null,
 //                'type' => 'unknown',
             ];
 

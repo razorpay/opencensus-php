@@ -145,6 +145,8 @@ trait Authorize
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
+        $this->validateInternationalAllowed($payment);
+
         //
         // Call gateway input
         //
@@ -158,6 +160,24 @@ trait Authorize
         $gatewayInput = [];
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+    }
+
+    protected function validateInternationalAllowed($payment)
+    {
+        if ($payment->getMethod() !== Method::CARD)
+        {
+            return;
+        }
+
+        $card = $payment->card;
+        $merchant = $payment->merchant;
+
+        if (($card->isInternational() === true) and
+            ($merchant->isInternational() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
+        }
     }
 
     protected function runAuthorizeFailedTransaction($payment)

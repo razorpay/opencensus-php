@@ -89,6 +89,10 @@ class Core extends Base\Core
             }
 
             $card->fill($arr);
+
+            $intl = $details->isInternational();
+
+            $card->setInternational($intl);
         }
         else
         {
