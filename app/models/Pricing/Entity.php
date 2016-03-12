@@ -80,6 +80,12 @@ class Entity extends Base\PublicEntity
                 $input[$key] = $value;
             }
         }
+
+        if ((isset($input[self::AMOUNT_RANGE_ACTIVE])) and
+            ($input[self::AMOUNT_RANGE_ACTIVE] === false))
+        {
+            $input[self::AMOUNT_RANGE_ACTIVE] = '0';
+        }
     }
 
     public function build(array $input = array())
