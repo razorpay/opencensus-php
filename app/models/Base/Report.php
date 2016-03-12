@@ -30,7 +30,7 @@ class Report extends Service
 
         list($from, $to) = $this->getTimestamps($input);
 
-        $repo = E::getPublicEntityRepository($entity);
+        $repo = E::getEntityRepository($entity);
 
         $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
 

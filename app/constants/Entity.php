@@ -125,7 +125,6 @@ class Entity
         self::PAYMENT,
         self::REFUND,
         self::ORDER,
-        self::TRANSACTION,
     );
 
     public static $namespace = array(
