@@ -8,6 +8,12 @@ use SplTempFileObject;
 
 class AppResponse
 {
+    /**
+     * [security] sensitive
+     * https://github.com/razorpay/dashboard/issues/103
+     */
+    const EXCEL_TRIGGER_CHARS = ['=', '-', '+'];
+
     public static function jsonResponse($errors, $data = null)
     {
         if (empty($errors))
@@ -48,9 +54,19 @@ class AppResponse
 
         foreach ($array as &$value)
         {
+            // This will return "" for all non-string values
+            // like NULL, false etc
+            $firstCharacter = substr(trim($value), 0, 1);
+
             if (is_array($value))
             {
                 $value = '"'.json_encode($value);
+            }
+            // Escape the value if it starts with a trigger
+            // character as per EXCEL.
+            else if (in_array($firstCharacter, self::EXCEL_TRIGGER_CHARS))
+            {
+                $value = "'" . $value;
             }
         }
 
