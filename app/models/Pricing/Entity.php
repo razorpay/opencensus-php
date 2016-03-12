@@ -60,6 +60,9 @@ class Entity extends Base\PublicEntity
     protected static $generators = array('plan_id');
 
     protected $defaults = array(
+        self::PAYMENT_METHOD_TYPE   => null,
+        self::PAYMENT_NETWORK       => null,
+        self::PAYMENT_ISSUER        => null,
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
         self::AMOUNT_RANGE_ACTIVE   => false,
@@ -70,13 +73,11 @@ class Entity extends Base\PublicEntity
 
     protected function modifyInputProvideDefaults(& $input)
     {
-        $nullables = array(self::PAYMENT_METHOD_TYPE, self::PAYMENT_NETWORK, self::PAYMENT_ISSUER);
-
-        foreach ($nullables as $key)
+        foreach ($this->defaults as $key => $value)
         {
             if (empty($input[$key]))
             {
-                $input[$key] = null;
+                $input[$key] = $value;
             }
         }
     }
