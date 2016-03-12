@@ -35,5 +35,4 @@ class Repository extends Base\Repository
                     ->orWhereNull(Entity::SERVICE_TAX)
                     ->get();
     }
-
 }

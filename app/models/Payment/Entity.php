@@ -161,6 +161,10 @@ class Entity extends Base\PublicEntity
         self::FEE               => null,
     );
 
+    protected $amounts = array(
+        self::FEE,
+        self::SERVICE_TAX);
+
 // --------------------- Generators --------------------------------------------
 
 // --------------------- Generators Ends ---------------------------------------
@@ -783,9 +787,11 @@ class Entity extends Base\PublicEntity
 
     public function toArrayReport()
     {
-        $data = $this->toArrayPublic();
+        $data = parent::toArrayReport();
 
         $data['notes'] = $this->getNotesJson();
+
+        return $data;
     }
 
 // --------------- Relation to other entities ----------------------------------

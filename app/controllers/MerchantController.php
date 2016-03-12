@@ -411,7 +411,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        return (new Base\Report)->getReport($input, $entity);
+        return (new Models\Base\Report)->getReport($input, $entity);
     }
 
     /**

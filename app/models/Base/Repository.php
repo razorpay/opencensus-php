@@ -60,4 +60,17 @@ class Repository extends \Razorpay\Spine\Repository
 
         return ($this->db->transactionLevel() > 0);
     }
+
+    public function fetchEntitiesForReport($merchantId, $from, $to)
+    {
+        return $this->fetchBetweenTimestamp($merchantId, $from, $to);
+    }
+
+    public function fetchBetweenTimestamp($merchantId, $from, $to)
+    {
+        return $this->newQuery()
+                    ->betweenTime($from, $to)
+                    ->merchantId($merchantId)
+                    ->get();
+    }
 }

@@ -4,6 +4,8 @@ namespace Constants;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Gateway;
+use Models;
 use Trace;
 use Trace\TraceCode;
 
@@ -122,6 +124,8 @@ class Entity
     public static $public = array(
         self::PAYMENT,
         self::REFUND,
+        self::ORDER,
+        self::TRANSACTION,
     );
 
     public static $namespace = array(
@@ -131,13 +135,11 @@ class Entity
         self::HDFC              => Gateway\Hdfc::class,
         self::ORDER             => Models\Order::class,
         self::PAYTM             => Gateway\Paytm::class,
-        self::KOTAK             => Gateway\Kotak::class,
         self::REFUND            => Models\Payment\Refund::class,
         self::WALLET            => Gateway\Wallet\Base::class,
         self::BALANCE           => Models\Merchant\Balance::class,
         self::METHODS           => Models\Merchant\Methods::class,
         self::PRICING           => Models\Pricing::class,
-        self::SBIEPAY           => Gateway\Sbiepay::class,
         self::WEBHOOK           => Models\Merchant\Webhook::class,
         self::BILLDESK          => Gateway\Billdesk::class,
         self::EMI_PLAN          => Models\Emi::class,
@@ -146,32 +148,38 @@ class Entity
         self::AXIS_MIGS         => Gateway\AxisMigs::class,
         self::AXIS_GENIUS       => Gateway\AxisGenius::class,
         self::BANK_ACCOUNT      => Models\Merchant\BankAccount::class,
+        self::NETBANKING_HDFC   => Models\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,
+        self::NETBANKING_KOTAK  => Gateway\Netbanking\Kotak::class,
     );
 
     public static function getEntityNamespace($entity)
     {
-        if (constant(__CLASS__.'::'.strtoupper($entity)) === null)
+        self::validateIsEntity($entity);
+
+        if (array_key_exists($entity, self::$namespace))
         {
-            return false;
+            return self::$namespace[$entity];
         }
 
-        return self::$namespace[$entity];
+        return 'Models\\' . ucfirst($entity);
     }
 
     public static function getPublicEntityNamespace($entity)
     {
-        if (isset(self::$public[$entity]) === false)
+        self::validateIsPublicEntity($entity);
+
+        if (array_key_exists($entity, self::$namespace))
         {
-            return false;
+            return $self::$namespace[$entity];
         }
 
-        return self::$namespace[$entity];
+        return 'Models\\' . ucfirst($entity);
     }
 
     public static function getEntityRepository($entity)
     {
-        $class = $this->getEntityNamespace($entity) . '\Repository';
+        $class = self::getEntityNamespace($entity) . '\Repository';
 
         if (class_exists($class) === false)
         {
@@ -189,14 +197,27 @@ class Entity
         return self::getEntityRepository($entity);
     }
 
-    public function validateIsPublicEntity($entity)
+    public static function validateIsEntity($entity)
     {
-        Trace::error(
-            TraceCode::ERROR_INVALID_ARGUMENT,
-            ['entity' => $entity]);
-
-        if (isset(self::$public[$entity]) === false)
+        if (constant(__CLASS__.'::'.strtoupper($entity)) === null)
         {
+            Trace::error(
+                TraceCode::ERROR_INVALID_ARGUMENT,
+                ['entity' => $entity]);
+
+            throw new Exception\RuntimeException(
+                'Not a valid entity');
+        }
+    }
+
+    public static function validateIsPublicEntity($entity)
+    {
+        if (in_array($entity, self::$public) === false)
+        {
+            Trace::error(
+                TraceCode::ERROR_INVALID_ARGUMENT,
+                ['entity' => $entity]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid input');
         }

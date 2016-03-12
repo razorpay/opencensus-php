@@ -60,23 +60,24 @@ class PublicEntity extends UniqueIdEntity
 
         if (isset($this->amounts))
         {
-            foreach ($this->amounts as $key => $value)
+
+            foreach ($this->amounts as $key)
             {
                 if (isset($array[$key]))
                 {
-                    $array[$key] = $array[$value] / 100;
+                    $array[$key] = $array[$key] / 100;
                 }
             }
         }
 
         $dates = $this->getDates();
 
-        foreach ($dates as $key => $value)
+        foreach ($dates as $key)
         {
             if ((isset($array[$key])) and
-                ($value !== null))
+                ($array[$key] !== null))
             {
-                $array[$key] = $this->getDateInFormatDMY($value);
+                $array[$key] = $this->getDateInFormatDMY($key);
             }
         }
 
@@ -247,5 +248,12 @@ class PublicEntity extends UniqueIdEntity
     public function getMerchantId()
     {
         return $this->getAttribute(static::MERCHANT_ID);
+    }
+
+    public function getDateInFormatDMY($attribute)
+    {
+        $value = $this->getAttribute($attribute);
+
+        return date('d/m/y', $value);
     }
 }

@@ -3,6 +3,7 @@
 namespace Models\Base;
 
 use Constants\Entity as E;
+use Carbon\Carbon;
 use EE\Exception;
 
 class Report extends Service
@@ -27,7 +28,7 @@ class Report extends Service
 
         $merchantId = $this->merchant->getId();
 
-        [$from, $to] = $this->getTimestamps($input);
+        list($from, $to) = $this->getTimestamps($input);
 
         $repo = E::getPublicEntityRepository($entity);
 
@@ -35,18 +36,16 @@ class Report extends Service
 
         date_default_timezone_set('Asia/Kolkata');
 
-        return $entities->toArrayReport();
-
         $this->trace->debug(
             'MISC_TRACE_CODE',
             [
+                'entity'        => $entity,
                 'from'          => $from,
                 'to'            => $to,
                 'merchantId'    => $merchantId
             ]);
 
-
-        return $reportTxns;
+        return $entities->toArrayReport();
     }
 
     protected function getTimestamps($input)

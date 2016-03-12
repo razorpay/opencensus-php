@@ -117,7 +117,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function entity()
+    public function source()
     {
         $type = $this->getAttribute(self::TYPE);
 
@@ -410,7 +410,7 @@ class Entity extends Base\PublicEntity
 
         if ($txn->isTypePayment())
         {
-            $payment = $txn->entity;
+            $payment = $txn->source;
 
             $reportTxn['description'] = $payment->getDescription();
             $reportTxn['notes'] = $payment->getNotesJson();

@@ -71,4 +71,13 @@ class PublicCollection extends Collection
 
         }, $this->items);
     }
+
+    protected function itemsToArrayReport()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayReport();
+
+        }, $this->items);
+    }
 }

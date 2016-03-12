@@ -546,6 +546,18 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetchReport($entity, $content, $id = '10000000000000')
+    {
+        $request = array(
+            'url' => '/reports/'.$entity,
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;

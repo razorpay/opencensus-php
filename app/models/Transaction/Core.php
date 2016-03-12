@@ -92,7 +92,7 @@ class Core extends Base\Core
 
         $txn->fill($txnData);
 
-        $txn->entity()->associate($payment);
+        $txn->source()->associate($payment);
         $txn->merchant()->associate($payment->merchant);
         $payment->transaction()->associate($txn);
     }
