@@ -47,7 +47,8 @@ trait AuthorizeFailed
         else
         {
             throw new Exception\LogicException(
-                'Should not have reached here');
+                'Should not have reached here',
+                ['payment' => $verify->input['payment']]);
         }
 
         return true;
