@@ -113,24 +113,37 @@ class FeeCalculator
         // Current Implementation
         // * Filter based on international
         // * Filter based on Network
+        // * If its amex, then stop
         // * Filter based on Card Type
         // * Filter based on AmountRange
         // * Choose based on Amount
 
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
-        $filters = array(
+        $filters1 = array(
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
+        );
+
+        $filters2 = array(
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE,   true,           true,   false   ],
         );
 
-        foreach ($filters as $filter)
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        if ($network === Card\Network::AMEX)
         {
-            $rules = $this->filterRulesOnFieldByValue(
-                $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
+            if (count($rules) !== 1)
+            {
+                throw new Exception\LogicException(
+                    'Invalid rule count: ' . count($rules));
+            }
+
+            return $rules[0];
         }
+
+        $rules = $this->applyFiltersOnRules($rules, $filters2);
 
         $amount = $payment->getAmount();
 
@@ -141,16 +154,21 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment',
-                [
-                    'rules' => $rules->toArray(),
-                    'amount' => $amount,
-                    'network' => $network,
-                    'type', $cardType
-                ]);
+                'Failed to find a valid pricing rule for the payment');
         }
 
         return $rule;
+    }
+
+    protected function applyFiltersOnRules($rules, $filters)
+    {
+        foreach ($filters as $filter)
+        {
+            $rules = $this->filterRulesOnFieldByValue(
+                $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
+        }
+
+        return $rules;
     }
 
     /**
@@ -238,7 +256,9 @@ class FeeCalculator
         }
         else
         {
-            // Ideally should not reach this case, ever.
+            // Should not reach this case, ever.
+            throw new Exception\RuntimeException(
+                'Should not have reached here');
         }
 
         return $relevantRule;
