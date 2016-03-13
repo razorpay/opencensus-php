@@ -48,6 +48,18 @@ class Pricing extends Base
                         'international' => 0,
                     ),
                     array(
+                        'id' => '1nwo5YENadEFvf',
+                        'plan_id' => '1hDYlICobzOCYt',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_method' => 'card',
+                        'payment_method_type' => null,
+                        'payment_network' => null,
+                        'payment_issuer' => null,
+                        'percent_rate' => 200,
+                        'fixed_rate' => 0,
+                        'international' => 1,
+                    ),
+                    array(
                         'id' => '1zD0BXpeOyaqpB',
                         'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
