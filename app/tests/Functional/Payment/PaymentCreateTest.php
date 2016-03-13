@@ -11,7 +11,7 @@ class PaymentCreateTest extends TestCase
 
     public function setUp()
     {
-//        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
+        $this->testDataFilePath = __DIR__.'/helpers/PaymentCreateTestData.php';
 
         parent::setUp();
 
@@ -59,5 +59,26 @@ class PaymentCreateTest extends TestCase
         $this->markTestIncomplete();
         $payment = $this->doAuthPayment();
         $id = $payment['razorpay_payment_id'];
+    }
+
+    public function testInternationalPayment()
+    {
+        $this->fixtures->merchant->enableInternational();
+        $this->payment['card']['number'] = '4012010000000007';
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['international'], true);
+    }
+
+    public function testIntlPaymentWhenNotAllowed()
+    {
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function ()
+            {
+                $this->payment['card']['number'] = '4012010000000007';
+                $this->doAuthPayment($this->payment);
+            });
     }
 }
