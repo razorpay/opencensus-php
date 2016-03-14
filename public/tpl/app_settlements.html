@@ -35,7 +35,7 @@
             <th>Created At</th>
             <th>Fees</th>
             <th>Service Tax</th>
-            <!-- <th>Status</th> -->
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -45,11 +45,11 @@
             <td>{{row.created_at*1000 | date:'medium'}}</td>
             <td>{{row.fees/100 | rupee:"INR " }}</td>
             <td>{{row.service_tax/100 | rupee:"INR " }}</td>
-            <!-- <td>
+            <td>
               <span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">
-                {{row.status | titlecase}}
+                Created<!-- {{row.status | titlecase}} -->
               </span>
-            </td> -->
+            </td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">
