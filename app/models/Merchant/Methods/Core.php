@@ -69,7 +69,7 @@ class Core extends Base\Core
         }
 
         if (($merchant->isInternational()) and
-            ($plan->hasInternationalPricing()))
+            ($plan->hasInternationalPricing() === false))
         {
                 throw new Exception\BadRequestValidationFailureException(
                     'International payment enabled, but pricing not present.');
