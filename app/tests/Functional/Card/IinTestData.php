@@ -79,7 +79,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 9,
+                'count' => 10,
                 'items' => [
                     [
                     ]
