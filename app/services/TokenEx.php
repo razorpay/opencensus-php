@@ -55,7 +55,7 @@ class TokenEx
             self::TOKEN_SCHEME  => (int)$this->tokenScheme 
         );
 
-        $response = $this->sendRequest('REST/Tokenize', 'POST', $input);
+        $response = $this->sendRequest('REST/Tokenize', 'post', $input);
 
         return $response[self::TOKEN];
     }
@@ -68,7 +68,7 @@ class TokenEx
             self::TOKEN         => $token
         );
 
-        $response = $this->sendRequest('REST/ValidateToken', 'POST', $input);
+        $response = $this->sendRequest('REST/ValidateToken', 'post', $input);
 
         return $response;
     }
@@ -81,7 +81,7 @@ class TokenEx
             self::TOKEN         => $token,
         );
 
-        $response = $this->sendRequest('REST/Detokenize', 'POST', $input);
+        $response = $this->sendRequest('REST/Detokenize', 'post', $input);
 
         return $response;
     }
@@ -94,7 +94,7 @@ class TokenEx
             self::TOKEN         => $token,
         );
 
-        $response = $this->sendRequest('REST/DeleteToken', 'POST', $input);
+        $response = $this->sendRequest('REST/DeleteToken', 'post', $input);
 
         return $response;        
     }
@@ -109,11 +109,43 @@ class TokenEx
         $headers['Content-Type'] = 'application/json';
         $headers['Accept'] = 'application/json';
 
-        $response = \Requests::request($url, $headers, json_encode($data), $method, array());
+        $options = array(
+            'proxy' => 'https://splunk.razorpay.com:8888'
+        );
+
+        $request = array(
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'options' => $options,
+            'content' => $data
+        );
+
+        $response = $this->sendTokenExRequest($request);
 
         $this->checkErrors(json_decode($response->body, true));
 
         return json_decode($response->body, true);
+    }
+
+    protected function sendTokenExRequest($request)
+    {
+        $method = $request['method'];
+
+        try
+        {
+            $response = Requests::$method(
+                $request['url'],
+                $request['headers'],
+                json_encode($request['content']),
+                $request['options']);
+        }
+        catch(\Requests_Exception $e)
+        {
+            throw $e;
+        }
+
+        return $response;
     }
 
     protected function checkErrors($response)
