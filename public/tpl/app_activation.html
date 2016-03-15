@@ -80,18 +80,23 @@
         <div class="form-group">
           <label for="business_type" class="col-sm-3 control-label">Organisation Type</label>
           <div class="col-sm-8">
-              <select name="business_type" ng-model="data.2.business_type" class="form-control" required>
-                <option value="1">Proprietership</option>
-                <option value="2">Individual</option>
-                <option value="3">Partnership</option>
-                <option value="4">Private Limited</option>
-                <option value="5">Public Limited</option>
-                <option value="6">LLP</option>
-                <option value="7">NGO</option>
-                <option value="8">Educational Institutes</option>
-                <option value="9">Trust</option>
-                <option value="10">Society</option>
-              </select>
+            <alert type="warning" ng-show="data.2.business_type==2">
+              We may not be able to support individuals as of now. Get in touch with
+                <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+              for more details
+            </alert>
+            <select name="business_type" ng-model="data.2.business_type" class="form-control" required>
+              <option value="1">Proprietership</option>
+              <option value="2">Individual</option>
+              <option value="3">Partnership</option>
+              <option value="4">Private Limited</option>
+              <option value="5">Public Limited</option>
+              <option value="6">LLP</option>
+              <option value="7">NGO</option>
+              <option value="8">Educational Institutes</option>
+              <option value="9">Trust</option>
+              <option value="10">Society</option>
+            </select>
           </div>
         </div>
         <div class="form-group">
@@ -483,7 +488,7 @@
           <label for="business_proof" class="col-sm-3 control-label">Business Registration Proof <a href ng-click="isBusinessRegistrationHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
           <div class="col-sm-8">
             <span class="help-block" ng-show="isBusinessRegistrationHelpOpen">
-                Upload scan of following (not necessary for proprietership):
+                Upload scan of following:
               <li>Sales Tax/Service Tax or Shop Act Registration (Mandatory, if Partnership/Proprietership firm)</li>
               <li>Certificate of Incorporation (Mandatory if private limited)</li>
               <li>Trust/Society/NGO etc. registration proof</li>
