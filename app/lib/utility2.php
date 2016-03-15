@@ -87,10 +87,19 @@ if (! function_exists('utf8_json_encode'))
              * over the keys of the array as well, only if it's a string
              * Otherwise, numeric indexes become string indexes
              */
-            if (is_string($key))
+
+            /**
+             * The mb_detect_encoding check is to make sure that we are not
+             * re-encoding something that is already in utf8.
+             */
+
+            // Encode the key
+            if (is_string($key) and mb_detect_encoding($key) !== 'UTF-8')
             {
                 $key = utf8_encode($key);
             }
+
+            // Encode the value
             if (is_array($value))
             {
                 $utf8Data[$key] = utf8_array_encode($value);
