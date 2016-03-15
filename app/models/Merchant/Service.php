@@ -13,6 +13,8 @@ use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
 use Models\Merchant\Webhook;
+use Models\Admin\Newsletter;
+use Models\Settlement\Holidays;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -69,6 +71,13 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function editConfig(array $input)
+    {
+        $merchant = (new Merchant\Core)->editConfig($this->merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function addOrUpdateMerchantFeatures($id, array $input)
     {
         $merchant = $this->repo->findOrFailPublic($id);
@@ -92,9 +101,9 @@ class Service extends Base\Service
         return $features;
     }
 
+    // This is on internal auth
     public function fetch($id)
     {
-        // s(Merchant\Entity::all()->toArray());s($id);
         $merchant = $this->repo->findOrFailPublic($id);
 
         $methods = $merchant->methods;
@@ -109,8 +118,23 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
-    public function fetchBalance($merchantId)
+    // This is on proxy auth
+    public function fetchConfig()
     {
+        $merchantId = $this->merchant->getId();
+
+        $merchant = $this->repo->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
+
+        return $merchant->toArray();
+    }
+
+    public function fetchBalance($merchantId = null)
+    {
+        if(null === $merchantId)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
         //
@@ -169,13 +193,6 @@ class Service extends Base\Service
         $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
         return $keys->toArrayPublic();
-    }
-
-    public function retrieveById($id)
-    {
-        $merchant = $this->repo->findOrFailPublic($id);
-
-        return $merchant->toArrayPublic();
     }
 
     public function assignPricingPlan($id, $input)
@@ -382,6 +399,13 @@ class Service extends Base\Service
         // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
+    public function getFeeBearer()
+    {
+        $feeBearer = $this->merchant->isFeeBearerCustomer();
+
+        return $feeBearer;
+    }
+
     public function getPaymentMethods()
     {
         $data = array(
@@ -461,6 +485,13 @@ class Service extends Base\Service
         return $file;
     }
 
+    public function getCheckoutPreferences()
+    {
+        $merchant = $this->merchant;
+
+        return (new Checkout)->getPreferences($merchant, $this->mode);
+    }
+
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since
@@ -511,6 +542,9 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
         $filter = [];
 
         // In test, none of the merchants are activated
@@ -574,5 +608,94 @@ class Service extends Base\Service
             $message->to($data['email'], $data['name'])
                 ->subject($subject);
         });
+    }
+
+    public function notifyMerchantsHoliday($input)
+    {
+        if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+        {
+            return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+        }
+
+        if ($input['test'] === 'true')
+        {
+            $response = $this->sendTestHolidayNotificationMail($input);
+        }
+        else
+        {
+            $response = $this->sendHolidayNotificationMail($input);
+        }
+
+
+        // Log just the result of the settlement reports
+        $this->trace->info(
+            TraceCode::MERCHANT_NOTIFY_HOLIDAY,
+            $response
+        );
+
+        return $response;
+    }
+
+    protected function sendHolidayNotificationMail($input)
+    {
+        $msg = $this->getHolidayNotificationMsg();
+
+        if (empty($errors))
+        {
+            $mailer = new Newsletter(
+                $input['lists'],
+                'Notification of Bank Holiday',
+                $msg,
+                'newsletter'
+                );
+
+            $mailer->setMailingListName('bank-holiday-notification');
+
+            if ($input['test_list_add'] === 'true')
+            {
+                $mailer->setTestListMembersAdd();
+            }
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
+
+    protected function sendTestHolidayNotificationMail($input)
+    {
+        $msg = $this->getHolidayNotificationMsg();
+
+        if (empty($errors))
+        {
+            $mailer = new Newsletter(
+                $input['lists'],
+                'Notification of Bank Holiday',
+                $msg,
+                'newsletter',
+                true
+                );
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
+
+    protected function getHolidayNotificationMsg()
+    {
+        $date = Carbon::tomorrow('Asia/Kolkata')->toFormattedDateString();
+
+        $msg  = <<<EOT
+<b>As $date is a bank holiday, settlements will not be processed tomorrow.</b>
+Settlements expected on this date will be processed on the next working day.
+<p>Thank you for partnering with Razorpay.</p>
+EOT;
+
+        return $msg;
     }
 }

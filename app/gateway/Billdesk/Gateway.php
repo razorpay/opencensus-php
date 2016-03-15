@@ -46,7 +46,7 @@ class Gateway extends Base\Gateway
         // We should ensure once that AuthStatus is 0300 and
         // RefundStatus is null.
 
-        assert ($payment['RefundStatus'] === null);
+        // assert ($payment['RefStatus'] === null);
         assert ($payment['AuthStatus'] === AuthStatus::SUCCESS);
     }
 
@@ -111,8 +111,8 @@ class Gateway extends Base\Gateway
             // In that case, we need to let the refund go ahead.
 
             if (($content['ErrorCode'] === 'ERR_REF009') and
-                ($payment['RefundStatus'] === RefundStatus::CANCELLED) and
-                ((int) $payment['TotalRefundAmount'] * 100 === $input['payment']['amount']))
+                ($payment['RefStatus'] === RefundStatus::CANCELLED) and
+                ((int) $payment['RefAmount'] * 100 === $input['payment']['amount']))
             {
                 return;
             }
@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
-        $amountRefunded = (int) ($content['TotalRefundAmount'] * 100);
+        $amountRefunded = (int) ($content['RefAmount'] * 100);
 
         $status = VerifyResult::STATUS_MATCH;
 
@@ -210,8 +210,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (($verify->match === true) and
-            ($payment['received'] === false))
+        if ($payment['received'] === false)
         {
             unset(
                 $content['TxnAmount'],

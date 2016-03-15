@@ -10,6 +10,7 @@ return array(
 
     'channels'  =>  [
         'low'   =>  '#transactions',
-        'high'  =>  '#transactions_high'
+        'high'  =>  '#transactions_high',
+        'risky' =>  '#transactions_risky'
     ]
 );

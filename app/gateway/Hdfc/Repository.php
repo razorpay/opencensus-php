@@ -13,7 +13,7 @@ class Repository extends Base\Repository
     protected $entity = 'Hdfc';
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID              => 'sometimes|string|size:14',
+        Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
         'auth'                          => 'sometimes|string|max:6',
         'gateway_transaction_id'        => 'sometimes|numeric|digits:16',
         'ref'                           => 'sometimes|numeric|digits:12');

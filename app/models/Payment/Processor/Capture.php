@@ -24,6 +24,15 @@ trait Capture
     {
         $payment = $this->retrieve($id);
 
+        /*
+            If the fee bearer is customer then please to adjust input amount
+            with the available fee for the payment.
+         */
+        if ($this->merchant->isFeeBearerCustomer())
+        {
+            $input['amount'] = $input['amount'] + $payment->getFee();
+        }
+
         (new Payment\Validator)->captureValidate($payment, $input);
 
         return $this->capturePayment($payment, $input['amount']);
@@ -153,9 +162,13 @@ trait Capture
             $txn = $txnCore->updateOnCapture($payment);
         }
 
-        //set the service tax and fee values from txn
         $payment->setServiceTax($txn->getServiceTax());
-        $payment->setFee($txn->getFee());
+
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            //set and fee values from txn
+            $payment->setFee($txn->getFee());
+        }
 
         $txn->saveOrFail();
         $payment->saveOrFail();

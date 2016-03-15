@@ -159,7 +159,7 @@ class MerchantFeeTest extends TestCase
             'Models\Pricing\Repository',
             function($mock) use ($pricingPlan)
             {
-                $mock->shouldReceive("getPricingRulesForCard")
+                $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
             });
 
@@ -194,7 +194,7 @@ class MerchantFeeTest extends TestCase
             'Models\Pricing\Repository',
             function($mock) use ($pricingPlan)
             {
-                $mock->shouldReceive("getPricingRulesForCard")
+                $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
             });
 

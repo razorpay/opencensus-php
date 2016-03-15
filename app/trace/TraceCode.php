@@ -33,6 +33,7 @@ class TraceCode
     const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
     const PAYMENT_PRICING_RULE_NOT_FOUND            = 'PAYMENT_PRICING_RULE_NOT_FOUND';
     const PAYMENT_OTP_READ_FAILURE                  = 'PAYMENT_OTP_READ_FAILURE';
+    const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
 
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
@@ -120,6 +121,9 @@ class TraceCode
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+
+    const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
+    const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

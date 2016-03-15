@@ -96,27 +96,6 @@ class NetbankingTest extends TestCase
         $this->assertEquals($data['payment']['verified'], 1);
     }
 
-    public function testAtomVerifyFailedPayment()
-    {
-        $this->markTestIncomplete();
-
-        //
-        // Just after a payment, on verification atom sends false response
-        // irrespective of the result.
-        // Their doc states that we can only verify after 15 mins, whic is kinda weird.
-        // So, for testing purposes, we need to keep the mock as true.
-        //
-        $this->setMockGatewayTrue();
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $id = $payment['id'];
-
-        $payment = $this->verifyPayment($id);
-
-        $this->assertEquals($payment['verified'], true);
-    }
-
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

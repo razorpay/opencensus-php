@@ -15,4 +15,8 @@ class Repository extends Base\Repository
         Entity::STATUS 			=> 'sometimes|in:created,attempted,paid',
         Entity::AUTHORIZED 		=> 'sometimes|in:0,1',
     );
+
+    protected $entityFetchParamRules = array(
+        Entity::AUTHORIZED      => 'sometimes|in:0,1',
+    );
 }

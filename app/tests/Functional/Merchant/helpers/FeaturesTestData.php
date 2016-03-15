@@ -22,6 +22,28 @@ return [
         ],
     ],
 
+    'testAddInvalidFeatureToMerchant' => [
+        'request' => [
+            'content' => [
+                'features'    => 'invalid',
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testGetFeatureListForMerchant' => [
         'request' => [
             'content' => [

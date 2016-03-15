@@ -23,6 +23,9 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
+    const FEE_BEARER                = 'fee_bearer';
+    const BRAND_COLOR               = 'brand_color';
+    const RISK_RATING               = 'risk_rating';
 
     /**
      * Refers to methods relation and not a property;
@@ -37,20 +40,34 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    protected static $generators = array(
+        self::TRANSACTION_REPORT_EMAIL);
+
     protected $fillable = array(
         self::ID,
         self::NAME,
         self::EMAIL,
         self::WEBSITE,
         self::CATEGORY,
+        self::FEATURES,
         self::HOLD_FUNDS,
+        self::RISK_RATING,
+        self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
         self::FEATURES,
+        self::FEE_BEARER,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
+
+    // Requires PHP 5.6
+    const CONFIG_LIST = [
+        Entity::ID,
+        Entity::BRAND_COLOR,
+        Entity::TRANSACTION_REPORT_EMAIL
+    ];
 
     protected $public = array(
         self::ID,
@@ -65,16 +82,17 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::INTERNATIONAL,
+        self::FEE_BEARER,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::SETTLEMENT_SCHEDULE,
         self::METHODS,
+        self::BRAND_COLOR,
+        self::RISK_RATING,
         self::CREATED_AT,
-        self::UPDATED_AT);
-
-    protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL);
+        self::UPDATED_AT
+     );
 
     protected $defaults = array(
         self::LIVE                  => false,
@@ -83,7 +101,10 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED => true,
         self::HOLD_FUNDS            => false,
         self::SETTLEMENT_SCHEDULE   => 3,
-        self::FEATURES         => null,
+        self::FEATURES              => null,
+        self::FEE_BEARER            => FeeBearer::PLATFORM,
+        self::BRAND_COLOR           => null,
+        self::RISK_RATING           => 3,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -98,7 +119,12 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isFeeBearerCustomer()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
     }
 
     public function isLive()
@@ -145,6 +171,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'Models\Key\Entity');
+    }
+
+    public function pricing()
+    {
+        return $this->belongsTo(
+            'Models\Pricing\Entity', self::PRICING_PLAN_ID, 'plan_id');
     }
 
     public function payments()
@@ -194,6 +226,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
+    public function setBrandColorAttribute($brandColor)
+    {
+        $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
+    }
+
     public function getBillingLabelElseName()
     {
         $label = $this->getBillingLabel();
@@ -211,11 +248,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
-    public function getPricingPlan()
-    {
-        return (new PricingService)->getPricingPlanById($this->getPricingPlanId());
-    }
-
     public function getActivatedAttribute()
     {
         return (bool) $this->attributes[self::ACTIVATED];
@@ -224,6 +256,11 @@ class Entity extends Base\PublicEntity
     public function getLiveAttribute()
     {
         return (bool) $this->attributes[self::LIVE];
+    }
+
+    public function getFeeBearerAttribute()
+    {
+        return  FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
     }
 
     public function getInternationalAttribute()
@@ -290,6 +327,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEATURES);
     }
 
+    public function getBrandColor()
+    {
+        return $this->getAttribute(self::BRAND_COLOR);
+    }
+
     public function getTransactionReportEmailAttribute()
     {
         $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
@@ -341,6 +383,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setFeeBearerAttribute($bearer)
+    {
+        $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
     public function getSettlementSchedule()
     {
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
@@ -354,6 +401,22 @@ class Entity extends Base\PublicEntity
     public function isReceiptEmailsEnabled()
     {
         return $this->getReceiptEmailEnabledAttribute();
+    }
+
+    public function getRiskRating()
+    {
+        return $this->getAttribute(self::RISK_RATING);
+    }
+
+    public function getSubventionType()
+    {
+        // Move to subvention type if ever.
+        if ($this->isFeeBearerCustomer())
+        {
+            return FeeBearer::CUSTOMER;
+        }
+
+        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()
@@ -387,5 +450,13 @@ class Entity extends Base\PublicEntity
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
+    }
+
+    /** Overridden from the PublicEntity */
+    public function getDashboardEntityLink()
+    {
+        $id = $this->getId();
+
+        return "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
     }
 }

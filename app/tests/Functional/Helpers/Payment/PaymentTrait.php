@@ -44,7 +44,7 @@ trait PaymentTrait
      */
     protected $failPaymentOnBankPage = false;
 
-    protected function doAuthAndCapturePayment($payment = null)
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0)
     {
         if ($payment === null)
         {
@@ -53,9 +53,18 @@ trait PaymentTrait
 
         $paymentAuth = $this->doJsonpAuthPayment($payment);
 
-        $payment = $this->capturePayment(
-            $paymentAuth['razorpay_payment_id'],
-            $payment['amount']);
+        if ($amount !== 0)
+        {
+            $payment = $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $amount, $payment['amount']);
+        }
+        else
+        {
+            $payment = $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $payment['amount']);
+        }
 
         return $payment;
     }
@@ -86,9 +95,24 @@ trait PaymentTrait
         $id = $payment['razorpay_payment_id'];
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
         $func = $trace[1]['function'];
 
         return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    protected function createAndGetFeesForPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment['view'] = 'json';
+
+        $content = $this->getFeesForPayment($payment);
+
+        return $content;
     }
 
     protected function runTestForAuthPayment($payment = null)
@@ -277,7 +301,21 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function capturePayment($id, $amount)
+    protected function getFeesForPayment($payment)
+    {
+        $request = array(
+                'method'  => 'POST',
+                'url'     =>  '/payments/create/fees',
+                'content' =>  $payment);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function capturePayment($id, $amount, $verifyAmount = 0)
     {
         $request = array(
             'method' => 'POST',
@@ -290,7 +328,16 @@ trait PaymentTrait
         $this->assertArrayHasKey('amount', $content);
         $this->assertArrayHasKey('status', $content);
 
-        $this->assertEquals($content['amount'], $amount);
+        if ($verifyAmount !== 0)
+        {
+            $this->assertEquals($content['amount'], $verifyAmount);
+        }
+        else
+        {
+            $this->assertEquals($content['amount'], $amount);
+        }
+
+
         $this->assertEquals($content['status'], 'captured');
 
         return $content;

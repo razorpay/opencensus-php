@@ -15,6 +15,7 @@ use Models\Merchant\BankAccount;
 use Models\Terminal;
 use Models\Payment;
 use Models\Order;
+use Models\Pricing;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -90,6 +91,50 @@ class Processor
         $this->checkSignature($input, $payment);
 
         return $this->authorize($payment, $input);
+    }
+
+    public function processAndReturnFees(array & $input)
+    {
+        if (isset($input['method']) === false)
+        {
+            $input['method'] = Payment\Method::CARD;
+        }
+        else if (empty($input['method']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please provide appropriate payment method',
+                Payment\Entity::METHOD);
+        }
+
+        $payment = $this->createDummyPaymentEntity($input);
+
+        // Performing dummy set of processing for the same
+        $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+        $preCalculationOfFees = true;
+
+        list($fee, $serviceTax, $ruleKey) =
+                            (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
+
+        $data = array(
+            'originalAmount'    => $input['amount'],
+            'fees'              => $fee,
+            'razorpay_fee'      => $fee - $serviceTax,
+            'serviceTax'        => $serviceTax,
+            'amount'            => $input['amount'] + $fee
+        );
+
+        foreach ($data as $key => $value)
+        {
+            $data[$key] = $value / 100;
+        }
+
+        // Set new input amount and fees
+        $input['amount'] = $input['amount'] + $fee;
+
+        $input['fee'] = $fee;
+
+        return $data;
     }
 
     protected function checkSignature($input, $payment)
@@ -202,11 +247,16 @@ class Processor
      */
     public function cancel($id, $input)
     {
-        $payment = $this->retrieve($id);
+        return $this->repo->transaction(function() use ($id, $input)
+        {
+            $payment = $this->retrieve($id);
 
-        (new Payment\Validator)->cancelValidate($payment);
+            $this->repo->lockForUpdate($payment->getKey());
 
-        return $this->cancelPayment($payment, $input);
+            (new Payment\Validator)->cancelValidate($payment);
+
+            return $this->cancelPayment($payment, $input);
+        });
     }
 
     protected function cancelPayment($payment)
@@ -293,15 +343,94 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
-        $payment = (new Payment\Entity)->build($input);
+        $payment = new Payment\Entity;
 
         $payment->merchant()->associate($this->merchant);
+
+        $payment->build($input);
+
+        // Verify if the provided fee is within 5 p of our original fee
+        if ($this->merchant->isFeeBearerCustomer())
+        {
+            $this->verifyProvidedFee($payment, $input);
+        }
 
         $this->setOrderDetails($payment, $input);
 
         $this->payment = $payment;
 
         return $payment;
+    }
+
+    protected function createDummyPaymentEntity($input)
+    {
+        $payment = new Payment\Entity;
+
+        $payment->merchant()->associate($this->merchant);
+
+        $payment->build($input);
+
+        $this->payment = $payment;
+
+        return $payment;
+    }
+
+    protected function verifyProvidedFee($payment, $input)
+    {
+        // Get to original state and get back fee and tax
+        // modifying input to be from old state
+        $input['amount'] = $payment->getAmount() - $payment->getFee();
+
+        $feesArray = $this->processAndReturnFees($input);
+
+        $feeDifference = $input['fee'] - $payment->getFee();
+
+        // $serviceTax = (new Pricing\Fee)->calculateServiceTaxFromFees($payment->getFee());
+
+        // $serviceTaxDifference = $feesArray['serviceTax'] - $serviceTax;
+
+        if ($this->getModValue($feeDifference) > 5)
+            // or ($this->getModValue($serviceTaxDifference) > 5))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
+        }
+
+    }
+
+    protected function getModValue($val)
+    {
+        if ($val > 0)
+        {
+            return $val;
+        }
+        else
+        {
+            return (-1 * $val);
+        }
+    }
+
+    protected function fetchOrderFromInput($input)
+    {
+        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
+
+        $order = $this->orderRepo->find($orderId);
+
+        if ($order === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id provided not found.',
+                'order_id');
+        }
+
+        if ($order->getMerchantId() !== $this->merchant->id)
+        {
+            // Merchant mismatch
+            throw new Exception\BadRequestValidationFailureException(
+                'Order id not found');
+        }
+
+        return $order;
     }
 
     protected function setOrderDetails($payment, $input)
@@ -311,38 +440,20 @@ class Processor
             return;
         }
 
-        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
+        $this->order = $this->fetchOrderFromInput($input);
 
-        $this->order = $this->orderRepo->find($orderId);
+        $amount = $payment->getAmount();
 
-        if ($this->order === null)
+        // If the merchant is a tdr client, use the adjusted amount to
+        // match order amount.
+        if ($this->merchant->isFeeBearerCustomer())
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id provided not found.',
-                'order_id');
+            $amount = $amount - $payment->getFee();
         }
 
-        if ($this->order->getAmount() !== $payment->getAmount())
-        {
-            // Order and Payment amount mismatch
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
-        }
+        (new Order\Validator)->validateOrderAmount($this->order, $amount);
 
-        if ($this->order->getMerchantId() !== $payment->getMerchantId())
-        {
-            // Merchant mismatch
-            throw new Exception\BadRequestValidationFailureException(
-                'Order id not found');
-        }
-
-        if (($this->order->getStatus() === Order\Status::PAID) or
-            ($this->order->isAuthorized()))
-        {
-            // Order already paid for
-            throw new Exception\BadRequestValidationFailureException(
-                'Order already paid for');
-        }
+        (new Order\Validator)->validateOrderPaidFor($this->order);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
@@ -378,6 +489,7 @@ class Processor
                                     $id, $this->merchant->getKey());
 
         $card = $this->payment->card()->first();
+
         return $this->payment;
     }
 

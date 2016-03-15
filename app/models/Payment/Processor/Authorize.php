@@ -153,6 +153,13 @@ trait Authorize
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }
 
+    protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
+    {
+        $gatewayInput = [];
+
+        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+    }
+
     protected function runAuthorizeFailedTransaction($payment)
     {
         $this->repo->transaction(function() use ($payment)

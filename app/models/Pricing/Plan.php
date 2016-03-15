@@ -198,8 +198,14 @@ class Plan extends PublicCollection
         return false;
     }
 
-    public function hasMethodWallet()
+    public function hasInternationalPricing()
     {
-        return $this->hasMethod('wallet');
+        foreach ($this->items as $rule)
+        {
+            if ($rule->isInternational())
+            {
+                return true;
+            }
+        }
     }
 }

@@ -20,11 +20,13 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|max:255',
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::FEATURES                    => 'sometimes|max:255',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
+        Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
     );
 
     protected static $editCreditsRules = array(
@@ -35,10 +37,19 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
     );
 
+    protected static $editConfigRules = array(
+        Entity::BRAND_COLOR                 => 'sometimes|regex:([0-9a-fA-F]{6})',
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array'
+    );
+
+    protected static $editConfigValidators = [
+        'csv_email'
+    ];
+
     protected static $editValidators = [
         'csv_email', 'features'
     ];
-    
+
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)

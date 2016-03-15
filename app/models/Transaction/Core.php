@@ -100,6 +100,7 @@ class Core extends Base\Core
     protected function fillTxnFeesAndAmount($txn, $payment)
     {
         $credit = $fee = $serviceTax = 0;
+
         $pricingRuleId = null;
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
@@ -118,11 +119,21 @@ class Core extends Base\Core
 
             $txn->setGratis(true);
         }
+        //If the merchant is tdrClient
+        //use the fees and service tax from both
+        else if (isset($this->merchant) and ($this->merchant->isFeeBearerCustomer()))
+        {
+            $fee            = $payment->getFee();
+            $serviceTax     = (new Pricing\Fee)->calculateServiceTaxFromFees($fee);
+            $credit         = $amount - $fee;
+        }
         else
         {
             list($fee, $serviceTax, $pricingRuleId) = $this->calculateMerchantFees($payment);
             $credit = $amount - $fee;
         }
+
+
 
         $txn->setPricingRule($pricingRuleId);
         $txn->setAmount($amount);
@@ -408,24 +419,54 @@ class Core extends Base\Core
     {
         $currentDay = $timestamp->dayOfWeek;
 
-        $daysToSettle = $currentDay + $addDays;
+        $daysToSettlement = $currentDay + $addDays;
 
-        if (($daysToSettle % Carbon::DAYS_PER_WEEK === Carbon::SATURDAY) or
-            ($daysToSettle % Carbon::DAYS_PER_WEEK === Carbon::SUNDAY) or
-             ($daysToSettle > Carbon::DAYS_PER_WEEK))
+        $settleDay = $timestamp->copy()->addDays($addDays);
+
+        // For a working saturday
+        //  - No more days to be added
+
+        // For a non working saturday
+        //  - Add a two day weekend
+        if (($settleDay->dayOfWeek === Carbon::SATURDAY) and
+            ($this->isWorkingSaturday($settleDay) === false))
         {
-            // Adding a two day weekend
             $addDays += 2;
         }
-
-        // transaction was on saturday
-        // we added two day weekend
-        // remove one day for that
-        if ($currentDay === Carbon::SATURDAY)
+        // For settlement on sundays or beyond this week :
+        else if (($settleDay->dayOfWeek === Carbon::SUNDAY) or
+                 ($daysToSettlement > Carbon::DAYS_PER_WEEK))
         {
-            $addDays -= 1;
+            // If the transaction was done on a saturday or
+            // the saturday before the settle day was a working saturday
+            //   - Add a one day weekend.
+            if (($currentDay === Carbon::SATURDAY) or
+                ($this->isWorkingSaturday($settleDay->previous(Carbon::SATURDAY)) === true))
+            {
+                $addDays += 1;
+            }
+            // Else
+            //  - Add a two day weekend
+            else
+            {
+                $addDays += 2;
+            }
         }
 
         return $addDays;
+    }
+
+    /**
+     * Given a carbon day instance,
+     * returns whether that saturday was working or not
+     * Bank logic: Every non even week of the month is a working saturday
+     * @param Carbon\Carbon $day Any Carbon Day
+     * return boolean;
+     */
+    protected function isWorkingSaturday($day)
+    {
+        assert($day->dayOfWeek === Carbon::SATURDAY);
+
+        return ($day->weekOfMonth % 2 !== 0);
     }
 }

@@ -290,6 +290,7 @@ class ApiResponse
     protected static function isJsonpRoute($route)
     {
         $jsonpRoutes = array(
+            'merchant_checkout_preferences',
             'merchant_methods',
             'merchant_public_get_banks',
             'payment_cancel',

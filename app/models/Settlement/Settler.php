@@ -44,6 +44,8 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
+        $this->increaseMemoryAndTimeLimit();
+
         $this->checkTime();
 
         $this->input = $input;
@@ -54,7 +56,7 @@ class Settler
 
         $data = [];
 
-        if (Holidays::isTodayHoliday($this->mode))
+        if (Holidays::isThisDayHoliday($this->mode, 'today'))
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }
@@ -502,5 +504,11 @@ class Settler
             throw new Exception\BadRequestValidationFailureException(
                 'Please settlements before 6 pm everyday');
         }
+    }
+
+    protected function increaseMemoryAndTimeLimit()
+    {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
     }
 }

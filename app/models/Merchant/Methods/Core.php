@@ -36,29 +36,43 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    protected function checkPricing($merchant, $methods)
+    public function checkPricing($merchant, $methods = null)
     {
-        $pricingCore = new Pricing\Core;
+        if ($methods === null)
+        {
+            $methods = $this->getPaymentMethods($merchant);
+        }
+
+        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
+
+        $methodsToCheck = array(
+            Payment\Method::CARD,
+            Payment\Method::NETBANKING,
+            Payment\Method::WALLET,
+            Payment\Method::EMI);
+
+        foreach ($methodsToCheck as $method)
+        {
+            if (($methods->isMethodEnabled($method)) and
+                ($plan->hasMethod($method) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Pricing not present for method: ' . $method);
+            }
+        }
 
         if (($methods->isAmexEnabled()) and
-            ($pricingCore->checkPricingForAmex($merchant) === false))
+            ($plan->hasNetworkAmex() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT);
         }
 
-        if (($methods->isAnyWalletEnabled()) and
-            ($pricingCore->hasWalletPricing($merchant) === false))
+        if (($merchant->isInternational()) and
+            ($plan->hasInternationalPricing()))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Wallet pricing not present for merchant');
-        }
-
-        if (($methods->isEmiEnabled()) and
-            ($pricingCore->hasEmiPricing($merchant) === false))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Emi pricing not present for merchant');
+                throw new Exception\BadRequestValidationFailureException(
+                    'International payment enabled, but pricing not present.');
         }
     }
 

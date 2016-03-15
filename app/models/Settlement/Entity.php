@@ -58,7 +58,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
-        self::STATUS,
         self::CREATED_AT);
 
     public function merchant()
@@ -79,6 +78,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Transaction\Entity');
     }
 
+    public function isStatusCreated()
+    {
+        return ($this->getStatus() === Status::CREATED);
+    }
+
     public function setlTransactions()
     {
         return $this->hasMany('Models\Transaction\Entity');
@@ -97,6 +101,11 @@ class Entity extends Base\PublicEntity
     public function getFees()
     {
         return $this->getAttribute(self::FEES);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
     }
 
     public function getServiceTax()
