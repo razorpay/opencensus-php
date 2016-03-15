@@ -28,6 +28,8 @@ class Report extends Service
 
         $merchantId = $this->merchant->getId();
 
+        (new Validator)->validateInput('report', $input);
+
         list($from, $to) = $this->getTimestamps($input);
 
         $repo = E::getEntityRepository($entity);
