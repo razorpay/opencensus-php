@@ -492,11 +492,13 @@ trait Authorize
 
         if($save)
         {
-            $app = \App::getFacadeRoot();
-        
-            $cardInput[Card\Entity::TOKEN] = $app['card.tokenex']->tokenize($cardInput['number']);
-        
-            $cardInput[Card\Entity::SERVICE] = 'tokenex';            
+            $token = $this->getCardToken($cardInput['number']);
+
+            if (empty($token) === false) 
+            {
+                $cardInput[Card\Entity::TOKEN] = $token;
+                $cardInput[Card\Entity::SERVICE] = 'tokenex';            
+            }
         }
 
         $cardCore = new Card\Core();
@@ -516,6 +518,24 @@ trait Authorize
         (new Card\Repository)->saveOrFail($card);
 
         return $cardData;
+    }
+
+    protected function getCardToken($cardNumber)
+    {
+        $app = \App::getFacadeRoot();
+
+        try 
+        {
+            $token = $app['card.tokenex']->tokenize($cardNumber);            
+        } 
+        catch (Exception $e) 
+        {
+            $this->trace->info(
+                TraceCode::TOKENEX_REQUEST,
+                "failed to tokenize data");                   
+        }
+
+        return $token;
     }
 
     protected function verifyBankEnabled($payment)
