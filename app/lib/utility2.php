@@ -89,9 +89,17 @@ if (! function_exists('utf8_json_encode'))
 
         return $utf8Data;
     }
-    function utf8_json_encode(array $data, $depth = 512)
+    function utf8_json_encode($data, $depth = 512)
     {
-        $utf8Data = utf8_array_encode($data);
+        if (is_array($data))
+        {
+            $utf8Data = utf8_array_encode($data);
+        }
+        else
+        {
+            $utf8Data = utf8_encode($data);
+        }
+
         $jsonOptions = JSON_UNESCAPED_UNICODE or JSON_FORCE_OBJECT;
 
         // We can use JSON_UNESCAPED_UNICODE because our schema allows utf-8
