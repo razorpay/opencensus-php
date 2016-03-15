@@ -1130,7 +1130,7 @@ trait PaymentTrait
 
         $tokenex->shouldReceive('sendRequest')
               ->once()
-              ->with(Mockery::type('string'), 'POST', Mockery::type('array'))
+              ->with(Mockery::type('string'), 'post', Mockery::type('array'))
               ->andReturnUsing(function ($route, $method, $input)
                     {
                         $response = array(
