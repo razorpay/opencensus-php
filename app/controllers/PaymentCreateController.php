@@ -225,7 +225,7 @@ class PaymentCreateController extends BaseController
      */
     protected function returnCheckoutCallbackView($data)
     {
-        return View::make('gateway.callback')->with('data', $data);
+        return View::make('gateway.callback')->with('data', $data)->render();
     }
 
     /**
