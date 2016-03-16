@@ -164,7 +164,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
-        self::SAVE              => false
+        self::SAVE              => false,
         self::FEE               => null,
         self::SERVICE_TAX       => null,
     );
