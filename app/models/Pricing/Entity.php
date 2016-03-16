@@ -65,9 +65,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ISSUER        => null,
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
-        self::AMOUNT_RANGE_ACTIVE   => false,
-        self::AMOUNT_RANGE_MIN      => null,
-        self::AMOUNT_RANGE_MAX      => null);
+        self::AMOUNT_RANGE_ACTIVE   => '0');
 
     const ZERO_PRICING = '10ZeroPricingP';
 
@@ -81,10 +79,10 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if ((isset($input[self::AMOUNT_RANGE_ACTIVE])) and
-            ($input[self::AMOUNT_RANGE_ACTIVE] === false))
+        if ($input[self::AMOUNT_RANGE_ACTIVE] !== '1')
         {
-            $input[self::AMOUNT_RANGE_ACTIVE] = '0';
+            $input[self::AMOUNT_RANGE_MIN] = null;
+            $input[self::AMOUNT_RANGE_MAX] = null;
         }
     }
 

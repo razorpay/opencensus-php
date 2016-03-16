@@ -263,7 +263,8 @@ class Gateway extends Base\Gateway
                 //
 
                 if (($payment['vpc_TxnResponseCode'] === '0') or
-                    ($input['payment']['status'] !== 'failed'))
+                    (($input['payment']['status'] !== 'failed') and
+                     ($input['payment']['status'] !== 'created')))
                 {
                     // It's marked as success, in this case, if it's totally refunded,
                     // then that means billdesk refunded the payment on it's own end

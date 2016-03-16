@@ -15,6 +15,9 @@ use Models\Payment\Method;
 use Models\Payment\Gateway;
 use Models\Terminal;
 use Models\Terminal\Shared;
+use App;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class TerminalPicker
 {
@@ -42,6 +45,10 @@ class TerminalPicker
     public function __construct()
     {
         $this->repo = new Terminal\Repository;
+
+        $this->app = \App::getFacadeRoot();
+
+        // $this->app['config']->set('database.default', $this->mode);
     }
 
     public function selectTerminal($payment, $mode)
@@ -55,6 +62,8 @@ class TerminalPicker
         $this->validateCount($merchantTerminals, $payment->merchant);
 
         $terminals = $this->getTerminalsKeyedByGateway($merchantTerminals);
+
+        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS, [$terminals]);
 
         $terminal = $this->pickTerminal($terminals, $payment);
 
@@ -153,6 +162,8 @@ class TerminalPicker
 
         // First check if we have direct tie-up with this bank and fetch it's gateway.
         $terminal = $this->selectDirectNetbankingBankTerminal($terminals, $bank);
+
+        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS, ['netbanking_terminals_direct' => $terminal]);
 
         if ($terminal !== null)
         {
@@ -402,6 +413,9 @@ class TerminalPicker
         }
 
         $gateway = Gateway::$netbankingToGatewayMap[$bank];
+
+        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS,
+        ['bank_mapped_gateway' => $gateway, 'terminals' => $terminals, 'bank'=> $bank]);
 
         if (isset($terminals[$gateway]))
         {
