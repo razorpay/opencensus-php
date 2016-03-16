@@ -145,7 +145,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
-    protected static $modifiers = array(self::CONTACT, self::BANK);
+    protected static $modifiers = array(self::CONTACT, self::BANK, 'method_based_input');
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
@@ -159,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
         self::FEE               => null,
+        self::SERVICE_TAX       => null,
     );
 
     protected $amounts = array(
@@ -196,6 +197,29 @@ class Entity extends Base\PublicEntity
         }
 
         return $contact;
+    }
+
+    protected function modifyMethodBasedInput(& $input)
+    {
+        if (isset($input['method']) === false)
+        {
+            return;
+        }
+
+        if ($input['method'] !== Method::NETBANKING)
+        {
+            $input['bank'] = null;
+        }
+
+        if ($input['method'] !== Method::EMI)
+        {
+            $input['emi_duration'] = null;
+        }
+
+        if ($input['method'] !== Method::WALLET)
+        {
+            $input['wallet'] = null;
+        }
     }
 
     protected function modifyBank(& $input)

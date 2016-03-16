@@ -108,10 +108,6 @@ class Processor
 
         $payment = $this->createDummyPaymentEntity($input);
 
-        // While calculating the first time around
-        // let's pretend it's a normal transaction
-        // $payment->merchant->tdr_client = 0;
-
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
@@ -120,9 +116,6 @@ class Processor
         list($fee, $serviceTax, $ruleKey) =
                             (new Pricing\Fee)->calculateMerchantFees($payment, $preCalculationOfFees);
 
-        $input['fees'] = $fee;
-        $input['amount'] = $input['amount'] + $fee;
-
         $data = array(
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
@@ -130,6 +123,16 @@ class Processor
             'serviceTax'        => $serviceTax,
             'amount'            => $input['amount'] + $fee
         );
+
+        foreach ($data as $key => $value)
+        {
+            $data[$key] = $value / 100;
+        }
+
+        // Set new input amount and fees
+        $input['amount'] = $input['amount'] + $fee;
+
+        $input['fee'] = $fee;
 
         return $data;
     }
@@ -380,14 +383,14 @@ class Processor
 
         $feesArray = $this->processAndReturnFees($input);
 
-        $feeDifference = $feesArray['fees'] - $payment->getFee();
+        $feeDifference = $input['fee'] - $payment->getFee();
 
-        $serviceTax = (new Pricing\Fee)->calculateServiceTaxFromFees($payment->getFee());
+        // $serviceTax = (new Pricing\Fee)->calculateServiceTaxFromFees($payment->getFee());
 
-        $serviceTaxDifference = $feesArray['serviceTax'] - $serviceTax;
+        // $serviceTaxDifference = $feesArray['serviceTax'] - $serviceTax;
 
-        if (($this->getModValue($feeDifference) > 5)
-            or ($this->getModValue($serviceTaxDifference) > 5))
+        if ($this->getModValue($feeDifference) > 5)
+            // or ($this->getModValue($serviceTaxDifference) > 5))
         {
             throw new Exception\BadRequestValidationFailureException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);

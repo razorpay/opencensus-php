@@ -223,6 +223,13 @@ class Gateway extends Base\Gateway
         return 'OSTEST';
     }
 
+    protected function getLiveSecret()
+    {
+        assert ($this->mode === Mode::LIVE);
+
+        return $this->config['live_hash_secret'];
+    }
+
     protected function getHashOfString($str)
     {
         $str = $str . '|' . $this->getSecret();

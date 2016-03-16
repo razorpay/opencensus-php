@@ -143,7 +143,8 @@ class Gateway
         self::PAYTM,
         self::HDFC,
         self::AMEX,
-        self::NETBANKING_HDFC);
+        self::NETBANKING_HDFC,
+        self::WALLET_PAYZAPP);
 
     /**
      * Card gateways which support international payments

@@ -1,6 +1,7 @@
 <?php
 $fonts = 'https://cdn.razorpay.com/lato2';
 $checkout = 'https://checkout.razorpay.com';
+header('Cache-Control: no-transform, no-store, no-cache, must-revalidate');
 ?>
 <!DOCTYPE html>
 <html dir="ltr">

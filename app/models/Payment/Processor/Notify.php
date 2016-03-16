@@ -29,9 +29,10 @@ class Notify
 
     /**
      * This is the minimum risk rating for a merchant that prompts a
-     * post on the RISKY channel. The scale goes from 1-5
+     * post on the RISKY channel. The scale goes from 1-5. This is
+     * decided by our risk team.
      */
-    const MIN_HIGH_RISK_RATING = 4;
+    const MIN_HIGH_RISK_RATING = 3;
 
     /**
      * When are receipt emails sent to the customer

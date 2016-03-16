@@ -33,7 +33,9 @@ class TraceCode
     const PAYMENT_WEBHOOK                           = 'PAYMENT_WEBHOOK';
     const PAYMENT_PRICING_RULE_NOT_FOUND            = 'PAYMENT_PRICING_RULE_NOT_FOUND';
     const PAYMENT_OTP_READ_FAILURE                  = 'PAYMENT_OTP_READ_FAILURE';
+    const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
 
+    const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';

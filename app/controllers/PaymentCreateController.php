@@ -169,7 +169,7 @@ class PaymentCreateController extends BaseController
 
         if ($retJson)
         {
-            return ApiResponse::json($data);
+            return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
         $url = Http\Route::getUrlWithPublicAuth('payment_create_checkout');

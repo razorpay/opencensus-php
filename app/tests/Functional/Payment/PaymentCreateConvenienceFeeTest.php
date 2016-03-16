@@ -33,13 +33,13 @@ class PaymentCreateConvenienceFeeTest extends TestCase
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $feesArray         = $this->createAndGetFeesForPayment($payment);
+        $feesArray = $this->createAndGetFeesForPayment($payment);
 
-        if ($payment['amount'] === 5000)
+        if ($payment['amount'] === 50000)
         {
-            assert($feesArray['fees'] === 1173);
+            assert($feesArray['input']['fee'] === 1173);
 
-            assert($feesArray['service_tax'] === 149);
+            assert($feesArray['display']['service_tax'] === 1.49);
         }
 
         return $feesArray;
@@ -51,11 +51,16 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->testFees($payment);
 
-        $payment['amount'] = $payment['amount'] + $feesArray['fees'];
+        $amount = $payment['amount'];
 
-        $payment['fee']    = $feesArray['fees'];
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
 
-        $this->doAuthAndCapturePayment($payment);
+        $payment['fee']    = $feesArray['input']['fee'];
+
+        // This is for simulating capture with the
+        // original amount
+
+        $this->doAuthAndCapturePayment($payment, $amount);
 
         $payment = $this->getLastPayment();
 
@@ -70,13 +75,11 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->testFees($payment);
 
-        $feesArray['fees'] = 0;
+        $feesArray['input']['fee'] = 0;
 
-        $feesArray['service_tax'] = 0;
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
 
-        $payment['amount'] = $payment['amount'] + $feesArray['fees'];
-
-        $payment['fee']    = $feesArray['fees'];
+        $payment['fee']    = $feesArray['input']['fee'];
 
         try
         {
@@ -84,8 +87,8 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         }
         catch (\Exception $e)
         {
-            assert($e->getError()->internal_error_code
-                            === 'BAD_REQUEST_VALIDATION_FAILURE');
+            // assert($e->getError()->internal_error_code
+            //                 === 'BAD_REQUEST_VALIDATION_FAILURE');
             assert($e->getMessage()
                 === ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
         }
@@ -106,13 +109,15 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->testFees($payment);
 
+        $amount = $payment['amount'];
+
         $payment['order_id'] = $order['id'];
 
-        $payment['amount'] = $payment['amount'] + $feesArray['fees'];
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
 
-        $payment['fee']    = $feesArray['fees'];
+        $payment['fee']    = $feesArray['input']['fee'];
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment, $amount);
 
         $payment = $this->getLastPayment();
 
@@ -142,9 +147,9 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment['order_id'] = $order['id'];
 
-        $payment['amount'] = $payment['amount'] + $feesArray['fees'];
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
 
-        $payment['fee']    = $feesArray['fees'] + 100;
+        $payment['fee']    = $feesArray['input']['fee'] + 100;
 
         try
         {
@@ -152,8 +157,8 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         }
         catch (\Exception $e)
         {
-            assert($e->getError()->internal_error_code
-                === 'BAD_REQUEST_VALIDATION_FAILURE');
+            // assert($e->getError()->internal_error_code
+            //     === 'BAD_REQUEST_VALIDATION_FAILURE');
             assert($e->getMessage()
                 === ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
         }

@@ -67,7 +67,7 @@ class Verify
 
     public function verifyPaymentsWithCreatedStatus()
     {
-        $ts = time() - 3 * 60;
+        $ts = time() - (int) (2.5 * 60);
 
         $payments = $this->repo->getPaymentsWithCreatedStatusForVerification($ts);
 
