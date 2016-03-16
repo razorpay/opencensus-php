@@ -80,5 +80,11 @@ class PaymentCreateTest extends TestCase
                 $this->payment['card']['number'] = '4012010000000007';
                 $this->doAuthPayment($this->payment);
             });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED');
     }
 }
