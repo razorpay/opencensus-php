@@ -10,6 +10,8 @@ use Http\Route;
 use Models\Merchant\Methods;
 use Models\Card;
 use Models\Card\IIN;
+use Models\Customer;
+use Models\Customer\Methods as CustomerMethods;
 use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
@@ -181,11 +183,12 @@ trait Authorize
         });
     }
 
-    protected function runPaymentMethodRelatedPreProcessing($payment, $input, array & $gatewayInput)
+    protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
         $save = false;
 
-        if ($payment->isMethod(Payment\Method::EMI))
+        if ($payment->isMethod(Payment\Method::EMI) or
+            ((isset($input['save'])) and ($input['save'] === '1')))
         {
             $save = true;
         }
@@ -196,9 +199,74 @@ trait Authorize
             $gatewayInput['card'] = $this->createCardEntity($input, $save);
         }
 
+        if ($save === true)
+        {
+            $this->savePaymentMethod($payment, $input);
+        }
+
         if ($payment->isMethod(Payment\Method::EMI))
         {
             $this->setBankAndEmiPlanDetails($payment, $input);
+        }
+
+        unset($input['save']);
+    }
+
+    protected function savePaymentMethod($payment, $input)
+    {
+        $customer = null;
+
+        if( empty($input['customer_id']) === false)
+        {
+            $customerId = $input['customer_id'];
+            $customer = (new Customer\Repository)->find($customerId);               
+        }
+        else
+        {
+            $customer = (new Customer\Repository)->findByEmailContactForMerchant(
+                $input['email'], 
+                $input['contact'], 
+                $payment->getMerchantId());
+        }
+
+        if ($customer === null)
+        {
+            $createCustomerInput = array(
+                'email' => $input['email'],
+                'contact' => $input['contact'],
+                'merchant_id' => $payment->getMerchantId()
+            );
+
+            $customer = (new Customer\Core)->create($createCustomerInput);
+        }
+
+        $saveMethodInput = array(
+            'customer_id' => $customer->getId(),
+            'method'      => $payment->getMethod(),
+        );
+
+        if (($payment->isMethod(Payment\Method::CARD)) or 
+            ($payment->isMethod(Payment\Method::EMI)))
+        {
+            $saveMethodInput['method'] = Payment\Method::CARD;
+            $saveMethodInput['card_id'] = $payment->getCardId();
+        }
+        else if ($payment->isMethod(Payment\Method::NETBANKING))
+        {
+            $saveMethodInput['bank'] = $payment->getBank();
+        }
+        else if ($payment->isMethod(Payment\Method::WALLET))
+        {
+            $saveMethodInput['wallet'] = $payment->getWallet();
+        }
+
+        try
+        {
+            (new CustomerMethods\Core)->create($customer, $saveMethodInput);
+        }
+        catch (Exception\BaseException $e)
+        {
+            //ignore the exception
         }
     }
 

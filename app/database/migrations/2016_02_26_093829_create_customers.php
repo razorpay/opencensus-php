@@ -6,6 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Merchant;
 use Models\Customer\Entity as Customer;
+use Models\Order\Entity as Order;
+use Models\Payment\Entity as Payment;
 
 class CreateCustomers extends Migration {
 
@@ -36,12 +38,28 @@ class CreateCustomers extends Migration {
             $table->integer(Customer::UPDATED_AT);
 
             $table->index(Customer::EMAIL);
-
+            $table->index(Customer::CONTACT);
             $table->index(Customer::CREATED_AT);
 
             $table->foreign(Customer::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+        });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment::CUSTOMER_ID)
+                  ->references(Customer::ID)
+                  ->on(Table::CUSTOMER)
+                  ->on_delete('restrict');
+        });
+
+        Schema::table(Table::ORDER, function($table)
+        {
+            $table->foreign(Order::CUSTOMER_ID)
+                  ->references(Customer::ID)
+                  ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
         });
     }
@@ -53,6 +71,18 @@ class CreateCustomers extends Migration {
      */
     public function down()
     {
+        Schema::table(Table::ORDER, function($table)
+        {
+            $table->dropForeign(Table::ORDER.'_'.Payment::CUSTOMER_ID.'_foreign');
+
+        });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::CUSTOMER_ID.'_foreign');
+
+        });
+
         Schema::table(Table::CUSTOMER, function($table)
         {
             $table->dropForeign(Table::CUSTOMER.'_'.Customer::MERCHANT_ID.'_foreign');

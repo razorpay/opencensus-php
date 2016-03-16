@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     // To Mark If a payment corresponding to
     // this order is in authorized state
     const AUTHORIZED    = 'authorized';
+    const CUSTOMER_ID   = 'customer_id';
 
     // const METHOD      = 'method';
     // const ACCOUNT_ID  = 'account_id';

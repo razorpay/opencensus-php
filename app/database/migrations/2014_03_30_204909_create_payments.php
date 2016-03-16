@@ -77,6 +77,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::ERROR_DESCRIPTION, 255)
                   ->nullable();
 
+            $table->string(Payment::CUSTOMER_ID, 14)
+                  ->nullable();
+
             $table->string(Payment::EMAIL, 255)
                   ->nullable();
 
@@ -117,6 +120,9 @@ class CreatePayments  extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->boolean(Payment::SAVE)
+                  ->default(0);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -129,6 +135,7 @@ class CreatePayments  extends Migration
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);
             $table->index(Payment::ORDER_ID);
+            $table->index(Payment::CUSTOMER_ID);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

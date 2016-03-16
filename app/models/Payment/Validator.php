@@ -25,6 +25,8 @@ class Validator extends Base\Validator
         'notes'         =>  'sometimes',
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
+        'customer_id'   =>  'sometimes',
+        'save'          =>  'sometimes|boolean',
         '_'             =>  'sometimes');
 
     protected static $captureRules = array(
