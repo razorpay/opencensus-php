@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
     {
         $ns = $this->getGatewayNamespace();
 
-        if ($type === Action::AUTHORIZE)
+        if ($this->action === Action::AUTHORIZE)
         {
             $type = $this->mode.'_'.$type;
 
