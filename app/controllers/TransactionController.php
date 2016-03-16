@@ -229,4 +229,19 @@ class TransactionController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function getResourceReport($mode, $resource)
+    {
+        $this->checkMode($mode);
+        $input = Input::all();
+
+        list($error, $file) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
+
+        if (empty($error) === false)
+        {
+            return AppResponse::notFoundResponse($error);
+        }
+
+        $file->download('xlsx');
+    }
 }
