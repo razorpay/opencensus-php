@@ -209,7 +209,8 @@ class Inferno
         //
         // check if timeout has occured
         //
-        if ((strpos($msg, 'Empty reply from server')  !== false))
+        if ((strpos($msg, 'Empty reply from server') !== false) or
+            (strpos($msg, 'SSL certificate problem: certificate has expired') !== false))
         {
             return true;
         }
