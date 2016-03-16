@@ -265,6 +265,12 @@ class Service extends Base\Service
             // Our first sheet
             $excel->sheet('Export', function($sheet) use ($data)
             {
+                foreach ($data as &$row)
+                {
+                    // This just converts array fields to JSON
+                    // And escapes insecure values with quotes
+                    $row = AppResponse::flatten($row);
+                }
 
                 $sheet->fromArray($data);
             });
