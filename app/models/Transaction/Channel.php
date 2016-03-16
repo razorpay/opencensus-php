@@ -48,7 +48,7 @@ class Channel
         $channel = null;
         $gateway = null;
 
-        $entity = $txn->entity;
+        $entity = $txn->source;
 
         $payment = null;
 

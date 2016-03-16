@@ -143,7 +143,7 @@ class Service extends Base\Service
 
         if ($txn->isTypePayment())
         {
-            $payment = $txn->entity;
+            $payment = $txn->source;
 
             $reportTxn['description'] = $payment->getDescription();
             $reportTxn['notes'] = $payment->getNotesJson();
@@ -155,7 +155,7 @@ class Service extends Base\Service
         }
         else if ($txn->isTypeRefund())
         {
-            $refund = $txn->entity;
+            $refund = $txn->source;
             $payment = $refund->payment;
 
             if ($payment->hasBeenCaptured() === false)

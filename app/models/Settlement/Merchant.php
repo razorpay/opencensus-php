@@ -91,7 +91,7 @@ class Merchant
         // Create settlement entity
         $setl = $this->newSettlementEntity();
 
-        $setlTransaction->entity()->associate($setl);
+        $setlTransaction->source()->associate($setl);
 
         return $setl;
     }

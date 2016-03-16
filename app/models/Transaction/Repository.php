@@ -89,7 +89,7 @@ class Repository extends Base\Repository
 
         foreach ($txns as $txn)
         {
-            $refund = $txn->entity;
+            $refund = $txn->source;
             $payment = $refund->payment;
 
             if ($payment->hasBeenCaptured() === false)

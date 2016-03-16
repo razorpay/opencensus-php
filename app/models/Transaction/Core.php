@@ -270,7 +270,7 @@ class Core extends Base\Core
 
         $txn->merchant()->associate($adj->merchant);
 
-        $txn->entity()->associate($adj);
+        $txn->source()->associate($adj);
 
         $adj->transaction()->associate($txn);
 
