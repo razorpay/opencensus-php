@@ -92,7 +92,7 @@ class Core extends Base\Core
 
         $txn->fill($txnData);
 
-        $txn->entity()->associate($payment);
+        $txn->source()->associate($payment);
         $txn->merchant()->associate($payment->merchant);
         $payment->transaction()->associate($txn);
     }
@@ -213,7 +213,7 @@ class Core extends Base\Core
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
 
-        $txn->entity()->associate($refund);
+        $txn->source()->associate($refund);
         $txn->merchant()->associate($refund->merchant);
         $refund->transaction()->associate($txn);
 
@@ -270,7 +270,7 @@ class Core extends Base\Core
 
         $txn->merchant()->associate($adj->merchant);
 
-        $txn->entity()->associate($adj);
+        $txn->source()->associate($adj);
 
         $adj->transaction()->associate($txn);
 

@@ -139,7 +139,7 @@ class Reconciler
         if ($transaction->isTypePayment())
         {
             $this->updateCardDetail(
-                $transaction->entity->card,
+                $transaction->source->card,
                 $data['card']);
 
             $gatewayFee = $data['transaction']['gateway_fee'];
@@ -222,7 +222,7 @@ class Reconciler
         $merchant = $transaction->merchant;
         $card = $payment->card;
 
-        $transaction->entity()->associate($payment);
+        $transaction->source()->associate($payment);
 
         $this->transaction = $transaction;
 
@@ -245,7 +245,7 @@ class Reconciler
         $merchant = $transaction->merchant;
         $card = $refund->payment->card;
 
-        $transaction->entity()->associate($refund);
+        $transaction->source()->associate($refund);
 
         $this->transaction = $transaction;
 

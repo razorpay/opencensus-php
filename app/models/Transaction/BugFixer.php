@@ -130,7 +130,7 @@ class BugFixer extends Base\Service
                 $setl = (new Settlement\Repository)->findOrFail($setlId);
 
                 $txn->setId($newTxnId);
-                $txn->entity()->associate($adj);
+                $txn->source()->associate($adj);
                 $txn->setAttribute(Transaction\Entity::SETTLED, true);
                 $txn->setAttribute(Transaction\Entity::SETTLED_AT, $setl->getCreatedAt());
                 $txn->settlement()->associate($setl);

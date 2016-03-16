@@ -38,6 +38,11 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    public function toArrayReport()
+    {
+        return $this->itemsToArrayReport();
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -63,6 +68,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayAdmin();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayReport()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayReport();
 
         }, $this->items);
     }

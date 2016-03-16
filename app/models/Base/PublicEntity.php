@@ -52,6 +52,38 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    public function toArrayReport()
+    {
+        $array = $this->toArrayPublic();
+
+        unset($array[self::ENTITY]);
+
+        if (isset($this->amounts))
+        {
+
+            foreach ($this->amounts as $key)
+            {
+                if (isset($array[$key]))
+                {
+                    $array[$key] = $array[$key] / 100;
+                }
+            }
+        }
+
+        $dates = $this->getDates();
+
+        foreach ($dates as $key)
+        {
+            if ((isset($array[$key])) and
+                ($array[$key] !== null))
+            {
+                $array[$key] = $this->getDateInFormatDMY($key);
+            }
+        }
+
+        return $array;
+    }
+
     /**
      * Create a new Eloquent Collection instance.
      *
@@ -216,5 +248,12 @@ class PublicEntity extends UniqueIdEntity
     public function getMerchantId()
     {
         return $this->getAttribute(static::MERCHANT_ID);
+    }
+
+    public function getDateInFormatDMY($attribute)
+    {
+        $value = $this->getAttribute($attribute);
+
+        return date('d/m/y', $value);
     }
 }
