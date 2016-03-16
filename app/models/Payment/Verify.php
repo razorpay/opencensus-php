@@ -146,7 +146,7 @@ class Verify
 
         if ($authorized !== 0)
         {
-            $avgTimeDiff = $timeDiff / $authorized;
+            $avgTimeDiff = (int) ($timeDiff / $authorized);
         }
 
         $results = array(
