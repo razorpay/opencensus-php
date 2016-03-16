@@ -14,9 +14,9 @@ class Transaction extends Entity
         return parent::all();
     }
 
-    public function generateReport($params)
+    public function generateEntityReport($entity, $params)
     {
-        $relativeUrl = $this->getEntityUrl(). 'report';
+        $relativeUrl = "reports/$entity";
 
         return $this->longRequest('GET', $relativeUrl, $params);
     }

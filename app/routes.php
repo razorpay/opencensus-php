@@ -55,6 +55,8 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('settings/invitations/{invite}/resend', 'InvitationsController@getResendMerchantInvitation');
     Route::get('settings/invitations/pending', 'InvitationsController@switchCurrentMerchant');
 
+    Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport');
+
     // This is a sensitive route
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
 
@@ -85,7 +87,6 @@ Route::group(array('before' => 'auth.user'), function()
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
         Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
         Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
-        Route::get('/{mode}/reports', 'TransactionController@getGenerateReport');
 
         // Upgrades a standard invited user to a merchant
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');

@@ -2,6 +2,7 @@
 
 namespace Models\Api;
 
+use Http\AppResponse;
 use Auth;
 use Models\Base;
 use Trace;
@@ -186,84 +187,29 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Generates a excel report for the given parameters
-     * @param  string $mode  live|test
-     * @param  array  $input query parameters to be passed to API
-     */
-    public function generateReport($mode, $input = [])
+    protected function generateTransactionReportAsExcel($data, $entity = "Transaction")
     {
-        $data = $error = [];
-        $file = null;
-
-        // Increase the time limit for the excel generation
-        set_time_limit(60);
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api
-                         ->transaction
-                         ->generateReport($input)
-                         ->toArray();
-
-            $traceData = [
-                'count' => count($data),
-                'params'=> $input
-            ];
-
-            // Put the first row in trace as well
-            if (count($data) >= 1)
-            {
-                $traceData['first_row'] = $data[0];
-                $file = $this->generateTransactionReportAsExcel($data);
-            }
-            else
-            {
-                $traceData['empty'] = true;
-                $error = ['No data found for given range'];
-            }
-
-            Trace::debug('MISC_TRACE_CODE', $traceData);
-
-            return array($error, $file);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-
-            return array($error, null);
-        }
-        catch(\Exception $exception)
-        {
-            $error[] = "Could not generate report. Please try again later";
-
-            Trace::critical('ERROR_EXCEPTION', [
-                'message'   => $exception->getMessage(),
-                'code'      => $exception->getCode(),
-                'stack'     => $exception->getTraceAsString(),
-            ]);
-        }
-
-        return array($error, null);
-    }
-
-    protected function generateTransactionReportAsExcel($data)
-    {
-        $file = \Excel::create('transaction_report', function($excel) use ($data)
+        $file = \Excel::create("{$entity}_report", function($excel) use ($data, $entity)
         {
             // Set the title
-            $excel->setTitle("Transaction Report");
+            $excel->setTitle("$entity Report");
 
             // Chain the setters
             $excel->setCreator('Razorpay')->setCompany('Razorpay');
 
             // Call them separately
-            $excel->setDescription("Transaction Report Razorpay");
+            $excel->setDescription("$entity Report Razorpay");
 
             // Our first sheet
             $excel->sheet('Export', function($sheet) use ($data)
             {
+                foreach ($data as &$row)
+                {
+                    // This just converts array fields to JSON
+                    // And escapes insecure values with quotes
+                    $row = AppResponse::flatten($row);
+                }
+
                 $sheet->fromArray($data);
             });
 
@@ -296,5 +242,67 @@ class Service extends Base\Service
         }
 
         return $error;
+    }
+
+    /**
+     * Generates a excel report for the given parameters
+     * @param  string $mode  live|test
+     * @param  array  $input query parameters to be passed to API
+     */
+    public function generateResourceReport($mode, $resource, $params = [])
+    {
+        $data = $error = [];
+        $file = null;
+
+        // Increase the time limit for the excel generation
+        set_time_limit(600);
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+            $data = $this->api
+                         ->transaction
+                         ->generateEntityReport($resource, $params)
+                         ->toArray();
+
+            $traceData = [
+                'count' => count($data),
+                'params'=> $params
+            ];
+
+            // Put the first row in trace as well
+            if (count($data) >= 1)
+            {
+                $traceData['first_row'] = $data[0];
+                $file = $this->generateTransactionReportAsExcel($data, $resource);
+            }
+            else
+            {
+                $traceData['empty'] = true;
+                $error = ['No data found for given range'];
+            }
+
+            Trace::debug('MISC_TRACE_CODE', $traceData);
+
+            return array($error, $file);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
+        catch(\Exception $exception)
+        {
+            $error[] = "Could not generate report. Please try again later";
+
+            Trace::critical('ERROR_EXCEPTION', [
+                'message'   => $exception->getMessage(),
+                'code'      => $exception->getCode(),
+                'stack'     => $exception->getTraceAsString(),
+            ]);
+        }
+
+        return array($error, null);
     }
 }

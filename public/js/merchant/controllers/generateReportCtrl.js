@@ -39,7 +39,8 @@ app.controller('GenerateReportCtrl', [
       day: yesterday.getDate(),
       month: yesterday.getMonth() + 1,
       year: yesterday.getFullYear(),
-      type: 'daily'
+      type: 'daily',
+      entity: 'payment'
     };
 
     $scope.days = range(1,31);
@@ -50,7 +51,6 @@ app.controller('GenerateReportCtrl', [
       var data = {
         'month': $scope.report.month,
         'year' : $scope.report.year,
-        'type' : $scope.report.type
       };
 
       if ($scope.report.type=='daily') {
@@ -60,7 +60,7 @@ app.controller('GenerateReportCtrl', [
       var request = $http({
         method: 'GET',
         responseType: 'arraybuffer',
-        url: '/' + $scope.mode + '/reports',
+        url: '/' + $scope.mode + '/reports/' + $scope.report.entity,
         params: data,
         headers: {
           'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -73,11 +73,11 @@ app.controller('GenerateReportCtrl', [
           var blob = new Blob([data], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           });
-          saveAs(blob, 'transaction_report.xlsx');
+          saveAs(blob, $scope.report.entity+'_report.xlsx');
         }
       }).error(function (data) {
         $scope.alerts.resetAlerts();
-        $scope.alerts.addAlert('danger', 'No data found for given time range');
+         $scope.alerts.addAlert('danger', 'No data found for given time range');
       });
     };
   }

@@ -49,24 +49,27 @@ class AppResponse
      * @param  string $prefix prefix used to concat keys
      * @return array flat version of input array
      */
-    protected static function flatten(array $array)
+    public static function flatten(array $array)
     {
 
         foreach ($array as &$value)
         {
-            // This will return "" for all non-string values
-            // like NULL, false etc
-            $firstCharacter = substr(trim($value), 0, 1);
-
             if (is_array($value))
             {
                 $value = '"'.json_encode($value);
             }
-            // Escape the value if it starts with a trigger
-            // character as per EXCEL.
-            else if (in_array($firstCharacter, self::EXCEL_TRIGGER_CHARS))
+            else if (is_string($value))
             {
-                $value = "'" . $value;
+                // This will return "" for all non-string values
+                // like NULL, false etc
+                $firstCharacter = substr(trim($value), 0, 1);
+
+                // Escape the value if it starts with a trigger
+                // character as per EXCEL.
+                if (in_array($firstCharacter, self::EXCEL_TRIGGER_CHARS))
+                {
+                    $value = "'" . $value;
+                }
             }
         }
 
