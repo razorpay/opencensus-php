@@ -72,7 +72,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        return $merchant;
+        // Proxy Auth, take care not to return the entire merchant entity
+        return $this->repo->findOrFailPublic($merchant->id, Entity::CONFIG_LIST);
     }
 
     public function createBalance($merchant, $mode)
