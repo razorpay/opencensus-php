@@ -70,6 +70,8 @@ class CreateCards extends Migration
             $table->index(Card::SERVICE);
             $table->index(Card::TOKEN);
 
+            $table->index(Card::INTERNATIONAL);
+
             $table->foreign(Card::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

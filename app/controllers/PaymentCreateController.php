@@ -148,6 +148,35 @@ class PaymentCreateController extends BaseController
         return $response->header('Access-Control-Allow-Origin', '*');
     }
 
+    /**
+     * Creates a dummy payments and
+     * return corresponding fees and service_tax
+     */
+    public function postCreatePaymentFees()
+    {
+        $input = Input::all();
+
+        $retJson = false;
+
+        if (isset($input['view']) and ($input['view'] === 'json'))
+        {
+            unset($input['view']);
+
+            $retJson = true;
+        }
+
+        $data = $this->payment->processAndReturnFees($input);
+
+        if ($retJson)
+        {
+            return ApiResponse::json(['input' => $input,'display' => $data]);
+        }
+
+        $url = Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+
+        return $this->returnConvenienceFeesView($input, $data, $url);
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -205,5 +234,13 @@ class PaymentCreateController extends BaseController
     protected function returnMerchantFullRedirectView($data)
     {
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
+    }
+
+    protected function returnConvenienceFeesView($input, $data, $url)
+    {
+        return View::make('gateway.gatewayFeesForm')
+                   ->with('data', $data)
+                   ->with('input', $input)
+                   ->with('url', $url);
     }
 }

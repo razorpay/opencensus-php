@@ -17,6 +17,7 @@ class Repository extends Base\Repository
         Entity::LAST4           => 'sometimes|string|digits:4',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::NETWORK         => 'sometimes|alpha_space',
+        Entity::INTERNATIONAL   => 'sometimes|in:0,1',
         Payment\Entity::STATUS  => 'sometimes|string',
         Entity::EXPIRY_MONTH    => 'sometimes|integer|digits_between:1,2|max:12|min:1',
         ENTITY::EXPIRY_YEAR     => 'sometimes|integer|digits:4|non_past_year',

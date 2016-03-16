@@ -35,6 +35,11 @@ class Service extends Base\Service
         return $this->processor()->process($input);
     }
 
+    public function processAndReturnFees(array & $input)
+    {
+        return $this->processor()->processAndReturnFees($input);
+    }
+
     /**
      * Refunds a payment
      *

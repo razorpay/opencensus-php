@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 
 use Models\Merchant\Entity as Merchant;
+use Models\Merchant\FeeBearer;
 
 class CreateMerchants extends Migration
 {
@@ -17,6 +18,7 @@ class CreateMerchants extends Migration
      */
     public function up()
     {
+
         Schema::create(Table::MERCHANT, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
@@ -58,18 +60,23 @@ class CreateMerchants extends Migration
 
             $table->integer(Merchant::SETTLEMENT_SCHEDULE);
 
-            $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)
-                  ->default(1);
-
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
             $table->string(Merchant::FEATURES)
                   ->nullable();
 
+            $table->tinyInteger(Merchant::FEE_BEARER)
+                  ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
+
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable()
                   ->default(null);
+
+            $table->tinyInteger(Merchant::RISK_RATING);
+
+            $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)
+                  ->default(1);
 
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
@@ -81,6 +88,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::CATEGORY);
             $table->index(Merchant::INTERNATIONAL);
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
+            $table->index(Merchant::RISK_RATING);
         });
     }
 

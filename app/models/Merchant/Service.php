@@ -71,11 +71,9 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function editConfig($id, array $input)
+    public function editConfig(array $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
-
-        $merchant = (new Merchant\Core)->editConfig($merchant, $input);
+        $merchant = (new Merchant\Core)->editConfig($this->merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -103,9 +101,9 @@ class Service extends Base\Service
         return $features;
     }
 
+    // This is on internal auth
     public function fetch($id)
     {
-        // s(Merchant\Entity::all()->toArray());s($id);
         $merchant = $this->repo->findOrFailPublic($id);
 
         $methods = $merchant->methods;
@@ -120,8 +118,23 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
-    public function fetchBalance($merchantId)
+    // This is on proxy auth
+    public function fetchConfig()
     {
+        $merchantId = $this->merchant->getId();
+
+        $merchant = $this->repo->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
+
+        return $merchant->toArray();
+    }
+
+    public function fetchBalance($merchantId = null)
+    {
+        if(null === $merchantId)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
         //
@@ -180,13 +193,6 @@ class Service extends Base\Service
         $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
         return $keys->toArrayPublic();
-    }
-
-    public function retrieveById($id)
-    {
-        $merchant = $this->repo->findOrFailPublic($id);
-
-        return $merchant->toArrayPublic();
     }
 
     public function assignPricingPlan($id, $input)
@@ -393,6 +399,13 @@ class Service extends Base\Service
         // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
+    public function getFeeBearer()
+    {
+        $feeBearer = $this->merchant->isFeeBearerCustomer();
+
+        return $feeBearer;
+    }
+
     public function getPaymentMethods()
     {
         $data = array(
@@ -470,6 +483,13 @@ class Service extends Base\Service
         $file = (new BankAccount\BeneficiaryFile)->generate();
 
         return $file;
+    }
+
+    public function getCheckoutPreferences()
+    {
+        $merchant = $this->merchant;
+
+        return (new Checkout)->getPreferences($merchant, $this->mode);
     }
 
     /**

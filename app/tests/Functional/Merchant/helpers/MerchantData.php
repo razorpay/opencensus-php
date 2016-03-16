@@ -67,13 +67,28 @@ return [
 
     'testGetBalance' => [
         'request' => [
-            'url' => '/merchants/10000000000000/balance',
+            'url' => '/balance',
             'method' => 'GET',
         ],
         'response' => [
             'content' => [
                 'id'    => '10000000000000',
                 'balance' => 1000000,
+            ],
+        ],
+    ],
+
+    'testGetAccountConfig' => [
+        'request' => [
+            'url' => '/account/config',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'brand_color' => null,
+                'transaction_report_email' => [
+                    'test@razorpay.com'
+                ]
             ],
         ],
     ],
@@ -272,13 +287,35 @@ return [
             'content' => [
                 'brand_color' => '00bcd4',
             ],
-            'url' => '/merchants/1X4hRFHFx4UiXt/config',
+            'url' => '/account/config',
             'method' => 'put',
         ],
         'response' => [
             'content' => [
-                'id' => '1X4hRFHFx4UiXt',
+                'id' => '10000000000000',
                 'brand_color' => '00BCD4'
+            ]
+        ]
+    ],
+
+    'testEditMerchantConfigWithEmail' => [
+        'request' => [
+            'content' => [
+                'transaction_report_email' => [
+                    'nemo@razorpay.com',
+                    'hello@razorpay.com'
+                ]
+            ],
+            'url' => '/account/config',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'transaction_report_email'  => [
+                    'nemo@razorpay.com',
+                    'hello@razorpay.com'
+                ]
             ]
         ]
     ],

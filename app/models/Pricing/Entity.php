@@ -60,24 +60,29 @@ class Entity extends Base\PublicEntity
     protected static $generators = array('plan_id');
 
     protected $defaults = array(
+        self::PAYMENT_METHOD_TYPE   => null,
+        self::PAYMENT_NETWORK       => null,
+        self::PAYMENT_ISSUER        => null,
         self::PERCENT_RATE          => 0,
         self::FIXED_RATE            => 0,
-        self::AMOUNT_RANGE_ACTIVE   => false,
-        self::AMOUNT_RANGE_MIN      => null,
-        self::AMOUNT_RANGE_MAX      => null);
+        self::AMOUNT_RANGE_ACTIVE   => '0');
 
     const ZERO_PRICING = '10ZeroPricingP';
 
     protected function modifyInputProvideDefaults(& $input)
     {
-        $nullables = array(self::PAYMENT_METHOD_TYPE, self::PAYMENT_NETWORK, self::PAYMENT_ISSUER);
-
-        foreach ($nullables as $key)
+        foreach ($this->defaults as $key => $value)
         {
             if (empty($input[$key]))
             {
-                $input[$key] = null;
+                $input[$key] = $value;
             }
+        }
+
+        if ($input[self::AMOUNT_RANGE_ACTIVE] !== '1')
+        {
+            $input[self::AMOUNT_RANGE_MIN] = null;
+            $input[self::AMOUNT_RANGE_MAX] = null;
         }
     }
 
@@ -140,6 +145,22 @@ class Entity extends Base\PublicEntity
         return new Plan($models);
     }
 
+    public function fillRule($input, $plan)
+    {
+        $rule = $plan->first();
+
+        $input[self::PLAN_ID] = $rule->getAttribute(self::PLAN_ID);
+        $input[self::PLAN_NAME] = $rule->getAttribute(self::PLAN_NAME);
+        $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
+
+        return $this->fill($input);
+    }
+
+    public function getRates()
+    {
+        return [$this->getPercentRate(), $this->getFixedRate()];
+    }
+
     public function getPlanId()
     {
         return $this->getAttribute(self::PLAN_ID);
@@ -188,47 +209,46 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_RANGE_MAX);
     }
 
-    public function getInternationalAttribute()
+    public function getFixedRate()
+    {
+        return $this->getAttribute(self::FIXED_RATE);
+    }
+
+    public function getPercentRate()
+    {
+        return $this->getAttribute(self::PERCENT_RATE);
+    }
+
+    protected function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
-    public function getAmountRangeActiveAttribute()
+    protected function getAmountRangeActiveAttribute()
     {
         return (bool) $this->attributes[self::AMOUNT_RANGE_ACTIVE];
     }
 
-    public function getAmountRangeMinAttribute()
+    protected function getAmountRangeMinAttribute()
     {
         $min = $this->attributes[self::AMOUNT_RANGE_MIN];
 
         return ($min === null) ? $min : (int) $min;
     }
 
-    public function getAmountRangeMaxAttribute()
+    protected function getAmountRangeMaxAttribute()
     {
         $max = $this->attributes[self::AMOUNT_RANGE_MAX];
 
         return ($max === null) ? $max : (int) $max;
     }
 
-    public function fillRule($input, $plan)
-    {
-        $rule = $plan->first();
-
-        $input[self::PLAN_ID] = $rule->getAttribute(self::PLAN_ID);
-        $input[self::PLAN_NAME] = $rule->getAttribute(self::PLAN_NAME);
-        $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
-
-        return $this->fill($input);
-    }
-
-    public function getPercentRateAttribute()
+    protected function getPercentRateAttribute()
     {
         return (int) $this->attributes[self::PERCENT_RATE];
     }
 
-    public function getFixedRateAttribute()
+    protected function getFixedRateAttribute()
     {
         return (int) $this->attributes[self::FIXED_RATE];
     }

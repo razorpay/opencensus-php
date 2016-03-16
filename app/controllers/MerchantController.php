@@ -38,15 +38,16 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function putMerchantConfig($id)
+    public function putMerchantConfig()
     {
         $input = Input::all();
 
-        $data = (new Merchant\Service)->editConfig($id, $input);
+        $data = (new Merchant\Service)->editConfig($input);
 
         return ApiResponse::json($data);
     }
 
+    // This is on Internal Auth
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
@@ -279,6 +280,21 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getAccountBalance()
+    {
+        $data = (new Merchant\Service)->fetchBalance();
+
+        return ApiResponse::json($data);
+    }
+
+    // This is on proxy Auth
+    public function getAccountConfig()
+    {
+        $data = (new Merchant\Service)->fetchConfig();
+
+        return ApiResponse::json($data);
+    }
+
     public function postFreeCredits($id)
     {
         $input = Input::all();
@@ -291,6 +307,13 @@ class MerchantController extends BaseController
     public function getPaymentMethods()
     {
         $data = (new Merchant\Service)->getPaymentMethods();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCheckoutPreferences()
+    {
+        $data = (new Merchant\Service)->getCheckoutPreferences();
 
         return ApiResponse::json($data);
     }
@@ -354,6 +377,8 @@ class MerchantController extends BaseController
 
         $methods = (new Merchant\Service)->getPaymentMethods();
 
+        $feeBearer = (new Merchant\Service)->getFeeBearer();
+
         $app = \App::getFacadeRoot();
 
         $context = $app['config']->get('app.context');
@@ -376,6 +401,8 @@ class MerchantController extends BaseController
         $data['checkout'] = $url;
 
         $data['methods'] = json_encode($methods);
+
+        $data['feeBearer'] = json_encode($feeBearer);
 
         return ApiResponse::generateResponse($data);
     }

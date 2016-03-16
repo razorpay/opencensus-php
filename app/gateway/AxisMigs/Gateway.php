@@ -111,8 +111,26 @@ class Gateway extends Base\Gateway
 
     protected function captureAuthorizedPayment(array $input)
     {
+        assert ($input['payment']['status'] === 'authorized');
+
         $payment = $this->getRepo()->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
+
+        $capturedAmount = (int) $payment['vpc_CapturedAmount'];
+
+        if ($capturedAmount === $input['payment']['amount'])
+        {
+            //
+            // Looks like the payment has already been captured on gateway,
+            // but due to some previous error, this has not been recorded
+            // on api.
+            //
+            // In this case we will silently return implying payment has
+            // been captured on gateway
+            //
+
+            return;
+        }
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
@@ -245,7 +263,8 @@ class Gateway extends Base\Gateway
                 //
 
                 if (($payment['vpc_TxnResponseCode'] === '0') or
-                    ($input['payment']['status'] !== 'failed'))
+                    (($input['payment']['status'] !== 'failed') and
+                     ($input['payment']['status'] !== 'created')))
                 {
                     // It's marked as success, in this case, if it's totally refunded,
                     // then that means billdesk refunded the payment on it's own end
@@ -266,6 +285,26 @@ class Gateway extends Base\Gateway
             unset($content['vpc_Command']);
 
             $payment->fill($content);
+            $payment->saveOrFail();
+        }
+        else
+        {
+            // Fill only important fields that change during payment auth/capture/refund
+            // lifecycle.
+            $array = array(
+                'vpc_AuthorisedAmount',
+                'vpc_CapturedAmount',
+                'vpc_RefundedAmount',
+                'vpc_ShopTransactionNo');
+
+            foreach ($array as $key)
+            {
+                if (empty($content[$key]) === false)
+                {
+                    $payment->setAttribute($key, $content[$key]);
+                }
+            }
+
             $payment->saveOrFail();
         }
 

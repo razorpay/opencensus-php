@@ -34,7 +34,7 @@ class Repository extends Base\Repository
         Entity::CAPTURED        => 'sometimes|in:0,1',
         Entity::WALLET          => 'sometimes|',
         Card\Entity::IIN        => 'sometimes|integer|digits:6',
-        Card\Entity::LAST4      => 'sometimes|integer|digits:4',
+        Card\Entity::LAST4      => 'sometimes|string|digits:4',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)

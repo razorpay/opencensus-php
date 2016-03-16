@@ -58,7 +58,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
-        self::STATUS,
         self::CREATED_AT);
 
     public function merchant()

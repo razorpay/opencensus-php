@@ -133,7 +133,8 @@ class Entity extends Base\PublicEntity
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
-        self::CUSTOMER_ID,
+        self::BANK,
+        self::WALLET,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -150,7 +151,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
-    protected static $modifiers = array(self::CONTACT, self::BANK);
+    protected static $modifiers = array(self::CONTACT, self::BANK, 'method_based_input');
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
@@ -164,6 +165,8 @@ class Entity extends Base\PublicEntity
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
         self::SAVE              => false
+        self::FEE               => null,
+        self::SERVICE_TAX       => null,
     );
 
 // --------------------- Generators --------------------------------------------
@@ -197,6 +200,29 @@ class Entity extends Base\PublicEntity
         }
 
         return $contact;
+    }
+
+    protected function modifyMethodBasedInput(& $input)
+    {
+        if (isset($input['method']) === false)
+        {
+            return;
+        }
+
+        if ($input['method'] !== Method::NETBANKING)
+        {
+            $input['bank'] = null;
+        }
+
+        if ($input['method'] !== Method::EMI)
+        {
+            $input['emi_duration'] = null;
+        }
+
+        if ($input['method'] !== Method::WALLET)
+        {
+            $input['wallet'] = null;
+        }
     }
 
     protected function modifyBank(& $input)
@@ -400,7 +426,7 @@ class Entity extends Base\PublicEntity
         return ($this->attributes[self::CREATED_AT] !== null);
     }
 
-        public function getFeeAttribute()
+    public function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
     }

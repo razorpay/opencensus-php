@@ -211,6 +211,20 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getRelativeUrl($type)
+    {
+        $ns = $this->getGatewayNamespace();
+
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $type = $this->mode.'_'.$type;
+
+            $type = strtoupper($type);
+        }
+
+        return constant($ns.'\Url::'.$type);
+    }
+
     public function getMessageStringWithHash($content)
     {
         $str = $this->getStringToHash($content, '|');
@@ -221,6 +235,13 @@ class Gateway extends Base\Gateway
     protected function getTestMerchantId()
     {
         return 'OSTEST';
+    }
+
+    protected function getLiveSecret()
+    {
+        assert ($this->mode === Mode::LIVE);
+
+        return $this->config['live_hash_secret'];
     }
 
     protected function getHashOfString($str)

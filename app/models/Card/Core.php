@@ -97,7 +97,14 @@ class Core extends Base\Core
                 }
             }
 
-            $type = Card\Type::getType($details['type']);
+            if ($network === Network::AMEX)
+            {
+                $type = Type::CREDIT;
+            }
+            else
+            {
+                $type = Card\Type::getType($details['type']);
+            }
 
             $arr = array(
                 Entity::TYPE    => $type,
