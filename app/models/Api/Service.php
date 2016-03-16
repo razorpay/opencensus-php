@@ -203,11 +203,20 @@ class Service extends Base\Service
             // Our first sheet
             $excel->sheet('Export', function($sheet) use ($data)
             {
-                foreach ($data as &$row)
+                foreach ($data as $index => &$row)
                 {
-                    // This just converts array fields to JSON
-                    // And escapes insecure values with quotes
-                    $row = AppResponse::flatten($row);
+                    if (is_array($row))
+                    {
+                        // This just converts array fields to JSON
+                        // And escapes insecure values with quotes
+                        $row = AppResponse::flatten($row);
+                    }
+                    else
+                    {
+                        // failsafe to make sure you don't call flatten
+                        unset($data[$index]);
+                    }
+
                 }
 
                 $sheet->fromArray($data);
@@ -267,7 +276,8 @@ class Service extends Base\Service
 
             $traceData = [
                 'count' => count($data),
-                'params'=> $params
+                'params'=> $params,
+                'entity' => $resource
             ];
 
             // Put the first row in trace as well
