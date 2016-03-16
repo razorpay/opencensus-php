@@ -213,7 +213,7 @@ class Core extends Base\Core
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
 
-        $txn->entity()->associate($refund);
+        $txn->source()->associate($refund);
         $txn->merchant()->associate($refund->merchant);
         $refund->transaction()->associate($txn);
 
