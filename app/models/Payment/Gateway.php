@@ -161,8 +161,8 @@ class Gateway
      * @var array
      */
     public static $domesticCardGateways = array(
-        Gateway::HDFC,
         Gateway::AXIS_MIGS,
+        Gateway::HDFC,
         Gateway::AMEX);
 
     /**
@@ -186,8 +186,8 @@ class Gateway
      * @var array
      */
     public static $directCardGateways = array(
-        Gateway::HDFC,
         Gateway::AXIS_MIGS,
+        Gateway::HDFC,
         Gateway::AMEX);
 
     /**
