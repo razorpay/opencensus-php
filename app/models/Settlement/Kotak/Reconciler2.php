@@ -203,7 +203,7 @@ class Reconciler2
         }
         else
         {
-            $status = Status::FAILED;
+            $status = Settlement\Status::FAILED;
         }
 
         if ($setl->isStatusCreated() === false)
