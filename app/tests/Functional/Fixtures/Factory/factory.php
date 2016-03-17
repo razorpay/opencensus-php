@@ -105,6 +105,7 @@ $factory(Models\Payment\Refund\Entity::class, [
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => 100,
     'currency' => 'INR',
+    'notes' => '[]',
     'transaction_id' => null,
 ]);
 
@@ -228,6 +229,7 @@ $factory(Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
+    'notes' => '[]',
     'attempts' => 0,
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,

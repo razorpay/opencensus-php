@@ -20,10 +20,10 @@ class Validator extends Base\Validator
         'emi_duration'  =>  'required_with:emi|integer|in:3,6,9,12,18,24',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
-        'contact'       =>  'required',
+        'contact'       =>  'required|contact',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
-        'notes'         =>  'sometimes',
+        'notes'         =>  'sometimes|notes|required_with_nested:merchant_order_id,signature',
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
         'fee'           =>  'sometimes|integer|max:50000000',
@@ -35,16 +35,16 @@ class Validator extends Base\Validator
         'currency'      => 'sometimes|in:INR');
 
     protected static $refundRules = array(
-        'amount'        => 'sometimes|integer');
+        'amount'        => 'sometimes|integer',
+        'notes'         => 'sometimes|notes'
+    );
 
     protected static $createValidators = array(
         'card_key',
         'amount',
         'bank',
         'currency',
-        'contact',
         'description',
-        'notes',
         'fee');
 
     protected function validateCardKey($input)
@@ -108,50 +108,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateContact($input)
-    {
-        $contact = $input['contact'];
-
-        $code = null;
-        $message = null;
-
-        $field = Entity::CONTACT;
-
-        if (is_string($contact) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
-        }
-
-        $origContact = $contact;
-
-        // Except digits, only '+' symbol is allowed in the beginning
-        if ($contact[0] === '+')
-            $contact = substr($contact, 1);
-
-        if (ctype_digit($contact) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
-        }
-
-        if (strlen($contact) < 10)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
-                $field);
-        }
-
-        if (strlen($contact) > 12)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
-                $field);
-        }
-    }
-
     protected function validateDescription($input)
     {
         if (isset($input['description']) === false)
@@ -172,76 +128,6 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
                 Entity::DESCRIPTION);
         }
-    }
-
-    /**
-     * Validates Notes
-     *
-     * @param  array $input  input array
-     * @return void
-     */
-    protected function validateNotes($input)
-    {
-        if (isset($input['signature']))
-        {
-            if ((isset($input['notes']) === false) or
-                (isset($input['notes']['merchant_order_id']) === false))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'merchant_order_id should be defined when signature is present');
-            }
-        }
-
-        if (isset($input['notes']) === false)
-            return;
-
-        $notes = $input['notes'];
-
-        $code = null;
-
-        if (is_array($notes) === false)
-        {
-            $code = ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY;
-        }
-        else if (count($notes) > 15)
-        {
-            $code = ErrorCode::BAD_REQUEST_NOTES_TOO_MANY_KEYS;
-        }
-        else
-        {
-            foreach ($notes as $key => $value)
-            {
-                $code = $this->validateNotesKeyValue($key, $value);
-
-                if ($code !== null)
-                    break;
-            }
-        }
-
-        if ($code !== null)
-        {
-            throw new Exception\BadRequestException($code, 'notes');
-        }
-    }
-
-    protected function validateNotesKeyValue($key, $value)
-    {
-        $code = null;
-
-        if (is_array($value))
-        {
-            $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY;
-        }
-        else if (strlen($value) > 256)
-        {
-            $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE;
-        }
-        else if (strlen($key) > 256)
-        {
-            $code = ErrorCode::BAD_REQUEST_NOTES_KEY_TOO_LARGE;
-        }
-
-        return $code;
     }
 
     protected function validateFee($input)

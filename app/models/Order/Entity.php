@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY      = 'currency';
     const ATTEMPTS      = 'attempts';
     const STATUS        = 'status';
+    const NOTES         = 'notes';
 
     // Ideally should be a unique from the merchant side as well
     const RECEIPT       = 'receipt';
@@ -32,7 +33,9 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::AMOUNT,
         self::CURRENCY,
-        self::RECEIPT);
+        self::RECEIPT,
+        self::NOTES
+    );
 
     protected $table = \Constants\Table::ORDER;
 
@@ -41,7 +44,9 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::ATTEMPTS   => 0,
         self::STATUS     => Status::CREATED,
-        self::AUTHORIZED => 0);
+        self::AUTHORIZED => 0,
+        self::NOTES      => []
+    );
 
     protected $public = array(
         self::ID,
@@ -51,7 +56,9 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::STATUS,
         self::ATTEMPTS,
-        self::CREATED_AT);
+        self::NOTES,
+        self::CREATED_AT
+    );
 
     protected $amounts = array(
         self::AMOUNT
@@ -73,6 +80,21 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Models\Payment\Entity');
     }
 
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
+    }
+
+    public function getNotesJson()
+    {
+        return $this->attributes[self::NOTES];
+    }
+
+    public function setNotesAttribute($notes)
+    {
+        $this->attributes[self::NOTES] = json_encode($notes);
+    }
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -86,6 +108,18 @@ class Entity extends Base\PublicEntity
     public function setAuthorized($authorized)
     {
         return $this->setAttribute(self::AUTHORIZED, $authorized);
+    }
+
+    public function getNotesAttribute($notes)
+    {
+        $notesArray = json_decode($notes, true);
+
+        if($notesArray === '')
+        {
+            return [];
+        }
+
+        return $notesArray;
     }
 
     public function getStatus()

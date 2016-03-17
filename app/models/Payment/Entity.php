@@ -366,14 +366,13 @@ class Entity extends Base\PublicEntity
     public function getNotesAttribute($notes)
     {
         $notesArray = json_decode($notes, true);
+
         if($notesArray === '')
         {
             return [];
         }
-        else
-        {
-            return $notesArray;
-        }
+
+        return $notesArray;
     }
 
     public function getAmountAttribute()
