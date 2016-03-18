@@ -91,15 +91,18 @@ app.controller('EntitiesCtrl', [
       adjustment: { merchant_id: ['Merchant Id'] },
       amex: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
+        vpc_ReceiptNo: ['Receipt Number']
       },
       axis_genius: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
+        vpc_ReceiptNo: ['Receipt Number']
       },
       axis_migs: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
+        vpc_ReceiptNo: ['Receipt Number']
       },
       bank_account: {
         merchant_id: ['Merchant Id'],
