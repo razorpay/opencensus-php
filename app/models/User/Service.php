@@ -169,8 +169,6 @@ class Service extends Base\Service
                 'status'        => 'subscribed',
                 'merge_fields'  => $this->breakName($data['name']),
             ]);
-
-            Requests::post($config['zapier_url'], [], $data);
         }
 
         $job->delete();
@@ -238,45 +236,57 @@ class Service extends Base\Service
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 
-        return [null, $this->slackSignupPost($merchant, $user, $referer)];
+        return [null, $this->signupPost($merchant, $user, $referer)];
     }
 
     /**
      * Makes a call to sorting hat to post on Slack that a new merchant
      * signed up
      */
-    protected function slackSignupPost($merchant, $user, $referer = false)
+    protected function signupPost($merchant, $user, $referer = '')
     {
-        $data = [
-            'id'        => $merchant->id,
-            'name'      => $merchant->name,
-            'email'     => $user->email,
-            'user_name' => $user->name,
-        ];
+        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer);
+        $zapierData = $this->getZapierData($merchant, $user, $referer);
 
-        $config = Config::get('razorpay.sorting_hat');
-        $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$data['id']}/detail";
-        $message = "[New Signup]($merchantLink) as {$data['user_name']}";
+        // We want to keep environment conditional checks as late as possible
+        if ($_ENV['SLACK_ENABLE'] === true)
+        {
+            Queue::push('Models\User\Service@postToSortingHat', $sortingHatData);
+            Queue::push('Models\User\Service@postToZapier', $zapierData);
+        }
+
+        // Requirement being a 'id' key in this array
+        return $sortingHatData;
+    }
+
+    protected function getSortingHatData($merchant, $user, $referer)
+    {
+        $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$merchant->id}/detail";
+        $message = "[New Signup]($merchantLink) as {$user->name}";
 
         if ($referer)
         {
             $message .= " | REF: $referer";
         }
 
-        $postData = [
-            'email'         => $data['email'],
-            'name'          => $data['name'],
+        return [
+            'id'            => $merchant->id,
+            'email'         => $user->email,
+            'name'          => $merchant->name,
             'message'       => $message,
-            'token'         => $config['token']
+            'token'         => Config::get('razorpay.sorting_hat.token')
         ];
+    }
 
-        // We want to keep environment conditional checks as late as possible
-        if ($_ENV['SLACK_ENABLE'] === true)
-        {
-            Queue::push('Models\User\Service@postToSortingHat', $postData);
-        }
-
-        return $data;
+    protected function getZapierData($merchant, $user, $referer)
+    {
+        return [
+            'id'            => $merchant->id,
+            'email'         => $user->email,
+            'individual'    => $user->name,
+            'name'          => $merchant->name,
+            'ref'           => $referer ? $referer : ''
+        ];
     }
 
     /**
@@ -286,8 +296,17 @@ class Service extends Base\Service
      */
     public function postToSortingHat($job, $data)
     {
-        $config = Config::get('razorpay.sorting_hat');
-        Requests::post($config['url'], [], $data);
+        $url = Config::get('razorpay.sorting_hat.url');
+        Requests::post($url, [], $data);
+
+        $job->delete();
+    }
+
+    public function postToZapier($job, $data)
+    {
+        $url = Config::get('razorpay.sorting_hat.zapier_url');
+        Requests::post($url, [], $data);
+
         $job->delete();
     }
 
