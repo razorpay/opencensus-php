@@ -35,6 +35,13 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         $messages = array_merge($messages, \Razorpay\Spine\Validation\Messages::$messages);
     }
 
+    /**
+     * Create notes validation
+     *
+     * @param string $attribute
+     * @param array $notes
+     * @param array $parameters
+     */
     protected function validateNotes($attribute, $notes, $parameters)
     {
         if (isset($notes) === false)
@@ -52,7 +59,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
         else
         {
-            $code = $this->validateFlatArray('array', $notes);
+            $code = $this->validateNotesArray($notes);
         }
 
         if ($code !== null)
@@ -63,17 +70,22 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
-    protected function validateFlatArray($attribute, $array)
+    /**
+     * Check notes array is flat
+     *
+     * @param array $notes
+     */
+    protected function validateNotesKeyValue(array $notes)
     {
         $code = null;
 
-        foreach ($array as $key => $value)
+        foreach ($notes as $key => $note)
         {
-            if (is_array($value))
+            if (is_array($note))
             {
                 $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY;
             }
-            else if (strlen($value) > 256)
+            else if (strlen($note) > 256)
             {
                 $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE;
             }
@@ -89,6 +101,13 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return $code;
     }
 
+    /**
+     * Create contact (mobile number) validation
+     *
+     * @param string $attribute
+     * @param string $contact
+     * @param array $parameters
+     */
     protected function validateContact($attribute, $contact, $parameters)
     {
         $code = null;
@@ -133,11 +152,21 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
+    /**
+     * Create requiredWithNested validation (Laravel 4.2 doesn't support nested array validations)
+     * Nested array value should be required if any input is present
+     * Usage: required_with_nested:key1,key2,key3,last_key
+     * if arr['last_key'] is present then arr['key1']['key2']['key3'] will be validated
+     *
+     * @param string $attribute
+     * @param string $value
+     * @param array $parameters
+     */
     protected function validateRequiredWithNested($attribute, $value, $parameters)
     {
-        $required_with = [array_pop($parameters)];
+        $requiredWith = [array_pop($parameters)];
 
-        if ( ! $this->allFailingRequired($required_with))
+        if ( ! $this->allFailingRequired($requiredWith))
         {
             return $this->validateRequiredNested($attribute, $value, $parameters);
         }
@@ -145,13 +174,21 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
+    /**
+     * Create requiredNested validation (Laravel 4.2 doesn't support nested array validations)
+     * Nested array value should be present
+     *
+     * @param string $attribute
+     * @param string $value
+     * @param array $keys
+     */
     protected function validateRequiredNested($attribute, $value, $keys)
     {
         $data = $value;
 
-        foreach($keys as $key)
+        foreach ($keys as $key)
         {
-            if(empty($data[$key]))
+            if (empty($data[$key]))
             {
                 throw new Exception\BadRequestValidationFailureException('Nested required data is not there.');
             }

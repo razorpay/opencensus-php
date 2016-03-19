@@ -114,7 +114,7 @@ class Entity extends Base\PublicEntity
     {
         $notesArray = json_decode($notes, true);
 
-        if($notesArray === '')
+        if ($notesArray === '')
         {
             return [];
         }
