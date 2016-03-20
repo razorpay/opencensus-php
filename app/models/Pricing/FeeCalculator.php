@@ -176,7 +176,7 @@ class FeeCalculator
 
             $this->trace->debug(
                 TraceCode::PAYMENT_PRICING_RULE_SELECTION,
-                ['rules' => $rules, 'filter' => $filter]);
+                ['filter' => $filter, 'count' => count($rules)]);
         }
 
         return $rules;
@@ -205,12 +205,14 @@ class FeeCalculator
 
         foreach ($rules as $rule)
         {
-            if ($rule->getAttribute($fieldName) === $fieldValue)
+            $value = $rule->getAttribute($fieldName);
+
+            if ($value === $fieldValue)
             {
                 $matchRules[] = $rule;
             }
             else if (($chooseDefault === true) and
-                     ($rule->getAttribute($fieldName) === $defaultValue))
+                     ($value === $defaultValue))
             {
                 $defaultMatchRules[] = $rule;
             }
