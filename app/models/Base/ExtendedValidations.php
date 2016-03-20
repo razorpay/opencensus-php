@@ -32,7 +32,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function addCustomMessages(& $messages)
     {
-        $messages = array_merge($messages, \Razorpay\Spine\Validation\Messages::$messages);
+        $messages = array_merge(\Razorpay\Spine\Validation\Messages::$messages, $messages);
     }
 
     /**
@@ -59,7 +59,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
         else
         {
-            $code = $this->validateNotesArray($notes);
+            $code = $this->validateNotesKeyValue($notes);
         }
 
         if ($code !== null)
@@ -99,57 +99,6 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
 
         return $code;
-    }
-
-    /**
-     * Create contact (mobile number) validation
-     *
-     * @param string $attribute
-     * @param string $contact
-     * @param array $parameters
-     */
-    protected function validateContact($attribute, $contact, $parameters)
-    {
-        $code = null;
-        $message = null;
-
-        $field = $attribute;
-
-        if (is_string($contact) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
-        }
-
-        $origContact = $contact;
-
-        // Except digits, only '+' symbol is allowed in the beginning
-        if ($contact[0] === '+')
-            $contact = substr($contact, 1);
-
-        if (ctype_digit($contact) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
-        }
-
-        if (strlen($contact) < 10)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
-                $field);
-        }
-
-        if (strlen($contact) > 12)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
-                $field);
-        }
-
-        return true;
     }
 
     /**

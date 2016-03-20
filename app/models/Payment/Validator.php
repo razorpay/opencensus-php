@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         'emi_duration'  =>  'required_with:emi|integer|in:3,6,9,12,18,24',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
-        'contact'       =>  'required|contact',
+        'contact'       =>  'required',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes|notes|required_with_nested:merchant_order_id,signature',
@@ -44,6 +44,7 @@ class Validator extends Base\Validator
         'amount',
         'bank',
         'currency',
+        'contact',
         'description',
         'fee');
 
@@ -105,6 +106,50 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
                 'bank');
+        }
+    }
+
+    protected function validateContact($input)
+    {
+        $contact = $input['contact'];
+
+        $code = null;
+        $message = null;
+
+        $field = Entity::CONTACT;
+
+        if (is_string($contact) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
+                $field);
+        }
+
+        $origContact = $contact;
+
+        // Except digits, only '+' symbol is allowed in the beginning
+        if ($contact[0] === '+')
+            $contact = substr($contact, 1);
+
+        if (ctype_digit($contact) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
+                $field);
+        }
+
+        if (strlen($contact) < 10)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
+                $field);
+        }
+
+        if (strlen($contact) > 12)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
+                $field);
         }
     }
 
