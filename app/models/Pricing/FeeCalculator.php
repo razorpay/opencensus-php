@@ -152,7 +152,8 @@ class FeeCalculator
         if (count($rules) === 0)
         {
             throw new Exception\LogicException(
-                'Invalid rule count: 0, Payment Id: ' . $payment->getId());
+                'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
+                ['intl' => $international, 'cardType' => $cardType, 'network' => $network]);
         }
 
         $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
