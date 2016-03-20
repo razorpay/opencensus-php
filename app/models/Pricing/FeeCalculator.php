@@ -149,6 +149,12 @@ class FeeCalculator
 
         $subventionType = $payment->merchant->getSubventionType();
 
+        if (count($rules) === 0)
+        {
+            throw new Exception\LogicException(
+                'Invalid rule count: 0, Payment Id: ' . $payment->getId());
+        }
+
         $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 
         if ($rule === null)
