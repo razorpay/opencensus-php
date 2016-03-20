@@ -173,6 +173,10 @@ class FeeCalculator
         {
             $rules = $this->filterRulesOnFieldByValue(
                 $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
+
+            $this->trace->debug(
+                TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+                ['rules' => $rules, 'filter' => $filter]);
         }
 
         return $rules;
