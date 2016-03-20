@@ -72,6 +72,10 @@ class FeeCalculator
         $rules = $this->filterRulesOnFieldByValue(
                 $pricing, Pricing\Entity::PAYMENT_METHOD, $method, false);
 
+        $this->trace->debug(
+            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+            ['count' => count($rules)]);
+
         if ($method === Payment\Method::CARD)
         {
             $rule = $this->getRelevantPricingRuleForCard($rules);
@@ -109,6 +113,8 @@ class FeeCalculator
         $international = $payment->isInternational();
 
         $network = Card\Network::getCode($payment->card->getNetwork());
+
+        $this->traceAllRules($rules);
 
         // Current Implementation
         // * Filter based on international
@@ -177,6 +183,8 @@ class FeeCalculator
             $this->trace->debug(
                 TraceCode::PAYMENT_PRICING_RULE_SELECTION,
                 ['filter' => $filter, 'count' => count($rules)]);
+
+            $this->traceAllRules($rules);
         }
 
         return $rules;
@@ -363,5 +371,19 @@ class FeeCalculator
         {
             return (($amount * $percent) / 10000) + $fixed;
         }
+    }
+
+    protected function traceAllRules($rules)
+    {
+        $array = [];
+
+        foreach ($rules as $rule)
+        {
+            $array[] = $rule->toArray();
+        }
+
+        $this->trace->debug(
+            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+            ['rules' => $array]);
     }
 }
