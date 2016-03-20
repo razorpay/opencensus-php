@@ -48,7 +48,7 @@ class Service extends Base\Service
 
         $repo = new Settlement\Repository;
 
-        $setl = $repo->findByIdAndMerchantId($id);
+        $setl = $repo->findOrFailPublic($id);
 
         if ((isset($input['status'])) and
             ($input['status'] === Status::FAILED))
