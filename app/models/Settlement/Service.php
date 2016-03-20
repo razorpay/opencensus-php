@@ -42,6 +42,30 @@ class Service extends Base\Service
         return $setl->toArrayPublic();
     }
 
+    public function editSettlement($id, $input)
+    {
+        Settlement\Entity::verifyIdAndStripSign($id);
+
+        $repo = new Settlement\Repository;
+
+        $setl = $repo->findByIdAndMerchantId($id);
+
+        if ((isset($input['status'])) and
+            ($input['status'] === Status::FAILED))
+        {
+            if ($setl->isStatusCreated() === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Settlement status is not created. Status: ' . $setl->getStatus());
+            }
+
+            $setl->setStatus(Settlement\Status::FAILED);
+            $repo->saveOrFail($setl);
+        }
+
+        return $setl->toArrayPublic();
+    }
+
     public function fetchMultiple($input)
     {
         $settlements = (new Settlement\Repository)->fetch($input, $this->merchant->getKey());

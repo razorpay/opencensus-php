@@ -34,6 +34,15 @@ class SettlementController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putEditSettlement($id)
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->editSettlement($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getSettlement($id)
     {
         $data = (new Settlement\Service)->fetch($id);
