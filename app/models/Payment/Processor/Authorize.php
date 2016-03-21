@@ -52,9 +52,7 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized($payment);
 
-        $data = $this->postPaymentAuthorizeProcessing($payment);
-
-        return $data;
+        return $this->postPaymentAuthorizeProcessing($payment);
     }
 
     public function authorizeFailedPayment($payment)
