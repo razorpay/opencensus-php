@@ -72,6 +72,10 @@ class FeeCalculator
         $rules = $this->filterRulesOnFieldByValue(
                 $pricing, Pricing\Entity::PAYMENT_METHOD, $method, false);
 
+        $this->trace->debug(
+            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+            ['count' => count($rules)]);
+
         if ($method === Payment\Method::CARD)
         {
             $rule = $this->getRelevantPricingRuleForCard($rules);
@@ -109,6 +113,8 @@ class FeeCalculator
         $international = $payment->isInternational();
 
         $network = Card\Network::getCode($payment->card->getNetwork());
+
+        $this->traceAllRules($rules);
 
         // Current Implementation
         // * Filter based on international
@@ -149,6 +155,13 @@ class FeeCalculator
 
         $subventionType = $payment->merchant->getSubventionType();
 
+        if (count($rules) === 0)
+        {
+            throw new Exception\LogicException(
+                'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
+                ['intl' => $international, 'cardType' => $cardType, 'network' => $network]);
+        }
+
         $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 
         if ($rule === null)
@@ -166,6 +179,12 @@ class FeeCalculator
         {
             $rules = $this->filterRulesOnFieldByValue(
                 $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
+
+            $this->trace->debug(
+                TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+                ['filter' => $filter, 'count' => count($rules)]);
+
+            $this->traceAllRules($rules);
         }
 
         return $rules;
@@ -194,12 +213,14 @@ class FeeCalculator
 
         foreach ($rules as $rule)
         {
-            if ($rule->getAttribute($fieldName) === $fieldValue)
+            $value = $rule->getAttribute($fieldName);
+
+            if ($value === $fieldValue)
             {
                 $matchRules[] = $rule;
             }
             else if (($chooseDefault === true) and
-                     ($rule->getAttribute($fieldName) === $defaultValue))
+                     ($value === $defaultValue))
             {
                 $defaultMatchRules[] = $rule;
             }
@@ -350,5 +371,19 @@ class FeeCalculator
         {
             return (($amount * $percent) / 10000) + $fixed;
         }
+    }
+
+    protected function traceAllRules($rules)
+    {
+        $array = [];
+
+        foreach ($rules as $rule)
+        {
+            $array[] = $rule->toArray();
+        }
+
+        $this->trace->debug(
+            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+            ['rules' => $array]);
     }
 }
