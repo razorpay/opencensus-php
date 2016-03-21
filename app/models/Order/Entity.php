@@ -3,9 +3,12 @@
 namespace Models\Order;
 
 use Models\Base;
+use Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
     const AMOUNT        = 'amount';
@@ -80,21 +83,6 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Models\Payment\Entity');
     }
 
-    public function getNotes()
-    {
-        return $this->getAttribute(self::NOTES);
-    }
-
-    public function getNotesJson()
-    {
-        return $this->attributes[self::NOTES];
-    }
-
-    public function setNotesAttribute($notes)
-    {
-        $this->attributes[self::NOTES] = json_encode($notes);
-    }
-
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -108,18 +96,6 @@ class Entity extends Base\PublicEntity
     public function setAuthorized($authorized)
     {
         return $this->setAttribute(self::AUTHORIZED, $authorized);
-    }
-
-    public function getNotesAttribute($notes)
-    {
-        $notesArray = json_decode($notes, true);
-
-        if ($notesArray === '')
-        {
-            return [];
-        }
-
-        return $notesArray;
     }
 
     public function getStatus()

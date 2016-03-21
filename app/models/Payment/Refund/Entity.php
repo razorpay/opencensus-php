@@ -4,9 +4,12 @@ namespace Models\Payment\Refund;
 
 use Models\Base;
 use Models\Payment;
+use Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
     const PAYMENT_ID        = 'payment_id';
@@ -102,33 +105,6 @@ class Entity extends Base\PublicEntity
     protected function generateCurrency($input)
     {
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
-    }
-
-    public function setNotesAttribute($notes)
-    {
-        $this->attributes[self::NOTES] = json_encode($notes);
-    }
-
-    public function getNotesAttribute($notes)
-    {
-        $notesArray = json_decode($notes, true);
-
-        if ($notesArray === '')
-        {
-            return [];
-        }
-
-        return $notesArray;
-    }
-
-    public function getNotes()
-    {
-        return $this->getAttribute(self::NOTES);
-    }
-
-    public function getNotesJson()
-    {
-        return $this->attributes[self::NOTES];
     }
 
     public function getAmount()
