@@ -199,6 +199,9 @@ Route::group(array('before' => 'auth.admin'), function()
         // Terminal Routes
         Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
         Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
+
+        // Reconcile settlements
+        Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
     });
 
     Route::group(array('before' => 'auth.superadmin'), function()

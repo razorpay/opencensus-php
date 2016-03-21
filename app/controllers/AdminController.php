@@ -554,6 +554,14 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $response);
     }
 
+    public function postReconcileSettlement()
+    {
+        $path = 'settlements/reconcile';
+        list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
     public function editCredits($merchantId)
     {
         $input = Input::all();

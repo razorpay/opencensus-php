@@ -148,8 +148,11 @@ app.controller('ActionsCtrl', [
     $scope.toJson = function (data) {
       return angular.toJson(data, 4);
     };
-    $scope.apiRequest = function (data) {
-      var url = '/api/' + data.url;
+    $scope.apiRequest = function (data, url) {
+
+      if (typeof url === "undefined") {
+        var url = '/api/' + data.url;
+      }
 
       data = data.form;
 
@@ -233,7 +236,7 @@ app.controller('ActionsCtrl', [
         controller: 'ApiRequestCtrl'
       });
       modalInstance.result.then(function (data) {
-        $scope.apiRequest(data)
+        $scope.apiRequest(data, '/settlements/reconcile')
       }, $.noop);
     };
     $scope.openApiRequest = function () {
