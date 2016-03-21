@@ -47,8 +47,9 @@ else
     <link rel="stylesheet" href="<?= $checkout ?>/v1/css/checkout.css">
   </body>
   <script>
-    var payment_methods = <?= $methods ?>;
-    var fee_bearer  = <?= $feeBearer ?>;
+    var payment_methods = <?= json_encode($preferences['methods']) ?>;
+    var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
+    var preferences = <?= json_encode($preferences) ?>;
   </script>
   <script src="<?= $checkout ?>/v1/checkout-frame.js"></script>
 

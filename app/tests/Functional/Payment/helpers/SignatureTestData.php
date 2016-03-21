@@ -15,7 +15,7 @@ return [
             'content' => [
                 'amount' => 50000,
                 'currency' => 'INR',
-                'merchant_order_id' => 'random order id'
+                'merchant_order_id' => 'Grü-1234'
             ]
         ],
     ],
@@ -31,7 +31,7 @@ return [
                 'amount' => 50000,
                 'currency' => 'INR',
                 'notes' => [
-                    'merchant_order_id' => 'random order id'
+                    'merchant_order_id' => 'Grü-1234'
                 ]
             ],
         ],

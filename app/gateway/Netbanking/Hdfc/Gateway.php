@@ -243,16 +243,29 @@ class Gateway extends Base\Gateway
 
         $days = (time() - $input['payment']['created_at']) / (24*60*60);
 
+        $status = VerifyResult::STATUS_MATCH;
+
+        //
         // In HDFC netbnaking, the bank only stores the payment data for
-        // 45 days!
+        // 45 days! So for verification requests after 45 days, we simply
+        // treat it as successful and return.
+        //
         if ($days > 45)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'For hdfc netbanking, the bank only stores payment data for 45 days. ' .
-                'The given payment for verification is ' . $days . ' days old');
-        }
+            $verify->apiSuccess = true;
+            $verify->gatewaySuccess = true;
+            $verify->match = true;
 
-        $status = VerifyResult::STATUS_MATCH;
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                ['message' =>
+                    'In HDFC netbnaking, the bank only stores the payment data for
+                    45 days! Since it has been more than 45 days, we simply
+                    treat it as successful and return.',
+                 'payment_id' => $input['payment']['id']]);
+
+            return $status;
+        }
 
         $verify->apiSuccess = (($input['payment']['status'] === 'authorized') or
                                ($input['payment']['status'] === 'captured'));

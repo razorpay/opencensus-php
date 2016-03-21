@@ -66,6 +66,8 @@ class Gateway extends Base\Gateway
             $request['content']['msg'] = $request['content']['msg'] . '|' . $input['callbackUrl'];
         }
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         return $request;
     }
 //

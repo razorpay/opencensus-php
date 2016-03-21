@@ -180,9 +180,9 @@ class Reconciler2
 
         if ($setl->isStatusCreated() === false)
         {
-            throw new Exception\BadRequestValidationFailure(
-                'Settlement status should be created for reconciliation. ' .
-                'Current status: ' . $setl->getStatus());
+            // throw new Exception\BadRequestValidationFailureException(
+            //     'Settlement status should be created for reconciliation. ' .
+            //     'Current status: ' . $setl->getStatus());
         }
 
         if (isset($row['utr_no']))
@@ -199,17 +199,33 @@ class Reconciler2
         if (($status === 'Account Debited') or
             ($status === 'Presented and Paid'))
         {
-            $setl->setStatus(Settlement\Status::PROCESSED);
-            $this->setlRepo->save($setl);
+            $status = Settlement\Status::PROCESSED;
         }
         else
         {
-            $setl->setStatus(Settlement\Status::FAILED);
-            $this->setlRepo->save($setl);
+            $status = Settlement\Status::FAILED;
         }
 
-        $setl->transaction->setReconciledAt($this->reconciledAt);
-        $this->txnRepo->save($setl->transaction);
+        if ($setl->isStatusCreated() === false)
+        {
+            $oldStatus = $setl->getStatus();
+
+            if ($oldStatus !== $status)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old and new status not matching. ' .
+                    'Old status: ' . $oldStatus . ' New status: ' . $status .
+                    'Settlement Id: ' . $setl->getId());
+            }
+        }
+        else
+        {
+            $setl->setStatus($status);
+            $this->setlRepo->save($setl);
+
+            $setl->transaction->setReconciledAt($this->reconciledAt);
+            $this->txnRepo->save($setl->transaction);
+        }
 
         return $setl;
     }

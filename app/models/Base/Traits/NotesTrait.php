@@ -10,7 +10,7 @@ trait NotesTrait
 	 */
 	public function setNotesAttribute($notes)
     {
-        $this->attributes[self::NOTES] = json_encode($notes);
+        $this->attributes[self::NOTES] = utf8_json_encode($notes);
     }
 
     /**************************************************************
