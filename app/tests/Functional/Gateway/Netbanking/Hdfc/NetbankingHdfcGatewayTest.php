@@ -87,11 +87,12 @@ class NetbankingHdfcGatewayTest extends TestCase
     public function testRefundExcelFile()
     {
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
-        $this->refundPayment($payment['id']);
+
+        $refund = $this->refundPayment($payment['id']);
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
-        $this->refundPayment($payment['id'], 10000);
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
 
         $refunds = $this->getEntities('refund', [], true);
 

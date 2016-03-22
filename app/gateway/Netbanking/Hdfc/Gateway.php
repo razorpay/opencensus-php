@@ -137,6 +137,11 @@ class Gateway extends Base\Gateway
         return (new RefundExcel)->generate($input);
     }
 
+    public function reconcileRefunds($excel, $input)
+    {
+        return (new RefundExcel)->reconcile($excel, $input);
+    }
+
     protected function validateCallbackChecksum($input)
     {
         $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
