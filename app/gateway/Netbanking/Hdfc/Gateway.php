@@ -124,19 +124,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function generateRefunds($input)
-    {
-        foreach ($input as & $row)
-        {
-            $payment = $this->getRepo()->findByPaymentIdAndAction(
-                                $row['payment']['id'], Action::AUTHORIZE);
-
-            $row['gateway'] = $payment->toArray();
-        }
-
-        return (new RefundFile)->generate($input);
-    }
-
     public function reconcileRefunds($excel, $input)
     {
         return (new RefundExcel)->reconcile($excel, $input);

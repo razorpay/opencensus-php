@@ -5,7 +5,7 @@ namespace Gateway\Netbanking\Hdfc;
 use Carbon\Carbon;
 use Models\Settlement\Kotak\FileHandlerTrait;
 
-class RefundExcel
+class RefundFile
 {
     use FileHandlerTrait;
 
