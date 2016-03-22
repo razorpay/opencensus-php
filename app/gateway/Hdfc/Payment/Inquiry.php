@@ -117,13 +117,6 @@ trait Inquiry
 
             $this->fillPaymentStatusAndContent($verify);
         }
-        else
-        {
-            if ($received === null)
-            {
-                $this->setReceived(true);
-            }
-        }
 
         $payment->saveOrFail();
 
