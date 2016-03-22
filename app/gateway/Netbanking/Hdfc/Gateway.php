@@ -134,7 +134,7 @@ class Gateway extends Base\Gateway
             $row['gateway'] = $payment->toArray();
         }
 
-        return (new RefundExcel)->generate($input);
+        return (new RefundFile)->generate($input);
     }
 
     public function reconcileRefunds($excel, $input)
