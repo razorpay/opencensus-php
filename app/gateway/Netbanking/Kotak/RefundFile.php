@@ -9,22 +9,65 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Kotak_Netbanking_Refunds';
 
-    //@shk need clarity on what each of these fields means
-    //for each transaction. That's about it.
     protected static $headers = [
-    'S.No',
-    'Mer.Id',
-    'Date',
-    'Mer.RefNo.',
-    'Amount',
-    'Bank.RefNo.'];
-
-    public function __construct()
-    {
-        $this->mail = \Mail::getFacadeRoot();
-    }
+        'S.No',
+        'Mer.Id',
+        'Date',
+        'Mer.RefNo.',
+        'Amount',
+        'Bank.RefNo.'];
 
     public function generate($input)
+    {
+        $txt = $this->getRefundData($input);
+
+        $name = $this->getFileToWriteName();
+
+        $filePath = $this->writeToTextFile($txt);
+
+        $fileFullPath = $this->getFullFilePath($name);
+
+        $this->sendKotakRefundsMail($totalAmount, $fileFullPath);
+
+        return $filePath;
+    }
+
+    protected function getTextData($data, $prependLine = '')
+    {
+        $ignoreLastNewline = true;
+
+        $txt = $this->generateText($data, '|', $ignoreLastNewline);
+
+        $txt = $prependLine.$txt;
+
+        return $txt;
+    }
+
+    protected function sendKotakRefundsMail($totalAmount, $filePath)
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $data = [
+            'subject'   => 'Kotak NB Refund files for '.$today,
+            'body'      => 'PFA attached refund file.',
+            'file'      => $filePath,
+        ];
+
+        $this->mail->queue('emails.message', $data, function($message) use ($data)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('settlement@razorpay.com', 'Kotak Refunds');
+
+            $message->subject($data['subject']);
+
+            $message->to($emails);
+
+            $message->attach($data['file']);
+        });
+    }
+
+    protected function getRefundData($input)
     {
         // S.No in this file begins with 1
         $i = 1;
@@ -59,47 +102,6 @@ class RefundFile extends Base\RefundFile
 
         $txt = $this->getTextData($data, $initialLine);
 
-        $urlText = $this->writeToTextFile($txt);
-
-        $fileFullPath = $this->getFullFilePath($name);
-
-        $this->sendKotakRefundsMail($totalAmount, $fileFullPath);
-
-        return $urlText;
-    }
-
-    protected function getTextData($data, $prependLine = '')
-    {
-        $ignoreLastNewline = true;
-
-        $txt = $this->generateText($data, '|', $ignoreLastNewline);
-
-        $txt = $prependLine.$txt;
-
         return $txt;
-    }
-
-    protected function sendKotakRefundsMail($totalAmount, $urlText)
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $data = [
-            'subject'   => 'Kotak NB Refund files for '.$today,
-            'body'      => 'PFA attached refund file.',
-            'file'      => $urlText,
-        ];
-
-        $this->mail->queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('settlement@razorpay.com', 'Kotak Refunds');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-        });
     }
 }

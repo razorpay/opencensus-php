@@ -126,12 +126,11 @@ trait FileHandlerTrait
 
             $count--;
 
-           if((!$ignoreLastNewline)
-            or ($ignoreLastNewline and ($count > 0)))
+           if (($ignoreLastNewline === false) or
+               (($ignoreLastNewline === true) and ($count > 0)))
            {
                 $txt .= "\r\n";
            }
-
         }
 
         return $txt;
