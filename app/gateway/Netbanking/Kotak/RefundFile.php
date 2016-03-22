@@ -3,12 +3,10 @@
 namespace Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use Models\Settlement\Kotak\FileHandlerTrait;
+use Gateway\Netbanking\Base;
 
-class RefundFile
+class RefundFile extends Base\RefundFile
 {
-    use FileHandlerTrait;
-
     protected static $fileToWriteName = 'Kotak_Netbanking_Refunds';
 
     //@shk need clarity on what each of these fields means

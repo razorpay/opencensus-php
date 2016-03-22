@@ -3,12 +3,10 @@
 namespace Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
-use Models\Settlement\Kotak\FileHandlerTrait;
+use Gateway\Netbanking\Base;
 
-class RefundFile
+class RefundFile extends Base\RefundFile
 {
-    use FileHandlerTrait;
-
     protected static $fileToWriteName = 'HDFC_Netbanking_Refunds';
 
     protected static $headers = array(
@@ -60,14 +58,6 @@ class RefundFile
 
         $data['file'] = $fullpath;
         $data['body'] = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
-
-        // @note: May also cc -
-        //  Kavita.Puthran@hdfcbank.com,
-        //  Charusheela.Ghorpade@hdfcbank.com,
-        //  Santosh.Ghorpade@hdfcbank.com,
-        //  Santosh.Malap@hdfcbank.com,
-        //  Keshav.Mishra@hdfcbank.com,
-        //  Ashish.Mandhare@hdfcbank.com
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
