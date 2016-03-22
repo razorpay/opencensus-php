@@ -57,7 +57,7 @@ class RefundFile extends Base\RefundFile
     {
         $i = 1;
 
-        foreach ($input as $row)
+        foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');

@@ -15,31 +15,7 @@ class Service extends Base\Service
 {
     public function getNetbankingRefundsFile(array $input = array())
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
-
-        if (isset($input['on']))
-        {
-            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
-
-            $fromTimeStamp = $from->timestamp;
-
-            $to = $from->addDay()->timestamp - 1;
-
-            $from = $fromTimeStamp;
-        }
-        else
-        {
-            if (isset($input['from']))
-            {
-                $from = $input['from'];
-            }
-
-            if (isset($input['to']))
-            {
-                $to = $input['to'];
-            }
-        }
+        list($from, $to) = $this->getTimestamps($input);
 
         $returnValue = [];
 
@@ -72,7 +48,7 @@ class Service extends Base\Service
             return ['count' => $count];
         }
 
-        $input = [];
+        $data = [];
 
         foreach ($refunds as $refund)
         {
@@ -83,8 +59,10 @@ class Service extends Base\Service
             $col['payment'] = $refund->payment->toArray();
             $col['terminal'] = $refund->payment->terminal->toArray();
 
-            $input[] = $col;
+            $data[] = $col;
         }
+
+        $input['data'] = $data;
 
         $gateway = $terminal->getGateway();
 
@@ -93,6 +71,37 @@ class Service extends Base\Service
         $file = Gateway::call($gateway, $action, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
+    }
+
+    protected function getTimestamps($input)
+    {
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+
+        if (isset($input['on']))
+        {
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+
+            $fromTimeStamp = $from->timestamp;
+
+            $to = $from->addDay()->timestamp - 1;
+
+            $from = $fromTimeStamp;
+        }
+        else
+        {
+            if (isset($input['from']))
+            {
+                $from = $input['from'];
+            }
+
+            if (isset($input['to']))
+            {
+                $to = $input['to'];
+            }
+        }
+
+        return array($from, $to);
     }
 
     public function fetch($id)
