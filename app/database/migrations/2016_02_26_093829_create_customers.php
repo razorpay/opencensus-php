@@ -37,7 +37,6 @@ class CreateCustomers extends Migration {
             $table->integer(Customer::CREATED_AT);
             $table->integer(Customer::UPDATED_AT);
 
-            $table->index(Customer::EMAIL);
             $table->index(Customer::CONTACT);
             $table->index(Customer::CREATED_AT);
 

@@ -24,6 +24,7 @@ class Table
     const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
+    const CUSTOMER_APP      = 'customer_apps';
     const CUSTOMER_METHOD   = 'customer_methods';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 

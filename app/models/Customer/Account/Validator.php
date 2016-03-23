@@ -8,15 +8,15 @@ use Models\Customer\Entity;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::EMAIL           =>      'required|email|unique:customers',
+        Entity::EMAIL           =>      'sometimes|email',
         Entity::CONTACT         =>      'required|unique:customers',
         Entity::MERCHANT_ID     =>      'required',
         Entity::NAME            =>      'sometimes',
     );
 
     protected static $editRules = array(
-        Entity::EMAIL           =>      'required|email|unique:customers',
-        Entity::CONTACT         =>      'required|unique:customers',
+        Entity::EMAIL           =>      'sometimes|email',
+        Entity::CONTACT         =>      'sometimes|unique:customers',
         Entity::NAME            =>      'sometimes',
     );
 
