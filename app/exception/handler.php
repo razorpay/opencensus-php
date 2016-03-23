@@ -8,6 +8,7 @@ use Trace;
 use Redirect;
 use Response;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler
 {
@@ -36,10 +37,16 @@ class Handler
             return Response::json(array('success' => false, 'errors' => ['Method not allowed']));
         });
 
+        $this->app->error(function(NotFoundHttpException $e)
+        {
+            return Redirect::to('/#/404');
+        });
+
         $this->app->error(function(\Throwable $e, $code)
         {
             return $this->PHP7ExceptionHandler($e, $code);
         });
+
 
     }
     public function PHP7ExceptionHandler(\Throwable $e, $code)
