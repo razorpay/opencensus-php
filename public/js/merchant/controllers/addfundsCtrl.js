@@ -27,7 +27,7 @@ app.controller('AddfundsCtrl', [
     };
     $scope.addFunds = function () {
       try {
-        var rzp1 = new Razorpay($scope.options);
+        var rzp1 = new window.Razorpay($scope.options);
         rzp1.open();
       } catch (e) {
         $scope.alerts.addAlert('danger', 'An error occured - ' + e.message, true);
