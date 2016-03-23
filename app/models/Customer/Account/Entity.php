@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
     const EMAIL             =       'email';
     const CONTACT           =       'contact';
     const MERCHANT_ID       =       'merchant_id';
+    const ACTIVE            =       'active';
 
     protected static $sign      = '';
 
@@ -23,6 +24,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
+        self::ACTIVE,
         self::CONTACT,
         self::MERCHANT_ID,
     );
@@ -31,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
+        self::ACTIVE,
         self::CONTACT,
         self::MERCHANT_ID,
     );
@@ -39,7 +42,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
+        self::ACTIVE,
         self::CONTACT
+    );
+
+    protected $defaults = array(
+        self::ACTIVE    =>  true,
     );
 
     public function merchant()
@@ -65,5 +73,15 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function isActive()
+    {
+        return (bool)$this->getAttribute(self::ACTIVE);
+    }
+
+    public function getActiveAttribute()
+    {
+        return (bool)$this->attributes[self::ACTIVE];
     }
 }

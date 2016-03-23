@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::EMAIL           =>      'sometimes|email',
         Entity::CONTACT         =>      'sometimes|unique:customers',
         Entity::NAME            =>      'sometimes',
+        Entity::ACTIVE          =>      'sometimes|in:0,1'
     );
 
     protected static $createValidators = array(

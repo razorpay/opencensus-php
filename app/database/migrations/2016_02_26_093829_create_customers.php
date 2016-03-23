@@ -34,6 +34,9 @@ class CreateCustomers extends Migration {
             
             $table->char(Customer::CONTACT, 15);
 
+            $table->boolean(Customer::ACTIVE);
+                  ->default(1);
+                              
             $table->integer(Customer::CREATED_AT);
             $table->integer(Customer::UPDATED_AT);
 
