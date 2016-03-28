@@ -325,8 +325,15 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        if ($response->status_code !== 200)
+        $statusCode = $response->status_code;
+        if ($statusCode !== 200)
         {
+            if ($statusCode === 504)
+            {
+                throw new Exception\GatewayTimeoutException(
+                    'Http status code - 504');
+            }
+
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 '',

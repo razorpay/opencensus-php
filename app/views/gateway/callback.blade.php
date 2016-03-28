@@ -1,4 +1,6 @@
-<!doctype html><html style="height:100%"><head><title>Razorpay - Payment in progress</title><style>
+<!doctype html><html style="height:100%"><head><title>Razorpay - Payment in progress</title>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"><style>
 body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;padding:0;width:100%;height:100%;text-align:center;display:table}
 #text{vertical-align: middle; display: none; text-transform: uppercase; font-weight: bold; font-size: 30px; line-height: 40px}
 #icon{font-size: 60px;color: #fff; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin: -60px auto 20px; display: inline-block}
@@ -22,7 +24,7 @@ You can safely close this tab
 // during tests for extracting callback data from js
 
 // Callback data //
-var data = {{json_encode($data);}};
+var data = {{utf8_json_encode($data)}};
 // Callback data //
 
 var s = 'razorpay_payment_id' in data;
