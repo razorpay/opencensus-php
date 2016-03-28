@@ -171,6 +171,11 @@ class Server
         $this->input = $input;
     }
 
+    public function setRequest($request)
+    {
+        $this->request = $request;
+    }
+
     public function setAction($action)
     {
         $this->action = $action;

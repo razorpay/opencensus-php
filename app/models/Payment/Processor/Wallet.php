@@ -7,4 +7,5 @@ class Wallet
     const PAYTM     = 'paytm';
     const PAYZAPP   = 'payzapp';
     const MOBIKWIK  = 'mobikwik';
+    const PAYUMONEY = 'payumoney';
 }

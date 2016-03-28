@@ -35,6 +35,12 @@ class Gateway
     protected $authorize = false;
 
     /**
+     * Whether the gateway supports otp flow.
+     * @var boolean
+     */
+    protected $otpFlow = false;
+
+    /**
      * The state in which the api is operating
      * that is live/test
      * @var string
@@ -123,6 +129,11 @@ class Gateway
     {
         $this->action = $action;
         $this->input = $input;
+    }
+
+    public function canRunOtpFlow()
+    {
+        return $this->otpFlow;
     }
 
     public function setTerminal($terminal)

@@ -887,6 +887,10 @@ trait PaymentTrait
                 {
                     return $this->processMerchantReturnCallbackForm($response);
                 }
+                else if ($content['type'] === 'otp')
+                {
+                    $gateway = $content['gateway'];
+                }
             }
         }
 

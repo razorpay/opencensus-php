@@ -66,6 +66,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
                 <option value="paytm">Paytm</option>
                 <option value="mobikwik">Mobikwik</option>
                 <option value="payzapp">Payzapp</option>
+                <option value="payumoney">Payumoney</option>
             </select>
         </td>
     </tr>

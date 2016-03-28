@@ -460,18 +460,19 @@ trait Authorize
 
     protected function canRunOtpPaymentFlow($payment, $input)
     {
-        return ((isset($input['_']['source'])) and
-                ($input['_']['source'] === 'checkoutjs') and
-                ($payment->getMethod() === Method::WALLET) and
-                ($payment->getWallet() === Wallet::MOBIKWIK));
+        return ($payment->getMethod() === Method::WALLET and
+                    (((isset($input['_']['source'])) and
+                        ($input['_']['source'] === 'checkoutjs') and
+                        ($payment->getWallet() === Wallet::MOBIKWIK)) or
+                    $payment->getWallet() === Wallet::PAYUMONEY));
     }
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)
     {
-        return $this->callGatewayMobikwikOtpGenerate($gatewayInput, $payment);
+        return $this->callGatewayOtpGenerate($gatewayInput, $payment);
     }
 
-    protected function callGatewayMobikwikOtpGenerate($data, $payment)
+    protected function callGatewayOtpGenerate($data, $payment)
     {
         try
         {

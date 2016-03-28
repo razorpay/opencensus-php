@@ -38,6 +38,9 @@ class CreateMerchantBanks extends Migration {
             $table->boolean(Methods::PAYZAPP)
                   ->default(0);
 
+            $table->boolean(Methods::PAYUMONEY)
+                  ->default(0);
+
             $table->boolean(Methods::EMI)
                   ->default(0);
 
