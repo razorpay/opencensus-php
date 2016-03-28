@@ -131,4 +131,22 @@ return [
             ]
         ]
     ],
+
+    'testCreateSubMerchant' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'POST',
+            'content' => [
+                'id' => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'NewSubmerchant',
+                'name' => 'Submerchant',
+                'email' => 'test@razorpay.com',
+            ],
+        ],
+    ]
 ];

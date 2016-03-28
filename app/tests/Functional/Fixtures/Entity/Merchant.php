@@ -215,4 +215,9 @@ class Merchant extends Base
     {
         return $this->edit($id, ['international' => '0']);
     }
+
+    public function editFeatures($features, $id = '10000000000000')
+    {
+        return $this->edit($id, ['features' => $features]);
+    }
 }
