@@ -23,8 +23,12 @@
         </thead>
         <tbody>
           <tr ng-repeat="merchant in referrals">
-            <!-- <td>{{webhook.id}}</td> -->
-            <td>{{merchant.id}}</td>
+            <td ng-show="user.tags.indexOf('Mastermerchant') != -1"
+              tooltip="Click to login as this merchant"
+            >
+              <a ng-click="switchMerchant(merchant.id)">{{merchant.id}}</a>
+            </td>
+            <td ng-show="user.tags.indexOf('Mastermerchant') === -1">{{merchant.id}}</td>
             <td>{{merchant.name}}</td>
             <td>{{merchant.created_at*1000 | date:'medium'}}</td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.merchant_details.submitted == 1, 'fa-times text-danger':merchant.merchant_details.submitted == 0}"></i></td>

@@ -31,6 +31,19 @@ app.controller('ReferralsCtrl', [
       });
     };
 
+    $scope.switchMerchant = function (merchantId){
+      var request = $http.get('/settings/merchants/switch/' + merchantId);
+      request.success(function (data) {
+        if (data.success) {
+          location.reload();
+        } else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.createMerchant = function(merchant) {
       var request = $http({
         method: 'post',
