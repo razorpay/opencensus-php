@@ -411,7 +411,8 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'dummy_feature' =>  'dummy'
+        'dummy_feature'         =>  'dummy',
+        'submerchant_create'    =>  'aggregator',
     );
 
     protected static $router;
