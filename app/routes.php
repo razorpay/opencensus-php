@@ -20,7 +20,7 @@ Route::group(array('before' => 'auth.user'), function()
 
     // This returns all the needed information
     Route::get('/user', 'UserController@getUserDetails');
-    Route::get('user/details', 'UserController@getUserDetails');
+    Route::get('/user/details', 'UserController@getUserDetails');
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
     Route::get('/{mode}/payments', 'TransactionController@getPayments');
 
