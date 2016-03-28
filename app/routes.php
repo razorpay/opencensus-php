@@ -206,24 +206,29 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::group(array('before' => 'auth.superadmin'), function()
     {
-        // This is the RAW API route which processes api calls
-        Route::post('/api/{path?}', 'AdminController@passThrough')
-            ->where('path', '.*$');
+        Route::group(array('before' => 'csrf'), function() {
+            // This is the RAW API route which processes api calls
+            Route::post('/api/{path?}', 'AdminController@passThrough')
+                ->where('path', '.*$');
+            Route::post('/admin/users', 'AdminController@postAddAdmin');
+            Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
+            Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
+            Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
+            Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+            Route::put('/admin/merchant/{id}/name', 'AdminController@putEditMerchantName');
+            Route::put('/admin/merchant/{id}/bankdetails', 'AdminController@putEditBankDetails');
+        });
+
         Route::get('/admin/users', 'AdminController@getAdmins');
-        Route::post('/admin/users', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
-        Route::post('/admin/users/{id}/superadmin', array('before'=>'csrf', 'uses'=> 'AdminController@postPromoteAdmin'));
-        Route::put('/admin/merchants/{id}/confirmed', array('before'=>'csrf', 'uses'=> 'AdminController@postConfirmMerchant'));
-        Route::delete('/admin/users/{id}', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
-        Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-        Route::put('/admin/merchant/{id}/name', 'AdminController@putEditMerchantName');
-        Route::put('/admin/merchant/{id}/bankdetails', 'AdminController@putEditBankDetails');
     });
+
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
     Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
             ->where('format', 'csv');
-    // This is a generic route and needs to be defined below
+    // This is a very generic route and needs to be defined below
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 });
+
 Route::group(array('before' => 'guest.admin'), function()
 {
     Route::post('/admin/signin', array('before' => 'csrf','uses'=> 'AdminController@postSignin'));
