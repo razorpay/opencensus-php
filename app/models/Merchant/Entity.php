@@ -58,6 +58,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
+    const MASTER_MERCHANT = 'Mastermerchant';
+
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
         'Diners Club'       =>  self::DICL,
@@ -124,6 +126,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->tag("ref-{$masterMerchant->id}");
 
         return $merchant;
+    }
+
+    public function isMasterMerchant()
+    {
+        return in_array(self::MASTER_MERCHANT, $this->tagNames());
     }
 
     /**

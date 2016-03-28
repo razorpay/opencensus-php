@@ -25,6 +25,9 @@ class Service extends Base\Service
     const ROLL_KEY_FORBIDDEN        = "Roll key forbidden on this account";
     const SELF_REMOVE_FORBIDDEN     = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
+    const SUBMERCHANT_NOT_ALLOWED   = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+
+    const MASTER_MERCHANT = 'Mastermerchant';
 
     public function __construct()
     {
@@ -85,6 +88,11 @@ class Service extends Base\Service
     public function registerSubMerchant(array $input)
     {
         $masterMerchant = $this->currentMerchant;
+
+        if(! $masterMerchant->isMasterMerchant())
+        {
+            return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+        }
 
         $error = (new Merchant\Validator)
             ->validateInput('create_submerchant', $input)->messages();
