@@ -11,8 +11,6 @@ angular.module('app.filters', []).filter('fromNow', function () {
       return input;
     var words = input.toString().split(' ');
     for (var i = 0; i < words.length; i++) {
-      words[i] = words[i].toLowerCase();
-      // lowercase everything
       words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
     }
     return words.join(' ');
