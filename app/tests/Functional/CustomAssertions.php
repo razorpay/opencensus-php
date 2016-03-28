@@ -7,7 +7,7 @@ use Validator;
 trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
-    {//sd(get_class($e));
+    {// sd(get_class($e), $class);
         if (($e instanceof $class) === false)
         {
             throw $e;
