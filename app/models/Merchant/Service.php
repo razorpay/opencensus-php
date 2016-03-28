@@ -121,12 +121,37 @@ class Service extends Base\Service
             // Finally attach the current user to the new user's team
             $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
 
+            try
+            {
+                $this->createSubMerchantOnApi($merchant, $currentMerchant);
+            }
+            catch(BadRequestError $e)
+            {
+                return [[$e->getMessage()], null];
+            }
+
             return [null, $merchant->toArray()];
         }
         else
         {
             return [$error, null];
         }
+    }
+
+    protected function createSubMerchantOnApi(Entity $merchant, Entity $aggregator)
+    {
+        $data = [
+            'name'  =>  $merchant->name,
+            'id'    =>  $merchant->id
+        ];
+
+        $this->setApiCredentials($aggregator->id);
+
+        $response = $this->api->merchant
+            ->createSubMerchant($data)
+            ->toArray();
+
+        return $response;
     }
     /**
      * take care when calling this function
