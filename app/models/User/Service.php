@@ -2,6 +2,7 @@
 
 namespace Models\User;
 
+use Carbon\Carbon;
 use Config;
 use DB;
 use DrewM\MailChimp\MailChimp;
@@ -280,12 +281,17 @@ class Service extends Base\Service
 
     protected function getZapierData($merchant, $user, $referer)
     {
+        // This is the same format we'll set in the google spreadsheet
+        $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
+            ->format('j/m/Y H:i:s');
+
         return [
             'id'            => $merchant->id,
             'email'         => $user->email,
             'individual'    => $user->name,
             'name'          => $merchant->name,
-            'ref'           => $referer ? $referer : ''
+            'ref'           => $referer ? $referer : '',
+            'timestamp'     => $timestamp,
         ];
     }
 
