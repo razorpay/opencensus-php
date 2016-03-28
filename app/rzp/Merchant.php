@@ -5,9 +5,20 @@ namespace RZP;
 class Merchant extends Entity
 {
     const CONFIG_URL = 'account/config';
+    const SUBMERCHANT_CREATE_URL = 'submerchants';
+
     public function create($params = null)
     {
         return parent::create($params);
+    }
+
+    /**
+     * Creates a submerchant account
+     * Uses Proxy Auth
+    */
+    public function createSubMerchant(array $params = [])
+    {
+        return $this->request('POST', self::SUBMERCHANT_CREATE_URL, $params);
     }
 
     public function fetch($id)

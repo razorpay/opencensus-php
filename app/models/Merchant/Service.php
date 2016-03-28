@@ -25,7 +25,17 @@ class Service extends Base\Service
     const ROLL_KEY_FORBIDDEN        = "Roll key forbidden on this account";
     const SELF_REMOVE_FORBIDDEN     = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
+    const SUBMERCHANT_NOT_ALLOWED   = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
 
+    public function __construct()
+    {
+        $this->currentUser = Auth::user()->user();
+
+        if ($this->currentUser)
+        {
+            $this->currentMerchant = $this->currentUser->currentMerchant();
+        }
+    }
 
     public static function register(User\Entity $user, $businessName, $referer = false)
     {
@@ -48,7 +58,6 @@ class Service extends Base\Service
             // This is called for certain special email addresses
             $merchant->setCustomId();
 
-
             if ($referer)
             {
                 $merchant->tag('ref-'.$referer);
@@ -66,6 +75,84 @@ class Service extends Base\Service
 
         return [$error, $merchant];
 
+    }
+
+    /**
+     * Registers a sub-merchant account and associates it both ways:
+     * 1. Marks the original user as the referral
+     * 2. Adds the original user to the new merchant's team
+     *
+     * This is one scenario where we don't use currentMerchant
+     * @param  string $merchantId Merchant Id
+     * @param  array  $input      [description]
+     * @return [type]             [description]
+     */
+    public function registerSubMerchant(array $input)
+    {
+        $currentMerchant = $this->currentMerchant;
+
+        if(! $currentMerchant->isAggregator())
+        {
+            return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+        }
+
+        $error = (new Merchant\Validator)
+            ->validateInput('create_submerchant', $input)->messages();
+
+        // We are re-using the merchant email here
+        $data = [
+            'name'  =>  $input['name'],
+            'email' =>  $currentMerchant->email,
+        ];
+
+        if (empty($error))
+        {
+            $businessName = $input['name'];
+            $merchant = Entity::createFromMerchant($currentMerchant, $businessName);
+
+            $merchant->save();
+
+            $details = [
+                'merchant_id'   => $merchant->id,
+                'contact_email' => $merchant->email
+            ];
+
+            MerchantDetails\Entity::createOrFail($details);
+
+            // Finally attach the current user to the new user's team
+            $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+
+            try
+            {
+                $this->createSubMerchantOnApi($merchant, $currentMerchant);
+            }
+            catch(BadRequestError $e)
+            {
+                return [[$e->getMessage()], null];
+            }
+
+            return [null, $merchant->toArray()];
+        }
+        else
+        {
+            return [$error, null];
+        }
+    }
+
+    protected function createSubMerchantOnApi(Entity $merchant, Entity $aggregator)
+    {
+        $data = [
+            'name'  =>  $merchant->name,
+            'id'    =>  $merchant->id
+        ];
+
+        $this->setApiCredentials($aggregator->id);
+
+        $response = $this->api->merchant
+            ->createSubMerchant($data)
+            ->toArray();
+
+        return $response;
     }
     /**
      * take care when calling this function
@@ -253,7 +340,7 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
-        if (Auth::user()->user()->currentMerchant->isTestAccount()) {
+        if ($this->currentMerchant->isTestAccount()) {
             return [[static::ROLL_KEY_FORBIDDEN], null];
         }
 
@@ -322,7 +409,7 @@ class Service extends Base\Service
      */
     public function getWebhooks($mode)
     {
-        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = $this->currentUser->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -342,7 +429,7 @@ class Service extends Base\Service
 
     public function editWebhook($mode, $webhookId, $input)
     {
-        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = $this->currentUser->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -365,7 +452,7 @@ class Service extends Base\Service
 
     public function createWebhook($mode, $input)
     {
-        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = $this->currentUser->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -486,7 +573,11 @@ class Service extends Base\Service
     {
         $tag = "ref-$merchantId";
 
-        return Merchant\Entity::withAnyTag($tag)
+        return Merchant\Entity::with(array('merchantDetails' => function($query)
+            {
+                $query->addSelect(array('merchant_id', 'submitted'));
+            }))
+            ->withAnyTag($tag)
             ->get(['id', 'name', 'activated', 'created_at']);
     }
 

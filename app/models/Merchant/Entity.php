@@ -4,9 +4,11 @@ namespace Models\Merchant;
 
 use Mail;
 use Uuid;
+
 use Models\Base;
 use Models\User;
 use Models\Invitation;
+
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
@@ -54,6 +56,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
+    const AGGREGATOR = 'Aggregator';
+
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
         'Diners Club'       =>  self::DICL,
@@ -93,6 +97,47 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->updated_at = $user->updated_at;
 
         return $merchant;
+    }
+
+    /**
+     * Create sub-merchant accounts
+     * @param  Models\Merchant\Entity $aggregator Aggregator Merchant Entity
+     * @param  string          $businessName   Merchant Business Name
+     * @return Models\Merchant\Entity Sub Merchant Entity
+     */
+    public static function createFromMerchant(Entity $aggregator, $businessName)
+    {
+        $merchant = new static();
+
+        $merchant->id       = Uuid::generate();
+        $merchant->name     = $businessName;
+        $merchant->email    = $aggregator->email;
+
+        // This password is never really used anywhere
+        // We just have it for legacy reasons till we drop
+        // the field entirely from our database
+        // Logins run on top of User\password.
+        $merchant->password = "invalid_password";
+
+        // We mark the user as confirmed
+        $merchant->confirm_token = null;
+
+        // We tag the merchant as referred from the original merchant as well
+        $merchant->tag("ref-{$aggregator->id}");
+
+        return $merchant;
+    }
+
+    /**
+     * An aggregator is defined as a merchant
+     * Which can create other merchants without sending
+     * them confirmation emails. All these merchants are also
+     * created with the same email address
+     * return boolean
+     */
+    public function isAggregator()
+    {
+        return in_array(self::AGGREGATOR, $this->tagNames());
     }
 
     /**

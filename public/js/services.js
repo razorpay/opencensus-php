@@ -51,8 +51,9 @@ angular.module('app.services', [])
       }
     };
   }
-])  //Authorisation service
-    //Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
+])
+//Authorisation service
+//Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 .factory('authorization', [
   '$rootScope',
   '$state',
@@ -195,7 +196,8 @@ angular.module('app.services', [])
       return new handler($scopeVar);
     }
   };
-})  // Fetches & stores details of currently logged in user
+})
+// Fetches & stores details of currently logged in user
 .factory('admin', [
   '$q',
   '$http',
@@ -240,8 +242,9 @@ angular.module('app.services', [])
       }
     };
   }
-])  //Authorisation service
-    //Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
+])
+//Authorisation service
+//Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 .factory('adminAuthorization', [
   '$rootScope',
   '$state',

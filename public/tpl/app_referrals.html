@@ -17,19 +17,64 @@
             <th data-toggle="true">Merchant Id</th>
             <th>Name</th>
             <th>Registered At</th>
+            <th>Submitted</th>
             <th>Activated</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="merchant in referrals">
-            <!-- <td>{{webhook.id}}</td> -->
-            <td>{{merchant.id}}</td>
+            <td ng-show="user.tags.indexOf('Aggregator') != -1"
+            >
+              <a ng-click="switchMerchant(merchant.id)">{{merchant.id}}</a>
+            </td>
+            <td ng-show="user.tags.indexOf('Aggregator') === -1">{{merchant.id}}</td>
             <td>{{merchant.name}}</td>
             <td>{{merchant.created_at*1000 | date:'medium'}}</td>
+            <td><i class="fa" ng-class="{'fa-check text-success': merchant.merchant_details.submitted == 1, 'fa-times text-danger':merchant.merchant_details.submitted == 0}"></i></td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
           </tr>
         </tbody>
       </table>
+      <footer class="panel-footer" ng-show="user.tags.indexOf('Aggregator') != -1">
+        <div class="text-center m-t m-b">
+          <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 hidden-xs">
+          </div>
+          <div class="col-sm-4 text-center">
+            <button id="createMerchant" ng-click="openCreateMerchant()" class="btn btn-primary">
+              Create New Merchant
+            </button>
+          </div>
+          <div class="col-sm-4 text-right text-center-xs">
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 </div>
+
+<script type="text/ng-template" id="createMerchantModal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Create Merchant</h3>
+  </div>
+  <div class="modal-body create-merchant-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-3 control-label">Merchant Name</label>
+        <div class="col-lg-7">
+          <input id="merchant_name" class="form-control" ng-model="merchant.name">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">
+        Cancel
+      </button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(merchant)">
+        Create
+      </button>
+  </div>
+</script>
