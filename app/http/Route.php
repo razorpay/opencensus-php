@@ -62,6 +62,7 @@ final class Route
         'merchant_fetch'                        => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                    ],
         'merchant_edit'                         => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                    ],
         'merchant_edit_config'                  => ['put',      'account/config',                           'MerchantController@putMerchantConfig'                              ],
+        'submerchant_create'                    => ['post',     'submerchants',                             'MerchantController@postCreateSubMerchant'                          ],
         'account_fetch_balance'                 => ['get',      'balance',                                  'MerchantController@getAccountBalance'                              ],
         'account_fetch_config'                  => ['get',      'account/config',                           'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
@@ -356,6 +357,7 @@ final class Route
         'merchant_edit_config',
         'account_fetch_balance',
         'account_fetch_config',
+        'submerchant_create',
     );
 
     public static $direct = array(

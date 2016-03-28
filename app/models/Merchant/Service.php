@@ -45,12 +45,20 @@ class Service extends Base\Service
         // The merchant is created on email confirmation on dashboard side
         // This is when we send the welcome email
 
-        $this->sendEmail(
-            'emails.merchant.welcome',
-            'Welcome to Razorpay',
-            $merchant->toArray());
+        $this->sendMerchantCreationMail($merchant);
 
         return $merchant->toArrayPublic();
+    }
+
+    public function createSubMerchant(array $input)
+    {
+        $merchant = $this->merchant;
+
+        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
+
+        $this->sendMerchantCreationMail($subMerchant);
+
+        return $subMerchant->toArrayPublic();
     }
 
     public function edit($id, array $input)
@@ -60,6 +68,14 @@ class Service extends Base\Service
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function sendMerchantCreationMail($merchant)
+    {
+        $this->sendEmail(
+            'emails.merchant.welcome',
+            'Welcome to Razorpay',
+            $merchant->toArray());
     }
 
     public function editEmail($id, array $input)

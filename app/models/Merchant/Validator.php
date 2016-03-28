@@ -29,6 +29,9 @@ class Validator extends Base\Validator
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
     );
 
+    protected static $uniqueEmailRules = array(
+        Entity::EMAIL               => 'required|email|unique:merchants');
+
     protected static $editCreditsRules = array(
         Balance\Entity::CREDITS             => 'required|integer|min:0|max:50000000'
     );

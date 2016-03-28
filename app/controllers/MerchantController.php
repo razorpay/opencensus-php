@@ -16,6 +16,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function postCreateSubMerchant()
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->createSubMerchant($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchant($id)
     {
         $input = Input::all();
