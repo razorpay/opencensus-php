@@ -84,7 +84,7 @@ class Service extends Base\Service
      */
     public function registerSubMerchant(array $input)
     {
-        $masterMerchant = $this->currentUser->getOwnerMerchant();
+        $masterMerchant = $this->currentMerchant;
 
         $error = (new Merchant\Validator)
             ->validateInput('create_submerchant', $input)->messages();

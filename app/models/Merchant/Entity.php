@@ -121,7 +121,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->confirm_token = null;
 
         // We tag the merchant as referred from the original merchant as well
-        $merchant->tag("ref-{$merchant->id}");
+        $merchant->tag("ref-{$masterMerchant->id}");
 
         return $merchant;
     }

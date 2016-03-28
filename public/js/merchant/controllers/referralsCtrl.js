@@ -42,6 +42,7 @@ app.controller('ReferralsCtrl', [
         $scope.alerts.resetAlerts();
         if (data.success) {
           $scope.alerts.addAlert('success', 'Merchant was created successfully');
+          fetchReferrals();
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
