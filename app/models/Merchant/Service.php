@@ -33,7 +33,10 @@ class Service extends Base\Service
     {
         $this->currentUser = Auth::user()->user();
 
-        $this->currentMerchant = $this->currentUser->currentMerchant();
+        if ($this->currentUser)
+        {
+            $this->currentMerchant = $this->currentUser->currentMerchant();
+        }
     }
 
     public static function register(User\Entity $user, $businessName, $referer = false)
