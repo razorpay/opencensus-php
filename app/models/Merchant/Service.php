@@ -546,7 +546,11 @@ class Service extends Base\Service
     {
         $tag = "ref-$merchantId";
 
-        return Merchant\Entity::withAnyTag($tag)
+        return Merchant\Entity::with(array('merchantDetails' => function($query)
+            {
+                $query->addSelect(array('merchant_id', 'submitted'));
+            }))
+            ->withAnyTag($tag)
             ->get(['id', 'name', 'activated', 'created_at']);
     }
 

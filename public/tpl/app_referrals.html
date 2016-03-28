@@ -17,6 +17,7 @@
             <th data-toggle="true">Merchant Id</th>
             <th>Name</th>
             <th>Registered At</th>
+            <th>Submitted</th>
             <th>Activated</th>
           </tr>
         </thead>
@@ -26,6 +27,7 @@
             <td>{{merchant.id}}</td>
             <td>{{merchant.name}}</td>
             <td>{{merchant.created_at*1000 | date:'medium'}}</td>
+            <td><i class="fa" ng-class="{'fa-check text-success': merchant.merchant_details.submitted == 1, 'fa-times text-danger':merchant.merchant_details.submitted == 0}"></i></td>
             <td><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></td>
           </tr>
         </tbody>
