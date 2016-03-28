@@ -88,9 +88,9 @@ class Service extends Base\Service
      */
     public function registerSubMerchant(array $input)
     {
-        $masterMerchant = $this->currentMerchant;
+        $currentMerchant = $this->currentMerchant;
 
-        if(! $masterMerchant->isMasterMerchant())
+        if(! $currentMerchant->isAggregator())
         {
             return [[self::SUBMERCHANT_NOT_ALLOWED], null];
         }
@@ -101,13 +101,13 @@ class Service extends Base\Service
         // We are re-using the merchant email here
         $data = [
             'name'  =>  $input['name'],
-            'email' =>  $masterMerchant->email,
+            'email' =>  $currentMerchant->email,
         ];
 
         if (empty($error))
         {
             $businessName = $input['name'];
-            $merchant = Entity::createFromMerchant($masterMerchant, $businessName);
+            $merchant = Entity::createFromMerchant($currentMerchant, $businessName);
 
             $merchant->save();
 

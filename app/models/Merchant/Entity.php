@@ -58,7 +58,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
-    const MASTER_MERCHANT = 'Mastermerchant';
+    const AGGREGATOR = 'Aggregator';
 
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
@@ -103,11 +103,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     /**
      * Create sub-merchant accounts
-     * @param  Models\Merchant\Entity $masterMerchant Mast Merchant Entity
+     * @param  Models\Merchant\Entity $aggregator Aggregator Merchant Entity
      * @param  string          $businessName   Merchant Business Name
      * @return Models\Merchant\Entity Sub Merchant Entity
      */
-    public static function createFromMerchant(Entity $masterMerchant, $businessName)
+    public static function createFromMerchant(Entity $aggregator, $businessName)
     {
         $password = (new RandomFactory)->getLowStrengthGenerator()->generateString(8);
 
@@ -115,7 +115,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         $merchant->id       = Uuid::generate();
         $merchant->name     = $businessName;
-        $merchant->email    = $masterMerchant->email;
+        $merchant->email    = $aggregator->email;
 
         $merchant->password = $password;
 
@@ -123,14 +123,21 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->confirm_token = null;
 
         // We tag the merchant as referred from the original merchant as well
-        $merchant->tag("ref-{$masterMerchant->id}");
+        $merchant->tag("ref-{$aggregator->id}");
 
         return $merchant;
     }
 
-    public function isMasterMerchant()
+    /**
+     * An aggregator is defined as a merchant
+     * Which can create other merchants without sending
+     * them confirmation emails. All these merchants are also
+     * created with the same email address
+     * return boolean
+     */
+    public function isAggregator()
     {
-        return in_array(self::MASTER_MERCHANT, $this->tagNames());
+        return in_array(self::AGGREGATOR, $this->tagNames());
     }
 
     /**
