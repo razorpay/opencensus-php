@@ -27,8 +27,6 @@ class Service extends Base\Service
     const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
     const SUBMERCHANT_NOT_ALLOWED   = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
 
-    const MASTER_MERCHANT = 'Mastermerchant';
-
     public function __construct()
     {
         $this->currentUser = Auth::user()->user();

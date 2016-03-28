@@ -12,8 +12,6 @@ use Models\Invitation;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
-use RandomLib\Factory as RandomFactory;
-
 class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
     use \Conner\Tagging\TaggableTrait;
@@ -109,15 +107,17 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      */
     public static function createFromMerchant(Entity $aggregator, $businessName)
     {
-        $password = (new RandomFactory)->getLowStrengthGenerator()->generateString(8);
-
         $merchant = new static();
 
         $merchant->id       = Uuid::generate();
         $merchant->name     = $businessName;
         $merchant->email    = $aggregator->email;
 
-        $merchant->password = $password;
+        // This password is never really used anywhere
+        // We just have it for legacy reasons till we drop
+        // the field entirely from our database
+        // Logins run on top of User\password.
+        $merchant->password = "invalid_password";
 
         // We mark the user as confirmed
         $merchant->confirm_token = null;
