@@ -9,6 +9,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'AxisMigs';
 
+    protected $appFetchParamRules = array(
+        Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
+        'vpc_ReceiptNo'                 => 'sometimes|string|max:25');
+
     public function findByMerchantTxnRef($merchantTxnRef)
     {
         $repo = $this->repo;

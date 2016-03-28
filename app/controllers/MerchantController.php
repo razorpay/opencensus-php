@@ -375,9 +375,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $methods = (new Merchant\Service)->getPaymentMethods();
-
-        $feeBearer = (new Merchant\Service)->getFeeBearer();
+        $prefs = (new Merchant\Service)->getCheckoutPreferences();
 
         $app = \App::getFacadeRoot();
 
@@ -399,12 +397,16 @@ class MerchantController extends BaseController
         }
 
         $data['checkout'] = $url;
-
-        $data['methods'] = json_encode($methods);
-
-        $data['feeBearer'] = json_encode($feeBearer);
+        $data['preferences'] = $prefs;
 
         return ApiResponse::generateResponse($data);
+    }
+
+    public function getPublicEntityReport($entity)
+    {
+        $input = Input::all();
+
+        return (new Models\Base\Report)->getReport($input, $entity);
     }
 
     /**

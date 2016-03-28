@@ -147,6 +147,8 @@ trait Authorize
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
+        $this->validateInternationalAllowed($payment);
+
         //
         // Call gateway input
         //
@@ -160,6 +162,30 @@ trait Authorize
         $gatewayInput = [];
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+    }
+
+    protected function validateInternationalAllowed($payment)
+    {
+        if ($payment->getMethod() !== Method::CARD)
+        {
+            return;
+        }
+
+        $card = $payment->card;
+        $merchant = $payment->merchant;
+
+        if (($card->isInternational() === true) and
+            ($merchant->isInternational() === false))
+        {
+            $e = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
+
+            $this->updatePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $e;
+        }
     }
 
     protected function runAuthorizeFailedTransaction($payment)
@@ -490,7 +516,7 @@ trait Authorize
 
             return $callbackData;
         }
-        catch(Exception\BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed(
                     $e->getError(),
@@ -569,17 +595,17 @@ trait Authorize
         {
             $token = $this->getCardToken($cardInput['number']);
 
-            if (empty($token) === false) 
+            if (empty($token) === false)
             {
                 $cardInput[Card\Entity::TOKEN] = $token;
-                $cardInput[Card\Entity::SERVICE] = 'tokenex';            
+                $cardInput[Card\Entity::SERVICE] = 'tokenex';
             }
         }
 
         $cardCore = new Card\Core();
-        
+
         $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $this->merchant);
-        
+
         $card = $cardCore->getCard();
 
         if ($card->isUnsupported())
@@ -599,15 +625,15 @@ trait Authorize
     {
         $app = \App::getFacadeRoot();
 
-        try 
+        try
         {
-            $token = $app['card.tokenex']->tokenize($cardNumber);            
-        } 
-        catch (Exception $e) 
+            $token = $app['card.tokenex']->tokenize($cardNumber);
+        }
+        catch (Exception $e)
         {
             $this->trace->info(
                 TraceCode::TOKENEX_REQUEST,
-                "failed to tokenize data");                   
+                "failed to tokenize data");
         }
 
         return $token;

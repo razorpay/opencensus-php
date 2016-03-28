@@ -13,18 +13,18 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
 <html>
 <head>
-    <title>Razorpay - Testing page</title>
+    <title>Razorpay - Testing page for create fees</title>
 </head>
 
 <body>
 <table border="1" align="center"  width="100%" >
     <tr>
-    <td align = "left" width = "90%"><b>Testing Page</b></td>
+    <td align = "left" width = "90%"><b>Testing page for create fees</b></td>
     <td align = "right"width = "10%"><img src="" width="169" height="37" border="0" alt=""></td>
     </tr>
 </table>
 <br><br>
-<form method="post" id="paymentform" action="//<?=$public_url?>/payments">
+<form method="post" id="paymentform" action="//<?=$public_url?>/payments/create/fees">
 <table border="1" align="center"  width="300">
     <tr>
     <th colspan="50" bgcolor="brown" >Enter Parameters</th>
@@ -116,7 +116,6 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <tr>
         <td colspan='40'>Order Id:</td>
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
-        <td><input type="checkbox" name="save" value=1>save</td>
     </tr>
     <tr>
         <td colspan="100" align="center">

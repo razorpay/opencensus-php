@@ -55,12 +55,16 @@ class Verify
     {
         $payments = $this->repo->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
 
+        $payments->shuffle();
+
         return $this->verifyMultiplePayments($payments, 'failed');
     }
 
     public function verifyPaymentsWithErrorVerifyResult()
     {
         $payments = $this->repo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
+
+        $payments->shuffle();
 
         return $this->verifyMultiplePayments($payments, 'error');
     }
@@ -146,7 +150,7 @@ class Verify
 
         if ($authorized !== 0)
         {
-            $avgTimeDiff = $timeDiff / $authorized;
+            $avgTimeDiff = (int) ($timeDiff / $authorized);
         }
 
         $results = array(

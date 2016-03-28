@@ -272,7 +272,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 6,
+                        'count' => 7,
                         'rules' => array(
                             array(),
                         ),

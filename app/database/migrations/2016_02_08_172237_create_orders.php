@@ -108,6 +108,12 @@ class CreateOrders extends Migration {
                 TABLE::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
         });
 
+        Schema::table(Table::WEBHOOK, function($table)
+        {
+            $table->dropForeign(
+                TABLE::WEBHOOK.'_'.Webhook::MERCHANT_ID.'_foreign');
+        });
+
         Schema::drop(Table::ORDER);
 	}
 

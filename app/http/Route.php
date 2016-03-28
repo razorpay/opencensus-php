@@ -116,6 +116,7 @@ final class Route
         'setl_fetch_by_id'                      => ['get',      'settlements/{id}',                         'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                   => ['get',      'settlements',                              'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'               => ['get',      'settlements/{id}/transactions',            'SettlementController@getSettlementTransactions'                    ],
+        'setl_edit'                             => ['put',      'settlements/{id}',                         'SettlementController@putEditSettlement'                           ],
         'setl_fixer'                            => ['get',      'settlements/fixer',                        'SettlementController@getSettlementFixer'                           ],
         'hdfc_mpr_reconcile'                    => ['post',     'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'                      ],
         'hdfc_mpr_generate'                     => ['post',     'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'                       ],
@@ -189,6 +190,7 @@ final class Route
         'fetch_customer_method'                 => ['get',      'customers/{uid}/methods/{mid}',            'CustomerController@fetchMethod'                                    ],
         'fetch_multiple_customer_methods'       => ['get',      'customers/{uid}/methods',                  'CustomerController@fetchMethods'                                   ],
         'delete_customer_method'                => ['delete',   'customers/{uid}/methods/{mid}',            'CustomerController@deleteMethod'                                   ],
+        'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
     );
 
     public static $public = array(
@@ -308,6 +310,7 @@ final class Route
         'setl_reconcile_generate',
         'setl_return_generate',
         'setl_return',
+        'setl_edit',
         'setl_delete_file',
         'setl_calc_previous_fees',
         'setl_fixer',
@@ -367,6 +370,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'merchant_fetch_balance',
+        'reports_public_entity',
         'merchant_edit_config',
         'account_fetch_balance',
         'account_fetch_config',

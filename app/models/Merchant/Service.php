@@ -71,11 +71,10 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    // Proxy Auth.
     public function editConfig(array $input)
     {
-        $merchant = (new Merchant\Core)->editConfig($this->merchant, $input);
-
-        return $merchant->toArrayPublic();
+        return (new Merchant\Core)->editConfig($this->merchant, $input);
     }
 
     public function addOrUpdateMerchantFeatures($id, array $input)

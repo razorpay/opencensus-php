@@ -230,7 +230,7 @@ class Settler
                 if (($txn->getBalance() === 0) and
                     ($txn->isTypeRefund()))
                 {
-                    $payment = $txn->entity->payment;
+                    $payment = $txn->source->payment;
 
                     if ($payment->hasBeenCaptured() === false)
                     {
@@ -377,11 +377,11 @@ class Settler
         {
             if ($txn->isTypePayment())
             {
-                $payment = $txn->entity;
+                $payment = $txn->source;
             }
             else if ($txn->getType() === Transaction\Type::REFUND)
             {
-                $payment = $txn->entity->payment;
+                $payment = $txn->source->payment;
             }
         }
 

@@ -205,4 +205,14 @@ class Merchant extends Base
     {
         return $this->edit($id, ['fee_bearer' => 'platform']);
     }
+
+    public function enableInternational($id = '10000000000000')
+    {
+        return $this->edit($id, ['international' => '1']);
+    }
+
+    public function disableInternational($id = '10000000000000')
+    {
+        return $this->edit($id, ['international' => '0']);
+    }
 }

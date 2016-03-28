@@ -18,6 +18,7 @@ class SignatureTest extends TestCase
         $this->ba->publicAuth();
 
         $this->payment = $this->getDefaultPaymentArray();
+        $this->payment['notes']['merchant_order_id'] = 'Grü-1234';
     }
 
     public function testValidSignature()

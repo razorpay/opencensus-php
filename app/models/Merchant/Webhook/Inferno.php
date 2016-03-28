@@ -44,54 +44,15 @@ class Inferno
             TraceCode::WEBHOOK_FIRING,
             $request);
 
-        $timeout = false;
+        $success = $this->sendRequest($request, $webhook);
 
-        try
+        if ($success === false)
         {
-            $response = $this->makeRequest($request);
-        }
-        catch (\Requests_Exception $e)
-        {
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (\Gateway\Utility::checkTimeout($e))
-            {
-                $timeout = true;
-
-                $this->trace->info(
-                    TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                    [
-                        'webhook' => $webhook->getId(),
-                        'exception' => $e->getMessage(),
-                    ]);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
-
-        if ($timeout === true)
-        {
-            $this->webhookBumpFailureCount($webhook);
-        }
-        else if ($response->success === false)
-        {
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook' => $webhook->getId(),
-                    'response_code' => $response->status_code
-                ]);
-
             $this->webhookBumpFailureCount($webhook);
         }
         else
         {
-            $this->webhookSuccessfullyFired($webhook, $response);
+            $this->webhookSuccessfullyFired($webhook);
         }
     }
 
@@ -106,6 +67,66 @@ class Inferno
                     $request['options']);
 
         return $response;
+    }
+
+    protected function sendRequest($request, $webhook)
+    {
+        $success = true;
+        $response = null;
+
+        try
+        {
+            $response = $this->makeRequest($request);
+        }
+        catch (\Requests_Exception $e)
+        {
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                ;
+            }
+            else if ($this->isKnowRequestsException($e))
+            {
+                ;
+            }
+            else
+            {
+                $this->trace->traceException($e);
+            }
+
+            $this->trace->info(
+                TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                [
+                    'webhook' => $webhook->getId(),
+                    'exception' => $e->getMessage(),
+                ]);
+
+            return false;
+        }
+
+        $code = TraceCode::WEBHOOK_FIRED;
+
+        if ($response->success === false)
+        {
+            $code = TraceCode::WEBHOOK_RESPONSE_FAILURE;
+
+            $success = false;
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::WEBHOOK_FIRED,
+                [
+                    'webhook' => $webhook->getId(),
+                    'response_code' => $response->status_code,
+                ]);
+        }
+
+        return $success;
     }
 
     protected function getRequestArray($event, $webhook)
@@ -125,19 +146,12 @@ class Inferno
         return $request;
     }
 
-    protected function webhookSuccessfullyFired($webhook, $response)
+    protected function webhookSuccessfullyFired($webhook)
     {
         if ($webhook->getFailureCount() !== 0)
         {
             $this->repo->resetFailureCount($webhook);
         }
-
-        $this->trace->info(
-            TraceCode::WEBHOOK_FIRED,
-            [
-                'webhook' => $webhook->getId(),
-                'response_code' => $response->status_code,
-            ]);
 
         $this->job->delete();
     }
@@ -185,5 +199,24 @@ class Inferno
         }
 
         return $webhook;
+    }
+
+    protected function isKnowRequestsException($e)
+    {
+        $msg = $e->getMessage();
+        $msg = strtolower($msg);
+
+        //
+        // check if timeout has occured
+        //
+        if ((strpos($msg, 'Empty reply from server') !== false) or
+            (strpos($msg, 'SSL certificate problem: certificate has expired') !== false))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

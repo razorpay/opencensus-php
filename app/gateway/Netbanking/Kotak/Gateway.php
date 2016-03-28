@@ -66,6 +66,8 @@ class Gateway extends Base\Gateway
             $request['content']['msg'] = $request['content']['msg'] . '|' . $input['callbackUrl'];
         }
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         return $request;
     }
 //
@@ -256,18 +258,5 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
-    }
-
-    public function generateRefunds($input)
-    {
-        foreach ($input as &$row)
-        {
-            $payment = $this->getRepo()->findByPaymentIdAndAction(
-                                $row['payment']['id'], Action::AUTHORIZE);
-
-            $row['gateway'] = $payment->toArray();
-        }
-
-        return (new RefundFile)->generate($input);
     }
 }

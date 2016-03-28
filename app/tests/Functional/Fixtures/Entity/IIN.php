@@ -86,6 +86,17 @@ class Iin extends Base
             'emi'           => 1,
             'trivia'        => 'random trivia'
             ),
+        array(
+            'iin'           => '401201',
+            'category'      => 'STANDARD',
+            'network'       => 'Visa',
+            'type'          => 'credit',
+            'country'       => 'US',
+            'issuer_name'   => 'JP MORGAIN CHASE',
+            'issuer'        => null,
+            'emi'           => 0,
+            'trivia'        => 'random trivia'
+            ),
         );
 
     public function createDefaultIins()

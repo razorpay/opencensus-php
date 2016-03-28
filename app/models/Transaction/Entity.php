@@ -31,6 +31,8 @@ class Entity extends Base\PublicEntity
     const SETTLED_AT        = 'settled_at';
     const SETTLEMENT_ID     = 'settlement_id';
 
+    const PAYMENT_ID        = 'payment_id';
+
     protected $table = \Constants\Table::TRANSACTION;
 
     protected static $sign = 'txn';
@@ -88,13 +90,34 @@ class Entity extends Base\PublicEntity
         self::GRATIS    => false,
     );
 
+    protected $amounts = array(
+        self::AMOUNT,
+        self::DEBIT,
+        self::CREDIT,
+        self::FEE,
+        self::SERVICE_TAX,
+    );
+
+    protected $reportAttributes = array(
+        self::CREATED_AT,
+        self::AMOUNT,
+        self::DEBIT,
+        self::CREDIT,
+        self::FEE,
+        self::SERVICE_TAX,
+        self::SETTLED_AT,
+        self::SETTLEMENT_ID,
+        Payment\Entity::DESCRIPTION,
+        Payment\Entity::NOTES,
+        self::PAYMENT_ID,
+    );
 
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function entity()
+    public function source()
     {
         $type = $this->getAttribute(self::TYPE);
 
@@ -103,7 +126,9 @@ class Entity extends Base\PublicEntity
         $class = 'Models\\';
 
         if ($type === Transaction\Type::REFUND)
+        {
             $class .= 'Payment\\';
+        }
 
         $class .= ucfirst($type).'\\'.'Entity';
 
@@ -367,5 +392,49 @@ class Entity extends Base\PublicEntity
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
+    }
+
+    public function toArrayReport()
+    {
+        // $reportAttributes
+
+        $reportTxn = parent::toArrayReport();
+
+        unset($reportTxn[self::ID]);
+
+        $txn = $this;
+
+        $reportTxn['description'] = null;
+        $reportTxn['notes'] = null;
+        $reportTxn['payment_id'] = null;
+
+        if ($txn->isTypePayment())
+        {
+            $payment = $txn->source;
+
+            $reportTxn['description'] = $payment->getDescription();
+            $reportTxn['notes'] = $payment->getNotesJson();
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                // Skip if the payment was not captured.
+                return;
+            }
+        }
+        else if ($txn->isTypeRefund())
+        {
+            $refund = $txn->source;
+            $payment = $refund->payment;
+
+            // Skip if the payment was not captured.
+            if ($payment->hasBeenCaptured() === false)
+            {
+                return;
+            }
+
+            $reportTxn['payment_id'] = $payment->getPublicId();
+        }
+
+        return $reportTxn;
     }
 }

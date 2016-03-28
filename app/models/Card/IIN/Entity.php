@@ -67,6 +67,16 @@ class Entity extends Base\PublicEntity
         self::EMI       =>  false,
     );
 
+    public function isEmiAvailable()
+    {
+        return $this->getAttribute(self::EMI);
+    }
+
+    public function isInternational()
+    {
+        return $this->getInternationalAttribute();
+    }
+
     public function getIin()
     {
         return $this->getAttribute(self::IIN);
@@ -122,11 +132,6 @@ class Entity extends Base\PublicEntity
         $country = $this->getCountry();
 
         return ($country !== 'IN');
-    }
-
-    public function isEmiAvailable()
-    {
-        return (bool) $this->getAttribute(self::EMI);
     }
 
     protected function getEmiAttribute()

@@ -64,6 +64,7 @@ class CreateAxisGateway extends Migration
             $table->index('genius');
             $table->index('received');
             $table->index('amex');
+            $table->index('vpc_ReceiptNo');
 
             $table->foreign('payment_id')
                   ->references('id')
