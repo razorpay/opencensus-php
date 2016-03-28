@@ -105,7 +105,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * @param  string          $businessName   Merchant Business Name
      * @return Models\Merchant\Entity Sub Merchant Entity
      */
-    public static function createFromMerchant(Merchant\Entity $masterMerchant, $businessName)
+    public static function createFromMerchant(Entity $masterMerchant, $businessName)
     {
         $password = (new RandomFactory)->getLowStrengthGenerator()->generateString(8);
 

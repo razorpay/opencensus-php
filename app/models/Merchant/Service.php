@@ -84,20 +84,20 @@ class Service extends Base\Service
      */
     public function registerSubMerchant(array $input)
     {
-        $masterMerchant = $this->currentuser->getOwnerMerchant();
+        $masterMerchant = $this->currentUser->getOwnerMerchant();
 
         $error = (new Merchant\Validator)
             ->validateInput('create_submerchant', $input)->messages();
 
         // We are re-using the merchant email here
         $data = [
-            'name'  =>  $input['business_name'],
-        ];
+            'name'  =>  $input['name'],
             'email' =>  $masterMerchant->email,
+        ];
 
         if (empty($error))
         {
-            $businessName = $input['business_name'];
+            $businessName = $input['name'];
             $merchant = Entity::createFromMerchant($masterMerchant, $businessName);
 
             $merchant->save();
