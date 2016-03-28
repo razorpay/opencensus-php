@@ -30,6 +30,22 @@
           </tr>
         </tbody>
       </table>
+      <footer class="panel-footer" ng-show="user.tags.indexOf('Mastermerchant') != -1">
+        <div class="text-center m-t m-b">
+          <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 hidden-xs">
+          </div>
+          <div class="col-sm-4 text-center">
+            <button id="createMerchant" ng-click="openCreateMerchant()" class="btn btn-primary">
+              Create New Merchant
+            </button>
+          </div>
+          <div class="col-sm-4 text-right text-center-xs">
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 </div>
