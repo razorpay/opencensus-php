@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2d554858be5f0de912f6a0d44e9a4359",
-    "content-hash": "6866dbab4debb6befb0d31538262ce56",
+    "hash": "354c9c0a4f7a6c28dd4270b8dd3d5975",
+    "content-hash": "b44b383f65cdacbdcb737d132450b648",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -915,16 +915,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v4.2.18",
+            "version": "v4.2.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "ce1fc065de4e58fcf243fb7b84fe3d156e1f6ac9"
+                "reference": "93d7dc4a51bb54fe99f070eabbc9a8fd7989f32b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/ce1fc065de4e58fcf243fb7b84fe3d156e1f6ac9",
-                "reference": "ce1fc065de4e58fcf243fb7b84fe3d156e1f6ac9",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/93d7dc4a51bb54fe99f070eabbc9a8fd7989f32b",
+                "reference": "93d7dc4a51bb54fe99f070eabbc9a8fd7989f32b",
                 "shasum": ""
             },
             "require": {
@@ -1026,7 +1026,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2016-01-02 20:27:55"
+            "time": "2016-02-02 14:55:02"
         },
         {
             "name": "league/csv",
@@ -1246,16 +1246,16 @@
         },
         {
             "name": "marlek/laravel-automigrate",
-            "version": "dev-master",
+            "version": "1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/marlek/laravel-automigrate.git",
-                "reference": "ba1f781bf269ffb65fbd3103a341de24d19022c9"
+                "reference": "be4b5cbbf7d1165b1d27f136ecb1a9d3e481a30f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/marlek/laravel-automigrate/zipball/7a6d3ec46367f88276df113bfe0239ffe5a62270",
-                "reference": "ba1f781bf269ffb65fbd3103a341de24d19022c9",
+                "url": "https://api.github.com/repos/marlek/laravel-automigrate/zipball/be4b5cbbf7d1165b1d27f136ecb1a9d3e481a30f",
+                "reference": "be4b5cbbf7d1165b1d27f136ecb1a9d3e481a30f",
                 "shasum": ""
             },
             "require": {
@@ -1286,7 +1286,7 @@
                 "laravel",
                 "migrations"
             ],
-            "time": "2014-10-18 20:40:24"
+            "time": "2014-09-05 15:12:59"
         },
         {
             "name": "maximebf/debugbar",
@@ -1346,16 +1346,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "1.17.2",
+            "version": "1.18.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "bee7f0dc9c3e0b69a6039697533dca1e845c8c24"
+                "reference": "a5f2734e8c16f3aa21b3da09715d10e15b4d2d45"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/bee7f0dc9c3e0b69a6039697533dca1e845c8c24",
-                "reference": "bee7f0dc9c3e0b69a6039697533dca1e845c8c24",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45",
+                "reference": "a5f2734e8c16f3aa21b3da09715d10e15b4d2d45",
                 "shasum": ""
             },
             "require": {
@@ -1384,6 +1384,7 @@
                 "ext-amqp": "Allow sending log messages to an AMQP server (1.0+ required)",
                 "ext-mongo": "Allow sending log messages to a MongoDB server",
                 "graylog2/gelf-php": "Allow sending log messages to a GrayLog2 server",
+                "mongodb/mongodb": "Allow sending log messages to a MongoDB server via PHP Driver",
                 "php-console/php-console": "Allow sending log messages to Google Chrome",
                 "raven/raven": "Allow sending log messages to a Sentry server",
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
@@ -1393,7 +1394,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.16.x-dev"
+                    "dev-master": "2.0.x-dev"
                 }
             },
             "autoload": {
@@ -1419,7 +1420,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2015-10-14 12:51:02"
+            "time": "2016-03-13 16:08:35"
         },
         {
             "name": "nesbot/carbon",
@@ -1866,12 +1867,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d"
+                "reference": "717d1ab6c348536916ff30163aa89d536474e76e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/f846b7aadbbd265325f610fd2ae8afb40bcd74fa",
-                "reference": "fa3f849333f6954cd8c56d88afef6d98348efa7d",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/717d1ab6c348536916ff30163aa89d536474e76e",
+                "reference": "717d1ab6c348536916ff30163aa89d536474e76e",
                 "shasum": ""
             },
             "require": {
@@ -1914,7 +1915,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2016-01-25 18:05:44"
+            "time": "2016-03-28 06:38:49"
         },
         {
             "name": "razorpay/spine",
@@ -1965,16 +1966,16 @@
         },
         {
             "name": "react/promise",
-            "version": "v2.2.1",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/promise.git",
-                "reference": "3b6fca09c7d56321057fa8867c8dbe1abf648627"
+                "reference": "8ffacee1171e33a1c129f424bf1ec36e062eba82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/3b6fca09c7d56321057fa8867c8dbe1abf648627",
-                "reference": "3b6fca09c7d56321057fa8867c8dbe1abf648627",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/8ffacee1171e33a1c129f424bf1ec36e062eba82",
+                "reference": "8ffacee1171e33a1c129f424bf1ec36e062eba82",
                 "shasum": ""
             },
             "require": {
@@ -2005,7 +2006,7 @@
                 }
             ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
-            "time": "2015-07-03 13:48:55"
+            "time": "2016-03-24 21:20:22"
         },
         {
             "name": "rmccue/requests",
@@ -2538,16 +2539,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.2",
+            "version": "v2.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "ee278f7c851533e58ca307f66305ccb9188aceda"
+                "reference": "47d2d8cade9b1c3987573d2943bb9352536cdb87"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/ee278f7c851533e58ca307f66305ccb9188aceda",
-                "reference": "ee278f7c851533e58ca307f66305ccb9188aceda",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/47d2d8cade9b1c3987573d2943bb9352536cdb87",
+                "reference": "47d2d8cade9b1c3987573d2943bb9352536cdb87",
                 "shasum": ""
             },
             "require": {
@@ -2594,20 +2595,20 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-01-13 10:28:07"
+            "time": "2016-03-07 14:04:32"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.8.2",
+            "version": "v2.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "637b64d0ee10f44ae98dbad651b1ecdf35a11e8c"
+                "reference": "f08ffdf229252cd2745558cb2112df43903bcae4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/637b64d0ee10f44ae98dbad651b1ecdf35a11e8c",
-                "reference": "637b64d0ee10f44ae98dbad651b1ecdf35a11e8c",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/f08ffdf229252cd2745558cb2112df43903bcae4",
+                "reference": "f08ffdf229252cd2745558cb2112df43903bcae4",
                 "shasum": ""
             },
             "require": {
@@ -2643,7 +2644,7 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "time": "2016-01-13 10:28:07"
+            "time": "2016-03-27 10:20:16"
         },
         {
             "name": "symfony/finder",
@@ -2821,7 +2822,7 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.1.0",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
@@ -3114,16 +3115,16 @@
         },
         {
             "name": "symfony/var-dumper",
-            "version": "v2.8.2",
+            "version": "v2.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "ab94426d127ad9e95433778a3a451fe9d18f3d6b"
+                "reference": "1f840df081f59cbe25140742bbe94a0dfac0222a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/ab94426d127ad9e95433778a3a451fe9d18f3d6b",
-                "reference": "ab94426d127ad9e95433778a3a451fe9d18f3d6b",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/1f840df081f59cbe25140742bbe94a0dfac0222a",
+                "reference": "1f840df081f59cbe25140742bbe94a0dfac0222a",
                 "shasum": ""
             },
             "require": {
@@ -3173,7 +3174,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2016-01-07 13:38:40"
+            "time": "2016-03-07 14:04:32"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -3224,16 +3225,16 @@
         },
         {
             "name": "vipsoft/unzip",
-            "version": "1.1",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vipsoft/Unzip.git",
-                "reference": "b9d4820cfe756f6b8295edd022961b9c40005f68"
+                "reference": "657cda91648db84b8882e6ac881e2fd439bbe82c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vipsoft/Unzip/zipball/b9d4820cfe756f6b8295edd022961b9c40005f68",
-                "reference": "b9d4820cfe756f6b8295edd022961b9c40005f68",
+                "url": "https://api.github.com/repos/vipsoft/Unzip/zipball/657cda91648db84b8882e6ac881e2fd439bbe82c",
+                "reference": "657cda91648db84b8882e6ac881e2fd439bbe82c",
                 "shasum": ""
             },
             "require": {
@@ -3265,7 +3266,7 @@
                 "zip",
                 "ziparchive"
             ],
-            "time": "2014-04-30 02:23:52"
+            "time": "2016-02-16 04:29:22"
         }
     ],
     "packages-dev": [
@@ -3363,7 +3364,7 @@
         },
         {
             "name": "hamcrest/hamcrest-php",
-            "version": "dev-master",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hamcrest/hamcrest-php.git",
@@ -3467,12 +3468,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/padraic/mockery.git",
-                "reference": "791ca92e112f64af3ce5833e05bb10ab2578a626"
+                "reference": "e597b2047e5a722dc18d7a629a2964b4ca606441"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/d173b9a3c6d3dcf52d7f8f70ac591ba11c475e8c",
-                "reference": "791ca92e112f64af3ce5833e05bb10ab2578a626",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/e597b2047e5a722dc18d7a629a2964b4ca606441",
+                "reference": "e597b2047e5a722dc18d7a629a2964b4ca606441",
                 "shasum": ""
             },
             "require": {
@@ -3524,7 +3525,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2016-01-28 11:09:46"
+            "time": "2016-03-17 19:48:40"
         },
         {
             "name": "raveren/kint",
@@ -3635,7 +3636,6 @@
         "ollieread/multiauth": 20,
         "razorpay/spine": 20,
         "maknz/slack": 20,
-        "marlek/laravel-automigrate": 20,
         "zizaco/testcases-laravel": 20,
         "mockery/mockery": 20
     },

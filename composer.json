@@ -19,9 +19,10 @@
         "schuppo/password-strength": "~0.7",
         "league/csv": "7.1.2",
         "rtconner/laravel-tagging": "~0.5",
-        "marlek/laravel-automigrate": "dev-master",
+        "marlek/laravel-automigrate": "1.2",
         "ircmaxell/random-lib": "^1.1",
-        "drewm/mailchimp-api": "^2.1"
+        "drewm/mailchimp-api": "^2.1",
+        "nesbot/carbon": "1.*"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
