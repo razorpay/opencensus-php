@@ -26,6 +26,11 @@ class Service extends Base\Service
     const SELF_REMOVE_FORBIDDEN     = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
 
+    public function __construct()
+    {
+        $this->currentUser = Auth::user()->user();
+        $this->currentMerchant = $this->currentUser->currentMerchant;
+    }
 
     public static function register(User\Entity $user, $businessName, $referer = false)
     {
@@ -48,7 +53,6 @@ class Service extends Base\Service
             // This is called for certain special email addresses
             $merchant->setCustomId();
 
-
             if ($referer)
             {
                 $merchant->tag('ref-'.$referer);
@@ -66,6 +70,54 @@ class Service extends Base\Service
 
         return [$error, $merchant];
 
+    }
+
+    /**
+     * Registers a sub-merchant account and associates it both ways:
+     * 1. Marks the original user as the referral
+     * 2. Adds the original user to the new merchant's team
+     *
+     * This is one scenario where we don't use currentMerchant
+     * @param  string $merchantId Merchant Id
+     * @param  array  $input      [description]
+     * @return [type]             [description]
+     */
+    public function registerSubMerchant(array $input)
+    {
+        $masterMerchant = $this->currentuser->getOwnerMerchant();
+
+        $error = (new Merchant\Validator)
+            ->validateInput('create_submerchant', $input)->messages();
+
+        // We are re-using the merchant email here
+        $data = [
+            'name'  =>  $input['business_name'],
+        ];
+            'email' =>  $masterMerchant->email,
+
+        if (empty($error))
+        {
+            $businessName = $input['business_name'];
+            $merchant = Entity::createFromMerchant($masterMerchant, $businessName);
+
+            $merchant->save();
+
+            $details = [
+                'merchant_id'   => $merchant->id,
+                'contact_email' => $merchant->email
+            ];
+
+            MerchantDetails\Entity::createOrFail($details);
+
+            // Finally attach the current user to the new user's team
+            $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+
+            return [null, $merchant->toArray()];
+        }
+        else
+        {
+            return [$error, null];
+        }
     }
     /**
      * take care when calling this function
@@ -253,7 +305,7 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
-        if (Auth::user()->user()->currentMerchant->isTestAccount()) {
+        if ($this->currentMerchant->isTestAccount()) {
             return [[static::ROLL_KEY_FORBIDDEN], null];
         }
 
@@ -322,7 +374,7 @@ class Service extends Base\Service
      */
     public function getWebhooks($mode)
     {
-        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = $this->currentUser->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -342,7 +394,7 @@ class Service extends Base\Service
 
     public function editWebhook($mode, $webhookId, $input)
     {
-        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = $this->currentUser->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -365,7 +417,7 @@ class Service extends Base\Service
 
     public function createWebhook($mode, $input)
     {
-        $merchantId = \Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = $this->currentUser->getCurrentMerchantId();
 
         $this->setApiCredentials($merchantId, $mode);
 

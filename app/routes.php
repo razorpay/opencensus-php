@@ -11,6 +11,7 @@
 */
 Route::get('/', 'UserController@getIndex');
 Route::get('/admin', 'AdminController@getIndex');
+// This is for enabling CORS support on contact form submissions
 Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
 Route::group(array('before' => 'auth.user'), function()
@@ -90,6 +91,9 @@ Route::group(array('before' => 'auth.user'), function()
 
         // Upgrades a standard invited user to a merchant
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
+
+        // Registers a sub-merchant account
+        Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant');
     });
 });
 Route::group(array('before' => 'guest.user'), function()

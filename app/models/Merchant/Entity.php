@@ -4,11 +4,15 @@ namespace Models\Merchant;
 
 use Mail;
 use Uuid;
+
 use Models\Base;
 use Models\User;
 use Models\Invitation;
+
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
+
+use RandomLib\Factory as RandomFactory;
 
 class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
@@ -91,6 +95,33 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $merchant->confirm_token = $user->confirm_token;
         $merchant->created_at = $user->created_at;
         $merchant->updated_at = $user->updated_at;
+
+        return $merchant;
+    }
+
+    /**
+     * Create sub-merchant accounts
+     * @param  Models\Merchant\Entity $masterMerchant Mast Merchant Entity
+     * @param  string          $businessName   Merchant Business Name
+     * @return Models\Merchant\Entity Sub Merchant Entity
+     */
+    public static function createFromMerchant(Merchant\Entity $masterMerchant, $businessName)
+    {
+        $password = (new RandomFactory)->getLowStrengthGenerator()->generateString(8);
+
+        $merchant = new static();
+
+        $merchant->id       = Uuid::generate();
+        $merchant->name     = $businessName;
+        $merchant->email    = $masterMerchant->email;
+
+        $merchant->password = $password;
+
+        // We mark the user as confirmed
+        $merchant->confirm_token = null;
+
+        // We tag the merchant as referred from the original merchant as well
+        $merchant->tag("ref-{$merchant->id}");
 
         return $merchant;
     }

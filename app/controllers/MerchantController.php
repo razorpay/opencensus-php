@@ -251,4 +251,14 @@ class MerchantController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function postRegisterSubMerchant()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)
+            ->registerSubMerchant($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

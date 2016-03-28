@@ -87,7 +87,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Join the merchant with the given ID and role.
      *
-     * @param  int  $merchantId
+     * @param  string  $merchantId
      * @return void
      */
     public function joinMerchantByIdWithRole($merchantId, $role)
