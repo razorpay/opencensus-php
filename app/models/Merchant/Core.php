@@ -46,6 +46,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subMerchant);
 
         $this->addMerchantSupportingEntities($subMerchant);
+
+        return $subMerchant;
     }
 
     protected function addMerchantSupportingEntities($merchant)
