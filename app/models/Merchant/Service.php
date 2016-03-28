@@ -32,7 +32,8 @@ class Service extends Base\Service
     public function __construct()
     {
         $this->currentUser = Auth::user()->user();
-        $this->currentMerchant = $this->currentUser->currentMerchant;
+
+        $this->currentMerchant = $this->currentUser->currentMerchant();
     }
 
     public static function register(User\Entity $user, $businessName, $referer = false)
