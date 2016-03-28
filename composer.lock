@@ -1889,12 +1889,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "902607ad00fe7cad411b34f761438b804b7d1786"
+                "reference": "717d1ab6c348536916ff30163aa89d536474e76e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/902607ad00fe7cad411b34f761438b804b7d1786",
-                "reference": "902607ad00fe7cad411b34f761438b804b7d1786",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/717d1ab6c348536916ff30163aa89d536474e76e",
+                "reference": "717d1ab6c348536916ff30163aa89d536474e76e",
                 "shasum": ""
             },
             "require": {
@@ -1937,7 +1937,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2016-03-17 14:35:45"
+            "time": "2016-03-28 06:38:49"
         },
         {
             "name": "razorpay/spine",
