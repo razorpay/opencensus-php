@@ -76,17 +76,17 @@ class Reconciler2
 
         $data = $this->parseReturnFile($reconcileFile);
 
-        // $this->storeReconciledFile($mprFile);
-        // $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
-
 //        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
 
-        $date = $data[0]['debit_date'];
         //
-        // Format is dd mon yyyy, eg: 28 Mar 2016
-        // We need to convert it to dd-mm-yyyy, or in php parlance: d-m-Y
+        // In excel, dates are displayed properly, but in reality, are stored as
+        // integer value. The integer value is the number of days from 1/1/1990
+        // which has the value of 1.
         //
-        $date = Carbon::createFromFormat('d M Y', $date, 'Asia/Kolkata')->format('d-m-Y');
+
+        $daysSince1900 = (int) $data[0]['debit_date'];
+        $date = Carbon::createFromDate(1900, 1, 1)->addDays($daysSince1900);
+        $date = $date->format('d-m-Y');
 
         list($settlements, $failures) = $this->reconcile($data);
 
