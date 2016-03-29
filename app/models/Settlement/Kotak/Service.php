@@ -16,21 +16,14 @@ class Service extends Base\Service
         // @todo: Write tests for the newer format
         //
 
-        if (\App::environment('testing'))
-        {
-            $collection = (new Kotak\Reconciler)->process($input);
-        }
-        else
-        {
-            $collection = (new Kotak\Reconciler2)->process($input);
-        }
+        $collection = (new Kotak\Reconciler2)->process($input);
 
         return $collection->toArray();
     }
 
     public function generateSettlementReconciliation($input)
     {
-        $filename = (new Kotak\ReconciliationGenerator)->generateReconcileFile($input);
+        $filename = (new Kotak\ReconciliationGenerator2)->generateReconcileFile($input);
 
         return ['setlReconciliationFile' => $filename];
     }
