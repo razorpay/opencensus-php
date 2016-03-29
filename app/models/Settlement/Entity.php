@@ -89,6 +89,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::CREATED);
     }
 
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
+    }
+
     public function setlTransactions()
     {
         return $this->hasMany('Models\Transaction\Entity');

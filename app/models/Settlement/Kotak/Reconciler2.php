@@ -5,6 +5,7 @@ namespace Models\Settlement\Kotak;
 use Carbon\Carbon;
 use EE\Exception;
 use Excel;
+use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
@@ -76,7 +77,7 @@ class Reconciler2
         $data = $this->parseReturnFile($reconcileFile);
 
         // $this->storeReconciledFile($mprFile);
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
+        // $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
 
 //        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
 
@@ -85,15 +86,15 @@ class Reconciler2
         // Format is dd mon yyyy, eg: 28 Mar 2016
         // We need to convert it to dd-mm-yyyy, or in php parlance: d-m-Y
         //
-        $date = Carbon::createFromFormat('d M Y')->format('d-m-Y');
+        $date = Carbon::createFromFormat('d M Y', $date, 'Asia/Kolkata')->format('d-m-Y');
 
-        $data = $this->reconcile($data);
+        list($settlements, $failures) = $this->reconcile($data);
 
         $this->storeReconciledFile($reconcileFile);
 
-        $this->sendReconciliationMail($date);
+        $this->sendReconciliationMail($date, $failures);
 
-        return $data;
+        return $settlements;
     }
 
     protected function parseReturnFile($file)
@@ -135,6 +136,7 @@ class Reconciler2
     protected function reconcile($data)
     {
         $collection = new Base\PublicCollection;
+        $failures = new Base\PublicCollection;
 
         $this->setlRepo->beginTransaction();
 
@@ -145,6 +147,11 @@ class Reconciler2
                 $setl = $this->reconcileSetl($row);
 
                 $collection->push($setl);
+
+                if ($setl->isStatusFailed())
+                {
+                    $failures->push($setl);
+                }
             }
 
 //            $this->dailySettlement->reconciled_at = $this->reconciledAt;
@@ -161,12 +168,16 @@ class Reconciler2
             throw $e;
         }
 
+        $failureIds = implode(',', $failures->getPublicIds());
+
         $slackData = [
-            'setl_count' => $setl->count()];
+            'setl_count'     => $collection->count(),
+            'failures_count' => $failures->count(),
+            'failure ids'    => $failureIds];
 
         (new SlackNotification)->success('setl_reconciliation', $slackData);
 
-        return $collection;
+        return [$collection, $failures];
     }
 
     protected function reconcileSetl($row)
@@ -293,10 +304,15 @@ class Reconciler2
         return $fullpath;
     }
 
-    protected function sendReconciliationMail($date)
+    protected function sendReconciliationMail($date, $failures)
     {
+        $msg = 'UTR File reconciled.\n';
+        $msg .= 'Failure Count: ' . $failures->count() . '\n';
+        $msg .= 'Failed settlement ids: ' . implode(',', $failures->getPublicIds());
+
         $data['subject'] = "Kotak Settlement files for $date";
         $data['date'] = $date;
+        $data['body'] = $msg;
 
         Mail::queue('emails.message', $data, function($message) use ($data)
         {
