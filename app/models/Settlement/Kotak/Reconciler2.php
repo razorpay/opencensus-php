@@ -80,9 +80,18 @@ class Reconciler2
 
 //        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
 
+        $date = $data[0]['debit_date'];
+        //
+        // Format is dd mon yyyy, eg: 28 Mar 2016
+        // We need to convert it to dd-mm-yyyy, or in php parlance: d-m-Y
+        //
+        $date = Carbon::createFromFormat('d M Y')->format('d-m-Y');
+
         $data = $this->reconcile($data);
 
         $this->storeReconciledFile($reconcileFile);
+
+        $this->sendReconciliationMail($date);
 
         return $data;
     }
@@ -282,6 +291,23 @@ class Reconciler2
         }
 
         return $fullpath;
+    }
+
+    protected function sendReconciliationMail($date)
+    {
+        $data['subject'] = "Kotak Settlement files for $date";
+        $data['date'] = $date;
+
+        Mail::queue('emails.message', $data, function($message) use ($data)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('settlement@razorpay.com', 'Kotak UTR Reconciliation');
+
+            $message->subject($data['subject']);
+
+            $message->to($emails);
+        });
     }
 
     protected function getFileToReadName()
