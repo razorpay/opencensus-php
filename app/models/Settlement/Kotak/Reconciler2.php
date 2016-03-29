@@ -83,6 +83,9 @@ class Reconciler2
         // integer value. The integer value is the number of days from 1/1/1990
         // which has the value of 1.
         //
+        // We actually need to subtract 2 from the integer value to reach
+        // the correct date. (Sad, but true!)
+        //
 
         $daysSince1900 = (int) $data[0]['debit_date'];
         $date = Carbon::createFromDate(1900, 1, 1)->addDays($daysSince1900 - 2);
@@ -307,8 +310,13 @@ class Reconciler2
     protected function sendReconciliationMail($date, $failures)
     {
         $msg = 'UTR File reconciled.' . PHP_EOL;
-        $msg .= 'Failure Count: ' . $failures->count() . PHP_EOL;
-        $msg .= 'Failed settlement ids: ' . implode(',', $failures->getPublicIds());
+        $failureCount = $failures->count();
+        $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
+
+        if ($failureCount !== 0)
+        {
+            $msg .= 'Failed settlement ids: ' . implode(',', $failures->getPublicIds());
+        }
 
         $data['subject'] = "Kotak Settlement files for $date";
         $data['date'] = $date;
