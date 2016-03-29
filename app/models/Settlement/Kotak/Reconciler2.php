@@ -85,7 +85,7 @@ class Reconciler2
         //
 
         $daysSince1900 = (int) $data[0]['debit_date'];
-        $date = Carbon::createFromDate(1900, 1, 1)->addDays($daysSince1900);
+        $date = Carbon::createFromDate(1900, 1, 1)->addDays($daysSince1900 - 2);
         $date = $date->format('d-m-Y');
 
         list($settlements, $failures) = $this->reconcile($data);
@@ -306,8 +306,8 @@ class Reconciler2
 
     protected function sendReconciliationMail($date, $failures)
     {
-        $msg = 'UTR File reconciled.\n';
-        $msg .= 'Failure Count: ' . $failures->count() . '\n';
+        $msg = 'UTR File reconciled.' . PHP_EOL;
+        $msg .= 'Failure Count: ' . $failures->count() . PHP_EOL;
         $msg .= 'Failed settlement ids: ' . implode(',', $failures->getPublicIds());
 
         $data['subject'] = "Kotak Settlement files for $date";
