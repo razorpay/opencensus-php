@@ -183,6 +183,7 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = array(
+            'Accept'        => 'application/json',
             'Authorization' => $this->getAuthHeader($input['terminal'])
         );
 
@@ -297,6 +298,7 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = array(
+            'Accept'        => 'application/json',
             'Authorization' => 'Bearer ' . $this->accessToken
         );
 
