@@ -21,17 +21,22 @@ app.controller('GenerateReportCtrl', [
         step = 1;
       }
 
-      if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+      if ((step > 0 && start > stop) || (step < 0 && start < stop)) {
         return [];
       }
 
       var result = [];
-      for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+      for (var i = start; step > 0 ? i <= stop : i >= stop; i += step) {
         result.push(i);
       }
 
       return result;
     };
+
+    // Let's keep this 1-indexed
+    $scope.numberOfDaysInMonth = [
+      0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+    ];
 
     var yesterday = moment().add(-1, 'days').toDate();
 
@@ -43,8 +48,20 @@ app.controller('GenerateReportCtrl', [
       entity: 'payment'
     };
 
-    $scope.days = range(1,31);
     $scope.weeks = range(1,53);
+
+    $scope.updateNumberOfDays = function() {
+      $scope.days = range(1, $scope.numberOfDaysInMonth[$scope.report.month]);
+
+      // If the day is not present in the chosen month
+      var day = parseInt($scope.report.day);
+      if ($scope.days.indexOf(day) === -1) {
+        $scope.report.day = 1;
+      }
+    };
+
+    $scope.$watch('report.month', $scope.updateNumberOfDays);
+    $scope.updateNumberOfDays();
 
     $scope.generateReport = function () {
 
