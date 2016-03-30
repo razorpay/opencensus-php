@@ -283,7 +283,7 @@ class Service extends Base\Service
     {
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
-            ->format('j/m/Y H:i:s');
+            ->format('j/m/Y');
 
         return [
             'id'            => $merchant->id,
