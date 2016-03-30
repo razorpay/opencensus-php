@@ -8,6 +8,8 @@ app.controller('AddfundsCtrl', [
   'transformRequestAsFormPost',
   function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
+    $scope.disableAddFunds = true;
+
     $scope.options = {
       'key': '',
       'amount': '50000',
@@ -76,18 +78,25 @@ app.controller('AddfundsCtrl', [
       var api = document.createElement('a');
       api.href = apiURL;
 
-      // This needs to be global
-      window.Razorpay = {
-        config: {
-          protocol: api.protocol.slice(0,-1),
-          hostname: api.hostname,
-          // Remove the starting slash, but keep the trailing one
-          version: api.pathname.slice(1)
-        }
+      var checkoutURL = 'https://checkout.razorpay.com/v1/checkout.js';
+
+      // We call this to ensure that Checkout is calling the correct API
+      // Skipped in production
+      if (typeof window.Razorpay !== 'function' && apiURL !== 'https://api.razorpay.com/v1/') {
+        // This needs to be global
+        window.Razorpay = {
+          config: {
+            protocol: api.protocol.slice(0,-1),
+            hostname: api.hostname,
+            // Remove the starting slash, but keep the trailing one
+            version: api.pathname.slice(1)
+          }
+        };
       }
 
-      var checkoutURL = 'https://checkout.razorpay.com/v1/checkout.js';
-      uiLoad.loadScript(checkoutURL);
+      uiLoad.loadScript(checkoutURL).then(function() {
+        $scope.disableAddFunds = false;
+      });
     }
     function fetchKey() {
       var request = $http.get('/' + $scope.mode + '/keys');
@@ -95,7 +104,6 @@ app.controller('AddfundsCtrl', [
         if (data.success) {
           if (data.data.count > 0) {
             $scope.options.key = data.data.items[0].id;
-            $scope.disableAddFunds = false;
           } else {
             $scope.alerts.addAlert('danger', 'No valid api keys found, check Api Keys page.', true);
             $scope.disableAddFunds = true;
