@@ -171,9 +171,9 @@ class Server
         $this->input = $input;
     }
 
-    public function setRequest($request)
+    public function setMockRequest($request)
     {
-        $this->request = $request;
+        $this->mockRequest = $request;
     }
 
     public function setAction($action)

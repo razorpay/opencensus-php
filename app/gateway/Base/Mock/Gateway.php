@@ -70,7 +70,7 @@ trait GatewayTrait
 
         $server->setInput($request['content']);
 
-        $server->setRequest($request);
+        $server->setMockRequest($request);
 
         $action = studly_case($this->action);
 

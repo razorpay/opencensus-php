@@ -20,7 +20,7 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($this->request['content']);
+        $this->validateActionInput($this->mockRequest['content']);
 
         $response = array(
             'status'    => 0,
@@ -31,7 +31,7 @@ class Server extends Base\Mock\Server
                     'transactionDirection'  => -1,
                     'paymentId'             => 1110561680,
                     'status'                => 'success',
-                    'merchantTransactionId' => $this->request['content']['merchantTransactionId'],
+                    'merchantTransactionId' => $this->mockRequest['content']['merchantTransactionId'],
                     'completedOn'           => 1459219419000
                 )
             ),
@@ -135,7 +135,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'authorize');
 
-        if (!isset($this->request['headers']['Authorization']))
+        if (!isset($this->mockRequest['headers']['Authorization']))
         {
             $response = array(
                 'error'              => 'unauthorized',
@@ -145,7 +145,7 @@ class Server extends Base\Mock\Server
             return $this->makeResponse($response);
         }
 
-        if ($this->request['headers']['Authorization'] === $this->authHeader)
+        if ($this->mockRequest['headers']['Authorization'] === $this->authHeader)
         {
             $response = array(
                 'status'        => 0,
