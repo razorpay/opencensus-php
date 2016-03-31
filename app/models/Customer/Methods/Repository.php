@@ -39,6 +39,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where(Methods\Entity::CUSTOMER_ID, '=', $uid)
+                    //->where(Methods\Entity::METHOD, '=', 'card')
                     ->get();
     }
 

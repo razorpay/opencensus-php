@@ -29,8 +29,6 @@ class CreateCustomers extends Migration {
 
             $table->char(Customer::NAME, 50)
                   ->nullable();
-
-            $table->char(Customer::EMAIL, 255);
             
             $table->char(Customer::CONTACT, 15);
 

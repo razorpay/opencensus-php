@@ -369,6 +369,46 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutRouteWithSavedLocal()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = array(
+            'url' => '/checkout',
+            'method' => 'get',
+            'content' => [
+                'customer_id' => '100000customer'
+            ],
+        );
+
+        $response = $this->makeRequest($request);
+
+        $headers = $response->headers->all();
+        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
+    public function testGetCheckoutRouteWithSavedGlobal()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = array(
+            'url' => '/checkout',
+            'method' => 'get',
+            'content' => [
+                'app_id' => '1000000custapp'
+            ],
+        );
+
+        $response = $this->makeRequest($request);
+
+        $headers = $response->headers->all();
+        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
     public function testGetCheckoutRouteWithWrongKey()
     {
         $this->ba->publicLiveAuth('random');

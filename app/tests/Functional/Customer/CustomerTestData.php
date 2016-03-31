@@ -12,14 +12,12 @@ return [
             'method' => 'post',
             'content' => [
                 'name'    => 'testc',
-                'email'   => 'testc@razorpay.com',
                 'contact' => '1234567899',
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'testc',
-                'email' => 'testc@razorpay.com',
                 'contact' => '1234567899',
             ],
         ],
@@ -31,14 +29,12 @@ return [
             'method' => 'put',
             'content' => [
                 'name'    => 'test1',
-                'email'   => 'test1@razorpay.com',
                 'contact' => '1234567809',
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'test1',
-                'email' => 'test1@razorpay.com',
                 'contact' => '1234567809',
             ],
         ],
@@ -55,21 +51,7 @@ return [
             'content' => [
                 'id' => '100000customer',
                 'name'    => 'test',
-                'email' => 'test@razorpay.com',
                 'contact' => '1234567890',
-            ],
-        ],
-    ],
-
-    'testDeleteCustomer' => [
-        'request' => [
-            'url' => '/customers/100000customer',
-            'method' => 'delete',
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
             ],
         ],
     ],
@@ -89,6 +71,12 @@ return [
                         'customer_id'   => '100000customer',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
+                    ],
+                    [
+                        'id'            => '100000custcard',
+                        'customer_id'   => '100000customer',
+                        'method'        => 'card',
+                        'card_id'       => '1000000000card',
                     ],
                     [
                         'id'            => '1000custwallet',

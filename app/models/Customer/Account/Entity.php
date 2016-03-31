@@ -7,7 +7,6 @@ use Models\Base;
 class Entity extends Base\PublicEntity
 {
     const NAME              =       'name';
-    const EMAIL             =       'email';
     const CONTACT           =       'contact';
     const MERCHANT_ID       =       'merchant_id';
     const ACTIVE            =       'active';
@@ -23,7 +22,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::EMAIL,
         self::ACTIVE,
         self::CONTACT,
         self::MERCHANT_ID,
@@ -32,7 +30,6 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::NAME,
-        self::EMAIL,
         self::ACTIVE,
         self::CONTACT,
         self::MERCHANT_ID,
@@ -41,7 +38,6 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::NAME,
-        self::EMAIL,
         self::ACTIVE,
         self::CONTACT
     );
@@ -58,11 +54,6 @@ class Entity extends Base\PublicEntity
     public function getName()
     {
         return $this->attributes(self::NAME);
-    }
-
-    public function getEmail()
-    {
-        return $this->attributes(self::EMAIL);
     }
 
     public function getContact()

@@ -5,15 +5,22 @@ namespace Models\Customer\Methods;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
+use Models\Customer;
+use Models\Customer\App;
 use Models\Customer\Methods;
+use Models\Merchant\Account;
 
 class Core extends Base\Core
 {
+    protected $custRepo;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->repo = new Methods\Repository;
+
+        $this->custRepo = new Customer\Repository;
     }
     
     public function create($customer, $input)
@@ -45,6 +52,26 @@ class Core extends Base\Core
         $this->repo->saveOrFail($method);
     
         return $method;
+    }
+
+    public function fetchMethodsByAppId($merchantId, $appId)
+    {
+        $appEntity = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $merchantId);
+
+        $methods = $this->fetchMethodsByCustomerId(Account::SHARED_ACCOUNT, $appEntity->getCustomerId());
+
+        return $methods;
+    }
+
+    public function fetchMethodsByCustomerId($merchantId, $customerId)
+    {
+        $customer = $this->custRepo->findOrFailPublic($customerId);
+
+        assert($customer->getMerchantId() === $merchantId);
+
+        $methods = $this->repo->getByCustomerId($customerId);
+
+        return $methods;
     }
 
     protected function validateExistingMethod($method)

@@ -58,7 +58,6 @@ class Core extends Base\Core
         }
         else
         {
-
             $editInput = array_diff($input, $card->toArray());
 
             $card = $this->edit($card, $editInput);

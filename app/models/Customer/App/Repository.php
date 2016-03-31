@@ -13,7 +13,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'CustomerApps';
 
-    public function findByAppAndMerchant($appId, $merchantId)
+    public function findByAppIdAndMerchantId($appId, $merchantId)
     {
         $repo = $this->repo;
 

@@ -44,6 +44,7 @@ class Base
         'settlement'        => Models\Settlement\Entity::class,
         'transaction'       => Models\Transaction\Entity::class,
         'customer_method'   => Models\Customer\Methods\Entity::class,
+        'customer_app'      => Models\Customer\App\Entity::class,
         'bank_account'      => Models\Merchant\BankAccount\Entity::class,
     );
 

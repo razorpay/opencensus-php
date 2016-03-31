@@ -14,8 +14,6 @@ class CustomerTest extends TestCase
         $this->testDataFilePath = __DIR__.'/CustomerTestData.php';
 
         parent::setUp();
-
-        $customer = $this->fixtures->create('customer:default_customers');
     }
 
     public function testCreateCustomer()
@@ -41,12 +39,5 @@ class CustomerTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();        
-    }
-
-    public function testDeleteCustomer()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
     }
 }

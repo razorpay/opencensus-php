@@ -484,11 +484,11 @@ class Service extends Base\Service
         return $file;
     }
 
-    public function getCheckoutPreferences()
+    public function getCheckoutPreferences($input)
     {
         $merchant = $this->merchant;
 
-        return (new Checkout)->getPreferences($merchant, $this->mode);
+        return (new Checkout)->getPreferences($merchant, $this->mode, $input);
     }
 
     /**

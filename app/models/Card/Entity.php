@@ -234,6 +234,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IIN);
     }
 
+    public function getIssuer()
+    {
+        return $this->getAttribute(self::ISSUER);
+    }
+
     public function getExpiryMonthAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_MONTH);

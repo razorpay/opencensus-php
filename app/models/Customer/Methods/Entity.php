@@ -108,4 +108,20 @@ class Entity extends Base\PublicEntity
     {
         return json_decode($this->attributes[self::NOTES]);
     }
+
+    public function getFormattedMethod()
+    {
+        $formattedMethod = array();
+
+        if ($this->getMethod() == 'card')
+        {
+            $formattedMethod['card_id'] = $this->getCardId();
+            $formattedMethod['last4'] = $this->card->getLast4();
+            $formattedMethod['issuer'] = $this->card->getIssuer();
+            $formattedMethod['network'] = $this->card->getNetwork();
+            $formattedMethod['emi'] = false;
+        }
+
+        return $formattedMethod;
+    }
 }

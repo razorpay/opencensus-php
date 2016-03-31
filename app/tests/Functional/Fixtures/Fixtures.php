@@ -67,6 +67,10 @@ class Fixtures
 
         $this->create('iin:default_iins');
 
+        $this->create('card:default_cards');
+
+        $this->customer->setUp();
+
         $this->entities = $entities;
     }
 

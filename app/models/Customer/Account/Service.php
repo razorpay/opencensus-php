@@ -4,6 +4,7 @@ namespace Models\Customer;
 
 use Models\Base;
 use Models\Customer;
+use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
@@ -20,9 +21,14 @@ class Service extends Base\Service
     {
         $input['merchant_id'] = $this->merchant->getId();
 
-        $customer = (new Customer\Core)->create($input);
+        return $this->createCustomer($input);
+    }
 
-        return $customer->toArrayPublic();
+    public function createGlobalCustomer($input)
+    {
+        $input['merchant_id'] = Account::SHARED_ACCOUNT;
+
+        return $this->createCustomer($input);
     }
 
     public function edit($id, $input)
@@ -49,6 +55,13 @@ class Service extends Base\Service
 
         if ($customer === null)
             return [];
+
+        return $customer->toArrayPublic();
+    }
+
+    protected function createCustomer($input)
+    {
+        $customer = (new Customer\Core)->create($input);
 
         return $customer->toArrayPublic();
     }

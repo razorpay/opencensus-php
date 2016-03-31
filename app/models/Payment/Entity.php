@@ -29,6 +29,8 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const CUSTOMER_ID           = 'customer_id';
+    const APP_ID                = 'app_id';
+    const METHOD_ID             = 'method_id';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';

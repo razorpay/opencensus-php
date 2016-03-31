@@ -218,21 +218,48 @@ trait Authorize
 
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
-        $save = false;
+        // flow if app_id and method_id is send as part of payment
+        // this means payment method is already saved for given app_id or customer
+        // 
+        
+        $customerId = null;
+        $merchantId = null;
 
-        if ($payment->isMethod(Payment\Method::EMI) or
-            ((isset($input['save'])) and ($input['save'] === '1')))
+        if (isset($input[Payment\Entity::APP_ID]))
         {
-            $save = true;
+            $customerId = (new Customer\App\Repository)->findByAppAndMerchant(
+                $input[Payment\Entity::APP_ID],
+                $payment->merchant()->getId());
+        }
+        else if(isset($input[Payment\Entity::CUSTOMER_ID]))
+        {
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
+        }
+
+
+        if (isset($input[Payment\Entity::METHOD_ID]))
+        {
+            $method = (new Customer\Method\Repository)->find(Payment\Entity::METHOD_ID);
+            assert($method->getCustomerId() === $customerId);
+        }
+
+        // flow if card details are entered with save set to true/false
+        $saveCard = false;
+        $saveMethod = ((isset($input['save'])) and ($input['save'] === '1'));
+
+        if (($payment->isMethod(Payment\Method::EMI)) or 
+            ($payment->isMethod(Payment\Method::CARD) and $saveMethod))
+        {
+            $saveCard = true;
         }
 
         if (($payment->isMethod(Payment\Method::CARD)) or
             ($payment->isMethod(Payment\Method::EMI)))
         {
-            $gatewayInput['card'] = $this->createCardEntity($input, $save);
+            $gatewayInput['card'] = $this->createCardEntity($input, $saveCard);
         }
 
-        if ($save === true)
+        if ($saveMethod === true)
         {
             $this->savePaymentMethod($payment, $input);
         }
@@ -249,14 +276,14 @@ trait Authorize
     {
         $customer = null;
 
-        if( empty($input['customer_id']) === false)
+        if (empty($input['customer_id']) === false)
         {
             $customerId = $input['customer_id'];
             $customer = (new Customer\Repository)->find($customerId);               
         }
         else
         {
-            $customer = (new Customer\Repository)->findByEmailContactForMerchant(
+            $customer = (new Customer\Repository)->findByContactForMerchant(
                 $input['email'], 
                 $input['contact'], 
                 $payment->getMerchantId());

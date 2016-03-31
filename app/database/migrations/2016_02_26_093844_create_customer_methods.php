@@ -9,7 +9,7 @@ use Models\Merchant;
 use Models\Customer;
 use Models\Customer\Methods\Entity as Methods;
 
-class CreateCustomersMethods extends Migration {
+class CreateCustomerMethods extends Migration {
 
     /**
      * Run the migrations.

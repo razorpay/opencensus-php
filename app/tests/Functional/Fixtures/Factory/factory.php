@@ -238,7 +238,6 @@ $factory(Models\Customer\Entity::class, [
     'merchant_id' => 10000000000000,
     'name' => 'name',
     'contact' => '1234567890',
-    'email' => 'test@razorpay.com'
 ]);
 
 $factory(Models\Customer\Methods\Entity::class, [
@@ -248,4 +247,31 @@ $factory(Models\Customer\Methods\Entity::class, [
     'method' => 'wallet',
     'bank'   => null,
     'card_id' => null
+]);
+
+$factory(Models\Customer\App\Entity::class, [
+    'id' => $faker->uniqueid,
+    'customer_id' => '10000gcustomer',
+    'device_id' => 'test',
+    'app_id' => '1000000custapp',
+    'merchant_id'  => '10000000000000'
+]);
+
+$factory(Models\Card\Entity::class, [
+    'id'                =>  $faker->uniqueid,
+    'merchant_id'       =>  '10000000000000',
+    'name'              =>  'test',
+    'expiry_month'      =>  '12',
+    'expiry_year'       =>  '2100',
+    'iin'               =>  '411111',
+    'last4'             =>  '1111',
+    'length'            =>  '16',
+    'network'           =>  'Visa',
+    'type'              =>  'premiermiles',
+    'issuer'            =>  'hdfc',
+    'country'           =>  'in',
+    'international'     =>  'false',
+    'token'             =>  null,
+    'service'           =>  null,
+    'trivia'            =>  '',
 ]);

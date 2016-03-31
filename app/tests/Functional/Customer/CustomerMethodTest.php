@@ -14,17 +14,12 @@ class CustomerMethodTest extends TestCase
         $this->testDataFilePath = __DIR__.'/CustomerTestData.php';
 
         parent::setUp();
-
-        $customer = $this->fixtures->create('customer:default_customers');
-
-        $card = $this->fixtures->create('card', ['id' => '10000savedcard']);
-
-        $customerMethods = $this->fixtures->create('customer_method:default_customer_methods');
     }
-
 
     public function testAddCustomerMethodCard()
     {
+        $this->fixtures->create('card', ['id' => '10000savedcard']);
+
         $this->ba->privateAuth();
 
         $this->startTest();
