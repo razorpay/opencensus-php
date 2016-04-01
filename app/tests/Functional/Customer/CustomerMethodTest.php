@@ -59,4 +59,11 @@ class CustomerMethodTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetCustomerMethodsByAppId()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
 }

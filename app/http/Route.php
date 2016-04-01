@@ -181,6 +181,7 @@ final class Route
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
         'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
+        'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
         'create_customer'                       => ['post',     'customers',                                'CustomerController@createCustomer'                                 ],
         'update_customer'                       => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
         'get_customer'                          => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
@@ -190,7 +191,7 @@ final class Route
         'fetch_customer_method'                 => ['get',      'customers/{uid}/methods/{mid}',            'CustomerController@fetchMethod'                                    ],
         'fetch_multiple_customer_methods'       => ['get',      'customers/{uid}/methods',                  'CustomerController@fetchMethods'                                   ],
         'delete_customer_method'                => ['delete',   'customers/{uid}/methods/{mid}',            'CustomerController@deleteMethod'                                   ],
-        'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
+        'fetch_saved_methods_by_app_id'         => ['get',      'customer/methods/{appId}',                 'CustomerController@fetchMethodsByAppId'                            ],
     );
 
     public static $public = array(
@@ -225,6 +226,7 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_plans',
+        'fetch_saved_methods_by_app_id',
     );
 
     public static $publicCallback = array(

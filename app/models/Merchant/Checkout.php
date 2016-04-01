@@ -67,26 +67,11 @@ class Checkout
             $savedMethods = (new Customer\Methods\Core)->fetchMethodsByAppId($merchant->getId(), $input['app_id']);
         }
 
-        if ($savedMethods !== null)
+        if (($savedMethods !== null) and ($savedMethods->count() !== 0)) 
         {
-            $data['customer_methods'] = $this->formatSavedMethods($savedMethods);
+            $data['customer_methods'] = $savedMethods->toArray();
         }
 
         return $data;
-    }
-
-    protected function formatSavedMethods($input)
-    {        
-        $methods = array();
-
-        foreach ($input as $method)
-        {
-            if($method->getMethod() === 'card')
-            {
-                $methods[] = $method->getFormattedMethod();                
-            }
-        }
-
-        return $methods;
     }
 }

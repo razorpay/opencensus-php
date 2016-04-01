@@ -55,6 +55,12 @@ class Customer extends Base
             'method'        => 'card',
             'card_id'       => '1000000000card',
         ),
+        array(
+            'id'            => '10000custgcard',
+            'customer_id'   => '10000gcustomer',
+            'method'        => 'card',
+            'card_id'       => '1000000000card',
+        ),
     );
 
     public function createCustomers()

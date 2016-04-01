@@ -55,7 +55,7 @@ class Core extends Base\Core
     }
 
     public function fetchMethodsByAppId($merchantId, $appId)
-    {
+    {        
         $appEntity = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $merchantId);
 
         $methods = $this->fetchMethodsByCustomerId(Account::SHARED_ACCOUNT, $appEntity->getCustomerId());
@@ -71,7 +71,24 @@ class Core extends Base\Core
 
         $methods = $this->repo->getByCustomerId($customerId);
 
-        return $methods;
+        $formattedMethods = $this->formatSavedMethods($methods);
+
+        return $formattedMethods;
+    }
+
+    protected function formatSavedMethods($methods)
+    {        
+        $formattedMethods = new Base\PublicCollection;
+
+        foreach ($methods as $method)
+        {
+            if($method->getMethod() === 'card')
+            {
+                $formattedMethods->push($method->getFormattedMethod());
+            }
+        }
+
+        return $formattedMethods;
     }
 
     protected function validateExistingMethod($method)

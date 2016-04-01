@@ -180,5 +180,25 @@ return [
                 'account_key' => '23881822',
             ],
         ],
-    ]
+    ],
+
+    'testGetCustomerMethodsByAppId' => [
+        'request' => [
+            'url' => '/customer/methods/1000000custapp',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'card_id'   =>  '1000000000card',
+                    'last4'     =>  '1111',
+                    'emi'       =>  false,
+                    'issuer'    =>  null,
+                    'network'   => 'Visa'
+                ],
+            ],
+        ],
+    ],
 ];

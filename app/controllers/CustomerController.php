@@ -76,4 +76,11 @@ class CustomerController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function fetchMethodsByAppId($appId)
+    {
+        $methods = (new Customer\Methods\Service)->fetchMethodsByAppId($appId);
+
+        return ApiResponse::json($methods);
+    }
 }

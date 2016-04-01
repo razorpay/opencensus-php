@@ -60,6 +60,13 @@ class Service extends Base\Service
         return $methods->toArrayPublic();
     }
 
+    public function fetchMethodsByAppId($appId)
+    {
+        $methods = (new Customer\Methods\Core)->fetchMethodsByAppId($this->merchant->getKey(), $appId);
+
+        return $methods->toArray();
+    }
+
     public function delete($uid, $mid)
     {
         $method = $this->methodsRepo->findOrFailPublic($mid);
