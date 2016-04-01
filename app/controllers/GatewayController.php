@@ -19,7 +19,7 @@ class GatewayController extends BaseController
 
         $app = \App::getFacadeRoot();
         $app['slack']->send($input, 'transactions', '#tech_logs');
-    } 
+    }
 
     public function callbackKotakCancel()
     {
@@ -31,10 +31,9 @@ class GatewayController extends BaseController
         $inputMsg = Input::get('msg');
         $input = explode('|', $inputMsg);
 
-        $mode = 'test';
-
         $app = \App::getFacadeRoot();
-        $app['config']->set('database.default', $mode);
+
+        $nb = $this->getGatewayEntityByTraceId($input[3]);
 
         $trace = $app['trace'];
 
@@ -46,11 +45,6 @@ class GatewayController extends BaseController
                 'input_msg' => Input::get('msg'),
                 'input_arr' => $input
             ]);
-
-
-        $repo = new \Gateway\Netbanking\Base\Repository;
-
-        $nb = $repo->findByTraceIdAndAction($input[3], \Gateway\Base\Action::AUTHORIZE);
 
         if ($nb === null)
         {
@@ -75,5 +69,29 @@ class GatewayController extends BaseController
         $url = $url . '?msg=' . $inputMsg;
 
         return Redirect::to($url);
+    }
+
+    protected function getGatewayEntityByTraceId($traceId)
+    {
+        $app = \App::getFacadeRoot();
+
+        $repo = new \Gateway\Netbanking\Base\Repository;
+
+        $mode = 'test';
+
+        $app['config']->set('database.default', $mode);
+
+        $nb = $repo->findByTraceIdAndAction($traceId, \Gateway\Base\Action::AUTHORIZE);
+
+        if ($nb === null)
+        {
+            $mode = 'live';
+
+            $app['config']->set('database.default', $mode);
+
+            $nb = $repo->findByTraceIdAndAction($traceId, \Gateway\Base\Action::AUTHORIZE);
+        }
+
+        return $nb;
     }
 }
