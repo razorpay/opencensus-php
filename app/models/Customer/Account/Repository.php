@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Customer;
+use Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
@@ -13,22 +14,20 @@ class Repository extends Base\Repository
 
     protected $entity = 'customer';
 
-    public function findByEmailContactForMerchant($email, $contact, $merchantId)
+    public function findByContactForMerchant($contact, $merchantId)
     {
         $repo = $this->repo;
 
-        return $repo::where(Customer\Entity::EMAIL, '=', $email)
-                    ->where(Customer\Entity::CONTACT, '=', $contact)
+        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
     }
 
-    public function findByEmailContact($email, $contact)
+    public function findByContact($contact)
     {
         $repo = $this->repo;
 
-        return $repo::where(Customer\Entity::EMAIL, '=', $email)
-                    ->where(Customer\Entity::CONTACT, '=', $contact)
+        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
                     ->get();
     }
 }

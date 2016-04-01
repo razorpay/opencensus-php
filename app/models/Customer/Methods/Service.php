@@ -5,6 +5,7 @@ namespace Models\Customer\Methods;
 use Models\Base;
 use Models\Customer;
 use Models\Customer\Methods;
+use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
@@ -66,6 +67,31 @@ class Service extends Base\Service
 
         return $methods->toArray();
     }
+
+    public function fetchCustomerStatus($contact)
+    {
+        $saved = false; 
+        
+        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+
+        if ($customer !== null) 
+        {
+            $methods = (new Customer\Methods\Core)->fetchMethodsByCustomerId(
+                Account::SHARED_ACCOUNT, $customer->getId());
+
+            if ($methods !== null)
+            {
+                $saved = true;
+            }
+        }
+
+        $result = array(
+            'saved' =>  $saved
+        );
+
+        return $result;
+    }
+
 
     public function delete($uid, $mid)
     {

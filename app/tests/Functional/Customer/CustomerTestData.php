@@ -201,4 +201,32 @@ return [
             ],
         ],
     ],
+
+    'testFetchSavedMethodsStatusSaved'   => [
+        'request' => [
+                'url' => '/customer/status/1234567890',
+                'method' => 'get',
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => true
+                ],
+            ],
+    ],
+
+    'testFetchSavedMethodsStatusNotSaved'   => [
+        'request' => [
+                'url' => '/customer/status/1234567899',
+                'method' => 'get',
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'saved' => false
+                ],
+            ],
+    ],
 ];

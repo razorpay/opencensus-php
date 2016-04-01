@@ -192,6 +192,7 @@ final class Route
         'fetch_multiple_customer_methods'       => ['get',      'customers/{uid}/methods',                  'CustomerController@fetchMethods'                                   ],
         'delete_customer_method'                => ['delete',   'customers/{uid}/methods/{mid}',            'CustomerController@deleteMethod'                                   ],
         'fetch_saved_methods_by_app_id'         => ['get',      'customer/methods/{appId}',                 'CustomerController@fetchMethodsByAppId'                            ],
+        'fetch_cust_status_by_contact'          => ['get',      'customer/status/{contact}',                'CustomerController@fetchCustomerStatus'                            ],
     );
 
     public static $public = array(
@@ -227,6 +228,7 @@ final class Route
         'dummy_critical_error',
         'get_emi_plans',
         'fetch_saved_methods_by_app_id',
+        'fetch_cust_status_by_contact',
     );
 
     public static $publicCallback = array(

@@ -66,4 +66,18 @@ class CustomerMethodTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFetchSavedMethodsStatusSaved()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchSavedMethodsStatusNotSaved()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }    
 }

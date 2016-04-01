@@ -83,4 +83,11 @@ class CustomerController extends BaseController
 
         return ApiResponse::json($methods);
     }
+
+    public function fetchCustomerStatus($contact)
+    {
+        $status = (new Customer\Methods\Service)->fetchCustomerStatus($contact);
+
+        return ApiResponse::json($status);
+    }
 }
