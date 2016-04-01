@@ -33,7 +33,11 @@ class GatewayController extends BaseController
 
         $app = \App::getFacadeRoot();
 
-        $nb = $this->getGatewayEntityByTraceId($input[3]);
+        $result = $this->getGatewayEntityAndModeByTraceId($input[3]);
+
+        $nb = $result['nb'];
+
+        $mode = $result['mode'];
 
         $trace = $app['trace'];
 
@@ -71,7 +75,7 @@ class GatewayController extends BaseController
         return Redirect::to($url);
     }
 
-    protected function getGatewayEntityByTraceId($traceId)
+    protected function getGatewayEntityAndModeByTraceId($traceId)
     {
         $app = \App::getFacadeRoot();
 
@@ -92,6 +96,6 @@ class GatewayController extends BaseController
             $nb = $repo->findByTraceIdAndAction($traceId, \Gateway\Base\Action::AUTHORIZE);
         }
 
-        return $nb;
+        return ['nb' => $nb, 'mode' => $mode];
     }
 }
