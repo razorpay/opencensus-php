@@ -63,6 +63,17 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchEmiPaymentsBetween($from, $to, $bank)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where(Entity::BANK, '=', $bank)
+                    ->where(Entity::METHOD, '=', Method::EMI)
+                    ->get();
+    }
+
     public function countPaymentsForPricingRuleId($pricingRuleId)
     {
         $repo = $this->repo;

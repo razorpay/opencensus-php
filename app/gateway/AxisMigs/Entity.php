@@ -92,4 +92,14 @@ class Entity extends Base\Entity
     {
         return (int) $this->attributes['vpc_Amount'];
     }
+
+    public function getAuthCode()
+    {
+        return $this->attributes['vpc_AuthorizeId'];
+    }
+
+    public function getTransactionId()
+    {
+        return $this->attributes['vpc_TransactionNo'];
+    }
 }

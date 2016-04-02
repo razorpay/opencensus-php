@@ -177,6 +177,7 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+        'emi_generate_excel'                    => ['post',     'emi/generate/excel',                       'EmiController@generateEmiExcel'                                    ],
         'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
         'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
@@ -238,6 +239,7 @@ final class Route
         'order_fetch_by_id',
         'order_payments',
         'dummy_feature',
+        'emi_generate_excel',
     );
 
     public static $internal = array(
@@ -332,6 +334,7 @@ final class Route
         'add_emi_plan',
         'delete_emi_plan',
         'get_emi_plan_by_id',
+        'emi_generate_excel',
         'order_update',
     );
 
@@ -392,6 +395,7 @@ final class Route
                 'refund_netbanking_generate_excel',
                 'payment_refund_authorized',
                 'payment_capture_reminder',
+                'emi_generate_excel',
             ),
 
             'mailgun' => array(
