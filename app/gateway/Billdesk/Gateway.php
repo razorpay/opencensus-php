@@ -116,6 +116,13 @@ class Gateway extends Base\Gateway
                 ($payment['RefStatus'] === RefundStatus::CANCELLED) and
                 ($refundAmount === $input['payment']['amount']))
             {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_REFUND,
+                    [
+                        'message' => 'Payment was already cancelled at this point by billdesk',
+                        'payment_id' => $input['payment']['id']
+                    ]);
+
                 return;
             }
 
