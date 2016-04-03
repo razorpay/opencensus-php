@@ -110,9 +110,11 @@ class Gateway extends Base\Gateway
             // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
             // In that case, we need to let the refund go ahead.
 
+            $refundAmount = (int) ($payment['RefAmount'] * 100);
+
             if (($content['ErrorCode'] === 'ERR_REF009') and
                 ($payment['RefStatus'] === RefundStatus::CANCELLED) and
-                ((int) $payment['RefAmount'] * 100 === $input['payment']['amount']))
+                ($refundAmount === $input['payment']['amount']))
             {
                 return;
             }
