@@ -164,6 +164,23 @@ class Gateway extends Base\Gateway
                 ($input['payment']['status'] === 'failed') or
                 ($input['payment']['status'] === 'created'))
             {
+                $refAmount = (int) $content['RefAmount'] * 100;
+
+                if (($content['RefStatus'] === RefundStatus::CANCELLED) and
+                    ($refAmount === $input['payment']['amount']))
+                {
+                    //
+                    // This is the case where payment actually succeeded
+                    // when billdesk reconciled on the next day and those payments
+                    // are automatically cancelled by billdesk as well,
+                    // meaning it's been automatically refunded.
+                    //
+
+                    $verify->gatewaySuccess = false;
+                    $verify->apiSuccess = false;
+                    $status = VerifyResult::STATUS_MATCH;
+                }
+
                 $verify->apiSuccess = false;
                 $status = VerifyResult::STATUS_MISMATCH;
             }
