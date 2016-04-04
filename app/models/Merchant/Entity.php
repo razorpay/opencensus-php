@@ -371,8 +371,8 @@ class Entity extends Base\PublicEntity
     {
         if (is_array($emails))
         {
-            $this->attributes[self::TRANSACTION_REPORT_EMAIL] =
-                strtolower(implode(',', $emails));
+            $emailsFormatted = array_unique(array_map('strtolower', array_map('trim', $emails)));
+            $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emailsFormatted);
         }
         else
         {
