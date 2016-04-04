@@ -47,21 +47,24 @@ class Core extends Base\Core
         Card\Entity::modifyNumber($input);
 
         $card = null;
+
         if (isset($input['token']))
         {
             $card = $this->findExistingCards($input, $merchant);
+
+            $this->card = $card;
         }
 
         if ($card === null)
         {
             $card = $this->create($input, $merchant);
         }
-        else
-        {
-            $editInput = array_diff($input, $card->toArray());
+        // else
+        // {
+        //     $editInput = array_diff($input, $card->toArray());
 
-            $card = $this->edit($card, $editInput);
-        }
+        //     $card = $this->edit($card, $editInput);
+        // }
 
         return array_merge(
             $card->toArray(),
