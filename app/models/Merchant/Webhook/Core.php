@@ -5,6 +5,7 @@ namespace Models\Merchant\Webhook;
 use EE\Exception;
 use Models\Base;
 use Models\Merchant\Webhook;
+use Crypt;
 
 class Core extends Base\Core
 {
@@ -43,5 +44,10 @@ class Core extends Base\Core
     public function getWebhooks($merchant)
     {
         return (new Webhook\Repository)->findByMerchant($merchant);
+    }
+
+    public function encryptSecret($secret)
+    {
+        return Crypt::encrypt($secret);
     }
 }

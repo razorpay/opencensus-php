@@ -5,6 +5,7 @@ namespace Models\Merchant\Webhook;
 use Constants\Table;
 use EE\Exception;
 use Models\Base;
+use Crypt;
 
 class Entity extends Base\PublicEntity
 {
@@ -86,7 +87,12 @@ class Entity extends Base\PublicEntity
 
     public function getSecret()
     {
-        return $this->getAttribute(self::SECRET);
+        $encryptedSecret = $this->getAttribute(self::SECRET);
+        if(!empty($encryptedSecret))
+        {
+            return Crypt::decrypt($encryptedSecret);
+        }
+        return NULL;
     }
 
     public function isActive()
