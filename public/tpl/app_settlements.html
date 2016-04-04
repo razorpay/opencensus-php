@@ -47,7 +47,7 @@
             <td>{{row.service_tax/100 | rupee:"INR " }}</td>
             <td>
               <span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">
-                Created<!-- {{row.status | titlecase}} -->
+                {{row.status | titlecase}}
               </span>
             </td>
           </tr>
