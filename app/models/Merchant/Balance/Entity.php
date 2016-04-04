@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'balance';
 
-    protected $genereateIdOnCreate = false;
+    protected $generateIdOnCreate = false;
 
     protected function addAmount($amount)
     {

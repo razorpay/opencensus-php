@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'refund';
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected static $generators = array(self::ID, self::AMOUNT, self::CURRENCY);
 

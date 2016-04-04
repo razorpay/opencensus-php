@@ -2,6 +2,7 @@
 
 namespace Models\Merchant\Webhook;
 
+use Constants\Table;
 use EE\Exception;
 use Models\Base;
 
@@ -14,14 +15,15 @@ class Entity extends Base\PublicEntity
     const FAILURE_COUNT     = 'failure_count';
     const ACTIVE            = 'active';
     const CREATED_AT        = 'created_at';
-
+    const SECRET            = 'secret';
+    
     protected $entity       = 'webhook';
 
     const MAX_FAILURE_COUNT = 3;
 
-    protected $table        = \Constants\Table::WEBHOOK;
+    protected $table        = Table::WEBHOOK;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $defaults = array(
         self::ACTIVE        => true,
@@ -32,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::ACTIVE,
         self::EVENTS,
+        self::SECRET
     );
 
     protected $visible = array(
@@ -42,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FAILURE_COUNT,
         self::CREATED_AT,
+        self::SECRET
     );
 
     protected $public = array(
@@ -78,6 +82,11 @@ class Entity extends Base\PublicEntity
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
+    }
+
+    public function getSecret()
+    {
+        return $this->getAttribute(self::SECRET);
     }
 
     public function isActive()

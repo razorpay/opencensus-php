@@ -11,3 +11,4 @@ docs/
 app/config/dev
 app/config/**/dev/
 _*
+.idea/

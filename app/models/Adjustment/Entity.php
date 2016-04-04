@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'adjustment';
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $fillable = array(
         self::AMOUNT,

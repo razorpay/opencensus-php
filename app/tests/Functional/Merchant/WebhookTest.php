@@ -5,6 +5,7 @@ namespace Tests\Functional\Merchant;
 use Mockery;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Models\Merchant\Webhook\Inferno;
 
 class WebhookTest extends TestCase
 {
@@ -72,7 +73,6 @@ class WebhookTest extends TestCase
                     Mockery::on(function ($data) use ($testData)
                         {
                             $data['event'] = json_decode($data['event'], true);
-
                             $this->assertArraySelectiveEquals($testData, $data);
 
                             return true;
@@ -156,30 +156,73 @@ class WebhookTest extends TestCase
     public function testWebhookEventDataJustBeforeFiring()
     {
         $webhook = $this->createWebhook();
-
         $inferno = $this->mockInferno();
-
         $testData = $this->testData[__FUNCTION__];
-
         $inferno->shouldReceive('makeRequest')
                 ->once()
                 ->with(Mockery::type('array'))
                 ->andReturnUsing(function ($request) use ($testData)
                     {
                         $request['content'] = json_decode($request['content'], true);
-
                         $this->assertArraySelectiveEquals($testData, $request);
-
                         $response = $this->getStandardWebhookResponse();
-
                         return $response;
                     });
 
         $this->app->instance('webhook.inferno', $inferno);
-
         $this->doAuthPayment();
     }
 
+    public function testSecretValueInWebhookEventDataJustBeforeFiring()
+    {
+        $webhook = $this->createWebhook(['secret'=>'test_secret']);
+        $inferno = $this->mockInferno();
+        $testData = $this->testData[__FUNCTION__];
+        $inferno->shouldReceive('makeRequest')
+            ->once()
+            ->with(Mockery::type('array'))
+            ->andReturnUsing(function ($request) use ($testData, $webhook)
+            {
+                $request['content'] = json_decode($request['content'], true);
+                $this->assertArraySelectiveEquals($testData, $request);
+                $this->assertArrayHasKey('X-RAZORPAY-SIGNATURE', $request['header']);
+                $this->assertNotNull($request['header']['X-RAZORPAY-SIGNATURE']);
+                $response = $this->getStandardWebhookResponse();
+                return $response;
+            });
+
+        $this->app->instance('webhook.inferno', $inferno);
+        $this->doAuthPayment();
+    }
+
+    public function testGenerateHmac()
+    {
+        $payload = 'a';
+        $secret = 'b';
+        $expected_value = hash_hmac('md5', $payload, $secret);
+        $actual_value = Inferno::generateHMAC($payload, $secret, 'md5');
+        $this->assertEquals($expected_value, $actual_value);
+    }
+    
+    public function testGenerateHmacWithNullSecret()
+    {
+        $payload = 'a';
+        $actual_value = Inferno::generateHMAC($payload, NULL, 'md5');
+        $this->assertNull($actual_value);
+    }
+
+    public function testGenerateHmacWithNonStringPayload()
+    {
+        $secret = 'a';
+        $payload = ['a' => 'b'];
+        try {
+            Inferno::generateHMAC($payload, $secret, 'md5');
+        } catch(\Exception $ex) {
+            $this->assertEquals($ex->getCode(), 0);
+            return;
+        }
+        self::fail();
+    }
 
     protected function mockInfernoWithResponseStatusCode($statusCode)
     {

@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_COUNTRY,
     );
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     public function build(array $input = array())
     {

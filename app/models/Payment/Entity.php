@@ -59,7 +59,7 @@ class Entity extends Base\PublicEntity
 
     protected $table            = \Constants\Table::PAYMENT;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $fillable = array(
         self::ID,

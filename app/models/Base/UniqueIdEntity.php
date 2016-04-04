@@ -10,7 +10,7 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
-    protected $genereateIdOnCreate = false;
+    protected $generateIdOnCreate = false;
 
     const BASE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
@@ -136,7 +136,7 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            if ($this->genereateIdOnCreate)
+            if ($this->generateIdOnCreate)
             {
                 $this->generateAndSetUniqueId();
             }
@@ -207,7 +207,6 @@ class UniqueIdEntity extends Entity
     {
         // Get current nanotime from 1st Jan 1970
         $nanotime = self::getNanotimeInteger();
-
         return self::generateUniqueIdFromNanoTime($nanotime);
     }
 

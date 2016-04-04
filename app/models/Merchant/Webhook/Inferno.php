@@ -8,9 +8,7 @@ use Trace\TraceCode;
 class Inferno
 {
     protected $job;
-
     protected $trace;
-
     protected $repo;
 
     public function __construct()
@@ -22,6 +20,10 @@ class Inferno
         $this->repo = new Repository;
     }
 
+    /**
+     * @param $job
+     * @param $data
+     */
     public function fire($job, $data)
     {
         $this->job = $job;
@@ -38,7 +40,10 @@ class Inferno
             return;
         }
 
-        $request = $this->getRequestArray($data['event'], $webhook);
+        $secret = $webhook->getSecret();
+        $hmac = $this->generateHMAC($data['event'], $secret, 'md5');
+
+        $request = $this->getRequestArray($data['event'], $webhook, ['X-RAZORPAY-SIGNATURE' => $hmac]);
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
@@ -54,6 +59,17 @@ class Inferno
         {
             $this->webhookSuccessfullyFired($webhook);
         }
+    }
+
+    public static function generateHMAC($payload, $secret, $algo)
+    {
+        //hmac doesn't throw up an exception for NULL values.
+        if($secret === NULL || $payload === NULL) {
+            return NULL;
+        }
+        //TODO: payload should be of type string. Throws up an error otherwise. Should we handle?
+        $hmac = hash_hmac($algo, $payload, $secret);
+        return $hmac;
     }
 
     public function makeRequest($request)
@@ -129,7 +145,7 @@ class Inferno
         return $success;
     }
 
-    protected function getRequestArray($event, $webhook)
+    protected function getRequestArray($event, $webhook, $headers = array())
     {
         $request = array(
             'url' => $webhook->getUrl(),
@@ -140,6 +156,12 @@ class Inferno
             'User-Agent' => 'Razorpay-Webhook/v1',
             'Content-Type' => 'application/json',
         ];
+
+        foreach ($headers as $key => $value) {
+            if(!empty($value)) {
+                $request['header'][$key] = $value;
+            }
+        }
 
         $request['options'] = ['timeout' => 10];
 
