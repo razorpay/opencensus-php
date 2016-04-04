@@ -191,7 +191,8 @@ final class Route
         'fetch_customer_method'                 => ['get',      'customers/{uid}/methods/{mid}',            'CustomerController@fetchMethod'                                    ],
         'fetch_multiple_customer_methods'       => ['get',      'customers/{uid}/methods',                  'CustomerController@fetchMethods'                                   ],
         'delete_customer_method'                => ['delete',   'customers/{uid}/methods/{mid}',            'CustomerController@deleteMethod'                                   ],
-        'fetch_saved_methods_by_app_id'         => ['get',      'customer/methods/{appId}',                 'CustomerController@fetchMethodsByAppId'                            ],
+        'delete_method_for_app'                 => ['delete',   'apps/{appId}/methods/{mId}',               'CustomerController@deleteAppMethod'                                ],
+        'fetch_saved_methods_by_app_id'         => ['get',      'apps/{appId}/methods',                     'CustomerController@fetchMethodsByAppId'                            ],
         'fetch_cust_status_by_contact'          => ['get',      'customer/status/{contact}',                'CustomerController@fetchCustomerStatus'                            ],
     );
 
@@ -229,6 +230,8 @@ final class Route
         'get_emi_plans',
         'fetch_saved_methods_by_app_id',
         'fetch_cust_status_by_contact',
+        'delete_customer_method',
+        'delete_method_for_app',
     );
 
     public static $publicCallback = array(
@@ -258,7 +261,6 @@ final class Route
         'update_customer_method',
         'fetch_customer_method',
         'fetch_multiple_customer_methods',
-        'delete_customer_method',
     );
 
     public static $internal = array(

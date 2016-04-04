@@ -55,7 +55,7 @@ class CustomerMethodTest extends TestCase
 
     public function testDeleteCustomerMethod()
     {
-        $this->ba->privateAuth();
+        $this->ba->publicAuth();
 
         $this->startTest();
     }
@@ -79,5 +79,12 @@ class CustomerMethodTest extends TestCase
         $this->ba->publicAuth();
 
         $this->startTest();
-    }    
+    }
+
+    public function testDeleteAppMethod()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
 }

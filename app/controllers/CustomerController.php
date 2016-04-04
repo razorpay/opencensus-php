@@ -90,4 +90,11 @@ class CustomerController extends BaseController
 
         return ApiResponse::json($status);
     }
+
+    public function deleteAppMethod($appId, $mId)
+    {
+        $data = (new Customer\Methods\Service)->deleteAppMethod($appId, $mId);
+
+        return ApiResponse::json($data);
+    }
 }

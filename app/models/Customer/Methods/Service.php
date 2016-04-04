@@ -97,12 +97,21 @@ class Service extends Base\Service
     {
         $method = $this->methodsRepo->findOrFailPublic($mid);
 
+        assert($method->getCustomerId() === $uid);
+
         $method = $this->methodsRepo->deleteOrFail($method);
 
         if ($method === null)
             return [];
 
         return $method->toArrayPublic();
+    }
+
+    public function deleteAppMethod($appId, $mId)
+    {
+        $app = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $this->merchant->getId());
+
+        return $this->delete($app->getCustomerId(), $mId);
     }
 }
  

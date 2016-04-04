@@ -184,7 +184,7 @@ return [
 
     'testGetCustomerMethodsByAppId' => [
         'request' => [
-            'url' => '/customer/methods/1000000custapp',
+            'url' => '/apps/1000000custapp/methods',
             'method' => 'get',
             'content' => [
             ],
@@ -228,5 +228,18 @@ return [
                     'saved' => false
                 ],
             ],
+    ],
+
+    'testDeleteAppMethod' => [
+        'request' => [
+            'url' => '/apps/1000000custapp/methods/10000custgcard',
+            'method' => 'delete',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
     ],
 ];
