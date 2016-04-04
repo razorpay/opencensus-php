@@ -110,10 +110,19 @@ class Gateway extends Base\Gateway
             // So, the AuthStatus changes to 0300 but RefundStatus also changes to 0699.
             // In that case, we need to let the refund go ahead.
 
+            $refundAmount = (int) ($payment['RefAmount'] * 100);
+
             if (($content['ErrorCode'] === 'ERR_REF009') and
                 ($payment['RefStatus'] === RefundStatus::CANCELLED) and
-                ((int) $payment['RefAmount'] * 100 === $input['payment']['amount']))
+                ($refundAmount === $input['payment']['amount']))
             {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_REFUND,
+                    [
+                        'message' => 'Payment was already cancelled at this point by billdesk',
+                        'payment_id' => $input['payment']['id']
+                    ]);
+
                 return;
             }
 
@@ -164,6 +173,23 @@ class Gateway extends Base\Gateway
                 ($input['payment']['status'] === 'failed') or
                 ($input['payment']['status'] === 'created'))
             {
+                $refAmount = (int) $content['RefAmount'] * 100;
+
+                if (($content['RefStatus'] === RefundStatus::CANCELLED) and
+                    ($refAmount === $input['payment']['amount']))
+                {
+                    //
+                    // This is the case where payment actually succeeded
+                    // when billdesk reconciled on the next day and those payments
+                    // are automatically cancelled by billdesk as well,
+                    // meaning it's been automatically refunded.
+                    //
+
+                    $verify->gatewaySuccess = false;
+                    $verify->apiSuccess = false;
+                    $status = VerifyResult::STATUS_MATCH;
+                }
+
                 $verify->apiSuccess = false;
                 $status = VerifyResult::STATUS_MISMATCH;
             }
