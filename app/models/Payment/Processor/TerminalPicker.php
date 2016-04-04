@@ -203,7 +203,7 @@ class TerminalPicker
         $bank = $this->payment->getBank();
 
         $cardTerminalBanks = array(
-            IFSC::KKBK, 
+            IFSC::KKBK,
             IFSC::UTIB,
         );
 

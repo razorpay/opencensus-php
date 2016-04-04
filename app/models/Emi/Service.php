@@ -84,15 +84,14 @@ class Service extends Base\Service
 
         $count = $emiPaymentsForBank->count();
 
-        // if ($count === 0)
-        // {
-        //     return ['count' => $count];
-        // }
+        if ($count === 0)
+        {
+            return ['count' => $count];
+        }
 
         $class = $this->getEmiFileClass($bank);
 
         return (new $class)->generate($emiPaymentsForBank);
-        // return ['file' => $file, 'count' => $count];
     }
 
     protected function getEmiFileClass($bank)
@@ -104,8 +103,8 @@ class Service extends Base\Service
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+        $from = Carbon::parse('first day of 2008','Asia/Kolkata')->timestamp;
+        $to = Carbon::tomorrow('Asia/Kolkata')->timestamp - 1;
 
         if (isset($input['on']))
         {

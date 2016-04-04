@@ -1188,7 +1188,6 @@ trait PaymentTrait
         $this->app->instance('card.tokenex', $tokenex);
 
         $tokenex->shouldReceive('sendRequest')
-              ->once()
               ->with(Mockery::type('string'), 'post', Mockery::type('array'))
               ->andReturnUsing(function ($route, $method, $input)
                     {
@@ -1198,24 +1197,30 @@ trait PaymentTrait
                             "Success" => true,
                         );
 
-                        switch ($route) 
+                        $cardToTokenMap = array(
+                                '4111111111111111' => '1a2b3c4b5e',
+                                '4280951000002433' => '1a2b3c4b4e',
+                                '4111460212312338' => '1a2b3c4b5f'
+                            );
+
+                        switch ($route)
                         {
                             case 'REST/Tokenize':
-                                $response['Token'] = '1a2b3c4b5e';
+                                $response['Token'] = $cardToTokenMap[$input['Data']];
                                 break;
 
                             case 'REST/Detokenize':
-                                $response['Value'] = '4111111111111111';
+                                $tokenToCardMap = array_flip($cardToTokenMap);
+                                $response['Value'] = $tokenToCardMap[$input['Token']];
                                 break;
 
                             case 'REST/ValidateToken':
                                 $response['Valid'] = true;
                                 break;
-                            
+
                             case 'REST/DeleteToken':
                                 break;
                         }
-
                         return $response;
                     });
 

@@ -39,4 +39,9 @@ class Repository extends Base\Repository
                     ->where('vpc_Command', '=', $command)
                     ->firstOrFail();
     }
+
+    public function findByPaymentId($paymentId)
+    {
+        return $this->findByPaymentIdAndCommand($paymentId, 'pay');
+    }
 }
