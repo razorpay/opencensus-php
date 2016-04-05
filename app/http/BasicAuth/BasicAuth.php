@@ -521,7 +521,7 @@ class BasicAuth
             return false;
         }
 
-        // The key in case of app proxy will be the merhcant id
+        // The key in case of app proxy will be the merchant id
         $merchantId = $this->getKey();
 
         $this->merchant = (new Merchant\Repository)->find($merchantId);
