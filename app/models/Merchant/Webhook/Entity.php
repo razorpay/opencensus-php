@@ -92,14 +92,14 @@ class Entity extends Base\PublicEntity
         {
             return Crypt::decrypt($encryptedSecret);
         }
-        return NULL;
+        return null;
     }
 
     public function setSecretAttribute($secret)
     {
         if (empty($secret))
         {
-            $this->attributes[self::SECRET] = NULL;
+            $this->attributes[self::SECRET] = null;
         }
         else
         {

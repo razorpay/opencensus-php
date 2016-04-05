@@ -81,8 +81,8 @@ class Inferno
     public static function generateHMAC($payload, $secret)
     {
         //hmac doesn't throw up an exception for NULL values.
-        if($secret === NULL or $payload === NULL) {
-            return NULL;
+        if($secret === null or $payload === null) {
+            return null;
         }
         //TODO: payload should be of type string. Throws up an error otherwise. Should we handle?
         $hmac = hash_hmac(self::HASH_ALGO, $payload, $secret);
