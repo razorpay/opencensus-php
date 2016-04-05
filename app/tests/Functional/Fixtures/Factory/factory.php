@@ -270,8 +270,8 @@ $factory(Models\Card\Entity::class, [
     'type'              =>  'premiermiles',
     'issuer'            =>  'hdfc',
     'country'           =>  'in',
-    'international'     =>  'false',
-    'token'             =>  null,
-    'service'           =>  null,
+    'international'     =>  false,
+    'token'             =>  '1a2b3c4b5e',
+    'service'           =>  'tokenex',
     'trivia'            =>  '',
 ]);

@@ -53,13 +53,13 @@ class Customer extends Base
             'id'            => '100000custcard',
             'customer_id'   => '100000customer',
             'method'        => 'card',
-            'card_id'       => '1000000000card',
+            'card_id'       => '100000000lcard',
         ),
         array(
             'id'            => '10000custgcard',
             'customer_id'   => '10000gcustomer',
             'method'        => 'card',
-            'card_id'       => '1000000000card',
+            'card_id'       => '100000000gcard',
         ),
     );
 

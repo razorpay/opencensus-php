@@ -61,7 +61,7 @@ class Entity extends Base\PublicEntity
 
     public function customer()
     {
-        return $this->belongsTo('Models\Customer\Account\Entity');
+        return $this->belongsTo('Models\Customer\Entity');
     }
 
     public function card()

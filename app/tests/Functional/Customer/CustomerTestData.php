@@ -76,7 +76,7 @@ return [
                         'id'            => '100000custcard',
                         'customer_id'   => '100000customer',
                         'method'        => 'card',
-                        'card_id'       => '1000000000card',
+                        'card_id'       => '100000000lcard',
                     ],
                     [
                         'id'            => '1000custwallet',
@@ -192,10 +192,10 @@ return [
         'response' => [
             'content' => [
                 [
-                    'card_id'   =>  '1000000000card',
-                    'last4'     =>  '1111',
-                    'emi'       =>  false,
-                    'issuer'    =>  null,
+                    'card_id'   => '100000000gcard',
+                    'last4'     => '1111',
+                    'emi'       => false,
+                    'issuer'    => null,
                     'network'   => 'Visa'
                 ],
             ],

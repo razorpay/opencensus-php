@@ -236,15 +236,15 @@ trait Authorize
         }
 
         $customer = (new Customer\Repository)->find($customerId);
-        
+
         return $customer;
     }
 
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
-    {        
+    {
         $customer = $this->getCustomerIdLocalOrGlobal($input);
 
-        // flow if method_id is set, pay using already saved method        
+        // flow if method_id is set, pay using already saved method
         if(isset($input[Payment\Entity::METHOD_ID]))
         {
             if($customer === null)
@@ -258,7 +258,7 @@ trait Authorize
             assert($method !== null);
             assert($method->getCustomerId() === $customer->getId());
 
-            if (($payment->isMethod(Payment\Method::CARD)) or 
+            if (($payment->isMethod(Payment\Method::CARD)) or
                 ($payment->isMethod(Payment\Method::EMI)))
             {
                 $gatewayInput['card'] = $this->createCardEntityFromSavedMethod($method, $input);
@@ -278,8 +278,7 @@ trait Authorize
             $saveCard = false;
             $saveMethod = ((isset($input['save'])) and ($input['save'] === '1'));
 
-            if (($payment->isMethod(Payment\Method::EMI)) or 
-                ($payment->isMethod(Payment\Method::CARD) and $saveMethod))
+            if ($payment->isMethod(Payment\Method::EMI))
             {
                 $saveCard = true;
             }
@@ -287,17 +286,17 @@ trait Authorize
             if (($payment->isMethod(Payment\Method::CARD)) or
                 ($payment->isMethod(Payment\Method::EMI)))
             {
-                $gatewayInput['card'] = $this->createCardEntity($input, $saveCard);
-            }
-
-            if ($saveMethod === true)
-            {
-                $this->savePaymentMethod($customer, $payment, $input);
+                $gatewayInput['card'] = $this->createCardEntity($input['card'], $saveCard);
             }
 
             if ($payment->isMethod(Payment\Method::EMI))
             {
                 $this->setBankAndEmiPlanDetails($payment, $input);
+            }
+
+            if ($saveMethod === true)
+            {
+                $this->savePaymentMethod($customer, $payment, $input);
             }
 
             unset($input['save']);
@@ -311,11 +310,27 @@ trait Authorize
             'method'      => $payment->getMethod(),
         );
 
-        if (($payment->isMethod(Payment\Method::CARD)) or 
+        if (($payment->isMethod(Payment\Method::CARD)) or
             ($payment->isMethod(Payment\Method::EMI)))
         {
             $saveMethodInput['method'] = Payment\Method::CARD;
-            $saveMethodInput['card_id'] = $payment->getCardId();
+
+            $cardInput = $payment->card->toArray();
+
+            if (isset($cardInput['token']) === false)
+            {
+                $cardInput['token'] = $this->getCardToken($input['card']['number']);
+
+                $cardInput['service'] = 'tokenex';
+            }
+
+            $cardInput['number'] = $input['card']['number'];
+
+            $cardInput['cvv'] = $input['card']['cvv'];
+
+            $savedCard = (new Card\Core)->createDuplicateCard($cardInput, $customer->merchant);
+
+            $saveMethodInput['card_id'] = $savedCard->getId();
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
@@ -613,8 +628,8 @@ trait Authorize
      *                      Payment\Entity object and
      *                      card data array
      */
-    public function createCardEntity(array $input, $save = false)
-    {        
+    public function createCardEntity(array $cardInput, $save = false)
+    {
         //
         // Creates card entity. if save flag is set to true
         // number is stored with tokenex, and token is stored
@@ -622,7 +637,6 @@ trait Authorize
         // we get back a card data array contianing Card\Entity
         // with number and cvv
         //
-        $cardInput = $input['card'];
 
         if($save)
         {
@@ -655,15 +669,25 @@ trait Authorize
     }
 
     protected function createCardEntityFromSavedMethod($method, $input)
-    {        
+    {
         $cardNumber = $this->getCardNumber($method->card->getToken());
+        $cvv = $input['card']['cvv'];
 
-        $this->payment->card()->associate($method->card);
-        
+        $savedCard = $method->card->toArray();
+        $savedCard['number'] = $cardNumber;
+        $savedCard['cvv'] = $cvv;
+
+        //create a card entity for merchant
+        $cardCore = new Card\Core();
+
+        $card = $cardCore->createDuplicateCard($savedCard, $method->customer->merchant);
+
+        $this->payment->card()->associate($card);
+
         return array_merge(
-            $method->card->toArray(),
+            $card->toArray(),
             ['number' => $cardNumber,
-             'cvv' => $input['card']['cvv']]);
+             'cvv' => $cvv]);
     }
 
     protected function getCardToken($cardNumber)
@@ -702,7 +726,7 @@ trait Authorize
         return $cardNumber;
     }
 
-    protected function verifyBankEnabled($payment)
+        protected function verifyBankEnabled($payment)
     {
         $merchant = $payment->merchant;
 

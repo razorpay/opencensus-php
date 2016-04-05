@@ -35,7 +35,7 @@ class Core extends Base\Core
         $card->saveOrFail();
 
         return $card;
-    }    
+    }
 
     public function getCard()
     {
@@ -70,6 +70,35 @@ class Core extends Base\Core
             $card->toArray(),
             ['number' => $input['number'],
              'cvv' => $input['cvv']]);
+    }
+
+    public function createDuplicateCard($input, $merchant)
+    {
+        $createInput = array(
+            'number'                =>  $input['number'],
+            Entity::EXPIRY_MONTH    =>  $input[Entity::EXPIRY_MONTH],
+            Entity::EXPIRY_YEAR     =>  $input[Entity::EXPIRY_YEAR],
+            'cvv'                   =>  $input['cvv'],
+            Entity::NAME            =>  $input[Entity::NAME],
+            Entity::TOKEN           =>  $input[Entity::TOKEN],
+            Entity::SERVICE         =>  $input[Entity::SERVICE]
+        );
+
+        $card = null;
+
+        if (isset($input['token']))
+        {
+            $card = $this->findExistingCards($createInput, $merchant);
+
+            $this->card = $card;
+        }
+
+        if ($card === null)
+        {
+            $card = $this->create($createInput, $merchant);
+        }
+
+        return $card;
     }
 
     public function fillNetworkDetails($card, $input)
@@ -169,7 +198,7 @@ class Core extends Base\Core
         {
             assert($cards->count() === 1);
             return $cards[0];
-        } 
+        }
 
         return null;
     }
