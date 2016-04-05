@@ -88,11 +88,24 @@ class Entity extends Base\PublicEntity
     public function getSecret()
     {
         $encryptedSecret = $this->getAttribute(self::SECRET);
-        if(!empty($encryptedSecret))
+        if (!empty($encryptedSecret))
         {
             return Crypt::decrypt($encryptedSecret);
         }
         return NULL;
+    }
+
+    public function setSecretAttribute($secret)
+    {
+        if (empty($secret))
+        {
+            $this->attributes[self::SECRET] = NULL;
+        }
+        else
+        {
+            $encryptedSecret = Crypt::Encrypt($secret);
+            $this->attributes[self::SECRET] = $encryptedSecret;
+        }
     }
 
     public function isActive()

@@ -59,8 +59,7 @@ class Validator extends Base\Validator
                     Entity::EVENTS);
             }
 
-            if (($value !== '0') and
-                ($value !== '1')) {
+            if (($value !== '0') and ($value !== '1')) {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a valid event value',
                     Entity::EVENTS);

@@ -176,6 +176,7 @@ class WebhookTest extends TestCase
     public function testSecretValueInWebhookEventDataJustBeforeFiring()
     {
         $webhook = $this->createWebhook(['secret'=>'test_secret']);
+
         $inferno = $this->mockInferno();
         $testData = $this->testData[__FUNCTION__];
         $inferno->shouldReceive('makeRequest')
@@ -199,15 +200,15 @@ class WebhookTest extends TestCase
     {
         $payload = 'a';
         $secret = 'b';
-        $expected_value = hash_hmac('md5', $payload, $secret);
-        $actual_value = Inferno::generateHMAC($payload, $secret, 'md5');
+        $expected_value = hash_hmac('sha256', $payload, $secret);
+        $actual_value = Inferno::generateHMAC($payload, $secret);
         $this->assertEquals($expected_value, $actual_value);
     }
     
     public function testGenerateHmacWithNullSecret()
     {
         $payload = 'a';
-        $actual_value = Inferno::generateHMAC($payload, NULL, 'md5');
+        $actual_value = Inferno::generateHMAC($payload, NULL);
         $this->assertNull($actual_value);
     }
 
@@ -216,7 +217,7 @@ class WebhookTest extends TestCase
         $secret = 'a';
         $payload = ['a' => 'b'];
         try {
-            Inferno::generateHMAC($payload, $secret, 'md5');
+            Inferno::generateHMAC($payload, $secret);
         } catch(\Exception $ex) {
             $this->assertEquals($ex->getCode(), 0);
             return;

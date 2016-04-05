@@ -45,9 +45,4 @@ class Core extends Base\Core
     {
         return (new Webhook\Repository)->findByMerchant($merchant);
     }
-
-    public function encryptSecret($secret)
-    {
-        return Crypt::encrypt($secret);
-    }
 }

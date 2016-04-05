@@ -467,10 +467,6 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
-        if(!empty($input['secret']))
-        {
-            $input['secret'] = (new Webhook\Core)->encryptSecret($input['secret']);
-        }
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
         return $webhook->toArray();
     }

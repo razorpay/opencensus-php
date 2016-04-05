@@ -11,6 +11,8 @@ class Inferno
     protected $trace;
     protected $repo;
 
+    const HASH_ALGO = 'sha256';
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -41,9 +43,9 @@ class Inferno
         }
 
         $secret = $webhook->getSecret();
-        $hmac = $this->generateHMAC($data['event'], $secret, 'md5');
-
-        $request = $this->getRequestArray($data['event'], $webhook, ['X-RAZORPAY-SIGNATURE' => $hmac]);
+        $hmac = $this->generateHMAC($data['event'], $secret);
+        $headers = $this->getRequestHeaders($hmac);
+        $request = $this->getRequestArray($data['event'], $webhook, $headers);
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
@@ -61,14 +63,29 @@ class Inferno
         }
     }
 
-    public static function generateHMAC($payload, $secret, $algo)
+    public function getRequestHeaders($hmac)
+    {
+        $headers = array(
+            'User-Agent' => 'Razorpay-Webhook/v1',
+            'Content-Type' => 'application/json'
+        );
+
+        if (!empty($hmac))
+        {
+            $headers['X-RAZORPAY-SIGNATURE'] = $hmac;
+        }
+
+        return $headers;
+    }
+
+    public static function generateHMAC($payload, $secret)
     {
         //hmac doesn't throw up an exception for NULL values.
-        if($secret === NULL || $payload === NULL) {
+        if($secret === NULL or $payload === NULL) {
             return NULL;
         }
         //TODO: payload should be of type string. Throws up an error otherwise. Should we handle?
-        $hmac = hash_hmac($algo, $payload, $secret);
+        $hmac = hash_hmac(self::HASH_ALGO, $payload, $secret);
         return $hmac;
     }
 
@@ -145,23 +162,14 @@ class Inferno
         return $success;
     }
 
-    protected function getRequestArray($event, $webhook, $headers = array())
+    protected function getRequestArray($event, $webhook, $headers)
     {
         $request = array(
             'url' => $webhook->getUrl(),
             'method' => 'post',
             'content' => $event);
 
-        $request['header'] = [
-            'User-Agent' => 'Razorpay-Webhook/v1',
-            'Content-Type' => 'application/json',
-        ];
-
-        foreach ($headers as $key => $value) {
-            if(!empty($value)) {
-                $request['header'][$key] = $value;
-            }
-        }
+        $request['header'] = $headers;
 
         $request['options'] = ['timeout' => 10];
 
