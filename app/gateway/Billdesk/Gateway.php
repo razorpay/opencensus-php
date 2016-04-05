@@ -189,9 +189,11 @@ class Gateway extends Base\Gateway
                     $verify->apiSuccess = false;
                     $status = VerifyResult::STATUS_MATCH;
                 }
-
-                $verify->apiSuccess = false;
-                $status = VerifyResult::STATUS_MISMATCH;
+                else
+                {
+                    $verify->apiSuccess = false;
+                    $status = VerifyResult::STATUS_MISMATCH;
+                }
             }
             else
             {
