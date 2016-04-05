@@ -167,29 +167,56 @@ class WebhookTest extends TestCase
                 ->andReturnUsing(function ($request) use ($testData)
                     {
                         $request['content'] = json_decode($request['content'], true);
-
                         $this->assertArraySelectiveEquals($testData, $request);
-
                         $response = $this->getStandardWebhookResponse();
-
                         return $response;
                     });
 
         $this->app->instance('webhook.inferno', $inferno);
+        $this->doAuthPayment();
+    }
+
+    public function testWebhookUnsuccessfulEmail()
+    {
+        $webhook = $this->createWebhook();
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('sendRequest')
+            ->once()
+            ->andReturn(false);
+
+        $inferno->shouldReceive('sendEmail')
+                ->with(Mockery::type('object'),'unsuccessful')
+                ->once();
 
         $this->doAuthPayment();
     }
 
-
-    protected function mockInfernoWithResponseStatusCode($statusCode)
+    public function testWebhookFailureEmail()
     {
+        $webhook = $this->createWebhook();
         $inferno = $this->mockInferno();
 
+        $this->fixtures->edit(
+            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
+
+        $inferno->shouldReceive('sendRequest')
+            ->once()
+            ->andReturn(false);
+
+        $inferno->shouldReceive('sendEmail')
+            ->with(Mockery::type('object'),'failure')
+            ->once();
+
+        $this->doAuthPayment();
+    }
+
+    protected function mockInfernoWithResponseStatusCode($statusCode, $method='makeRequest')
+    {
+        $inferno = $this->mockInferno();
         $response = $this->getStandardWebhookResponse($statusCode);
-
-        $inferno->shouldReceive('makeRequest')
+        $inferno->shouldReceive($method)
                 ->andReturn($response);
-
         return $inferno;
     }
 
@@ -211,8 +238,7 @@ class WebhookTest extends TestCase
 
         $success = false;
 
-        if (($statusCode >= 200) and
-            ($statusCode < 300))
+        if (($statusCode >= 200) and ($statusCode < 300))
         {
             $success = true;
         }

@@ -4,6 +4,8 @@ namespace Models\Merchant\Webhook;
 
 use Requests;
 use Trace\TraceCode;
+use Mail;
+use Models\Merchant;
 
 class Inferno
 {
@@ -56,6 +58,28 @@ class Inferno
         }
     }
 
+    public function sendEmail($webhook, $type)
+    {
+        $data = array();
+        $to_emails = $webhook->merchant->getTransactionReportEmail();
+        $data['to_emails'] = $to_emails;
+        if($type === 'unsuccessful')
+        {
+            $data['subject'] = 'Unsuccessful webhook event';
+        }
+        else if($type === 'failure')
+        {
+            $data['subject'] = 'Failed webhook event';
+        }
+        Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
+        {
+            $emails = $data['to_emails'];
+            $message->from('support@razorpay.com', 'Razorpay Support');
+            $message->subject($data['subject']);
+            $message->to($emails);
+        });
+    }
+
     public function makeRequest($request)
     {
         $method = $request['method'];
@@ -69,7 +93,7 @@ class Inferno
         return $response;
     }
 
-    protected function sendRequest($request, $webhook)
+    public function sendRequest($request, $webhook)
     {
         $success = true;
         $response = null;
@@ -163,8 +187,7 @@ class Inferno
         // It's a failure, increment failure count.
         $this->repo->bumpFailureCount($webhook);
 
-        if (($webhook->isActive() === false) or
-            ($job->attempts() >= 3))
+        if (($webhook->isActive() === false) or ($job->attempts() >= 3))
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_DEACTIVATE,
@@ -172,10 +195,12 @@ class Inferno
 
             // Webhook is now inactive
             // So let's just delete the job
+            $this->sendEmail($webhook,'failure');
             $job->delete();
         }
         else
         {
+            $this->sendEmail($webhook,'unsuccessful');
             // Attempt again after 1 hour
             $job->release(3600);
         }
