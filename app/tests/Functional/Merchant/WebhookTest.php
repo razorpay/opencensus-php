@@ -182,8 +182,8 @@ class WebhookTest extends TestCase
         $inferno = $this->mockInferno();
 
         $inferno->shouldReceive('sendRequest')
-            ->once()
-            ->andReturn(false);
+                ->once()
+                ->andReturn(false);
 
         $inferno->shouldReceive('sendEmail')
                 ->with(Mockery::type('object'),'unsuccessful')

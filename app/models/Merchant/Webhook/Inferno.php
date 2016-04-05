@@ -61,15 +61,15 @@ class Inferno
     public function sendEmail($webhook, $type)
     {
         $data = array();
-        $to_emails = $webhook->merchant->getTransactionReportEmail();
-        $data['to_emails'] = $to_emails;
+        $toEmails = $webhook->merchant->getTransactionReportEmail();
+        $data['to_emails'] = $toEmails;
         if($type === 'unsuccessful')
         {
             $data['subject'] = 'Unsuccessful webhook event';
         }
         else if($type === 'failure')
         {
-            $data['subject'] = 'Failed webhook event';
+            $data['subject'] = 'Disabled webhook event';
         }
         Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
         {
@@ -191,16 +191,19 @@ class Inferno
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_DEACTIVATE,
-                ['webhook' => $webhook->getId()]);
+                ['webhook' => $webhook->getId()]
+            );
+
+            $this->sendEmail($webhook,'failure');
 
             // Webhook is now inactive
             // So let's just delete the job
-            $this->sendEmail($webhook,'failure');
             $job->delete();
         }
         else
         {
             $this->sendEmail($webhook,'unsuccessful');
+
             // Attempt again after 1 hour
             $job->release(3600);
         }
