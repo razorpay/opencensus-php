@@ -326,7 +326,7 @@ class Reconciler2
         {
             $emails = ['settlements@razorpay.com'];
 
-            $message->from('settlement@razorpay.com', 'Kotak UTR Reconciliation');
+            $message->from('settlement@razorpay.com', 'Kotak Settlement');
 
             $message->subject($data['subject']);
 
