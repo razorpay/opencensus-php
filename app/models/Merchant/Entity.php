@@ -50,13 +50,12 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::FEATURES,
+        self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
-        self::FEATURES,
-        self::FEE_BEARER,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -344,7 +343,7 @@ class Entity extends Base\PublicEntity
     {
         $features = $this->attributes[self::FEATURES];
 
-        if($features === null)
+        if ($features === null)
         {
             return [];
         }
@@ -372,8 +371,8 @@ class Entity extends Base\PublicEntity
     {
         if (is_array($emails))
         {
-            $this->attributes[self::TRANSACTION_REPORT_EMAIL] =
-                strtolower(implode(',', $emails));
+            $emailsFormatted = array_unique(array_map('strtolower', array_map('trim', $emails)));
+            $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emailsFormatted);
         }
         else
         {

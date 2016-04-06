@@ -3,12 +3,10 @@
 namespace Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
-use Models\Settlement\Kotak\FileHandlerTrait;
+use Gateway\Netbanking\Base;
 
-class RefundExcel
+class RefundFile extends Base\RefundFile
 {
-    use FileHandlerTrait;
-
     protected static $fileToWriteName = 'HDFC_Netbanking_Refunds';
 
     protected static $headers = array(
@@ -19,33 +17,11 @@ class RefundExcel
         'Order Amount',
         'Refund Amount',
         'Merchant Code',
-
     );
-
-    public function __construct()
-    {
-        $this->mail = \Mail::getFacadeRoot();
-    }
 
     public function generate($input)
     {
-        $i = 1;
-
-        foreach ($input as $row)
-        {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
-
-            $data[] = array(
-                'Sr No'            => $i++,
-                'Transaction date' => $date,
-                'Bank reference #' => $row['gateway']['bank_payment_id'],
-                'Order #'          => $row['payment']['id'],
-                'Order Amount'     => $row['payment']['amount'] / 100,
-                'Refund Amount'    => $row['refund']['amount'] / 100,
-                'Merchant Code'    => $row['terminal']['gateway_merchant_id'],
-            );
-        }
+        $data = $this->getRefundData($input);
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
@@ -61,14 +37,6 @@ class RefundExcel
         $data['file'] = $fullpath;
         $data['body'] = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
 
-        // @note: May also cc -
-        //  Kavita.Puthran@hdfcbank.com,
-        //  Charusheela.Ghorpade@hdfcbank.com,
-        //  Santosh.Ghorpade@hdfcbank.com,
-        //  Santosh.Malap@hdfcbank.com,
-        //  Keshav.Mishra@hdfcbank.com,
-        //  Ashish.Mandhare@hdfcbank.com
-
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
@@ -83,5 +51,28 @@ class RefundExcel
 
             $message->attach($data['file']);
         });
+    }
+
+    protected function getRefundData($input)
+    {
+        $i = 1;
+
+        foreach ($input['data'] as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
+
+            $data[] = array(
+                'Sr No'            => $i++,
+                'Transaction date' => $date,
+                'Bank reference #' => $row['gateway']['bank_payment_id'],
+                'Order #'          => $row['payment']['id'],
+                'Order Amount'     => $row['payment']['amount'] / 100,
+                'Refund Amount'    => $row['refund']['amount'] / 100,
+                'Merchant Code'    => $row['terminal']['gateway_merchant_id'],
+            );
+        }
+
+        return $data;
     }
 }

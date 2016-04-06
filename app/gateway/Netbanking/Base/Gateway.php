@@ -3,6 +3,7 @@
 namespace Gateway\Netbanking\Base;
 
 use Gateway\Netbanking;
+use Gateway\Base\Action;
 
 class Gateway extends \Gateway\Base\Gateway
 {
@@ -46,6 +47,23 @@ class Gateway extends \Gateway\Base\Gateway
         }
 
         return $attr;
+    }
+
+
+    public function generateRefunds($input)
+    {
+        foreach ($input['data'] as & $row)
+        {
+            $payment = $this->getRepo()->findByPaymentIdAndAction(
+                                $row['payment']['id'], Action::AUTHORIZE);
+
+            $row['gateway'] = $payment->toArray();
+        }
+
+        $ns = $this->getGatewayNamespace();
+        $class = $ns . '\\' . 'RefundFile';
+
+        return (new $class)->generate($input);
     }
 
     protected function getRepo()

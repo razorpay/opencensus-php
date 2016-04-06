@@ -71,7 +71,8 @@ trait Inquiry
             //
 
             if ((in_array($payment['status'], $successStatusArray)) and
-                ($input['payment']['status'] !== 'failed'))
+                ($input['payment']['status'] !== 'failed') and
+                ($input['payment']['status'] !== 'created'))
             {
                 $verify->apiSuccess = true;
             }
@@ -115,13 +116,6 @@ trait Inquiry
             }
 
             $this->fillPaymentStatusAndContent($verify);
-        }
-        else
-        {
-            if ($received === null)
-            {
-                $this->setReceived(true);
-            }
         }
 
         $payment->saveOrFail();

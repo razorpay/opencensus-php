@@ -75,15 +75,13 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $payment = (new Payment\Entity);
+        $ptable = Payment\Entity::getTableName();
 
-        $ptable = $payment->getTable();
+        $attrs = Refund\Entity::getTableName() . '.*';
 
-        $entity = (new $this->repo);
+        $query = $this->newQuery();
 
-        $query = $entity->newQuery();
-
-        $refunds = $query->join(
+        $refunds = $query->select($attrs)->join(
             $ptable,
             function ($join) use ($from, $to, $bank, $gateway)
             {

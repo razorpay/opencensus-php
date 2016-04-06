@@ -18,10 +18,13 @@ class MerchantCreateTest extends TestCase
         $this->ba->appAuth();
     }
 
-    /**
-     * @group merchant
-     * @return array Data return from merchant creation
-     */
+    public function testCreateMerchantWithDuplicateEmail()
+    {
+        $this->ba->appAuthTest();
+
+        $this->startTest();
+    }
+
     public function testCreateMerchantAndRelations()
     {
         $this->ba->appAuthTest();
@@ -101,6 +104,15 @@ class MerchantCreateTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->assertSame(array(), $content['disabled']);
+    }
+
+    public function testCreateSubMerchant()
+    {
+        $this->fixtures->merchant->editFeatures('aggregator');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     protected function startTest($testDataToReplace = [])

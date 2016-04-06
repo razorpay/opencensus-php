@@ -22,17 +22,41 @@ class Core extends Base\Core
     {
         $merchant = (new Merchant\Entity)->build($input);
 
+        $email['email'] = $input['email'];
+
+        $merchant->getValidator()->validateInput('unique_email', $email);
+
         $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
+        $this->addMerchantSupportingEntities($merchant);
+
+        return $merchant;
+    }
+
+    public function createSubMerchant($input, $merchant)
+    {
+        $input['email'] = $merchant->getEmail();
+
+        $subMerchant = (new Merchant\Entity)->build($input);
+
+        $subMerchant->setPricingPlan($merchant->getPricingPlanId());
+
+        $this->repo->saveOrFail($subMerchant);
+
+        $this->addMerchantSupportingEntities($subMerchant);
+
+        return $subMerchant;
+    }
+
+    protected function addMerchantSupportingEntities($merchant)
+    {
         $this->createBalance($merchant, Mode::TEST);
 
         (new Merchant\BankAccount\Core)->createTestBankAccount($merchant);
 
         (new Methods\Core)->setDefaultMethods($merchant);
-
-        return $merchant;
     }
 
     public function edit($merchant, $input)

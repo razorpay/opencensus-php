@@ -54,6 +54,17 @@ class PublicCollection extends Collection
         return $ids;
     }
 
+    public function getPublicIds()
+    {
+        $publicIds = array_map(function($item)
+        {
+            return $item->getPublicId();
+
+        }, $this->items);
+
+        return $publicIds;
+    }
+
     protected function itemsToArrayPublic()
     {
         return array_map(function($item)
