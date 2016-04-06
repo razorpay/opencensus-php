@@ -181,8 +181,8 @@
                   {{row.amount/100 | rupee}}
                   </div>
                   <div class="col-xs-8 col-md-9">
-                    <tt class="hidden-xs">{{row.id}}</tt>
-                    <tt class="visible-xs-inline">{{row.id | limitTo:10}}... </tt>
+                    <code class="hidden-xs">{{row.id}}</code>
+                    <code class="visible-xs-inline">{{row.id | limitTo:10}}... </code>
                     <span class="pull-right">{{row.created_at*1000 | fromNow}}</span>
                   </div>
                 </a>
