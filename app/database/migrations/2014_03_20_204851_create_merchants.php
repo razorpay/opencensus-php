@@ -28,8 +28,7 @@ class CreateMerchants extends Migration
 
             $table->string(Merchant::NAME);
 
-            $table->string(Merchant::EMAIL, 255)
-                  ->unique();
+            $table->string(Merchant::EMAIL, 255);
 
             $table->boolean(Merchant::ACTIVATED)
                   ->default(0);
@@ -89,6 +88,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::INTERNATIONAL);
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
+            $table->index(Merchant::EMAIL);
         });
     }
 

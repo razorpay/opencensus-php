@@ -4,15 +4,19 @@ namespace Models\Payment\Refund;
 
 use Models\Base;
 use Models\Payment;
+use Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
     const PAYMENT_ID        = 'payment_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const TRANSACTION_ID    = 'transaction_id';
+    const NOTES             = 'notes';
 
     protected $table = \Constants\Table::REFUND;
 
@@ -20,7 +24,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'refund';
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected static $generators = array(self::ID, self::AMOUNT, self::CURRENCY);
 
@@ -28,7 +32,9 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::PAYMENT_ID,
         self::AMOUNT,
-        self::CURRENCY);
+        self::CURRENCY,
+        self::NOTES
+    );
 
     protected $visible = array(
         self::ID,
@@ -37,8 +43,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::TRANSACTION_ID,
+        self::NOTES,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    );
 
     protected $public = array(
         self::ID,
@@ -46,10 +54,17 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::PAYMENT_ID,
-        self::CREATED_AT);
+        // self::NOTES,
+        self::CREATED_AT
+    );
+
+    protected $defaults = array(
+        self::NOTES      => []
+    );
 
     protected $publicSetters = array(
-        self::ID, self::ENTITY, self::PAYMENT_ID);
+        self::ID, self::ENTITY, self::PAYMENT_ID
+    );
 
     public function payment()
     {

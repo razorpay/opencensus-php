@@ -73,7 +73,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET);
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $entity = 'terminal';
 

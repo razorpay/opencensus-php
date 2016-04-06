@@ -535,7 +535,7 @@ trait PaymentTrait
             'url' => '/webhooks',
             'method' => 'post',
             'content' => $input);
-
+        
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);

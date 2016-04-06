@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         'currency'      =>  'required|size:3|in:INR',
         'receipt'       =>  'required|string|max:40',
         'customer_id'   =>  'sometimes',
+        'notes'         =>  'sometimes|notes',
     );
 
     public function validateOrderPaidFor($order)

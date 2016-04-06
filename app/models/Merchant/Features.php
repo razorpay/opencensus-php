@@ -6,7 +6,10 @@ use EE\Exception;
 
 class Features
 {
-    public static $allowedFeatures = array('dummy', 'webhooks');
+    public static $allowedFeatures = array(
+        'dummy',
+        'webhooks',
+        'aggregator');
 
     public static function validateFeatures($input)
     {

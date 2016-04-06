@@ -29,14 +29,6 @@ trait SlackPoster
             $data['fields']     = [];
             $data['pretext']    = $pretext;
 
-            /**
-             * This should be used for username, channel, and color setting
-             */
-            // foreach ($settings as $key => $value) {
-            //     $data[$key] = $value;
-            // }
-            //
-
             // If our data is nested, we need to flatten it
             $postdata = flatten_array($postdata);
 
@@ -47,10 +39,11 @@ trait SlackPoster
             {
                 //  Fallback text for plaintext clients, like IRC
                 $data['fallback'] .= $key . ': ' . $value . '\n';
+                $data['color'] = isset($settings['color']) ? $settings['color'] : 'good';
                 $data['fields'][] = array(
                     'title' => $key,
                     'value' => $value,
-                    'short' => true
+                    'short' => true,
                 );
             }
 

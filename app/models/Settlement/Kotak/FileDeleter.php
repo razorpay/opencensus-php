@@ -18,7 +18,7 @@ class FileDeleter
         'return');
 
     protected $fileTypeMapping = array(
-        'setl_initiate' => 'ReconciliationGenerator',
+        'setl_initiate' => 'ReconciliationGenerator2',
         'reconcile'     => 'Reconciler',
         'return'        => 'ReturnTransactions');
 

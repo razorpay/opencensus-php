@@ -5,6 +5,7 @@ namespace Models\Merchant\Webhook;
 use EE\Exception;
 use Models\Base;
 use Models\Merchant\Webhook;
+use Crypt;
 
 class Core extends Base\Core
 {

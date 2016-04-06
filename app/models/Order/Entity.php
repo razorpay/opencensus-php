@@ -3,15 +3,19 @@
 namespace Models\Order;
 
 use Models\Base;
+use Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
     const AMOUNT        = 'amount';
     const CURRENCY      = 'currency';
     const ATTEMPTS      = 'attempts';
     const STATUS        = 'status';
+    const NOTES         = 'notes';
 
     // Ideally should be a unique from the merchant side as well
     const RECEIPT       = 'receipt';
@@ -33,16 +37,20 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::AMOUNT,
         self::CURRENCY,
-        self::RECEIPT);
+        self::RECEIPT,
+        self::NOTES
+    );
 
     protected $table = \Constants\Table::ORDER;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $defaults = array(
         self::ATTEMPTS   => 0,
         self::STATUS     => Status::CREATED,
-        self::AUTHORIZED => 0);
+        self::AUTHORIZED => 0,
+        self::NOTES      => []
+    );
 
     protected $public = array(
         self::ID,
@@ -52,7 +60,9 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::STATUS,
         self::ATTEMPTS,
-        self::CREATED_AT);
+        // self::NOTES,
+        self::CREATED_AT
+    );
 
     protected $amounts = array(
         self::AMOUNT

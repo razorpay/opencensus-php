@@ -17,7 +17,7 @@ class Entity extends Base\PublicEntity
 
     protected $table            = \Constants\Table::CUSTOMER_APP;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $fillable = array(
         self::ID,
