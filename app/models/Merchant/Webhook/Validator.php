@@ -11,6 +11,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::URL     => 'required|string|url|max:255',
         Entity::EVENTS  => 'required|array',
+        Entity::SECRET  => 'sometimes|string|max:255',
     );
 
     protected static $createValidators = array('events', 'url');
@@ -19,6 +20,7 @@ class Validator extends Base\Validator
         Entity::URL     => 'sometimes|string|url|max:255',
         Entity::EVENTS  => 'sometimes|array',
         Entity::ACTIVE  => 'sometimes|in:0,1',
+        Entity::SECRET  => 'sometimes|string|max:255',
     );
 
     protected static $editValidators = array('events', 'url');
@@ -57,8 +59,7 @@ class Validator extends Base\Validator
                     Entity::EVENTS);
             }
 
-            if (($value !== '0') and
-                ($value !== '1')) {
+            if (($value !== '0') and ($value !== '1')) {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a valid event value',
                     Entity::EVENTS);

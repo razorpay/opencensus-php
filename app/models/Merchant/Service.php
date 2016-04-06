@@ -468,7 +468,6 @@ class Service extends Base\Service
     public function createWebhook($input)
     {
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
-
         return $webhook->toArray();
     }
 

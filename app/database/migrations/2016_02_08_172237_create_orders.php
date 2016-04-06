@@ -104,7 +104,7 @@ class CreateOrders extends Migration {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(
-                TABLE::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
+                Table::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
         });
 
         Schema::table(Table::ORDER, function($table)

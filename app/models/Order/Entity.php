@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
 
     protected $table = \Constants\Table::ORDER;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $defaults = array(
         self::ATTEMPTS   => 0,
