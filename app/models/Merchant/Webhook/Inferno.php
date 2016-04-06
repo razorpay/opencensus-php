@@ -66,16 +66,26 @@ class Inferno
     public function sendEmail($webhook, $type)
     {
         $data = array();
+
         $toEmails = $webhook->merchant->getTransactionReportEmail();
+
         $data['to_emails'] = $toEmails;
-        if($type === 'unsuccessful')
+
+        $subjectName = $webhook->merchant->getBillingLabelElseName();
+
+        $subject = 'Razorpay | ';
+
+        if ($type === 'failure')
         {
-            $data['subject'] = 'Unsuccessful webhook event';
+            $subject = 'Webhook failed for ' . $subjectName;
         }
-        else if($type === 'failure')
+        else if ($type === 'deactivate')
         {
-            $data['subject'] = 'Disabled webhook event';
+            $subject = 'Webhook deactivated after 3 failures for ' . $subjectName;
         }
+
+        $data['subject'] = $subject;
+
         Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
         {
             $emails = $data['to_emails'];
@@ -230,7 +240,7 @@ class Inferno
                 ['webhook' => $webhook->getId()]
             );
 
-            $this->sendEmail($webhook,'failure');
+            $this->sendEmail($webhook,'deactivate');
 
             // Webhook is now inactive
             // So let's just delete the job
@@ -238,7 +248,7 @@ class Inferno
         }
         else
         {
-            $this->sendEmail($webhook,'unsuccessful');
+            $this->sendEmail($webhook,'failure');
 
             // Attempt again after 1 hour
             $job->release(3600);

@@ -177,7 +177,7 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
-    public function testWebhookUnsuccessfulEmail()
+    public function testWebhookFailureEmail()
     {
         $webhook = $this->createWebhook();
         $inferno = $this->mockInferno();
@@ -187,7 +187,7 @@ class WebhookTest extends TestCase
                 ->andReturn(false);
 
         $inferno->shouldReceive('sendEmail')
-                ->with(Mockery::type('object'),'unsuccessful')
+                ->with(Mockery::type('object'),'failure')
                 ->once();
 
         $this->doAuthPayment();
@@ -260,7 +260,7 @@ class WebhookTest extends TestCase
         self::fail();
     }
 
-    public function testWebhookFailureEmail()
+    public function testWebhookDeactivationEmail()
     {
         $webhook = $this->createWebhook();
         $inferno = $this->mockInferno();
@@ -273,7 +273,7 @@ class WebhookTest extends TestCase
             ->andReturn(false);
 
         $inferno->shouldReceive('sendEmail')
-            ->with(Mockery::type('object'),'failure')
+            ->with(Mockery::type('object'), 'deactivate')
             ->once();
 
         $this->doAuthPayment();
