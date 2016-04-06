@@ -10,8 +10,14 @@ use Models\Merchant;
 class Inferno
 {
     protected $job;
+
     protected $trace;
+
     protected $repo;
+
+    protected $mode;
+
+    protected $errorMessage;
 
     const HASH_ALGO = 'sha256';
 
@@ -31,6 +37,10 @@ class Inferno
     public function fire($job, $data)
     {
         $this->job = $job;
+
+        $this->mode = $data['mode'];
+
+        $this->event = $data['event'];
 
         $repo = $this->repo;
 
@@ -75,6 +85,14 @@ class Inferno
 
         $subject = 'Razorpay | ';
 
+        $data['url'] = $webhook->getUrl();
+        $data['error_message'] = $this->errorMessage;
+        $data['date'] = date('d-M-Y H:m:s');
+
+        $event = json_decode($this->event, true);
+
+        $data['event'] = $event['event'];
+
         if ($type === 'failure')
         {
             $subject = 'Webhook failed for ' . $subjectName;
@@ -85,12 +103,16 @@ class Inferno
         }
 
         $data['subject'] = $subject;
+        $data['mode'] = $this->mode;
 
         Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
         {
             $emails = $data['to_emails'];
+
             $message->from('support@razorpay.com', 'Razorpay Support');
+
             $message->subject($data['subject']);
+
             $message->to($emails);
         });
     }
@@ -160,8 +182,15 @@ class Inferno
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if ((\Gateway\Utility::checkTimeout($e) === false) and
-                ($this->isKnowRequestsException($e) === false))
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 7 seconds. We will only retry 3 times before deactivating webhook.';
+            }
+            else if ($this->isKnowRequestsException($e))
+            {
+                $this->errorMessage = $e->getMessage();
+            }
+            else
             {
                 $this->trace->traceException($e);
             }
@@ -211,7 +240,7 @@ class Inferno
             'content' => $event,
             'headers' => $headers);
 
-        $request['options'] = ['timeout' => 10];
+        $request['options'] = ['timeout' => 7];
 
         return $request;
     }
@@ -248,6 +277,7 @@ class Inferno
         }
         else
         {
+
             $this->sendEmail($webhook,'failure');
 
             // Attempt again after 1 hour
@@ -280,9 +310,6 @@ class Inferno
         $msg = $e->getMessage();
         $msg = strtolower($msg);
 
-        //
-        // check if timeout has occured
-        //
         if ((strpos($msg, 'Empty reply from server') !== false) or
             (strpos($msg, 'SSL certificate problem: certificate has expired') !== false))
         {
