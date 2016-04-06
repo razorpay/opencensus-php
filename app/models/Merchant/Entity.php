@@ -369,8 +369,18 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setTransactionReportEmailAttribute(array $emails)
+    public function setTransactionReportEmailAttribute($emails)
     {
+        if (is_array($emails) === false)
+        {
+            //
+            // This is only called for the factory instances
+            // of the merchant entity becuase laracasts testdummy
+            // does not support array in factory values yet.
+            //
+            $emails = [$emails];
+        }
+
         $emails = array_unique(array_map('strtolower', array_map('trim', $emails)));
 
         $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emails);
