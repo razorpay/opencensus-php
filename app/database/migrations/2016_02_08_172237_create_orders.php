@@ -41,6 +41,8 @@ class CreateOrders extends Migration {
 
             $table->string(Order::RECEIPT, 40);
 
+            $table->text(Order::NOTES);
+
             $table->tinyInteger(Order::AUTHORIZED)
                   ->nullable();
 

@@ -8,11 +8,14 @@ use Models\Base;
 use Models\Order;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Base\Traits\NotesTrait;
 use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
@@ -351,30 +354,9 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
-    public function setNotesAttribute($notes)
-    {
-        $this->attributes[self::NOTES] = utf8_json_encode($notes);
-    }
-
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
-
-    /**
-     * Makes sure that getNotes always returns an array
-     */
-    public function getNotesAttribute($notes)
-    {
-        $notesArray = json_decode($notes, true);
-        if($notesArray === '')
-        {
-            return [];
-        }
-        else
-        {
-            return $notesArray;
-        }
-    }
 
     public function getAmountAttribute()
     {
@@ -566,16 +548,6 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
-    }
-
-    public function getNotes()
-    {
-        return $this->getAttribute(self::NOTES);
-    }
-
-    public function getNotesJson()
-    {
-        return $this->attributes[self::NOTES];
     }
 
     public function getBank()
