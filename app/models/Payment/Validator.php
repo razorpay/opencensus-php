@@ -21,7 +21,6 @@ class Validator extends Base\Validator
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
-        'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes|notes|contains_merchantorderid_if_signature',
         'callback_url'  =>  'sometimes|url',
