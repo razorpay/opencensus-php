@@ -9,33 +9,6 @@ use Symfony\Component\Translation\TranslatorInterface;
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
     /**
-     * Create a new Validator instance.
-     *
-     * @param  \Symfony\Component\Translation\TranslatorInterface  $translator
-     * @param  array  $data
-     * @param  array  $rules
-     * @param  array  $messages
-     * @param  array  $customAttributes
-     * @return void
-     */
-    public function __construct(
-        TranslatorInterface $translator,
-        array $data,
-        array $rules,
-        array $messages = array(),
-        array $customAttributes = array())
-    {
-        $this->addCustomMessages($messages);
-
-        parent::__construct($translator, $data, $rules, $messages, $customAttributes);
-    }
-
-    protected function addCustomMessages(& $messages)
-    {
-        $messages = array_merge(\Razorpay\Spine\Validation\Messages::$messages, $messages);
-    }
-
-    /**
      * Create notes validation
      *
      * @param string $attribute
@@ -44,9 +17,6 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      */
     protected function validateNotes($attribute, $notes, $parameters)
     {
-        if (isset($notes) === false)
-            return true;
-
         $code = null;
 
         if (is_array($notes) === false)
@@ -102,22 +72,23 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     }
 
     /**
-     * Create requiredWithNested validation (Laravel 4.2 doesn't support nested array validations)
-     * Nested array value should be required if any input is present
-     * Usage: required_with_nested:key1,key2,key3,last_key
-     * if arr['last_key'] is present then arr['key1']['key2']['key3'] will be validated
+     * Validate merchant_order_id should be present if signature is present in root
      *
      * @param string $attribute
-     * @param string $value
+     * @param array $value
      * @param array $parameters
      */
-    protected function validateRequiredWithNested($attribute, $value, $parameters)
+    protected function validateContainsMerchantorderidIfSignature($attribute, $value, $parameters)
     {
-        $requiredWith = [array_pop($parameters)];
+        $requiredWith = ['signature'];
 
         if ( ! $this->allFailingRequired($requiredWith))
         {
-            return $this->validateRequiredNested($attribute, $value, $parameters);
+            if (empty($value['merchant_order_id']))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'merchant_order_id should be defined when signature is present');
+            }
         }
 
         return true;

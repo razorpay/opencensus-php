@@ -59,7 +59,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::STATUS,
         self::ATTEMPTS,
-        self::NOTES,
+        // self::NOTES,
         self::CREATED_AT
     );
 

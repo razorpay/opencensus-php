@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         'contact'       =>  'required',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
-        'notes'         =>  'sometimes|notes|required_with_nested:merchant_order_id,signature',
+        'notes'         =>  'sometimes|notes|contains_merchantorderid_if_signature',
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
         'fee'           =>  'sometimes|integer|max:50000000',
