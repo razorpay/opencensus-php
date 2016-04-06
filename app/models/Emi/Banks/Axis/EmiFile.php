@@ -6,8 +6,9 @@ use Carbon\Carbon;
 
 use Services\TokenEx;
 use Models\Emi\Service;
+use Models\Emi\Banks\Base;
 
-class EmiFile extends \Models\Emi\Banks\Base\EmiFile
+class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'Axis_Emi_File';
 
@@ -69,18 +70,17 @@ class EmiFile extends \Models\Emi\Banks\Base\EmiFile
             $emiTenure = (new Service)->fetch($emiPayment->getEmiPlanId())['duration'];
 
             $data[] = array(
-                $this->getCardNumber($emiPayment->card),
-                $emiPayment->getAmount()/100,
-                $date,
-                $date,
-                $this->getAuthCode($emiPayment),
-                $emiPayment->merchant->getName(),
-                $emiPayment->merchant->getCategory(),
-                $emiTenure,
-                'Razorpay',
-                $emiPayment->getId(), // Can be empty, filling with out payment id
+                'Card Number'                  => $this->getCardNumber($emiPayment->card),
+                'Transaction Amount'           => $emiPayment->getAmount()/100,
+                'Transaction Date'             => $date,
+                'Settlement Date'              => $date,
+                'Authorisation Id'             => $this->getAuthCode($emiPayment),
+                'Merchant Name'                => $emiPayment->merchant->getName(),
+                'MCC (Merchant Category Code)' => $emiPayment->merchant->getCategory(), // Non Mandatory,
+                'Tenure'                       => $emiTenure,
+                'Source'                       => 'Razorpay',
+                'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id
             );
-
         }
 
         return $data;

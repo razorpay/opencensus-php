@@ -5,11 +5,13 @@ namespace Models\Emi\Banks\Kotak;
 use Gateway;
 use Models\Emi;
 use Services\TokenEx;
+use Models\Emi\Banks\Base;
 
 use Carbon\Carbon;
 
-class EmiFile extends \Models\Emi\Banks\Base\EmiFile
+class EmiFile extends Base\EmiFile
 {
+
     protected static $fileToWriteName = 'Kotak_Emi_File';
 
     protected static $headers = array(
@@ -86,23 +88,23 @@ class EmiFile extends \Models\Emi\Banks\Base\EmiFile
             $authCode = $gatewayEntity->getAuthCode();
 
             $data[] = array(
-                $emiPayment->getId(),
-                $this->getCardNumber($emiPayment->card),
-                'Kotak',
-                $authCode,
-                $emiPayment->getAmount()/ 100,
-                $emiPlan['duration'],
-                'Samsung',
-                $emiPayment->merchant->getName(),
-                'NA',
-                $emiPayment->terminal->gateway,
-                $emiPayment->terminal->gateway_merchant_id,
-                $gatewayEntity->getTransactionId(),
-                $date,
-                $date,
-                $emiPercent.'%',
-                '0.00%',
-                '0'
+            'EMI ID'                     => $emiPayment->getId(),
+            'Card Pan'                   => $this->getCardNumber($emiPayment->card),
+            'Issuer'                     => 'Kotak',
+            'Auth Code'                  => $authCode,
+            'Tx Amount'                  => $emiPayment->getAmount()/ 100,
+            'Tenure'                     => $emiPlan['duration'],
+            'Manufacturer'               => '', // Non Mandatory
+            'Merchant Name'              => $emiPayment->merchant->getName(),
+            'Address1'                   => '', // Non Mandatory
+            'Acquirer'                   => '', // Non Mandatory
+            'MID'                        => '', // Non Mandatory
+            'TID'                        => '', // Non Mandatory
+            'Tx Time'                    => $date,
+            'Settlement Time'            => '', // Non Mandatory
+            'Interest Rate'              => '', // Non Mandatory
+            'Discount / Cashback %'      => '0.00%',
+            'Discount / Cashback Amount' => '0'
             );
         }
 
