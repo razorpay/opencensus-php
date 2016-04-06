@@ -41,6 +41,8 @@ class CreateOrders extends Migration {
 
             $table->string(Order::RECEIPT, 40);
 
+            $table->text(Order::NOTES);
+
             $table->tinyInteger(Order::AUTHORIZED)
                   ->nullable();
 
@@ -102,13 +104,13 @@ class CreateOrders extends Migration {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(
-                TABLE::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
+                Table::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
         });
 
-        Schema::table(Table::WEBHOOK, function($table)
+        Schema::table(Table::ORDER, function($table)
         {
             $table->dropForeign(
-                TABLE::WEBHOOK.'_'.Webhook::MERCHANT_ID.'_foreign');
+                TABLE::ORDER.'_'.Webhook::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::ORDER);

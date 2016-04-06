@@ -47,7 +47,7 @@ class Entity extends Base\PublicEntity
 
     protected $table = \Constants\Table::PRICING;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     /**
      * Fields which will be modified before

@@ -243,10 +243,34 @@ class Notify
             ($this->isSlackEnabled($event)))
         {
             $settings = [
-                'channel'   => $this->getSlackChannel()
+                'channel'   => $this->getSlackChannel(),
+                'color'     => $this->getSlackPostColor(),
             ];
 
             $this->slackPost($slackMessages[$event], $slackData, $settings);
+        }
+    }
+
+    /**
+     * Returns color to use for slack posts
+     * @return string
+     */
+    protected function getSlackPostColor()
+    {
+        switch ($this->template['payment']['risk'])
+        {
+            case 1:
+            case 2:
+            case 3:
+                return 'good';
+                break;
+            case 4:
+                return 'warning';
+            case 5:
+                return 'danger';
+            // Peter River color from flatuicolors.com
+            default:
+                return '#4AA3DF';
         }
     }
 
