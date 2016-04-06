@@ -156,16 +156,22 @@ class WebhookTest extends TestCase
     public function testWebhookEventDataJustBeforeFiring()
     {
         $webhook = $this->createWebhook();
+
         $inferno = $this->mockInferno();
+
         $testData = $this->testData[__FUNCTION__];
+
         $inferno->shouldReceive('makeRequest')
                 ->once()
                 ->with(Mockery::type('array'))
                 ->andReturnUsing(function ($request) use ($testData)
                     {
                         $request['content'] = json_decode($request['content'], true);
+
                         $this->assertArraySelectiveEquals($testData, $request);
+
                         $response = $this->getStandardWebhookResponse();
+
                         return $response;
                     });
 
@@ -178,17 +184,24 @@ class WebhookTest extends TestCase
         $webhook = $this->createWebhook(['secret'=>'test_secret']);
 
         $inferno = $this->mockInferno();
+
         $testData = $this->testData[__FUNCTION__];
+
         $inferno->shouldReceive('makeRequest')
             ->once()
             ->with(Mockery::type('array'))
             ->andReturnUsing(function ($request) use ($testData, $webhook)
             {
                 $request['content'] = json_decode($request['content'], true);
+
                 $this->assertArraySelectiveEquals($testData, $request);
-                $this->assertArrayHasKey('X-RAZORPAY-SIGNATURE', $request['header']);
-                $this->assertNotNull($request['header']['X-RAZORPAY-SIGNATURE']);
+
+                $this->assertArrayHasKey('X-Razorpay-Signature', $request['headers']);
+
+                $this->assertNotNull($request['headers']['X-Razorpay-Signature']);
+
                 $response = $this->getStandardWebhookResponse();
+
                 return $response;
             });
 
@@ -200,26 +213,34 @@ class WebhookTest extends TestCase
     {
         $payload = 'a';
         $secret = 'b';
-        $expected_value = hash_hmac('sha256', $payload, $secret);
-        $actual_value = Inferno::generateHMAC($payload, $secret);
-        $this->assertEquals($expected_value, $actual_value);
+
+        $expectedValue = hash_hmac('sha256', $payload, $secret);
+
+        $actualValue = Inferno::generateHMAC($payload, $secret);
+
+        $this->assertEquals($expectedValue, $actualValue);
     }
-    
+
     public function testGenerateHmacWithNullSecret()
     {
         $payload = 'a';
-        $actual_value = Inferno::generateHMAC($payload, NULL);
-        $this->assertNull($actual_value);
+        $actualValue = Inferno::generateHMAC($payload, NULL);
+        $this->assertNull($actualValue);
     }
 
     public function testGenerateHmacWithNonStringPayload()
     {
         $secret = 'a';
         $payload = ['a' => 'b'];
-        try {
+
+        try
+        {
             Inferno::generateHMAC($payload, $secret);
-        } catch(\Exception $ex) {
+        }
+        catch(\Exception $ex)
+        {
             $this->assertEquals($ex->getCode(), 0);
+
             return;
         }
         self::fail();
