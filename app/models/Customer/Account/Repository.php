@@ -28,6 +28,6 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where(Customer\Entity::CONTACT, '=', $contact)
-                    ->get();
+                    ->first();
     }
 }

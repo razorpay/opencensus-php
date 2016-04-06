@@ -22,7 +22,7 @@ class Core extends Base\Core
 
         $this->custRepo = new Customer\Repository;
     }
-    
+
     public function create($customer, $input)
     {
         $input[Methods\Entity::CUSTOMER_ID] = $customer->getKey();
@@ -50,12 +50,12 @@ class Core extends Base\Core
         $this->validateExistingMethod($method);
 
         $this->repo->saveOrFail($method);
-    
+
         return $method;
     }
 
     public function fetchMethodsByAppId($merchantId, $appId)
-    {        
+    {
         $appEntity = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $merchantId);
 
         $methods = $this->fetchMethodsByCustomerId(Account::SHARED_ACCOUNT, $appEntity->getCustomerId());
@@ -77,7 +77,7 @@ class Core extends Base\Core
     }
 
     protected function formatSavedMethods($methods)
-    {        
+    {
         $formattedMethods = new Base\PublicCollection;
 
         foreach ($methods as $method)
@@ -107,7 +107,7 @@ class Core extends Base\Core
 
     protected function validateExistingMethodCard($existingMethods, $newMethod)
     {
-        foreach ($existingMethods as $method) 
+        foreach ($existingMethods as $method)
         {
             if($method->getCardId() === $newMethod->getCardId())
             {
@@ -119,7 +119,7 @@ class Core extends Base\Core
 
     protected function validateExistingMethodNetbanking($existingMethods, $newMethod)
     {
-        foreach ($existingMethods as $method) 
+        foreach ($existingMethods as $method)
         {
             if(($method->getBank()  === $newMethod->getBank()) and
                 ($method->getAccountKey() === $newMethod->getAccountKey()))
@@ -132,7 +132,7 @@ class Core extends Base\Core
 
     protected function validateExistingMethodWallet($existingMethods, $newMethod)
     {
-        foreach ($existingMethods as $method) 
+        foreach ($existingMethods as $method)
         {
             if(($method->getWallet()  === $newMethod->getWallet()) and
                 ($method->getAccountKey() === $newMethod->getAccountKey()))
@@ -140,6 +140,6 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
             }
-        }   
+        }
     }
 }

@@ -134,6 +134,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
+
+    const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                              = 'Card already exists for the customer';
     const BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS                              = 'Bank already exists for the customer';
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                            = 'Wallet already exists for the customer';

@@ -38,6 +38,36 @@ class CustomerTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->startTest();        
+        $this->startTest();
+    }
+
+    public function testOtpFlow()
+    {
+        $this->ba->publicAuth();
+
+        // send OTP
+
+        $request = array(
+            'url' => '/otp/create',
+            'method' => 'post',
+            'content' => [
+                "contact" => "1234567890"
+            ],
+        );
+
+        $response = $this->makeRequest($request);
+
+        // verify OTP
+        $request = array(
+            'url' => '/otp/verify',
+            'method' => 'post',
+            'content' => [
+                'contact' => '1234567890',
+                'otp' => '233323',
+                'device_id' => 'rzp_device_id'
+            ],
+        );
+
+        $response = $this->makeRequest($request);
     }
 }

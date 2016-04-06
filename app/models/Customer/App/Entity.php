@@ -6,7 +6,7 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const MERCHANT_ID       =       'merchant_id';    
+    const MERCHANT_ID       =       'merchant_id';
     const CUSTOMER_ID       =       'customer_id';
     const DEVICE_ID         =       'device_id';
     const APP_ID            =       'app_id';
@@ -53,12 +53,12 @@ class Entity extends Base\PublicEntity
 
     public function getAppId()
     {
-        return $this->attributes(self::APP_ID);
+        return $this->getAttribute(self::APP_ID);
     }
 
     public function getDeviceId()
     {
-        return $this->attributes(self::DEVICE_ID);
+        return $this->getAttribute(self::DEVICE_ID);
     }
 
     public function getCustomerId()

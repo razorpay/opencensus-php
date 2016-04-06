@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\Customer;
 
@@ -59,6 +59,35 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 
+    public function sendOtp($input)
+    {
+        $input['context'] = $this->merchant->getId();
+
+        $input['service'] = 'api';
+
+        $data = (new Customer\Raven)->sendOtp($input);
+
+        return $data;
+    }
+
+    public function verifyOtp($input)
+    {
+        $input['context'] = $this->merchant->getId();
+
+        $input['service'] = 'api';
+
+        $data = (new Customer\Core)->verifyOtp($input);
+
+        return $data;
+    }
+
+    public function updateSmsStatus($service, $input)
+    {
+        $data = (new Customer\Raven)->updateSmsStatus($service, $input);
+
+        return $data;
+    }
+
     protected function createCustomer($input)
     {
         $customer = (new Customer\Core)->create($input);
@@ -66,3 +95,4 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 }
+

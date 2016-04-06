@@ -97,4 +97,31 @@ class CustomerController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postOtp()
+    {
+        $input = Input::all();
+
+        $data = (new Customer\Service)->sendOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyOtp()
+    {
+        $input = Input::all();
+
+        $data = (new Customer\Service)->verifyOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateSmsStatus($service)
+    {
+        $input = Input::all();
+
+        $data = (new Customer\Service)->updateSmsStatus($service, $input);
+
+        return ApiResponse::json($data);
+    }
 }

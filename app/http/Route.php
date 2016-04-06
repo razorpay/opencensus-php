@@ -194,6 +194,9 @@ final class Route
         'delete_method_for_app'                 => ['delete',   'apps/{appId}/methods/{mId}',               'CustomerController@deleteAppMethod'                                ],
         'fetch_saved_methods_by_app_id'         => ['get',      'apps/{appId}/methods',                     'CustomerController@fetchMethodsByAppId'                            ],
         'fetch_cust_status_by_contact'          => ['get',      'customer/status/{contact}',                'CustomerController@fetchCustomerStatus'                            ],
+        'post_otp'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
+        'verify_otp'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
+        'customer_otp_callback'                 => ['post',     'sms/callback/{service}',                   'CustomerController@updateSmsStatus'                                ],
     );
 
     public static $public = array(
@@ -232,6 +235,9 @@ final class Route
         'fetch_cust_status_by_contact',
         'delete_customer_method',
         'delete_method_for_app',
+        'post_otp',
+        'verify_otp',
+        'customer_otp_callback',
     );
 
     public static $publicCallback = array(
