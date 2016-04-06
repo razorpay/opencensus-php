@@ -11,6 +11,7 @@ app.controller('ConfigCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.config = {};
+    $scope.showColorPicker = false;
 
     $scope.setConfig = function(config) {
       $scope.config.brand_color = config.brand_color ? "#" + config.brand_color : null
@@ -28,6 +29,9 @@ app.controller('ConfigCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.setConfig(data.data);
+          if ($scope.config.brand_color !== null) {
+            $scope.showColorPicker = true;
+          }
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
