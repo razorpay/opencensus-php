@@ -40,7 +40,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
+            <td><a ui-sref="app.settlements.detail({id:row.id})"><code>{{row.id}}</code></a></td>
             <td>{{row.amount/100 | rupee:"INR "}}</td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>
             <td>{{row.fees/100 | rupee:"INR " }}</td>
