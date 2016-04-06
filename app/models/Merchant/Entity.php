@@ -108,7 +108,9 @@ class Entity extends Base\PublicEntity
 
     protected function generateTransactionReportEmail($input)
     {
-        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
+        $email = array($input[self::EMAIL]);
+
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
     }
 
     public function isActivated()
@@ -367,20 +369,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setTransactionReportEmailAttribute($emails)
+    public function setTransactionReportEmailAttribute(array $emails)
     {
-        if (is_array($emails))
-        {
-            $emails = array_unique(array_map('strtolower', array_map('trim', $emails)));
+        $emails = array_unique(array_map('strtolower', array_map('trim', $emails)));
 
-            $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emails);
-        }
-        else
-        {
-            // This is only called for the factory instances
-            // of the merchant entity
-            $this->attributes[self::TRANSACTION_REPORT_EMAIL] = $emails;
-        }
+        $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emails);
     }
 
     public function setFeeBearerAttribute($bearer)
