@@ -239,7 +239,6 @@ final class Route
         'order_fetch_by_id',
         'order_payments',
         'dummy_feature',
-        'emi_generate_excel',
     );
 
     public static $internal = array(
