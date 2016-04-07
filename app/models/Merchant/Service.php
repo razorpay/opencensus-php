@@ -631,7 +631,7 @@ class Service extends Base\Service
             return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
         }
 
-        if ($input['test'] === 'true')
+        if (isset($input['test']) and ($input['test'] === 'true'))
         {
             $response = $this->sendTestHolidayNotificationMail($input);
         }
@@ -639,7 +639,6 @@ class Service extends Base\Service
         {
             $response = $this->sendHolidayNotificationMail($input);
         }
-
 
         // Log just the result of the settlement reports
         $this->trace->info(
