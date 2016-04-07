@@ -178,32 +178,23 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $content = $this->getRefundRequestContentArray($input);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = array(
-            'Accept'        => 'application/json',
-            'Authorization' => $this->getAuthHeader($input['terminal'])
-        );
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $request = $this->getRefundRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        $responseContent = json_decode($response->body, true);
+        $content = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseContent);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($input, $responseContent);
+        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($input, $content);
 
         $refund = $this->createGatewayRefundEntity($refundAttributes);
 
-        if ($responseContent['status'] !== Status::SUCCESS)
+        if ($content['status'] !== Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $responseContent['status'],
-                $responseContent['message']);
+                $content['status'],
+                $content['message']);
         }
     }
 
@@ -216,32 +207,22 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::REGISTER_USER);
 
-        $content = array(
-            'email'     => $input['payment']['email'],
-            'mobile'    => $input['payment']['contact'],
-            'client_id'  => $this->getClientId($input['terminal'])
-        );
-
-        $content['hash'] = $this->getHashForRegisterUser($content);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $request = $this->getRequestArrayForOtpGenerate($input);
 
         $response = $this->sendGatewayRequest($request);
-        $responseContent = json_decode($response->body, true);
+        $content = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseContent);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        $code = $responseContent['status'];
+        $code = $content['status'];
 
         if ($code !== Status::SUCCESS)
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $responseContent['status'],
-                $responseContent['message']);
+                $content['status'],
+                $content['message']);
         }
     }
 
@@ -249,43 +230,88 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::OTP_SUBMIT);
 
-        $content = array(
-            'email'         => $input['payment']['email'],
-            'mobile'        => $input['payment']['contact'],
-            'client_id'     => $this->getClientId($input['terminal']),
-            'otp'           => $input['gateway']['otp']
-        );
-
-        $content['hash'] = $this->getHashForVerifyUser($content);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $request = $this->getOtpSubmitRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        $responseContent = json_decode($response->body, true);
+        $content = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseContent);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        $code = $responseContent['status'];
+        $code = $content['status'];
 
-        if ($responseContent['status'] !== Status::SUCCESS
-            OR !isset($responseContent['result']['body']['access_token']))
+        if (($content['status'] !== Status::SUCCESS) or
+            (isset($content['result']['body']['access_token']) === false))
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
-                $responseContent['status'],
-                $responseContent['message']);
+                $content['status'],
+                $content['message']);
         }
 
-        $this->accessToken = $responseContent['result']['body']['access_token'];
+        $this->accessToken = $content['result']['body']['access_token'];
     }
 
     public function useWallet($input)
     {
         $this->action($input, Action::AUTHORIZE);
 
+        $request = $this->getUseWalletRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = json_decode($response->body, true);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        if ($content['status'] !== Status::SUCCESS)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content['status'],
+                $content['message']);
+        }
+
+        $contentToSave = array(
+            'key'      => $this->getMerchantId($input['terminal']),
+            'email'    => $input['payment']['email'],
+            'mobile'   => $input['payment']['contact'],
+            'status'   => $content['status'],
+            'amount'   => $input['payment']['amount'],
+            'txnId'    => $content['result'],
+            'message'  => $content['message'],
+            'received' => true
+        );
+
+        $this->createGatewayPaymentEntity($contentToSave);
+    }
+
+    protected function getRefundRequestArray($input)
+    {
+        $content = [];
+
+        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
+
+        $content =  array(
+            'merchantKey'   => $this->getMerchantId($input['terminal']),
+            'paymentId'     => $wallet['gateway_payment_id'],
+            'refundAmount'  => (string) ($input['refund']['amount'] / 100)
+        );
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = array(
+            'Accept'        => 'application/json',
+            'Authorization' => $this->getAuthHeader($input['terminal'])
+        );
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        return $request;
+    }
+
+    protected function getUseWalletRequestArray($input)
+    {
         $content = array(
             'key'                   => $this->getMerchantId($input['terminal']),
             'totalAmount'           => (string) ($input['payment']['amount'] / 100),
@@ -302,49 +328,7 @@ class Gateway extends Base\Gateway
             'Authorization' => 'Bearer ' . $this->accessToken
         );
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $responseContent = json_decode($response->body, true);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseContent);
-
-        if ($responseContent['status'] !== Status::SUCCESS)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $responseContent['status'],
-                $responseContent['message']);
-        }
-
-        $contentToSave = array(
-            'key'      => $this->getMerchantId($input['terminal']),
-            'email'    => $input['payment']['email'],
-            'mobile'   => $input['payment']['contact'],
-            'status'   => $responseContent['status'],
-            'amount'   => $input['payment']['amount'],
-            'txnId'    => $responseContent['result'],
-            'message'  => $responseContent['message'],
-            'received' => true
-        );
-
-        $this->createGatewayPaymentEntity($contentToSave);
-    }
-
-    protected function getRefundRequestContentArray($input)
-    {
-        $content = [];
-
-        $wallet = $this->getRepo()->fetchWalletByPaymentId($input['payment']['id']);
-
-        $content =  array(
-            'merchantKey'   => $this->getMerchantId($input['terminal']),
-            'paymentId'     => $wallet['gateway_payment_id'],
-            'refundAmount'  => (string) ($input['refund']['amount'] / 100)
-        );
-
-        return $content;
+        return $request;
     }
 
     protected function getRefundEntityAttributesFromRefundResponse($input, $response)
@@ -374,6 +358,41 @@ class Gateway extends Base\Gateway
         $content['hash'] = $this->getHashForVerifyRequest($content);
 
         $request = $this->getStandardRequestArray($content, 'POST');
+
+        return $request;
+    }
+
+    protected function getRequestArrayForOtpGenerate($input)
+    {
+        $content = array(
+            'email'     => $input['payment']['email'],
+            'mobile'    => $input['payment']['contact'],
+            'client_id' => $this->getClientId($input['terminal'])
+        );
+
+        $content['hash'] = $this->getHashForRegisterUser($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        return $request;
+    }
+
+    protected function getOtpSubmitRequestArray($input)
+    {
+        $content = array(
+            'email'         => $input['payment']['email'],
+            'mobile'        => $input['payment']['contact'],
+            'client_id'     => $this->getClientId($input['terminal']),
+            'otp'           => $input['gateway']['otp']
+        );
+
+        $content['hash'] = $this->getHashForVerifyUser($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
