@@ -59,43 +59,35 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $content = array(
-            'merchantTransactionId' => $input['payment']['id'],
-            'client_id'             => $this->getClientId($input['terminal'])
-        );
-
-        $request = $this->getVerifyRequestArray($content);
-        $request['options'] = array(
-            'type'  => 'GET'
-        );
+        $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
         $this->response = $response;
 
-        $responseContent = json_decode($response->body, true);
+        $content = json_decode($response->body, true);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
-                'content' => $responseContent,
+                'content' => $content,
                 'gateway' => 'payumoney',
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        if ($responseContent['status'] !== Status::SUCCESS)
+        if ($content['status'] !== Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                $responseContent['status'],
-                $responseContent['message']);
+                $content['status'],
+                $content['message']);
         }
 
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
 
-        $verify->verifyResponseContent = $responseContent;
+        $verify->verifyResponseContent = $content;
 
         return $content;
     }
@@ -117,7 +109,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if($content['status'] !== Status::SUCCESS)
+        if ($content['status'] !== Status::SUCCESS)
         {
             $verify->apiSuccess = false;
         }
@@ -185,9 +177,9 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
-        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($input, $content);
+        $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
-        $refund = $this->createGatewayRefundEntity($refundAttributes);
+        $refund = $this->createGatewayRefundEntity($attributes);
 
         if ($content['status'] !== Status::SUCCESS)
         {
@@ -207,7 +199,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::REGISTER_USER);
 
-        $request = $this->getRequestArrayForOtpGenerate($input);
+        $request = $this->getOtpGenerateRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
         $content = json_decode($response->body, true);
@@ -331,7 +323,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRefundEntityAttributesFromRefundResponse($input, $response)
+    protected function getRefundAttributesFromRefundResponse($input, $response)
     {
         $refundAttributes = array(
             'payment_id'            =>  $input['payment']['id'],
@@ -353,16 +345,24 @@ class Gateway extends Base\Gateway
         return $refundAttributes;
     }
 
-    protected function getVerifyRequestArray($content)
+    protected function getVerifyRequestArray($input)
     {
-        $content['hash'] = $this->getHashForVerifyRequest($content);
+        $content['key'] = $this->getMerchantId($this->input['terminal']);
+        $content['merchantTransactionId'] = $input['payment']['id'];
 
-        $request = $this->getStandardRequestArray($content, 'POST');
+        $content['hash'] = $this->getHashOfArray($orderedData);
+
+        // Client id is surprisingly not used for hashing so needs to be
+        // added after hashing.
+
+        $content['client_id'] = $this->getClientId($input['terminal']);
+
+        $request = $this->getStandardRequestArray($content, 'GET');
 
         return $request;
     }
 
-    protected function getRequestArrayForOtpGenerate($input)
+    protected function getOtpGenerateRequestArray($input)
     {
         $content = array(
             'email'     => $input['payment']['email'],
@@ -433,11 +433,9 @@ class Gateway extends Base\Gateway
             'key',
             'mobile',
             'email',
-            'salt'
         );
 
         $content['key']     = $this->getMerchantId($this->input['terminal']);
-        $content['salt']    = $this->getSecret();
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -450,11 +448,9 @@ class Gateway extends Base\Gateway
             'key',
             'mobile',
             'email',
-            'salt'
         );
 
         $content['key']     = $this->getMerchantId($this->input['terminal']);
-        $content['salt']    = $this->getSecret();
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -468,11 +464,9 @@ class Gateway extends Base\Gateway
             'totalAmount',
             'productInfo',
             'merchantTransactionId',
-            'salt'
         );
 
         $content['productInfo'] = '';
-        $content['salt']        = $this->getSecret();
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -489,25 +483,11 @@ class Gateway extends Base\Gateway
         return $terminal['gateway_merchant_id'];
     }
 
-    protected function getHashForVerifyRequest($content)
-    {
-        $fieldsInOrder = array(
-            'key',
-            'merchantTransactionId',
-            'salt'
-        );
-
-        $content['key'] = $this->getMerchantId($this->input['terminal']);
-        $content['salt'] = $this->getSecret();
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($orderedData);
-    }
-
     protected function getHashOfArray($content)
     {
         $str = $this->getStringToHash($content, "|");
+
+        $str .= '|' . $this->getSecret();
 
         return $this->getHashOfString($str);
     }
@@ -515,25 +495,6 @@ class Gateway extends Base\Gateway
     protected function getHashOfString($str)
     {
         return strtolower(hash('sha512', $str, false));
-    }
-
-    protected function getUrlDomain()
-    {
-        if ($this->mode === Mode::LIVE)
-        {
-            $apiDomainActionList = array(
-                Action::REGISTER_USER,
-                Action::USE_WALLET,
-                Action::OTP_SUBMIT
-            );
-
-            if (in_array($this->action, $apiDomainActionList))
-            {
-                $this->domainType = 'api';
-            }
-        }
-
-        return parent::getUrlDomain();
     }
 }
 

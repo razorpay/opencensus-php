@@ -179,10 +179,11 @@ class Gateway
 
         try
         {
-            $response = Requests::$method(
+            $response = Requests::request(
                 $request['url'],
                 $request['headers'],
                 $request['content'],
+                $method,
                 $request['options']);
         }
         catch(\Requests_Exception $e)
@@ -445,7 +446,7 @@ class Gateway
             if (isset($content[$key]))
             {
                 $orderedData[$key] = $content[$key];
-            }   
+            }
         }
 
         return $orderedData;
