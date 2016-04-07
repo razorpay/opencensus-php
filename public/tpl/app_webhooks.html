@@ -84,6 +84,14 @@
           <input type="url" id="new_webhook_url" name="webhook.url" class="form-control" ng-model="webhook.url">
         </div>
       </div>
+
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Secret (optional)</label>
+        <div class="col-lg-10">
+          <input type="text" name="webhook.secret" class="form-control" ng-model="webhook.secret">
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="col-lg-2 control-label">Active Events</label>
         <div class="col-lg-10">
@@ -136,17 +144,25 @@
           <div class="checkbox">
             <label><input ng-model="webhook.events['payment.authorized']" type="checkbox" value="payment.authorized">payment.authorized</label>
           </div>
-          <div class="checkbox">
+          <!--<div class="checkbox">
             <label><input ng-model="webhook.events['payment.captured']" type="checkbox" value="payment.captured">payment.captured</label>
           </div>
           <div class="checkbox">
             <label><input ng-model="webhook.events['payment.created']" type="checkbox" value="payment.created">payment.created</label>
-          </div>
+          </div>-->
           <!--<div class="checkbox">
             <label><input ng-model="webhook.events['settlement.created']" type="checkbox" value="settlement.created">settlement.created</label>
           </div>-->
         </div>
       </div>
+      <!--
+       We will enable secret edits later
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Secret (optional)</label>
+        <div class="col-lg-10">
+          <input type="text" name="webhook.secret" class="form-control" ng-model="webhook.secret">
+        </div>
+      </div>-->
     </form>
   </div>
   <div class="modal-footer">
