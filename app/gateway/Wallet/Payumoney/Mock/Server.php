@@ -177,16 +177,6 @@ class Server extends Base\Mock\Server
         return mt_rand(10000, 35000);
     }
 
-    protected function getContentFromInput($input)
-    {
-        return $input;
-    }
-
-    public static function getMockServerUrl()
-    {
-        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
-    }
-
     protected function makeResponse($json)
     {
         $response = \Response::make($json);
@@ -196,5 +186,4 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
-
 }
