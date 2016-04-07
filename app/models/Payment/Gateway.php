@@ -272,6 +272,11 @@ class Gateway
         self::AXIS_MIGS => IFSC::UTIB,
     );
 
+    public static $emiFileBanks = array(
+        self::KOTAK     => IFSC::KKBK,
+        self::AXIS_MIGS => IFSC::UTIB,
+    );
+
     public static $emiBankToGatewayMap = array(
         IFSC::HDFC      =>  Gateway::HDFC,
         IFSC::UTIB      =>  Gateway::AXIS_MIGS

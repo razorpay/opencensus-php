@@ -56,10 +56,7 @@ class Service extends Base\Service
 
         $returnValue = [];
 
-        $emiFileBanks = Payment\Gateway::$emiBanks;
-
-        //Doesn't need files
-        unset($emiFileBanks[Payment\Gateway::HDFC]);
+        $emiFileBanks = Payment\Gateway::$emiFileBanks;
 
         if (isset($input['bank']))
         {
