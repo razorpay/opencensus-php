@@ -29,6 +29,8 @@ class Newsletter
         $template = 'newsletter',
         $test = false)
     {
+        $this->app = \App::getFacadeRoot();
+
         $this->config = Config::get('applications.mailgun');
 
         if($test === true)
@@ -187,7 +189,7 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['pre_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
+            ['pre_upsert_timestamp' => Carbon::now('Asia/Kolkata')]);
 
         foreach ($chunks as $merchants) {
             // We take this list and push it to mailgun
@@ -202,7 +204,7 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['post_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
+            ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')]);
 
         do
         {
