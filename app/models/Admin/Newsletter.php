@@ -141,23 +141,20 @@ class Newsletter
      * generated mailing list address
      * @return string generated email address of mailing list
      */
-    protected function createNewListOnMailgun()
-    {
-        $listAddress = 'newsletter@'.$this->config['url'];
-
-        return $listAddress;
-    }
-
-    /**
-     * Creates a new mailing list on mailgun and returns the
-     * generated mailing list address
-     * @return string generated email address of mailing list
-     */
     protected function createListOnMailgun($listName)
     {
         $listAddress = $listName.'@'.$this->config['url'];
 
         return $listAddress;
+    }
+
+    protected function createMailgunList($listName)
+    {
+        $relativeUrl = 'lists';
+
+        $this->getMailgunInstance()->post($relativeUrl,[
+            'address'     => $listAddress,
+        ]);
     }
 
     /**
@@ -176,14 +173,12 @@ class Newsletter
      */
     protected function createMailingList($lists)
     {
-        if (isset($this->listName))
+        if (isset($this->listName) === false)
         {
-            $listAddress = $this->createListOnMailgun($this->listName);
+            $this->listName = 'newsletter';
         }
-        else
-        {
-            $listAddress = $this->createNewListOnMailgun();
-        }
+
+        $listAddress = $this->createListOnMailgun($this->listName);
 
         $chunks = $this->getMerchantListChunks($lists);
 

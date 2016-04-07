@@ -631,7 +631,7 @@ class Service extends Base\Service
             return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
         }
 
-        if (isset($input['test']) and ($input['test'] === 'true'))
+        if (isset($input['test']) and ($input['test'] === '1'))
         {
             $response = $this->sendTestHolidayNotificationMail($input);
         }
@@ -662,9 +662,9 @@ class Service extends Base\Service
                 'newsletter'
                 );
 
-            $mailer->setMailingListName('bank-holiday-notification');
+            $mailer->setMailingListName($input['lists']);
 
-            if ($input['test_list_add'] === 'true')
+            if ($input['test_list_add'] === '1')
             {
                 $mailer->setTestListMembersAdd();
             }
