@@ -1062,7 +1062,8 @@ trait PaymentTrait
             $values = array();
             $method = $request['method'];
 
-            if ($method === 'post')
+            if (($method === 'post') and
+                (isset($request['content'])))
             {
                 $values = $request['content'];
             }
@@ -1202,7 +1203,7 @@ trait PaymentTrait
                             "Success" => true,
                         );
 
-                        switch ($route) 
+                        switch ($route)
                         {
                             case 'REST/Tokenize':
                                 $response['Token'] = '1a2b3c4b5e';
@@ -1215,7 +1216,7 @@ trait PaymentTrait
                             case 'REST/ValidateToken':
                                 $response['Valid'] = true;
                                 break;
-                            
+
                             case 'REST/DeleteToken':
                                 break;
                         }

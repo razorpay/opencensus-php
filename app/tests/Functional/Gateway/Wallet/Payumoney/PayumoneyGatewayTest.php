@@ -71,6 +71,17 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
+    public function testRefundPayment2()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($capturePayment['id']);
+
+        $refund = $this->getLastEntity('wallet', true);
+    }
+
     protected function runPaymentCallbackFlowWalletPayumoney($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
@@ -80,6 +91,7 @@ class PayumoneyGatewayTest extends TestCase
         if ($mock)
         {
             $content['otp'] = '123456';
+            $content['type'] = 'otp';
 
             $request = array(
                 'url'       => $url,

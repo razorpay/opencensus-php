@@ -350,7 +350,11 @@ class Gateway extends Base\Gateway
         $content['key'] = $this->getMerchantId($this->input['terminal']);
         $content['merchantTransactionId'] = $input['payment']['id'];
 
-        $content['hash'] = $this->getHashOfArray($orderedData);
+        $content['hash'] = $this->getHashOfArray($content);
+
+        // key is not to be sent in actual request but
+        // only for calculating hash.
+        unset($content['key']);
 
         // Client id is surprisingly not used for hashing so needs to be
         // added after hashing.
