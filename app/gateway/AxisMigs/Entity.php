@@ -102,4 +102,9 @@ class Entity extends Base\Entity
     {
         return $this->attributes['vpc_TransactionNo'];
     }
+
+    public function setVpcTransactionNo($txnNo)
+    {
+        $this->attributes['vpc_TransactionNo'] = $txnNo;
+    }
 }

@@ -88,6 +88,17 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function forceAuthorizeFailed($id, $input)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        $merchant = (new Merchant\Repository)->findOrFail($payment->getMerchantId());
+
+        $data = $this->processor($merchant)->forceAuthorizeFailed($payment);
+
+        return $data;
+    }
+
     public function authorizeFailed($id)
     {
         $payment = $this->core->retrieveById($id);

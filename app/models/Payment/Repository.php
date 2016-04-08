@@ -86,7 +86,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $repo::lockForUpdate()->findOrFail($id);
+        return $repo::lockForUpdate()->findOrFail($id);
     }
 
     public function timeoutOldPayments($timestamp)

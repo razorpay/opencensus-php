@@ -100,6 +100,28 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
+    public function forceAuthorizeFailedPayment($input)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
+
+        assert ($payment['received'] === false);
+        assert ($payment['vpc_TxnResponseCode'] !== '0');
+
+        if (isset($input['gateway']['vpc_TransactionNo']) === false)
+        {
+            throw new Excception\BadRequestValidationFailureException(
+                'Correct field not present for the required operation');
+        }
+
+        $txnNo = $input['gateway']['vpc_TransactionNo'];
+        $txnNo = (int) $txnNo;
+        assert (strlen($txnNo) === 10);
+        assert (is_integer($txnNo) === true);
+
+        $payment->setVpcTransactionNo($txnNo);
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
