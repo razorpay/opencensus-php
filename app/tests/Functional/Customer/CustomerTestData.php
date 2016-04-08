@@ -12,12 +12,14 @@ return [
             'method' => 'post',
             'content' => [
                 'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
             ],
         ],
@@ -49,16 +51,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '100000customer',
+                'id'      => 'cust_100000customer',
                 'name'    => 'test',
                 'contact' => '1234567890',
             ],
         ],
     ],
 
-    'testGetCustomerMethods' => [
+    'testGetCustomerTokens' => [
         'request' => [
-            'url' => '/customers/100000customer/methods',
+            'url' => '/customers/100000customer/tokens',
             'method' => 'get',
             'content' => [
             ],
@@ -68,32 +70,30 @@ return [
                 'items' => [
                     [
                         'id'            => '100000custbank',
-                        'customer_id'   => '100000customer',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
                     ],
                     [
                         'id'            => '100000custcard',
-                        'customer_id'   => '100000customer',
                         'method'        => 'card',
-                        'card_id'       => '100000000lcard',
+                        'card'          =>  [
+                            'last4'         => '1111',
+                            'network'       => 'Visa',
+                        ]
                     ],
                     [
                         'id'            => '1000custwallet',
-                        'customer_id'   => '100000customer',
                         'method'        => 'wallet',
                         'wallet'        => 'paytm',
                     ],
-
                 ]
-
             ],
         ],
     ],
 
-    'testGetCustomerMethod' => [
+    'testGetCustomerToken' => [
         'request' => [
-            'url' => '/customers/100000customer/methods/1000custwallet',
+            'url' => '/customers/100000customer/tokens/1000custwallet',
             'method' => 'get',
             'content' => [
             ],
@@ -101,16 +101,15 @@ return [
         'response' => [
             'content' => [
                 'id'            => '1000custwallet',
-                'customer_id'   => '100000customer',
                 'method'        => 'wallet',
                 'wallet'        => 'paytm',
             ],
         ],
     ],
 
-    'testDeleteCustomerMethod' => [
+    'testDeleteCustomerToken' => [
         'request' => [
-            'url' => '/customers/100000customer/methods/1000custwallet',
+            'url' => '/customers/100000customer/tokens/1000custwallet',
             'method' => 'delete',
             'content' => [
             ],
@@ -121,9 +120,9 @@ return [
         ],
     ],
 
-    'testAddCustomerMethodCard' => [
+    'testAddCustomerTokenCard' => [
         'request' => [
-            'url' => '/customers/100000customer/methods',
+            'url' => '/customers/100000customer/tokens',
             'method' => 'post',
             'content' => [
                 'method' => 'card',
@@ -133,76 +132,77 @@ return [
         'response' => [
             'content' => [
                 'method' => 'card',
-                'card_id' => '10000savedcard',
-                'wallet' => null,
-                'bank' => null
+                'card'   =>  [
+                    'last4'   => '1111',
+                    'network' => 'Visa',
+                ],
+                'wallet'    => null,
+                'bank'      => null
             ],
         ],
     ],
 
-    'testAddCustomerMethodWallet' => [
+    'testAddCustomerTokenWallet' => [
         'request' => [
-            'url' => '/customers/100000customer/methods',
+            'url' => '/customers/100000customer/tokens',
             'method' => 'post',
             'content' => [
                 'method' => 'wallet',
                 'wallet' => 'mobikwik',
-                'account_key' => "dj83hd9j4jd=="
+                'gateway_token' => "dj83hd9j4jd=="
             ],
         ],
         'response' => [
             'content' => [
                 'method' => 'wallet',
-                'card_id' => null,
                 'wallet' => 'mobikwik',
                 'bank' => null,
-                'account_key' => "dj83hd9j4jd==",
             ],
         ],
     ],
 
-    'testAddCustomerMethodNetbanking' => [
+    'testAddCustomerTokenNetbanking' => [
         'request' => [
-            'url' => '/customers/100000customer/methods',
+            'url' => '/customers/100000customer/tokens',
             'method' => 'post',
             'content' => [
-                'method' => 'netbanking',
-                'bank' => 'KKBK',
-                'account_key' => '23881822'
+                'method'        => 'netbanking',
+                'bank'          => 'KKBK',
+                'gateway_token' => '23881822'
             ],
         ],
         'response' => [
             'content' => [
-                'method' => 'netbanking',
-                'card_id' => null,
-                'wallet' => null,
-                'bank' => 'KKBK',
-                'account_key' => '23881822',
+                'method'        => 'netbanking',
+                'wallet'        => null,
+                'bank'          => 'KKBK',
             ],
         ],
     ],
 
-    'testGetCustomerMethodsByAppId' => [
+    'testGetCustomerTokensByAppId' => [
         'request' => [
-            'url' => '/apps/1000000custapp/methods',
+            'url' => '/apps/1000000custapp/tokens',
             'method' => 'get',
             'content' => [
             ],
         ],
         'response' => [
             'content' => [
-                [
-                    'card_id'   => '100000000gcard',
-                    'last4'     => '1111',
-                    'emi'       => false,
-                    'issuer'    => null,
-                    'network'   => 'Visa'
-                ],
+                'entity'    => 'collection',
+                'items'     =>  [
+                    [
+                        'card'  => [
+                            'last4'     => '1111',
+                            'network'   => 'Visa'
+                        ],
+                    ]
+                 ],
             ],
         ],
     ],
 
-    'testFetchSavedMethodsStatusSaved'   => [
+    'testFetchSavedTokensStatusSaved'   => [
         'request' => [
                 'url' => '/customer/status/1234567890',
                 'method' => 'get',
@@ -216,7 +216,7 @@ return [
             ],
     ],
 
-    'testFetchSavedMethodsStatusNotSaved'   => [
+    'testFetchSavedTokensStatusNotSaved'   => [
         'request' => [
                 'url' => '/customer/status/1234567899',
                 'method' => 'get',
@@ -230,9 +230,9 @@ return [
             ],
     ],
 
-    'testDeleteAppMethod' => [
+    'testDeleteAppToken' => [
         'request' => [
-            'url' => '/apps/1000000custapp/methods/10000custgcard',
+            'url' => '/apps/1000000custapp/tokens/10000custgcard',
             'method' => 'delete',
             'content' => [
             ],

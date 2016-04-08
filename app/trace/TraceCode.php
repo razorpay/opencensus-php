@@ -39,7 +39,7 @@ class TraceCode
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
-    const CUSTOMER_METHODS_EDIT                     = 'CUSTOMER_METHODS_EDIT';
+    const CUSTOMER_METCUSTOMER_TOKENS_EDIT                     = 'CUSTOMER_METCUSTOMER_TOKENS_EDIT';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
@@ -130,7 +130,7 @@ class TraceCode
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
-    
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
         self::PAYMENT_CREATED                       => 'New payment created',

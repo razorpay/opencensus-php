@@ -10,6 +10,7 @@ class Table
     const KEY               = 'keys';
     const CARD              = 'cards';
     const ORDER             = 'orders';
+    const TOKEN             = 'customer_tokens';
     const REFUND            = 'refunds';
     const BALANCE           = 'balance';
     const METHODS           = 'merchant_banks';
@@ -25,7 +26,6 @@ class Table
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
     const CUSTOMER_APP      = 'customer_apps';
-    const CUSTOMER_METHOD   = 'customer_methods';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 
     // Gateway related

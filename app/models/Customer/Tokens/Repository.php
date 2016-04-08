@@ -1,17 +1,17 @@
 <?php
 
-namespace Models\Customer\Methods;
+namespace Models\Customer\Token;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
-use Models\Customer\Methods;
+use Models\Customer\Token;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'CustomerMethods';
+    protected $entity = 'Tokens';
 
     public function getByParams($params)
     {
@@ -38,7 +38,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Methods\Entity::CUSTOMER_ID, '=', $uid)
+        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $uid)
                     //->where(Methods\Entity::METHOD, '=', 'card')
                     ->get();
     }
@@ -47,7 +47,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Methods\Entity::CUSTOMER_ID, '=', $uid)
+        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $uid)
                     ->findOrFailPublic($mid);
     }
 }

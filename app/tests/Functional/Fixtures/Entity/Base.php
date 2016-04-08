@@ -29,6 +29,7 @@ class Base
         'hdfc'              => Gateway\Hdfc\Entity::class,
         'customer'          => Models\Customer\Entity::class,
         'order'             => Models\Order\Entity::class,
+        'token'             => Models\Customer\Token\Entity::class,
         'refund'            => Models\Payment\Refund\Entity::class,
         'webhook'           => Models\Merchant\Webhook\Entity::class,
         'methods'           => Models\Merchant\Methods\Entity::class,
@@ -43,7 +44,6 @@ class Base
         'adjustment'        => Models\Adjustment\Entity::class,
         'settlement'        => Models\Settlement\Entity::class,
         'transaction'       => Models\Transaction\Entity::class,
-        'customer_method'   => Models\Customer\Methods\Entity::class,
         'customer_app'      => Models\Customer\App\Entity::class,
         'bank_account'      => Models\Merchant\BankAccount\Entity::class,
     );

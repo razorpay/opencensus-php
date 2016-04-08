@@ -57,17 +57,22 @@ $factory(Models\Merchant\BankAccount\Entity::class, [
 ]);
 
 $factory(Models\Card\Entity::class, [
-    'id' => $faker->uniqueid,
-    'merchant_id' => 10000000000000,
-    'name' => $faker->word,
-    'network' => 'Visa',
-    'expiry_month' => 01,
-    'expiry_year' => 2017,
-    'type' => 'debit',
-    'country' => 'IN',
-    'last4' => 6666,
-    'iin' => 401200,
-    'length' => 16,
+    'id'                => $faker->uniqueid,
+    'merchant_id'       => 10000000000000,
+    'name'              => $faker->word,
+    'network'           => 'Visa',
+    'expiry_month'      => 01,
+    'expiry_year'       => 2018,
+    'type'              => 'debit',
+    'country'           => 'IN',
+    'last4'             => 1111,
+    'iin'               => 411111,
+    'length'            => '16',
+    'issuer'            => 'hdfc',
+    'international'     => false,
+    'token'             => '1a2b3c4b5e',
+    'service'           => 'tokenex',
+    'trivia'            => '',
 ]);
 
 $factory(Models\Key\Entity::class, [
@@ -240,9 +245,10 @@ $factory(Models\Customer\Entity::class, [
     'merchant_id' => 10000000000000,
     'name' => 'name',
     'contact' => '1234567890',
+    'notes' => []
 ]);
 
-$factory(Models\Customer\Methods\Entity::class, [
+$factory(Models\Customer\Token\Entity::class, [
     'id' => $faker->uniqueid,
     'customer_id' => '100000customer',
     'wallet' => 'paytm',
@@ -257,23 +263,4 @@ $factory(Models\Customer\App\Entity::class, [
     'device_id' => 'test',
     'app_id' => '1000000custapp',
     'merchant_id'  => '10000000000000'
-]);
-
-$factory(Models\Card\Entity::class, [
-    'id'                =>  $faker->uniqueid,
-    'merchant_id'       =>  '10000000000000',
-    'name'              =>  'test',
-    'expiry_month'      =>  '12',
-    'expiry_year'       =>  '2100',
-    'iin'               =>  '411111',
-    'last4'             =>  '1111',
-    'length'            =>  '16',
-    'network'           =>  'Visa',
-    'type'              =>  'premiermiles',
-    'issuer'            =>  'hdfc',
-    'country'           =>  'in',
-    'international'     =>  false,
-    'token'             =>  '1a2b3c4b5e',
-    'service'           =>  'tokenex',
-    'trivia'            =>  '',
 ]);

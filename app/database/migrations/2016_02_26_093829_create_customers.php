@@ -29,12 +29,17 @@ class CreateCustomers extends Migration {
 
             $table->char(Customer::NAME, 50)
                   ->nullable();
-            
+
             $table->char(Customer::CONTACT, 15);
+
+            $table->string(Customer::EMAIL, 255)
+                  ->nullable();
+
+            $table->text(Customer::NOTES);
 
             $table->boolean(Customer::ACTIVE)
                   ->default(1);
-                              
+
             $table->integer(Customer::CREATED_AT);
             $table->integer(Customer::UPDATED_AT);
 

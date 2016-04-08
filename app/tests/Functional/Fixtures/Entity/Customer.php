@@ -8,13 +8,14 @@ class Customer extends Base
     {
         $this->fixtures->create('customer:customers');
         $this->fixtures->create('customer:customer_apps');
-        $this->fixtures->create('customer:customer_methods');
+        $this->fixtures->create('customer:tokens');
     }
 
     protected $customers = array(
         array(
             'id'            => '100000customer',
             'name'          => 'test',
+            'email'         => 'test@razorpay.com',
             'contact'       => '1234567890',
             'merchant_id'   => '10000000000000'
         ),
@@ -22,6 +23,7 @@ class Customer extends Base
         array(
             'id'            => '10000gcustomer',
             'name'          => 'test',
+            'email'         => 'test@razorpay.com',
             'contact'       => '1234567890',
             'merchant_id'   => '100000Razorpay'
         ),
@@ -36,7 +38,7 @@ class Customer extends Base
         ),
     );
 
-    protected $customerMethods = array(
+    protected $customerTokens = array(
         array(
             'id'            => '1000custwallet',
             'customer_id'   => '100000customer',
@@ -67,7 +69,7 @@ class Customer extends Base
     {
         $customers = array();
 
-        foreach ($this->customers as $customer) 
+        foreach ($this->customers as $customer)
         {
             $customers[] = $this->fixtures->create('customer', $customer);
         }
@@ -77,7 +79,7 @@ class Customer extends Base
 
     public function createCustomerApps()
     {
-        $apps = [];
+        $apps = array();
 
         foreach ($this->customerApps as $attributes)
         {
@@ -87,15 +89,15 @@ class Customer extends Base
         return $apps;
     }
 
-    public function createCustomerMethods()
+    public function createTokens()
     {
-        $methods = [];
+        $tokens = array();
 
-        foreach ($this->customerMethods as $attributes)
+        foreach ($this->customerTokens as $attributes)
         {
-            $methods[] = $this->fixtures->create('customer_method', $attributes);
+            $tokens[] = $this->fixtures->create('token', $attributes);
         }
 
-        return $methods;
+        return $tokens;
     }
 }

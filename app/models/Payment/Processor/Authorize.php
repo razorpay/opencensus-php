@@ -11,7 +11,7 @@ use Models\Merchant\Methods;
 use Models\Card;
 use Models\Card\IIN;
 use Models\Customer;
-use Models\Customer\Methods as CustomerMethods;
+use Models\Customer\Token as CustomerTokens;
 use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
@@ -253,7 +253,7 @@ trait Authorize
                     "customer does not exist");
             }
 
-            $method = (new Customer\Methods\Repository)->findOrFail($input[Payment\Entity::METHOD_ID]);
+            $method = (new Customer\Token\Repository)->findOrFail($input[Payment\Entity::METHOD_ID]);
 
             assert($method !== null);
             assert($method->getCustomerId() === $customer->getId());
@@ -343,7 +343,7 @@ trait Authorize
 
         try
         {
-            (new CustomerMethods\Core)->create($customer, $saveMethodInput);
+            (new CustomerTokens\Core)->create($customer, $saveMethodInput);
         }
         catch (Exception\BaseException $e)
         {

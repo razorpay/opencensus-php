@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Functional\CustomerMethod;
+namespace Tests\Functional\CustomerToken;
 
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
-class CustomerMethodTest extends TestCase
+class CustomerTokenTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
@@ -16,72 +16,72 @@ class CustomerMethodTest extends TestCase
         parent::setUp();
     }
 
-    public function testAddCustomerMethodCard()
+    public function testAddCustomerTokenCard()
     {
         $this->fixtures->create('card', ['id' => '10000savedcard']);
 
-        $this->ba->privateAuth();
+        $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testAddCustomerMethodWallet()
+    public function testAddCustomerTokenWallet()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testAddCustomerTokenNetbanking()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCustomerTokens()
     {
         $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    public function testAddCustomerMethodNetbanking()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetCustomerMethods()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetCustomerMethod()
+    public function testGetCustomerToken()
     {
         $this->ba->privateAuth();
 
         return $this->startTest();
     }
 
-    public function testDeleteCustomerMethod()
+    public function testDeleteCustomerToken()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCustomerTokensByAppId()
     {
         $this->ba->publicAuth();
 
         $this->startTest();
     }
 
-    public function testGetCustomerMethodsByAppId()
+    public function testFetchSavedTokensStatusSaved()
     {
         $this->ba->publicAuth();
 
         $this->startTest();
     }
 
-    public function testFetchSavedMethodsStatusSaved()
+    public function testFetchSavedTokensStatusNotSaved()
     {
         $this->ba->publicAuth();
 
         $this->startTest();
     }
 
-    public function testFetchSavedMethodsStatusNotSaved()
-    {
-        $this->ba->publicAuth();
-
-        $this->startTest();
-    }
-
-    public function testDeleteAppMethod()
+    public function testDeleteAppToken()
     {
         $this->ba->publicAuth();
 

@@ -38,62 +38,62 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function addMethod($id)
+    public function addToken($id)
     {
         $input = Input::all();
 
-        $data = (new Customer\Methods\Service)->add($id, $input);
+        $data = (new Customer\Token\Service)->add($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function updateMethod($uid, $mid)
+    public function updateToken($uid, $mid)
     {
         $input = Input::all();
 
-        $data = (new Customer\Methods\Service)->edit($uid, $mid, $input);
+        $data = (new Customer\Token\Service)->edit($uid, $mid, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteMethod($uid, $mid)
+    public function deleteToken($uid, $mid)
     {
-        $data = (new Customer\Methods\Service)->delete($uid, $mid);
+        $data = (new Customer\Token\Service)->delete($uid, $mid);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchMethod($uid, $mid)
+    public function fetchToken($uid, $mid)
     {
-        $data = (new Customer\Methods\Service)->fetch($uid, $mid);
+        $data = (new Customer\Token\Service)->fetch($uid, $mid);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchMethods($uid)
+    public function fetchTokens($uid)
     {
-        $data = (new Customer\Methods\Service)->fetchMultiple($uid);
+        $data = (new Customer\Token\Service)->fetchMultiple($uid);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchMethodsByAppId($appId)
+    public function fetchTokensByAppId($appId)
     {
-        $methods = (new Customer\Methods\Service)->fetchMethodsByAppId($appId);
+        $tokens = (new Customer\Token\Service)->fetchTokensByAppId($appId);
 
-        return ApiResponse::json($methods);
+        return ApiResponse::json($tokens);
     }
 
     public function fetchCustomerStatus($contact)
     {
-        $status = (new Customer\Methods\Service)->fetchCustomerStatus($contact);
+        $status = (new Customer\Token\Service)->fetchCustomerStatus($contact);
 
         return ApiResponse::json($status);
     }
 
-    public function deleteAppMethod($appId, $mId)
+    public function deleteAppToken($appId, $mId)
     {
-        $data = (new Customer\Methods\Service)->deleteAppMethod($appId, $mId);
+        $data = (new Customer\Token\Service)->deleteAppToken($appId, $mId);
 
         return ApiResponse::json($data);
     }

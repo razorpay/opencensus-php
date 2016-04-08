@@ -1,16 +1,16 @@
 <?php
 
-namespace Models\Customer\Methods;
+namespace Models\Customer\Token;
 
 use Models\Base;
 use Models\Customer;
-use Models\Customer\Methods;
+use Models\Customer\Token;
 use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
     protected $repo;
-    protected $methodsRepo;
+    protected $tokensRepo;
 
     public function __construct()
     {
@@ -18,68 +18,66 @@ class Service extends Base\Service
 
         $this->repo = new Customer\Repository;
 
-        $this->methodsRepo = new Methods\Repository;
+        $this->tokensRepo = new Token\Repository;
     }
 
     public function add($uid, $input)
     {
         $customer = $this->repo->findOrFailPublic($uid);
 
-        $method = (new Methods\Core)->create($customer, $input);
+        $token = (new Token\Core)->create($customer, $input);
 
-        return $method->toArrayPublic();
-
+        return $token->toArrayPublic();
     }
 
     public function edit($uid, $mid, $input)
     {
         $customer = $this->repo->findOrFailPublic($uid);
 
-        $method = $this->methodsRepo->getByIdAndCustomerId($uid, $mid);
+        $token = $this->tokensRepo->getByIdAndCustomerId($uid, $mid);
 
-        $method = (new Methods\Core)->edit($method, $input);
+        $token = (new Token\Core)->edit($token, $input);
 
-        return $method->toArrayPublic();
+        return $token->toArrayPublic();
     }
 
     public function fetch($uid, $mid)
     {
         $customer = $this->repo->findOrFailPublic($uid);
 
-        $method = $this->methodsRepo->getByIdAndCustomerId($uid, $mid);
+        $token = $this->tokensRepo->getByIdAndCustomerId($uid, $mid);
 
-        return $method->toArrayPublic();
-
+        return $token->toArrayPublic();
     }
 
     public function fetchMultiple($uid)
     {
         $customer = $this->repo->findOrFailPublic($uid);
 
-        $methods = $this->methodsRepo->getByCustomerId($uid);
+        $tokens = $this->tokensRepo->getByCustomerId($uid);
 
-        return $methods->toArrayPublic();
+        return $tokens->toArrayPublic();
     }
 
-    public function fetchMethodsByAppId($appId)
+    public function fetchTokensByAppId($appId)
     {
-        $methods = (new Customer\Methods\Core)->fetchMethodsByAppId($this->merchant->getKey(), $appId);
+        $tokens = (new Customer\Token\Core)->fetchTokensByAppId($this->merchant->getKey(), $appId);
 
-        return $methods->toArray();
+        return $tokens->toArrayPublic();
     }
 
     public function fetchCustomerStatus($contact)
     {
-        $saved = false; 
-        
+        $saved = false;
+
         $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
 
-        if ($customer !== null) 
+        if ($customer !== null)
         {
-            $methods = (new Customer\Methods\Core)->fetchMethodsByCustomerId(
+            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
                 Account::SHARED_ACCOUNT, $customer->getId());
 
-            if ($methods !== null)
+            if ($tokens !== null)
             {
                 $saved = true;
             }
@@ -92,26 +90,24 @@ class Service extends Base\Service
         return $result;
     }
 
-
     public function delete($uid, $mid)
     {
-        $method = $this->methodsRepo->findOrFailPublic($mid);
+        $token = $this->tokensRepo->findOrFailPublic($mid);
 
-        assert($method->getCustomerId() === $uid);
+        assert($token->getCustomerId() === $uid);
 
-        $method = $this->methodsRepo->deleteOrFail($method);
+        $token = $this->tokensRepo->deleteOrFail($token);
 
-        if ($method === null)
+        if ($token === null)
             return [];
 
-        return $method->toArrayPublic();
+        return $token->toArrayPublic();
     }
 
-    public function deleteAppMethod($appId, $mId)
+    public function deleteAppToken($appId, $mId)
     {
         $app = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $this->merchant->getId());
 
         return $this->delete($app->getCustomerId(), $mId);
     }
 }
- 

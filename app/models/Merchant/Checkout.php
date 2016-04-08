@@ -56,20 +56,20 @@ class Checkout
 
         //fetch saved cards data if app_id or customer_id is set
 
-        $savedMethods = null;
+        $savedTokens = null;
 
         if (isset($input['customer_id']))
         {
-            $savedMethods = (new Customer\Methods\Core)->fetchMethodsbyCustomerId($merchant->getId(), $input['customer_id']);
+            $savedTokens = (new Customer\Token\Core)->fetchTokensbyCustomerId($merchant->getId(), $input['customer_id']);
         }
         else if (isset($input['app_id']))
         {
-            $savedMethods = (new Customer\Methods\Core)->fetchMethodsByAppId($merchant->getId(), $input['app_id']);
+            $savedTokens = (new Customer\Token\Core)->fetchTokensByAppId($merchant->getId(), $input['app_id']);
         }
 
-        if (($savedMethods !== null) and ($savedMethods->count() !== 0)) 
+        if (($savedTokens !== null) and ($savedTokens->count() !== 0))
         {
-            $data['customer_methods'] = $savedMethods->toArray();
+            $data['tokens'] = $savedTokens->toArrayPublic();
         }
 
         return $data;

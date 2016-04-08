@@ -3,15 +3,20 @@
 namespace Models\Customer;
 
 use Models\Base;
+use Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const NAME              =       'name';
     const CONTACT           =       'contact';
+    const EMAIL             =       'email';
     const MERCHANT_ID       =       'merchant_id';
     const ACTIVE            =       'active';
+    const NOTES             =       'notes';
 
-    protected static $sign      = '';
+    protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
 
@@ -22,6 +27,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
+        self::EMAIL,
+        self::NOTES,
         self::ACTIVE,
         self::CONTACT,
         self::MERCHANT_ID,
@@ -30,6 +37,8 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::NAME,
+        self::EMAIL,
+        self::NOTES,
         self::ACTIVE,
         self::CONTACT,
         self::MERCHANT_ID,
@@ -38,11 +47,14 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::NAME,
+        self::EMAIL,
+        self::NOTES,
         self::CONTACT
     );
 
     protected $defaults = array(
-        self::ACTIVE    =>  true,
+        self::ACTIVE    => true,
+        self::NOTES     => [],
     );
 
     public function merchant()
@@ -52,7 +64,12 @@ class Entity extends Base\PublicEntity
 
     public function getName()
     {
-        return $this->attributes(self::NAME);
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
     }
 
     public function getContact()

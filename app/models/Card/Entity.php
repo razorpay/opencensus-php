@@ -62,23 +62,14 @@ class Entity extends Base\PublicEntity
     protected $hidden = array();
 
     protected $public = array(
-        self::ID,
-        self::ENTITY,
-        self::MERCHANT_ID,
-        self::NAME,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
-        self::IIN,
         self::LAST4,
-        self::LENGTH,
         self::NETWORK,
-        self::TYPE,
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
-        self::TRIVIA,
-        self::CREATED_AT,
-        self::UPDATED_AT);
+    );
 
     protected $appends = array(
         self::NETWORK_CODE);

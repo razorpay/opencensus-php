@@ -11,12 +11,14 @@ class Validator extends Base\Validator
         Entity::CONTACT         =>      'required',
         Entity::MERCHANT_ID     =>      'required',
         Entity::NAME            =>      'sometimes',
+        Entity::EMAIL           =>      'sometimes',
     );
 
     protected static $editRules = array(
         Entity::CONTACT         =>      'sometimes',
         Entity::NAME            =>      'sometimes',
-        Entity::ACTIVE          =>      'sometimes|in:0,1'
+        Entity::ACTIVE          =>      'sometimes|in:0,1',
+        Entity::EMAIL           =>      'sometimes',
     );
 
     protected static $createValidators = array(
@@ -29,6 +31,6 @@ class Validator extends Base\Validator
 
     protected static function validateContact($input)
     {
-        
+
     }
 }
