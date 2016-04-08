@@ -213,7 +213,7 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['count_match_timestamp' => Carbon::now('Asia\Kolkata')->timestamp]);
+            ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
         return $listAddress;
     }
