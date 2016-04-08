@@ -52,11 +52,16 @@ app.controller('WebhooksCtrl', [
 
       // This is the whitelist of things you
       // can edit in a webhook
+
       var payload = {
         events: webhook.events,
         active: webhook.active,
         url: webhook.url
       };
+
+      if (webhook.secret !== '') {
+        payload.secret = webhook.secret;
+      }
 
       var request = $http({
         method: 'put',
