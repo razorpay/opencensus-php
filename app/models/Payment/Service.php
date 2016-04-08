@@ -170,31 +170,34 @@ class Service extends Base\Service
 
     public function addPaymentMetadata($id, $input)
     {
-        $otpRead = $input['otp_read'];
-
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
-        $card = $payment->card;
-        $cardIin = $card->iin;
-        $repo = new Card\IIN\Repository;
-        $iin = $repo->find($cardIin);
+        if (isset($input['otp_read']) === true)
+        {
+            $otpRead = $input['otp_read'];
 
-        if ($iin === null)
-        {
-            return [];
-        }
+            $card = $payment->card;
+            $cardIin = $card->iin;
+            $repo = new Card\IIN\Repository;
+            $iin = $repo->find($cardIin);
 
-        if ($otpRead === '1')
-        {
-            $iin->setOtpRead(true);
-            $repo->saveOrFail($iin);
-        }
-        else if (($otpRead === '0') and
-                 ($iin->getOtpRead() === true))
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_OTP_READ_FAILURE,
-                ['iin' => $cardIin, 'otp_read' => $otpRead]);
+            if ($iin === null)
+            {
+                return [];
+            }
+
+            if ($otpRead === '1')
+            {
+                $iin->setOtpRead(true);
+                $repo->saveOrFail($iin);
+            }
+            else if (($otpRead === '0') and
+                     ($iin->getOtpRead() === true))
+            {
+                $this->trace->error(
+                    TraceCode::PAYMENT_OTP_READ_FAILURE,
+                    ['iin' => $cardIin, 'otp_read' => $otpRead]);
+            }
         }
 
         return [];
