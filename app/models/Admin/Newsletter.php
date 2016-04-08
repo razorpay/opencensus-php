@@ -199,7 +199,7 @@ class Newsletter
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl);
 
-            $count =  $listInfo['list']['members_count'];
+            $count = $listInfo->list->members_count;
 
             // Wait here till the count of the members in list
             // matches the internal count
