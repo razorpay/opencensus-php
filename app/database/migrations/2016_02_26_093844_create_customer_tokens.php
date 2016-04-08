@@ -47,6 +47,7 @@ class CreateCustomerTokens extends Migration {
 
             $table->integer(Token::UPDATED_AT);
 
+            $table->index(Token::TOKEN);
             $table->index(Token::CREATED_AT);
 
             $table->foreign(Token::CUSTOMER_ID)
