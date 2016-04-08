@@ -199,6 +199,10 @@ class Newsletter
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl);
 
+            $this->app['trace']->info(
+            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
+            ['post_upsert_return_object' => $listInfo]);
+
             $count = $listInfo->list->members_count;
 
             // Wait here till the count of the members in list
