@@ -207,7 +207,7 @@ class Newsletter
             }
             // Wait here till the count of the members in list
             // matches the internal count
-            sleep(self::WAIT_BEFORE_RETRY);
+            // sleep(self::WAIT_BEFORE_RETRY);
         }
         while ($count < $this->count);
 
