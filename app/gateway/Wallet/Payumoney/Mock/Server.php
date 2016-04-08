@@ -27,12 +27,12 @@ class Server extends Base\Mock\Server
             'message'   => 'Transaction status',
             'result'    => array(
                 array(
-                    'amount'                => 5,
+                    'amount'                => 500,
                     'transactionDirection'  => -1,
                     'paymentId'             => 1110561680,
                     'status'                => 'success',
                     'merchantTransactionId' => $this->mockRequest['content']['merchantTransactionId'],
-                    'completedOn'           => 1459219419000
+                    'completedOn'           => strtotime('-30 mins')
                 )
             ),
             'errorCode' => null

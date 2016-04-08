@@ -65,7 +65,7 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $content = json_decode($response->body, true);
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -74,14 +74,6 @@ class Gateway extends Base\Gateway
                 'gateway' => 'payumoney',
                 'payment_id' => $input['payment']['id'],
             ]);
-
-        if ($content['status'] !== Status::SUCCESS)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                $content['status'],
-                $content['message']);
-        }
 
         $verify->verifyResponse = $this->response;
 
@@ -156,10 +148,11 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (($payment !== null) and
-            ($payment['received'] === false))
+        if ($content['status'] === Status::SUCCESS)
         {
-            $payment->fill($content);
+            $wallet = $this->getWalletContentFromVerify($payment, $content);
+
+            $payment->fill($wallet);
             $payment->saveOrFail();
         }
 
@@ -173,7 +166,8 @@ class Gateway extends Base\Gateway
         $request = $this->getRefundRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        $content = json_decode($response->body, true);
+
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
@@ -202,7 +196,8 @@ class Gateway extends Base\Gateway
         $request = $this->getOtpGenerateRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        $content = json_decode($response->body, true);
+
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
@@ -225,7 +220,8 @@ class Gateway extends Base\Gateway
         $request = $this->getOtpSubmitRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        $content = json_decode($response->body, true);
+
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
@@ -252,7 +248,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = json_decode($response->body, true);
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
@@ -499,6 +495,30 @@ class Gateway extends Base\Gateway
     protected function getHashOfString($str)
     {
         return strtolower(hash('sha512', $str, false));
+    }
+
+    protected function getWalletContentFromVerify($payment, array $response)
+    {
+        $content = $response['result'][0];
+
+        $status = $content['status'] === 'success' ? Status::SUCCESS : Status::FAILURE;
+
+        $wallet = array(
+            'gateway_payment_id'    => $content['paymentId'],
+            'status'                => $status
+        );
+
+        if (isset($payment['payment_id']) === false)
+        {
+            $wallet['payment_id'] = $content['merchantTransactionId'];
+        }
+
+        if (isset($payment['amount']) === false)
+        {
+            $wallet['amount'] = $content['amount'];
+        }
+
+        return $wallet;
     }
 }
 
