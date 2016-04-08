@@ -626,17 +626,20 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
-        {
-            return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-        }
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
 
-        if (isset($input['test']) and ($input['test'] === '1'))
+        if (isset($input['test']))
         {
             $response = $this->sendTestHolidayNotificationMail($input);
         }
         else
         {
+            if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+            {
+                return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+            }
+
             $response = $this->sendHolidayNotificationMail($input);
         }
 
@@ -658,16 +661,10 @@ class Service extends Base\Service
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg,
-                'newsletter'
-                );
+                $msg);
 
+            // Currently live@ and newsletter@ are available on mailgun
             $mailer->setMailingListName($input['lists']);
-
-            if ($input['test_list_add'] === '1')
-            {
-                $mailer->setTestListMembersAdd();
-            }
 
             return $mailer->send();
         }
@@ -686,10 +683,21 @@ class Service extends Base\Service
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg,
-                'newsletter',
-                true
-                );
+                $msg);
+
+            switch ($input['test']) {
+                case 'email':
+
+                    $mailer->setTestEmail($input['lists']);
+                    break;
+
+                case 'add_to_list':
+                default:
+                    // Currently live@ and newsletter@ are available on mailgun
+                    $mailer->setTestListMembersAdd();
+                    $mailer->setMailingListName($input['lists']);
+                    break;
+            }
 
             return $mailer->send();
         }
