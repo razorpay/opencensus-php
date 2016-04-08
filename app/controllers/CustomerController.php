@@ -47,32 +47,32 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function updateToken($uid, $mid)
+    public function updateToken($id, $token)
     {
         $input = Input::all();
 
-        $data = (new Customer\Token\Service)->edit($uid, $mid, $input);
+        $data = (new Customer\Token\Service)->edit($id, $token, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteToken($uid, $mid)
+    public function deleteToken($id, $token)
     {
-        $data = (new Customer\Token\Service)->delete($uid, $mid);
+        $data = (new Customer\Token\Service)->delete($id, $token);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchToken($uid, $mid)
+    public function fetchToken($id, $token)
     {
-        $data = (new Customer\Token\Service)->fetch($uid, $mid);
+        $data = (new Customer\Token\Service)->fetch($id, $token);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchTokens($uid)
+    public function fetchTokens($id)
     {
-        $data = (new Customer\Token\Service)->fetchMultiple($uid);
+        $data = (new Customer\Token\Service)->fetchMultiple($id);
 
         return ApiResponse::json($data);
     }
@@ -91,9 +91,9 @@ class CustomerController extends BaseController
         return ApiResponse::json($status);
     }
 
-    public function deleteAppToken($appId, $mId)
+    public function deleteAppToken($appId, $token)
     {
-        $data = (new Customer\Token\Service)->deleteAppToken($appId, $mId);
+        $data = (new Customer\Token\Service)->deleteAppToken($appId, $token);
 
         return ApiResponse::json($data);
     }

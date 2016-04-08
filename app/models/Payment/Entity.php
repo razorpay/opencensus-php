@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
     const ERROR_DESCRIPTION     = 'error_description';
     const CUSTOMER_ID           = 'customer_id';
     const APP_ID                = 'app_id';
-    const METHOD_ID             = 'method_id';
+    const TOKEN                 = 'token';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX           = 'service_tax';
     const FEE                   = 'fee';
     const SAVE                  = 'save';
-    
+
     const CURRENCY_LENGTH       = 3;
 
     const MIN_PAYMENT_AMOUNT    = 100;

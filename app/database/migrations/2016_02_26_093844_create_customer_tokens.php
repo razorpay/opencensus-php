@@ -27,6 +27,8 @@ class CreateCustomerTokens extends Migration {
 
             $table->char(Token::CUSTOMER_ID, 14);
 
+            $table->char(Token::TOKEN, 14);
+
             $table->char(Token::METHOD, 10);
 
             $table->char(Token::CARD_ID, 14)

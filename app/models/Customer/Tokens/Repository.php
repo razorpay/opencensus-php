@@ -34,20 +34,20 @@ class Repository extends Base\Repository
         return $repo::findOrFailPublic($id);
     }
 
-    public function getByCustomerId($uid)
+    public function getByCustomerId($id)
     {
         $repo = $this->repo;
 
-        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $uid)
-                    //->where(Methods\Entity::METHOD, '=', 'card')
+        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $id)
                     ->get();
     }
 
-    public function getByIdAndCustomerId($uid, $mid)
+    public function getByTokenAndCustomerId($id, $token)
     {
         $repo = $this->repo;
 
-        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $uid)
-                    ->findOrFailPublic($mid);
+        return $repo::where(Token\Entity::CUSTOMER_ID, '=', $id)
+                    ->where(Token\Entity::TOKEN, '=', $token)
+                    ->first();
     }
 }

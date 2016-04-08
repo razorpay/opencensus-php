@@ -10,6 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::CUSTOMER_ID     => 'required|alpha_num|size:14',
+        Entity::TOKEN           => 'required|alpha_num|size:14',
         Entity::METHOD          => 'required|in:card,netbanking,wallet',
         Entity::CARD_ID         => 'required_only_if:method,card|alpha_num|size:14',
         Entity::BANK            => 'required_only_if:method,netbanking',

@@ -20,7 +20,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        
+
         $this->mockTokenex();
     }
 
@@ -29,8 +29,8 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['card'] = array(
             'cvv'  => 111
         );
-        
-        $this->payment['method_id'] = '100000custcard';
+
+        $this->payment['token'] = '10000cardtoken';
         $this->payment['customer_id'] = '100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
@@ -42,9 +42,9 @@ class SavedCardPaymentCreateTest extends TestCase
             'cvv'  => 111
         );
 
-        $this->payment['method_id'] = '10000custgcard';
+        $this->payment['token'] = '1000gcardtoken';
         $this->payment['app_id'] = '1000000custapp';
-        
+
         $content = $this->doAuthAndCapturePayment($this->payment);
     }
 
@@ -53,7 +53,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['save'] = 1;
 
         $this->payment['customer_id'] = '100000customer';
-        
+
         $content = $this->doAuthAndCapturePayment($this->payment);
     }
 
@@ -62,7 +62,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['save'] = 1;
 
         $this->payment['app_id'] = '1000000custapp';
-        
+
         $content = $this->doAuthAndCapturePayment($this->payment);
     }
-}   
+}

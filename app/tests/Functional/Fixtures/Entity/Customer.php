@@ -41,24 +41,28 @@ class Customer extends Base
     protected $customerTokens = array(
         array(
             'id'            => '1000custwallet',
+            'token'         => '100wallettoken',
             'customer_id'   => '100000customer',
             'method'        => 'wallet',
             'wallet'        => 'paytm',
         ),
         array(
             'id'            => '100000custbank',
+            'token'         => '10000banktoken',
             'customer_id'   => '100000customer',
             'method'        => 'netbanking',
             'bank'          => 'HDFC',
         ),
         array(
             'id'            => '100000custcard',
+            'token'         => '10000cardtoken',
             'customer_id'   => '100000customer',
             'method'        => 'card',
             'card_id'       => '100000000lcard',
         ),
         array(
             'id'            => '10000custgcard',
+            'token'         => '1000gcardtoken',
             'customer_id'   => '10000gcustomer',
             'method'        => 'card',
             'card_id'       => '100000000gcard',

@@ -69,12 +69,12 @@ return [
             'content' => [
                 'items' => [
                     [
-                        'id'            => '100000custbank',
+                        'token'         => '10000banktoken',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
                     ],
                     [
-                        'id'            => '100000custcard',
+                        'token'            => '10000cardtoken',
                         'method'        => 'card',
                         'card'          =>  [
                             'last4'         => '1111',
@@ -82,7 +82,7 @@ return [
                         ]
                     ],
                     [
-                        'id'            => '1000custwallet',
+                        'token'            => '100wallettoken',
                         'method'        => 'wallet',
                         'wallet'        => 'paytm',
                     ],
@@ -93,14 +93,14 @@ return [
 
     'testGetCustomerToken' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens/1000custwallet',
+            'url' => '/customers/100000customer/tokens/100wallettoken',
             'method' => 'get',
             'content' => [
             ],
         ],
         'response' => [
             'content' => [
-                'id'            => '1000custwallet',
+                'token'         => '100wallettoken',
                 'method'        => 'wallet',
                 'wallet'        => 'paytm',
             ],
@@ -109,7 +109,7 @@ return [
 
     'testDeleteCustomerToken' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens/1000custwallet',
+            'url' => '/customers/100000customer/tokens/100wallettoken',
             'method' => 'delete',
             'content' => [
             ],
@@ -192,6 +192,7 @@ return [
                 'entity'    => 'collection',
                 'items'     =>  [
                     [
+                        'token' => '1000gcardtoken',
                         'card'  => [
                             'last4'     => '1111',
                             'network'   => 'Visa'
@@ -232,7 +233,7 @@ return [
 
     'testDeleteAppToken' => [
         'request' => [
-            'url' => '/apps/1000000custapp/tokens/10000custgcard',
+            'url' => '/apps/1000000custapp/tokens/1000gcardtoken',
             'method' => 'delete',
             'content' => [
             ],

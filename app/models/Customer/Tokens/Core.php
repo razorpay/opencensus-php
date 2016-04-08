@@ -27,6 +27,8 @@ class Core extends Base\Core
     {
         $input[Token\Entity::CUSTOMER_ID] = $customer->getKey();
 
+        $input[Token\Entity::TOKEN] = $this->generateToken();
+
         $token = (new Token\Entity)->build($input);
 
         $this->validateExistingToken($token);
@@ -124,5 +126,12 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
             }
         }
+    }
+
+    protected function generateToken()
+    {
+        $token = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 14);
+
+        return $token;
     }
 }

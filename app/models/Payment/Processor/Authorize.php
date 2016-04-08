@@ -245,7 +245,7 @@ trait Authorize
         $customer = $this->getCustomerIdLocalOrGlobal($input);
 
         // flow if method_id is set, pay using already saved method
-        if(isset($input[Payment\Entity::METHOD_ID]))
+        if(isset($input[Payment\Entity::TOKEN]))
         {
             if($customer === null)
             {
@@ -253,23 +253,25 @@ trait Authorize
                     "customer does not exist");
             }
 
-            $method = (new Customer\Token\Repository)->findOrFail($input[Payment\Entity::METHOD_ID]);
+            $token = (new Customer\Token\Repository)->getByTokenAndCustomerId(
+                $customer->getId(),
+                $input[Payment\Entity::TOKEN]
+            );
 
-            assert($method !== null);
-            assert($method->getCustomerId() === $customer->getId());
+            assert($token !== null);
 
             if (($payment->isMethod(Payment\Method::CARD)) or
                 ($payment->isMethod(Payment\Method::EMI)))
             {
-                $gatewayInput['card'] = $this->createCardEntityFromSavedMethod($method, $input);
+                $gatewayInput['card'] = $this->createCardEntityFromSavedMethod($token, $input);
             }
             else if ($payment->isMethod(Payment\Method::WALLET))
             {
-                $payment->setWallet($method->getBank());
+                $payment->setWallet($token->getBank());
             }
             else if ($payment->isMethod(Payment\Method::BANK))
             {
-                $payment->setBank($method->getWallet());
+                $payment->setBank($token->getWallet());
             }
         }
         else

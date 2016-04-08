@@ -21,40 +21,40 @@ class Service extends Base\Service
         $this->tokensRepo = new Token\Repository;
     }
 
-    public function add($uid, $input)
+    public function add($id, $input)
     {
-        $customer = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($id);
 
         $token = (new Token\Core)->create($customer, $input);
 
         return $token->toArrayPublic();
     }
 
-    public function edit($uid, $mid, $input)
+    public function edit($id, $token, $input)
     {
-        $customer = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($id);
 
-        $token = $this->tokensRepo->getByIdAndCustomerId($uid, $mid);
+        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
         $token = (new Token\Core)->edit($token, $input);
 
         return $token->toArrayPublic();
     }
 
-    public function fetch($uid, $mid)
+    public function fetch($id, $token)
     {
-        $customer = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($id);
 
-        $token = $this->tokensRepo->getByIdAndCustomerId($uid, $mid);
+        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
         return $token->toArrayPublic();
     }
 
-    public function fetchMultiple($uid)
+    public function fetchMultiple($id)
     {
-        $customer = $this->repo->findOrFailPublic($uid);
+        $customer = $this->repo->findOrFailPublic($id);
 
-        $tokens = $this->tokensRepo->getByCustomerId($uid);
+        $tokens = $this->tokensRepo->getByCustomerId($id);
 
         return $tokens->toArrayPublic();
     }
@@ -90,11 +90,9 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function delete($uid, $mid)
+    public function delete($id, $token)
     {
-        $token = $this->tokensRepo->findOrFailPublic($mid);
-
-        assert($token->getCustomerId() === $uid);
+        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
         $token = $this->tokensRepo->deleteOrFail($token);
 
@@ -104,10 +102,10 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
-    public function deleteAppToken($appId, $mId)
+    public function deleteAppToken($appId, $token)
     {
         $app = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $this->merchant->getId());
 
-        return $this->delete($app->getCustomerId(), $mId);
+        return $this->delete($app->getCustomerId(), $token);
     }
 }

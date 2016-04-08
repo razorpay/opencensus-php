@@ -7,6 +7,7 @@ use Models\Base;
 class Entity extends Base\PublicEntity
 {
     const CUSTOMER_ID           = 'customer_id';
+    const TOKEN                 = 'token';
     const METHOD                = 'method';
     const CARD_ID               = 'card_id';
     const CARD                  = 'card';
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::METHOD,
+        self::TOKEN,
         self::CARD_ID,
         self::CUSTOMER_ID,
         self::GATEWAY_TOKEN,
@@ -36,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::BANK,
         self::WALLET,
+        self::TOKEN,
         self::METHOD,
         self::CARD_ID,
         self::CARD,
@@ -44,7 +47,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
-        self::ID,
+        self::TOKEN,
         self::BANK,
         self::WALLET,
         self::METHOD,
