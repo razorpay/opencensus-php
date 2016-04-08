@@ -193,18 +193,18 @@ class Newsletter
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
+        $count = 0;
+
         do
         {
             $relativeUrl = "lists/$listAddress";
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl);
 
-            $this->app['trace']->info(
-            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['post_upsert_return_object' => $listInfo]);
-
-            $count = $listInfo->list->members_count;
-
+            if ($listInfo->http_response_code === 200)
+            {
+                $count = $listInfo->http_response_body->list->members_count;
+            }
             // Wait here till the count of the members in list
             // matches the internal count
             sleep(self::WAIT_BEFORE_RETRY);
