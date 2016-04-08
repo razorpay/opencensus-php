@@ -204,15 +204,6 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testNotesValueUnicode()
-    {
-        $this->payment['notes']['key'] = 'こんにちは、元気ですか';
-
-        $content = $this->doAuthAndGetPayment($this->payment);
-
-        sd($content);
-    }
-
     public function testTimeoutOldPayment()
     {
         $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);

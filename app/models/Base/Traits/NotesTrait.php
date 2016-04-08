@@ -17,7 +17,7 @@ trait NotesTrait
         {
             $code = ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY;
 
-            throw new Exception\BadRequestException($code, 'notes');
+            throw new Exception\BadRequestException($code, self::NOTES);
         }
 
         if ($notes === null)
