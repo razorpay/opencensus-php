@@ -22,7 +22,7 @@ class RawApiRequest
     protected $client;
 
     protected $params = [
-        'timeout'   =>  15
+        'timeout'   =>  60
     ];
 
     /**
