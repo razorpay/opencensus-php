@@ -20,11 +20,11 @@ class Newsletter
     protected $email;
     protected $listName;
     protected $testListMemberAdd;
-    // 30 seconds
-    const WAIT_BEFORE_RETRY = 30;
+
+    const WAIT_BEFORE_RETRY = 5;
 
     function __construct($recipient,
-        $subject = "Razorpay Newsletter",
+        $subject = 'Razorpay Newsletter',
         $msg,
         $template = 'newsletter')
     {
@@ -181,7 +181,7 @@ class Newsletter
         foreach ($chunks as $merchants) {
             // We take this list and push it to mailgun
 
-            $relativeUrl = "lists/$listAddress/members.json";
+            $relativeUrl = 'lists/'.$listAddress.'/members.json';
 
             $this->getMailgunInstance()->post($relativeUrl,[
                 'upsert'     => true,
@@ -193,27 +193,14 @@ class Newsletter
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
-        $count = 0;
+        $relativeUrl = 'lists/'.$listAddress;
 
-        do
-        {
-            $relativeUrl = "lists/$listAddress";
-
-            $listInfo = $this->getMailgunInstance()->get($relativeUrl);
-
-            if ($listInfo->http_response_code === 200)
-            {
-                $count = $listInfo->http_response_body->list->members_count;
-            }
-            // Wait here till the count of the members in list
-            // matches the internal count
-            // sleep(self::WAIT_BEFORE_RETRY);
-        }
-        while ($count < $this->count);
+        $listInfo = $this->getMailgunInstance()->get($relativeUrl);
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
+            ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp,
+             'info_post_sleep'       => $listInfo]);
 
         return $listAddress;
     }
@@ -302,7 +289,7 @@ class Newsletter
 $msg
 </div>
 EOT;
-        $viewDirectory = app_path()."/views/";
+        $viewDirectory = app_path().'/views/';
         $ink_css =      file_get_contents($viewDirectory.'css/ink.css');
         $cssContent =   file_get_contents($viewDirectory.'css/email.css')
             . PHP_EOL
