@@ -12,7 +12,10 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
         'vpc_ReceiptNo'                 => 'sometimes|string|max:25',
-        'received'                      => 'sometimes|in:0,1');
+        'received'                      => 'sometimes|in:0,1',
+        'vpc_TransactionNo'             => 'sometimes|string|max:10',
+        'vpc_ShopTransactionNo'         => 'sometimes|string|max:10',
+        'vpc_TxnResponseCode'           => 'sometimes|string|max:10');
 
     public function findByMerchantTxnRef($merchantTxnRef)
     {
