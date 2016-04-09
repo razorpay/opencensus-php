@@ -117,6 +117,7 @@ trait Authorize
             $this->updateAndNotifyPaymentAuthorized($payment, true);
 
             $this->repo->saveOrFail($payment);
+        });
 
         return $payment->toArrayAdmin();
     }
@@ -248,7 +249,7 @@ trait Authorize
 
             $payment = $this->repo->lockForUpdate($payment->getKey());
 
-            assert ($payment->isStatusFailed());
+            assert ($payment->isFailed());
 
             $payment->setErrorNull();
             $payment->setVerified(true);

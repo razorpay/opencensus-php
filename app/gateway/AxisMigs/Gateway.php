@@ -81,8 +81,9 @@ class Gateway extends Base\Gateway
 
         $toSaveContent = $content;
         $toSaveContent['refund_id'] = $input['refund']['id'];
+        $toSaveContent['terminal_id'] = $input['terminal']['id'];
 
-        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -173,7 +174,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
-        $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
+        $payment = $this->createGatewayPaymentEntity($content, $input);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -375,7 +376,7 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef'           => $input['payment']['id'],
         );
 
-        $this->createGatewayPaymentEntity($attributes);
+        $this->createGatewayPaymentEntity($attributes, $input);
 
         $network = ucfirst(strtolower($input['card']['network']));
 
@@ -468,12 +469,15 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function createGatewayPaymentEntity($attributes, $paymentId = null)
+    protected function createGatewayPaymentEntity($attributes, $input)
     {
         $payment = $this->getNewGatewayPaymentEntity();
 
-        if ($paymentId === null)
-            $paymentId = $attributes['vpc_MerchTxnRef'];
+        // if ($paymentId )
+        //     $paymentId = $attributes['vpc_MerchTxnRef'];
+
+        $paymentId = $input['payment']['id'];
+        $attributes['terminal_id'] = $input['terminal']['id'];
 
         $payment->setPaymentId($paymentId);
         $payment->setAction($this->action);
