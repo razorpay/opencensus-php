@@ -47,4 +47,15 @@ class Repository extends Base\Repository
     {
         return $this->findByPaymentIdAndCommand($paymentId, 'pay');
     }
+
+    public function countPaymentsNearTransactionNo($txnNo, $terminalId)
+    {
+        $txnNo = (int) $txnNo;
+
+        return $this->newQuery()
+                    ->where('vpc_TransactionNo', '=', $txnNo - 1)
+                    ->where('vpc_TransactionNo', '=', $txnNo + 1)
+                    ->where('terminal_id', '=', $terminalId)
+                    ->count();
+    }
 }

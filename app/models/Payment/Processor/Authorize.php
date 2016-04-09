@@ -96,7 +96,7 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray(), 'gateway' => $input);
 
-            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+            $flag = $this->callGatewayFunction('forceAuthorizeFailed', $data);
 
             if ($flag === false)
             {

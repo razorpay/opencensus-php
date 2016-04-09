@@ -102,7 +102,9 @@ class Gateway extends Base\Gateway
 
     public function forceAuthorizeFailedPayment($input)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+        $repo = $this->getRepo();
+
+        $payment = $repo->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
 
         assert ($payment['received'] === false);
@@ -119,7 +121,22 @@ class Gateway extends Base\Gateway
         assert (strlen($txnNo) === 10);
         assert (is_integer($txnNo) === true);
 
-        $payment->setVpcTransactionNo($txnNo);
+        $terminalId = $input['terminal']['id'];
+
+        $count = $repo->findPaymentsNearTransactionNo($txnNo, $terminalId);
+
+        if ($count === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No migs payments with nearby vpc_TransactionNo found');
+        }
+
+        $payment->setVpcTransactionNo($txnNo, $terminalId);
+        $payment['vpc_TxnResponseCode'] = '0';
+
+        $repo->saveOrFail($payment);
+
+        return true;
     }
 
     public function verify(array $input)
