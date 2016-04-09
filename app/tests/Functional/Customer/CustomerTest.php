@@ -5,6 +5,8 @@ namespace Tests\Functional\Customer;
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
+use Mockery;
+
 class CustomerTest extends TestCase
 {
     use RequestResponseFlowTrait;
@@ -45,6 +47,8 @@ class CustomerTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->mockRaven();
+
         // send OTP
 
         $request = array(
@@ -68,6 +72,37 @@ class CustomerTest extends TestCase
             ],
         );
 
-        $response = $this->makeRequest($request);
+        $content = $this->makeRequestAndGetContent($request);
+        assert(empty($content['app_id']) === false);
+    }
+
+    protected function mockRaven()
+    {
+        $raven = Mockery::mock('Services\Raven')->makePartial();
+
+        $this->app->instance('raven', $raven);
+
+        $raven->shouldReceive('sendRequest')
+              ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+              ->andReturnUsing(function ($route, $method, $input)
+                    {
+                        $response = array(
+                            "success" => true,
+                        );
+
+                        switch ($route)
+                        {
+                            case 'sms/send-otp':
+                                $response['message'] = 'message queued.';
+                                break;
+
+                            case 'sms/verify-otp':
+                                break;
+                        }
+
+                        return $response;
+                    });
+
+        $this->app->instance('raven', $raven);
     }
 }

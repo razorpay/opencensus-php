@@ -12,22 +12,45 @@ class Raven
 
     public function __construct()
     {
-        //$this->raven = \App::____
+         $app = \App::getFacadeRoot();
+
+         $this->raven = $app['raven'];
     }
 
     public function sendOtp($input)
     {
-        return array('result' => 1);
+        $input['receiver'] = $input['contact'];
+        unset($input['contact']);
+
+        $response = $this->raven->sendOtp($input);
+
+        $result = array(
+            'success' => $response['success']
+        );
+
+        return $result;
     }
 
     public function verifyOtp($input)
     {
-        return array('result' => 1);
+        $input['receiver'] = $input['contact'];
+        unset($input['contact']);
+
+        $response = $this->raven->verifyOtp($input);
+
+        $result = array(
+            'success' => $response['success']
+        );
+
+        return $result;
     }
 
-    public function updateSmsStatus($service, $input)
+    public function updateSmsStatus($id, $input)
     {
-        return array('result' => 1);
+        $result = $this->raven->smsCallback($id, $input);
+
+        return $result;
+
     }
 }
 

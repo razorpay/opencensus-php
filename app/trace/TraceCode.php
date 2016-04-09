@@ -126,10 +126,12 @@ class TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
+    const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+    const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
+
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
 
-    const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

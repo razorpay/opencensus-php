@@ -197,7 +197,7 @@ final class Route
         'fetch_cust_status_by_contact'          => ['get',      'customer/status/{contact}',                'CustomerController@fetchCustomerStatus'                            ],
         'post_otp'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'verify_otp'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
-        'customer_otp_callback'                 => ['post',     'sms/callback/{service}',                   'CustomerController@updateSmsStatus'                                ],
+        'otp_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
     );
 
     public static $public = array(
@@ -237,7 +237,7 @@ final class Route
         'delete_token_for_app',
         'post_otp',
         'verify_otp',
-        'customer_otp_callback',
+        'otp_callback',
     );
 
     public static $publicCallback = array(

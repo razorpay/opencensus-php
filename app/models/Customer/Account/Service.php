@@ -63,7 +63,7 @@ class Service extends Base\Service
     {
         $input['context'] = $this->merchant->getId();
 
-        $input['service'] = 'api';
+        $input['source'] = 'api';
 
         $data = (new Customer\Raven)->sendOtp($input);
 
@@ -74,16 +74,16 @@ class Service extends Base\Service
     {
         $input['context'] = $this->merchant->getId();
 
-        $input['service'] = 'api';
+        $input['source'] = 'api';
 
         $data = (new Customer\Core)->verifyOtp($input);
 
         return $data;
     }
 
-    public function updateSmsStatus($service, $input)
+    public function updateSmsStatus($id, $input)
     {
-        $data = (new Customer\Raven)->updateSmsStatus($service, $input);
+        $data = (new Customer\Raven)->updateSmsStatus($id, $input);
 
         return $data;
     }

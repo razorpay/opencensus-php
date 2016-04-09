@@ -116,11 +116,11 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function updateSmsStatus($service)
+    public function updateSmsStatus($id)
     {
         $input = Input::all();
 
-        $data = (new Customer\Service)->updateSmsStatus($service, $input);
+        $data = (new Customer\Service)->updateSmsStatus($id, $input);
 
         return ApiResponse::json($data);
     }

@@ -50,7 +50,7 @@ class Core extends Base\Core
 
         $response = array();
 
-        if (isset($data['result']) and $data['result'] === 1)
+        if (isset($data['success']) and $data['success'] === true)
         {
             $customer = $this->repo->findByContactForMerchant(
                 $input[Customer\Entity::CONTACT],
@@ -76,13 +76,13 @@ class Core extends Base\Core
 
             $app = (new App\Core)->create($custAppInput);
 
+            $response['success'] = 1;
             $response[App\Entity::APP_ID] = $app->getAppId();
-            $response['result'] = 1;
         }
         else
         {
-            $response['result'] = 0;
-            $response['error'] = $data['error'];
+            $response['success'] = 0;
+            $response['error'] = "otp verification failed";
         }
 
         return $response;
