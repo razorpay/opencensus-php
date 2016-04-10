@@ -287,6 +287,10 @@
           Payzapp
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.payumoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payumoney == true, 'fa-times text-danger':merchant.details.methods.payumoney == false}"></i></span>
+          PayUMoney
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
           Mobikwik
         </a>
@@ -441,7 +445,7 @@
     <h3 class="modal-title">Activate/Deactivate Merchant Payment Methods</h3>
   </div>
   <div class="modal-body methods-modal">
-  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp)">
+  <span class="text-danger" ng-show="methods.paytm && (methods.mobikwik || methods.payzapp || methods.payumoney)">
     Warning: You shouldn&apos;t enable both PayTM with any other wallet
   </span>
   <form class="form-horizontal">
@@ -488,6 +492,7 @@
              <option value="ezeclick">Ezeclick</option>
              <option value="paytm">Paytm</option>
              <option value="wallet_payzapp">Payzapp</option>
+             <option value="wallet_payumoney">Payumoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="kotak">Kotak</option>

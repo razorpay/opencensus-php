@@ -63,6 +63,7 @@ app.controller('EntitiesCtrl', [
       'paytm',
       'mobikwik',
       'wallet_payzapp',
+      'wallet_payumoney',
       'netbanking_hdfc',
       'sharp'
     ];
@@ -167,6 +168,7 @@ app.controller('EntitiesCtrl', [
         paytm: booleanList2,
         mobikwik: booleanList2,
         payzapp: booleanList2,
+        payumoney: booleanList2,
         card: booleanList2,
         amex: booleanList2
       },
@@ -177,7 +179,8 @@ app.controller('EntitiesCtrl', [
         emi: booleanList,
         paytm: booleanList,
         mobikwik: booleanList,
-        payzapp: booleanList
+        payzapp: booleanList,
+        payumoney: booleanList
       },
       netbanking: {
         payment_id: ['Payment Id'],
@@ -229,6 +232,7 @@ app.controller('EntitiesCtrl', [
           'paytm',
           'mobikwik',
           'payzapp',
+          'payumoney',
           'ezeclick'
         ],
         iin: ['Card IIN'],
@@ -431,7 +435,8 @@ app.controller('EntitiesCtrl', [
             'emi',
             'paytm',
             'mobikwik',
-            'payzapp'
+            'payzapp',
+            'payumoney'
           ];
         for (var i in validMethods) {
           var method = validMethods[i];
