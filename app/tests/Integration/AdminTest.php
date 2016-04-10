@@ -50,9 +50,10 @@ class AdminTest extends TestCase
             $this->merchant = Models\Merchant\Entity::createFromUser($user, $businessName);
             $this->merchant->saveOrFail();
 
-            $this->merchant_details = $this->createEntity('merchant_details',
-                ['merchant_id'=>$this->merchant->id]
-            );
+            $this->merchant_details = $this->createEntity('merchant_details',[
+                'merchant_id'   =>  $this->merchant->id,
+                'business_name' =>  $businessName
+            ]);
 
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
