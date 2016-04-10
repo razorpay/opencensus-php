@@ -11,6 +11,7 @@ class Entity extends Base\Entity
         'payment_id',
         'action',
         'refund_id',
+        'terminal_id',
         'received',
         'vpc_3DSECI',
         'vpc_3DSenrolled',
@@ -44,6 +45,7 @@ class Entity extends Base\Entity
     protected $fillable = array(
         'id',
         'refund_id',
+        'terminal_id',
         'received',
         'vpc_3DSECI',
         'vpc_3DSenrolled',
@@ -101,5 +103,10 @@ class Entity extends Base\Entity
     public function getTransactionId()
     {
         return $this->attributes['vpc_TransactionNo'];
+    }
+
+    public function setVpcTransactionNo($txnNo)
+    {
+        $this->attributes['vpc_TransactionNo'] = $txnNo;
     }
 }
