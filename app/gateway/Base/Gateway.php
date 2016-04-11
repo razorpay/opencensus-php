@@ -179,6 +179,8 @@ class Gateway
 
         try
         {
+            $method = strtoupper($method);
+
             $response = Requests::request(
                 $request['url'],
                 $request['headers'],
