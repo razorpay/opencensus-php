@@ -21,7 +21,7 @@ class Newsletter
     protected $listName;
     protected $testListMemberAdd;
 
-    const WAIT_BEFORE_RETRY = 5;
+    const WAIT_BEFORE_RETRY = 10;
 
     function __construct($recipient,
         $subject = 'Razorpay Newsletter',
@@ -193,9 +193,22 @@ class Newsletter
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
-        $relativeUrl = 'lists/'.$listAddress;
+        // Arbit wait time of about 10 for the mail to be sent.
+        $count = 0;
 
-        $listInfo = $this->getMailgunInstance()->get($relativeUrl);
+        sleep(self::WAIT_BEFORE_RETRY);
+
+        do{
+            $relativeUrl = 'lists/'.$listAddress.'/members';
+
+            $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
+                'skip' => $this->count]);
+
+            $count = $listInfo->http_response_body->total_count;
+
+            sleep(self::WAIT_BEFORE_RETRY);
+
+        }while ($count < $this->count);
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,

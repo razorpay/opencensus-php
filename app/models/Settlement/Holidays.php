@@ -73,4 +73,19 @@ class Holidays
 
         return $flag;
     }
+
+    /**
+     * Given a carbon day instance,
+     * returns whether that saturday was working or not
+     * Bank logic: Every non even week of the month is a working saturday
+     * @param Carbon\Carbon $day Any Carbon Day
+     * return boolean;
+     */
+    public static function isWorkingSaturday($day)
+    {
+        assert($day->dayOfWeek === Carbon::SATURDAY);
+
+        return ($day->weekOfMonth % 2 !== 0);
+    }
+
 }

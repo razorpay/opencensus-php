@@ -13,6 +13,7 @@ use Models\Pricing;
 use Models\Terminal;
 use Models\Transaction;
 use Models\Adjustment;
+use Models\Settlement\Holidays;
 
 class Core extends Base\Core
 {
@@ -429,7 +430,7 @@ class Core extends Base\Core
         // For a non working saturday
         //  - Add a two day weekend
         if (($settleDay->dayOfWeek === Carbon::SATURDAY) and
-            ($this->isWorkingSaturday($settleDay) === false))
+            (Holidays::isWorkingSaturday($settleDay) === false))
         {
             $addDays += 2;
         }
@@ -441,7 +442,7 @@ class Core extends Base\Core
             // the saturday before the settle day was a working saturday
             //   - Add a one day weekend.
             if (($currentDay === Carbon::SATURDAY) or
-                ($this->isWorkingSaturday($settleDay->previous(Carbon::SATURDAY)) === true))
+                (Holidays::isWorkingSaturday($settleDay->previous(Carbon::SATURDAY)) === true))
             {
                 $addDays += 1;
             }
@@ -454,19 +455,5 @@ class Core extends Base\Core
         }
 
         return $addDays;
-    }
-
-    /**
-     * Given a carbon day instance,
-     * returns whether that saturday was working or not
-     * Bank logic: Every non even week of the month is a working saturday
-     * @param Carbon\Carbon $day Any Carbon Day
-     * return boolean;
-     */
-    protected function isWorkingSaturday($day)
-    {
-        assert($day->dayOfWeek === Carbon::SATURDAY);
-
-        return ($day->weekOfMonth % 2 !== 0);
     }
 }
