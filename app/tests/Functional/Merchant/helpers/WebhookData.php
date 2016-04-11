@@ -30,6 +30,32 @@ return [
         ]
     ],
 
+    'testCreateWebhookWithLargerSecret' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'secret' => 'cef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1c',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The secret may not be greater than 255 characters.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testCreateWebhookWithDisallowedPort' => [
         'request' => [
             'url' => '/webhooks',

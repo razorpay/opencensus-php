@@ -256,11 +256,15 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input)
     {
-        $resCode = (int) $input['resCode'];
-
-        if ($resCode === 0)
+        if (isset($input['resCode']))
         {
-            return;
+            $resCode = (int) $input['resCode'];
+
+            if ($resCode === 0)
+            {
+                return;
+            }
+
         }
 
         //trace input

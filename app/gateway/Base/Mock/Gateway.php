@@ -62,10 +62,15 @@ trait GatewayTrait
         {
             $url = $request['url'];
             $parts = parse_url($url);
-            parse_str($parts['query'], $input);
+            if (isset($parts['query']))
+            {
+                parse_str($parts['query'], $input);
+            }
         }
 
         $server->setInput($request['content']);
+
+        $server->setMockRequest($request);
 
         $action = studly_case($this->action);
 

@@ -24,6 +24,7 @@ class Gateway
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
+    const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
     public static $channels = array(
         self::AMEX              => Settlement\Channel::KOTAK,
@@ -40,6 +41,7 @@ class Gateway
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
+        self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -71,6 +73,7 @@ class Gateway
             self::MOBIKWIK,
             self::PAYTM,
             self::WALLET_PAYZAPP,
+            self::WALLET_PAYUMONEY,
         ),
 
         Method::EMI => array(
@@ -128,6 +131,7 @@ class Gateway
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
+        Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
     );
 
     /**
@@ -265,6 +269,17 @@ class Gateway
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);
+
+    public static $emiBanks = array(
+        self::HDFC      => IFSC::HDFC,
+        self::KOTAK     => IFSC::KKBK,
+        self::AXIS_MIGS => IFSC::UTIB,
+    );
+
+    public static $emiFileBanks = array(
+        self::KOTAK     => IFSC::KKBK,
+        self::AXIS_MIGS => IFSC::UTIB,
+    );
 
     public static $emiBankToGatewayMap = array(
         IFSC::HDFC      =>  Gateway::HDFC,

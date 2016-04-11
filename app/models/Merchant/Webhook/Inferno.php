@@ -4,12 +4,20 @@ namespace Models\Merchant\Webhook;
 
 use Requests;
 use Trace\TraceCode;
+use Mail;
+use Models\Merchant;
 
 class Inferno
 {
     protected $job;
+
     protected $trace;
+
     protected $repo;
+
+    protected $mode;
+
+    protected $errorMessage;
 
     const HASH_ALGO = 'sha256';
 
@@ -29,6 +37,10 @@ class Inferno
     public function fire($job, $data)
     {
         $this->job = $job;
+
+        $this->mode = $data['mode'];
+
+        $this->event = $data['event'];
 
         $repo = $this->repo;
 
@@ -58,6 +70,52 @@ class Inferno
         {
             $this->webhookBumpFailureCount($webhook);
         }
+    }
+
+
+    public function sendEmail($webhook, $type)
+    {
+        $data = array();
+
+        $toEmails = $webhook->merchant->getTransactionReportEmail();
+
+        $data['to_emails'] = $toEmails;
+
+        $subjectName = $webhook->merchant->getBillingLabelElseName();
+
+        $subject = 'Razorpay | ';
+
+        $data['url'] = $webhook->getUrl();
+        $data['error_message'] = $this->errorMessage;
+        $data['date'] = date('d-M-Y H:m:s');
+
+        $event = json_decode($this->event, true);
+
+        $data['event'] = $event['event'];
+
+        if ($type === 'failure')
+        {
+            $subject .= 'Webhook failed for ' . $subjectName;
+        }
+        else if ($type === 'deactivate')
+        {
+            $subject .= 'Webhook deactivated after 3 failures for ' . $subjectName;
+        }
+
+        $data['subject'] = $subject;
+        $data['mode'] = $this->mode;
+
+        Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
+        {
+
+            $emails = $data['to_emails'];
+
+            $message->from('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($emails);
+        });
     }
 
     public function getRequestHeaders($hmac)
@@ -105,7 +163,7 @@ class Inferno
         return $response;
     }
 
-    protected function sendRequest($request, $webhook)
+    public function sendRequest($request, $webhook)
     {
         $success = true;
         $response = null;
@@ -125,9 +183,17 @@ class Inferno
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if ((\Gateway\Utility::checkTimeout($e) === false) and
-                ($this->isKnowRequestsException($e) === false))
+            if (\Gateway\Utility::checkTimeout($e))
             {
+                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 7 seconds. We will only retry 3 times before deactivating webhook.';
+            }
+            else if ($this->isKnownRequestsException($e))
+            {
+                $this->errorMessage = $e->getMessage();
+            }
+            else
+            {
+                $this->errorMessage = 'Internal Server Error. Please contact the Razorpay team for more details.';
                 $this->trace->traceException($e);
             }
 
@@ -176,7 +242,7 @@ class Inferno
             'content' => $event,
             'headers' => $headers);
 
-        $request['options'] = ['timeout' => 10];
+        $request['options'] = ['timeout' => 7];
 
         return $request;
     }
@@ -198,12 +264,14 @@ class Inferno
         // It's a failure, increment failure count.
         $this->repo->bumpFailureCount($webhook);
 
-        if (($webhook->isActive() === false) or
-            ($job->attempts() >= 3))
+        if (($webhook->isActive() === false) or ($job->attempts() >= 3))
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_DEACTIVATE,
-                ['webhook' => $webhook->getId()]);
+                ['webhook' => $webhook->getId()]
+            );
+
+            $this->sendEmail($webhook,'deactivate');
 
             // Webhook is now inactive
             // So let's just delete the job
@@ -211,6 +279,9 @@ class Inferno
         }
         else
         {
+
+            $this->sendEmail($webhook,'failure');
+
             // Attempt again after 1 hour
             $job->release(3600);
         }
@@ -236,14 +307,11 @@ class Inferno
         return $webhook;
     }
 
-    protected function isKnowRequestsException($e)
+    protected function isKnownRequestsException($e)
     {
         $msg = $e->getMessage();
         $msg = strtolower($msg);
 
-        //
-        // check if timeout has occured
-        //
         if ((strpos($msg, 'Empty reply from server') !== false) or
             (strpos($msg, 'SSL certificate problem: certificate has expired') !== false))
         {

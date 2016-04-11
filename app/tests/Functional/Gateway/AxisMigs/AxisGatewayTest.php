@@ -125,4 +125,28 @@ class AxisGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['status'], 'authorized');
     }
+
+    public function testForceAuthorizePayment()
+    {
+        $payment = $this->doAuthPayment();
+        $migs = $this->getLastEntity('axis_migs', true);
+        $txnNo = (int) $migs['vpc_TransactionNo'] - 1;
+
+        $this->failAuthorizePayment();
+
+        $payment = $this->getLastEntity('axis_migs', true);
+        $pid1 = 'pay_'.$payment['payment_id'];
+        $this->fixtures->edit('axis_migs', $payment['id'], ['received' => '0']);
+
+        $this->resetMockServer();
+
+
+        $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $payment = $this->getLastEntity('axis_migs', true);
+        $this->assertEquals($payment['vpc_TransactionNo'], $txnNo);
+    }
 }

@@ -202,7 +202,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         $namespace = 'Gateway\\'.$namespace;
 
         if ($mock === true)
-            $namespace = $namespace .= '\\' . 'Mock';
+            $namespace .= '\\' . 'Mock';
 
         return $namespace;
     }

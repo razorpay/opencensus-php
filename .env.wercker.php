@@ -73,6 +73,11 @@ return array(
     'PAYZAPP_WALLET_TEST_PG_HASH_KEY'               => '2938FJ9823FJ99F8',
     'PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'            => '17021203',
 
+    'PAYUMONEY_WALLET_TEST_HASH_SECRET'             => 'random_hash_secret',
+    'PAYUMONEY_WALLET_TEST_MERCHANT_ID'             => 'random_id',
+    'PAYUMONEY_WALLET_TEST_CLIENT_ID'               => 'random_client_id',
+    'PAYUMONEY_WALLET_TEST_AUTH_HEADER'             => 'random_auth_header',
+
     'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'      => '000000',
 
     'NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'     => 'randomtesthash',
@@ -88,6 +93,7 @@ return array(
     'MOBIKWIK_MOCK'                                 => true,
     'PAYTM_MOCK'                                    => true,
     'PAYZAPP_MOCK'                                  => true,
+    'PAYUMONEY_MOCK'                                => true,
     'SBIEPAY_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
     'NETBANKING_KOTAK_MOCK'                         => true,

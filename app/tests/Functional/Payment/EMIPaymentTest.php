@@ -57,6 +57,42 @@ class EmiPaymentTest extends TestCase
         $this->testEmiPaymentCreate();
     }
 
+    public function testEmiFileGenerate()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        //Kotak Card
+        $this->makeEmiPaymentOnCard('4280951000002433', 9);
+
+        //Axis Card
+        $this->makeEmiPaymentOnCard('4111460212312338', 3);
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/emi/generate/excel',
+            'content' => array());
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->merchant->disableEmi();
+    }
+
+    protected function makeEmiPaymentOnCard($card, $emiDuration)
+    {
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = $emiDuration;
+        $this->payment['card']['number'] = $card;
+
+        $this->doAuthAndCapturePayment($this->payment);
+    }
+
     public function testEmiPaymentEmiNotSupported()
     {
         $emiPlan = $this->emiPlan;

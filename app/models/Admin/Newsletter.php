@@ -20,29 +20,23 @@ class Newsletter
     protected $email;
     protected $listName;
     protected $testListMemberAdd;
-    // 30 seconds
-    const WAIT_BEFORE_RETRY = 30;
+
+    const WAIT_BEFORE_RETRY = 10;
 
     function __construct($recipient,
-        $subject = "Razorpay Newsletter",
+        $subject = 'Razorpay Newsletter',
         $msg,
-        $template = 'newsletter',
-        $test = false)
+        $template = 'newsletter')
     {
+        $this->app = \App::getFacadeRoot();
+
         $this->config = Config::get('applications.mailgun');
 
-        if($test === true)
-        {
-            $this->email = $recipient;
-            $this->count = 1;
-        }
-        else
-        {
-            $this->lists = $recipient;
-        }
-
         $this->data = $this->setupData($subject, $msg);
+
         $this->template = $template;
+
+        $this->lists = $recipient;
     }
 
     protected function setupData($subject, $msg)
@@ -139,23 +133,20 @@ class Newsletter
      * generated mailing list address
      * @return string generated email address of mailing list
      */
-    protected function createNewListOnMailgun()
-    {
-        $listAddress = 'newsletter@'.$this->config['url'];
-
-        return $listAddress;
-    }
-
-    /**
-     * Creates a new mailing list on mailgun and returns the
-     * generated mailing list address
-     * @return string generated email address of mailing list
-     */
     protected function createListOnMailgun($listName)
     {
         $listAddress = $listName.'@'.$this->config['url'];
 
         return $listAddress;
+    }
+
+    protected function createMailgunList($listName)
+    {
+        $relativeUrl = 'lists';
+
+        $this->getMailgunInstance()->post($relativeUrl,[
+            'address'     => $listAddress,
+        ]);
     }
 
     /**
@@ -174,25 +165,23 @@ class Newsletter
      */
     protected function createMailingList($lists)
     {
-        if (isset($this->listName))
+        if (isset($this->listName) === false)
         {
-            $listAddress = $this->createListOnMailgun($this->listName);
+            $this->listName = 'newsletter';
         }
-        else
-        {
-            $listAddress = $this->createNewListOnMailgun();
-        }
+
+        $listAddress = $this->createListOnMailgun($this->listName);
 
         $chunks = $this->getMerchantListChunks($lists);
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['pre_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
+            ['pre_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
         foreach ($chunks as $merchants) {
             // We take this list and push it to mailgun
 
-            $relativeUrl = "lists/$listAddress/members.json";
+            $relativeUrl = 'lists/'.$listAddress.'/members.json';
 
             $this->getMailgunInstance()->post($relativeUrl,[
                 'upsert'     => true,
@@ -202,27 +191,45 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['post_upsert_timestamp' => Carbon::now('Asia\Kolkata')]);
+            ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
-        do
-        {
-            $relativeUrl = "lists/$listAddress";
+        // Arbit wait time of about 10 for the mail to be sent.
+        sleep(self::WAIT_BEFORE_RETRY);
 
-            $listInfo = $this->getMailgunInstance()->get($relativeUrl);
+        $iterations = 0;
+        $count = 0;
 
-            $count =  $listInfo['list']['members_count'];
+        do{
+            $iterations = $iterations + 1;
 
-            // Wait here till the count of the members in list
-            // matches the internal count
+            $relativeUrl = 'lists/'.$listAddress.'/members';
+
+            $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
+                'skip' => $this->count]);
+
+            $count = $listInfo->http_response_body->total_count;
+
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
+                ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp,
+                 'info_post_sleep'       => $listInfo]);
+
             sleep(self::WAIT_BEFORE_RETRY);
-        }
-        while ($count < $this->count);
 
-        $this->app['trace']->info(
-            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['count_match_timestamp' => Carbon::now('Asia\Kolkata')]);
+        // Possible that not every email id can be part of mailing list.
+        // Number could always be lesser.
+        } while (($count < $this->count) and ($iterations < 6));
 
         return $listAddress;
+    }
+
+    public function setTestEmail($email)
+    {
+        $this->lists = null;
+
+        $this->email = $email;
+
+        $this->count = 1;
     }
 
     public function setTestListMembersAdd()
@@ -257,7 +264,7 @@ class Newsletter
         if ($this->testListMemberAdd)
         {
             return [
-                'email' =>  $this->email.' created and timestamps recorded'
+                'email' => $this->lists.' created and timestamps recorded.'
             ];
         }
 
@@ -300,7 +307,7 @@ class Newsletter
 $msg
 </div>
 EOT;
-        $viewDirectory = app_path()."/views/";
+        $viewDirectory = app_path().'/views/';
         $ink_css =      file_get_contents($viewDirectory.'css/ink.css');
         $cssContent =   file_get_contents($viewDirectory.'css/email.css')
             . PHP_EOL

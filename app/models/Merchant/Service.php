@@ -626,20 +626,22 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
-        {
-            return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-        }
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
 
-        if ($input['test'] === 'true')
+        if (isset($input['test']))
         {
             $response = $this->sendTestHolidayNotificationMail($input);
         }
         else
         {
+            if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+            {
+                return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+            }
+
             $response = $this->sendHolidayNotificationMail($input);
         }
-
 
         // Log just the result of the settlement reports
         $this->trace->info(
@@ -659,16 +661,10 @@ class Service extends Base\Service
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg,
-                'newsletter'
-                );
+                $msg);
 
-            $mailer->setMailingListName('bank-holiday-notification');
-
-            if ($input['test_list_add'] === 'true')
-            {
-                $mailer->setTestListMembersAdd();
-            }
+            // Currently live@ and newsletter@ are available on mailgun
+            $mailer->setMailingListName($input['lists']);
 
             return $mailer->send();
         }
@@ -687,10 +683,21 @@ class Service extends Base\Service
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg,
-                'newsletter',
-                true
-                );
+                $msg);
+
+            switch ($input['test']) {
+                case 'email':
+
+                    $mailer->setTestEmail($input['lists']);
+                    break;
+
+                case 'add_to_list':
+                default:
+                    // Currently live@ and newsletter@ are available on mailgun
+                    $mailer->setTestListMembersAdd();
+                    $mailer->setMailingListName($input['lists']);
+                    break;
+            }
 
             return $mailer->send();
         }

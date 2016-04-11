@@ -97,6 +97,29 @@ class Iin extends Base
             'emi'           => 0,
             'trivia'        => 'random trivia'
             ),
+        array(
+            'iin'           => '428095',
+            'category'      => 'CLASSIC',
+            'network'       => 'Visa',
+            'type'          => 'credit',
+            'country'       => 'IN',
+            'issuer_name'   => 'KOTAK MAHINDRA BANK, LTD.',
+            'issuer'        => 'KKBK',
+            'emi'           => 1,
+            'trivia'        => 'random trivia'
+            ),
+        array(
+            'iin'           => '411146',
+            'category'      => 'CLASSIC',
+            'network'       => 'Visa',
+            'type'          => 'credit',
+            'country'       => 'IN',
+            'issuer_name'   => 'AXIS BANK, LTD.',
+            'issuer'        => 'UTIB',
+            'emi'           => 1,
+            'trivia'        => 'random trivia'
+            ),
+
         );
 
     public function createDefaultIins()

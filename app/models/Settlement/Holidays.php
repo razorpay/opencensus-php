@@ -24,21 +24,21 @@ class Holidays
         [14,  4, 2016],
         [15,  4, 2016],
         [19,  4, 2016],
-        [1,   5, 2016], // Sunday
+        //[1,   5, 2016], // Sunday
         [21,  5, 2016], // working saturday
         [6,   7, 2016],
         [15,  8, 2016],
         [17,  8, 2016],
         [5,   9, 2016],
         [13,  9, 2016],
-        [2,  10, 2016], // Sunday
+        // [2,  10, 2016], // Sunday
         [11, 10, 2016],
         [12, 10, 2016],
-        [30, 10, 2016], // Sunday
+        // [30, 10, 2016], // Sunday
         [31, 10, 2016],
         [14, 11, 2016],
         [12, 12, 2016],
-        [25, 12, 2016], // Sunday
+        // [25, 12, 2016], // Sunday
     );
 
     public static function isThisDayHoliday($mode, $thisDay = 'today')
@@ -73,4 +73,19 @@ class Holidays
 
         return $flag;
     }
+
+    /**
+     * Given a carbon day instance,
+     * returns whether that saturday was working or not
+     * Bank logic: Every non even week of the month is a working saturday
+     * @param Carbon\Carbon $day Any Carbon Day
+     * return boolean;
+     */
+    public static function isWorkingSaturday($day)
+    {
+        assert($day->dayOfWeek === Carbon::SATURDAY);
+
+        return ($day->weekOfMonth % 2 !== 0);
+    }
+
 }

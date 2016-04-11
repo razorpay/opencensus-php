@@ -117,6 +117,29 @@ class SettlementTest extends TestCase
         return $payments;
     }
 
+    // Test case where payment was made on 5 Apr, with 8 Apr being a holiday
+    // Settlement file was now generated on 9 Apr
+    public function testSettlementOnHolidayFollowedBySaturday()
+    {
+        $createdAt = Carbon::parse('5 apr 2016 2:13:08 am', 'Asia/Kolkata')->timestamp;
+        $capturedAt = Carbon::parse('5 apr 2016 2:13:08 am', 'Asia/Kolkata')->timestamp + 10;
+
+        $payments = $this->fixtures->times(5)->create('payment:captured',
+                ['captured_at' => $capturedAt,
+                 'created_at' => $createdAt,
+                 'updated_at' => $createdAt + 10]);
+
+        $setDate = Carbon::parse('9 apr 2016 2:13:08 am','Asia/Kolkata');
+        Carbon::setTestNow($setDate);
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
+
+        Carbon::setTestNow();
+    }
+
     protected function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

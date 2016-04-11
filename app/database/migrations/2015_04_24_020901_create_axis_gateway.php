@@ -57,6 +57,8 @@ class CreateAxisGateway extends Migration
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
+            $table->string('terminal_id', UniqueIdEntity::ID_LENGTH)->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
             $table->integer('updated_at');
@@ -69,6 +71,11 @@ class CreateAxisGateway extends Migration
             $table->foreign('payment_id')
                   ->references('id')
                   ->on('payments')
+                  ->on_delete('restrict');
+
+            $table->foreign('terminal_id')
+                  ->references('id')
+                  ->on('terminals')
                   ->on_delete('restrict');
         });
     }
@@ -83,6 +90,7 @@ class CreateAxisGateway extends Migration
         Schema::table('axis', function($table)
         {
             $table->dropForeign('axis_payment_id_foreign');
+            $table->dropForeign('axis_terminal_id_foreign');
         });
 
         Schema::drop('axis');

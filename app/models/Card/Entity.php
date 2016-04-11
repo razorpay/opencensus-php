@@ -165,6 +165,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getCardToken()
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
+
     public function getLast4()
     {
         return $this->getAttribute(self::LAST4);
