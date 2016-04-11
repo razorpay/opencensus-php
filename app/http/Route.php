@@ -232,12 +232,12 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_plans',
-        'fetch_saved_tokens_by_app_id',
-        'fetch_cust_status_by_contact',
-        'delete_token_for_app',
-        'post_otp',
-        'verify_otp',
-        'otp_callback',
+        // 'fetch_saved_tokens_by_app_id',
+        // 'fetch_cust_status_by_contact',
+        // 'delete_token_for_app',
+        // 'post_otp',
+        // 'verify_otp',
+        // 'otp_callback',
     );
 
     public static $publicCallback = array(
@@ -262,9 +262,9 @@ final class Route
         'create_customer',
         'update_customer',
         'get_customer',
-        'delete_customer',
+        // 'delete_customer',
         'delete_customer_token',
-        'fetch_customer_token',
+        // 'fetch_customer_token',
         'fetch_multiple_customer_tokens',
     );
 
@@ -443,6 +443,11 @@ final class Route
     public static $routeNameToFeatureMap = array(
         'dummy_feature'         =>  'dummy',
         'submerchant_create'    =>  'aggregator',
+        'create_customer'       =>  'savecardslocal',
+        'update_customer'       =>  'savecardslocal',
+        'get_customer'          =>  'savecardslocal',
+        'delete_customer_token' =>  'savecardslocal',
+        'fetch_multiple_customer_tokens' => 'savecardslocal',
     );
 
     protected static $router;

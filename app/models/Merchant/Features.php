@@ -9,7 +9,9 @@ class Features
     public static $allowedFeatures = array(
         'dummy',
         'webhooks',
-        'aggregator');
+        'aggregator',
+        'savecardslocal',
+    );
 
     public static function validateFeatures($input)
     {

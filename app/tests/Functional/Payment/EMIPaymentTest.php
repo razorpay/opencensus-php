@@ -24,7 +24,7 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
-        
+
         $this->mockTokenex();
     }
 
@@ -54,13 +54,13 @@ class EmiPaymentTest extends TestCase
     {
         $this->testEmiPaymentCreate();
 
-        $this->testEmiPaymentCreate();        
+        $this->testEmiPaymentCreate();
     }
 
     public function testEmiPaymentEmiNotSupported()
     {
         $emiPlan = $this->emiPlan;
-        
+
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;
@@ -74,4 +74,4 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals($content['error']['http_status_code'], 400);
         $this->assertEquals($content['error']['internal_error_code'], 'BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD');
     }
-}   
+}
