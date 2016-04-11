@@ -221,12 +221,9 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = null;
+        $driver = 'wallet_' . $wallet;
 
-        if ($wallet === 'payzapp')
-        {
-            $server = new Gateway\Wallet\Payzapp\Mock\Server;
-        }
+        $server = $this->gateway->server($driver);
 
         return $server->authorize($input);
     }

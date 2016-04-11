@@ -21,6 +21,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
+    protected $canRunOtpFlow = true;
+
     public function authorize(array $input)
     {
         parent::authorize($input);

@@ -189,6 +189,7 @@ class DatabaseSeeder extends Seeder
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'payzapp'       => '1',
+                    'payumoney'     => '1',
                     'card'          => '1',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -202,6 +203,7 @@ class DatabaseSeeder extends Seeder
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'payzapp'       => '1',
+                    'payumoney'     => '1',
                     'card'          => '1',
                     'emi'           => '1',
                     'created_at'    =>  time(),
@@ -450,6 +452,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
+        $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
     }
@@ -713,6 +716,40 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_payzapp',
                 'gateway_terminal_id'       => 'demo_terminal_payzapp',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_payzapp_terminal_pass'),
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
+                )
+            );
+    }
+
+    protected function createPayumoneyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '2byKhdVKZ9iDew',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_PAYUMONEY,
+                'card'                      => '0',
+                'gateway_merchant_id'       => 'test_merchant_payumoney',
+                'gateway_terminal_id'       => 'test_terminal_payumoney',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_payumoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_PAYUMONEY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'demo_merchant_payumoney',
+                'gateway_terminal_id'       => 'demo_terminal_payumoney',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_payumoney_terminal_pass'),
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )

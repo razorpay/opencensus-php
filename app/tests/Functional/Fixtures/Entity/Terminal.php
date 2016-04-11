@@ -131,6 +131,28 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedPayumoneyTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_payumoney',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'payumoney_merchant',
+            'gateway_merchant_id2'      => 'payumoney_auth_code',
+            'gateway_terminal_id'       => 'payumoney_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => '293823',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBilldeskTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;

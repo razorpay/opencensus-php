@@ -171,6 +171,11 @@ class Server
         $this->input = $input;
     }
 
+    public function setMockRequest($request)
+    {
+        $this->mockRequest = $request;
+    }
+
     public function setAction($action)
     {
         $this->action = $action;
