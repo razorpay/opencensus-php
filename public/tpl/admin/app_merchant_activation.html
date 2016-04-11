@@ -225,7 +225,7 @@
           <div class="row" ng-show="companyInfo">
             <div class="col-sm-3"></div>
             <div class="col-sm-7 panel-body">
-              <div class="list-group-item" ng-repeat="(key,value) in companyInfo.company">
+              <div class="list-group-item" ng-repeat="(key,value) in companyInfo.company" ng-class="{'label bg-danger':key==='defaulter'&&value===true, 'label bg-success':key==='defaulter' && value=== false}">
                 <span class="pull-right">{{value}}</span>
                 {{key}}
               </div>
@@ -237,16 +237,18 @@
               <table class="table table-striped">
                 <thead>
                   <th>Name</th>
-                  <th>PAN</th>
+                  <th>PAN/DIN</th>
                   <th>Start Date</th>
                   <th>End Date</th>
+                  <th>Defaulter</th>
                 </thead>
                 <tbody>
                   <tr ng-repeat="person in companyInfo.signatories">
                     <td>{{person.Name}}</td>
-                    <td>{{person.PAN}}</td>
+                    <td>{{person.PAN_DIN}}</td>
                     <td>{{person.StartDate}}</td>
                     <td>{{person.EndDate}}</td>
+                    <td><i class="fa" ng-class="{'fa-smile-o text-success': person.Defaulter==false, 'fa-exclamation-triangle text-danger': person.Defaulter==true}"></i></td>
                   </tr>
                 </tbody>
               </table>

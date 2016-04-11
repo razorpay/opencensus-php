@@ -26,9 +26,7 @@ app.controller('MerchantActivationCtrl', [
     $scope.verifyPAN = function (signatories, pan_name, pan_number) {
       for (var i in signatories) {
         var person = signatories[i];
-        console.debug(person.PAN.toUpperCase() === pan_number.toUpperCase());
-        console.info(person.Name.toUpperCase() === pan_name.toUpperCase());
-        if (person.PAN.toUpperCase() === pan_number.toUpperCase() && person.Name.toUpperCase() === pan_name.toUpperCase()) {
+        if (person.PAN_DIN.toUpperCase() === pan_number.toUpperCase() && person.Name.toUpperCase() === pan_name.toUpperCase()) {
           $scope.panVerified = true;
         }
       }
