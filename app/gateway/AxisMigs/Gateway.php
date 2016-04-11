@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
-    public function forceAuthorizeFailedPayment($input)
+    public function forceAuthorizeFailed($input)
     {
         $repo = $this->getRepo();
 
@@ -124,7 +124,7 @@ class Gateway extends Base\Gateway
 
         $terminalId = $input['terminal']['id'];
 
-        $count = $repo->findPaymentsNearTransactionNo($txnNo, $terminalId);
+        $count = $repo->countPaymentsNearTransactionNo($txnNo, $terminalId);
 
         if ($count === 0)
         {

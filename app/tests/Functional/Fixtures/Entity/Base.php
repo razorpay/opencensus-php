@@ -38,6 +38,7 @@ class Base
         'webhook'       => Models\Merchant\Webhook\Entity::class,
         'merchant'      => Models\Merchant\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
+        'axis_migs'     => Gateway\AxisMigs\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,
         'settlement'    => Models\Settlement\Entity::class,
         'transaction'   => Models\Transaction\Entity::class,

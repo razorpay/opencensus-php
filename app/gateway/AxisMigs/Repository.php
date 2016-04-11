@@ -53,8 +53,11 @@ class Repository extends Base\Repository
         $txnNo = (int) $txnNo;
 
         return $this->newQuery()
-                    ->where('vpc_TransactionNo', '=', $txnNo - 1)
-                    ->where('vpc_TransactionNo', '=', $txnNo + 1)
+                    ->where(function($query) use ($txnNo)
+                    {
+                        $query->where('vpc_TransactionNo', '=', $txnNo - 1)
+                              ->orWhere('vpc_TransactionNo', '=', $txnNo + 1);
+                    })
                     ->where('terminal_id', '=', $terminalId)
                     ->count();
     }

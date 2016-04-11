@@ -80,7 +80,7 @@ trait Authorize
     {
         $this->setPayment($payment);
 
-        if ($payment->isStatusFailed() === false)
+        if ($payment->isFailed() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Non failed payment given for authorization');
@@ -107,7 +107,7 @@ trait Authorize
 
             $this->repo->lockForUpdate($payment->getKey());
 
-            assert ($payment->isStatusFailed() === true);
+            assert ($payment->isFailed() === true);
 
             $payment->setErrorNull();
             $payment->setVerified(true);

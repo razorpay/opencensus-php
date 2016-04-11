@@ -466,6 +466,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function forceAuthorizeFailedPayment($id, $content)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/force_authorize',
+            'method' => 'post',
+            'content' => $content);
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function timeoutOldPayment()
     {
         $this->ba->appAuth();
@@ -535,7 +549,7 @@ trait PaymentTrait
             'url' => '/webhooks',
             'method' => 'post',
             'content' => $input);
-        
+
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
