@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         'merchantTransactionId' => 'required|string'
     );
 
-    protected static $registeruserRules = array(
+    protected static $generateotpRules = array(
         'email'                 => 'required|email',
         'mobile'                => 'required|regex:"^[789]\d{9}$"',
         'client_id'             => 'required|string',

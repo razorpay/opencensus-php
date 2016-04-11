@@ -60,9 +60,9 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($refundResponse);
     }
 
-    public function registerUser($input)
+    public function generateOtp($input)
     {
-        $this->validateActionInput($input, 'registeruser');
+        $this->validateActionInput($input, 'generateotp');
 
         $mobile = $input['mobile'];
 

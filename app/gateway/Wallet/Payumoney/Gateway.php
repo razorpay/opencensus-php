@@ -191,7 +191,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate($input)
     {
-        $this->action($input, Action::REGISTER_USER);
+        $this->action($input, Action::GENERATE_OTP);
 
         $request = $this->getOtpGenerateRequestArray($input);
 
@@ -315,6 +315,8 @@ class Gateway extends Base\Gateway
             'Accept'        => 'application/json',
             'Authorization' => 'Bearer ' . $this->accessToken
         );
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
