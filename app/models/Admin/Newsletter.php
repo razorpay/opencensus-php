@@ -194,11 +194,14 @@ class Newsletter
             ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
         // Arbit wait time of about 10 for the mail to be sent.
-        $count = 0;
-
         sleep(self::WAIT_BEFORE_RETRY);
 
+        $iterations = 0;
+        $count = 0;
+
         do{
+            $iterations = $iterations + 1;
+
             $relativeUrl = 'lists/'.$listAddress.'/members';
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
@@ -213,7 +216,9 @@ class Newsletter
 
             sleep(self::WAIT_BEFORE_RETRY);
 
-        }while ($count < $this->count);
+        // Possible that not every email id can be part of mailing list.
+        // Number could always be lesser.
+        } while (($count < $this->count) and ($iterations < 6));
 
         return $listAddress;
     }
