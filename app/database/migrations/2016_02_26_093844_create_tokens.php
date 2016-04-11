@@ -9,7 +9,7 @@ use Models\Merchant;
 use Models\Customer;
 use Models\Customer\Token\Entity as Token;
 
-class CreateCustomerTokens extends Migration {
+class CreateTokens extends Migration {
 
     /**
      * Run the migrations.
