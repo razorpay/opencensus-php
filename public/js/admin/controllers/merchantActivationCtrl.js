@@ -19,14 +19,27 @@ app.controller('MerchantActivationCtrl', [
     $scope.files = {};
     $scope.locked = true;
     $scope.companyInfo = null;
+
+    $scope.panVerified = false;
     getData();
+
+    $scope.verifyPAN = function (signatories, pan_name, pan_number) {
+      for (var i in signatories) {
+        var person = signatories[i];
+        console.debug(person.PAN.toUpperCase() === pan_number.toUpperCase());
+        console.info(person.Name.toUpperCase() === pan_name.toUpperCase());
+        if (person.PAN.toUpperCase() === pan_number.toUpperCase() && person.Name.toUpperCase() === pan_name.toUpperCase()) {
+          $scope.panVerified = true;
+        }
+      }
+    }
 
     $scope.getCompanyData = function(cin) {
       var request = $http.get('/admin/companies/' + cin + '/info');
       request.success(function (data) {
         if (data.success) {
           $scope.companyInfo = data.data;
-          console.log($scope.companyInfo);
+          $scope.verifyPAN(data.data.signatories, $scope.data['2'].promoter_pan_name, $scope.data['2'].promoter_pan);
         } else {
           $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
         }
