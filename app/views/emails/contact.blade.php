@@ -9,8 +9,12 @@
 		<div>
 			Name: {{{$name}}} <br/>
 			Email: {{{$email}}} <br/>
+@if($phone)
+            Phone: {{{$phone}}} <br/>
+@endif
 			Message: <br/>
 			{{{$content}}}
 		</div>
+
 	</body>
 </html>
