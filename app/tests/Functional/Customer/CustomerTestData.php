@@ -69,6 +69,11 @@ return [
             'content' => [
                 'items' => [
                     [
+                        'token'         => '100wallettoken',
+                        'method'        => 'wallet',
+                        'wallet'        => 'paytm',
+                    ],
+                    [
                         'token'         => '10000banktoken',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
@@ -80,11 +85,6 @@ return [
                             'last4'         => '1111',
                             'network'       => 'Visa',
                         ]
-                    ],
-                    [
-                        'token'         => '100wallettoken',
-                        'method'        => 'wallet',
-                        'wallet'        => 'paytm',
                     ],
                 ]
             ],
@@ -149,7 +149,6 @@ return [
             'content' => [
                 'method' => 'wallet',
                 'wallet' => 'mobikwik',
-                'gateway_token' => "dj83hd9j4jd=="
             ],
         ],
         'response' => [
@@ -168,7 +167,6 @@ return [
             'content' => [
                 'method'        => 'netbanking',
                 'bank'          => 'KKBK',
-                'gateway_token' => '23881822'
             ],
         ],
         'response' => [
