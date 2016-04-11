@@ -95,11 +95,11 @@ class Inferno
 
         if ($type === 'failure')
         {
-            $subject = 'Webhook failed for ' . $subjectName;
+            $subject .= 'Webhook failed for ' . $subjectName;
         }
         else if ($type === 'deactivate')
         {
-            $subject = 'Webhook deactivated after 3 failures for ' . $subjectName;
+            $subject .= 'Webhook deactivated after 3 failures for ' . $subjectName;
         }
 
         $data['subject'] = $subject;
@@ -107,6 +107,7 @@ class Inferno
 
         Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
         {
+
             $emails = $data['to_emails'];
 
             $message->from('support@razorpay.com', 'Razorpay Support');
@@ -186,12 +187,13 @@ class Inferno
             {
                 $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 7 seconds. We will only retry 3 times before deactivating webhook.';
             }
-            else if ($this->isKnowRequestsException($e))
+            else if ($this->isKnownRequestsException($e))
             {
                 $this->errorMessage = $e->getMessage();
             }
             else
             {
+                $this->errorMessage = 'Internal Server Error. Please contact the Razorpay team for more details.';
                 $this->trace->traceException($e);
             }
 
@@ -305,7 +307,7 @@ class Inferno
         return $webhook;
     }
 
-    protected function isKnowRequestsException($e)
+    protected function isKnownRequestsException($e)
     {
         $msg = $e->getMessage();
         $msg = strtolower($msg);

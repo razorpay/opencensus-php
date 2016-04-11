@@ -198,6 +198,26 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testWebhookDeactivationEmail()
+    {
+        $webhook = $this->createWebhook();
+        $inferno = $this->mockInferno();
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->fixtures->edit(
+            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
+
+        $inferno->shouldReceive('sendRequest')
+                ->once()
+                ->andReturn(false);
+
+        $inferno->shouldReceive('sendEmail')
+                ->with(Mockery::type('object'), 'deactivate')
+                ->once();
+
+        $this->doAuthPayment();
+    }
+
     public function testSecretValueInWebhookEventDataJustBeforeFiring()
     {
         $webhook = $this->createWebhook(['secret'=>'test_secret']);
@@ -263,25 +283,6 @@ class WebhookTest extends TestCase
             return;
         }
         self::fail();
-    }
-
-    public function testWebhookDeactivationEmail()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
-
-        $inferno->shouldReceive('sendRequest')
-            ->once()
-            ->andReturn(false);
-
-        $inferno->shouldReceive('sendEmail')
-            ->with(Mockery::type('object'), 'deactivate')
-            ->once();
-
-        $this->doAuthPayment();
     }
 
     protected function mockInfernoWithResponseStatusCode($statusCode, $method='makeRequest')

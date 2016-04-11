@@ -3,7 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>{{{$subject}}}</title>
+<title>{{$subject}}</title>
 </head>
 <body bgcolor="#f6f6f6" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; -webkit-font-smoothing: antialiased; height: 100%; -webkit-text-size-adjust: none; width: 100% !important; margin: 0; padding: 0;">
 
@@ -16,18 +16,18 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
 Hi,
 
-We hit 3 consecutive failures while trying to hit the {{$mode}} webhook url - {{$url}}. As noted in our documentation, we have disabled your webhook as a precaution. You can re-enable the webhook again by visiting the Dashboard and going to the webhooks tab.
+We hit 3 consecutive failures while trying to hit the <b>{{$mode}}</b> webhook url - <b>{{$url}}</b>. As noted in our documentation, we have disabled your webhook as a precaution. You can re-enable the webhook again by visiting the Dashboard and going to the webhooks tab.<br><br>
 
-The last error message we got was: "{{ $error_message }}".
-To help you debug this further, here are a few more details about the failure event:
+The last error message we got was: <br>"{{ $error_message }}". <br>
+To help you debug this further, here are a few more details about the failure event:<br>
 
-Timestamp: {{$date}}
-Event: {{$event}}
+<b>Timestamp:</b> {{$date}}<br>
+<b></b>Event:</b> {{$event}}<br><br>
 
-Note that this is the final failed attempt and we will not be attempting any more retries at this url.
-If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.
+Note that this is the <b>final</b> failed attempt and we will not be attempting any more retries at this url.<br>
+If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.<br><br>
 
-Thanks,
+Thanks,<br>
 Team Razorpay
       </div>
       <!-- /content -->

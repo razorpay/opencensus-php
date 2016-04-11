@@ -3,7 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>{{{$subject}}}</title>
+<title>{{$subject}}</title>
 </head>
 <body bgcolor="#f6f6f6" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; -webkit-font-smoothing: antialiased; height: 100%; -webkit-text-size-adjust: none; width: 100% !important; margin: 0; padding: 0;">
 
@@ -16,17 +16,17 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
 Hi,
 
-We tried to hit the {{$mode}} webhook specified url - {{ $url }} but it failed with the following error message - "{{ $error_message }}".
+We tried to hit the <b>{{$mode}}</b> webhook specified url - <b>{{ $url }}</b> but it failed with the following error message - <br>"{{ $error_message }}".<br><br>
 
-To help you debug this, here are a few more details about the failure event:
+To help you debug this, here are a few more details about the failure event:<br><br>
 
-Timestamp: {{$date}}
-Event: {{$event}}
+<b>Timestamp:</b> {{$date}}<br>
+<b>Event:</b> {{$event}}<br><br>
 
-Note that we will only retry the request three times before deactivating the webhook. You will receive a mail informing you of the deactivation if this is the case.
-If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.
+Note that we will only retry the request <b>three</b> times before deactivating the webhook. You will receive a mail informing you of the deactivation if this is the case.<br>
+If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.<br><br>
 
-Thanks,
+Thanks,<br>
 Team Razorpay
 
       </div>
