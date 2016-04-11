@@ -118,29 +118,29 @@ class Core extends Base\Core
             {
                 $recordedNetwork = $details->getNetwork();
 
-                if (($recordedNetwork !== null) and
-                    ($recordedNetwork !== ''))
+                if ((empty($recordedNetwork) === false) and
+                    (Card\Network::isValidNetwork($recordedNetwork)))
                 {
-                    if (Card\Network::isValidNetwork($recordedNetwork))
-                    {
-                        $card->setNetwork($recordedNetwork);
-                    }
+                    $card->setNetwork($recordedNetwork);
                 }
             }
+
+            $type = Card\Type::getType($details['type']);
 
             if ($network === Network::AMEX)
             {
                 $type = Type::CREDIT;
             }
-            else
-            {
-                $type = Card\Type::getType($details['type']);
-            }
+
+            $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
 
             $arr = array(
-                Entity::TYPE    => $type,
-                Entity::ISSUER  => $details['issuer'],
-                Entity::COUNTRY => $details['country']);
+                Entity::TYPE            => $type,
+                Entity::ISSUER          => $details['issuer'],
+                Entity::COUNTRY         => $details['country'],
+                Entity::INTERNATIONAL   => $details->isInternational(),
+                Entity::EMI             => $emi,
+            );
 
             if (($details['type'] !== '') and
                 ($details['type'] !== null))
@@ -149,14 +149,6 @@ class Core extends Base\Core
             }
 
             $card->fill($arr);
-
-            $intl = $details->isInternational();
-
-            $card->setInternational($intl);
-
-            $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
-
-            $card->setEmi($emi);
         }
         else
         {
@@ -170,7 +162,7 @@ class Core extends Base\Core
     {
         $cvvLength = strlen($input['cvv']);
 
-        if ($card->getNetworkCode() === Card\Network::AMEX)
+        if (($card->getNetworkCode() === Card\Network::AMEX)
         {
             if ($cvvLength !== 4)
             {

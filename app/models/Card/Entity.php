@@ -43,10 +43,12 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_YEAR,
         self::NETWORK,
         self::COUNTRY,
+        self::EMI,
         self::TYPE,
         self::ISSUER,
         self::TOKEN,
         self::SERVICE,
+        self::INTERNATIONAL,
     );
 
     protected $guarded = array(self::ID);
