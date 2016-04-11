@@ -94,7 +94,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail($payment->getMerchantId());
 
-        $data = $this->processor($merchant)->forceAuthorizeFailed($payment);
+        $data = $this->processor($merchant)->forceAuthorizeFailedPayment($payment);
 
         return $data;
     }
