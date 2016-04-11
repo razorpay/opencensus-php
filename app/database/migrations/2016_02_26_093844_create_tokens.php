@@ -27,27 +27,27 @@ class CreateTokens extends Migration {
 
             $table->char(Token::CUSTOMER_ID, 14);
 
-            $table->char(Token::TOKEN, 14);
+            $table->char(Token::TOKEN, 14)
+                  ->unique();
 
-            $table->char(Token::METHOD, 10);
+            $table->string(Token::METHOD, 10);
 
             $table->char(Token::CARD_ID, 14)
                   ->nullable();
 
-            $table->char(Token::BANK, 6)
+            $table->string(Token::BANK, 6)
                   ->nullable();
 
-            $table->char(Token::WALLET, 15)
+            $table->string(Token::WALLET, 15)
                   ->nullable();
 
-            $table->char(Token::GATEWAY_TOKEN)
+            $table->string(Token::GATEWAY_TOKEN, 50)
                   ->nullable();
 
             $table->integer(Token::CREATED_AT);
 
             $table->integer(Token::UPDATED_AT);
 
-            $table->index(Token::TOKEN);
             $table->index(Token::CREATED_AT);
 
             $table->foreign(Token::CUSTOMER_ID)
