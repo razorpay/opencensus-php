@@ -27,12 +27,17 @@ trait PaymentAxisMigsTrait
         return $this->submitPaymentCallbackRedirect($url);
     }
 
-    protected function failAuthorizePayment()
+    protected function failAuthorizePayment(array $replace = array())
     {
         $server = $this->mockServer()
                         ->shouldReceive('content')
-                        ->andReturnUsing(function (& $content)
+                        ->andReturnUsing(function (& $content) use ($replace)
                         {
+                            foreach ($replace as $key => $value)
+                            {
+                                $content[$key] = $value;
+                            }
+
                             $content['vpc_TxnResponseCode'] = '5';
                         })->mock();
 

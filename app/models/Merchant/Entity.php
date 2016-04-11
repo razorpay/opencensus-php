@@ -50,13 +50,12 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::FEATURES,
+        self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
-        self::FEATURES,
-        self::FEE_BEARER,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -109,7 +108,9 @@ class Entity extends Base\PublicEntity
 
     protected function generateTransactionReportEmail($input)
     {
-        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
+        $email = array($input[self::EMAIL]);
+
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
     }
 
     public function isActivated()
@@ -344,7 +345,7 @@ class Entity extends Base\PublicEntity
     {
         $features = $this->attributes[self::FEATURES];
 
-        if($features === null)
+        if ($features === null)
         {
             return [];
         }
@@ -370,17 +371,19 @@ class Entity extends Base\PublicEntity
 
     public function setTransactionReportEmailAttribute($emails)
     {
-        if (is_array($emails))
+        if (is_array($emails) === false)
         {
-            $this->attributes[self::TRANSACTION_REPORT_EMAIL] =
-                strtolower(implode(',', $emails));
-        }
-        else
-        {
+            //
             // This is only called for the factory instances
-            // of the merchant entity
-            $this->attributes[self::TRANSACTION_REPORT_EMAIL] = $emails;
+            // of the merchant entity becuase laracasts testdummy
+            // does not support array in factory values yet.
+            //
+            $emails = [$emails];
         }
+
+        $emails = array_unique(array_map('strtolower', array_map('trim', $emails)));
+
+        $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emails);
     }
 
     public function setFeeBearerAttribute($bearer)

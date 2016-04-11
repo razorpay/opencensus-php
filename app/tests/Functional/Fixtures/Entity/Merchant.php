@@ -16,7 +16,7 @@ class Merchant extends Base
     public function createDefaultTestMerchant()
     {
         // Default merchant to be used for tests
-        $this->fixtures->create('merchant', ['id' => '10000000000000']);
+        $this->fixtures->create('merchant', ['id' => '10000000000000', 'email' => 'test@razorpay.com']);
 
         // Merchant on whom all shared terminals are created
         $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
@@ -214,5 +214,10 @@ class Merchant extends Base
     public function disableInternational($id = '10000000000000')
     {
         return $this->edit($id, ['international' => '0']);
+    }
+
+    public function editFeatures($features, $id = '10000000000000')
+    {
+        return $this->edit($id, ['features' => $features]);
     }
 }

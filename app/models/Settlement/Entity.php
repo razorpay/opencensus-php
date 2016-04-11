@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::AMOUNT,
+        self::STATUS,
         self::FEES,
         self::SERVICE_TAX,
         self::CREATED_AT);
@@ -87,6 +88,11 @@ class Entity extends Base\PublicEntity
     public function isStatusCreated()
     {
         return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function setlTransactions()

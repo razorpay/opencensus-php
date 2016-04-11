@@ -8,10 +8,10 @@ use Trace\TraceCode;
 class Inferno
 {
     protected $job;
-
     protected $trace;
-
     protected $repo;
+
+    const HASH_ALGO = 'sha256';
 
     public function __construct()
     {
@@ -22,10 +22,13 @@ class Inferno
         $this->repo = new Repository;
     }
 
+    /**
+     * @param $job
+     * @param $data
+     */
     public function fire($job, $data)
     {
         $this->job = $job;
-        $this->repo = new Repository;
 
         $repo = $this->repo;
 
@@ -40,20 +43,53 @@ class Inferno
 
         $request = $this->getRequestArray($data['event'], $webhook);
 
-        $this->trace->info(
-            TraceCode::WEBHOOK_FIRING,
-            $request);
-
         $success = $this->sendRequest($request, $webhook);
 
-        if ($success === false)
-        {
-            $this->webhookBumpFailureCount($webhook);
-        }
-        else
+        $this->updateWebhookPostFiring($success, $webhook);
+    }
+
+    protected function updateWebhookPostFiring($success, $webhook)
+    {
+        if ($success === true)
         {
             $this->webhookSuccessfullyFired($webhook);
         }
+        else
+        {
+            $this->webhookBumpFailureCount($webhook);
+        }
+    }
+
+    public function getRequestHeaders($hmac)
+    {
+        $headers = array(
+            'User-Agent'    => 'Razorpay-Webhook/v1',
+            'Content-Type'  => 'application/json'
+        );
+
+        if (!empty($hmac))
+        {
+            $headers['X-Razorpay-Signature'] = $hmac;
+        }
+
+        return $headers;
+    }
+
+    public static function generateHMAC($payload, $secret)
+    {
+        // hmac doesn't throw up an exception for NULL values.
+        if (($secret === null) or ($payload === null))
+        {
+            return null;
+        }
+
+        //
+        // TODO: payload should be of type string.
+        // Throws up an error otherwise. Should we handle?
+        //
+        $hmac = hash_hmac(self::HASH_ALGO, $payload, $secret);
+
+        return $hmac;
     }
 
     public function makeRequest($request)
@@ -62,7 +98,7 @@ class Inferno
 
         $response = Requests::$method(
                     $request['url'],
-                    $request['header'],
+                    $request['headers'],
                     $request['content'],
                     $request['options']);
 
@@ -73,6 +109,10 @@ class Inferno
     {
         $success = true;
         $response = null;
+
+        $this->trace->info(
+            TraceCode::WEBHOOK_FIRING,
+            $request);
 
         try
         {
@@ -85,15 +125,8 @@ class Inferno
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\Gateway\Utility::checkTimeout($e))
-            {
-                ;
-            }
-            else if ($this->isKnowRequestsException($e))
-            {
-                ;
-            }
-            else
+            if ((\Gateway\Utility::checkTimeout($e) === false) and
+                ($this->isKnowRequestsException($e) === false))
             {
                 $this->trace->traceException($e);
             }
@@ -131,15 +164,17 @@ class Inferno
 
     protected function getRequestArray($event, $webhook)
     {
+        $secret = $webhook->getSecret();
+
+        $hmac = $this->generateHMAC($event, $secret);
+
+        $headers = $this->getRequestHeaders($hmac);
+
         $request = array(
             'url' => $webhook->getUrl(),
             'method' => 'post',
-            'content' => $event);
-
-        $request['header'] = [
-            'User-Agent' => 'Razorpay-Webhook/v1',
-            'Content-Type' => 'application/json',
-        ];
+            'content' => $event,
+            'headers' => $headers);
 
         $request['options'] = ['timeout' => 10];
 

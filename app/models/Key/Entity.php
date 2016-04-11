@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
 
     protected $table  = \Constants\Table::KEY;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $public = array(
         self::ID,

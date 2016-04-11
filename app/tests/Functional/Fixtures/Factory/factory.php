@@ -11,7 +11,7 @@ $factory(Models\Merchant\Entity::class, [
     'website' => $faker->url,
     'billing_label' => $faker->word,
     'category' => 1100,
-    'transaction_report_email' => 'test@razorpay.com',
+    'transaction_report_email' => ['test@razorpay.com'],
     'receipt_email_enabled' => true,
     'settlement_schedule' => 3,
     'fee_bearer' => Models\Merchant\FeeBearer::PLATFORM,
@@ -105,6 +105,7 @@ $factory(Models\Payment\Refund\Entity::class, [
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => 100,
     'currency' => 'INR',
+    'notes' => '[]',
     'transaction_id' => null,
 ]);
 
@@ -228,6 +229,7 @@ $factory(Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
+    'notes' => '[]',
     'attempts' => 0,
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,

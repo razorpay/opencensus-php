@@ -9,9 +9,9 @@ use Models\Merchant;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::ID                  => 'required|alpha_num|size:14',
-        Entity::NAME                => 'required|alpha_space_num|max:200',
-        Entity::EMAIL               => 'required|email|unique:merchants',
+        Entity::ID                          => 'required|alpha_num|size:14',
+        Entity::NAME                        => 'required|alpha_space_num|max:200',
+        Entity::EMAIL                       => 'required|email',
     );
 
     protected static $editRules = array(
@@ -28,6 +28,9 @@ class Validator extends Base\Validator
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
     );
+
+    protected static $uniqueEmailRules = array(
+        Entity::EMAIL                       => 'required|email|unique:merchants');
 
     protected static $editCreditsRules = array(
         Balance\Entity::CREDITS             => 'required|integer|min:0|max:50000000'

@@ -50,16 +50,19 @@ class Settler
 
         $this->input = $input;
 
+        $today = Carbon::today('Asia/Kolkata');
+
+        if ((Holidays::isThisDayHoliday($this->mode, 'today')) or
+         (($today->dayOfWeek === Carbon::SATURDAY) and (Holidays::isWorkingSaturday($today) === false)))
+        {
+            return ['message' => 'Today is a holiday! Happy holidays :)'];
+        }
+
         $txns = $this->fetchTransactionsToSettle($input);
 
         $channels = $this->getArrayedChannels($channel);
 
         $data = [];
-
-        if (Holidays::isThisDayHoliday($this->mode, 'today'))
-        {
-            return ['message' => 'Today is a holiday! Happy holidays :)'];
-        }
 
         foreach ($channels as $channel)
         {
@@ -116,7 +119,7 @@ class Settler
             $this->setlRepo->commit();
         }
         catch (\Exception $e)
-        {throw $e;
+        {
             $this->setlRepo->rollback();
 
             $this->settlementFailure('kotak', $e);

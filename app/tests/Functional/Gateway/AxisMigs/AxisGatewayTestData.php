@@ -80,6 +80,7 @@ return [
         'vpc_Message' => 'Accepted', // 'Approved',
         'refund_id' => null,
         'entity' => 'axis_migs',
+        'terminal_id' => '1000AxisMigsTl',
     ],
 
     'testPaymentRefund' => [
@@ -114,6 +115,7 @@ return [
         // 'updated_at' => 1437872024,
         'vpc_amount' => 50000,
         'entity' => 'axis_migs',
+        'terminal_id' => '1000AxisMigsTl',
         'admin' => true,
     ],
 

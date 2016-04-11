@@ -21,6 +21,14 @@ class EmiPlan extends Base
             'bank'              => 'UTIB',
             'min_amount'        => '500000',
         ),
+        array(
+            'id'                => '10101010101100',
+            'duration'          => '9',
+            'rate'              => '1400',
+            'methods'           => 'debitcard',
+            'bank'              => 'KKBK',
+            'min_amount'        => '500000',
+        ),
     );
 
     public function createDefaultEmiPlans()

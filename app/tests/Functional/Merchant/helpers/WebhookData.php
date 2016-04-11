@@ -30,6 +30,32 @@ return [
         ]
     ],
 
+    'testCreateWebhookWithLargerSecret' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'secret' => 'cef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1c',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The secret may not be greater than 255 characters.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testCreateWebhookWithDisallowedPort' => [
         'request' => [
             'url' => '/webhooks',
@@ -183,6 +209,39 @@ return [
     ],
 
     'testWebhookEventDataJustBeforeFiring' => [
+        'url' => 'http://localhost/v1/dummy/route',
+        'method' => 'post',
+        'content' => [
+            'entity' => 'event',
+            'event' => 'payment.authorized',
+            'contains' => ['payment'],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+//                        'id' => 'pay_4WVwsa1ZAIsNZ5',
+                        'entity' => 'payment',
+                        'method' => 'card',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'authorized',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => false,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '9918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                        // 'created_at' => 1449782144,
+                    ],
+                ],
+            ],
+            // 'created_at' => 1449782144,
+        ],
+        // 'webhook_id' => '4WVwsVEmeO3wwp',
+    ],
+    'testSecretValueInWebhookEventDataJustBeforeFiring' => [
         'url' => 'http://localhost/v1/dummy/route',
         'method' => 'post',
         'content' => [

@@ -466,6 +466,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function forceAuthorizeFailedPayment($id, $content)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/force_authorize',
+            'method' => 'post',
+            'content' => $content);
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function timeoutOldPayment()
     {
         $this->ba->appAuth();
@@ -1193,7 +1207,6 @@ trait PaymentTrait
         $this->app->instance('card.tokenex', $tokenex);
 
         $tokenex->shouldReceive('sendRequest')
-              ->once()
               ->with(Mockery::type('string'), 'post', Mockery::type('array'))
               ->andReturnUsing(function ($route, $method, $input)
                     {
@@ -1203,14 +1216,23 @@ trait PaymentTrait
                             "Success" => true,
                         );
 
+                        $cardToTokenMap = array(
+                                '41476700000006'   => '1a2b3c4b3e',
+                                '4111111111111111' => '1a2b3c4b5e',
+                                '4280951000002433' => '1a2b3c4b4e',
+                                '4111460212312338' => '1a2b3c4b6e',
+                                '4000400000000004' => '1a2b3c4b7e'
+                            );
+
                         switch ($route)
                         {
                             case 'REST/Tokenize':
-                                $response['Token'] = '1a2b3c4b5e';
+                                $response['Token'] = $cardToTokenMap[$input['Data']];
                                 break;
 
                             case 'REST/Detokenize':
-                                $response['Value'] = '4111111111111111';
+                                $tokenToCardMap = array_flip($cardToTokenMap);
+                                $response['Value'] = $tokenToCardMap[$input['Token']];
                                 break;
 
                             case 'REST/ValidateToken':
@@ -1220,7 +1242,6 @@ trait PaymentTrait
                             case 'REST/DeleteToken':
                                 break;
                         }
-
                         return $response;
                     });
 

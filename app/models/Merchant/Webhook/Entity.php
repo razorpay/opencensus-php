@@ -2,8 +2,10 @@
 
 namespace Models\Merchant\Webhook;
 
+use Constants\Table;
 use EE\Exception;
 use Models\Base;
+use Crypt;
 
 class Entity extends Base\PublicEntity
 {
@@ -14,14 +16,15 @@ class Entity extends Base\PublicEntity
     const FAILURE_COUNT     = 'failure_count';
     const ACTIVE            = 'active';
     const CREATED_AT        = 'created_at';
-
+    const SECRET            = 'secret';
+    
     protected $entity       = 'webhook';
 
     const MAX_FAILURE_COUNT = 3;
 
-    protected $table        = \Constants\Table::WEBHOOK;
+    protected $table        = Table::WEBHOOK;
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected $defaults = array(
         self::ACTIVE        => true,
@@ -32,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::ACTIVE,
         self::EVENTS,
+        self::SECRET
     );
 
     protected $visible = array(
@@ -42,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FAILURE_COUNT,
         self::CREATED_AT,
+        self::SECRET
     );
 
     protected $public = array(
@@ -78,6 +83,29 @@ class Entity extends Base\PublicEntity
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
+    }
+
+    public function getSecret()
+    {
+        $encryptedSecret = $this->getAttribute(self::SECRET);
+        if (!empty($encryptedSecret))
+        {
+            return Crypt::decrypt($encryptedSecret);
+        }
+        return null;
+    }
+
+    public function setSecretAttribute($secret)
+    {
+        if (empty($secret))
+        {
+            $this->attributes[self::SECRET] = null;
+        }
+        else
+        {
+            $encryptedSecret = Crypt::Encrypt($secret);
+            $this->attributes[self::SECRET] = $encryptedSecret;
+        }
     }
 
     public function isActive()

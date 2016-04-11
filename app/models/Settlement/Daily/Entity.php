@@ -26,7 +26,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'daily_settlement';
 
-    protected $genereateIdOnCreate = true;
+    protected $generateIdOnCreate = true;
 
     protected static $delimiter = '';
 

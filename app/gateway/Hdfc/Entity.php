@@ -107,4 +107,14 @@ class Entity extends Base\Entity
     {
         $this->setAttribute('gateway_transaction_id', $txnId);
     }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute('gateway_transaction_id');
+    }
+
+    public function getAuthCode()
+    {
+        return $this->getAttribute('auth');
+    }
 }

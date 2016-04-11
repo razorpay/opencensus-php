@@ -7,7 +7,7 @@ use Validator;
 trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
-    {//sd(get_class($e));
+    {// sd(get_class($e), $class);
         if (($e instanceof $class) === false)
         {
             throw $e;
@@ -18,13 +18,10 @@ trait CustomAssertions
 
     public function assertArraySelectiveEquals(array $expected, array $actual)
     {//sd($expected, $actual);
-
-        if ((isset($actual['entity'])) and
-            (is_string($actual['entity'])))
+        if ((isset($actual['entity'])) and (is_string($actual['entity'])))
         {
             $this->validateEntity($actual);
         }
-
         foreach ($expected as $key => $value)
         {
             if (is_array($value))

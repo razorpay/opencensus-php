@@ -45,12 +45,20 @@ class Service extends Base\Service
         // The merchant is created on email confirmation on dashboard side
         // This is when we send the welcome email
 
-        $this->sendEmail(
-            'emails.merchant.welcome',
-            'Welcome to Razorpay',
-            $merchant->toArray());
+        $this->sendMerchantCreationMail($merchant);
 
         return $merchant->toArrayPublic();
+    }
+
+    public function createSubMerchant(array $input)
+    {
+        $merchant = $this->merchant;
+
+        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
+
+        $this->sendMerchantCreationMail($subMerchant);
+
+        return $subMerchant->toArrayPublic();
     }
 
     public function edit($id, array $input)
@@ -60,6 +68,14 @@ class Service extends Base\Service
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function sendMerchantCreationMail($merchant)
+    {
+        $this->sendEmail(
+            'emails.merchant.welcome',
+            'Welcome to Razorpay',
+            $merchant->toArray());
     }
 
     public function editEmail($id, array $input)
@@ -452,7 +468,6 @@ class Service extends Base\Service
     public function createWebhook($input)
     {
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
-
         return $webhook->toArray();
     }
 
@@ -611,20 +626,22 @@ class Service extends Base\Service
 
     public function notifyMerchantsHoliday($input)
     {
-        if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
-        {
-            return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-        }
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
 
-        if ($input['test'] === 'true')
+        if (isset($input['test']))
         {
             $response = $this->sendTestHolidayNotificationMail($input);
         }
         else
         {
+            if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+            {
+                return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+            }
+
             $response = $this->sendHolidayNotificationMail($input);
         }
-
 
         // Log just the result of the settlement reports
         $this->trace->info(
@@ -644,16 +661,10 @@ class Service extends Base\Service
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg,
-                'newsletter'
-                );
+                $msg);
 
-            $mailer->setMailingListName('bank-holiday-notification');
-
-            if ($input['test_list_add'] === 'true')
-            {
-                $mailer->setTestListMembersAdd();
-            }
+            // Currently live@ and newsletter@ are available on mailgun
+            $mailer->setMailingListName($input['lists']);
 
             return $mailer->send();
         }
@@ -672,10 +683,21 @@ class Service extends Base\Service
             $mailer = new Newsletter(
                 $input['lists'],
                 'Notification of Bank Holiday',
-                $msg,
-                'newsletter',
-                true
-                );
+                $msg);
+
+            switch ($input['test']) {
+                case 'email':
+
+                    $mailer->setTestEmail($input['lists']);
+                    break;
+
+                case 'add_to_list':
+                default:
+                    // Currently live@ and newsletter@ are available on mailgun
+                    $mailer->setTestListMembersAdd();
+                    $mailer->setMailingListName($input['lists']);
+                    break;
+            }
 
             return $mailer->send();
         }

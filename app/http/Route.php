@@ -27,6 +27,7 @@ final class Route
         'payment_refund'                        => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                                      ],
         'payment_capture'                       => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                     ],
         'payment_verify'                        => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                       ],
+        'payment_force_authorize'               => ['post',     'payments/{id}/force_authorize',            'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                        => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'              => ['post',     'payments/{id}/authorize_failed',           'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_authorize_refund'              => ['post',     'payments/{id}/authorize_refund',           'PaymentController@postRefundAuthorized'                            ],
@@ -62,6 +63,7 @@ final class Route
         'merchant_fetch'                        => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                    ],
         'merchant_edit'                         => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                    ],
         'merchant_edit_config'                  => ['put',      'account/config',                           'MerchantController@putMerchantConfig'                              ],
+        'submerchant_create'                    => ['post',     'submerchants',                             'MerchantController@postCreateSubMerchant'                          ],
         'account_fetch_balance'                 => ['get',      'balance',                                  'MerchantController@getAccountBalance'                              ],
         'account_fetch_config'                  => ['get',      'account/config',                           'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
@@ -176,6 +178,7 @@ final class Route
         'get_emi_plans'                         => ['get',      'emi',                                      'EmiController@fetchAvailableEmiPlans'                              ],
         'get_emi_plan_by_id'                    => ['get',      'emi/{id}',                                 'EmiController@fetchEmiPlanById'                                    ],
         'delete_emi_plan'                       => ['delete',   'emi/{id}',                                 'EmiController@deleteEmiPlan'                                       ],
+        'emi_generate_excel'                    => ['post',     'emi/generate/excel',                       'EmiController@generateEmiExcel'                                    ],
         'order_create'                          => ['post',     'orders',                                   'OrderController@createOrder'                                       ],
         'order_fetch'                           => ['get',      'orders',                                   'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
@@ -305,6 +308,7 @@ final class Route
         'payment_auth_notify',
         'payment_auto_capture',
         'payment_auto_capture_email',
+        'payment_force_authorize',
         'payment_capture_reminder',
         'payment_refund_authorized',
         'payment_compute_tax',
@@ -331,6 +335,7 @@ final class Route
         'add_emi_plan',
         'delete_emi_plan',
         'get_emi_plan_by_id',
+        'emi_generate_excel',
         'order_update',
     );
 
@@ -356,6 +361,7 @@ final class Route
         'merchant_edit_config',
         'account_fetch_balance',
         'account_fetch_config',
+        'submerchant_create',
     );
 
     public static $direct = array(
@@ -390,6 +396,7 @@ final class Route
                 'refund_netbanking_generate_excel',
                 'payment_refund_authorized',
                 'payment_capture_reminder',
+                'emi_generate_excel',
             ),
 
             'mailgun' => array(
@@ -409,7 +416,8 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'dummy_feature' =>  'dummy'
+        'dummy_feature'         =>  'dummy',
+        'submerchant_create'    =>  'aggregator',
     );
 
     protected static $router;

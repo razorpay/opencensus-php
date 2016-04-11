@@ -76,6 +76,52 @@ trait Authorize
         return $payment->toArrayAdmin();
     }
 
+    public function forceAuthorizeFailedPayment($payment, $input)
+    {
+        $this->setPayment($payment);
+
+        if ($payment->isFailed() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Non failed payment given for authorization');
+        }
+
+        if ($payment->getGateway() !== Payment\Gateway::AXIS_MIGS)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Can force authroize only on axis migs gateway');
+        }
+
+        $this->repo->transaction(function() use ($payment, $input)
+        {
+            $data = array('payment' => $payment->toArray(), 'gateway' => $input);
+
+            $flag = $this->callGatewayFunction('forceAuthorizeFailed', $data);
+
+            if ($flag === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Should not have called this function in this scenario');
+            }
+
+            $this->repo->lockForUpdate($payment->getKey());
+
+            assert ($payment->isFailed() === true);
+
+            $payment->setErrorNull();
+            $payment->setVerified(true);
+
+            // The second argument marks the payment as converted from failed
+            // to authorized
+            $this->updateAndNotifyPaymentAuthorized($payment, true);
+
+            $this->repo->saveOrFail($payment);
+        });
+
+        return $payment->toArrayAdmin();
+    }
+
     /**
      * After payment initiation, bank redirects to us
      * and we send it to gateway for further
@@ -192,8 +238,6 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray());
 
-            $this->repo->lockForUpdate($payment->getKey());
-
             $flag = $this->callGatewayFunction('authorizeFailed', $data);
 
             if ($flag === false)
@@ -203,6 +247,10 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
+            $payment = $this->repo->lockForUpdate($payment->getKey());
+
+            assert ($payment->isFailed());
+
             $payment->setErrorNull();
             $payment->setVerified(true);
 
@@ -211,6 +259,8 @@ trait Authorize
             $this->updateAndNotifyPaymentAuthorized($payment, true);
 
             $this->repo->saveOrFail($payment);
+
+            $this->setPayment($payment);
         });
     }
 

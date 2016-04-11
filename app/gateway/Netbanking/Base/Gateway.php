@@ -52,7 +52,7 @@ class Gateway extends \Gateway\Base\Gateway
 
     public function generateRefunds($input)
     {
-        foreach ($input as & $row)
+        foreach ($input['data'] as & $row)
         {
             $payment = $this->getRepo()->findByPaymentIdAndAction(
                                 $row['payment']['id'], Action::AUTHORIZE);
