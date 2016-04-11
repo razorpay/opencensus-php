@@ -27,10 +27,11 @@ class Company
     public function parseCompanyDetails($dom)
     {
         $data  =[];
-        $rows = $dom->find('form[id=exportCompanyMasterData] tr');
+        $rows = $dom->find('div[id=companyMasterData] tr');
         foreach ($rows as $tr)
         {
-            $data[$tr->first_child()->plaintext] = $tr->last_child()->plaintext;
+            $key = trim(html_entity_decode($tr->first_child()->plaintext));
+            $data[$key] = $tr->last_child()->plaintext;
         }
 
         return $data;
@@ -51,10 +52,10 @@ class Company
             $rowdata = $tr->find('td');
 
             $data[] = [
-                'PAN'          =>  $rowdata[0]->plaintext,
-                'Name'         =>  $rowdata[1]->plaintext,
-                'StartDate'    =>  $rowdata[2]->plaintext,
-                'EndDate'      =>  $rowdata[3]->plaintext,
+                'PAN'          =>  trim($rowdata[0]->plaintext),
+                'Name'         =>  trim($rowdata[1]->plaintext),
+                'StartDate'    =>  trim($rowdata[2]->plaintext),
+                'EndDate'      =>  trim($rowdata[3]->plaintext),
             ];
         }
         return $data;

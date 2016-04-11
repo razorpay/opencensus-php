@@ -18,7 +18,23 @@ app.controller('MerchantActivationCtrl', [
     };
     $scope.files = {};
     $scope.locked = true;
+    $scope.companyInfo = null;
     getData();
+
+    $scope.getCompanyData = function(cin) {
+      var request = $http.get('/admin/companies/' + cin + '/info');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.companyInfo = data.data;
+          console.log($scope.companyInfo);
+        } else {
+          $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
+      });
+    }
+
     function getData() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/details');
       request.success(function (data) {
