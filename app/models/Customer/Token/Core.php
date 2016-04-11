@@ -25,11 +25,9 @@ class Core extends Base\Core
 
     public function create($customer, $input)
     {
-        $input[Token\Entity::CUSTOMER_ID] = $customer->getKey();
-
-        $input[Token\Entity::TOKEN] = $this->generateToken();
-
         $token = (new Token\Entity)->build($input);
+
+        $token->customer()->associate($customer);
 
         $this->validateExistingToken($token);
 
@@ -41,7 +39,7 @@ class Core extends Base\Core
     public function edit($token, $input)
     {
         $this->trace->info(
-            TraceCode::CUSTOMER_TOKENS_EDIT,
+            TraceCode::CUSTOMER_TOKEN_EDIT,
             [
                 'token_id' => $token->getId(),
                 'fields' => array_keys($input),
@@ -126,12 +124,5 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
             }
         }
-    }
-
-    protected function generateToken()
-    {
-        $token = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 14);
-
-        return $token;
     }
 }

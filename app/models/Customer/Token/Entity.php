@@ -60,6 +60,9 @@ class Entity extends Base\PublicEntity
         self::CARD,
     );
 
+    protected static $generators = array(
+        self::TOKEN);
+
     public function customer()
     {
         return $this->belongsTo('Models\Customer\Entity');
@@ -102,9 +105,16 @@ class Entity extends Base\PublicEntity
 
     public function setPublicCardAttribute(array & $array)
     {
-        if($this->card !== null)
+        if ($this->card !== null)
         {
             $array[self::CARD] = $this->card->toArrayPublic();
         }
+    }
+
+    protected function generateToken($input)
+    {
+        $token = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 14);
+
+        $this->setAttribute(self::TOKEN, $token);
     }
 }

@@ -39,7 +39,7 @@ class TraceCode
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
-    const CUSTOMER_METCUSTOMER_TOKENS_EDIT                     = 'CUSTOMER_METCUSTOMER_TOKENS_EDIT';
+    const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
