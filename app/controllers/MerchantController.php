@@ -250,6 +250,14 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    /** Fetches merchant's own Bank Account details */
+    public function getOwnBankAccount()
+    {
+        $data = (new Merchant\Service)->getOwnBankAccount();
+
+        return ApiResponse::json($data);
+    }
+
     public function postGenerateBankAccountIds()
     {
         $data = (new Merchant\Service)->generateBankAccountIds();
