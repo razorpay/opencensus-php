@@ -206,14 +206,14 @@ class Newsletter
 
             $count = $listInfo->http_response_body->total_count;
 
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
+                ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp,
+                 'info_post_sleep'       => $listInfo]);
+
             sleep(self::WAIT_BEFORE_RETRY);
 
         }while ($count < $this->count);
-
-        $this->app['trace']->info(
-            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp,
-             'info_post_sleep'       => $listInfo]);
 
         return $listAddress;
     }

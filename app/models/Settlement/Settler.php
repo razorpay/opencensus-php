@@ -50,10 +50,7 @@ class Settler
 
         $this->input = $input;
 
-        $today = Carbon::today('Asia/Kolkata');
-
-        if ((Holidays::isThisDayHoliday($this->mode, 'today')) or
-         (($today->dayOfWeek === Carbon::SATURDAY) and (Holidays::isWorkingSaturday($today) === false)))
+        if ($this->checkForHolidays())
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }
@@ -81,6 +78,26 @@ class Settler
         }
 
         return $data;
+    }
+
+    protected function checkForHolidays()
+    {
+        //Settlement files to not be generated on Public Holidays
+        if (Holidays::isThisDayHoliday($this->mode, 'today'))
+        {
+            return true;
+        }
+
+        $today = Carbon::today('Asia/Kolkata');
+
+        //and on second saturdays due to bank leaves.
+        if (($today->dayOfWeek === Carbon::SATURDAY) and
+            (Holidays::isWorkingSaturday($today) === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function settleForKotak($txns)
