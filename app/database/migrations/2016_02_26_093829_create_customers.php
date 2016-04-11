@@ -27,10 +27,11 @@ class CreateCustomers extends Migration {
 
             $table->char(Customer::MERCHANT_ID, 14);
 
-            $table->char(Customer::NAME, 50)
+            $table->string(Customer::NAME, 50)
                   ->nullable();
 
-            $table->char(Customer::CONTACT, 15);
+            $table->string(Customer::CONTACT, 20)
+                  ->nullable();
 
             $table->string(Customer::EMAIL, 255)
                   ->nullable();
@@ -78,7 +79,7 @@ class CreateCustomers extends Migration {
     {
         Schema::table(Table::ORDER, function($table)
         {
-            $table->dropForeign(Table::ORDER.'_'.Payment::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::ORDER.'_'.Order::CUSTOMER_ID.'_foreign');
 
         });
 
