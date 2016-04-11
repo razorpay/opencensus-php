@@ -391,6 +391,8 @@ class MerchantTest extends TestCase
 
     public function testGetCheckoutRouteWithSavedGlobal()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->activate('10000000000000');

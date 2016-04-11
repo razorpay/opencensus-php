@@ -38,6 +38,8 @@ class SavedCardPaymentCreateTest extends TestCase
 
     public function testGlobalSavedCardPaymentCreate()
     {
+        $this->markTestSkipped();
+
         $this->payment['card'] = array(
             'cvv'  => 111
         );
@@ -59,6 +61,8 @@ class SavedCardPaymentCreateTest extends TestCase
 
     public function testPaymentCreateAndSaveCardGlobal()
     {
+        $this->markTestSkipped();
+
         $this->payment['save'] = 1;
 
         $this->payment['app_id'] = '1000000custapp';

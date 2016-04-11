@@ -7,7 +7,7 @@ class Customer extends Base
     public function setUp()
     {
         $this->fixtures->create('customer:customers');
-        $this->fixtures->create('customer:customer_apps');
+        //$this->fixtures->create('customer:customer_apps');
         $this->fixtures->create('customer:tokens');
     }
 
