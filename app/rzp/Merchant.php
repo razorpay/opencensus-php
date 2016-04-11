@@ -6,6 +6,7 @@ class Merchant extends Entity
 {
     const CONFIG_URL = 'account/config';
     const SUBMERCHANT_CREATE_URL = 'submerchants';
+    const BANK_ACCOUNT_URL = 'bank_account';
 
     public function create($params = null)
     {
@@ -198,5 +199,10 @@ class Merchant extends Entity
     public function updateConfig($input)
     {
         return $this->request('PUT', self::CONFIG_URL, $input);
+    }
+
+    public function fetchProxyBankAccount()
+    {
+        return $this->request('GET', self::BANK_ACCOUNT_URL);
     }
 }

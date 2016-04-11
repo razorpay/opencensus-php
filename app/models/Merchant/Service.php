@@ -620,4 +620,25 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    /**
+     * This one uses Proxy Auth
+     * @return [type] [description]
+     */
+    public function fetchBankAccount()
+    {
+        $this->setApiCredentials($this->currentMerchant->id);
+        $error = $data = null;
+
+        try
+        {
+            $data = $this->api->merchant->fetchProxyBankAccount()->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }
