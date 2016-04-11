@@ -60,7 +60,7 @@ class Service extends Base\Service
             'wallet'            => Gateway\Wallet\Base::class,
             'emi_plan'          => Models\Emi::class,
             'order'             => Models\Order::class,
-            'customer'          => Models\Customer\Account::class,
+            'customer'          => Models\Customer::class,
             'token'             => Models\Customer\Token::class,
         );
 
