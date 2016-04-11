@@ -33,16 +33,20 @@ class Service extends Base\Service
 
     public function edit($id, $input)
     {
-        $customer = $this->repo->findOrFailPublic($id);
+        Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer= (new Customer\Core)->edit($customer, $input);
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $customer = (new Customer\Core)->edit($customer, $input);
 
         return $customer->toArrayPublic();
     }
 
     public function fetch($id)
     {
-        $customer = $this->repo->findOrFailPublic($id);
+        Customer\Entity::verifyIdAndStripSign($id);
+
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $customer->toArrayPublic();
     }

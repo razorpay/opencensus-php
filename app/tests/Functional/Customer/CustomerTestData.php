@@ -27,7 +27,7 @@ return [
 
     'testUpdateCustomer' => [
         'request' => [
-            'url' => '/customers/100000customer',
+            'url' => '/customers/cust_100000customer',
             'method' => 'put',
             'content' => [
                 'name'    => 'test1',
@@ -44,7 +44,7 @@ return [
 
     'testGetCustomer' => [
         'request' => [
-            'url' => '/customers/100000customer',
+            'url' => '/customers/cust_100000customer',
             'method' => 'get',
             'content' => [
             ],
@@ -60,7 +60,7 @@ return [
 
     'testGetCustomerTokens' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens',
+            'url' => '/customers/cust_100000customer/tokens',
             'method' => 'get',
             'content' => [
             ],
@@ -74,7 +74,7 @@ return [
                         'bank'          => 'HDFC',
                     ],
                     [
-                        'token'            => '10000cardtoken',
+                        'token'         => '10000cardtoken',
                         'method'        => 'card',
                         'card'          =>  [
                             'last4'         => '1111',
@@ -82,7 +82,7 @@ return [
                         ]
                     ],
                     [
-                        'token'            => '100wallettoken',
+                        'token'         => '100wallettoken',
                         'method'        => 'wallet',
                         'wallet'        => 'paytm',
                     ],
@@ -93,7 +93,7 @@ return [
 
     'testGetCustomerToken' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens/100wallettoken',
+            'url' => '/customers/cust_100000customer/tokens/100wallettoken',
             'method' => 'get',
             'content' => [
             ],
@@ -109,7 +109,7 @@ return [
 
     'testDeleteCustomerToken' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens/100wallettoken',
+            'url' => '/customers/cust_100000customer/tokens/100wallettoken',
             'method' => 'delete',
             'content' => [
             ],
@@ -122,7 +122,7 @@ return [
 
     'testAddCustomerTokenCard' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens',
+            'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
                 'method' => 'card',
@@ -144,7 +144,7 @@ return [
 
     'testAddCustomerTokenWallet' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens',
+            'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
                 'method' => 'wallet',
@@ -163,7 +163,7 @@ return [
 
     'testAddCustomerTokenNetbanking' => [
         'request' => [
-            'url' => '/customers/100000customer/tokens',
+            'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
                 'method'        => 'netbanking',

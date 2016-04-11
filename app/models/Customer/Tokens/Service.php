@@ -23,6 +23,8 @@ class Service extends Base\Service
 
     public function add($id, $input)
     {
+        Customer\Entity::verifyIdAndStripSign($id);
+
         $customer = $this->repo->findOrFailPublic($id);
 
         $token = (new Token\Core)->create($customer, $input);
@@ -32,6 +34,8 @@ class Service extends Base\Service
 
     public function edit($id, $token, $input)
     {
+        Customer\Entity::verifyIdAndStripSign($id);
+
         $customer = $this->repo->findOrFailPublic($id);
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
@@ -43,6 +47,8 @@ class Service extends Base\Service
 
     public function fetch($id, $token)
     {
+        Customer\Entity::verifyIdAndStripSign($id);
+
         $customer = $this->repo->findOrFailPublic($id);
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
@@ -52,6 +58,8 @@ class Service extends Base\Service
 
     public function fetchMultiple($id)
     {
+        Customer\Entity::verifyIdAndStripSign($id);
+
         $customer = $this->repo->findOrFailPublic($id);
 
         $tokens = $this->tokensRepo->getByCustomerId($id);
@@ -92,12 +100,22 @@ class Service extends Base\Service
 
     public function delete($id, $token)
     {
+        Customer\Entity::verifyIdAndStripSign($id);
+
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+
+        if ($token === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token not found');
+        }
 
         $token = $this->tokensRepo->deleteOrFail($token);
 
         if ($token === null)
-            return [];
+        {
+            return ['deleted' => true];
+        }
 
         return $token->toArrayPublic();
     }
