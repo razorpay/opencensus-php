@@ -21,6 +21,9 @@ class Service extends Base\Service
         $this->tokensRepo = new Token\Repository;
     }
 
+    /**
+     * Note that this is on internal auth and not private auth
+     */
     public function add($id, $input)
     {
         Customer\Entity::verifyIdAndStripSign($id);
@@ -36,7 +39,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findOrFailPublic($id);
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
@@ -49,7 +52,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findOrFailPublic($id);
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
@@ -60,7 +63,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findOrFailPublic($id);
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $tokens = $this->tokensRepo->getByCustomerId($id);
 
@@ -101,6 +104,8 @@ class Service extends Base\Service
     public function delete($id, $token)
     {
         Customer\Entity::verifyIdAndStripSign($id);
+
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 

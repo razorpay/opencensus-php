@@ -11,28 +11,12 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'Tokens';
+    protected $entity = 'Token';
 
-    public function getByParams($params)
-    {
-        $repo = $this->repo;
-
-        $query = (new $repo)->newQuery();
-
-        foreach ($params as $key => $value)
-        {
-            $query = $query->where($key, '=', $value);
-        }
-
-        return $query->get();
-    }
-
-    public function getById($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::findOrFailPublic($id);
-    }
+    protected $appFetchParamRules = array(
+        Entity::METHOD          => 'sometimes|alpha',
+        Entity::CUSTOMER_ID     => 'sometimes|alpha_num',
+    );
 
     public function getByCustomerId($id)
     {

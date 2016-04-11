@@ -83,7 +83,7 @@ class Core extends Base\Core
             Token\Entity::CUSTOMER_ID => $token->getCustomerId(),
         );
 
-        $existingTokens = $this->repo->getByParams($params);
+        $existingTokens = $this->repo->fetch($params);
 
         $func = 'validateExistingToken'.$token->getMethod();
 
