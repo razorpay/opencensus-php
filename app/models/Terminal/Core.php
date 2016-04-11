@@ -59,7 +59,7 @@ class Core extends Base\Core
 
         $this->repo = new Terminal\Repository();
 
-        $existingTerminals = $this->repo->getByParams($params);
+        $existingTerminals = $this->repo->fetch($params);
 
         //
         // Checks that existing terminals don't
@@ -76,7 +76,7 @@ class Core extends Base\Core
         $params = array(
             Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
 
-        $existingTerminals = $this->repo->getByParams($params);
+        $existingTerminals = $this->repo->fetch($params);
 
         if ($existingTerminals->count() === 1)
         {
