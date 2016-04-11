@@ -24,6 +24,7 @@ return array(
         'sharp',
         'sbiepay',
         'wallet_payzapp',
+        'wallet_payumoney',
     ),
 
     'mock_amex'             => $_ENV['AMEX_MOCK'],
@@ -39,6 +40,7 @@ return array(
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
     'mock_sbiepay'          => false,
     'mock_wallet_payzapp'   => $_ENV['PAYZAPP_MOCK'],
+    'mock_wallet_payumoney' => $_ENV['PAYUMONEY_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -103,6 +105,13 @@ return array(
         'test_pg_merchant_id'       => $_ENV['PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'],
         'test_pg_hash_key'          => $_ENV['PAYZAPP_WALLET_TEST_PG_HASH_KEY'],
         'live_pg_instance_id'       => $_ENV['PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'],
+    ),
+
+    'wallet_payumoney' => array(
+        'test_hash_secret'      => $_ENV['PAYUMONEY_WALLET_TEST_HASH_SECRET'],
+        'test_merchant_id'      => $_ENV['PAYUMONEY_WALLET_TEST_MERCHANT_ID'],
+        'test_access_code'      => $_ENV['PAYUMONEY_WALLET_TEST_CLIENT_ID'],
+        'test_auth_header'      => $_ENV['PAYUMONEY_WALLET_TEST_AUTH_HEADER'],
     ),
 
     'netbanking_hdfc' => array(

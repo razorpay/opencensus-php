@@ -35,6 +35,12 @@ class Gateway
     protected $authorize = false;
 
     /**
+     * Whether the gateway supports otp flow.
+     * @var boolean
+     */
+    protected $otpFlow = false;
+
+    /**
      * The state in which the api is operating
      * that is live/test
      * @var string
@@ -125,6 +131,11 @@ class Gateway
         $this->input = $input;
     }
 
+    public function canRunOtpFlow()
+    {
+        return $this->otpFlow;
+    }
+
     public function setTerminal($terminal)
     {
         $this->terminal = $terminal;
@@ -168,10 +179,13 @@ class Gateway
 
         try
         {
-            $response = Requests::$method(
+            $method = strtoupper($method);
+
+            $response = Requests::request(
                 $request['url'],
                 $request['headers'],
                 $request['content'],
+                $method,
                 $request['options']);
         }
         catch(\Requests_Exception $e)
@@ -434,7 +448,7 @@ class Gateway
             if (isset($content[$key]))
             {
                 $orderedData[$key] = $content[$key];
-            }   
+            }
         }
 
         return $orderedData;
@@ -449,5 +463,29 @@ class Gateway
         );
 
         return $request;
+    }
+
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch(json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+                $this->trace->error(
+                    TraceCode::GATEWAY_PAYMENT_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json],
+                    $e);
+        }
     }
 }

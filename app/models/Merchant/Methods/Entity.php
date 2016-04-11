@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
     const PAYZAPP           = 'payzapp';
+    const PAYUMONEY         = 'payumoney';
     const EMI               = 'emi';
 
     const METHODS           = 'methods';
@@ -33,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::BANKS,
         self::PAYTM,
         self::PAYZAPP,
+        self::PAYUMONEY,
         self::MOBIKWIK,
         self::EMI,
     );
@@ -44,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::BANKS,
         self::PAYTM,
         self::PAYZAPP,
+        self::PAYUMONEY,
         self::MOBIKWIK,
         self::EMI,
     );
@@ -58,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM     => false,
         self::MOBIKWIK  => false,
         self::PAYZAPP   => false,
+        self::PAYUMONEY => false,
         self::BANKS     => [],
         self::EMI       => false,
     );
@@ -66,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::PAYTM,
         self::PAYZAPP,
+        self::PAYUMONEY,
     );
 
     public function setMethods(array $input = array())
@@ -126,6 +131,11 @@ class Entity extends Base\PublicEntity
         return $this->getPayzappAttribute();
     }
 
+    public function isPayumoneyEnabled()
+    {
+        return $this->getPayumoneyAttribute();
+    }
+
     public function isMobikwikEnabled()
     {
         return $this->getMobikwikAttribute();
@@ -175,14 +185,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYTM);
     }
 
-    public function setMobikwik($mobikwik)
-    {
-        $this->setAttribute(self::MOBIKWIK, $mobikwik);
-    }
-
     public function getMobikwik()
     {
         return $this->getAttribute(self::MOBIKWIK);
+    }
+
+    public function getPayumoney()
+    {
+        return $this->getAttribute(self::PAYUMONEY);
     }
 
     public function getEMi()
@@ -197,6 +207,7 @@ class Entity extends Base\PublicEntity
                 case self::MOBIKWIK:
                 case self::PAYTM:
                 case self::PAYZAPP:
+                case self::PAYUMONEY:
                     $this->setAttribute($wallet, true);
                     break;
 
@@ -233,9 +244,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PAYTM, $paytm);
     }
 
+    public function setMobikwik($mobikwik)
+    {
+        $this->setAttribute(self::MOBIKWIK, $mobikwik);
+    }
+
     public function setPayzapp($value)
     {
         $this->setAttribute(self::PAYZAPP, $value);
+    }
+
+    public function setPayumoney($value)
+    {
+        $this->setAttribute(self::PAYUMONEY, $value);
     }
 
     public function setCard($card)
@@ -273,6 +294,11 @@ class Entity extends Base\PublicEntity
     public function getPayzappAttribute()
     {
         return (bool) $this->attributes[self::PAYZAPP];
+    }
+
+    public function getPayumoneyAttribute()
+    {
+        return (bool) $this->attributes[self::PAYUMONEY];
     }
 
     public function getBanksAttribute()
