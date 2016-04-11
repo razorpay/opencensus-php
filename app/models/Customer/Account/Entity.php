@@ -49,7 +49,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::NOTES,
-        self::CONTACT
+        self::CONTACT,
+        self::CREATED_AT,
     );
 
     protected $defaults = array(
