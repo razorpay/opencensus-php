@@ -75,10 +75,10 @@ class Core extends Base\Core
     public function createDuplicateCard($input, $merchant)
     {
         $createInput = array(
-            'number'                =>  $input['number'],
+            Entity::NUMBER          =>  $input[Entity::NUMBER],
             Entity::EXPIRY_MONTH    =>  $input[Entity::EXPIRY_MONTH],
             Entity::EXPIRY_YEAR     =>  $input[Entity::EXPIRY_YEAR],
-            'cvv'                   =>  $input['cvv'],
+            Entity::CVV             =>  $input[Entity::CVV],
             Entity::NAME            =>  $input[Entity::NAME],
             Entity::TOKEN           =>  $input[Entity::TOKEN],
             Entity::SERVICE         =>  $input[Entity::SERVICE]
@@ -114,23 +114,15 @@ class Core extends Base\Core
 
         if ($details)
         {
-            if ($network === Card\Network::UNKNOWN)
-            {
-                $recordedNetwork = $details->getNetwork();
+            $iinNetwork = $details->getNetwork();
 
-                if ((empty($recordedNetwork) === false) and
-                    (Card\Network::isValidNetwork($recordedNetwork)))
-                {
-                    $card->setNetwork($recordedNetwork);
-                }
+            if (($network === Card\Network::UNKNOWN) and
+                (Card\Network::isValidNetwork($iinNetwork)))
+            {
+                $card->setNetwork($iinNetwork);
             }
 
-            $type = Card\Type::getType($details['type']);
-
-            if ($network === Network::AMEX)
-            {
-                $type = Type::CREDIT;
-            }
+            $type = Card\Type::getType($details['type'], $network);
 
             $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
 
@@ -141,12 +133,6 @@ class Core extends Base\Core
                 Entity::INTERNATIONAL   => $details->isInternational(),
                 Entity::EMI             => $emi,
             );
-
-            if (($details['type'] !== '') and
-                ($details['type'] !== null))
-            {
-                $arr[Entity::TYPE] = $details['type'];
-            }
 
             $card->fill($arr);
         }
@@ -162,6 +148,7 @@ class Core extends Base\Core
     {
         $cvvLength = strlen($input['cvv']);
 
+        // If card is Amex, cvv length should be 4.
         if ($card->getNetworkCode() === Card\Network::AMEX)
         {
             if ($cvvLength !== 4)
@@ -174,7 +161,7 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE,
-                'cvv');
+                Entity::CVV);
         }
     }
 

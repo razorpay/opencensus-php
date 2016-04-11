@@ -26,6 +26,14 @@ class Entity extends Base\PublicEntity
     const SERVICE           = 'service';
     const TRIVIA            = 'trivia';
 
+    /**
+     * Number and cvv are never saved in the database
+     * but are referenced at various points
+     * and the values are held in-memory.
+     */
+    const NUMBER            = 'number';
+    const CVV               = 'cvv';
+
     const COUNTRY_LENGTH = 2;
 
     const NETWORK_CODE      = 'network_code';

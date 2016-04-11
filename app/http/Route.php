@@ -192,7 +192,7 @@ final class Route
         'create_customer_token'                 => ['post',     'customers/{id}/tokens',                    'CustomerController@addToken'                                       ],
         'update_customer_token'                 => ['put',      'customers/{id}/tokens/{token}',            'CustomerController@updateToken'                                    ],
         'fetch_customer_token'                  => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
-        'fetch_multiple_customer_tokens'        => ['get',      'customers/{id}/tokens',                    'CustomerController@fetchTokens'                                    ],
+        'fetch_customer_tokens'                 => ['get',      'customers/{id}/tokens',                    'CustomerController@fetchTokens'                                    ],
         'delete_customer_token'                 => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
         'delete_token_for_app'                  => ['delete',   'apps/{appId}/tokens/{token}',              'CustomerController@deleteAppToken'                                 ],
         'fetch_saved_tokens_by_app_id'          => ['get',      'apps/{appId}/tokens',                      'CustomerController@fetchTokensByAppId'                             ],
@@ -267,7 +267,7 @@ final class Route
         // 'delete_customer',
         'delete_customer_token',
         // 'fetch_customer_token',
-        'fetch_multiple_customer_tokens',
+        'fetch_customer_tokens',
     );
 
     public static $internal = array(
@@ -452,7 +452,7 @@ final class Route
         'update_customer'       =>  'savecardslocal',
         'get_customer'          =>  'savecardslocal',
         'delete_customer_token' =>  'savecardslocal',
-        'fetch_multiple_customer_tokens' => 'savecardslocal',
+        'fetch_customer_tokens' =>  'savecardslocal',
     );
 
     protected static $router;
