@@ -51,10 +51,10 @@ class CreateCards extends Migration
             $table->boolean(Card::EMI)
                   ->nullable();
 
-            $table->char(Card::SERVICE, 20)
+            $table->string(Card::SERVICE, 20)
                    ->nullable();
 
-            $table->char(Card::TOKEN, 50)
+            $table->string(Card::TOKEN, 50)
                    ->nullable();
 
             $table->string(Card::TRIVIA)
