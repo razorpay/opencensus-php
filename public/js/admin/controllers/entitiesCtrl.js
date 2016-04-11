@@ -102,7 +102,10 @@ app.controller('EntitiesCtrl', [
       axis_migs: {
         payment_id: ['Payment Id'],
         received: booleanList,
-        vpc_ReceiptNo: ['Receipt Number']
+        vpc_TransactionNo: ['Transaction No'],
+        vpc_ShopTransactionNo: ['Shop Transaction No'],
+        vpc_TxnResponseCode: ['Txn Response Code'],
+        vpc_ReceiptNo: ['Receipt No']
       },
       bank_account: {
         merchant_id: ['Merchant Id'],
