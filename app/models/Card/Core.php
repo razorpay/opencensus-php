@@ -162,7 +162,7 @@ class Core extends Base\Core
     {
         $cvvLength = strlen($input['cvv']);
 
-        if (($card->getNetworkCode() === Card\Network::AMEX)
+        if ($card->getNetworkCode() === Card\Network::AMEX)
         {
             if ($cvvLength !== 4)
             {
