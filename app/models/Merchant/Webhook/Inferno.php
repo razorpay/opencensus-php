@@ -107,10 +107,11 @@ class Inferno
 
         Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
         {
-
             $emails = $data['to_emails'];
 
-            $message->from('support@razorpay.com', 'Razorpay Support');
+            $message->from('webhooks@razorpay.com', 'Razorpay Webhook Support');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
             $message->subject($data['subject']);
 
