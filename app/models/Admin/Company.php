@@ -22,8 +22,42 @@ class Company
         $this->cin = $cin;
         $this->session = new Requests_Session(self::PORTAL_BASE_URL);
         $res = $this->session->get(self::INDEX_URL);
+    }
 
-        // sd($res->body);
+    public function parseCompanyDetails($dom)
+    {
+        $data  =[];
+        $rows = $dom->find('form[id=exportCompanyMasterData] tr');
+        foreach ($rows as $tr)
+        {
+            $data[$tr->first_child()->plaintext] = $tr->last_child()->plaintext;
+        }
+
+        return $data;
+    }
+
+    public function parseSignatories($dom)
+    {
+        $data = [];
+        $rows = $dom->find('div[id=signatories] tr');
+        foreach ($rows as $index => $tr)
+        {
+            // Skip the first row
+            if ($index === 0)
+            {
+                continue;
+            }
+
+            $rowdata = $tr->find('td');
+
+            $data[] = [
+                'PAN'          =>  $rowdata[0]->plaintext,
+                'Name'         =>  $rowdata[1]->plaintext,
+                'StartDate'    =>  $rowdata[2]->plaintext,
+                'EndDate'      =>  $rowdata[3]->plaintext,
+            ];
+        }
+        return $data;
     }
 
     public function fetch()
@@ -34,6 +68,10 @@ class Company
         ]);
 
         $dom = HtmlDomParser::str_get_html($response->body);
-        return $dom->find('form[id=exportCompanyMasterData]', 0)->innertext;
+
+        return [
+            'company'           =>  $this->parseCompanyDetails($dom),
+            'signatories'       =>  $this->parseSignatories($dom)
+        ];
     }
 }
