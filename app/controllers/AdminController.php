@@ -688,4 +688,10 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function getCompanyInfo($cin)
+    {
+        $company = new Admin\Company($cin);
+        return AppResponse::jsonResponse([], $company->fetch());
+    }
 }

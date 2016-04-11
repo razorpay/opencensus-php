@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "354c9c0a4f7a6c28dd4270b8dd3d5975",
-    "content-hash": "b44b383f65cdacbdcb737d132450b648",
+    "hash": "01681ab7b9f7974caae7acb23976438d",
+    "content-hash": "21b9d25f74b1f0c788c2d9bf0783bdbb",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.27",
+            "version": "2.8.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c1605360b6624958a5397601ad5543cd45fcf8f7"
+                "reference": "cdc2c4f55b7c89b9bfd9899c3116b369d2e6fe63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c1605360b6624958a5397601ad5543cd45fcf8f7",
-                "reference": "c1605360b6624958a5397601ad5543cd45fcf8f7",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/cdc2c4f55b7c89b9bfd9899c3116b369d2e6fe63",
+                "reference": "cdc2c4f55b7c89b9bfd9899c3116b369d2e6fe63",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-01-30 00:53:32"
+            "time": "2016-04-05 23:38:03"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -376,16 +376,16 @@
         },
         {
             "name": "drewm/mailchimp-api",
-            "version": "v2.1",
+            "version": "v2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/drewm/mailchimp-api.git",
-                "reference": "a9bf617afb5a9bcb2601f5cc23b01a7b581d5659"
+                "reference": "f4539014e9cc96eab0f187f52eb60499518a31bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/drewm/mailchimp-api/zipball/a9bf617afb5a9bcb2601f5cc23b01a7b581d5659",
-                "reference": "a9bf617afb5a9bcb2601f5cc23b01a7b581d5659",
+                "url": "https://api.github.com/repos/drewm/mailchimp-api/zipball/f4539014e9cc96eab0f187f52eb60499518a31bb",
+                "reference": "f4539014e9cc96eab0f187f52eb60499518a31bb",
                 "shasum": ""
             },
             "require": {
@@ -414,7 +414,7 @@
             ],
             "description": "Super-simple, minimum abstraction MailChimp API v3 wrapper",
             "homepage": "https://github.com/drewm/mailchimp-api",
-            "time": "2016-01-30 16:12:54"
+            "time": "2016-04-06 12:41:37"
         },
         {
             "name": "filp/whoops",
@@ -1346,16 +1346,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "1.18.1",
+            "version": "1.18.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "a5f2734e8c16f3aa21b3da09715d10e15b4d2d45"
+                "reference": "064b38c16790249488e7a8b987acf1c9d7383c09"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45",
-                "reference": "a5f2734e8c16f3aa21b3da09715d10e15b4d2d45",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/064b38c16790249488e7a8b987acf1c9d7383c09",
+                "reference": "064b38c16790249488e7a8b987acf1c9d7383c09",
                 "shasum": ""
             },
             "require": {
@@ -1370,13 +1370,13 @@
                 "doctrine/couchdb": "~1.0@dev",
                 "graylog2/gelf-php": "~1.0",
                 "jakub-onderka/php-parallel-lint": "0.9",
+                "php-amqplib/php-amqplib": "~2.4",
                 "php-console/php-console": "^3.1.3",
                 "phpunit/phpunit": "~4.5",
                 "phpunit/phpunit-mock-objects": "2.3.0",
                 "raven/raven": "^0.13",
                 "ruflin/elastica": ">=0.90 <3.0",
-                "swiftmailer/swiftmailer": "~5.3",
-                "videlalvaro/php-amqplib": "~2.4"
+                "swiftmailer/swiftmailer": "~5.3"
             },
             "suggest": {
                 "aws/aws-sdk-php": "Allow sending log messages to AWS services like DynamoDB",
@@ -1385,11 +1385,11 @@
                 "ext-mongo": "Allow sending log messages to a MongoDB server",
                 "graylog2/gelf-php": "Allow sending log messages to a GrayLog2 server",
                 "mongodb/mongodb": "Allow sending log messages to a MongoDB server via PHP Driver",
+                "php-amqplib/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib",
                 "php-console/php-console": "Allow sending log messages to Google Chrome",
                 "raven/raven": "Allow sending log messages to a Sentry server",
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
-                "ruflin/elastica": "Allow sending log messages to an Elastic Search server",
-                "videlalvaro/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib"
+                "ruflin/elastica": "Allow sending log messages to an Elastic Search server"
             },
             "type": "library",
             "extra": {
@@ -1420,7 +1420,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-03-13 16:08:35"
+            "time": "2016-04-02 13:12:58"
         },
         {
             "name": "nesbot/carbon",
@@ -1966,16 +1966,16 @@
         },
         {
             "name": "react/promise",
-            "version": "v2.3.0",
+            "version": "v2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/promise.git",
-                "reference": "8ffacee1171e33a1c129f424bf1ec36e062eba82"
+                "reference": "f942da7b505d1a294284ab343d05df42d02ad6d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/8ffacee1171e33a1c129f424bf1ec36e062eba82",
-                "reference": "8ffacee1171e33a1c129f424bf1ec36e062eba82",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/f942da7b505d1a294284ab343d05df42d02ad6d9",
+                "reference": "f942da7b505d1a294284ab343d05df42d02ad6d9",
                 "shasum": ""
             },
             "require": {
@@ -2006,7 +2006,7 @@
                 }
             ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
-            "time": "2016-03-24 21:20:22"
+            "time": "2016-03-31 13:10:33"
         },
         {
             "name": "rmccue/requests",
@@ -2210,6 +2210,49 @@
                 "stack"
             ],
             "time": "2014-11-23 20:37:11"
+        },
+        {
+            "name": "sunra/php-simple-html-dom-parser",
+            "version": "v1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sunra/php-simple-html-dom-parser.git",
+                "reference": "a0b80ace086c7e09085669205e1b3c2c9c7a453c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sunra/php-simple-html-dom-parser/zipball/a0b80ace086c7e09085669205e1b3c2c9c7a453c",
+                "reference": "a0b80ace086c7e09085669205e1b3c2c9c7a453c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Sunra\\PhpSimple\\HtmlDomParser": "Src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "sunra",
+                    "email": "sunra@yandex.ru",
+                    "homepage": "http://github.com/sunra"
+                }
+            ],
+            "description": "Composer adaptation of: A HTML DOM parser written in PHP5+ let you manipulate HTML in a very easy way! Require PHP 5+. Supports invalid HTML. Find tags on an HTML page with selectors just like jQuery. Extract contents from HTML in a single line.",
+            "homepage": "https://github.com/sunra/php-simple-html-dom-parser",
+            "keywords": [
+                "dom",
+                "html",
+                "parser"
+            ],
+            "time": "2013-05-04 14:32:03"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -3468,12 +3511,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/padraic/mockery.git",
-                "reference": "e597b2047e5a722dc18d7a629a2964b4ca606441"
+                "reference": "50c55201c8b649aa65f96748964ff72f3e7fdcf0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/e597b2047e5a722dc18d7a629a2964b4ca606441",
-                "reference": "e597b2047e5a722dc18d7a629a2964b4ca606441",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/50c55201c8b649aa65f96748964ff72f3e7fdcf0",
+                "reference": "50c55201c8b649aa65f96748964ff72f3e7fdcf0",
                 "shasum": ""
             },
             "require": {
@@ -3525,7 +3568,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2016-03-17 19:48:40"
+            "time": "2016-04-08 08:59:10"
         },
         {
             "name": "raveren/kint",

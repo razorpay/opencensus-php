@@ -139,6 +139,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
     // Might delete this route later if its not used
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
+
     Route::group(array('before' => 'csrf'), function()
     {
         // Admin Meta Routes
@@ -171,6 +172,7 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
+        Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');

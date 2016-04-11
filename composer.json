@@ -22,7 +22,8 @@
         "marlek/laravel-automigrate": "1.2",
         "ircmaxell/random-lib": "^1.1",
         "drewm/mailchimp-api": "^2.1",
-        "nesbot/carbon": "1.*"
+        "nesbot/carbon": "1.*",
+        "sunra/php-simple-html-dom-parser": "v1.5.0"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
