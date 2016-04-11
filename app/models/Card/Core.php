@@ -153,6 +153,10 @@ class Core extends Base\Core
             $intl = $details->isInternational();
 
             $card->setInternational($intl);
+
+            $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
+
+            $card->setEmi($emi);
         }
         else
         {

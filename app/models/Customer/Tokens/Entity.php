@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
 
-    protected static $sign      = 'tokn';
+    protected static $sign      = 'token';
 
     protected $entity           = 'token';
 

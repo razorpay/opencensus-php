@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const LENGTH            = 'length';
     const NETWORK           = 'network';
     const TYPE              = 'type';
+    const EMI               = 'emi';
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
     const INTERNATIONAL     = 'international';
@@ -61,11 +62,33 @@ class Entity extends Base\PublicEntity
 
     protected $hidden = array();
 
+    protected $visible = array(
+        self::ID,
+        self::MERCHANT_ID,
+        self::NAME,
+        self::EXPIRY_MONTH,
+        self::EXPIRY_YEAR,
+        self::IIN,
+        self::LAST4,
+        self::LENGTH,
+        self::NETWORK,
+        self::TYPE,
+        self::EMI,
+        self::ISSUER,
+        self::COUNTRY,
+        self::INTERNATIONAL,
+        self::TOKEN,
+        self::SERVICE,
+        self::NETWORK_CODE,
+        self::TRIVIA,
+    );
+
     protected $public = array(
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
         self::LAST4,
         self::NETWORK,
+        self::EMI,
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
@@ -75,7 +98,9 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CODE);
 
     protected $defaults = array(
-        self::INTERNATIONAL => null);
+        self::INTERNATIONAL => null,
+        self::EMI => false
+    );
 
     public function merchant()
     {
@@ -220,6 +245,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $flag);
     }
 
+    public function setEmi($flag)
+    {
+        $this->setAttribute(self::EMI, $flag);
+    }
+
     public function setTrivia($trivia)
     {
         $this->setAttribute(self::TRIVIA, $trivia);
@@ -233,6 +263,11 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getEmi()
+    {
+        return (bool) $this->getAttribute(self::EMI);
     }
 
     public function getExpiryMonthAttribute()
