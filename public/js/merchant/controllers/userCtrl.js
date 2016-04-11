@@ -14,7 +14,7 @@ app.controller('UserCtrl', [
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
 
-    $scope.getPendingInvitations = function(){
+    $scope.getPendingInvitations = function() {
       var request = $http.get('/settings/invitations');
       request.success(function (data) {
         if (data.success) {
@@ -26,6 +26,19 @@ app.controller('UserCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.fetchBankAccount = function() {
+      var request = $http.get('/bank_account');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.bankAccount = data.data;
+        } else {
+          $scope.bankAccount = false;
+        }
+      }).error(function () {
+        $scope.bankAccount = false;
+      });
+    }
 
     $scope.acceptInvitation = function(invite) {
       var request = $http.post('settings/invitations/' + invite.id + '/accept');

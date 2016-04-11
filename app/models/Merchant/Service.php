@@ -26,6 +26,7 @@ class Service extends Base\Service
     const SELF_REMOVE_FORBIDDEN     = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT         = "We couldn't find the merchant that you own.";
     const SUBMERCHANT_NOT_ALLOWED   = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+    const BANK_ACCOUNT_NOT_FOUND    = "Could not find a Bank Account";
 
     public function __construct()
     {
@@ -636,7 +637,7 @@ class Service extends Base\Service
         }
         catch(BadRequestError $e)
         {
-            $error = [$e->getMessage()];
+            $error = [self::BANK_ACCOUNT_NOT_FOUND];
         }
 
         return [$error, $data];
