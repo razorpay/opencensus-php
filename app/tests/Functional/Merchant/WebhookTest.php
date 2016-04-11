@@ -202,7 +202,6 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook();
         $inferno = $this->mockInferno();
-        $testData = $this->testData[__FUNCTION__];
 
         $this->fixtures->edit(
             'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
