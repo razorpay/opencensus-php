@@ -252,7 +252,7 @@ class Processor
         {
             $payment = $this->retrieve($id);
 
-            $this->repo->lockForUpdate($payment->getKey());
+            $payment = $this->repo->lockForUpdate($payment->getKey());
 
             (new Payment\Validator)->cancelValidate($payment);
 

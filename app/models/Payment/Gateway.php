@@ -266,6 +266,17 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM);
 
+    public static $emiBanks = array(
+        self::HDFC      => IFSC::HDFC,
+        self::KOTAK     => IFSC::KKBK,
+        self::AXIS_MIGS => IFSC::UTIB,
+    );
+
+    public static $emiFileBanks = array(
+        self::KOTAK     => IFSC::KKBK,
+        self::AXIS_MIGS => IFSC::UTIB,
+    );
+
     public static $emiBankToGatewayMap = array(
         IFSC::HDFC      =>  Gateway::HDFC,
         IFSC::UTIB      =>  Gateway::AXIS_MIGS

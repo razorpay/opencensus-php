@@ -36,4 +36,14 @@ class EmiController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function generateEmiExcel()
+    {
+        $input = Input::all();
+
+        $emiExcel = (new Emi\Service)->getEmiFiles($input);
+
+        return ApiResponse::json($emiExcel);
+    }
+
 }

@@ -130,6 +130,6 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::LIVE, '=', 0);
+        return $repo::where(Entity::LIVE, '=', 1);
     }
 }

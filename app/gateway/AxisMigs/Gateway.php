@@ -81,8 +81,9 @@ class Gateway extends Base\Gateway
 
         $toSaveContent = $content;
         $toSaveContent['refund_id'] = $input['refund']['id'];
+        $toSaveContent['terminal_id'] = $input['terminal']['id'];
 
-        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -98,6 +99,45 @@ class Gateway extends Base\Gateway
             'refund' => $input['refund']]);
 
         $this->verifyAmaTransactionResponse($content, $input);
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $repo = $this->getRepo();
+
+        $payment = $repo->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
+
+        assert ($payment['received'] === false);
+        assert ($payment['vpc_TxnResponseCode'] !== '0');
+
+        if (isset($input['gateway']['vpc_TransactionNo']) === false)
+        {
+            throw new Excception\BadRequestValidationFailureException(
+                'Correct field not present for the required operation');
+        }
+
+        $txnNo = $input['gateway']['vpc_TransactionNo'];
+        $txnNo = (int) $txnNo;
+        assert (strlen($txnNo) === 10);
+        assert (is_integer($txnNo) === true);
+
+        $terminalId = $input['terminal']['id'];
+
+        $count = $repo->countPaymentsNearTransactionNo($txnNo, $terminalId);
+
+        if ($count === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No migs payments with nearby vpc_TransactionNo found');
+        }
+
+        $payment->setVpcTransactionNo($txnNo, $terminalId);
+        $payment['vpc_TxnResponseCode'] = '0';
+
+        $repo->saveOrFail($payment);
+
+        return true;
     }
 
     public function verify(array $input)
@@ -134,7 +174,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
-        $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
+        $payment = $this->createGatewayPaymentEntity($content, $input);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -336,7 +376,7 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef'           => $input['payment']['id'],
         );
 
-        $this->createGatewayPaymentEntity($attributes);
+        $this->createGatewayPaymentEntity($attributes, $input);
 
         $network = ucfirst(strtolower($input['card']['network']));
 
@@ -429,12 +469,15 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function createGatewayPaymentEntity($attributes, $paymentId = null)
+    protected function createGatewayPaymentEntity($attributes, $input)
     {
         $payment = $this->getNewGatewayPaymentEntity();
 
-        if ($paymentId === null)
-            $paymentId = $attributes['vpc_MerchTxnRef'];
+        // if ($paymentId )
+        //     $paymentId = $attributes['vpc_MerchTxnRef'];
+
+        $paymentId = $input['payment']['id'];
+        $attributes['terminal_id'] = $input['terminal']['id'];
 
         $payment->setPaymentId($paymentId);
         $payment->setAction($this->action);
