@@ -74,6 +74,35 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    public function getCardNumberFromToken($token)
+    {
+        // Get card from token
+        $card = $token->card;
+
+        // Get vault token from card
+        $vaultToken = $card->getVaultToken();
+
+        // Get card number from vault service (tokenex) via vault token
+
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $cardNumber = $app['card.tokenex']->detokenize($vaultToken);
+
+            if (empty($cardNumber) === false)
+            {
+                $cardNumber = strval($cardNumber);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceExeption($e);
+        }
+
+        return $cardNumber;
+    }
+
     protected function validateExistingToken($token)
     {
         $params = array(

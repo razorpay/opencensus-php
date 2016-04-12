@@ -4,6 +4,7 @@ namespace Models\Customer;
 
 use Models\Base;
 use Models\Base\Traits\NotesTrait;
+use Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
@@ -91,5 +92,10 @@ class Entity extends Base\PublicEntity
     public function getActiveAttribute()
     {
         return (bool)$this->attributes[self::ACTIVE];
+    }
+
+    public function isLocal()
+    {
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 }

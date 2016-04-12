@@ -512,6 +512,12 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === $method);
     }
 
+    public function isMethodCardOrEmi()
+    {
+        return (($this->isMethod(Payment\Method::CARD)) or
+                ($this->isMethod(Payment\Method::EMI)));
+    }
+
     public function isSigned()
     {
         return ((bool)$this->getAttribute(self::SIGNED) === true);
