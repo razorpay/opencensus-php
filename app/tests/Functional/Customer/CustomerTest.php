@@ -28,7 +28,7 @@ class CustomerTest extends TestCase
 
         $customer = $this->getLastEntity('customer', true);
 
-        assert($customer !== null);
+        $this->assertNotNull($customer);
     }
 
     public function testUpdateCustomer()
