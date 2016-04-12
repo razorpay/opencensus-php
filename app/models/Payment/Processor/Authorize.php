@@ -431,7 +431,8 @@ trait Authorize
             (new Token\Core)->create($customer, $saveMethodInput);
         }
         catch (Exception\BaseException $e)
-        {sd($e->getTraceAsString(), $e->getMessage());
+        {
+            $this->trace->traceException($e);
             // Ignore the exception, can be an already saved method
         }
     }

@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         'customer_id'   =>  'sometimes',
         'app_id'        =>  'sometimes',
         'token'         =>  'sometimes',
-        'save'          =>  'sometimes|boolean',
+        'save'          =>  'sometimes|in:0,1',
         'fee'           =>  'sometimes|integer|max:50000000',
         'service_tax'   =>  'sometimes|integer|max:50000000',
         '_'             =>  'sometimes');
