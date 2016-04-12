@@ -397,7 +397,7 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            //create an saved card entity
+            // Create a global saved card entity
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
 
             $savedCard = $payment->card;
@@ -408,6 +408,10 @@ trait Authorize
 
             if ($customer->isLocal() === false)
             {
+                //
+                // Create a local card entity specific to merchant.
+                // Link to parent global card entity and to payment entity.
+                //
                 $card = (new Card\Core)->createDuplicateCard($savedCard->toArray(), $this->merchant);
 
                 $payment->associate($card);
