@@ -10,7 +10,7 @@ class Features
         'dummy',
         'webhooks',
         'aggregator',
-        'savecardslocal',
+        'tokens',
     );
 
     public static function validateFeatures($input)

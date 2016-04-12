@@ -448,11 +448,11 @@ final class Route
     public static $routeNameToFeatureMap = array(
         'dummy_feature'         =>  'dummy',
         'submerchant_create'    =>  'aggregator',
-        'create_customer'       =>  'savecardslocal',
-        'update_customer'       =>  'savecardslocal',
-        'get_customer'          =>  'savecardslocal',
-        'delete_customer_token' =>  'savecardslocal',
-        'fetch_customer_tokens' =>  'savecardslocal',
+        'create_customer'       =>  'tokens',
+        'update_customer'       =>  'tokens',
+        'get_customer'          =>  'tokens',
+        'delete_customer_token' =>  'tokens',
+        'fetch_customer_tokens' =>  'tokens',
     );
 
     protected static $router;

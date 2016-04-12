@@ -17,7 +17,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures("savecardslocal");
+        $this->fixtures->merchant->editFeatures("tokens");
     }
 
     public function testCreateCustomer()
