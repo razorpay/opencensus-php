@@ -103,13 +103,13 @@ trait RepositoryFetch
         }
 
         if (($this->auth->isProxyAuth()) and
-            (isset($this->proxyAuthFetchParamRules)))
+            (isset($this->proxyFetchParamRules)))
         {
             $this->fetchParamRules = array_merge(
-                    $this->fetchParamRules, $this->proxyAuthFetchParamRules);
+                    $this->fetchParamRules, $this->proxyFetchParamRules);
         }
 
-        if (($this->auth->isAppAuth()) and
+        if (($this->auth->isPrivilegeAuth()) and
             (isset($this->appFetchParamRules)))
         {
             $this->fetchParamRules = array_merge(

@@ -21,6 +21,11 @@ class Repository extends Base\Repository
         Entity::ORDER_ID        => 'sometimes|string|size:20',
     );
 
+    protected $proxyFetchParamRules = array(
+        Entity::EMAIL           => 'sometimes',
+        Entity::STATUS          => 'sometimes|string',
+    );
+
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|string',
         Entity::VERIFIED        => 'sometimes|in:null,0,1,2',
