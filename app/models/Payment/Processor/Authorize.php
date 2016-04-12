@@ -11,7 +11,7 @@ use Models\Merchant\Methods;
 use Models\Card;
 use Models\Card\IIN;
 use Models\Customer;
-use Models\Customer\Token as CustomerTokens;
+use Models\Customer\Token;
 use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
@@ -294,21 +294,20 @@ trait Authorize
     {
         $customer = $this->getCustomerIdLocalOrGlobal($input);
 
-        // flow if method_id is set, pay using already saved method
-        if(isset($input[Payment\Entity::TOKEN]))
+        // Flow if method_id is set, pay using already saved method
+        if (isset($input[Payment\Entity::TOKEN]))
         {
-            if($customer === null)
+            if ($customer === null)
             {
                 throw new Exception\BadRequestException(
-                    "customer does not exist");
+                    'Customer does not exist');
             }
 
-            $token = (new Customer\Token\Repository)->getByTokenAndCustomerId(
+            $token = (new Token\Repository)->getByTokenAndCustomerId(
                 $customer->getId(),
-                $input[Payment\Entity::TOKEN]
-            );
+                $input[Payment\Entity::TOKEN]);
 
-            assert($token !== null);
+            assert ($token !== null);
 
             if (($payment->isMethod(Payment\Method::CARD)) or
                 ($payment->isMethod(Payment\Method::EMI)))
@@ -326,7 +325,7 @@ trait Authorize
         }
         else
         {
-            // flow if card details are entered with save set to true/false
+            // Flow if card details are entered with save set to true/false
             $saveCard = false;
             $saveMethod = ((isset($input['save'])) and ($input['save'] === '1'));
 
@@ -395,11 +394,11 @@ trait Authorize
 
         try
         {
-            (new CustomerTokens\Core)->create($customer, $saveMethodInput);
+            (new Token\Core)->create($customer, $saveMethodInput);
         }
         catch (Exception\BaseException $e)
         {
-            //ignore the exception, can be an already saved method
+            // Ignore the exception, can be an already saved method
         }
     }
 
@@ -690,7 +689,7 @@ trait Authorize
         // with number and cvv
         //
 
-        if($save)
+        if ($save)
         {
             $token = $this->getCardToken($cardInput['number']);
 
