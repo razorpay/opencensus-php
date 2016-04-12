@@ -26,14 +26,16 @@ class SavedCardPaymentCreateTest extends TestCase
 
     public function testLocalSavedCardPaymentCreate()
     {
-        $this->payment['card'] = array(
-            'cvv'  => 111
-        );
+        $this->payment['card'] = array('cvv'  => 111);
 
         $this->payment['token'] = '10000cardtoken';
         $this->payment['customer_id'] = '100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['token'], '10000cardtoken');
+        $this->assertEquals($payment['customer_id'], '100000customer');
     }
 
     public function testGlobalSavedCardPaymentCreate()
@@ -53,10 +55,17 @@ class SavedCardPaymentCreateTest extends TestCase
     public function testPaymentCreateAndSaveCardLocal()
     {
         $this->payment['save'] = 1;
-
+        $this->payment['card']['number'] = '4000400000000004';
         $this->payment['customer_id'] = '100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
+        $payment = $this->getLastEntity('payment', true);
+        $card = $this->getLastEntity('card', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('card_'.$payment['card_id'], $card['id']);
+        $this->assertEquals('card_'.$token['card_id'], $card['id']);
+
     }
 
     public function testPaymentCreateAndSaveCardGlobal()
