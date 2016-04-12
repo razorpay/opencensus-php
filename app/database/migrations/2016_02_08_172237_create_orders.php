@@ -52,9 +52,11 @@ class CreateOrders extends Migration {
 
             // Commented parts to be added incrementally
 
-            // $table->char(Order::METHOD);//
+            $table->string(Order::METHOD)
+                  ->nullable();
 
-            // $table->char(Order::ACCOUNT_ID);//
+            $table->string(Order::ACCOUNT_ID)
+                  ->nullable();
 
             // $table->integer(Order::CREATED_AT);
 
