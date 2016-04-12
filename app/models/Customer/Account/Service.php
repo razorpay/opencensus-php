@@ -53,7 +53,9 @@ class Service extends Base\Service
 
     public function delete($id)
     {
-        $customer = $this->repo->findOrFail($id);
+        Customer\Entity::verifyIdAndStripSign($id);
+
+        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $customer = $this->repo->deleteOrFail($customer);
 
