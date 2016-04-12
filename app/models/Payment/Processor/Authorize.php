@@ -397,18 +397,22 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            $merchantId = $customer->getMerchantId();
+            //create an saved card entity
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
 
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $merchantId);
+            $savedCard = $payment->card;
 
-            if ($customer->isGlobal())
+            $saveMethodInput['method'] = Payment\Method::CARD;
+
+            $saveMethodInput['card_id'] = $savedCard->getId();
+
+            if ($customer->isLocal() === false)
             {
-                $savedCard = (new Card\Core)->createDuplicateCard($cardInput, $this->merchant);
+                $card = (new Card\Core)->createDuplicateCard($savedCard->toArray(), $this->merchant);
 
-                $saveMethodInput['method'] = Payment\Method::CARD;
-
-                $saveMethodInput['card_id'] = $savedCard->getId();
+                $payment->associate($card);
             }
+
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
@@ -732,7 +736,7 @@ trait Authorize
         return $cardData;
     }
 
-    protected function createCardEntity(array $cardInput, $merchant, $vault)
+    protected function createCardEntity(array $cardInput, $vault, $merchant)
     {
         //
         // Creates card entity. Card number is vaulted if vault is true
@@ -784,19 +788,19 @@ trait Authorize
                  'cvv' => $cvv]);
     }
 
-    protected function createCardEntityFromSavedMethod($method, $input)
+    protected function createCardEntityFromSavedToken($token, $input)
     {
-        $cardNumber = $this->getCardNumber($method->card->getVaultToken());
+        $cardNumber = $this->getCardNumber($token->card->getVaultToken());
         $cvv = $input['card']['cvv'];
 
-        $savedCard = $method->card->toArray();
+        $savedCard = $token->card->toArray();
         $savedCard['number'] = $cardNumber;
         $savedCard['cvv'] = $cvv;
 
         //create a card entity for merchant
         $cardCore = new Card\Core();
 
-        $card = $cardCore->createDuplicateCard($savedCard, $method->customer->merchant);
+        $card = $cardCore->createDuplicateCard($savedCard, $token->customer->merchant);
 
         $this->payment->card()->associate($card);
 
