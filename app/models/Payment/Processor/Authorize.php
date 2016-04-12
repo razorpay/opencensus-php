@@ -340,7 +340,7 @@ trait Authorize
                 //
                 if ($payment->isMethodCardOrEmi())
                 {
-                    $gatewayInput['card'] = $this->createCardEntityFromSavedMethod($token, $input);
+                    $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
                 }
                 else if ($payment->isMethod(Payment\Method::WALLET))
                 {

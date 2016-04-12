@@ -80,8 +80,6 @@ class Core extends Base\Core
             Entity::EXPIRY_YEAR     =>  $input[Entity::EXPIRY_YEAR],
             Entity::CVV             =>  $input[Entity::CVV],
             Entity::NAME            =>  $input[Entity::NAME],
-            Entity::VAULT_TOKEN     =>  $input[Entity::VAULT_TOKEN],
-            Entity::VAULT           =>  $input[Entity::VAULT]
         );
 
         $card = null;
