@@ -35,4 +35,23 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
         }
     }
+
+    public function validateOrderMethodAndAccount($order, $paymentMethod, $paymentAccount)
+    {
+        if ((isset($order->getMethod())) and
+             ($order->getMethod() !== $paymentMethod))
+        {
+            // Order and Payment amount mismatch
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_METHOD_MISMATCH);
+        }
+
+        if ((isset($order->getAccountId())) and
+            ($order->getAccountId() !== $paymentAccount))
+        {
+            // Order and Payment amount mismatch
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ACCOUNT_MISMATCH);
+        }
+    }
 }

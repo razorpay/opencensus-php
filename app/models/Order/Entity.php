@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'order';
 
+    /** Related Models */
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
@@ -83,6 +84,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Models\Payment\Entity');
     }
 
+    /** End Related Models */
+
+    /** Setters And Getters */
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -108,6 +112,24 @@ class Entity extends Base\PublicEntity
         return $this->getAmountAttribute();
     }
 
+    public function getAccountId()
+    {
+        return $this->attributes[self::ACCOUNT_ID];
+    }
+
+    public function getMethod()
+    {
+        return $this->attributes[self::METHOD];
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttemptsAttribute();
+    }
+
+    /** End Setters And Getters */
+
+    /** Mutators */
     protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
@@ -123,11 +145,9 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::ATTEMPTS];
     }
 
-    public function getAttempts()
-    {
-        return $this->getAttemptsAttribute();
-    }
+    /** End Mutators */
 
+    /** Other Functions */
     public function incrementAttempts()
     {
         $attempts = $this->getAttempts() + 1;
