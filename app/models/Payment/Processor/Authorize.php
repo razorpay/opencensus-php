@@ -272,7 +272,7 @@ trait Authorize
         $merchantId = null;
         $customer = null;
 
-        if (isset($input[Payment\Entity::APP_ID]))
+        if (empty($input[Payment\Entity::APP_ID]) === false)
         {
             $customerApp = (new Customer\App\Repository)->findByAppIdAndMerchantId(
                 $input[Payment\Entity::APP_ID],
@@ -283,7 +283,7 @@ trait Authorize
             $customerId = $customerApp->getCustomerId();
             $merchantId = Merchant\Account::SHARED_ACCOUNT;
         }
-        else if (isset($input[Payment\Entity::CUSTOMER_ID]))
+        else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $merchantId = $this->merchant->getId();
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
@@ -291,8 +291,15 @@ trait Authorize
 
         if ($customerId !== null)
         {
+            Customer\Entity::verifyIdAndStripSign($customerId);
+
             $customer = (new Customer\Repository)
                                 ->findByIdAndMerchantId($customerId, $merchantId);
+
+            if ($customer->isLocal())
+            {
+                $this->payment->customer()->associate($customer);
+            }
         }
 
         return $customer;
@@ -306,14 +313,14 @@ trait Authorize
         //
         // If token is set, then that means we have a saved card
         //
-        if (isset($input[Payment\Entity::TOKEN]))
+        if (empty($input[Payment\Entity::TOKEN]) === false)
         {
             $tokenInput = $input[Payment\Entity::TOKEN];
 
             // Customer should definitely exist in this case.
             if ($customer === null)
             {
-                throw new Exception\BadRequestException(
+                throw new Exception\BadRequestValidationFailureException(
                     'Customer does not exist');
             }
 

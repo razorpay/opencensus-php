@@ -83,7 +83,7 @@ class CreatePayments  extends Migration
             $table->string(Payment::APP_ID, 14)
                   ->nullable();
 
-            $table->string(Payment::TOKEN)
+            $table->string(Payment::TOKEN, 14)
                   ->nullable();
 
             $table->string(Payment::EMAIL, 255)

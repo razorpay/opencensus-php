@@ -117,7 +117,15 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <tr>
         <td colspan='40'>Order Id:</td>
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
-        <td><input type="checkbox" name="save" value=1>save</td>
+    </tr>
+    <tr>
+        <td colspan='40'>Customer Id:</td>
+        <td><input type="text" name="customer_id" size="25" value=""></td>
+        <td><input type="checkbox" name="save" value=0>save</td>
+    </tr>
+    <tr>
+        <td colspan='40'>Token:</td>
+        <td><input type="text" name="token" size="25" value=""></td>
     </tr>
     <tr>
         <td colspan="100" align="center">

@@ -29,7 +29,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['card'] = array('cvv'  => 111);
 
         $this->payment['token'] = '10000cardtoken';
-        $this->payment['customer_id'] = '100000customer';
+        $this->payment['customer_id'] = 'cust_100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -56,7 +56,7 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->payment['save'] = 1;
         $this->payment['card']['number'] = '4000400000000004';
-        $this->payment['customer_id'] = '100000customer';
+        $this->payment['customer_id'] = 'cust_100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
         $payment = $this->getLastEntity('payment', true);
@@ -69,7 +69,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['card'] = array('cvv'  => 111);
 
         $this->payment['token'] = $token['token'];
-        $this->payment['customer_id'] = '100000customer';
+        $this->payment['customer_id'] = 'cust_100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 

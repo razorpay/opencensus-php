@@ -78,7 +78,6 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
-        self::CUSTOMER_ID,
         self::TOKEN,
         self::EMAIL,
         self::CONTACT,
@@ -159,7 +158,11 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
-    protected static $modifiers = array(self::CONTACT, self::BANK, 'method_based_input');
+    protected static $modifiers = array(
+        self::CONTACT,
+        self::BANK,
+        'method_based_input',
+        'convert_empty_strings_to_null');
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
@@ -234,6 +237,22 @@ class Entity extends Base\PublicEntity
         if ($input['method'] !== Method::WALLET)
         {
             $input['wallet'] = null;
+        }
+    }
+
+    protected function modifyConvertEmptyStringsToNull(& $input)
+    {
+        $array = array(
+            Entity::CUSTOMER_ID,
+            Entity::TOKEN,
+            Entity::APP_ID);
+
+        foreach ($array as $key)
+        {
+            if (empty($input[$key]))
+            {
+                $input[$key] = null;
+            }
         }
     }
 
