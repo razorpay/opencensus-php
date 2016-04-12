@@ -368,11 +368,11 @@ trait Authorize
 
             $cardInput = $payment->card->toArray();
 
-            if (isset($cardInput['token']) === false)
+            if (isset($cardInput['vault_token']) === false)
             {
-                $cardInput['token'] = $this->getCardToken($input['card']['number']);
+                $cardInput['vault_token'] = $this->getCardToken($input['card']['number']);
 
-                $cardInput['service'] = 'tokenex';
+                $cardInput['vault'] = 'tokenex';
             }
 
             $cardInput['number'] = $input['card']['number'];
@@ -695,8 +695,8 @@ trait Authorize
 
             if (empty($token) === false)
             {
-                $cardInput[Card\Entity::TOKEN] = $token;
-                $cardInput[Card\Entity::SERVICE] = 'tokenex';
+                $cardInput[Card\Entity::VAULT_TOKEN] = $token;
+                $cardInput[Card\Entity::VAULT] = 'tokenex';
             }
         }
 
@@ -721,7 +721,7 @@ trait Authorize
 
     protected function createCardEntityFromSavedMethod($method, $input)
     {
-        $cardNumber = $this->getCardNumber($method->card->getToken());
+        $cardNumber = $this->getCardNumber($method->card->getVaultToken());
         $cvv = $input['card']['cvv'];
 
         $savedCard = $method->card->toArray();
@@ -766,6 +766,11 @@ trait Authorize
         try
         {
             $cardNumber = $app['card.tokenex']->detokenize($token);
+
+            if (empty($cardNumber) === false)
+            {
+                $cardNumber = strval($cardNumber);
+            }
         }
         catch (Exception $e)
         {

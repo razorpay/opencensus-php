@@ -21,8 +21,8 @@ class Repository extends Base\Repository
         Payment\Entity::STATUS  => 'sometimes|string',
         Entity::EXPIRY_MONTH    => 'sometimes|integer|digits_between:1,2|max:12|min:1',
         ENTITY::EXPIRY_YEAR     => 'sometimes|integer|digits:4|non_past_year',
-        ENTITY::TOKEN           => 'sometimes|alphanum',
-        ENTITY::SERVICE         => 'required_with:token|in:tokenex'
+        ENTITY::VAULT_TOKEN     => 'sometimes|alphanum',
+        ENTITY::VAULT           => 'required_with:token|in:tokenex'
 
     );
 

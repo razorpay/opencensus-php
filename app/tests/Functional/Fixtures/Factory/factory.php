@@ -70,8 +70,8 @@ $factory(Models\Card\Entity::class, [
     'length'            => '16',
     'issuer'            => 'hdfc',
     'international'     => false,
-    'token'             => '1a2b3c4b5e',
-    'service'           => 'tokenex',
+    'vault_token'       => '1a2b3c4b5e',
+    'vault'             => 'tokenex',
     'trivia'            => '',
 ]);
 

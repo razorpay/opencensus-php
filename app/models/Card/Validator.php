@@ -14,16 +14,16 @@ class Validator extends Base\Validator
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'required|numeric|digits_between:3,4',
         Entity::NAME               => 'required|alpha_space|max:100',
-        Entity::TOKEN              => 'sometimes|alphanum',
-        Entity::SERVICE            => 'required_with:token|in:tokenex'
+        Entity::VAULT_TOKEN        => 'sometimes|alphanum',
+        Entity::VAULT              => 'required_with:vault_token|in:tokenex'
     );
 
     protected static $editRules = array(
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
         Entity::CVV                => 'required|numeric|digits_between:3,4',
         Entity::NAME               => 'sometimes|alpha_space|max:100',
-        Entity::TOKEN              => 'sometimes|alphanum',
-        Entity::SERVICE            => 'required_with:token|in:tokenex'
+        Entity::VAULT_TOKEN        => 'sometimes|alphanum',
+        Entity::VAULT              => 'required_with:vault_token|in:tokenex'
     );
 
     protected static $createValidators = array('expiry_date');

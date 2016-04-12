@@ -22,8 +22,8 @@ class Entity extends Base\PublicEntity
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
     const INTERNATIONAL     = 'international';
-    const TOKEN             = 'token';
-    const SERVICE           = 'service';
+    const VAULT_TOKEN       = 'vault_token';
+    const VAULT             = 'vault';
     const TRIVIA            = 'trivia';
 
     /**
@@ -54,8 +54,8 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::TYPE,
         self::ISSUER,
-        self::TOKEN,
-        self::SERVICE,
+        self::VAULT_TOKEN,
+        self::VAULT,
         self::INTERNATIONAL,
     );
 
@@ -87,8 +87,8 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
-        self::TOKEN,
-        self::SERVICE,
+        self::VAULT_TOKEN,
+        self::VAULT,
         self::NETWORK_CODE,
         self::TRIVIA,
     );
@@ -200,24 +200,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getCardToken()
-    {
-        return $this->getAttribute(self::TOKEN);
-    }
-
     public function getLast4()
     {
         return $this->getAttribute(self::LAST4);
     }
 
-    public function getToken()
+    public function getVaultToken()
     {
-        return $this->getAttribute(self::TOKEN);
+        return $this->getAttribute(self::VAULT_TOKEN);
     }
 
-    public function getService()
+    public function getVault()
     {
-        return $this->getAttribute(self::SERVICE);
+        return $this->getAttribute(self::VAULT);
     }
 
     public function getExpiryMonth()
