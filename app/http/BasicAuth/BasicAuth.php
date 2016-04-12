@@ -49,6 +49,12 @@ class BasicAuth
         'public_key' => '',
         'secret' => '');
 
+    const PRODUCTION_HOSTS = [
+        'alpha.razorpay.com',
+        'beta.razorpay.com',
+        'api.razorpay.com'
+    ];
+
     /**
      * Key used for authentication
      * @var Key\Entity
@@ -397,12 +403,17 @@ class BasicAuth
     }
 
 
+    /**
+     * Ensures that HTTPS is forced on all
+     * production environments
+     */
     public function verifyHttps()
     {
         $host = $this->request->getHttpHost();
-        $rootDomain = substr($host, -12);
 
-        if (( $rootDomain=== 'razorpay.com') and
+        // If we are on a production host and HTTP is being used
+        // Throw an error
+        if ( in_array($host, self::PRODUCTION_HOSTS) and
             ($this->request->secure() === false))
         {
             return ApiResponse::generateErrorResponse(
