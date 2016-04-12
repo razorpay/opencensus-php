@@ -6,6 +6,7 @@ use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const TOKEN                 = 'token';
     const METHOD                = 'method';
@@ -68,6 +69,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo('Models\Customer\Entity');
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('Models\Merchant\Entity');
     }
 
     public function card()

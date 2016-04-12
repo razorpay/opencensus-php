@@ -28,6 +28,7 @@ class Core extends Base\Core
         $token = (new Token\Entity)->build($input);
 
         $token->customer()->associate($customer);
+        $token->merchant()->associate($customer->merchant);
 
         $this->validateExistingToken($token);
 

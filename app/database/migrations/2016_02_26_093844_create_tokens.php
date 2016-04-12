@@ -25,14 +25,16 @@ class CreateTokens extends Migration {
             $table->char(Token::ID, 14)
                   ->primary();
 
-            $table->char(Token::CUSTOMER_ID, 14);
+            $table->char(Token::CUSTOMER_ID, Token::ID_LENGTH);
+
+            $table->char(Token::MERCHANT_ID, Token::ID_LENGTH);
 
             $table->char(Token::TOKEN, 14)
                   ->unique();
 
             $table->string(Token::METHOD, 10);
 
-            $table->char(Token::CARD_ID, 14)
+            $table->char(Token::CARD_ID, Token::ID_LENGTH)
                   ->nullable();
 
             $table->string(Token::BANK, 6)
@@ -59,6 +61,11 @@ class CreateTokens extends Migration {
                   ->references(Card\Entity::ID)
                   ->on(Table::CARD)
                   ->on_delete('restrict');
+
+            $table->foreign(Token::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
         });
     }
 
@@ -71,9 +78,11 @@ class CreateTokens extends Migration {
     {
         Schema::table(Table::TOKEN, function($table)
         {
-            $table->dropForeign(Table::TOKEN.'_'.Customer::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::TOKEN.'_'.Token::CUSTOMER_ID.'_foreign');
 
-            $table->dropForeign(Table::TOKEN.'_'.Customer::CARD_ID.'_foreign');
+            $table->dropForeign(Table::TOKEN.'_'.Token::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(Table::TOKEN.'_'.Token::CARD_ID.'_foreign');
         });
 
         Schema::drop(Table::TOKEN);

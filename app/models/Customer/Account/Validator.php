@@ -17,7 +17,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         Entity::CONTACT         =>      'sometimes',
-        Entity::NAME            =>      'sometimes|alhpa_space_num|max:50',
+        Entity::NAME            =>      'sometimes|alpha_space_num|max:50',
         Entity::ACTIVE          =>      'sometimes|in:0,1',
         Entity::EMAIL           =>      'sometimes|email',
     );
