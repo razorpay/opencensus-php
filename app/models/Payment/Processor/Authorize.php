@@ -391,7 +391,6 @@ trait Authorize
     protected function savePaymentMethod($customer, $payment, $input, array & $gatewayInput)
     {
         $saveMethodInput = array(
-            'customer_id' => $customer->getId(),
             'method'      => $payment->getMethod(),
         );
 
@@ -432,7 +431,7 @@ trait Authorize
             (new Token\Core)->create($customer, $saveMethodInput);
         }
         catch (Exception\BaseException $e)
-        {
+        {sd($e->getTraceAsString(), $e->getMessage());
             // Ignore the exception, can be an already saved method
         }
     }

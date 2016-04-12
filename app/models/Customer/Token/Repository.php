@@ -34,4 +34,17 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::TOKEN, '=', $token)
                     ->first();
     }
+
+    public function getByMethodAndCustomerId($method, $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::METHOD, '=', $method)
+                    ->where(Entity::CUSTOMER_ID, '=', $customerId)
+                    ->get();
+    }
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
+    }
 }

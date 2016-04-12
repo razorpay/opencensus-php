@@ -107,10 +107,10 @@ class Core extends Base\Core
     {
         $params = array(
             Token\Entity::METHOD      => $token->getMethod(),
-            Token\Entity::CUSTOMER_ID => $token->getCustomerId(),
-        );
+            Token\Entity::CUSTOMER_ID => $token->getCustomerId());
 
-        $existingTokens = $this->repo->fetch($params);
+        $existingTokens = $this->repo->getByMethodAndCustomerId(
+                                $token->getMethod(), $token->getCustomerId());
 
         $func = 'validateExistingToken'.$token->getMethod();
 
@@ -121,7 +121,7 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if($token->getCardId() === $newToken->getCardId())
+            if ($token->getCardId() === $newToken->getCardId())
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS);

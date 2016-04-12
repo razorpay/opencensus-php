@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CUSTOMER_ID,
         self::GATEWAY_TOKEN,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     );
 
     protected $public = array(
