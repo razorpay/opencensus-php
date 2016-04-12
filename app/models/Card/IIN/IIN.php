@@ -56,7 +56,7 @@ class IIN
         ],
     );
 
-    public static function isValidCardForBank($bank, $cardNumber)
+    protected static function isValidCardForBank($bank, $cardNumber)
     {
         if (in_array($bank, self::$emiBanks))
         {
@@ -73,4 +73,12 @@ class IIN
 
         return true;
     }
+
+    public static function isEmiAvailableForCard($iin, $cardNumber)
+    {
+        $emi = $iin->isEmiAvailable() and self::isValidCardForBank($iin->getIssuer(), $cardNumber);
+
+        return $emi;
+    }
+
 }

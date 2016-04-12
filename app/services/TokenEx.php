@@ -18,6 +18,7 @@ class TokenEx
     const REFERENCE_NUMBER  = 'ReferenceNumber';
     const ERROR             = 'Error';
     const VALID             = 'Valid';
+    const VALUE             = 'Value';
 
     protected $tokenScheme;
 
@@ -83,7 +84,7 @@ class TokenEx
 
         $response = $this->sendRequest('REST/Detokenize', 'post', $input);
 
-        return $response;
+        return $response[self::VALUE];
     }
 
     public function deleteToken($token)

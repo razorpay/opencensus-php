@@ -2,15 +2,21 @@
 
 namespace Models\Card;
 
+
 class Type
 {
     const CREDIT     = 'credit';
     const DEBIT      = 'debit';
     const UNKNOWN    = 'unknown';
 
-    public static function getType($type)
+    public static function getType($type, $network = null)
     {
-        if ($type === '')
+        if ($network === Network::AMEX)
+        {
+            return self::CREDIT;
+        }
+
+        if (empty($type))
         {
             return self::UNKNOWN;
         }

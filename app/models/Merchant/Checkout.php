@@ -4,6 +4,7 @@ namespace Models\Merchant;
 
 use Constants\Mode;
 use Models\Base;
+use Models\Customer;
 use Models\Merchant;
 use Models\Card;
 use Models\Key;
@@ -18,7 +19,7 @@ use Trace\TraceCode;
 
 class Checkout
 {
-    public function getPreferences($merchant, $mode)
+    public function getPreferences($merchant, $mode, $input)
     {
         $methodsArray = array(
             'entity'        => 'methods',
@@ -51,6 +52,24 @@ class Checkout
         if ($merchant->isFeeBearerCustomer())
         {
             $data['fee_bearer'] = true;
+        }
+
+        //fetch saved cards data if app_id or customer_id is set
+
+        $savedTokens = null;
+
+        if (isset($input['customer_id']))
+        {
+            $savedTokens = (new Customer\Token\Core)->fetchTokensbyCustomerId($merchant->getId(), $input['customer_id']);
+        }
+        else if (isset($input['app_id']))
+        {
+            $savedTokens = (new Customer\Token\Core)->fetchTokensByAppId($merchant->getId(), $input['app_id']);
+        }
+
+        if (($savedTokens !== null) and ($savedTokens->count() !== 0))
+        {
+            $data['tokens'] = $savedTokens->toArrayPublic();
         }
 
         return $data;

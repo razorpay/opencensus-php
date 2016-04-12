@@ -38,6 +38,11 @@ $public_url = $key_id.'@'.$baseurl;
             <label>Expiry Year</label><input required id="card_year" value="34">
             <label>CVV</label><input required id="card_cvv" value="300">
         </div>
+        <div class="section">
+            <label>Save</label><input type="input" id="save" value="">
+            <label>Customer Id</label><input id="customer_id" value="">
+            <label>Token</label><input id="token" value="">
+        </div>
         <div style="clear: both"></div>
         <input id="submit" type="submit" value="Purchase" class="pure-button pure-button-primary">
     </form>
