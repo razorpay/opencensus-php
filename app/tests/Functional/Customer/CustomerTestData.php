@@ -69,11 +69,6 @@ return [
             'content' => [
                 'items' => [
                     [
-                        'token'         => '100wallettoken',
-                        'method'        => 'wallet',
-                        'wallet'        => 'paytm',
-                    ],
-                    [
                         'token'         => '10000banktoken',
                         'method'        => 'netbanking',
                         'bank'          => 'HDFC',
@@ -85,6 +80,11 @@ return [
                             'last4'         => '1111',
                             'network'       => 'Visa',
                         ]
+                    ],
+                    [
+                        'token'         => '100wallettoken',
+                        'method'        => 'wallet',
+                        'wallet'        => 'paytm',
                     ],
                 ]
             ],
