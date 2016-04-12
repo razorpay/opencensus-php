@@ -249,7 +249,7 @@ trait Authorize
 
             $payment = $this->repo->lockForUpdate($payment->getKey());
 
-            assert (($payment->isStatusCreatedOrFailed());
+            assert ($payment->isStatusCreatedOrFailed());
 
             $payment->setErrorNull();
             $payment->setVerified(true);
