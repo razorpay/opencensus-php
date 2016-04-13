@@ -234,12 +234,12 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_plans',
-        // 'fetch_saved_tokens_by_app_id',
-        // 'fetch_cust_status_by_contact',
-        // 'delete_token_for_app',
-        // 'post_otp',
-        // 'verify_otp',
-        // 'otp_callback',
+        'fetch_saved_tokens_by_app_id',
+        'fetch_cust_status_by_contact',
+        'delete_token_for_app',
+        'post_otp',
+        'verify_otp',
+        'otp_callback',
     );
 
     public static $publicCallback = array(
@@ -266,7 +266,6 @@ final class Route
         'get_customer',
         // 'delete_customer',
         'delete_customer_token',
-        // 'fetch_customer_token',
         'fetch_customer_tokens',
     );
 
@@ -392,6 +391,7 @@ final class Route
         'account_fetch_balance',
         'account_fetch_config',
         'submerchant_create',
+        'fetch_customer_token',
     );
 
     public static $direct = array(

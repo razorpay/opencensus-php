@@ -79,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::DESCRIPTION,
         self::TOKEN,
+        self::APP_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,

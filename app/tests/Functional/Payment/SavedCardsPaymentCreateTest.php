@@ -60,8 +60,6 @@ class SavedCardPaymentCreateTest extends TestCase
 
     public function testGlobalSavedCardPaymentCreate()
     {
-        $this->markTestSkipped();
-
         $this->payment['card'] = array(
             'cvv'  => 111
         );
@@ -70,6 +68,12 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['app_id'] = '1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['token'], '1000gcardtoken');
+        $this->assertEquals($payment['app_id'], '1000000custapp');
+
     }
 
     public function testPaymentCreateAndSaveCardLocal()
@@ -134,12 +138,27 @@ class SavedCardPaymentCreateTest extends TestCase
 
     public function testPaymentCreateAndSaveCardGlobal()
     {
-        $this->markTestSkipped();
-
         $this->payment['save'] = 1;
-
+        $this->payment['card']['number'] = '4000400000000004';
         $this->payment['app_id'] = '1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $card = $this->getLastEntity('card', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('card_'.$payment['card_id'], $card['id']);
+        $this->assertNotEquals('card_'.$token['card_id'], $card['id']);
+
+        $this->payment['card'] = array('cvv'  => 111);
+        $this->payment['token'] = $token['token'];
+        $this->payment['app_id'] = '1000000custapp';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['token'], $token['token']);
+        $this->assertEquals($payment['app_id'], '1000000custapp');
     }
 }

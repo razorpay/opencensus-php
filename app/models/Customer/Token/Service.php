@@ -102,11 +102,16 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function delete($id, $token)
+    public function delete($id, $token, $merchantId = null)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
+        $customer = $this->repo->findByIdAndMerchantId($id, $merchantId);
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
@@ -130,6 +135,8 @@ class Service extends Base\Service
     {
         $app = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $this->merchant->getId());
 
-        return $this->delete($app->getCustomerId(), $token);
+        $customerId = Customer\Entity::getIdPrefix().$app->getCustomerId();
+
+        return $this->delete($customerId, $token, Account::SHARED_ACCOUNT);
     }
 }
