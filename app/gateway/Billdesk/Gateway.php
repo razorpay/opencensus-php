@@ -425,6 +425,12 @@ class Gateway extends Base\Gateway
             'RU'                        => $input['callbackUrl'],
         );
 
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $content['Unknown1'] = $input['order']['account_id'];
+        }
+
         if ($this->mode === Mode::TEST)
         {
             $content['MerchantID'] = $this->getTestMerchantId();

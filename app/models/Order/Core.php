@@ -19,7 +19,7 @@ class Core extends Base\Core
     {
         $order = (new Entity)->build($input);
 
-        (new Validator)->validateCategoryRequirement($order, $merchant);
+        (new Validator)->validateMerchantSpecificData($order, $merchant);
 
         $order->merchant()->associate($merchant);
 

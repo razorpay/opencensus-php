@@ -199,6 +199,11 @@ trait Authorize
         $gatewayInput['payment'] = $payment->toArray();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+
+        if ($payment->order)
+        {
+            $gatewayInput['order'] = $payment->order->toArray();
+        }
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)

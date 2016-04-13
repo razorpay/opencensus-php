@@ -436,14 +436,12 @@ class Processor
 
     protected function setOrderDetails($payment, $input)
     {
-        $category = $this->merchant->getCategory();
-
         if (empty($input['order_id']) === true)
         {
-            if ($this->isOrderRequiredForCategory($category))
+            if ($this->merchant->isTPVRequired())
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Merchant category requires Order.');
+                    'This merchant requires Third Party Validation data.');
             }
 
             return;
@@ -460,9 +458,13 @@ class Processor
             $amount = $amount - $payment->getFee();
         }
 
+        // Move this to a common validate function.
         (new Order\Validator)->validateOrderAmount($this->order, $amount);
 
         (new Order\Validator)->validateOrderPaidFor($this->order);
+
+        (new Order\Validator)->validateMerchantSpecificData($this->order,
+                                                    $this->merchant);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
@@ -471,18 +473,6 @@ class Processor
         $this->order->saveOrFail();
 
         $payment->order()->associate($this->order);
-    }
-
-    protected function isOrderRequiredForCategory($category)
-    {
-        $orderRequiredCategories = array(6211 => 6211);
-
-        if (isset($orderRequiredCategories[$category]))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function tracePaymentFailed($error, $traceCode)

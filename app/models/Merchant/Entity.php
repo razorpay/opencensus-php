@@ -462,4 +462,18 @@ class Entity extends Base\PublicEntity
 
         return "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
     }
+
+    public function isTPVRequired()
+    {
+        $tpvCategories = array(6211 => 6211);
+
+        $category = $this->getCategory();
+
+        if (isset($tpvCategories[$category]))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

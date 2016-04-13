@@ -37,7 +37,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
-        self::NOTES
+        self::NOTES,
+        self::METHOD,
+        self::ACCOUNT_ID,
     );
 
     protected $table = \Constants\Table::ORDER;
@@ -48,7 +50,9 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS   => 0,
         self::STATUS     => Status::CREATED,
         self::AUTHORIZED => 0,
-        self::NOTES      => []
+        self::NOTES      => [],
+        self::METHOD     => null,
+        self::ACCOUNT_ID => null,
     );
 
     protected $public = array(
@@ -59,6 +63,8 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::STATUS,
         self::ATTEMPTS,
+        self::METHOD,
+        self::ACCOUNT_ID,
         // self::NOTES,
         self::CREATED_AT
     );

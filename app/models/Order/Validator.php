@@ -13,6 +13,8 @@ class Validator extends Base\Validator
         'currency'      =>  'required|size:3|in:INR',
         'receipt'       =>  'required|string|max:40',
         'notes'         =>  'sometimes|notes',
+        'method'        =>  'sometimes',
+        'account_id'    =>  'sometimes',
     );
 
     public function validateOrderPaidFor($order)
@@ -37,32 +39,24 @@ class Validator extends Base\Validator
     }
 
     // Could have been placed in validator, but there could be more.
-    public function validateCategoryRequirement($order, $merchant)
+    public function validateMerchantSpecificData($order, $merchant)
     {
-        $category = $merchant->getCategory();
+        $tpvRequired = $merchant->isTPVRequired();
 
-        switch ($category) {
-            case 6211:
-                $this->validateSecuritiesOrder($order);
-                break;
+        if ($tpvRequired)
+        {
+            if (empty($order->getMethod()))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ORDER_CATEGORY_METHOD_REQUIRED);
+            }
 
-            default:
-                break;
+            if (empty($order->getAccountId()))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ORDER_CATEGORY_ACCOUNT_ID_REQUIRED);
+            }
         }
     }
 
-    public function validateSecuritiesOrder($order)
-    {
-        if (empty($order->getMethod()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_CATEGORY_METHOD_REQUIRED);
-        }
-
-        if (empty($order->getAccountId()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_CATEGORY_ACCOUNT_ID_REQUIRED);
-        }
-    }
 }
