@@ -104,10 +104,7 @@ class Newsletter
         // Attaching the Transaction Report Emails
         if (isset($merchant['transaction_report_email']))
         {
-            $emails = explode(',', $merchant['transaction_report_email']);
-            $emails = array_map('trim', $emails);
-
-            foreach ($emails as $email)
+            foreach ($merchant['transaction_report_email'] as $email)
             {
                 $response[] = json_encode([
                         'address' => $email,
