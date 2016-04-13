@@ -271,15 +271,8 @@ class Newsletter
 
     public function send()
     {
-        //No need to do anything if we are mocking
-        if ($this->config['mock'] === true)
-        {
-            return [
-                'email' =>  'nobody, mocked'
-            ];
-        }
-
         $data = $this->data;
+
         $config = $this->config;
 
         if (isset($this->lists))

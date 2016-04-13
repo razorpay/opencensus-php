@@ -668,7 +668,7 @@ class Service extends Base\Service
                     break;
 
                 case 'email':
-                    if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+                    if (Holidays::isDayHoliday('tomorrow', $this->mode, true) === false)
                     {
                         return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
                     }
