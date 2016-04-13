@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         }
     }
 
-    // Could have been placed in validator, but suspect there could be more.
+    // Could have been placed in validator, but there could be more.
     public function validateCategoryRequirement($order, $merchant)
     {
         $category = $merchant->getCategory();
@@ -53,13 +53,13 @@ class Validator extends Base\Validator
 
     public function validateSecuritiesOrder($order)
     {
-        if (isset($order->getMethod()) === false)
+        if (empty($order->getMethod()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_CATEGORY_METHOD_REQUIRED);
         }
 
-        if (isset($order->getAccountId()) === false)
+        if (empty($order->getAccountId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_CATEGORY_ACCOUNT_ID_REQUIRED);
