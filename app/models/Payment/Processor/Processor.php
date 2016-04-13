@@ -441,7 +441,7 @@ class Processor
             if ($this->merchant->isTPVRequired())
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'This merchant requires Third Party Validation data.');
+                    ErrorCode::BAD_REQUEST_ORDER_DATA_REQUIRED_FOR_MERCHANT);
             }
 
             return;
