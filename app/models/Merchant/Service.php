@@ -656,7 +656,8 @@ class Service extends Base\Service
                 'Notification of Bank Holiday',
                 $msg);
 
-            switch ($input['action']) {
+            switch ($input['action'])
+            {
                 case 'test_email':
                     $mailer->setTestEmail($input['lists']);
                     break;
