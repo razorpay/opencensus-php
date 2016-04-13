@@ -2,6 +2,9 @@
 
 namespace Tests\Functional\Payment;
 
+use File;
+use Carbon\Carbon;
+
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -61,24 +64,45 @@ class EmiPaymentTest extends TestCase
     {
         $emiPlan = $this->emiPlan;
 
+        //Making transactions hapen yesterday
+        $yesterdayAtTen = Carbon::yesterday('Asia/Kolkata')->addHours(10)->timestamp;
+
         $this->fixtures->merchant->enableEmi();
 
         $this->ba->publicAuth();
 
         //Kotak Card
         $this->makeEmiPaymentOnCard('4280951000002433', 9);
+        $payment = $this->getLastEntity('payment', true);
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at'  => $yesterdayAtTen - 2,
+            'authorized_at' => $yesterdayAtTen,
+            'captured_at' => $yesterdayAtTen + 2,
+            'updated_at' => $yesterdayAtTen + 2,
+        ]);
 
         //Axis Card
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
+        $payment = $this->getLastEntity('payment', true);
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at'  => $yesterdayAtTen - 2,
+            'authorized_at' => $yesterdayAtTen,
+            'captured_at' => $yesterdayAtTen + 2,
+            'updated_at' => $yesterdayAtTen + 2,
+        ]);
 
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
             'content' => array());
 
-        $this->ba->privateAuth();
+        $this->ba->appAuth();
 
         $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(count($content), 2);
+        $this->assertEquals(File::exists($content['KKBK']), true);
+        $this->assertEquals(File::exists($content['UTIB']), true);
 
         $this->fixtures->merchant->disableEmi();
     }
