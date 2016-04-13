@@ -649,7 +649,7 @@ class Service extends Base\Service
     {
         $msg = $this->getHolidayNotificationMsg();
 
-        if (isset($errors))
+        if (empty($errors))
         {
             $mailer = new Newsletter(
                 $input['lists'],
