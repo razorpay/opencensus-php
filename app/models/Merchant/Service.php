@@ -633,27 +633,7 @@ class Service extends Base\Service
 
         if (isset($input['action']))
         {
-            $msg = $this->getHolidayNotificationMsg();
-
-            switch ($input['action']) {
-                case 'test_email':
-                case 'add_to_list':
-                    $response = $this->sendTestHolidayNotificationMail($input, $msg);
-                    break;
-
-                case 'email':
-                    if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
-                    {
-                        return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-                    }
-
-                    $response = $this->sendHolidayNotificationMail($input, $msg);
-
-                    break;
-
-                default:
-                    break;
-            }
+            $response = $this->sendMerchantNotifyHolidayEmail($input);
         }
 
         // Log just the result of the settlement reports
@@ -665,29 +645,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function sendHolidayNotificationMail($input, $msg)
+    protected function sendMerchantNotifyHolidayEmail($input)
     {
-        if (empty($errors))
-        {
-            $mailer = new Newsletter(
-                $input['lists'],
-                'Notification of Bank Holiday',
-                $msg);
+        $msg = $this->getHolidayNotificationMsg();
 
-            // Currently live@ and newsletter@ are available on mailgun
-            $mailer->setMailingListName($input['lists']);
-
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
-    }
-
-    protected function sendTestHolidayNotificationMail($input, $msg)
-    {
-        if (empty($errors))
+        if (isset($errors))
         {
             $mailer = new Newsletter(
                 $input['lists'],
@@ -700,12 +662,21 @@ class Service extends Base\Service
                     break;
 
                 case 'add_to_list':
-                    // Currently live@ and newsletter@ are available on mailgun
                     $mailer->setTestListMembersAdd();
                     $mailer->setMailingListName($input['lists']);
                     break;
 
+                case 'email':
+                    if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+                    {
+                        return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+                    }
+
+                    $mailer->setMailingListName($input['lists']);
+                    break;
+
                 default:
+                    return ['message' => 'No Appropriate action has been set. Nothing done.'];
                     break;
             }
 
@@ -715,6 +686,7 @@ class Service extends Base\Service
         {
             return $errors;
         }
+
     }
 
     protected function getHolidayNotificationMsg()
