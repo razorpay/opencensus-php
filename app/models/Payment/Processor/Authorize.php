@@ -7,6 +7,7 @@ use EE\Exception;
 use EE\Error;
 use EE\Error\ErrorCode;
 use Http\Route;
+use Models\Merchant;
 use Models\Merchant\Methods;
 use Models\Card;
 use Models\Card\IIN;
@@ -280,7 +281,7 @@ trait Authorize
 
             assert($customerApp !== null);
 
-            $customerId = $customerApp->getCustomerId();
+            $customerId = Customer\Entity::getIdPrefix() . $customerApp->getCustomerId();
             $merchantId = Merchant\Account::SHARED_ACCOUNT;
         }
         else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
@@ -418,9 +419,8 @@ trait Authorize
                 // Create a local card entity specific to merchant.
                 // Link to parent global card entity and to payment entity.
                 //
-                $card = (new Card\Core)->createDuplicateCard($savedCard->toArray(), $this->merchant);
 
-                $payment->associate($card);
+                $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
             }
 
         }

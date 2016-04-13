@@ -44,7 +44,6 @@ return array(
     ),
 
     'raven' => array(
-        //'url'       => $_ENV['RAVEN_API_URL'],
-        'url'   => ''
+        'url'       => $_ENV['RAVEN_API_URL'],
     ),
 );
