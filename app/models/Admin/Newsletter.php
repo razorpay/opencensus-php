@@ -37,6 +37,8 @@ class Newsletter
         $this->template = $template;
 
         $this->lists = $recipient;
+
+        $this->testListMemberAdd = false;
     }
 
     protected function setupData($subject, $msg)
@@ -192,6 +194,11 @@ class Newsletter
         }
 
         $listAddress = $this->createListOnMailgun($this->listName);
+
+        if ($this->testListMemberAdd === false)
+        {
+            return $listAddress;
+        }
 
         $chunks = $this->getMerchantListChunks($lists);
 

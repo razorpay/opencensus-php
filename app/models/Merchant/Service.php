@@ -629,18 +629,31 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
-        if (isset($input['test']))
-        {
-            $response = $this->sendTestHolidayNotificationMail($input);
-        }
-        else
-        {
-            if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
-            {
-                return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-            }
+        $response = '';
 
-            $response = $this->sendHolidayNotificationMail($input);
+        if (isset($input['action']))
+        {
+            $msg = $this->getHolidayNotificationMsg();
+
+            switch ($input['action']) {
+                case 'test_email':
+                case 'add_to_list':
+                    $response = $this->sendTestHolidayNotificationMail($input, $msg);
+                    break;
+
+                case 'email':
+                    if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+                    {
+                        return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+                    }
+
+                    $response = $this->sendHolidayNotificationMail($input, $msg);
+
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         // Log just the result of the settlement reports
@@ -652,10 +665,8 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function sendHolidayNotificationMail($input)
+    protected function sendHolidayNotificationMail($input, $msg)
     {
-        $msg = $this->getHolidayNotificationMsg();
-
         if (empty($errors))
         {
             $mailer = new Newsletter(
@@ -674,10 +685,8 @@ class Service extends Base\Service
         }
     }
 
-    protected function sendTestHolidayNotificationMail($input)
+    protected function sendTestHolidayNotificationMail($input, $msg)
     {
-        $msg = $this->getHolidayNotificationMsg();
-
         if (empty($errors))
         {
             $mailer = new Newsletter(
@@ -685,17 +694,18 @@ class Service extends Base\Service
                 'Notification of Bank Holiday',
                 $msg);
 
-            switch ($input['test']) {
-                case 'email':
-
+            switch ($input['action']) {
+                case 'test_email':
                     $mailer->setTestEmail($input['lists']);
                     break;
 
                 case 'add_to_list':
-                default:
                     // Currently live@ and newsletter@ are available on mailgun
                     $mailer->setTestListMembersAdd();
                     $mailer->setMailingListName($input['lists']);
+                    break;
+
+                default:
                     break;
             }
 
