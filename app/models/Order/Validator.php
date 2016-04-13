@@ -36,22 +36,33 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateOrderMethodAndAccount($order, $paymentMethod, $paymentAccount)
+    // Could have been placed in validator, but suspect there could be more.
+    public function validateCategoryRequirement($order, $merchant)
     {
-        if ((isset($order->getMethod())) and
-             ($order->getMethod() !== $paymentMethod))
+        $category = $merchant->getCategory();
+
+        switch ($category) {
+            case 6211:
+                $this->validateSecuritiesOrder($order);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public function validateSecuritiesOrder($order)
+    {
+        if (isset($order->getMethod()) === false)
         {
-            // Order and Payment amount mismatch
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_METHOD_MISMATCH);
+                ErrorCode::BAD_REQUEST_ORDER_CATEGORY_METHOD_REQUIRED);
         }
 
-        if ((isset($order->getAccountId())) and
-            ($order->getAccountId() !== $paymentAccount))
+        if (isset($order->getAccountId()) === false)
         {
-            // Order and Payment amount mismatch
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ACCOUNT_MISMATCH);
+                ErrorCode::BAD_REQUEST_ORDER_CATEGORY_ACCOUNT_ID_REQUIRED);
         }
     }
 }

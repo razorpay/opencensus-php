@@ -436,8 +436,16 @@ class Processor
 
     protected function setOrderDetails($payment, $input)
     {
+        $category = $this->merchant->getCategory();
+
         if (empty($input['order_id']) === true)
         {
+            if ($this->isOrderRequiredForCategory($category))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Merchant category requires Order.');
+            }
+
             return;
         }
 
@@ -463,6 +471,18 @@ class Processor
         $this->order->saveOrFail();
 
         $payment->order()->associate($this->order);
+    }
+
+    protected function isOrderRequiredForCategory($category)
+    {
+        $orderRequiredCategories = array(6211 => 6211);
+
+        if (isset($orderRequiredCategories[$category]))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function tracePaymentFailed($error, $traceCode)

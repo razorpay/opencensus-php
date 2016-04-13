@@ -19,6 +19,8 @@ class Core extends Base\Core
     {
         $order = (new Entity)->build($input);
 
+        (new Validator)->validateCategoryRequirement($order, $merchant);
+
         $order->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($order);
