@@ -58,7 +58,7 @@ class CreateOrders extends Migration {
             $table->string(Order::METHOD)
                   ->nullable();
 
-            $table->string(Order::ACCOUNT_ID)
+            $table->string(Order::ACCOUNT_NUMBER)
                   ->nullable();
 
             // $table->integer(Order::CREATED_AT);

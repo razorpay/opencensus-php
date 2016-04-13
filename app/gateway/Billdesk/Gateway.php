@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
-            'Unknown1'                  => 'NA',
+            'AccountNumber'             => 'NA',
             'TxnAmount'                 => $input['payment']['amount'] / 100,
             'BankID'                    => $bankId,
             'Unknown2'                  => 'NA',
@@ -428,7 +428,7 @@ class Gateway extends Base\Gateway
         // Change Content for Merchants with TPV Required
         if ($input['merchant']->isTPVRequired())
         {
-            $content['Unknown1'] = $input['order']['account_id'];
+            $content['AccountNumber'] = $input['order']['account_number'];
         }
 
         if ($this->mode === Mode::TEST)

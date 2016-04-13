@@ -9,13 +9,13 @@ use EE\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        =>  'required|integer|max:50000000',
-        'currency'      =>  'required|size:3|in:INR',
-        'receipt'       =>  'required|string|max:40',
-        'customer_id'   =>  'sometimes',
-        'notes'         =>  'sometimes|notes',
-        'method'        =>  'sometimes',
-        'account_id'    =>  'sometimes',
+        Entity::AMOUNT         =>  'required|integer|max:50000000',
+        Entity::CURRENCY       =>  'required|size:3|in:INR',
+        Entity::RECEIPT        =>  'required|string|max:40',
+        Entity::CUSTOMER_ID    =>  'sometimes',
+        Entity::NOTES          =>  'sometimes|notes',
+        Entity::METHOD         =>  'sometimes',
+        Entity::ACCOUNT_NUMBER =>  'sometimes',
     );
 
     public function validateOrderPaidFor($order)
@@ -52,7 +52,7 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_ORDER_CATEGORY_METHOD_REQUIRED);
             }
 
-            if (empty($order->getAccountId()))
+            if (empty($order->getAccountNumber()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ORDER_CATEGORY_ACCOUNT_ID_REQUIRED);

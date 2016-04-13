@@ -459,11 +459,13 @@ class Processor
         }
 
         // Move this to a common validate function.
-        (new Order\Validator)->validateOrderAmount($this->order, $amount);
+        $validator = new Order\Validator;
 
-        (new Order\Validator)->validateOrderPaidFor($this->order);
+        $validator->validateOrderAmount($this->order, $amount);
 
-        (new Order\Validator)->validateMerchantSpecificData($this->order,
+        $validator->validateOrderPaidFor($this->order);
+
+        $validator->validateMerchantSpecificData($this->order,
                                                     $this->merchant);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);

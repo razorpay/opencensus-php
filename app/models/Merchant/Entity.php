@@ -467,7 +467,8 @@ class Entity extends Base\PublicEntity
 
     public function isTPVRequired()
     {
-        $tpvCategories = array(6211 => 6211);
+        //Test Category Code
+        $tpvCategories = array(9999 => 9999);
 
         $category = $this->getCategory();
 

@@ -9,24 +9,24 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID            = 'id';
-    const MERCHANT_ID   = 'merchant_id';
-    const AMOUNT        = 'amount';
-    const CURRENCY      = 'currency';
-    const ATTEMPTS      = 'attempts';
-    const STATUS        = 'status';
-    const NOTES         = 'notes';
+    const ID             = 'id';
+    const MERCHANT_ID    = 'merchant_id';
+    const AMOUNT         = 'amount';
+    const CURRENCY       = 'currency';
+    const ATTEMPTS       = 'attempts';
+    const STATUS         = 'status';
+    const NOTES          = 'notes';
 
     // Ideally should be a unique from the merchant side as well
-    const RECEIPT       = 'receipt';
+    const RECEIPT        = 'receipt';
 
     // To Mark If a payment corresponding to
     // this order is in authorized state
-    const AUTHORIZED    = 'authorized';
-    const METHOD        = 'method';
-    const ACCOUNT_ID    = 'account_id';
+    const AUTHORIZED     = 'authorized';
+    const METHOD         = 'method';
+    const ACCOUNT_NUMBER = 'account_number';
 
-    const CUSTOMER_ID   = 'customer_id';
+    const CUSTOMER_ID    = 'customer_id';
 
 
     // const CREATED_AT  = 'created_at';
@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::NOTES,
         self::METHOD,
-        self::ACCOUNT_ID,
+        self::ACCOUNT_NUMBER,
     );
 
     protected $table = \Constants\Table::ORDER;
@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
         self::AUTHORIZED => 0,
         self::NOTES      => [],
         self::METHOD     => null,
-        self::ACCOUNT_ID => null,
+        self::ACCOUNT_NUMBER => null,
     );
 
     protected $public = array(
@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ATTEMPTS,
         self::METHOD,
-        self::ACCOUNT_ID,
+        self::ACCOUNT_NUMBER,
         // self::NOTES,
         self::CREATED_AT
     );
@@ -121,9 +121,9 @@ class Entity extends Base\PublicEntity
         return $this->getAmountAttribute();
     }
 
-    public function getAccountId()
+    public function getAccountNumber()
     {
-        return $this->attributes[self::ACCOUNT_ID];
+        return $this->attributes[self::ACCOUNT_NUMBER];
     }
 
     public function getMethod()
