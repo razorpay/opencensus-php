@@ -39,9 +39,9 @@ class Validator extends Base\Validator
         }
     }
 
-    // Could have been placed in validator, but there could be more.
     public function validateMerchantSpecificData($order, $merchant)
     {
+        // TPV - Third Party Validation
         $tpvRequired = $merchant->isTPVRequired();
 
         if ($tpvRequired)
@@ -49,13 +49,13 @@ class Validator extends Base\Validator
             if (empty($order->getMethod()))
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ORDER_CATEGORY_METHOD_REQUIRED);
+                    ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
             }
 
             if (empty($order->getAccountNumber()))
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ORDER_CATEGORY_ACCOUNT_ID_REQUIRED);
+                    ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);
             }
         }
     }

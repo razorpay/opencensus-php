@@ -465,9 +465,10 @@ class Entity extends Base\PublicEntity
         return "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
     }
 
+    // TPV - Third Party Validation
     public function isTPVRequired()
     {
-        //Test Category Code
+        // 9999 - Test MCC requiring TPV
         $tpvCategories = array(9999 => 9999);
 
         $category = $this->getCategory();
