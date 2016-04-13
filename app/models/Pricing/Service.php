@@ -53,6 +53,7 @@ class Service extends Base\Service
         $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
 
         $rule->getValidator()->matchPaymentRules($plan);
+        $rule->generateId();
 
         (new Pricing\Repository)->saveOrFail($rule);
 

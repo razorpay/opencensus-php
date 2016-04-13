@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'pricing';
 
-    protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate = false;
 
     /**
      * Fields which will be modified before
