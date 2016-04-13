@@ -31,6 +31,8 @@ class Service extends Base\Service
 
         Pricing\Validator::validatePlanCountZero($plan);
 
+        $pricing->generateId();
+
         $this->repo->saveOrFail($pricing);
 
         $plan = new Plan(array($pricing));
