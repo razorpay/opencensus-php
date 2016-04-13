@@ -37,6 +37,8 @@ class Newsletter
         $this->template = $template;
 
         $this->lists = $recipient;
+
+        $this->testListMemberAdd = false;
     }
 
     protected function setupData($subject, $msg)
@@ -65,12 +67,12 @@ class Newsletter
 
             case 'live':
                 $merchants = $repo->fetchAllLiveMerchants()
-                    ->select(['email', 'name'])->get();
+                    ->select(['email', 'name', 'transaction_report_email'])->get();
                 break;
 
             case 'recent':
                 $merchants = $repo->fetchRecentMerchants()
-                    ->select(['email', 'name'])->get();
+                    ->select(['email', 'name','transaction_report_email'])->get();
                 break;
 
             case 'default':
@@ -86,13 +88,31 @@ class Newsletter
             // because array_unique only works on strings
             // This isn't precise but it doesn't matter
             // because mailgun is set to ignore duplicate entries
-            $response[] = json_encode([
-                'address' => $merchant['email'],
-                'name'    => $merchant['name']
-            ]);
+            $this->encodeMerchantDetails($merchant, $response);
         }
 
         return $response;
+    }
+
+    protected function encodeMerchantDetails($merchant, &$reposnse)
+    {
+        $response[] = json_encode([
+                'address' => $merchant['email'],
+                'name'    => $merchant['name']
+            ]);
+
+        // Attaching the Transaction Report Emails
+        if (isset($merchant['transaction_report_email']))
+        {
+            foreach ($merchant['transaction_report_email'] as $email)
+            {
+                $response[] = json_encode([
+                        'address' => $email,
+                        'name'    => $merchant['name']
+                    ]);
+            }
+
+        }
     }
 
     /**
@@ -171,6 +191,11 @@ class Newsletter
         }
 
         $listAddress = $this->createListOnMailgun($this->listName);
+
+        if ($this->testListMemberAdd === false)
+        {
+            return $listAddress;
+        }
 
         $chunks = $this->getMerchantListChunks($lists);
 

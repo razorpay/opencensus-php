@@ -38,6 +38,9 @@ class TraceCode
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';
+    const CUSTOMER_TOKEN_EDIT                       = 'CUSTOMER_TOKEN_EDIT';
+
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
@@ -124,9 +127,11 @@ class TraceCode
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+    const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
 
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
+
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

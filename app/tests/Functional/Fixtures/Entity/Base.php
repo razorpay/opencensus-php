@@ -27,6 +27,7 @@ class Base
         'atom'          => Gateway\Atom\Entity::class,
         'card'          => Models\Card\Entity::class,
         'hdfc'          => Gateway\Hdfc\Entity::class,
+        'token'         => Models\Customer\Token\Entity::class,
         'order'         => Models\Order\Entity::class,
         'refund'        => Models\Payment\Refund\Entity::class,
         'webhook'       => Models\Merchant\Webhook\Entity::class,
@@ -36,14 +37,16 @@ class Base
         'payment'       => Models\Payment\Entity::class,
         'pricing'       => Models\Pricing\Entity::class,
         'webhook'       => Models\Merchant\Webhook\Entity::class,
+        'customer'      => Models\Customer\Entity::class,
         'merchant'      => Models\Merchant\Entity::class,
         'terminal'      => Models\Terminal\Entity::class,
+        'emi_plan'      => Models\Emi\Entity::class,
         'axis_migs'     => Gateway\AxisMigs\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,
         'settlement'    => Models\Settlement\Entity::class,
         'transaction'   => Models\Transaction\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
-        'emi_plan'      => Models\Emi\Entity::class
+        'customer_app'  => Models\Customer\App\Entity::class,
     );
 
     protected static $liveAndTest = array(

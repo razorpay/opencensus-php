@@ -50,6 +50,11 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new TokenEx($app);
         });
+
+        $this->app->bindShared('raven', function($app)
+        {
+            return new Raven($app);
+        });
     }
 
     /**
@@ -65,7 +70,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'exception.handler',
             'gateway',
             'webhook.inferno',
-            'card.tokenex'
+            'card.tokenex',
+            'raven',
         );
     }
 }

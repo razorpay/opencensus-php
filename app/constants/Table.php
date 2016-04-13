@@ -10,6 +10,7 @@ class Table
     const KEY               = 'keys';
     const CARD              = 'cards';
     const ORDER             = 'orders';
+    const TOKEN             = 'tokens';
     const REFUND            = 'refunds';
     const BALANCE           = 'balance';
     const METHODS           = 'merchant_banks';
@@ -18,11 +19,13 @@ class Table
     const WEBHOOK           = 'webhooks';
     const MERCHANT          = 'merchants';
     const TERMINAL          = 'terminals';
+    const CUSTOMER          = 'customers';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlements';
     const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
+    const CUSTOMER_APP      = 'customer_apps';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 
     // Gateway related

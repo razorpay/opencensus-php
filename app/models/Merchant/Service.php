@@ -499,11 +499,11 @@ class Service extends Base\Service
         return $file;
     }
 
-    public function getCheckoutPreferences()
+    public function getCheckoutPreferences($input)
     {
         $merchant = $this->merchant;
 
-        return (new Checkout)->getPreferences($merchant, $this->mode);
+        return (new Checkout)->getPreferences($merchant, $this->mode, $input);
     }
 
     /**
@@ -629,18 +629,11 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
-        if (isset($input['test']))
-        {
-            $response = $this->sendTestHolidayNotificationMail($input);
-        }
-        else
-        {
-            if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
-            {
-                return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-            }
+        $response = '';
 
-            $response = $this->sendHolidayNotificationMail($input);
+        if (isset($input['action']))
+        {
+            $response = $this->sendMerchantNotifyHolidayEmail($input);
         }
 
         // Log just the result of the settlement reports
@@ -652,7 +645,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function sendHolidayNotificationMail($input)
+    protected function sendMerchantNotifyHolidayEmail($input)
     {
         $msg = $this->getHolidayNotificationMsg();
 
@@ -663,39 +656,28 @@ class Service extends Base\Service
                 'Notification of Bank Holiday',
                 $msg);
 
-            // Currently live@ and newsletter@ are available on mailgun
-            $mailer->setMailingListName($input['lists']);
-
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
-    }
-
-    protected function sendTestHolidayNotificationMail($input)
-    {
-        $msg = $this->getHolidayNotificationMsg();
-
-        if (empty($errors))
-        {
-            $mailer = new Newsletter(
-                $input['lists'],
-                'Notification of Bank Holiday',
-                $msg);
-
-            switch ($input['test']) {
-                case 'email':
-
+            switch ($input['action'])
+            {
+                case 'test_email':
                     $mailer->setTestEmail($input['lists']);
                     break;
 
                 case 'add_to_list':
-                default:
-                    // Currently live@ and newsletter@ are available on mailgun
                     $mailer->setTestListMembersAdd();
                     $mailer->setMailingListName($input['lists']);
+                    break;
+
+                case 'email':
+                    if (Holidays::isThisDayHoliday($this->mode, 'tomorrow') === false)
+                    {
+                        return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
+                    }
+
+                    $mailer->setMailingListName($input['lists']);
+                    break;
+
+                default:
+                    return ['message' => 'No Appropriate action has been set. Nothing done.'];
                     break;
             }
 
@@ -705,6 +687,7 @@ class Service extends Base\Service
         {
             return $errors;
         }
+
     }
 
     protected function getHolidayNotificationMsg()

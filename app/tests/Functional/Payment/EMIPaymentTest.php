@@ -9,6 +9,8 @@ class EmiPaymentTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $emiPlan;
+
     public function setUp()
     {
         parent::setUp();
@@ -21,12 +23,15 @@ class EmiPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
         $this->mockTokenex();
     }
 
     public function testEmiPaymentCreate()
     {
-        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $emiPlan = $this->emiPlan;
+
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;
@@ -45,9 +50,16 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    public function testMultipleEmiPayments()
+    {
+        $this->testEmiPaymentCreate();
+
+        $this->testEmiPaymentCreate();
+    }
+
     public function testEmiFileGenerate()
     {
-        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $emiPlan = $this->emiPlan;
 
         $this->fixtures->merchant->enableEmi();
 
@@ -83,7 +95,8 @@ class EmiPaymentTest extends TestCase
 
     public function testEmiPaymentEmiNotSupported()
     {
-        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+        $emiPlan = $this->emiPlan;
+
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
         $this->payment['amount'] = 500000;

@@ -57,17 +57,22 @@ $factory(Models\Merchant\BankAccount\Entity::class, [
 ]);
 
 $factory(Models\Card\Entity::class, [
-    'id' => $faker->uniqueid,
-    'merchant_id' => 10000000000000,
-    'name' => $faker->word,
-    'network' => 'Visa',
-    'expiry_month' => 01,
-    'expiry_year' => 2017,
-    'type' => 'debit',
-    'country' => 'IN',
-    'last4' => 6666,
-    'iin' => 401200,
-    'length' => 16,
+    'id'                => $faker->uniqueid,
+    'merchant_id'       => 10000000000000,
+    'name'              => $faker->word,
+    'network'           => 'Visa',
+    'expiry_month'      => 01,
+    'expiry_year'       => 2018,
+    'type'              => 'debit',
+    'country'           => 'IN',
+    'last4'             => 1111,
+    'iin'               => 411111,
+    'length'            => '16',
+    'issuer'            => 'hdfc',
+    'international'     => false,
+    'vault_token'       => '1a2b3c4b5e',
+    'vault'             => 'tokenex',
+    'trivia'            => '',
 ]);
 
 $factory(Models\Key\Entity::class, [
@@ -198,14 +203,14 @@ $factory(Models\Card\IIN\Entity::class, [
 ]);
 
 $factory(Models\Merchant\Methods\Entity::class, [
-    'merchant_id' => 10000000000000,
+    'merchant_id' => '10000000000000',
     'card'  => '1',
     'banks' => '[]',
     'paytm' => '0',
 ]);
 
 $factory(Models\Merchant\Webhook\Entity::class, [
-    'merchant_id' => 10000000000000,
+    'merchant_id' => '10000000000000',
     'url' => $faker->url,
     'events' => [
         'payment.authorized' => true,
@@ -224,7 +229,7 @@ $factory(Models\Emi\Entity::class, [
 
 $factory(Models\Order\Entity::class, [
     'id' => $faker->uniqueid,
-    'merchant_id' => 10000000000000,
+    'merchant_id' => '10000000000000',
     'amount' => 1000000,
     'currency' => 'INR',
     'status' => 'created',
@@ -233,4 +238,30 @@ $factory(Models\Order\Entity::class, [
     'attempts' => 0,
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,
+]);
+
+$factory(Models\Customer\Entity::class, [
+    'id' => $faker->uniqueid,
+    'merchant_id' => '10000000000000',
+    'name' => 'name',
+    'contact' => '1234567890',
+    'notes' => []
+]);
+
+$factory(Models\Customer\Token\Entity::class, [
+    'id' => $faker->uniqueid,
+    'merchant_id' => '10000000000000',
+    'customer_id' => '100000customer',
+    'wallet' => 'paytm',
+    'method' => 'wallet',
+    'bank'   => null,
+    'card_id' => null
+]);
+
+$factory(Models\Customer\App\Entity::class, [
+    'id' => $faker->uniqueid,
+    'customer_id' => '10000gcustomer',
+    'device_id' => 'test',
+    'app_id' => '1000000custapp',
+    'merchant_id'  => '10000000000000'
 ]);
