@@ -19,9 +19,9 @@ class Core extends Base\Core
     {
         $order = (new Entity)->build($input);
 
-        $order->getValidator()->validateMerchantSpecificData($order, $merchant);
-
         $order->merchant()->associate($merchant);
+
+        $order->getValidator()->validateMerchantSpecificData($order);
 
         $this->repo->saveOrFail($order);
 

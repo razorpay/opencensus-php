@@ -29,7 +29,6 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID    = 'customer_id';
 
 
-    // const CREATED_AT  = 'created_at';
     // const VALIDITY    = 'validity';
     // const VALID_TILL  = 'valid_till';
 
@@ -50,12 +49,12 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = array(
-        self::ATTEMPTS   => 0,
-        self::STATUS     => Status::CREATED,
-        self::AUTHORIZED => 0,
-        self::NOTES      => [],
-        self::METHOD     => null,
-        self::ACCOUNT_NUMBER => null,
+        self::ATTEMPTS          => 0,
+        self::STATUS            => Status::CREATED,
+        self::AUTHORIZED        => 0,
+        self::NOTES             => [],
+        self::METHOD            => null,
+        self::ACCOUNT_NUMBER    => null,
     );
 
     protected $public = array(
@@ -66,8 +65,6 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::STATUS,
         self::ATTEMPTS,
-        self::METHOD,
-        self::ACCOUNT_NUMBER,
         // self::NOTES,
         self::CREATED_AT
     );

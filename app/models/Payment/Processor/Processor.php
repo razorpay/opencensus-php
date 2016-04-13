@@ -440,8 +440,9 @@ class Processor
         {
             if ($this->merchant->isTPVRequired())
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    ErrorCode::BAD_REQUEST_ORDER_DATA_REQUIRED_FOR_MERCHANT);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID);
             }
 
             return;
@@ -463,7 +464,7 @@ class Processor
 
         $validator->validateOrderAmount($this->order, $amount);
 
-        $validator->validateOrderPaidFor($this->order);
+        $validator->validateOrderNotPaid($this->order);
 
         $validator->validateMerchantSpecificData($this->order,
                                                     $this->merchant);

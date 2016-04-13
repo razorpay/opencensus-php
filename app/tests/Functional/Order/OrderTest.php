@@ -128,6 +128,8 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        // Not adding order_id in payment
+
         $this->runRequestResponseFlow(
             $this->testData[__FUNCTION__],
             function () use ($payment)

@@ -3,6 +3,7 @@
 namespace Models\Order;
 
 use Models\Base;
+use Models\Payment;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -14,11 +15,11 @@ class Validator extends Base\Validator
         Entity::RECEIPT        =>  'required|string|max:40',
         Entity::CUSTOMER_ID    =>  'sometimes',
         Entity::NOTES          =>  'sometimes|notes',
-        Entity::METHOD         =>  'sometimes',
-        Entity::ACCOUNT_NUMBER =>  'sometimes',
+        Entity::METHOD         =>  'sometimes|in:netbanking',
+        Entity::ACCOUNT_NUMBER =>  'sometimes|string|max:50|min:5',
     );
 
-    public function validateOrderPaidFor($order)
+    public function validateOrderNotPaid($order)
     {
         if (($order->getStatus() === Status::PAID) or
             ($order->isAuthorized()))
@@ -39,25 +40,37 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantSpecificData($order, $merchant)
+    public function validateMerchantSpecificData($order)
     {
-        // TPV - Third Party Validation
-        $tpvRequired = $merchant->isTPVRequired();
-
-        if ($tpvRequired)
-        {
-            if (empty($order->getMethod()))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
-            }
-
-            if (empty($order->getAccountNumber()))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);
-            }
-        }
+        $this->validateOrderTpvChecks($order);
     }
 
+    public function validateOrderTpvChecks($order)
+    {
+        // TPV - Third Party Validation
+        $tpvRequired = $order->merchant->isTPVRequired();
+
+        if ($tpvRequired === false)
+        {
+            return;
+        }
+
+        if (empty($order->getMethod()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
+        }
+
+        if ($order->getMethod() !== Payment\Method::NETBANKING)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order method needs to be netbanking for the merchant');
+        }
+
+        if (empty($order->getAccountNumber()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);
+        }
+    }
 }

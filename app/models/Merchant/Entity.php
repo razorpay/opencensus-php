@@ -465,7 +465,15 @@ class Entity extends Base\PublicEntity
         return "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
     }
 
-    // TPV - Third Party Validation
+    /**
+     * TPV -> Third Party Validation
+     * For securities, mutual funds etc. category of merchants,
+     * only netbanking is required. And for netbanking also,
+     * we need to verify the bank account number of customer during payment
+     * which is not required for a normal payment flow.
+     *
+     * @return boolean
+     */
     public function isTPVRequired()
     {
         // 9999 - Test MCC requiring TPV

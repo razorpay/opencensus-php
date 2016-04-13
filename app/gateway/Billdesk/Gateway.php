@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getRequestArray($content);
+        $request = $this->getRequestArrayForAuthorize($content, $input);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -497,6 +497,20 @@ class Gateway extends Base\Gateway
         $request = $this->getRequestArray($content);
 
         $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+
+        return $request;
+    }
+
+    protected function getRequestArrayForAuthorize($content, $input)
+    {
+        $request = $this->getRequestArray($content);
+
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $request['content']['hidRequestId'] = 'PGIME1000';
+            $request['content']['hidOperation'] = 'ME100';
+        }
 
         return $request;
     }
