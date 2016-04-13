@@ -157,6 +157,60 @@ class PaymentRetrieveTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testFetchAuthorizedPaymentsOnProxyAuth()
+    {
+        $this->fixtures->create('payment:authorized');
+
+        $this->ba->proxyAuth();
+
+        $testData = array(
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['status' => 'authorized'],
+            ],
+            'response' => [
+                'content' => [
+                    'count' => 1,
+                ],
+            ],
+        );
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchWrongMerchantIdOnProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = array(
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['status' => 'authorized', 'merchant_id' => '12345678901234'],
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'EE\Exception\ExtraFieldsException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+            ],
+        );
+
+        $this->startTest($testData);
+
+        unset($testData['request']['content']['merchant_id']);
+        $testData['request']['content']['method'] = 'card';
+
+        $this->startTest($testData);
+    }
+
     public function testMoreThan100InPrivateAuth()
     {
         $e = null;

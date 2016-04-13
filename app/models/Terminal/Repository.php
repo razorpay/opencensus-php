@@ -14,14 +14,15 @@ class Repository extends Base\Repository
     protected $entity = 'Terminal';
 
     protected $appFetchParamRules = array(
-        Entity::GATEWAY         => 'sometimes',
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::GATEWAY         => 'sometimes',
-        Entity::CARD            => 'sometimes|boolean',
-        Entity::NETBANKING      => 'sometimes|boolean',
-        Entity::SHARED          => 'sometimes|boolean',
-        Entity::CATEGORY        => 'sometimes|integer|digits:4',
-        'deleted'               => 'sometimes|boolean',
+        Entity::GATEWAY             => 'sometimes',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::GATEWAY             => 'sometimes',
+        Entity::CARD                => 'sometimes|boolean',
+        Entity::NETBANKING          => 'sometimes|boolean',
+        Entity::SHARED              => 'sometimes|boolean',
+        Entity::CATEGORY            => 'sometimes|integer|digits:4',
+        'deleted'                   => 'sometimes|boolean',
+        Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
     );
 
     public function addQueryParamDeleted($query, $params)
@@ -30,20 +31,6 @@ class Repository extends Base\Repository
         {
             $query->withTrashed();
         }
-    }
-
-    public function getByParams($params)
-    {
-        $repo = $this->repo;
-
-        $query = (new $repo)->newQuery();
-
-        foreach ($params as $key => $value)
-        {
-            $query = $query->where($key, '=', $value);
-        }
-
-        return $query->get();
     }
 
     public function getById($id)

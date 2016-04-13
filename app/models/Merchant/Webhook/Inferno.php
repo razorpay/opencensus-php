@@ -87,6 +87,10 @@ class Inferno
 
         $data['url'] = $webhook->getUrl();
         $data['error_message'] = $this->errorMessage;
+        if (empty($data['error_message']))
+        {
+            $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
+        }
         $data['date'] = date('d-M-Y H:m:s');
 
         $event = json_decode($this->event, true);
@@ -107,10 +111,11 @@ class Inferno
 
         Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
         {
-
             $emails = $data['to_emails'];
 
-            $message->from('support@razorpay.com', 'Razorpay Support');
+            $message->from('webhooks@razorpay.com', 'Razorpay Webhook Support');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
             $message->subject($data['subject']);
 
@@ -207,11 +212,17 @@ class Inferno
             return false;
         }
 
-        $code = TraceCode::WEBHOOK_FIRED;
-
         if ($response->success === false)
         {
-            $code = TraceCode::WEBHOOK_RESPONSE_FAILURE;
+            $this->trace->info(
+                TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                [
+                    'webhook' => $webhook->getId(),
+                    'response_code' => $response->status_code,
+                ]
+            );
+
+            $this->errorMessage = $response->body;
 
             $success = false;
         }

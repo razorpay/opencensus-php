@@ -322,7 +322,9 @@ class MerchantController extends BaseController
 
     public function getCheckoutPreferences()
     {
-        $data = (new Merchant\Service)->getCheckoutPreferences();
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->getCheckoutPreferences($input);
 
         return ApiResponse::json($data);
     }
@@ -384,7 +386,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $prefs = (new Merchant\Service)->getCheckoutPreferences();
+        $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
         $app = \App::getFacadeRoot();
 

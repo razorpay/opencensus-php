@@ -12,6 +12,7 @@ class Validator extends Base\Validator
         'amount'        =>  'required|integer|max:50000000',
         'currency'      =>  'required|size:3|in:INR',
         'receipt'       =>  'required|string|max:40',
+        'customer_id'   =>  'sometimes',
         'notes'         =>  'sometimes|notes',
         'method'        =>  'sometimes',
         'account_id'    =>  'sometimes',

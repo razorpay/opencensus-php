@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const FEATURES                  = 'features';
+    const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const BRAND_COLOR               = 'brand_color';
     const RISK_RATING               = 'risk_rating';
@@ -56,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::SCOPE,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,

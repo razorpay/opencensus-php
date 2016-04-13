@@ -66,7 +66,7 @@ class CardTest extends TestCase
             $this->ba->publicAuth();
             $payment = $this->doAuthAndGetPayment($payment);
 
-            $card = $this->getLastEntity('card');
+            $card = $this->getLastEntity('card', true);
 
             $this->assertArraySelectiveEquals($cardInfo, $card);
             $this->assertArrayNotHasKey('number', $card);

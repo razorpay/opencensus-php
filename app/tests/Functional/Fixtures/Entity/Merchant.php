@@ -21,6 +21,9 @@ class Merchant extends Base
         // Merchant on whom all shared terminals are created
         $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
 
+        //Merchant for creating shared emi terminals
+        $this->fixtures->create('merchant', ['id' => '100000Razorpay']);
+
         $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);

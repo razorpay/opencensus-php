@@ -31,6 +31,9 @@ class Entity extends Base\PublicEntity
     const ERROR_CODE            = 'error_code';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
+    const CUSTOMER_ID           = 'customer_id';
+    const APP_ID                = 'app_id';
+    const TOKEN                 = 'token';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -50,6 +53,7 @@ class Entity extends Base\PublicEntity
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
     const FEE                   = 'fee';
+    const SAVE                  = 'save';
 
     const CURRENCY_LENGTH       = 3;
 
@@ -74,12 +78,14 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::TOKEN,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
         self::CALLBACK_URL,
         self::FEE,
-        self::SERVICE_TAX);
+        self::SERVICE_TAX,
+        self::SAVE);
 
     protected $visible = array(
         self::ID,
@@ -96,6 +102,9 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::EMI_PLAN_ID,
+        self::CUSTOMER_ID,
+        self::APP_ID,
+        self::TOKEN,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -113,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::SIGNED,
         self::VERIFIED,
         self::CALLBACK_URL,
+        self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
         self::CREATED_AT,
@@ -148,7 +158,11 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
 
-    protected static $modifiers = array(self::CONTACT, self::BANK, 'method_based_input');
+    protected static $modifiers = array(
+        self::CONTACT,
+        self::BANK,
+        'method_based_input',
+        'convert_empty_strings_to_null');
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
@@ -161,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED          => null,
         self::CAPTURED_AT       => null,
         self::AUTO_CAPTURED     => 0,
+        self::SAVE              => false,
         self::FEE               => null,
         self::SERVICE_TAX       => null,
     );
@@ -222,6 +237,22 @@ class Entity extends Base\PublicEntity
         if ($input['method'] !== Method::WALLET)
         {
             $input['wallet'] = null;
+        }
+    }
+
+    protected function modifyConvertEmptyStringsToNull(& $input)
+    {
+        $array = array(
+            Entity::CUSTOMER_ID,
+            Entity::TOKEN,
+            Entity::APP_ID);
+
+        foreach ($array as $key)
+        {
+            if (empty($input[$key]))
+            {
+                $input[$key] = null;
+            }
         }
     }
 
@@ -420,6 +451,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::EMI_PLAN_ID];
     }
 
+    public function getSaveAttribute()
+    {
+        return (bool) $this->attributes[self::SAVE];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
@@ -496,6 +532,12 @@ class Entity extends Base\PublicEntity
     public function isMethod($method)
     {
         return ($this->getAttribute(self::METHOD) === $method);
+    }
+
+    public function isMethodCardOrEmi()
+    {
+        return (($this->isMethod(Payment\Method::CARD)) or
+                ($this->isMethod(Payment\Method::EMI)));
     }
 
     public function isSigned()
@@ -591,6 +633,11 @@ class Entity extends Base\PublicEntity
         return $this->card->getFormatted();
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
@@ -654,6 +701,16 @@ class Entity extends Base\PublicEntity
     public function getEmiPlanId()
     {
         return $this->getAttribute(self::EMI_PLAN_ID);
+    }
+
+    public function getSave()
+    {
+        return (bool) $this->getAttribute(self::SAVE);
+    }
+
+    public function getCardId()
+    {
+        return $this->getAttribute(self::CARD_ID);
     }
 
     /**
@@ -825,6 +882,11 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo('Models\Order\Entity');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo('Models\Customer\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

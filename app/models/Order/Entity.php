@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const METHOD        = 'method';
     const ACCOUNT_ID    = 'account_id';
 
+    const CUSTOMER_ID   = 'customer_id';
+
+
     // const CREATED_AT  = 'created_at';
     // const VALIDITY    = 'validity';
     // const VALID_TILL  = 'valid_till';

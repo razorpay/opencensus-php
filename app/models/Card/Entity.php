@@ -18,13 +18,21 @@ class Entity extends Base\PublicEntity
     const LENGTH            = 'length';
     const NETWORK           = 'network';
     const TYPE              = 'type';
+    const EMI               = 'emi';
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
     const INTERNATIONAL     = 'international';
-    const TOKEN             = 'token';
-    const SERVICE           = 'service';
-
+    const VAULT_TOKEN       = 'vault_token';
+    const VAULT             = 'vault';
     const TRIVIA            = 'trivia';
+
+    /**
+     * Number and cvv are never saved in the database
+     * but are referenced at various points
+     * and the values are held in-memory.
+     */
+    const NUMBER            = 'number';
+    const CVV               = 'cvv';
 
     const COUNTRY_LENGTH = 2;
 
@@ -43,10 +51,12 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_YEAR,
         self::NETWORK,
         self::COUNTRY,
+        self::EMI,
         self::TYPE,
         self::ISSUER,
-        self::TOKEN,
-        self::SERVICE,
+        self::VAULT_TOKEN,
+        self::VAULT,
+        self::INTERNATIONAL,
     );
 
     protected $guarded = array(self::ID);
@@ -62,9 +72,8 @@ class Entity extends Base\PublicEntity
 
     protected $hidden = array();
 
-    protected $public = array(
+    protected $visible = array(
         self::ID,
-        self::ENTITY,
         self::MERCHANT_ID,
         self::NAME,
         self::EXPIRY_MONTH,
@@ -74,18 +83,34 @@ class Entity extends Base\PublicEntity
         self::LENGTH,
         self::NETWORK,
         self::TYPE,
+        self::EMI,
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
+        self::VAULT_TOKEN,
+        self::VAULT,
+        self::NETWORK_CODE,
         self::TRIVIA,
-        self::CREATED_AT,
-        self::UPDATED_AT);
+    );
+
+    protected $public = array(
+        self::EXPIRY_MONTH,
+        self::EXPIRY_YEAR,
+        self::LAST4,
+        self::NETWORK,
+        self::EMI,
+        self::ISSUER,
+        self::COUNTRY,
+        self::INTERNATIONAL,
+    );
 
     protected $appends = array(
         self::NETWORK_CODE);
 
     protected $defaults = array(
-        self::INTERNATIONAL => null);
+        self::INTERNATIONAL => null,
+        self::EMI => false
+    );
 
     public function merchant()
     {
@@ -175,14 +200,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getCardToken()
-    {
-        return $this->getAttribute(self::TOKEN);
-    }
-
     public function getLast4()
     {
         return $this->getAttribute(self::LAST4);
+    }
+
+    public function getVaultToken()
+    {
+        return $this->getAttribute(self::VAULT_TOKEN);
+    }
+
+    public function getVault()
+    {
+        return $this->getAttribute(self::VAULT);
+    }
+
+    public function getExpiryMonth()
+    {
+        return $this->getAttribute(self::EXPIRY_MONTH);
+    }
+
+    public function getExpiryYear()
+    {
+        return $this->getAttribute(self::EXPIRY_YEAR);
     }
 
     public function setCountry($country)
@@ -210,6 +250,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $flag);
     }
 
+    public function setEmi($flag)
+    {
+        $this->setAttribute(self::EMI, $flag);
+    }
+
     public function setTrivia($trivia)
     {
         $this->setAttribute(self::TRIVIA, $trivia);
@@ -218,6 +263,16 @@ class Entity extends Base\PublicEntity
     public function getIin()
     {
         return $this->getAttribute(self::IIN);
+    }
+
+    public function getIssuer()
+    {
+        return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getEmi()
+    {
+        return (bool) $this->getAttribute(self::EMI);
     }
 
     public function getExpiryMonthAttribute()

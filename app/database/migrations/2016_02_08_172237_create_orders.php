@@ -46,6 +46,9 @@ class CreateOrders extends Migration {
             $table->tinyInteger(Order::AUTHORIZED)
                   ->nullable();
 
+            $table->char(Order::CUSTOMER_ID, 14)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Order::CREATED_AT);
             $table->integer(Order::UPDATED_AT);

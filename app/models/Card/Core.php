@@ -21,6 +21,19 @@ class Core extends Base\Core
 
         $this->fillNetworkDetails($card, $input);
 
+        $card->saveOrFail();
+
+        return $card;
+    }
+
+    public function edit($card, $input)
+    {
+        $card->edit($input);
+
+        $this->card = $card;
+
+        $card->saveOrFail();
+
         return $card;
     }
 
@@ -33,12 +46,57 @@ class Core extends Base\Core
     {
         Card\Entity::modifyNumber($input);
 
-        $card = $this->create($input, $merchant);
+        $card = null;
+
+        if (isset($input[Entity::VAULT_TOKEN]))
+        {
+            $card = $this->findExistingCards($input, $merchant);
+
+            $this->card = $card;
+        }
+
+        if ($card === null)
+        {
+            $card = $this->create($input, $merchant);
+        }
+        // else
+        // {
+        //     $editInput = array_diff($input, $card->toArray());
+
+        //     $card = $this->edit($card, $editInput);
+        // }
 
         return array_merge(
             $card->toArray(),
             ['number' => $input['number'],
              'cvv' => $input['cvv']]);
+    }
+
+    public function createDuplicateCard($input, $merchant)
+    {
+        $createInput = array(
+            Entity::NUMBER          =>  $input[Entity::NUMBER],
+            Entity::EXPIRY_MONTH    =>  $input[Entity::EXPIRY_MONTH],
+            Entity::EXPIRY_YEAR     =>  $input[Entity::EXPIRY_YEAR],
+            Entity::CVV             =>  $input[Entity::CVV],
+            Entity::NAME            =>  $input[Entity::NAME],
+        );
+
+        $card = null;
+
+        if (isset($input[Entity::VAULT_TOKEN]))
+        {
+            $card = $this->findExistingCards($createInput, $merchant);
+
+            $this->card = $card;
+        }
+
+        if ($card === null)
+        {
+            $card = $this->create($createInput, $merchant);
+        }
+
+        return $card;
     }
 
     public function fillNetworkDetails($card, $input)
@@ -54,45 +112,27 @@ class Core extends Base\Core
 
         if ($details)
         {
-            if ($network === Card\Network::UNKNOWN)
-            {
-                $recordedNetwork = $details->getNetwork();
+            $iinNetwork = $details->getNetwork();
 
-                if (($recordedNetwork !== null) and
-                    ($recordedNetwork !== ''))
-                {
-                    if (Card\Network::isValidNetwork($recordedNetwork))
-                    {
-                        $card->setNetwork($recordedNetwork);
-                    }
-                }
+            if (($network === Card\Network::UNKNOWN) and
+                (Card\Network::isValidNetwork($iinNetwork)))
+            {
+                $card->setNetwork($iinNetwork);
             }
 
-            if ($network === Network::AMEX)
-            {
-                $type = Type::CREDIT;
-            }
-            else
-            {
-                $type = Card\Type::getType($details['type']);
-            }
+            $type = Card\Type::getType($details['type'], $network);
+
+            $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
 
             $arr = array(
-                Entity::TYPE    => $type,
-                Entity::ISSUER  => $details['issuer'],
-                Entity::COUNTRY => $details['country']);
-
-            if (($details['type'] !== '') and
-                ($details['type'] !== null))
-            {
-                $arr[Entity::TYPE] = $details['type'];
-            }
+                Entity::TYPE            => $type,
+                Entity::ISSUER          => $details['issuer'],
+                Entity::COUNTRY         => $details['country'],
+                Entity::INTERNATIONAL   => $details->isInternational(),
+                Entity::EMI             => $emi,
+            );
 
             $card->fill($arr);
-
-            $intl = $details->isInternational();
-
-            $card->setInternational($intl);
         }
         else
         {
@@ -100,14 +140,13 @@ class Core extends Base\Core
         }
 
         $this->checkCvvLength($card, $input);
-
-        $card->saveOrFail();
     }
 
     protected function checkCvvLength($card, $input)
     {
         $cvvLength = strlen($input['cvv']);
 
+        // If card is Amex, cvv length should be 4.
         if ($card->getNetworkCode() === Card\Network::AMEX)
         {
             if ($cvvLength !== 4)
@@ -120,7 +159,29 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE,
-                'cvv');
+                Entity::CVV);
         }
+    }
+
+    protected function findExistingCards($input, $merchant)
+    {
+        $params = array(
+            Card\Entity::MERCHANT_ID     => $merchant->getId(),
+            Card\Entity::EXPIRY_MONTH    => $input[Card\Entity::EXPIRY_MONTH],
+            Card\Entity::EXPIRY_YEAR     => $input[Card\Entity::EXPIRY_YEAR],
+            Card\Entity::VAULT_TOKEN     => $input[Card\Entity::VAULT_TOKEN],
+            Card\Entity::VAULT           => $input[Card\Entity::VAULT],
+        );
+
+        $cards = (new Card\Repository)->getByParams($params);
+
+        if ($cards->count() > 0)
+        {
+            assert($cards->count() === 1);
+
+            return $cards[0];
+        }
+
+        return null;
     }
 }

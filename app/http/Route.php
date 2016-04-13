@@ -185,6 +185,21 @@ final class Route
         'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
+        'create_customer'                       => ['post',     'customers',                                'CustomerController@createCustomer'                                 ],
+        'update_customer'                       => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
+        'get_customer'                          => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
+        'delete_customer'                       => ['delete',   'customers/{id}',                           'CustomerController@deleteCustomer'                                 ],
+        'create_customer_token'                 => ['post',     'customers/{id}/tokens',                    'CustomerController@addToken'                                       ],
+        'update_customer_token'                 => ['put',      'customers/{id}/tokens/{token}',            'CustomerController@updateToken'                                    ],
+        'fetch_customer_token'                  => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
+        'fetch_customer_tokens'                 => ['get',      'customers/{id}/tokens',                    'CustomerController@fetchTokens'                                    ],
+        'delete_customer_token'                 => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
+        'delete_token_for_app'                  => ['delete',   'apps/{appId}/tokens/{token}',              'CustomerController@deleteAppToken'                                 ],
+        'fetch_saved_tokens_by_app_id'          => ['get',      'apps/{appId}/tokens',                      'CustomerController@fetchTokensByAppId'                             ],
+        'fetch_cust_status_by_contact'          => ['get',      'customer/status/{contact}',                'CustomerController@fetchCustomerStatus'                            ],
+        'post_otp'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
+        'verify_otp'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
+        'otp_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
     );
 
     public static $public = array(
@@ -219,6 +234,12 @@ final class Route
         'dummy_return_callback',
         'dummy_critical_error',
         'get_emi_plans',
+        // 'fetch_saved_tokens_by_app_id',
+        // 'fetch_cust_status_by_contact',
+        // 'delete_token_for_app',
+        // 'post_otp',
+        // 'verify_otp',
+        // 'otp_callback',
     );
 
     public static $publicCallback = array(
@@ -240,6 +261,13 @@ final class Route
         'order_fetch_by_id',
         'order_payments',
         'dummy_feature',
+        'create_customer',
+        'update_customer',
+        'get_customer',
+        // 'delete_customer',
+        'delete_customer_token',
+        // 'fetch_customer_token',
+        'fetch_customer_tokens',
     );
 
     public static $internal = array(
@@ -337,6 +365,8 @@ final class Route
         'get_emi_plan_by_id',
         'emi_generate_excel',
         'order_update',
+        'create_customer_token',
+        'update_customer_token',
     );
 
     public static $proxy = array(
@@ -418,6 +448,11 @@ final class Route
     public static $routeNameToFeatureMap = array(
         'dummy_feature'         =>  'dummy',
         'submerchant_create'    =>  'aggregator',
+        'create_customer'       =>  'tokens',
+        'update_customer'       =>  'tokens',
+        'get_customer'          =>  'tokens',
+        'delete_customer_token' =>  'tokens',
+        'fetch_customer_tokens' =>  'tokens',
     );
 
     protected static $router;

@@ -26,6 +26,10 @@ class Validator extends Base\Validator
         'notes'         =>  'sometimes|notes|contains_merchantorderid_if_signature',
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
+        'customer_id'   =>  'sometimes',
+        'app_id'        =>  'sometimes',
+        'token'         =>  'sometimes',
+        'save'          =>  'sometimes|in:0,1',
         'fee'           =>  'sometimes|integer|max:50000000',
         'service_tax'   =>  'sometimes|integer|max:50000000',
         '_'             =>  'sometimes');
