@@ -437,10 +437,13 @@ trait Authorize
         {
             (new Token\Core)->create($customer, $saveMethodInput);
         }
-        catch (Exception\BaseException $e)
+        catch (Exception\RecoverableException $e)
+        {
+            // Ignore the exception, can be an already saved method
+        }
+        catch (\Exception $e)
         {
             $this->trace->traceException($e);
-            // Ignore the exception, can be an already saved method
         }
     }
 
