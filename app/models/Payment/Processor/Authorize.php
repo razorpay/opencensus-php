@@ -361,6 +361,8 @@ trait Authorize
                     $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
                     $this->payment->card->globalCard()->associate($token->card);
+
+                    $this->payment->card->saveOrFail();
                 }
                 else if ($payment->isMethod(Payment\Method::WALLET))
                 {
@@ -439,6 +441,8 @@ trait Authorize
                 $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
 
                 $this->payment->card->globalCard()->associate($savedCard);
+
+                $this->payment->card->saveOrFail();
             }
 
         }
@@ -732,42 +736,6 @@ trait Authorize
         }
     }
 
-    protected function createGlobalAndChildCardEntity(array $cardInput, $merchant, $vault)
-    {
-        //
-        // Creates card entity. Card number is vaulted if vault is true
-        //
-
-        if ($vault)
-        {
-            $vaultToken = $this->getCardVaultToken($cardInput['number']);
-
-            if (empty($vaultToken) === false)
-            {
-                $cardInput[Card\Entity::VAULT_TOKEN] = $vaultToken;
-                $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
-            }
-        }
-
-        $cardCore = new Card\Core();
-
-        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
-
-        $card = $cardCore->getCard();
-
-        if ($card->isUnsupported())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-        }
-
-        $this->payment->card()->associate($card);
-
-        (new Card\Repository)->saveOrFail($card);
-
-        return $cardData;
-    }
-
     protected function createCardEntity(array $cardInput, $vault, $merchant)
     {
         //
@@ -832,7 +800,7 @@ trait Authorize
         //create a card entity for merchant
         $cardCore = new Card\Core();
 
-        $card = $cardCore->createDuplicateCard($savedCard, $token->customer->merchant);
+        $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);
 
         $this->payment->card()->associate($card);
 
