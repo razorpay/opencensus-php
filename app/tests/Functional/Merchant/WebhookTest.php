@@ -204,7 +204,7 @@ class WebhookTest extends TestCase
         $inferno = $this->mockInferno();
 
         $this->fixtures->edit(
-            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
+            'webhook', $webhook['id'], ['last_successful_at' => time()-(40*3600), 'active' => 1]);
 
         $inferno->shouldReceive('sendRequest')
                 ->once()

@@ -267,7 +267,7 @@ class Inferno
             $this->repo->resetFailureCount($webhook);
         }
 
-        $this->repo->resetLastSuccessfulAt($webhook);
+        $this->repo->setLastSuccessfulAt($webhook);
 
         $this->job->delete();
     }
@@ -315,7 +315,7 @@ class Inferno
 
         if($lastSuccessfulAt !== null)
         {
-            $differenceHours = ($lastSuccessfulAt - $currentTime)/3600;
+            $differenceHours = ($currentTime - $lastSuccessfulAt)/3600;
 
             // If (LSA - current time) > 24hrs, mark deactivated.
             if (($job->attempts() >= 100) or ($differenceHours > 24))
@@ -326,7 +326,7 @@ class Inferno
                 );
 
                 $webhook->deactivate();
-
+                
                 $this->sendEmail($webhook,'deactivate');
 
                 // Webhook is now inactive
