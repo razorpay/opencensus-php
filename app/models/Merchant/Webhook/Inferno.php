@@ -306,31 +306,37 @@ class Inferno
     {
         $job = $this->job;
 
+        $sendFailureEmail = 1;
         // It's a failure, increment failure count.
         //$this->repo->bumpFailureCount($webhook);
 
         $lastSuccessfulAt = $webhook->getLastSuccessfulAt();
         $currentTime = time();
 
-        $differenceHours = ($lastSuccessfulAt - $currentTime)/3600;
-
-        // If (LSA - current time) > 24hrs, mark deactivated.
-        if (($job->attempts() >= 100) or ($differenceHours > 24))
+        if($lastSuccessfulAt !== null)
         {
-            $this->trace->info(
-                TraceCode::WEBHOOK_DEACTIVATE,
-                ['webhook' => $webhook->getId()]
-            );
+            $differenceHours = ($lastSuccessfulAt - $currentTime)/3600;
 
-            $webhook->deactivate();
+            // If (LSA - current time) > 24hrs, mark deactivated.
+            if (($job->attempts() >= 100) or ($differenceHours > 24))
+            {
+                $this->trace->info(
+                    TraceCode::WEBHOOK_DEACTIVATE,
+                    ['webhook' => $webhook->getId()]
+                );
 
-            $this->sendEmail($webhook,'deactivate');
+                $webhook->deactivate();
 
-            // Webhook is now inactive
-            // So let's just delete the job
-            $job->delete();
+                $this->sendEmail($webhook,'deactivate');
+
+                // Webhook is now inactive
+                // So let's just delete the job
+                $job->delete();
+                $sendFailureEmail = 0;
+            }
         }
-        else
+
+        if($sendFailureEmail === 1)
         {
             $this->sendEmail($webhook,'failure');
 
