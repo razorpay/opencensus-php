@@ -47,5 +47,6 @@ class Repository extends Base\Repository
     public function setLastSuccessfulAt($webhook)
     {
         $webhook->setLastSuccessfulAt();
+        $webhook->saveOrFail();
     }
 }

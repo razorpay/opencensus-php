@@ -21,6 +21,10 @@ class Inferno
 
     const HASH_ALGO = 'sha256';
 
+    const WEBHOOK_FAILURE_HOURS = 24;
+
+    const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -262,10 +266,10 @@ class Inferno
     protected function webhookSuccessfullyFired($webhook)
     {
         // TODO: We can probably remove the concept of failure count here.
-        if ($webhook->getFailureCount() !== 0)
-        {
-            $this->repo->resetFailureCount($webhook);
-        }
+//        if ($webhook->getFailureCount() !== 0)
+//        {
+//            $this->repo->resetFailureCount($webhook);
+//        }
 
         $this->repo->setLastSuccessfulAt($webhook);
 
@@ -307,18 +311,23 @@ class Inferno
         $job = $this->job;
 
         $sendFailureEmail = 1;
-        // It's a failure, increment failure count.
-        //$this->repo->bumpFailureCount($webhook);
+        $jobDeleted = 0;
+
+        if (($job->attempts() > self::WEBHOOK_MAXIMUM_ATTEMPTS))
+        {
+            $job->delete();
+            $jobDeleted = 1;
+        }
 
         $lastSuccessfulAt = $webhook->getLastSuccessfulAt();
         $currentTime = time();
 
-        if($lastSuccessfulAt !== null)
+        if ($lastSuccessfulAt !== null)
         {
             $differenceHours = ($currentTime - $lastSuccessfulAt)/3600;
 
             // If (LSA - current time) > 24hrs, mark deactivated.
-            if (($job->attempts() >= 100) or ($differenceHours > 24))
+            if (($differenceHours > self::WEBHOOK_FAILURE_HOURS))
             {
                 $this->trace->info(
                     TraceCode::WEBHOOK_DEACTIVATE,
@@ -326,17 +335,21 @@ class Inferno
                 );
 
                 $webhook->deactivate();
-                
+
                 $this->sendEmail($webhook,'deactivate');
 
                 // Webhook is now inactive
                 // So let's just delete the job
-                $job->delete();
+                if ($jobDeleted == 0)
+                {
+                    $job->delete();
+                }
+
                 $sendFailureEmail = 0;
             }
         }
 
-        if($sendFailureEmail === 1)
+        if ($sendFailureEmail === 1)
         {
             $this->sendEmail($webhook,'failure');
 
