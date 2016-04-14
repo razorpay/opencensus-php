@@ -114,13 +114,13 @@ class Inferno
         {
             $emails = $data['to_emails'];
 
-            $message->from('webhooks@razorpay.com', 'Razorpay Webhook Support');
+            $message->from('alerts@razorpay.com', 'Razorpay Webhook Support');
 
-            $message->replyTo('alerts@razorpay.com', 'Razorpay Support');
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
             $message->subject($data['subject']);
 
-            $message->to($emails);g
+            $message->to($emails);
         });
     }
 
