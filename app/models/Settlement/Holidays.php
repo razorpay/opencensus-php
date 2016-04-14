@@ -41,22 +41,14 @@ class Holidays
         // [25, 12, 2016], // Sunday
     );
 
-    public static function isThisDayHoliday($mode, $thisDay = 'today')
+    public static function isDayHoliday($dayString = 'today', $mode = 'test', $forceResultInTest = false)
     {
-
         if ($mode === 'test')
         {
-            return false;
+            return $forceResultInTest;
         }
 
-        if ($thisDay === 'today')
-        {
-            $date = Carbon::today('Asia/Kolkata');
-        }
-        else if ($thisDay === 'tomorrow')
-        {
-            $date = Carbon::tomorrow('Asia/Kolkata');
-        }
+        $date = Carbon::parse($dayString,'Asia/Kolkata');
 
         $flag = false;
 

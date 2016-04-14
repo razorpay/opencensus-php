@@ -31,6 +31,8 @@ class Service extends Base\Service
 
         Pricing\Validator::validatePlanCountZero($plan);
 
+        $pricing->generateId();
+
         $this->repo->saveOrFail($pricing);
 
         $plan = new Plan(array($pricing));
@@ -53,6 +55,7 @@ class Service extends Base\Service
         $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
 
         $rule->getValidator()->matchPaymentRules($plan);
+        $rule->generateId();
 
         (new Pricing\Repository)->saveOrFail($rule);
 

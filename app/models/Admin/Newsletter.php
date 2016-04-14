@@ -37,6 +37,8 @@ class Newsletter
         $this->template = $template;
 
         $this->lists = $recipient;
+
+        $this->testListMemberAdd = false;
     }
 
     protected function setupData($subject, $msg)
@@ -65,12 +67,12 @@ class Newsletter
 
             case 'live':
                 $merchants = $repo->fetchAllLiveMerchants()
-                    ->select(['email', 'name'])->get();
+                    ->select(['email', 'name', 'transaction_report_email'])->get();
                 break;
 
             case 'recent':
                 $merchants = $repo->fetchRecentMerchants()
-                    ->select(['email', 'name'])->get();
+                    ->select(['email', 'name','transaction_report_email'])->get();
                 break;
 
             case 'default':
@@ -86,13 +88,31 @@ class Newsletter
             // because array_unique only works on strings
             // This isn't precise but it doesn't matter
             // because mailgun is set to ignore duplicate entries
-            $response[] = json_encode([
-                'address' => $merchant['email'],
-                'name'    => $merchant['name']
-            ]);
+            $this->encodeMerchantDetails($merchant, $response);
         }
 
         return $response;
+    }
+
+    protected function encodeMerchantDetails($merchant, &$reposnse)
+    {
+        $response[] = json_encode([
+                'address' => $merchant['email'],
+                'name'    => $merchant['name']
+            ]);
+
+        // Attaching the Transaction Report Emails
+        if (isset($merchant['transaction_report_email']))
+        {
+            foreach ($merchant['transaction_report_email'] as $email)
+            {
+                $response[] = json_encode([
+                        'address' => $email,
+                        'name'    => $merchant['name']
+                    ]);
+            }
+
+        }
     }
 
     /**
@@ -174,11 +194,17 @@ class Newsletter
 
         $chunks = $this->getMerchantListChunks($lists);
 
+        if ($this->testListMemberAdd === false)
+        {
+            return $listAddress;
+        }
+
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['pre_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
-        foreach ($chunks as $merchants) {
+        foreach ($chunks as $merchants)
+        {
             // We take this list and push it to mailgun
 
             $relativeUrl = 'lists/'.$listAddress.'/members.json';
@@ -197,6 +223,7 @@ class Newsletter
         sleep(self::WAIT_BEFORE_RETRY);
 
         $iterations = 0;
+
         $count = 0;
 
         do{
@@ -244,15 +271,8 @@ class Newsletter
 
     public function send()
     {
-        //No need to do anything if we are mocking
-        if ($this->config['mock'] === true)
-        {
-            return [
-                'email' =>  'nobody, mocked'
-            ];
-        }
-
         $data = $this->data;
+
         $config = $this->config;
 
         if (isset($this->lists))

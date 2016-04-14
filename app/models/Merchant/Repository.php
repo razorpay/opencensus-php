@@ -116,7 +116,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::all(['name', 'email']);
+        return $repo::all(['name', 'email', 'transaction_report_email']);
     }
 
     public function fetchMerchantWhereTestBankIsNull()

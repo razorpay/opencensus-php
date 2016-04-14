@@ -340,11 +340,14 @@ class FeeCalculator
 
     protected function validateAndGetOnePricingRule($pricing)
     {
+        $this->traceAllRules($pricing);
+
         if (count($pricing) > 1)
         {
+            $this->traceAllRules($pricing);
+
             throw new Exception\LogicException(
-                'Only 1 pricing rule should have been present here. Found: ' . count($pricing),
-                [$pricing->toArray()]);
+                'Only 1 pricing rule should have been present here. Found: ' . count($pricing));
         }
 
         $rule = $pricing[0];
