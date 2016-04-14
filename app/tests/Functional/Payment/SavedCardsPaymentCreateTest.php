@@ -21,6 +21,8 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
         $this->mockTokenex();
     }
 
@@ -28,6 +30,24 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->payment['card'] = array('cvv'  => 111);
 
+        $this->payment['token'] = '10000cardtoken';
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['token'], '10000cardtoken');
+        $this->assertEquals($payment['customer_id'], '100000customer');
+    }
+
+    public function testLocalSavedCardEmiPaymentCreate()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->payment['card'] = array('cvv'  => 111);
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['amount'] = '300000';
         $this->payment['token'] = '10000cardtoken';
         $this->payment['customer_id'] = 'cust_100000customer';
 
@@ -70,6 +90,40 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->payment['token'] = $token['token'];
         $this->payment['customer_id'] = 'cust_100000customer';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['token'], $token['token']);
+        $this->assertEquals($payment['customer_id'], '100000customer');
+    }
+
+    public function testEmiPaymentCreateAndSaveCardLocal()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->payment['save'] = 1;
+        $this->payment['card']['number'] = '41476700000006';
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['amount'] = '300000';
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+        $payment = $this->getLastEntity('payment', true);
+        $card = $this->getLastEntity('card', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('card_'.$payment['card_id'], $card['id']);
+        $this->assertEquals('card_'.$token['card_id'], $card['id']);
+
+        $this->payment['card'] = array('cvv'  => 111);
+
+        $this->payment['token'] = $token['token'];
+        $this->payment['customer_id'] = 'cust_100000customer';
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['amount'] = '300000';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
