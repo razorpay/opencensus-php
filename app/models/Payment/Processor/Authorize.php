@@ -396,7 +396,11 @@ trait Authorize
 
         if ($payment->isMethod(Payment\Method::EMI))
         {
-            $this->setBankAndEmiPlanDetails($payment, $input);
+            $cardNumber = $gatewayInput['card']['number'];
+
+            $emiDuration = $input['emi_duration'];
+
+            $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
     }
 
@@ -475,14 +479,14 @@ trait Authorize
         }
     }
 
-    protected function setBankAndEmiPlanDetails(& $payment, $input)
+    protected function setBankAndEmiPlanDetails(& $payment, $cardNumber, $emiDuration)
     {
         // Set the bank
-        $iin = substr($input['card']['number'], 0, 6);
+        $iin = substr($cardNumber, 0, 6);
 
         $iinEntity = (new IIN\Repository)->findOrFail($iin);
 
-        if (IIN\IIN::isEmiAvailableForCard($iinEntity, $input['card']['number']) === false)
+        if (IIN\IIN::isEmiAvailableForCard($iinEntity, $cardNumber) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
@@ -492,7 +496,7 @@ trait Authorize
 
         // Set emi plan id
         $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
-                        $iinEntity->getIssuer(), $input['emi_duration']);
+                        $iinEntity->getIssuer(), $emiDuration);
 
         $payment->setEmiPlanId($emiPlan->getId());
     }
