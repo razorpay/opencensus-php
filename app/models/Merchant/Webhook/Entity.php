@@ -123,7 +123,7 @@ class Entity extends Base\PublicEntity
     
     public function getLastSuccessfulAt()
     {
-        return $this->getLastSuccessfulAt(self::LAST_SUCCESSFUL_AT);
+        return $this->getAttribute(self::LAST_SUCCESSFUL_AT);
     }
 
     public function setEventsAttribute($events)
@@ -186,6 +186,11 @@ class Entity extends Base\PublicEntity
     protected function getFailureCountAttribute()
     {
         return (int) $this->attributes[self::FAILURE_COUNT];
+    }
+
+    protected function getLastSuccessfulAtAttribute()
+    {
+        return $this->attributes[self::LAST_SUCCESSFUL_AT];
     }
 
     protected function setFailureCountAttribute($count)
