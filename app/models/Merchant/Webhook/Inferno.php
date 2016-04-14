@@ -91,7 +91,8 @@ class Inferno
         {
             $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
         }
-        $data['date'] = date('d-M-Y H:m:s');
+
+        $data['date'] = date('d-M-Y H:m:s T');
 
         $event = json_decode($this->event, true);
 
