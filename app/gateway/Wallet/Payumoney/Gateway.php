@@ -2,20 +2,21 @@
 
 namespace Gateway\Wallet\Payumoney;
 
+use View;
 use Constants\Mode;
 use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Wallet\Payumoney\Action;
-use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\Verify;
-use Gateway\Base\VerifyResult;
 use Gateway\Wallet\Base;
 use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
-use View;
+use Gateway\Base\VerifyResult;
+use Gateway\Base\AuthorizeFailed;
+use Gateway\Wallet\Payumoney\Action;
+use Gateway\Wallet\Payumoney\ResponseCodeMap;
 
 class Gateway extends Base\Gateway
 {
@@ -223,6 +224,14 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
+        if (isset($content['result']['body']['access_token']))
+        {
+            $this->accessToken = $content['result']['body']['access_token'];
+
+            $content['result']['body']['access_token'] = '';
+            $content['result']['body']['refresh_token'] = '';
+        }
+
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $code = $content['status'];
@@ -230,14 +239,14 @@ class Gateway extends Base\Gateway
         if (($content['status'] !== Status::SUCCESS) or
             (isset($content['result']['body']['access_token']) === false))
         {
+            $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                $errorCode,
                 $content['status'],
                 $content['message']);
         }
-
-        $this->accessToken = $content['result']['body']['access_token'];
     }
 
     public function useWallet($input)
@@ -263,7 +272,7 @@ class Gateway extends Base\Gateway
         $contentToSave = array(
             'key'      => $this->getMerchantId($input['terminal']),
             'email'    => $input['payment']['email'],
-            'mobile'   => $input['payment']['contact'],
+            'mobile'   => $this->getFormattedContact($input['payment']['contact']),
             'status'   => $content['status'],
             'amount'   => $input['payment']['amount'],
             'txnId'    => $content['result'],
@@ -330,7 +339,7 @@ class Gateway extends Base\Gateway
             'wallet'                =>  $input['payment']['wallet'],
             'email'                 =>  $input['payment']['email'],
             'received'              =>  1,
-            'contact'               =>  $input['payment']['contact'],
+            'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
             'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
             'refund_id'             =>  $input['refund']['id'],
             'response_code'         =>  '',
@@ -368,7 +377,7 @@ class Gateway extends Base\Gateway
     {
         $content = array(
             'email'     => $input['payment']['email'],
-            'mobile'    => $input['payment']['contact'],
+            'mobile'    => $this->getFormattedContact($input['payment']['contact']),
             'client_id' => $this->getClientId($input['terminal'])
         );
 
@@ -385,7 +394,7 @@ class Gateway extends Base\Gateway
     {
         $content = array(
             'email'         => $input['payment']['email'],
-            'mobile'        => $input['payment']['contact'],
+            'mobile'        => $this->getFormattedContact($input['payment']['contact']),
             'client_id'     => $this->getClientId($input['terminal']),
             'otp'           => $input['gateway']['otp']
         );
@@ -521,6 +530,11 @@ class Gateway extends Base\Gateway
         }
 
         return $wallet;
+    }
+
+    protected function getFormattedContact($contact)
+    {
+        return substr($contact, -10);
     }
 }
 
