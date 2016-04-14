@@ -26,6 +26,9 @@ class CreateCards extends Migration
 
             $table->char(Card::MERCHANT_ID, Card::ID_LENGTH);
 
+            $table->string(Card::GLOBAL_CARD_ID, Card::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Card::NAME);
 
             $table->char(Card::EXPIRY_MONTH, 2);
