@@ -9,14 +9,15 @@ use Crypt;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const URL               = 'url';
-    const EVENTS            = 'events';
-    const FAILURE_COUNT     = 'failure_count';
-    const ACTIVE            = 'active';
-    const CREATED_AT        = 'created_at';
-    const SECRET            = 'secret';
+    const ID                 = 'id';
+    const MERCHANT_ID        = 'merchant_id';
+    const URL                = 'url';
+    const EVENTS             = 'events';
+    const FAILURE_COUNT      = 'failure_count';
+    const ACTIVE             = 'active';
+    const CREATED_AT         = 'created_at';
+    const SECRET             = 'secret';
+    const LAST_SUCCESSFUL_AT = 'last_successful_at';
     
     protected $entity       = 'webhook';
 
@@ -46,7 +47,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FAILURE_COUNT,
         self::CREATED_AT,
-        self::SECRET
+        self::SECRET,
+        self::LAST_SUCCESSFUL_AT
     );
 
     protected $public = array(
@@ -55,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::EVENTS,
         self::ACTIVE,
         self::CREATED_AT,
+        self::LAST_SUCCESSFUL_AT
     );
 
     public function edit(array $input = array(), $operation = 'edit')
@@ -117,6 +120,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::FAILURE_COUNT);
     }
+    
+    public function getLastSuccessfulAt()
+    {
+        return $this->getLastSuccessfulAt(self::LAST_SUCCESSFUL_AT);
+    }
 
     public function setEventsAttribute($events)
     {
@@ -162,6 +170,14 @@ class Entity extends Base\PublicEntity
         $this->activate();
     }
 
+    public function setLastSuccessfulAt()
+    {
+        // TODO: Decide on the date properly
+        $successfulTime = date('');
+        $this->setLastSuccessfulAtAttribute($successfulTime);
+        $this->activate();
+    }
+
     protected function getActiveAttribute()
     {
         return (bool) $this->attributes[self::ACTIVE];
@@ -182,6 +198,11 @@ class Entity extends Base\PublicEntity
         {
             $this->deactivate();
         }
+    }
+
+    protected function setLastSuccessfulAtAttribute($successfulTime)
+    {
+        $this->attributes[self::LAST_SUCCESSFUL_AT] = $successfulTime;
     }
 
     protected function getEventsHexValue()
