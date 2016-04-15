@@ -119,6 +119,17 @@ class Iin extends Base
             'emi'           => 1,
             'trivia'        => 'random trivia'
             ),
+        array(
+            'iin'           => '411111',
+            'category'      => 'CLASSIC',
+            'network'       => 'Visa',
+            'type'          => 'credit',
+            'country'       => 'IN',
+            'issuer_name'   => 'AXIS BANK, LTD.',
+            'issuer'        => 'HDFC',
+            'emi'           => 1,
+            'trivia'        => 'random trivia'
+            ),
 
         );
 

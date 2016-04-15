@@ -223,4 +223,14 @@ class Merchant extends Base
     {
         return $this->edit($id, ['features' => $features]);
     }
+
+    public function enableTPV($id = '10000000000000')
+    {
+        return $this->edit($id, ['category' => 9999]);
+    }
+
+    public function disableTPV($id = '10000000000000')
+    {
+        return $this->edit($id, ['category' => 9990]);
+    }
 }

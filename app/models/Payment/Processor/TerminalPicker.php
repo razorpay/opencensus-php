@@ -585,7 +585,6 @@ class TerminalPicker
             }
         }
 
-
         $this->sharedTerminals = $terminals;
 
         return $this->sharedTerminals;

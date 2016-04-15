@@ -83,7 +83,7 @@ class Settler
     protected function checkForHolidays()
     {
         //Settlement files to not be generated on Public Holidays
-        if (Holidays::isThisDayHoliday($this->mode, 'today'))
+        if (Holidays::isDayHoliday('today', $this->mode))
         {
             return true;
         }

@@ -192,18 +192,19 @@ class Newsletter
 
         $listAddress = $this->createListOnMailgun($this->listName);
 
+        $chunks = $this->getMerchantListChunks($lists);
+
         if ($this->testListMemberAdd === false)
         {
             return $listAddress;
         }
 
-        $chunks = $this->getMerchantListChunks($lists);
-
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['pre_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
 
-        foreach ($chunks as $merchants) {
+        foreach ($chunks as $merchants)
+        {
             // We take this list and push it to mailgun
 
             $relativeUrl = 'lists/'.$listAddress.'/members.json';
@@ -222,6 +223,7 @@ class Newsletter
         sleep(self::WAIT_BEFORE_RETRY);
 
         $iterations = 0;
+
         $count = 0;
 
         do{
@@ -269,15 +271,8 @@ class Newsletter
 
     public function send()
     {
-        //No need to do anything if we are mocking
-        if ($this->config['mock'] === true)
-        {
-            return [
-                'email' =>  'nobody, mocked'
-            ];
-        }
-
         $data = $this->data;
+
         $config = $this->config;
 
         if (isset($this->lists))

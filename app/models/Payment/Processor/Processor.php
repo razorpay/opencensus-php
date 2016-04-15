@@ -438,6 +438,13 @@ class Processor
     {
         if (empty($input['order_id']) === true)
         {
+            if ($this->merchant->isTPVRequired())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID);
+            }
+
             return;
         }
 
@@ -452,9 +459,15 @@ class Processor
             $amount = $amount - $payment->getFee();
         }
 
-        (new Order\Validator)->validateOrderAmount($this->order, $amount);
+        // Move this to a common validate function.
+        $validator = new Order\Validator;
 
-        (new Order\Validator)->validateOrderPaidFor($this->order);
+        $validator->validateOrderAmount($this->order, $amount);
+
+        $validator->validateOrderNotPaid($this->order);
+
+        $validator->validateMerchantSpecificData($this->order,
+                                                    $this->merchant);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
