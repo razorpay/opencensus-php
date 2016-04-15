@@ -297,12 +297,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
         $request['headers'] = array(
             'Accept'        => 'application/json',
             'Authorization' => $this->getAuthHeader($input['terminal'])
         );
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
