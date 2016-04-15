@@ -113,6 +113,11 @@ class EmiFile extends Base\EmiFile
 
     protected function getCardNumber($card)
     {
+        if ($card->globalCard !== null)
+        {
+            $card = $card->globalCard;
+        }
+
         $cardToken = $card->getVaultToken();
 
         $app = \App::getFacadeRoot();
