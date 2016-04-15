@@ -18,7 +18,25 @@ class OrderTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function setUpBillDeskGateway()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'billdesk';
+
+        $this->setMockGatewayTrue();
+    }
+
     public function testCreateOrder()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateTPVOrder()
     {
         $order = $this->startTest();
 
@@ -100,5 +118,46 @@ class OrderTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testPaymentForTPVMerchantWithoutOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpBillDeskGateway();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Not adding order_id in payment
+
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function () use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testPaymentForTPVMerchantWithOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpBillDeskGateway();
+
+        $order = $this->testCreateTPVOrder();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals($order['id'], $payment['order_id']);
+
+        $this->fixtures->merchant->disableTPV();
     }
 }

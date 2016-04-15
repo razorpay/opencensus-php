@@ -43,6 +43,12 @@ class CreateOrders extends Migration {
 
             $table->text(Order::NOTES);
 
+            $table->string(Order::METHOD, 10)
+                  ->nullable();
+
+            $table->string(Order::ACCOUNT_NUMBER, 50)
+                  ->nullable();
+
             $table->tinyInteger(Order::AUTHORIZED)
                   ->nullable();
 
@@ -52,12 +58,6 @@ class CreateOrders extends Migration {
             // Adds created_at and updated_at columns to the table
             $table->integer(Order::CREATED_AT);
             $table->integer(Order::UPDATED_AT);
-
-            // Commented parts to be added incrementally
-
-            // $table->char(Order::METHOD);//
-
-            // $table->char(Order::ACCOUNT_ID);//
 
             // $table->integer(Order::CREATED_AT);
 
