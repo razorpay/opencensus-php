@@ -25,6 +25,12 @@ class Inferno
 
     const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
 
+    /**
+     * We keep it internally as 7 seconds
+     * but publicly we only say it's 5 seconds.
+     */
+    const WEBHOOK_TIMEOUT = 7;
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -91,6 +97,7 @@ class Inferno
 
         $data['url'] = $webhook->getUrl();
         $data['error_message'] = $this->errorMessage;
+
         if (empty($data['error_message']))
         {
             $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
@@ -108,7 +115,7 @@ class Inferno
         }
         else if ($type === 'deactivate')
         {
-            $subject .= 'Webhook deactivated after 3 failures for ' . $subjectName;
+            $subject .= 'Webhook deactivated after 24 hours from last deliver for ' . $subjectName;
         }
 
         $data['subject'] = $subject;
@@ -135,7 +142,7 @@ class Inferno
             'Content-Type'  => 'application/json'
         );
 
-        if (!empty($hmac))
+        if (empty($hmac) === false)
         {
             $headers['X-Razorpay-Signature'] = $hmac;
         }
@@ -195,7 +202,7 @@ class Inferno
             //
             if (\Gateway\Utility::checkTimeout($e))
             {
-                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 7 seconds. We will only retry 3 times before deactivating webhook.';
+                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 5 seconds. We will only retry 3 times before deactivating webhook.';
             }
             else if ($this->isKnownRequestsException($e))
             {
@@ -258,7 +265,7 @@ class Inferno
             'content' => $event,
             'headers' => $headers);
 
-        $request['options'] = ['timeout' => 7];
+        $request['options'] = ['timeout' => self::WEBHOOK_TIMEOUT];
 
         return $request;
     }

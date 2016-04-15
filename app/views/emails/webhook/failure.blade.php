@@ -23,7 +23,9 @@ To help you debug this, here are a few more details about the failure event:<br>
 <b>Timestamp:</b> {{$date}}<br>
 <b>Event:</b> {{$event}}<br><br>
 
-Note that we will only retry the request <b>three</b> times before deactivating the webhook. You will receive a mail informing you of the deactivation if this is the case.<br>
+We will only re-attempt the current webhook delivery multiple times more in next few hours.
+
+Note that if webhooks delivery keep failing for next 24 hours then we will go ahead and deactivate it. You will receive a mail informing you of the deactivation if this is the case.<br>
 If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.<br><br>
 
 Thanks,<br>
