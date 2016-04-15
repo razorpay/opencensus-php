@@ -38,7 +38,7 @@ class Repository extends Base\Repository
         Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED        => 'sometimes|in:0,1',
         Entity::WALLET          => 'sometimes|',
-        Card\Entity::IIN        => 'sometimes|string|digits:6',
+        Card\Entity::IIN        => 'sometimes|integer|digits:6',
         Card\Entity::LAST4      => 'sometimes|string|digits:4',
     );
 

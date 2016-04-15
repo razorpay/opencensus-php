@@ -13,7 +13,7 @@ class Repository extends Base\Repository
     protected $entity = 'Card';
 
     protected $appFetchParamRules = array(
-        Entity::IIN             => 'sometimes|string|digits:6',
+        Entity::IIN             => 'sometimes|integer|digits:6',
         Entity::LAST4           => 'sometimes|string|digits:4',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::NETWORK         => 'sometimes|alpha_space',
