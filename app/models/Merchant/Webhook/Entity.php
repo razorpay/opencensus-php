@@ -172,9 +172,9 @@ class Entity extends Base\PublicEntity
 
     public function setLastSuccessfulAt()
     {
-        // TODO: Decide on the date properly
         $successfulTime = time();
-        $this->setLastSuccessfulAtAttribute($successfulTime);
+        $this->setAttribute(self::LAST_SUCCESSFUL_AT, $successfulTime);
+
         $this->activate();
     }
 
