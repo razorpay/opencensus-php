@@ -72,7 +72,7 @@ class Inferno
         }
         else
         {
-            $this->webhookBumpFailureCount($webhook);
+            $this->webhookFailure($webhook);
         }
     }
 
@@ -265,48 +265,12 @@ class Inferno
 
     protected function webhookSuccessfullyFired($webhook)
     {
-        // TODO: We can probably remove the concept of failure count here.
-//        if ($webhook->getFailureCount() !== 0)
-//        {
-//            $this->repo->resetFailureCount($webhook);
-//        }
-
         $this->repo->setLastSuccessfulAt($webhook);
 
         $this->job->delete();
     }
 
-//    protected function webhookBumpFailureCount2($webhook)
-//    {
-//        $job = $this->job;
-//
-//        // It's a failure, increment failure count.
-//        $this->repo->bumpFailureCount($webhook);
-//
-//        if (($webhook->isActive() === false) or ($job->attempts() >= 3))
-//        {
-//            $this->trace->info(
-//                TraceCode::WEBHOOK_DEACTIVATE,
-//                ['webhook' => $webhook->getId()]
-//            );
-//
-//            $this->sendEmail($webhook,'deactivate');
-//
-//            // Webhook is now inactive
-//            // So let's just delete the job
-//            $job->delete();
-//        }
-//        else
-//        {
-//
-//            $this->sendEmail($webhook,'failure');
-//
-//            // Attempt again after 1 hour
-//            $job->release(3600);
-//        }
-//    }
-
-    protected function webhookBumpFailureCount($webhook)
+    protected function webhookFailure($webhook)
     {
         $job = $this->job;
 

@@ -188,11 +188,6 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::FAILURE_COUNT];
     }
 
-    protected function getLastSuccessfulAtAttribute()
-    {
-        return $this->attributes[self::LAST_SUCCESSFUL_AT];
-    }
-
     protected function setFailureCountAttribute($count)
     {
         assert ($count <= self::MAX_FAILURE_COUNT);
@@ -203,11 +198,6 @@ class Entity extends Base\PublicEntity
         {
             $this->deactivate();
         }
-    }
-
-    protected function setLastSuccessfulAtAttribute($successfulTime)
-    {
-        $this->attributes[self::LAST_SUCCESSFUL_AT] = $successfulTime;
     }
 
     protected function getEventsHexValue()
