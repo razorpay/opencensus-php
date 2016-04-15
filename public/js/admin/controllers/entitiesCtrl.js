@@ -158,6 +158,7 @@ app.controller('EntitiesCtrl', [
         otp_read: booleanList,
         iin: ['Iin'],
         type: [
+          'all',
           'credit',
           'debit',
           'unknown'
