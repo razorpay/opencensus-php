@@ -238,6 +238,7 @@ app.controller('EntityDetailCtrl', [
           'bank_account',
           'billdesk',
           'card',
+          'customer',
           'daily_settlement',
           'hdfc',
           'iin',
@@ -252,6 +253,7 @@ app.controller('EntityDetailCtrl', [
           'refund',
           'settlement',
           'terminal',
+          'token',
           'transaction',
           'webhook'
         ];

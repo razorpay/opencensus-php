@@ -153,7 +153,16 @@ app.controller('EntitiesCtrl', [
         ref: ['Reference'],
         auth: ['Auth Code']
       },
-      iin: {},
+      iin: {
+        emi: booleanList,
+        otp_read: booleanList,
+        iin: ['Iin'],
+        type: [
+          'credit',
+          'debit',
+          'unknown'
+        ]
+      },
       key: {},
       kotak: {},
       merchant: {
@@ -276,6 +285,12 @@ app.controller('EntitiesCtrl', [
           'adjustment'
         ]
       },
+      token: {
+        token: ['Token'],
+        customer_id: ['Customer Id'],
+        merchant_id: ['Merchant Id'],
+        card_id: ['Card Id']
+      }
       webhook: {
         merchant_id: ['Merchant Id'],
       }
