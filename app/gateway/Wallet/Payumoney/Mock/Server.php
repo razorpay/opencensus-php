@@ -78,6 +78,27 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
+    public function getBalance($input)
+    {
+        $this->validateActionInput($input, 'getBalance');
+
+        $response = array(
+            'status' => 0,
+            'message' => 'Wallet limit',
+            'errorCode' => null,
+            'guid' => null,
+            'result' => array(
+                'maxLimit' => 5000,
+                'availableBalance' => 500,
+                'minLimit' => 10
+            ),
+            'userVaultDTO' => null,
+            'mode' => 'test'
+        );
+
+        return $this->makeResponse($response);
+    }
+
     public function otpSubmit($input)
     {
         $this->validateActionInput($input, 'otpsubmit');
