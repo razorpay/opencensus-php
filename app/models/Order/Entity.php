@@ -9,25 +9,26 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID            = 'id';
-    const MERCHANT_ID   = 'merchant_id';
-    const AMOUNT        = 'amount';
-    const CURRENCY      = 'currency';
-    const ATTEMPTS      = 'attempts';
-    const STATUS        = 'status';
-    const NOTES         = 'notes';
+    const ID             = 'id';
+    const MERCHANT_ID    = 'merchant_id';
+    const AMOUNT         = 'amount';
+    const CURRENCY       = 'currency';
+    const ATTEMPTS       = 'attempts';
+    const STATUS         = 'status';
+    const NOTES          = 'notes';
 
     // Ideally should be a unique from the merchant side as well
-    const RECEIPT       = 'receipt';
+    const RECEIPT        = 'receipt';
 
     // To Mark If a payment corresponding to
     // this order is in authorized state
-    const AUTHORIZED    = 'authorized';
-    const CUSTOMER_ID   = 'customer_id';
+    const AUTHORIZED     = 'authorized';
+    const METHOD         = 'method';
+    const ACCOUNT_NUMBER = 'account_number';
 
-    // const METHOD      = 'method';
-    // const ACCOUNT_ID  = 'account_id';
-    // const CREATED_AT  = 'created_at';
+    const CUSTOMER_ID    = 'customer_id';
+
+
     // const VALIDITY    = 'validity';
     // const VALID_TILL  = 'valid_till';
 
@@ -38,7 +39,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
-        self::NOTES
+        self::NOTES,
+        self::METHOD,
+        self::ACCOUNT_NUMBER,
     );
 
     protected $table = \Constants\Table::ORDER;
@@ -46,10 +49,12 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = array(
-        self::ATTEMPTS   => 0,
-        self::STATUS     => Status::CREATED,
-        self::AUTHORIZED => 0,
-        self::NOTES      => []
+        self::ATTEMPTS          => 0,
+        self::STATUS            => Status::CREATED,
+        self::AUTHORIZED        => 0,
+        self::NOTES             => [],
+        self::METHOD            => null,
+        self::ACCOUNT_NUMBER    => null,
     );
 
     protected $public = array(
@@ -74,6 +79,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'order';
 
+    /** Related Models */
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
@@ -84,6 +90,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Models\Payment\Entity');
     }
 
+    /** End Related Models */
+
+    /** Setters And Getters */
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -109,6 +118,24 @@ class Entity extends Base\PublicEntity
         return $this->getAmountAttribute();
     }
 
+    public function getAccountNumber()
+    {
+        return $this->attributes[self::ACCOUNT_NUMBER];
+    }
+
+    public function getMethod()
+    {
+        return $this->attributes[self::METHOD];
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttemptsAttribute();
+    }
+
+    /** End Setters And Getters */
+
+    /** Mutators */
     protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
@@ -124,11 +151,9 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::ATTEMPTS];
     }
 
-    public function getAttempts()
-    {
-        return $this->getAttemptsAttribute();
-    }
+    /** End Mutators */
 
+    /** Other Functions */
     public function incrementAttempts()
     {
         $attempts = $this->getAttempts() + 1;

@@ -21,6 +21,8 @@ class Core extends Base\Core
 
         $order->merchant()->associate($merchant);
 
+        $order->getValidator()->validateMerchantSpecificData($order);
+
         $this->repo->saveOrFail($order);
 
         return $order;

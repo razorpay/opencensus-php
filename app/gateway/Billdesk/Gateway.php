@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getRequestArray($content);
+        $request = $this->getRequestArrayForAuthorize($content, $input);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
-            'Unknown1'                  => 'NA',
+            'AccountNumber'             => 'NA',
             'TxnAmount'                 => $input['payment']['amount'] / 100,
             'BankID'                    => $bankId,
             'Unknown2'                  => 'NA',
@@ -424,6 +424,12 @@ class Gateway extends Base\Gateway
             'Unknown11'                 => 'NA',
             'RU'                        => $input['callbackUrl'],
         );
+
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $content['AccountNumber'] = $input['order']['account_number'];
+        }
 
         if ($this->mode === Mode::TEST)
         {
@@ -491,6 +497,20 @@ class Gateway extends Base\Gateway
         $request = $this->getRequestArray($content);
 
         $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+
+        return $request;
+    }
+
+    protected function getRequestArrayForAuthorize($content, $input)
+    {
+        $request = $this->getRequestArray($content);
+
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $request['content']['hidRequestId'] = 'PGIME1000';
+            $request['content']['hidOperation'] = 'ME100';
+        }
 
         return $request;
     }
