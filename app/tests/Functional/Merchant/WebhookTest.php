@@ -252,7 +252,7 @@ class WebhookTest extends TestCase
         $payload = 'a';
         $secret = 'b';
 
-        $expectedValue = hash_hmac('sha256', $payload, $secret);
+        $expectedValue = base64_encode(hash_hmac('sha256', $payload, $secret, true));
 
         $actualValue = Inferno::generateHMAC($payload, $secret);
 
