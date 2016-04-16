@@ -245,7 +245,7 @@ $factory(Models\Customer\Entity::class, [
     'merchant_id' => '10000000000000',
     'name' => 'name',
     'contact' => '1234567890',
-    'notes' => []
+    'notes' => null,
 ]);
 
 $factory(Models\Customer\Token\Entity::class, [
