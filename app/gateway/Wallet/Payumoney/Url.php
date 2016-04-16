@@ -14,7 +14,7 @@ class Url
 
     const VERIFY        = '/vault/ext/getTransactionStatus';
 
-    const GENERATE_OTP  = '/auth/ext/wallet/register';
+    const OTP_GENERATE  = '/auth/ext/wallet/register';
     const OTP_SUBMIT    = '/auth/ext/wallet/verify';
     const GET_BALANCE   = '/auth/ext/wallet/getWalletLimit';
 }

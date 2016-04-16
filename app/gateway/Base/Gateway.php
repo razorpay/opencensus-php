@@ -12,6 +12,12 @@ use Trace\TraceCode;
 class Gateway
 {
     /**
+     * Default request timeout duration in seconds.
+     * @var  integer
+     */
+    const TIMEOUT = 30;
+
+    /**
      * Trace instance for tracing
      * @var Trace\Trace
      */
@@ -176,6 +182,10 @@ class Gateway
         // echo $request['content'] . PHP_EOL . PHP_EOL;
         // \Log::info( 'Url: ' . $request['url'] . PHP_EOL);
         // \Log::info( json_encode($request['content'], JSON_PRETTY_PRINT) . PHP_EOL . PHP_EOL);
+        if (isset($request['options']['timeout']) === false)
+        {
+            $request['options']['timeout'] = self::TIMEOUT;
+        }
 
         try
         {
