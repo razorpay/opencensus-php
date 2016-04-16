@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
         {
             $this->callbackOtpSubmit($input);
 
-            return $this->useWallet($input);
+            return $this->debit($input);
         }
     }
 
@@ -192,7 +192,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate($input)
     {
-        $this->action($input, Action::GENERATE_OTP);
+        $this->action($input, Action::OTP_GENERATE);
 
         $request = $this->getOtpGenerateRequestArray($input);
 
@@ -249,13 +249,13 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function useWallet($input)
+    protected function debit($input)
     {
-        $this->userHasBalance($input);
+        $this->checkBalance($input);
 
         $this->action($input, Action::AUTHORIZE);
 
-        $request = $this->getUseWalletRequestArray($input);
+        $request = $this->getDebitRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -285,7 +285,7 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($contentToSave);
     }
 
-    protected function userHasBalance($input)
+    protected function checkBalance($input)
     {
         $userBalance = $this->getUserWalletLimit($input);
 
@@ -364,7 +364,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getUseWalletRequestArray($input)
+    protected function getDebitRequestArray($input)
     {
         $content = array(
             'key'                   => $this->getMerchantId($input['terminal']),

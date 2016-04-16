@@ -60,7 +60,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($refundResponse);
     }
 
-    public function generateOtp($input)
+    public function otpGenerate($input)
     {
         $this->validateActionInput($input, 'generateotp');
 
