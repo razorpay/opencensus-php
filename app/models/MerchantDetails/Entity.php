@@ -262,6 +262,11 @@ class Entity extends Base\Entity
         return json_decode($stepsFinished, true);
     }
 
+    protected function setBankBranchIfscAttribute($value)
+    {
+        $this->attributes['bank_branch_ifsc'] = strtoupper($value);
+    }
+
     protected function setStepsFinishedAttribute($value)
     {
         $this->attributes['steps_finished'] = json_encode($value);
