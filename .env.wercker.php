@@ -137,5 +137,5 @@ return array(
     'TOKENEX_API_URL'                               => getenv('TOKENEX_API_URL'),
     'TOKENEX_TOKEN_SCHEME'                          => '12',
 
-    'RAVEN_API_URL'                                 => 'https://raven.razorpay.com/v1/',
+    'RAVEN_URL'                                     => 'https://raven.razorpay.com/v1/',
 );

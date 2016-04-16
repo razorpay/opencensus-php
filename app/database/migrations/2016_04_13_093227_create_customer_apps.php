@@ -38,6 +38,16 @@ class CreateCustomerApps extends Migration {
             $table->index(App::CREATED_AT);
 
             $table->index(App::APP_ID);
+
+            $table->foreign(App::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            $table->foreign(App::CUSTOMER_ID)
+                  ->references(Customer\Entity::ID)
+                  ->on(Table::CUSTOMER)
+                  ->on_delete('restrict');
         });
 	}
 
@@ -48,6 +58,13 @@ class CreateCustomerApps extends Migration {
 	 */
 	public function down()
 	{
+        Schema::table(Table::CUSTOMER_APP, function($table)
+        {
+            $table->dropForeign(Table::CUSTOMER_APP.'_'.App::CUSTOMER_ID.'_foreign');
+
+            $table->dropForeign(Table::CUSTOMER_APP.'_'.App::MERCHANT_ID.'_foreign');
+        });
+
 		Schema::drop(Table::CUSTOMER_APP);
 	}
 }
