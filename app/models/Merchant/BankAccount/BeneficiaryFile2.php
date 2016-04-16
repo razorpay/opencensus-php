@@ -50,6 +50,9 @@ class BeneficiaryFile2
 
         foreach ($list as $ba)
         {
+            $ifsc = $ba->getAttribute(BankAccount\Entity::IFSC_CODE);
+            $ifsc = strtoupper($ifsc);
+
             $array = array(
                 'Client_Code'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CODE),
                 'Bene_Code'             => '',
@@ -67,7 +70,7 @@ class BeneficiaryFile2
                 'Bene_Mobile'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_MOBILE),
                 'Bene_Tel'              => '',
                 'Bene_Fax'              => '',
-                'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
+                'IFSC'                  => $ifsc,
                 'Bene_A/c No.'          => "'".$ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
             );
 
