@@ -50,7 +50,7 @@ class CustomerTokenTest extends TestCase
 
     public function testGetCustomerToken()
     {
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         return $this->startTest();
     }

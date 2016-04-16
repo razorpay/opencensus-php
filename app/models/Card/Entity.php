@@ -126,7 +126,7 @@ class Entity extends Base\PublicEntity
 
     public function globalCard()
     {
-        return $this->belongsTo('Models\Card\Entity', 'global_card_id', 'id');
+        return $this->belongsTo('Models\Card\Entity', self::GLOBAL_CARD_ID, self::ID);
     }
 
     public function generateLast4($input)

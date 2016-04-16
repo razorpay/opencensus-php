@@ -266,6 +266,7 @@ final class Route
         'get_customer',
         // 'delete_customer',
         'delete_customer_token',
+        'fetch_customer_token',
         'fetch_customer_tokens',
     );
 
@@ -391,7 +392,6 @@ final class Route
         'account_fetch_balance',
         'account_fetch_config',
         'submerchant_create',
-        'fetch_customer_token',
     );
 
     public static $direct = array(

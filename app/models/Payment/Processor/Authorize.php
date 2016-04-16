@@ -489,7 +489,7 @@ trait Authorize
         }
     }
 
-    protected function setBankAndEmiPlanDetails(& $payment, $cardNumber, $emiDuration)
+    protected function setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration)
     {
         // Set the bank
         $iin = substr($cardNumber, 0, 6);
@@ -744,7 +744,7 @@ trait Authorize
 
         if ($vault)
         {
-            $vaultToken = $this->getCardVaultToken($cardInput['number']);
+            $vaultToken = Card\Tokenex::getVaultToken($cardInput['number']);
 
             if (empty($vaultToken) === false)
             {
@@ -777,7 +777,7 @@ trait Authorize
     {
         $card = $token->card;
 
-        $cardNumber = $this->getCardNumber($card->getVaultToken());
+        $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
         $cvv = $input['card']['cvv'];
 
         $this->payment->card()->associate($card);
@@ -790,7 +790,7 @@ trait Authorize
 
     protected function createCardEntityFromSavedToken($token, $input)
     {
-        $cardNumber = $this->getCardNumber($token->card->getVaultToken());
+        $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
         $cvv = $input['card']['cvv'];
 
         $savedCard = $token->card->toArray();
@@ -810,48 +810,7 @@ trait Authorize
              'cvv' => $cvv]);
     }
 
-    protected function getCardVaultToken($cardNumber)
-    {
-        $app = \App::getFacadeRoot();
-
-        try
-        {
-            $token = $app['card.tokenex']->tokenize($cardNumber);
-        }
-        catch (Exception $e)
-        {
-            $this->trace->info(
-                TraceCode::TOKENEX_REQUEST,
-                "failed to tokenize data");
-        }
-
-        return $token;
-    }
-
-    protected function getCardNumber($vaultToken)
-    {
-        $app = \App::getFacadeRoot();
-
-        try
-        {
-            $cardNumber = $app['card.tokenex']->detokenize($vaultToken);
-
-            if (empty($cardNumber) === false)
-            {
-                $cardNumber = strval($cardNumber);
-            }
-        }
-        catch (Exception $e)
-        {
-            $this->trace->info(
-                TraceCode::TOKENEX_REQUEST,
-                "failed to detokenize data");
-        }
-
-        return $cardNumber;
-    }
-
-        protected function verifyBankEnabled($payment)
+    protected function verifyBankEnabled($payment)
     {
         $merchant = $payment->merchant;
 
