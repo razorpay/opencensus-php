@@ -155,6 +155,13 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::BENEFICIARY_CODE, $code);
     }
 
+    public function setIfscCodeAttribute($code)
+    {
+        $code = strtoupper($code);
+
+        $this->attributes[self::IFSC_CODE] = $code;
+    }
+
     public function generateIdFromCreatedAt()
     {
         $createdAt = $this->getAttribute(self::CREATED_AT);
