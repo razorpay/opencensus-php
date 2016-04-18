@@ -180,7 +180,7 @@ return [
 
     'testGetCustomerTokensByAppId' => [
         'request' => [
-            'url' => '/apps/1000000custapp/tokens',
+            'url' => '/apps/uuuu_1000000custapp/tokens',
             'method' => 'get',
             'content' => [
             ],
@@ -231,7 +231,7 @@ return [
 
     'testDeleteAppToken' => [
         'request' => [
-            'url' => '/apps/1000000custapp/tokens/1000gcardtoken',
+            'url' => '/apps/uuuu_1000000custapp/tokens/1000gcardtoken',
             'method' => 'delete',
             'content' => [
             ],

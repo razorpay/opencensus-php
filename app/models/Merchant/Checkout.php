@@ -60,16 +60,16 @@ class Checkout
 
         if (isset($input['customer_id']))
         {
-            $savedTokens = (new Customer\Token\Core)->fetchTokensbyCustomerId($merchant->getId(), $input['customer_id']);
+            $savedTokens = (new Customer\Token\Service)->fetchMultiple($input['customer_id']);
         }
         else if (isset($input['app_id']))
         {
-            $savedTokens = (new Customer\Token\Core)->fetchTokensByAppId($merchant->getId(), $input['app_id']);
+            $savedTokens = (new Customer\Token\Service)->fetchTokensByAppId($input['app_id']);
         }
 
-        if (($savedTokens !== null) and ($savedTokens->count() !== 0))
+        if ($savedTokens !== null)
         {
-            $data['tokens'] = $savedTokens->toArrayPublic();
+            $data['tokens'] = $savedTokens;
         }
 
         return $data;
