@@ -31,10 +31,9 @@ class Customer extends Base
 
     protected $customerApps = array(
         array(
-            'id'            => '1000custappuid',
             'customer_id'   => '10000gcustomer',
             'device_id'     => 'test',
-            'app_id'        => '1000000custapp',
+            'id'            => '1000000custapp',
         ),
     );
 
@@ -45,6 +44,8 @@ class Customer extends Base
             'customer_id'   => '100000customer',
             'method'        => 'wallet',
             'wallet'        => 'paytm',
+            'bank'          => null,
+            'card_id'       => null,
         ),
         array(
             'id'            => '100000custbank',
@@ -52,12 +53,16 @@ class Customer extends Base
             'customer_id'   => '100000customer',
             'method'        => 'netbanking',
             'bank'          => 'HDFC',
+            'wallet'        => null,
+            'card_id'       => null,
         ),
         array(
             'id'            => '100000custcard',
             'token'         => '10000cardtoken',
             'customer_id'   => '100000customer',
             'method'        => 'card',
+            'bank'          => null,
+            'wallet'        => null,
             'card_id'       => '100000000lcard',
         ),
         array(
@@ -66,6 +71,8 @@ class Customer extends Base
             'customer_id'   => '10000gcustomer',
             'method'        => 'card',
             'card_id'       => '100000000gcard',
+            'bank'          => null,
+            'wallet'        => null,
         ),
     );
 

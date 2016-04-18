@@ -262,6 +262,5 @@ $factory(Models\Customer\App\Entity::class, [
     'id' => $faker->uniqueid,
     'customer_id' => '10000gcustomer',
     'device_id' => 'test',
-    'app_id' => '1000000custapp',
     'merchant_id'  => '10000000000000'
 ]);
