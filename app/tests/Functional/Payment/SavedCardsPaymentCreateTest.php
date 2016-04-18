@@ -73,7 +73,7 @@ class SavedCardPaymentCreateTest extends TestCase
         );
 
         $this->payment['token'] = '1000gcardtoken';
-        $this->payment['app_id'] = '1000000custapp';
+        $this->payment['app_id'] = 'uuuu_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -97,7 +97,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['emi_duration'] = 9;
         $this->payment['amount'] = '300000';
         $this->payment['token'] = '1000gcardtoken';
-        $this->payment['app_id'] = '1000000custapp';
+        $this->payment['app_id'] = 'uuuu_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -182,7 +182,7 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->payment['save'] = 1;
         $this->payment['card']['number'] = '4000400000000004';
-        $this->payment['app_id'] = '1000000custapp';
+        $this->payment['app_id'] = 'uuuu_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -196,7 +196,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->payment['card'] = array('cvv'  => 111);
         $this->payment['token'] = $token['token'];
-        $this->payment['app_id'] = '1000000custapp';
+        $this->payment['app_id'] = 'uuuu_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -220,7 +220,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->payment['method'] = 'emi';
         $this->payment['emi_duration'] = 9;
         $this->payment['amount'] = '300000';
-        $this->payment['app_id'] = '1000000custapp';
+        $this->payment['app_id'] = 'uuuu_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -234,7 +234,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->payment['card'] = array('cvv'  => 111);
         $this->payment['token'] = $token['token'];
-        $this->payment['app_id'] = '1000000custapp';
+        $this->payment['app_id'] = 'uuuu_1000000custapp';
         $this->payment['method'] = 'emi';
         $this->payment['emi_duration'] = 9;
         $this->payment['amount'] = '300000';
