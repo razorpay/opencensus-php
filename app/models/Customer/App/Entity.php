@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign      = 'uuuu';
 
-    protected $entity           = 'customer_app';
+    protected $entity           = 'capp';
 
     protected $table            = \Constants\Table::CUSTOMER_APP;
 

@@ -379,7 +379,7 @@ class MerchantTest extends TestCase
             'url' => '/checkout',
             'method' => 'get',
             'content' => [
-                'customer_id' => '100000customer'
+                'customer_id' => 'cust_100000customer'
             ],
         );
 
@@ -399,7 +399,7 @@ class MerchantTest extends TestCase
             'url' => '/checkout',
             'method' => 'get',
             'content' => [
-                'app_id' => '1000000custapp'
+                'app_id' => 'uuuu_1000000custapp'
             ],
         );
 

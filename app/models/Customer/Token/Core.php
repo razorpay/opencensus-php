@@ -66,9 +66,7 @@ class Core extends Base\Core
 
     public function fetchTokensByCustomerId($merchantId, $customerId)
     {
-        $customer = $this->custRepo->findOrFailPublic($customerId);
-
-        assert($customer->merchant->getId() === $merchantId);
+        $customer = $this->custRepo->findByIdAndMerchantId($customerId, $merchantId);
 
         $tokens = $this->repo->getByCustomerId($customerId);
 
