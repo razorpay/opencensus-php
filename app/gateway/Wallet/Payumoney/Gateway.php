@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
         {
             $this->callbackOtpSubmit($input);
 
-            return $this->useWallet($input);
+            return $this->debit($input);
         }
     }
 
@@ -192,7 +192,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate($input)
     {
-        $this->action($input, Action::GENERATE_OTP);
+        $this->action($input, Action::OTP_GENERATE);
 
         $request = $this->getOtpGenerateRequestArray($input);
 
@@ -249,11 +249,13 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function useWallet($input)
+    protected function debit($input)
     {
+        $this->checkBalance($input);
+
         $this->action($input, Action::AUTHORIZE);
 
-        $request = $this->getUseWalletRequestArray($input);
+        $request = $this->getDebitRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -283,6 +285,61 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($contentToSave);
     }
 
+    protected function checkBalance($input)
+    {
+        $userBalance = $this->getUserWalletLimit($input);
+
+        if ($input['payment']['amount'] > $userBalance)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+        }
+    }
+
+    protected function getUserWalletLimit($input)
+    {
+        $this->action($input, Action::GET_BALANCE);
+
+        $request = $this->getUserWalletLimitRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        if ($content['status'] === Status::SUCCESS and
+            isset($content['result']['availableBalance']))
+        {
+            return (int) ($content['result']['availableBalance'] * 100);
+        }
+
+        return 0;
+    }
+
+    protected function getUserWalletLimitRequestArray($input)
+    {
+        $content = [];
+
+        $content = array(
+            'email'     => $input['payment']['email'],
+            'client_id' => $this->getClientId($input['terminal']),
+        );
+
+        $content['hash'] = $this->getHashForUserWalletLimit($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $request['headers'] = array(
+            'Accept'        => 'application/json',
+            'Authorization' => 'Bearer ' . $this->accessToken
+        );
+
+        return $request;
+    }
+
     protected function getRefundRequestArray($input)
     {
         $content = [];
@@ -297,17 +354,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
         $request['headers'] = array(
             'Accept'        => 'application/json',
             'Authorization' => $this->getAuthHeader($input['terminal'])
         );
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
         return $request;
     }
 
-    protected function getUseWalletRequestArray($input)
+    protected function getDebitRequestArray($input)
     {
         $content = array(
             'key'                   => $this->getMerchantId($input['terminal']),
@@ -320,12 +377,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
         $request['headers'] = array(
             'Accept'        => 'application/json',
             'Authorization' => 'Bearer ' . $this->accessToken
         );
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
     }
@@ -446,7 +503,24 @@ class Gateway extends Base\Gateway
             'email',
         );
 
+        $content['key'] = $this->getMerchantId($this->input['terminal']);
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getHashForUserWalletLimit($content)
+    {
+        $fieldsInOrder = array(
+            'key',
+            'mobile',
+            'email',
+        );
+
         $content['key']     = $this->getMerchantId($this->input['terminal']);
+        $content['mobile']  = $this->getFormattedContact(
+                                    $this->input['payment']['contact']);
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 

@@ -447,6 +447,48 @@ return [
         ],
     ],
 
+    'testNotesEmptyString' => [
+        'request' => [
+            'content' => [
+                'notes' => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'notes',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY,
+        ],
+    ],
+
+    'testNotesNull' => [
+        'request' => [
+            'content' => [
+                'notes' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'notes',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY,
+        ],
+    ],
+
     'testTimeoutOldPayment' => [
         'request' => [
             'content' => [],

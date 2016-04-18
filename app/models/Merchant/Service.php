@@ -532,7 +532,7 @@ class Service extends Base\Service
 
         if ($merchantsActivatedSinceLastReport > 0)
         {
-            (new BankAccount\BeneficiaryFile)->generate();
+            (new BankAccount\BeneficiaryFile2)->generate();
 
             $message = "Merchant Beneficiary file generated. Merchants activated since last".
                     " report is ".$merchantsActivatedSinceLastReport;

@@ -77,4 +77,30 @@ class Entity extends Base\Entity
     protected $guarded = array();
 
     protected $entity = 'billdesk';
+
+    protected $appends = array('status', 'refund_status');
+
+    protected function getStatusAttribute()
+    {
+        $code = $this->attributes['AuthStatus'];
+
+        if ($code === null)
+        {
+            return null;
+        }
+
+        return AuthStatus::$statusMap[$code];
+    }
+
+    protected function getRefundStatusAttribute()
+    {
+        $code = $this->attributes['RefStatus'];
+
+        if ($code === null)
+        {
+            return null;
+        }
+
+        return RefundStatus::$statusMap[$code];
+    }
 }

@@ -94,7 +94,7 @@ $factory(Models\Payment\Entity::class, [
     'status' => 'created',
     'refund_status' => null,
     'contact' => $faker->randomNumber(6),
-    'notes' => $faker->emptyarray,
+    'notes' => null,
     'gateway' => 'hdfc',
     'email' => $faker->email,
     'auto_captured' => 0,
@@ -110,7 +110,7 @@ $factory(Models\Payment\Refund\Entity::class, [
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => 100,
     'currency' => 'INR',
-    'notes' => '[]',
+    'notes' => null,
     'transaction_id' => null,
 ]);
 
@@ -234,7 +234,7 @@ $factory(Models\Order\Entity::class, [
     'currency' => 'INR',
     'status' => 'created',
     'receipt' => $faker->uniqueid,
-    'notes' => '[]',
+    'notes' => null,
     'attempts' => 0,
     'created_at' => $faker->timestamp,
     'updated_at' => $faker->timestamp,
@@ -245,7 +245,7 @@ $factory(Models\Customer\Entity::class, [
     'merchant_id' => '10000000000000',
     'name' => 'name',
     'contact' => '1234567890',
-    'notes' => []
+    'notes' => null,
 ]);
 
 $factory(Models\Customer\Token\Entity::class, [

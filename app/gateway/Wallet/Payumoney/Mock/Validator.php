@@ -40,4 +40,10 @@ class Validator extends Base\Validator
         'otp'                   => 'required|string|regex:"^\d{6}$"',
         'hash'                  => 'required|string|regex:"^[a-f0-9]+$"'
     );
+
+    protected static $getBalanceRules = array(
+        'email'                 => 'required|email',
+        'client_id'             => 'required|string',
+        'hash'                  => 'required|string|regex:"^[a-f0-9]+$"'
+    );
 }

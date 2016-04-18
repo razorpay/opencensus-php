@@ -194,6 +194,16 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testNotesEmptyString()
+    {
+        $this->startTest();
+    }
+
+    public function testNotesNull()
+    {
+        $this->startTest();
+    }
+
     public function testTimeoutOldPayment()
     {
         $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);

@@ -18,6 +18,13 @@ class AuthStatus
         '0001',
     );
 
+    public static $statusMap = array(
+        self::SUCCESS       => 'authorized',
+        self::PENDING       => 'pending',
+        self::INVALID_AUTH  => 'failed',
+        self::ERROR         => 'failed',
+        self::NA            => 'failed');
+
     public static $messages = array(
         '0300'  => 'Success',
         '0399'  => 'Invalid Authentication at Bank Cancel Transaction',

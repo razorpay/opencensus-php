@@ -60,7 +60,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($refundResponse);
     }
 
-    public function generateOtp($input)
+    public function otpGenerate($input)
     {
         $this->validateActionInput($input, 'generateotp');
 
@@ -73,6 +73,27 @@ class Server extends Base\Mock\Server
             'guid' => null,
             'result' => null,
             'userVaultDTO' => null
+        );
+
+        return $this->makeResponse($response);
+    }
+
+    public function getBalance($input)
+    {
+        $this->validateActionInput($input, 'getBalance');
+
+        $response = array(
+            'status' => 0,
+            'message' => 'Wallet limit',
+            'errorCode' => null,
+            'guid' => null,
+            'result' => array(
+                'maxLimit' => 5000,
+                'availableBalance' => 500,
+                'minLimit' => 10
+            ),
+            'userVaultDTO' => null,
+            'mode' => 'test'
         );
 
         return $this->makeResponse($response);

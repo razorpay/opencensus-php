@@ -102,7 +102,6 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::EMI,
         self::ISSUER,
-        self::COUNTRY,
         self::INTERNATIONAL,
     );
 
