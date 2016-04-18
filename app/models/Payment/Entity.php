@@ -890,6 +890,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Customer\Entity');
     }
 
+    public function app()
+    {
+        return $this->belongsTo('Models\Customer\App\Entity');
+    }
+
 // --------------- Relation to other entity section ends -----------------------
 
     public function refundAmount($amount)

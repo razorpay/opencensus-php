@@ -7,15 +7,16 @@ use Constants\Table;
 use Models\Merchant;
 use Models\Customer;
 use Models\Customer\App\Entity as App;
+use Models\Payment\Entity as Payment;
 
 class CreateCustomerApps extends Migration {
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
+    /**
+     * Run the migrations.
+  	 *
+  	 * @return void
+  	 */
+  	public function up()
+  	{
         Schema::create(Table::CUSTOMER_APP, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
@@ -27,8 +28,6 @@ class CreateCustomerApps extends Migration {
 
             $table->char(App::CUSTOMER_ID, 14);
 
-            $table->char(App::APP_ID, 14);
-
             $table->string(App::DEVICE_ID, 50);
 
             $table->integer(App::CREATED_AT);
@@ -36,8 +35,6 @@ class CreateCustomerApps extends Migration {
             $table->integer(App::UPDATED_AT);
 
             $table->index(App::CREATED_AT);
-
-            $table->index(App::APP_ID);
 
             $table->foreign(App::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -49,15 +46,28 @@ class CreateCustomerApps extends Migration {
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
         });
-	}
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment::APP_ID)
+                  ->references(App::ID)
+                  ->on(Table::CUSTOMER_APP)
+                  ->on_delete('restrict');
+        });
+	 }
+
+  	/**
+  	 * Reverse the migrations.
+  	 *
+  	 * @return void
+  	 */
+  	public function down()
+  	{
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::APP_ID.'_foreign');
+        });
+
         Schema::table(Table::CUSTOMER_APP, function($table)
         {
             $table->dropForeign(Table::CUSTOMER_APP.'_'.App::CUSTOMER_ID.'_foreign');
@@ -65,6 +75,6 @@ class CreateCustomerApps extends Migration {
             $table->dropForeign(Table::CUSTOMER_APP.'_'.App::MERCHANT_ID.'_foreign');
         });
 
-		Schema::drop(Table::CUSTOMER_APP);
-	}
+    		Schema::drop(Table::CUSTOMER_APP);
+  	}
 }

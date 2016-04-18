@@ -133,9 +133,9 @@ class Service extends Base\Service
 
     public function deleteAppToken($appId, $token)
     {
-        $app = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $this->merchant->getId());
+        $app = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $this->merchant->getId());
 
-        $customerId = Customer\Entity::getIdPrefix().$app->getCustomerId();
+        $customerId = Customer\Entity::getIdPrefix().$app->customer->getId();
 
         return $this->delete($customerId, $token, Account::SHARED_ACCOUNT);
     }

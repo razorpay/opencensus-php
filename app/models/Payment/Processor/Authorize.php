@@ -285,13 +285,13 @@ trait Authorize
 
         if (empty($input[Payment\Entity::APP_ID]) === false)
         {
-            $customerApp = (new Customer\App\Repository)->findByAppIdAndMerchantId(
+            $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
                 $input[Payment\Entity::APP_ID],
                 $this->merchant->getId());
 
             assert($customerApp !== null);
 
-            $customerId = Customer\Entity::getIdPrefix() . $customerApp->getCustomerId();
+            $customerId = Customer\Entity::getIdPrefix() . $customerApp->customer->getId();
             $merchantId = Merchant\Account::SHARED_ACCOUNT;
         }
         else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
