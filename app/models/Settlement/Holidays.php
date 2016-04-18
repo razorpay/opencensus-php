@@ -41,6 +41,92 @@ class Holidays
         // [25, 12, 2016], // Sunday
     );
 
+    public static $arrayedHolidays = array(
+        2016 => array(
+            1 => [26],
+            2 => [19],
+            3 => [7,24,25],
+            4 => [14,15,19],
+            5 => [21],
+            7 => [6],
+            8 => [15,17],
+            9 => [5,13],
+            10 => [11, 12, 31],
+            11 => [14],
+            12 => [12],
+    ));
+
+    /**
+     * getNextWorkingDay - Given a Carbon Date get the next working date
+     * This includes checks for :
+     *     :bank holiday
+     *     :non working saturday
+     *     :sundays
+     */
+
+    // Supports banking holidays for 2016 now
+    public static function getNextWorkingDay($date)
+    {
+        $nextDay = $date->copy();
+
+        do
+        {
+            $nextDay->addDay();
+        }
+        while(self::isWorkingDay($nextDay) === false);
+
+        return $nextDay;
+    }
+
+    /**
+     * getNextWorkingDay - Given a Carbon Date get the next working date
+     * This includes checks for :
+     *     :bank holiday
+     *     :non working saturday
+     *     :sundays
+     *
+     *  Supports banking holidays for 2016 now
+     */
+
+    public static function isWorkingDay($date)
+    {
+        if (self::isSpecifiedBankHoliday($date))
+        {
+            return false;
+        }
+
+        if ($date->dayOfWeek === Carbon::SUNDAY)
+        {
+            return false;
+        }
+
+        if ($date->dayOfWeek === Carbon::SATURDAY
+            and self::isWorkingSaturday($date) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isSpecifiedBankHoliday($date)
+    {
+        $year = $date->year;
+        $month = $date->month;
+        $day = $date->day;
+
+        if (isset(self::$arrayedHolidays[$year])
+            and isset(self::$arrayedHolidays[$year][$month]))
+        {
+            if (in_array($day,self::$arrayedHolidays[$year][$month]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function isDayHoliday($dayString = 'today', $mode = 'test', $forceResultInTest = false)
     {
         if ($mode === 'test')
