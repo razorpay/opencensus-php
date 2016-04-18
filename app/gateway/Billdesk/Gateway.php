@@ -536,7 +536,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->input['merchant']->isTPVRequired())
         {
-            return $this->config['sec_live_access_code'];
+            return $this->config['live_access_code_sec'];
         }
 
         return $this->config['live_access_code'];
@@ -546,7 +546,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->input['merchant']->isTPVRequired())
         {
-            return $this->config['sec_live_hash_secret'];
+            return $this->config['live_hash_secret_sec'];
         }
 
         return $this->config['live_hash_secret'];
