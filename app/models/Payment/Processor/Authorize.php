@@ -1,4 +1,4 @@
-<?php
+F<?php
 
 namespace Models\Payment\Processor;
 
@@ -285,8 +285,10 @@ trait Authorize
 
         if (empty($input[Payment\Entity::APP_ID]) === false)
         {
+            $appId = Customer\App\Entity::verifyIdAndStripSign($input[Payment\Entity::APP_ID]);
+
             $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
-                $input[Payment\Entity::APP_ID],
+                $appId,
                 $this->merchant->getId());
 
             assert($customerApp !== null);

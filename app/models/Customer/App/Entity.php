@@ -10,7 +10,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID       =       'customer_id';
     const DEVICE_ID         =       'device_id';
 
-    protected static $sign      = 'app';
+    protected static $sign      = 'uuuu';
 
     protected $entity           = 'customer_app';
 
