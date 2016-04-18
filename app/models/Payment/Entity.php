@@ -79,7 +79,6 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::DESCRIPTION,
         self::TOKEN,
-        self::APP_ID,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -632,11 +631,6 @@ class Entity extends Base\PublicEntity
     public function getFormattedCard()
     {
         return $this->card->getFormatted();
-    }
-
-    public function getCustomerId()
-    {
-        return $this->getAttribute(self::CUSTOMER_ID);
     }
 
     public function getEmail()

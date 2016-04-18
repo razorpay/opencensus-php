@@ -72,7 +72,7 @@ class EmiPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         //Kotak Card
-        $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, '1000000custapp');
+        $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'uuuu_1000000custapp');
         $payment = $this->getLastEntity('payment', true);
 
         $this->fixtures->edit('payment', $payment['id'], [
