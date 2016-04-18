@@ -44,6 +44,7 @@ return array(
     ),
 
     'raven' => array(
-        'url'       => '',//$_ENV['RAVEN_URL'],
+        'url'       => $_ENV['RAVEN_URL'],
+        'secret'    => $_ENV['RAVEN_SECRET'],
     ),
 );

@@ -138,4 +138,5 @@ return array(
     'TOKENEX_TOKEN_SCHEME'                          => '12',
 
     'RAVEN_URL'                                     => 'https://raven.razorpay.com/v1/',
+    'RAVEN_SECRET'                                  => '',
 );
