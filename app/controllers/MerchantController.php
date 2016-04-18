@@ -252,6 +252,11 @@ class MerchantController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    /**
+     * Registers a new sub-merchant account
+     * This will automatically have the correct
+     * referral field and dashboard users added.
+     */
     public function postRegisterSubMerchant()
     {
         $input = Input::all();

@@ -99,16 +99,13 @@ class Service extends Base\Service
         $error = (new Merchant\Validator)
             ->validateInput('create_submerchant', $input)->messages();
 
-        // We are re-using the merchant email here
-        $data = [
-            'name'  =>  $input['name'],
-            'email' =>  $currentMerchant->email,
-        ];
-
         if (empty($error))
         {
             $businessName = $input['name'];
-            $merchant = Entity::createFromMerchant($currentMerchant, $businessName);
+
+            $email = \Input::get('email', $currentMerchant->email);
+
+            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email);
 
             $merchant->save();
 
@@ -143,7 +140,8 @@ class Service extends Base\Service
     {
         $data = [
             'name'  =>  $merchant->name,
-            'id'    =>  $merchant->id
+            'id'    =>  $merchant->id,
+            'email' =>  $merchant->email
         ];
 
         $this->setApiCredentials($aggregator->id);
