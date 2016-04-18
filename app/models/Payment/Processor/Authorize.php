@@ -1,4 +1,4 @@
-F<?php
+<?php
 
 namespace Models\Payment\Processor;
 
@@ -272,6 +272,7 @@ trait Authorize
         $customerId = null;
         $merchantId = null;
         $customer = null;
+        $customerApp = null;
 
         if (empty($input[Payment\Entity::APP_ID]) === false)
         {
@@ -302,6 +303,10 @@ trait Authorize
             if ($customer->isLocal())
             {
                 $this->payment->customer()->associate($customer);
+            }
+            else
+            {
+                $this->payment->app()->associate($customerApp);
             }
         }
 
