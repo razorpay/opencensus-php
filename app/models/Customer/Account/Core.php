@@ -76,7 +76,7 @@ class Core extends Base\Core
             $app = (new App\Core)->create($custAppInput);
 
             $response['success'] = 1;
-            $response['app_id'] = $app->getId();
+            $response['app_id'] = $app->getPublicId();
         }
         else
         {
