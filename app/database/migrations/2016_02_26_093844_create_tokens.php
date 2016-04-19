@@ -30,7 +30,8 @@ class CreateTokens extends Migration {
 
             $table->char(Token::MERCHANT_ID, Token::ID_LENGTH);
 
-            $table->char(Token::TERMINAL_ID, Token::ID_LENGTH);
+            $table->char(Token::TERMINAL_ID, Token::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Token::TOKEN, 14)
                   ->unique();
