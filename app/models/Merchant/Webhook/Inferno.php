@@ -115,7 +115,7 @@ class Inferno
         }
         else if ($type === 'deactivate')
         {
-            $subject .= 'Webhook deactivated after 24 hours from last deliver for ' . $subjectName;
+            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
         }
 
         $data['subject'] = $subject;
