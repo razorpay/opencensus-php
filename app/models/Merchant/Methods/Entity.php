@@ -289,7 +289,15 @@ class Entity extends Base\PublicEntity
     
     public function getNetbankingAttribute()
     {
-        return (bool) $this->attributes[self::NETBANKING];
+        if (isset($this->attributes[self::NETBANKING]))
+        {
+            return (bool) $this->attributes[self::NETBANKING];
+        }
+        else
+        {
+            s("here");
+            return true;
+        }
     }
 
     public function getMobikwikAttribute()
