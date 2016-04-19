@@ -18,6 +18,7 @@ class Validator extends Base\Validator
     protected static $setMethodsRules = array(
         Entity::BANKS       => 'sometimes|array',
         Entity::CARD        => 'sometimes|boolean',
+        Entity::NETBANKING  => 'sometimes|boolean',
         Entity::AMEX        => 'sometimes|boolean',
         Entity::PAYTM       => 'sometimes|boolean',
         Entity::PAYZAPP     => 'sometimes|boolean',

@@ -436,7 +436,11 @@ class Service extends Base\Service
         if ($methods !== null)
         {
             $data['card'] = $methods->isCardEnabled();
-            $data['netbanking'] = $methods->toArrayWithBankNames();
+            $netbankingEnabled = $methods->isNetbankingEnabled();
+            if($netbankingEnabled === true)
+            {
+                $data['netbanking'] = $methods->toArrayWithBankNames();
+            }
             $data['wallet'] = $methods->getEnabledWallets();
             $data['emi'] = $methods->isEmiEnabled();
         }
@@ -449,9 +453,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function setPaymentMethods($id, $input)
+    public function setPaymentMethods($merchantId, $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($merchantId);
 
         return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }

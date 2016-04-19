@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
+    const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
@@ -87,10 +88,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getCardAttribute();
     }
-
+    
     public function isNetbankingEnabled()
     {
-        return true;
+        return $this->getNetbankingAttribute();
     }
 
     public function isWalletEnabled($wallet = null)
@@ -284,6 +285,11 @@ class Entity extends Base\PublicEntity
     public function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
+    }
+    
+    public function getNetbankingAttribute()
+    {
+        return (bool) $this->attributes[self::NETBANKING];
     }
 
     public function getMobikwikAttribute()

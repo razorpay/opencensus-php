@@ -266,11 +266,11 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function putMethods($id)
+    public function putMethods($merchantId)
     {
         $input = Input::all();
 
-        $data = (new Merchant\Service)->setPaymentMethods($id, $input);
+        $data = (new Merchant\Service)->setPaymentMethods($merchantId, $input);
 
         return ApiResponse::json($data);
     }
