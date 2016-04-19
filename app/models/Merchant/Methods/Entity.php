@@ -265,6 +265,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD, $card);
     }
 
+    public function setNetbanking($netbanking)
+    {
+        $this->setAttribute(self::NETBANKING, $netbanking);
+    }
+
     public function setEmi($emi)
     {
         assert($this->isCardEnabled(), "Cannot enable emi without Card method");
@@ -295,7 +300,6 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            s("here");
             return true;
         }
     }
