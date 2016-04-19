@@ -26,9 +26,6 @@ class CreateCards extends Migration
 
             $table->char(Card::MERCHANT_ID, Card::ID_LENGTH);
 
-            $table->string(Card::GLOBAL_CARD_ID, Card::ID_LENGTH)
-                  ->nullable();
-
             $table->string(Card::NAME);
 
             $table->char(Card::EXPIRY_MONTH, 2);
@@ -64,6 +61,9 @@ class CreateCards extends Migration
                   ->nullable();
 
             $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH)
+                  ->nullable();
+
+            $table->string(Card::GLOBAL_CARD_ID, Card::ID_LENGTH)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
