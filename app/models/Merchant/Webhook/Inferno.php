@@ -21,6 +21,16 @@ class Inferno
 
     const HASH_ALGO = 'sha256';
 
+    const WEBHOOK_FAILURE_HOURS = 24;
+
+    const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
+
+    /**
+     * We keep it internally as 7 seconds
+     * but publicly we only say it's 5 seconds.
+     */
+    const WEBHOOK_TIMEOUT = 7;
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -68,7 +78,7 @@ class Inferno
         }
         else
         {
-            $this->webhookBumpFailureCount($webhook);
+            $this->webhookFailure($webhook);
         }
     }
 
@@ -87,6 +97,7 @@ class Inferno
 
         $data['url'] = $webhook->getUrl();
         $data['error_message'] = $this->errorMessage;
+
         if (empty($data['error_message']))
         {
             $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
@@ -104,7 +115,7 @@ class Inferno
         }
         else if ($type === 'deactivate')
         {
-            $subject .= 'Webhook deactivated after 3 failures for ' . $subjectName;
+            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
         }
 
         $data['subject'] = $subject;
@@ -131,7 +142,7 @@ class Inferno
             'Content-Type'  => 'application/json'
         );
 
-        if (!empty($hmac))
+        if (empty($hmac) === false)
         {
             $headers['X-Razorpay-Signature'] = $hmac;
         }
@@ -191,7 +202,7 @@ class Inferno
             //
             if (\Gateway\Utility::checkTimeout($e))
             {
-                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 7 seconds. We will only retry 3 times before deactivating webhook.';
+                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 5 seconds. We will only retry 3 times before deactivating webhook.';
             }
             else if ($this->isKnownRequestsException($e))
             {
@@ -254,44 +265,63 @@ class Inferno
             'content' => $event,
             'headers' => $headers);
 
-        $request['options'] = ['timeout' => 7];
+        $request['options'] = ['timeout' => self::WEBHOOK_TIMEOUT];
 
         return $request;
     }
 
     protected function webhookSuccessfullyFired($webhook)
     {
-        if ($webhook->getFailureCount() !== 0)
-        {
-            $this->repo->resetFailureCount($webhook);
-        }
+        $this->repo->setLastSuccessfulAt($webhook);
 
         $this->job->delete();
     }
 
-    protected function webhookBumpFailureCount($webhook)
+    protected function webhookFailure($webhook)
     {
         $job = $this->job;
 
-        // It's a failure, increment failure count.
-        $this->repo->bumpFailureCount($webhook);
+        $sendFailureEmail = 1;
+        $jobDeleted = 0;
 
-        if (($webhook->isActive() === false) or ($job->attempts() >= 3))
+        if (($job->attempts() > self::WEBHOOK_MAXIMUM_ATTEMPTS))
         {
-            $this->trace->info(
-                TraceCode::WEBHOOK_DEACTIVATE,
-                ['webhook' => $webhook->getId()]
-            );
-
-            $this->sendEmail($webhook,'deactivate');
-
-            // Webhook is now inactive
-            // So let's just delete the job
             $job->delete();
+            $jobDeleted = 1;
         }
-        else
-        {
 
+        $lastSuccessfulAt = $webhook->getLastSuccessfulAt();
+        $currentTime = time();
+
+        if ($lastSuccessfulAt !== null)
+        {
+            $differenceHours = ($currentTime - $lastSuccessfulAt)/3600;
+
+            // If (LSA - current time) > 24hrs, mark deactivated.
+            if (($differenceHours > self::WEBHOOK_FAILURE_HOURS))
+            {
+                $this->trace->info(
+                    TraceCode::WEBHOOK_DEACTIVATE,
+                    ['webhook' => $webhook->getId()]
+                );
+
+                $webhook->deactivate();
+
+                $this->sendEmail($webhook,'deactivate');
+
+                // Webhook is now inactive
+                // So let's just delete the job
+                if ($jobDeleted == 0)
+                {
+                    $job->delete();
+                }
+
+                $sendFailureEmail = 0;
+            }
+        }
+
+        if ($sendFailureEmail === 1)
+        {
             $this->sendEmail($webhook,'failure');
 
             // Attempt again after 1 hour

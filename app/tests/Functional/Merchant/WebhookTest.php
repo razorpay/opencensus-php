@@ -118,35 +118,44 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
-    public function testWebhookDisableOn3Failures()
+    public function testWebhookResetLastSuccessfulAtAfterSuccessfulFiring()
     {
         $webhook = $this->createWebhook();
 
-        $this->fixtures->edit('webhook', $webhook['id'], ['failure_count' => 2]);
-
-        $this->mockInfernoWithResponseStatusCode(501);
-
-        $this->doAuthPayment();
-
-        $webhook = $this->getLastEntity('webhook', true);
-        $this->assertEquals(3, $webhook['failure_count']);
-        $this->assertEquals(false, $webhook['active']);
-    }
-
-    public function testWebhookResetFailureCountAfterSuccessfulFiring()
-    {
-        $webhook = $this->createWebhook();
+        $lastSuccessfulAt = time() - (23*3600);
 
         $this->fixtures->edit(
-            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
+            'webhook', $webhook['id'], ['last_successful_at' => $lastSuccessfulAt, 'active' => 1]);
 
         $this->mockInfernoWithResponseStatusCode(200);
 
         $this->doAuthPayment();
 
         $webhook = $this->getLastEntity('webhook', true);
-        $this->assertEquals(0, $webhook['failure_count']);
+
+        // In case it takes 3 seconds to make the mock request.
+        $this->assertGreaterThan((time() - (3)), $webhook['last_successful_at']);
+        $this->assertNotEquals($lastSuccessfulAt, $webhook['last_successful_at']);
         $this->assertEquals(true, $webhook['active']);
+    }
+
+    public function testWebhookDeactivationEmail()
+    {
+        $webhook = $this->createWebhook();
+        $inferno = $this->mockInferno();
+
+        $this->fixtures->edit(
+            'webhook', $webhook['id'], ['last_successful_at' => (time()-(25*3600)), 'active' => 1]);
+
+        $inferno->shouldReceive('sendRequest')
+            ->once()
+            ->andReturn(false);
+
+        $inferno->shouldReceive('sendEmail')
+            ->with(Mockery::type('object'), 'deactivate')
+            ->once();
+
+        $this->doAuthPayment();
     }
 
     public function testWebhookHittingTheDefinedRoute()
@@ -193,25 +202,6 @@ class WebhookTest extends TestCase
 
         $inferno->shouldReceive('sendEmail')
                 ->with(Mockery::type('object'),'failure')
-                ->once();
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookDeactivationEmail()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook', $webhook['id'], ['failure_count' => 2, 'active' => 1]);
-
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(false);
-
-        $inferno->shouldReceive('sendEmail')
-                ->with(Mockery::type('object'), 'deactivate')
                 ->once();
 
         $this->doAuthPayment();

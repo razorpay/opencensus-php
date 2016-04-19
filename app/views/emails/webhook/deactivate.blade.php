@@ -16,7 +16,8 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
 Hi,
 
-We hit 3 consecutive failures while trying to hit the <b>{{$mode}}</b> webhook url - <b>{{$url}}</b>. As noted in our documentation, we have disabled your webhook as a precaution. You can re-enable the webhook again by visiting the Dashboard and going to the webhooks tab.<br><br>
+We have been experiencing webhook deliery failure for past 24 hours while trying to hit the <b>{{$mode}}</b> webhook url - <b>{{$url}}</b>.
+As noted in our documentation, we have disabled your webhook as a precaution. You can re-enable the webhook again by visiting the Dashboard and going to the webhooks tab.<br><br>
 
 The last error message we got was: <br>"{{ $error_message }}". <br>
 To help you debug this further, here are a few more details about the failure event:<br>

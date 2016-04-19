@@ -34,6 +34,9 @@ class CreateWebhooks extends Migration
 
             $table->integer(Webhook::FAILURE_COUNT)
                   ->default(0);
+            
+            $table->integer(Webhook::LAST_SUCCESSFUL_AT)
+                  ->nullable();
 
             $table->integer(Webhook::CREATED_AT);
             $table->integer(Webhook::UPDATED_AT);
