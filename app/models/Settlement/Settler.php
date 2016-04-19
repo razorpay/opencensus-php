@@ -3,14 +3,19 @@
 namespace Models\Settlement;
 
 use Carbon\Carbon;
+
 use EE\Error\ErrorCode;
 use EE\Exception;
+
+use Constants\Mode;
 use Models\Base;
 use Models\Merchant;
 use Models\Settlement;
 use Models\Transaction;
 use Dashboard\Dashboard;
+
 use Trace\TraceCode;
+
 
 class Settler
 {
@@ -84,12 +89,13 @@ class Settler
     {
         //Settlement files to not be generated on Public Holidays
         //No public holiday in test mode
-        if (Holidays::isDayHoliday('today', $this->mode))
+        $today = Carbon::today('Asia/Kolkata');
+
+        if (($this->mode === Mode::LIVE) and
+            Holidays::isSpecifiedBankHoliday($today))
         {
             return true;
         }
-
-        $today = Carbon::today('Asia/Kolkata');
 
         //and on second saturdays due to bank leaves.
         //Marks as holiday in test mode as well
