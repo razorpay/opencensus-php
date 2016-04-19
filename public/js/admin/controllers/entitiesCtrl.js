@@ -291,7 +291,7 @@ app.controller('EntitiesCtrl', [
         customer_id: ['Customer Id'],
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id']
-      }
+      },
       webhook: {
         merchant_id: ['Merchant Id'],
       }
