@@ -7,6 +7,7 @@ use Constants\Table;
 use Models\Card;
 use Models\Merchant;
 use Models\Customer;
+use Models\Terminal;
 use Models\Customer\Token\Entity as Token;
 
 class CreateTokens extends Migration {
