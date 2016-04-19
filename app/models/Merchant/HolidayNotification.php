@@ -4,11 +4,14 @@ namespace Models\Merchant;
 
 use Carbon\Carbon;
 use Constants\Mode;
+use Services\SlackPoster;
 use Models\Admin\Newsletter;
 use Models\Settlement\Holidays;
 
 class HolidayNotification
 {
+    use SlackPoster;
+
     const TEST_EMAIL  = 'test_email';
     const ADD_TO_LIST = 'add_to_list';
     const EMAIL       = 'email';
@@ -34,7 +37,7 @@ class HolidayNotification
 
     protected function sendMerchantNotifyHolidayEmail($input)
     {
-        $msg = $this->getHolidayNotificationMsg();
+        list($msg, $holidays) = $this->getHolidayNotificationMsg();
 
         $tomorrow = Carbon::tomorrow('Asia/Kolkata');
 
@@ -64,6 +67,8 @@ class HolidayNotification
                         return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
                     }
 
+                    $this->notifySettlementsChannel($holidays);
+
                     $mailer->setMailingListName($input['lists']);
                     break;
 
@@ -81,9 +86,20 @@ class HolidayNotification
 
     }
 
+    protected function notifySettlementsChannel($holidays)
+    {
+        $slackMsg = "Bank Holiday Notification";
+
+        $slackData = ['holidays' => $holidays];
+
+        $slackSettings = ['channel' => '#settlements'];
+
+        $this->slackPost($slackMsg, $slackData, $slackSettings);
+    }
+
     protected function getHolidayNotificationMsg()
     {
-        $today = Carbon::parse('24 mar 2016', 'Asia/Kolkata');//Carbon::today('Asia/Kolkata');
+        $today = Carbon::today('Asia/Kolkata');
 
         $nextWorkingDay = Holidays::getNextWorkingDay($today);
 
@@ -101,7 +117,7 @@ $holidaysTableTemplate
 <p>Thank you for partnering with Razorpay.</p>
 EOT;
 
-        return $msg;
+        return [$msg,$holidays];
     }
 
     protected function getHolidaysTableTemplate($holidays)
