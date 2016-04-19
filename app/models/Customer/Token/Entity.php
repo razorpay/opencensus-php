@@ -8,6 +8,7 @@ class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
+    const TERMINAL_ID           = 'terminal_id';
     const TOKEN                 = 'token';
     const METHOD                = 'method';
     const CARD_ID               = 'card_id';
@@ -30,8 +31,6 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::TOKEN,
-        self::CARD_ID,
-        self::CUSTOMER_ID,
         self::GATEWAY_TOKEN,
     );
 
@@ -45,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::CARD,
         self::CUSTOMER_ID,
+        self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -65,7 +65,8 @@ class Entity extends Base\PublicEntity
     );
 
     protected static $generators = array(
-        self::TOKEN);
+        self::TOKEN
+    );
 
     public function customer()
     {
@@ -80,6 +81,11 @@ class Entity extends Base\PublicEntity
     public function card()
     {
         return $this->belongsTo('Models\Card\Entity');
+    }
+
+    public function terminal()
+    {
+        return $this->belongsTo('Models\Terminal\Entity');
     }
 
     public function getBank()
@@ -97,19 +103,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METHOD);
     }
 
-    public function getCustomerId()
-    {
-        return $this->getAttribute(self::CUSTOMER_ID);
-    }
-
     public function getGatewayToken()
     {
         return $this->getAttribute(self::GATEWAY_TOKEN);
-    }
-
-    public function getCardId()
-    {
-        return $this->getAttribute(self::CARD_ID);
     }
 
     public function setPublicCardAttribute(array & $array)
