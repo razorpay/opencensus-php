@@ -3,6 +3,7 @@
 namespace Models\Merchant;
 
 use Carbon\Carbon;
+use Constants\Mode;
 use Models\Admin\Newsletter;
 use Models\Settlement\Holidays;
 
@@ -11,6 +12,13 @@ class HolidayNotification
     const TEST_EMAIL  = 'test_email';
     const ADD_TO_LIST = 'add_to_list';
     const EMAIL       = 'email';
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->mode = $app['rzp.mode'];
+    }
 
     public function send($input)
     {
@@ -81,7 +89,7 @@ class HolidayNotification
 
         $nextWorkingDayString = $nextWorkingDay->toFormattedDateString();
 
-        $holidays = Holidays::getSpecifiBankHolidaysBetween($today, $nextWorkingDay);
+        $holidays = Holidays::getSpecifiedBankHolidaysBetween($today, $nextWorkingDay);
 
         $holidaysTableTemplate = $this->getHolidaysTableTemplate($holidays);
 

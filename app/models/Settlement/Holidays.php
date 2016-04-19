@@ -142,7 +142,7 @@ class Holidays
         return true;
     }
 
-    public static function getSpecifiBankHolidaysBetween($fromDate, $toDate)
+    public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate)
     {
         assert($fromDate->lte($toDate));
 
@@ -189,7 +189,6 @@ class Holidays
     {
         return self::$arrayedHolidays[$date->year][$date->month][$date->day];
     }
-
 
     public static function isDayHoliday($dayString = 'today', $mode = 'test', $forceResultInTest = false)
     {
