@@ -75,9 +75,11 @@ class Holidays
     ];
 
     /**
-     * getNextWorkingDay - Given a Carbon Date get the next working date
+     * getNextWorkingDay, getNthWorkingDayFrom
+     * Given a Carbon Date get the next/Nth working date from a given date
+     *
      * This includes checks for :
-     *     :bank holiday
+     *     :bank holidays | (2016/ currently supported)
      *     :non working saturday
      *     :sundays
      *
@@ -85,15 +87,26 @@ class Holidays
      */
     public static function getNextWorkingDay($date)
     {
-        $nextDay = $date->copy();
+        $countDays = 1;
 
-        do
+        return self::getNthWorkingDayFrom($date, $countDays);
+    }
+
+    public static function getNthWorkingDayFrom($date, $countDays)
+    {
+        $workingDay = $date->copy();
+
+        while($countDays > 0)
         {
-            $nextDay->addDay();
-        }
-        while (self::isWorkingDay($nextDay) === false);
+            $workingDay->addDay();
 
-        return $nextDay;
+            if (self::isWorkingDay($workingDay))
+            {
+                $countDays--;
+            }
+        }
+
+        return $workingDay;
     }
 
     /**
@@ -204,5 +217,4 @@ class Holidays
 
         return ($day->weekOfMonth % 2 !== 0);
     }
-
 }

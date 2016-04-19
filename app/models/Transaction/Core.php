@@ -398,62 +398,16 @@ class Core extends Base\Core
 
     public function calculateSettledAtTimestamp($timestamp, $addDays)
     {
-        assert ($addDays >= 1);
+        $capturedAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
 
-        $timestamp = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        $returnDay = Holidays::getNthWorkingDayFrom($capturedAt,
+                                                    $addDays);
 
-        $addDays = $this->getActualNumberOfDaysToAdd($timestamp, $addDays);
-
-        $settledAt = $timestamp->startOfDay()
-                                ->addDays($addDays)
-                                ->timestamp;
-
-        return $settledAt;
+        return $returnDay->timestamp;
     }
 
     protected function getSettlementSchedule($payment)
     {
         return $payment->merchant->getSettlementSchedule();
-    }
-
-    protected function getActualNumberOfDaysToAdd($timestamp, $addDays)
-    {
-        $currentDay = $timestamp->dayOfWeek;
-
-        $daysToSettlement = $currentDay + $addDays;
-
-        $settleDay = $timestamp->copy()->addDays($addDays);
-
-        // For a working saturday
-        //  - No more days to be added
-
-        // For a non working saturday
-        //  - Add a two day weekend
-        if (($settleDay->dayOfWeek === Carbon::SATURDAY) and
-            (Holidays::isWorkingSaturday($settleDay) === false))
-        {
-            $addDays += 2;
-        }
-        // For settlement on sundays or beyond this week :
-        else if (($settleDay->dayOfWeek === Carbon::SUNDAY) or
-                 ($daysToSettlement > Carbon::DAYS_PER_WEEK))
-        {
-            // If the transaction was done on a saturday or
-            // the saturday before the settle day was a working saturday
-            //   - Add a one day weekend.
-            if (($currentDay === Carbon::SATURDAY) or
-                (Holidays::isWorkingSaturday($settleDay->previous(Carbon::SATURDAY)) === true))
-            {
-                $addDays += 1;
-            }
-            // Else
-            //  - Add a two day weekend
-            else
-            {
-                $addDays += 2;
-            }
-        }
-
-        return $addDays;
     }
 }
