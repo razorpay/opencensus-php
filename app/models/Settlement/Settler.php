@@ -383,7 +383,6 @@ class Settler
     protected function fetchTransactionsToSettle($input)
     {
         $ts = $this->initSettlementTimestamp($input);
-
 //        $all = $this->isInputValue($input, 'all', '1');
 
 //        if ($all === true)
@@ -394,13 +393,17 @@ class Settler
             //
             $ts = time();
 
+            if (empty($input['testSettleTimeStamp']) === false)
+            {
+                $ts = $input['testSettleTimeStamp'];
+            }
+
             $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
         }
         // else
         // {
         //     $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
         // }
-
         foreach ($txns as $txn)
         {
             if ($txn->isTypePayment())

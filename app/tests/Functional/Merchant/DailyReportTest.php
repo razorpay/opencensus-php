@@ -4,7 +4,9 @@ namespace Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 use Mockery;
+use Models\Transaction;
 use Tests\Functional\TestCase;
+use Models\Settlement\Holidays;
 use Tests\Functional\RequestResponseFlowTrait;
 use Tests\Functional\Settlement\SettlementTrait;
 
@@ -12,6 +14,8 @@ class DailyReportTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+
+    protected $settleAtTimestamp;
 
     public function setUp()
     {
@@ -24,7 +28,7 @@ class DailyReportTest extends TestCase
 
         $this->setUpFixture();
 
-        $content = $this->initiateSettlements();
+        $content = $this->initiateSettlements('kotak', $this->settleAtTimestamp);
 
         $setl = $this->getLastEntity('settlement', true);
 
@@ -79,6 +83,8 @@ class DailyReportTest extends TestCase
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
         $capturedAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 10;
+
+        $this->settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3);
 
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
