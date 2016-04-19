@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::MOBIKWIK,
         self::EMI,
+        self::NETBANKING,
     );
 
     protected $visible = array(
@@ -50,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::MOBIKWIK,
         self::EMI,
+        self::NETBANKING,
     );
 
     protected $public = array(
@@ -57,14 +59,15 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD      => false,
-        self::AMEX      => false,
-        self::PAYTM     => false,
-        self::MOBIKWIK  => false,
-        self::PAYZAPP   => false,
-        self::PAYUMONEY => false,
-        self::BANKS     => [],
-        self::EMI       => false,
+        self::CARD       => false,
+        self::AMEX       => false,
+        self::PAYTM      => false,
+        self::MOBIKWIK   => false,
+        self::PAYZAPP    => false,
+        self::PAYUMONEY  => false,
+        self::BANKS      => [],
+        self::EMI        => false,
+        self::NETBANKING => true,
     );
 
     protected $wallets = array(
@@ -294,14 +297,7 @@ class Entity extends Base\PublicEntity
     
     public function getNetbankingAttribute()
     {
-        if (isset($this->attributes[self::NETBANKING]))
-        {
-            return (bool) $this->attributes[self::NETBANKING];
-        }
-        else
-        {
-            return true;
-        }
+        return (bool) $this->attributes[self::NETBANKING];
     }
 
     public function getMobikwikAttribute()
