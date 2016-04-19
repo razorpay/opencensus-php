@@ -94,7 +94,7 @@ class Holidays
 
     public static function getNthWorkingDayFrom($date, $countDays)
     {
-        $workingDay = $date->copy();
+        $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
 
         while($countDays > 0)
         {
