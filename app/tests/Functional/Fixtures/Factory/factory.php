@@ -207,6 +207,7 @@ $factory(Models\Merchant\Methods\Entity::class, [
     'card'  => '1',
     'banks' => '[]',
     'paytm' => '0',
+    'netbanking' => '1',
 ]);
 
 $factory(Models\Merchant\Webhook\Entity::class, [

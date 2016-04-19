@@ -437,7 +437,7 @@ class Service extends Base\Service
         {
             $data['card'] = $methods->isCardEnabled();
             $netbankingEnabled = $methods->isNetbankingEnabled();
-            if($netbankingEnabled === true)
+            if ($netbankingEnabled === true)
             {
                 $data['netbanking'] = $methods->toArrayWithBankNames();
             }
