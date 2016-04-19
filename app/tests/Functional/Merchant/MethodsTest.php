@@ -41,6 +41,18 @@ class MethodsTest extends TestCase
         $this->assertEquals(58, $count);
     }
 
+    public function testGetPaymentMethodsRouteWithNetbankingFalse()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->disableNetbanking('10000000000000');
+
+        $content = $this->startTest();
+
+        $count = count($content['netbanking']);
+        $this->assertEquals(0, $count);
+    }
+
     public function testNumOfBanksInTestMode()
     {
         $this->ba->publicTestAuth();

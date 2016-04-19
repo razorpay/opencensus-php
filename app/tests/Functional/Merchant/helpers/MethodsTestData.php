@@ -26,4 +26,21 @@ return [
             ],
         ],
     ],
+    
+    'testGetPaymentMethodsRouteWithNetbankingFalse' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'card' => true,
+                'netbanking' => [],
+                'wallet' => [
+//                    'paytm' => false,
+                ],
+            ],
+        ],
+    ]
 ];

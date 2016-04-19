@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
+    const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
@@ -37,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::MOBIKWIK,
         self::EMI,
+        self::NETBANKING,
     );
 
     protected $visible = array(
@@ -49,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::MOBIKWIK,
         self::EMI,
+        self::NETBANKING,
     );
 
     protected $public = array(
@@ -56,14 +59,15 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD      => false,
-        self::AMEX      => false,
-        self::PAYTM     => false,
-        self::MOBIKWIK  => false,
-        self::PAYZAPP   => false,
-        self::PAYUMONEY => false,
-        self::BANKS     => [],
-        self::EMI       => false,
+        self::CARD       => false,
+        self::AMEX       => false,
+        self::PAYTM      => false,
+        self::MOBIKWIK   => false,
+        self::PAYZAPP    => false,
+        self::PAYUMONEY  => false,
+        self::BANKS      => [],
+        self::EMI        => false,
+        self::NETBANKING => true,
     );
 
     protected $wallets = array(
@@ -87,10 +91,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getCardAttribute();
     }
-
+    
     public function isNetbankingEnabled()
     {
-        return true;
+        return $this->getNetbankingAttribute();
     }
 
     public function isWalletEnabled($wallet = null)
@@ -264,6 +268,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD, $card);
     }
 
+    public function setNetbanking($netbanking)
+    {
+        $this->setAttribute(self::NETBANKING, $netbanking);
+    }
+
     public function setEmi($emi)
     {
         assert($this->isCardEnabled(), "Cannot enable emi without Card method");
@@ -284,6 +293,11 @@ class Entity extends Base\PublicEntity
     public function getCardAttribute()
     {
         return (bool) $this->attributes[self::CARD];
+    }
+    
+    public function getNetbankingAttribute()
+    {
+        return (bool) $this->attributes[self::NETBANKING];
     }
 
     public function getMobikwikAttribute()
