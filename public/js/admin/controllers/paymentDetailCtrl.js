@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Single Payment Details controller
  * Child of TransactionDetailCtrl
@@ -15,12 +16,39 @@ app.controller('PaymentDetailCtrl', [
 
     // Keys currently added the to good-looking view
     var shownByDefault = [
-      'id', 'merchant_id', 'amount', 'method', 'card_id', 'gateway', 'status',
-      'amount_refunded', 'amount_authorized', 'refund_status', 'currency',
-      'description', 'error_code', 'error_description', 'email', 'contact',
-      'notes', 'transaction_id', 'authorized_at', 'captured_at', 'created_at',
-      'updated_at', 'authorized_at', 'terminal_id', 'signed', 'verified',
-      'internal_error_code', 'bank', 'wallet', 'refunds'
+      'amount',
+      'amount_authorized',
+      'amount_refunded',
+      'authorized_at',
+      'authorized_at',
+      'bank',
+      'captured_at',
+      'card_id',
+      'contact',
+      'created_at',
+      'currency',
+      'customer_id',
+      'description',
+      'email',
+      'emi_plan_id',
+      'error_code',
+      'error_description',
+      'gateway',
+      'id',
+      'internal_error_code',
+      'merchant_id',
+      'method',
+      'notes',
+      'order_id',
+      'refund_status',
+      'refunds',
+      'signed',
+      'status',
+      'terminal_id',
+      'transaction_id',
+      'updated_at',
+      'verified',
+      'wallet',
     ];
 
     /**
@@ -35,10 +63,10 @@ app.controller('PaymentDetailCtrl', [
         }
       }
       return keys;
-    }
+    };
 
     $scope.displayClass = function (value) {
-      if (value == null) {
+      if (value === null) {
         return 'label label-warning col-lg-1';
       } else if (value === '') {
         return 'label label-info';
@@ -51,12 +79,12 @@ app.controller('PaymentDetailCtrl', [
       moment().zone(5.5);
       // If not null and not zero
       if (value) {
-        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST'
+        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
       }
       else {
         return 'null';
       }
-    }
+    };
     $scope.displayValue = function (value) {
       if (value === null) {
         return 'null';
@@ -92,7 +120,7 @@ app.controller('PaymentDetailCtrl', [
           window.location.reload();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }

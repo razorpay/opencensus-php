@@ -290,10 +290,24 @@ angular.module('app.services', [])
       paid: 'bg-success',
 
       // settlement
-      processed: 'bg-success'
+      processed: 'bg-success',
+
+      // billdesk
+      cancelled: 'bg-danger',
+      null: 'bg-warning'
     };
 
     return mapper[status];
+  };
+}])
+.factory('isStatusKey', [function() {
+  return function (key) {
+    var statusKeys = [
+      'status',
+      'refund_status'
+    ];
+
+    return (statusKeys.indexOf(key) > -1);
   };
 }])
 .factory('riskMap', [function() {

@@ -49,6 +49,24 @@
             </span>
             Card Id
           </a>
+          <a ui-sref="app.entitiesdetail({mode:mode, type: 'customer', id:entity.customer_id})" class="list-group-item" ng-show="entity.customer_id!==null">
+            <span class="pull-right">
+              {{entity.customer_id}}
+            </span>
+            Customer Id
+          </a>
+          <a ui-sref="app.entitiesdetail({mode:mode, type: 'emi_plan', id:entity.emi_plan_id})" class="list-group-item" ng-show="entity.method==='emi'">
+            <span class="pull-right">
+              {{entity.emi_plan_id}}
+            </span>
+            EMI Plan Id
+          </a>
+          <a ui-sref="app.entitiesdetail({mode:mode, type: 'order', id:entity.order_id})" class="list-group-item" ng-show="entity.order_id!==null">
+            <span class="pull-right">
+              {{entity.order_id}}
+            </span>
+            Order Id
+          </a>
           <a href class="list-group-item">
             <span class="pull-right">
               {{entity.gateway|titlecase}}

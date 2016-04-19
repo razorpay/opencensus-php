@@ -5,8 +5,12 @@ app.controller('EntityDetailCtrl', [
   '$stateParams',
   'alertsFactory',
   '$modal',
-  function ($scope, $http, $stateParams, alertsFactory, $modal) {
+  'statusClass',
+  'isStatusKey',
+  function ($scope, $http, $stateParams, alertsFactory, $modal, statusClass, isStatusKey) {
     //Intialise alerts and scope functions
+    $scope.getStatusClass = statusClass;
+    $scope.isStatusKey = isStatusKey;
     $scope.alerts = alertsFactory.getHandler();
     $scope.mode = $stateParams.mode;
     $scope.entity = { id: $stateParams.id };
@@ -240,6 +244,7 @@ app.controller('EntityDetailCtrl', [
           'card',
           'customer',
           'daily_settlement',
+          'emi_plan',
           'hdfc',
           'iin',
           'kotak',
