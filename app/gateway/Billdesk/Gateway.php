@@ -411,7 +411,7 @@ class Gateway extends Base\Gateway
             'CurrencyType'              => 'INR',
             'ItemCode'                  => 'DIRECT',
             'TypeField1'                => 'R',
-            'SecurityID'                => $this->config['live_access_code'],
+            'SecurityID'                => $this->getSecurityId(),
             'Unknown4'                  => 'NA',
             'Unknown5'                  => 'NA',
             'TypeField2'                => 'F',
@@ -532,8 +532,23 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getSecurityId()
+    {
+        if ($this->input['merchant']->isTPVRequired())
+        {
+            return $this->config['live_access_code_sec'];
+        }
+
+        return $this->config['live_access_code'];
+    }
+
     protected function getLiveSecret()
     {
+        if ($this->input['merchant']->isTPVRequired())
+        {
+            return $this->config['live_hash_secret_sec'];
+        }
+
         return $this->config['live_hash_secret'];
     }
 }
