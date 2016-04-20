@@ -75,12 +75,21 @@ class Core extends Base\Core
 
             $app = (new App\Core)->create($custAppInput);
 
+            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
+                Account::SHARED_ACCOUNT, $customer->getId());
+
             $response['success'] = 1;
             $response['app_id'] = $app->getPublicId();
+
+            if ($tokens !== null)
+            {
+                $response['tokens'] = $tokens->toArrayPublic();
+            }
         }
         else
         {
             $response['success'] = 0;
+
             $response['error'] = "otp verification failed";
         }
 
