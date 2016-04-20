@@ -1,3 +1,4 @@
+"use strict";
 //Entities Listing Controller
 app.controller('EntitiesCtrl', [
   '$scope',
@@ -296,27 +297,30 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
       }
     };
+
+    var onWatchUpdate = function(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        $scope.showTable();
+      }
+    };
+
     // This loop initializes the filters object
     for (var entity in $scope.availableFilters) {
       $scope.filters[entity] = {};
       var filters = $scope.availableFilters[entity];
       for (var filter in filters) {
-        var def;
         // dropdown
         // Only call watch if the property is a dropdown
         if (filters[filter].length > 1) {
           // The first value is the default
           $scope.filters[entity][filter] = filters[filter][0];
-          $scope.$watch('filters.' + entity + '.' + filter, function (newValue, oldValue) {
-            if (newValue !== oldValue) {
-              $scope.showTable();
-            }
-          });
+          $scope.$watch('filters.' + entity + '.' + filter, onWatchUpdate);
         }
       }
     }
 
-    $scope.$watch('mode + entity_type + from + to', function (x) {
+
+    $scope.$watch('mode + entity_type + from + to', function () {
       $state.go('app.entities', {
         mode: $scope.mode,
         type: $scope.entity_type
@@ -367,7 +371,7 @@ app.controller('EntitiesCtrl', [
       }
 
       return uiEntities;
-    }
+    };
     $scope.search = function () {
       clear('skip');
       var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type + '/' + $scope.entity.id);
@@ -382,7 +386,6 @@ app.controller('EntitiesCtrl', [
           if (entity in stateArray) {
             state = stateArray[entity];
           }
-          console.debug([$scope.mode, data, entity]);
           $state.go(state, {
             mode: $scope.mode,
             id: data.data.id,
@@ -490,7 +493,7 @@ app.controller('EntitiesCtrl', [
           $scope.entity.items = data.data.items;
           $scope.entity.count = parseInt(data.data.count);
           $scope.entity.countStart = $scope.entity.skip + 1;
-          if (data.data.count == 0)
+          if (data.data.count === 0)
             $scope.entity.countEnd = $scope.entity.countStart;
           else
             $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count - 1;
@@ -498,7 +501,7 @@ app.controller('EntitiesCtrl', [
           $scope.allowNext = $scope.entity.count >= 10;
         } else {
           if (data.errors) {
-            angular.forEach(data.errors, function (value, key) {
+            angular.forEach(data.errors, function (value) {
               $scope.alerts.addAlert('danger', value);
             });
           } else {
