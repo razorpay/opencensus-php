@@ -277,60 +277,12 @@ trait Authorize
         });
     }
 
-    protected function getCustomerLocalOrGlobal($input)
-    {
-        $customerId = null;
-        $merchantId = null;
-        $customer = null;
-        $customerApp = null;
-
-        if (empty($input[Payment\Entity::APP_ID]) === false)
-        {
-            $appId = Customer\App\Entity::verifyIdAndStripSign($input[Payment\Entity::APP_ID]);
-
-            $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
-                $appId,
-                $this->merchant->getId());
-
-            assert($customerApp !== null);
-
-            $customerId = Customer\Entity::getIdPrefix() . $customerApp->customer->getId();
-            $merchantId = Merchant\Account::SHARED_ACCOUNT;
-        }
-        else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
-        {
-            $merchantId = $this->merchant->getId();
-            $customerId = $input[Payment\Entity::CUSTOMER_ID];
-        }
-
-        if ($customerId !== null)
-        {
-            Customer\Entity::verifyIdAndStripSign($customerId);
-
-            $customer = (new Customer\Repository)
-                                ->findByIdAndMerchantId($customerId, $merchantId);
-
-            if ($customer->isLocal())
-            {
-                $this->payment->customer()->associate($customer);
-            }
-            else
-            {
-                $this->payment->app()->associate($customerApp);
-            }
-        }
-
-        return $customer;
-    }
-
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
         // First fetch the relevant customer
-        $customer = $this->getCustomerLocalOrGlobal($input);
+        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
-        //
         // If token is set, then that means we have a saved card
-        //
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
             $tokenInput = $input[Payment\Entity::TOKEN];
@@ -350,9 +302,9 @@ trait Authorize
 
             if ($customer->isLocal())
             {
-                //
                 // Local customer, get token, get card, job done.
-                //
+                $this->payment->customer()->associate($customer);
+
                 if ($payment->isMethodCardOrEmi())
                 {
                     $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
@@ -360,9 +312,9 @@ trait Authorize
             }
             else
             {
-                //
                 // Global customer
-                //
+                $this->payment->app()->associate($customerApp);
+
                 if ($payment->isMethodCardOrEmi())
                 {
                     $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
@@ -637,7 +589,7 @@ trait Authorize
             'error' => $payment->getErrorDetails(),
         );
 
-        $message = 'Payment failed earlier converted to authorized';
+        $message = 'Payment failed earlier converte to authorized';
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
