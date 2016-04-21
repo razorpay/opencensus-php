@@ -79,6 +79,8 @@ class Checkout
         {
             list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
 
+            assert($customer !== null);
+
             $savedTokens = (new Customer\Token\Service)->fetchMultiple($customer->getPublicId());
 
             $custData =  array(
@@ -90,7 +92,7 @@ class Checkout
         catch (\Exception $e)
         {
             //log error and ignore
-            s($e);
+            //s($e);
         }
 
         return $custData;
