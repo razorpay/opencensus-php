@@ -5,6 +5,7 @@ namespace Models\Merchant;
 use Constants\Mode;
 use Models\Base;
 use Models\Customer;
+use Models\Customer\Token;
 use Models\Merchant;
 use Models\Card;
 use Models\Key;
@@ -13,8 +14,9 @@ use Models\Pricing;
 use Models\Terminal;
 use Models\Merchant\Webhook;
 use EE\Exception;
+use EE\Error;
 use EE\Error\ErrorCode;
-
+use Trace\Trace;
 use Trace\TraceCode;
 
 class Checkout
@@ -54,24 +56,43 @@ class Checkout
             $data['fee_bearer'] = true;
         }
 
-        //fetch saved cards data if app_id or customer_id is set
-
-        $savedTokens = null;
-
-        if (isset($input['customer_id']))
+        //fetch customer data and saved cards data
+        if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
+            (isset($input[Payment\Entity::APP_ID])))
         {
-            $savedTokens = (new Customer\Token\Service)->fetchMultiple($input['customer_id']);
-        }
-        else if (isset($input['app_id']))
-        {
-            $savedTokens = (new Customer\Token\Service)->fetchTokensByAppId($input['app_id']);
-        }
+            $custData = $this->fetchCustomerData($input, $merchant);
 
-        if ($savedTokens !== null)
-        {
-            $data['tokens'] = $savedTokens;
+            if ($custData !== null)
+            {
+                $data['customer'] = $custData;
+            }
         }
 
         return $data;
+    }
+
+    protected function fetchCustomerData($input, $merchant)
+    {
+        $custData = null;
+
+        try
+        {
+            list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
+
+            $savedTokens = (new Customer\Token\Service)->fetchMultiple($customer->getPublicId());
+
+            $custData =  array(
+                'email'     => $customer->getEmail(),
+                'contact'   => $customer->getContact(),
+                'tokens'    => $savedTokens
+            );
+        }
+        catch (\Exception $e)
+        {
+            //log error and ignore
+            s($e);
+        }
+
+        return $custData;
     }
 }

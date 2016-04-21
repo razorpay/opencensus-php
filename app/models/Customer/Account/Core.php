@@ -7,6 +7,7 @@ use EE\Exception;
 use Models\Base;
 use Models\Customer;
 use Models\Merchant\Account;
+use Models\Payment;
 use Trace\TraceCode;
 
 class Core extends Base\Core
@@ -94,6 +95,43 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    public function getCustomerAndApp($input, $merchant)
+    {
+        $customerId = null;
+        $merchantId = null;
+        $customer = null;
+        $customerApp = null;
+
+        if (empty($input[Payment\Entity::APP_ID]) === false)
+        {
+            $appId = Customer\App\Entity::verifyIdAndStripSign($input[Payment\Entity::APP_ID]);
+
+            $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
+                $appId,
+                $merchant->getId());
+
+            assert($customerApp !== null);
+
+            $customerId = Customer\Entity::getIdPrefix() . $customerApp->customer->getId();
+            $merchantId = Account::SHARED_ACCOUNT;
+        }
+        else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
+        {
+            $merchantId = $merchant->getId();
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
+        }
+
+        if ($customerId !== null)
+        {
+            Customer\Entity::verifyIdAndStripSign($customerId);
+
+            $customer = (new Customer\Repository)
+                                ->findByIdAndMerchantId($customerId, $merchantId);
+        }
+
+        return array($customer, $customerApp);
     }
 
     protected function verifyUniqueCustomer($customer)

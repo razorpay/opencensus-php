@@ -304,6 +304,18 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
+    public function getEmiAttribute()
+    {
+        $emi = $this->attributes[self::EMI];
+
+        if ($emi === null)
+        {
+            return false;
+        }
+
+        return (bool) $emi;
+    }
+
     public function isUnsupported()
     {
         $network = Card\Network::getCode($this->getNetwork());
