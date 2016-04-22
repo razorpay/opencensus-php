@@ -145,6 +145,11 @@ app.controller('EntitiesCtrl', [
         status: statusList,
         international: booleanList
       },
+      customer: {
+        merchant_id: ['Merchant Id'],
+        email: ['Email'],
+        active: booleanList
+      },
       daily_settlement: {},
       emi_plan: {},
       hdfc: {
