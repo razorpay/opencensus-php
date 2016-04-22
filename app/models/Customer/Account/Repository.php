@@ -14,6 +14,12 @@ class Repository extends Base\Repository
 
     protected $entity = 'customer';
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::EMAIL           => 'sometimes|email',
+        Entity::ACTIVE          => 'sometimes|in:0,1',
+    );
+
     public function findByContactForMerchant($contact, $merchantId)
     {
         $repo = $this->repo;
