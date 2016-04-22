@@ -43,4 +43,10 @@ class Repository extends Base\Repository
         $webhook->resetFailureCount();
         $webhook->saveOrFail();
     }
+    
+    public function setLastSuccessfulAt($webhook)
+    {
+        $webhook->setLastSuccessfulAt();
+        $webhook->saveOrFail();
+    }
 }

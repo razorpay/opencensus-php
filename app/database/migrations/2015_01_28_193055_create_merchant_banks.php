@@ -24,6 +24,9 @@ class CreateMerchantBanks extends Migration {
             $table->boolean(Methods::CARD)
                   ->default(1);
 
+            $table->boolean(Methods::NETBANKING)
+                  ->default(1);
+
             $table->boolean(Methods::AMEX)
                   ->default(0);
 

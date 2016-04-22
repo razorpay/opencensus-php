@@ -22,7 +22,7 @@ class Repository extends Base\Repository
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
         Entity::LIVE                    => 'sometimes|boolean',
         Entity::EMAIL                   => 'sometimes|string|max:255',
-        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::CATEGORY                => 'sometimes|string|max:4',
         Entity::INTERNATIONAL           => 'sometimes|boolean',
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',

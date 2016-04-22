@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::FEES,
         self::SERVICE_TAX,
+        self::UTR,
         self::CREATED_AT);
 
     protected $amounts = array(

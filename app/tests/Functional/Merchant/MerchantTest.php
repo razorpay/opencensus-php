@@ -194,10 +194,10 @@ class MerchantTest extends TestCase
                         'merchant:bank_account',
                         ['merchant_id' => '1cXSLlUU8V9sXl']);
 
-        $activated_at = time();
+        $activatedAt = time();
 
         $content = $this->startTest();
-        $this->assertLessThanOrEqual($content['activated_at'], $activated_at);
+        $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
 
         // We check that the merchant balance is just zero in live mode
         $this->ba->proxyAuthLive();
