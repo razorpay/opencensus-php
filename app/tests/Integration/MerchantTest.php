@@ -66,6 +66,7 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('name'), $this->merchant->name)
             // Fill email
             ->type(l::IdOrName('email'), $this->merchant->email)
+            ->type(l::IdOrName('contact_mobile'), '9999999999')
             ->type(l::IdOrName('password'), '123456xx')
             ->type(l::IdOrName('password_confirmation'), '123456xx')
             ->click(l::IdOrName('agree'))
