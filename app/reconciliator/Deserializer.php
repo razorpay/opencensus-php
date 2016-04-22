@@ -19,7 +19,8 @@ class Deserializer
     {
         if ($fileDetails['file_type'] === self::EXCEL)
         {
-            $this->modifier->convertExcelToCsv($fileDetails);
+            // TODO: Handle multiple sheets in the workbook
+            $this->modifier->convertExcelToArray($fileDetails);
         }
     }
 }

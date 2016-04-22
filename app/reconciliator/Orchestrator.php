@@ -88,6 +88,6 @@ class Orchestrator
         $this->deserializer->deserialize($fileDetails);
 
         // Deletes the file.
-        //$this->fileProcessor->deleteFileLocally($fileDetails);
+        $this->fileProcessor->deleteFileLocally($fileDetails);
     }
 }
