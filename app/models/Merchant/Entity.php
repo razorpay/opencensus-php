@@ -105,13 +105,13 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * @param  string          $businessName   Merchant Business Name
      * @return Models\Merchant\Entity Sub Merchant Entity
      */
-    public static function createFromMerchant(Entity $aggregator, $businessName)
+    public static function createFromMerchant(Entity $aggregator, $businessName, $email)
     {
         $merchant = new static();
 
         $merchant->id       = Uuid::generate();
         $merchant->name     = $businessName;
-        $merchant->email    = $aggregator->email;
+        $merchant->email    = $email;
 
         // This password is never really used anywhere
         // We just have it for legacy reasons till we drop

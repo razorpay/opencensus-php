@@ -82,7 +82,8 @@ app.controller('ReferralsCtrl', [
   '$modalInstance',
   function ($scope, $modalInstance) {
     $scope.merchant = {
-      name: ''
+      name: '',
+      email: ''
     };
     $scope.ok = function (merchant) {
       $modalInstance.close(merchant);
