@@ -33,7 +33,7 @@ class Repository extends Base\Repository
         Entity::BANK            => 'sometimes',
         Entity::METHOD          => 'sometimes',
         Entity::GATEWAY         => 'sometimes',
-        Entity::EMAIL           => 'sometimes',
+        Entity::EMAIL           => 'sometimes|email',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::CARD_ID         => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED        => 'sometimes|in:0,1',
