@@ -42,11 +42,6 @@ class Service extends Base\Service
     {
         $merchant = (new Merchant\Core)->create($input);
 
-        // The merchant is created on email confirmation on dashboard side
-        // This is when we send the welcome email
-
-        $this->sendMerchantCreationMail($merchant);
-
         return $merchant->toArrayPublic();
     }
 
@@ -56,7 +51,8 @@ class Service extends Base\Service
 
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
-        $this->sendMerchantCreationMail($subMerchant);
+        // This goes out to the aggregator
+        $this->sendSubMerchantCreationMail($subMerchant, $merchant);
 
         return $subMerchant->toArrayPublic();
     }
@@ -70,12 +66,26 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    protected function sendMerchantCreationMail($merchant)
+    /**
+     * Sends a mail to the aggregator telling them about
+     * sub-merchant account creation
+     */
+    protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
+        $data = [
+            'name'  =>  $subMerchant->name,
+            'email' =>  $subMerchant->email
+        ];
+
+        if ($subMerchant->email !== $aggregator->email)
+        {
+            $data['cc_email'] = $aggregator->email;
+        }
+
         $this->sendEmail(
             'emails.merchant.welcome',
             'Welcome to Razorpay',
-            $merchant->toArray());
+            $data);
     }
 
     public function editEmail($id, array $input)
@@ -622,9 +632,12 @@ class Service extends Base\Service
     protected function sendEmail($template, $subject, $data)
     {
         Mail::queue($template, $data, function($message) use ($data, $subject){
-
-            $message->to($data['email'], $data['name'])
-                ->subject($subject);
+            $message = $message->to($data['email'], $data['name'])
+                        ->subject($subject);
+            if (isset($data['cc_email']))
+            {
+                $message->cc($data['cc_email'], $data['name']);
+            }
         });
     }
 

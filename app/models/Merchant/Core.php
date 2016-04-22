@@ -35,13 +35,23 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $merchant)
+    public function createSubMerchant($input, $aggregatorMerchant)
     {
-        $input['email'] = $merchant->getEmail();
+        // We only check for email uniqueness if the email
+        // address is provided
+        if (isset($input['email']))
+        {
+            $email['email'] = $input['email'];
+            (new Validator)->validateInput('unique_email', $email);
+        }
+        else
+        {
+            $input['email'] = $aggregatorMerchant->getEmail();
+        }
 
         $subMerchant = (new Merchant\Entity)->build($input);
 
-        $subMerchant->setPricingPlan($merchant->getPricingPlanId());
+        $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
         $this->repo->saveOrFail($subMerchant);
 
