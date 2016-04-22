@@ -21,11 +21,17 @@ class Tokenex
                 $cardNumber = strval($cardNumber);
             }
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::TOKENEX_REQUEST,
-                "failed to detokenize data");
+                [
+                    'vault_token'   => $vaultToken,
+                    'message'       => 'Failed to detokenize data'
+                ]
+            );
+
+            $this->trace->traceException($e);
         }
 
         return $cardNumber;
@@ -41,9 +47,14 @@ class Tokenex
         }
         catch (Exception $e)
         {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::TOKENEX_REQUEST,
-                "failed to tokenize data");
+                [
+                    'message'       => 'Failed to tokenize data'
+                ]
+            );
+
+            $this->trace->traceException($e);
         }
 
         return $token;
