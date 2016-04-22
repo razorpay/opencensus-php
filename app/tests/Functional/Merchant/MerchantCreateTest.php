@@ -25,6 +25,13 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantWithDuplicateId()
+    {
+        $this->ba->appAuthTest();
+
+        $this->startTest();
+    }
+
     public function testCreateMerchantAndRelations()
     {
         $this->ba->appAuthTest();
@@ -108,6 +115,27 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchant()
     {
+        $this->fixtures->merchant->editFeatures('aggregator');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubMerchantWithEmail()
+    {
+        $this->fixtures->merchant->editFeatures('aggregator');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubMerchantWithDuplicateEmail()
+    {
+        // Just to check email collisions are still errors
+        $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
+
         $this->fixtures->merchant->editFeatures('aggregator');
 
         $this->ba->proxyAuth();

@@ -37,10 +37,16 @@ class Core extends Base\Core
 
     public function createSubMerchant($input, $aggregatorMerchant)
     {
-        if (! isset($input['email']))
+        // We only check for email uniqueness if the email
+        // address is provided
+        if (isset($input['email']))
         {
-            $email['email'] = $input['email'] = $aggregatorMerchant->getEmail();
-            $merchant->getValidator()->validateInput('unique_email', $email);
+            $email['email'] = $input['email'];
+            (new Validator)->validateInput('unique_email', $email);
+        }
+        else
+        {
+            $input['email'] = $aggregatorMerchant->getEmail();
         }
 
         $subMerchant = (new Merchant\Entity)->build($input);

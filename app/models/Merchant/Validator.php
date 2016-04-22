@@ -9,7 +9,7 @@ use Models\Merchant;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::ID                          => 'required|alpha_num|size:14',
+        Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'required|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
     );
