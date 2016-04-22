@@ -109,7 +109,12 @@ class Service extends Base\Service
         {
             // See HACKING.md in the root of the repo for a detailed note
             assert(! $invitationToken);
-            list($error, $data) = $this->createMerchantFromUser($user, $input['business_name'], $referer);
+
+            $data = [
+                'business_name' =>  $input['business_name'],
+                'contact_mobile' =>  Input::get('contact_mobile', null)
+            ];
+            list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
         }
 
         elseif ($invitationToken)
@@ -220,9 +225,9 @@ class Service extends Base\Service
      * @param  string $referer      Could be false as well
      * @return array containing some minor details
      */
-    protected function createMerchantFromUser(User\Entity $user, $businessName, $referer = false)
+    protected function createMerchantFromUser(User\Entity $user, array $data, $referer = false)
     {
-        list($error, $merchant) = Merchant\Service::register($user, $businessName, $referer);
+        list($error, $merchant) = Merchant\Service::register($user, $data, $referer);
 
         if (! empty($error))
         {
@@ -256,8 +261,12 @@ class Service extends Base\Service
             Queue::push('Models\User\Service@postToZapier', $zapierData);
         }
 
-        // Requirement being a 'id' key in this array
-        return $sortingHatData;
+        // These are displayed on the frontend
+        return [
+            'id'    =>  $merchant->id,
+            'name'  =>  $merchant->name,
+            'email' =>  $user->email
+        ];
     }
 
     protected function getSortingHatData($merchant, $user, $referer)
@@ -466,8 +475,12 @@ class Service extends Base\Service
             return [$error, null];
         }
 
+        $data = [
+            'business_name' =>  $input['business_name']
+        ];
+
         // We don't have a referrer for the upgrade
-        list($error, $data) = $this->createMerchantFromUser($user, $input['business_name']);
+        list($error, $data) = $this->createMerchantFromUser($user, $data);
 
         if (empty($error))
         {
