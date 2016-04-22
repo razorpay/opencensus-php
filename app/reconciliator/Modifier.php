@@ -2,7 +2,6 @@
 
 
 namespace Reconciliator;
-//use PHPExcel_IOFactory;
 use Excel;
 
 class Modifier
@@ -10,108 +9,110 @@ class Modifier
     const CSV_EXTENSION = 'csv';
 
     const MAPPINGS = [
-        'No'   => 'Number',
-        'Mer'  => 'Merchant',
-        'Comm' => 'Commission',
-        'Ac'   => 'Account',
-        'Acc'  => 'Account',
-        'Amt'  => 'Amount',
-        'Txn'  => 'Transaction',
-        'Msg'  => 'Message',
-        'C'    => 'Credit',
-        'D'    => 'Debit',
-        'Ref'  => 'Reference',
+        'no'   => 'number',
+        'mer'  => 'merchant',
+        'comm' => 'commission',
+        'ac'   => 'account',
+        'acc'  => 'account',
+        'amt'  => 'amount',
+        'txn'  => 'transaction',
+        'msg'  => 'message',
+        'c'    => 'credit',
+        'd'    => 'debit',
+        'ref'  => 'reference',
     ];
 
     public function convertExcelToArray($fileDetails)
     {
-        $filePath = $fileDetails['file_path'];
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        $results = [];
-
-        $results = Excel::load($filePath)->all();
+        $sheets = Excel::load($filePath)->all();
 
         // TODO: Handle multiple sheets in a workbook
-        $this->modifyColumnHeaders($results[0]->toArray());
+        $rows = $sheets[0]->toArray();
+
+        $modifiedColumnHeaders = $this->modifyColumnHeaders(array_keys($rows[0]));
+
+        // $rows is passed by reference
+        $this->replaceExcelRowsWithNewHeaders($rows, $modifiedColumnHeaders);
+
+        return $rows;
     }
 
-    public function modifyColumnHeaders($rows)
+    public function convertCsvToArray($fileDetails)
     {
-        $columnHeaders = array_keys($rows[0]);
-        //$modifiedColumnHeaders = [];
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        foreach($columnHeaders as &$header)
+        $columnHeaders = [];
+        $data = [];
+
+        if (($handle = fopen($filePath, 'r')) !== FALSE)
         {
-            $headerArray = explode('', $header);
-        }
-
-    }
-
-    public function temp2()
-    {
-        Excel::load('file.xls', function($reader) use (&$isError) {
-
-            $firstrow = $reader->first()->toArray();
-
-            if (isset($firstrow['firstname']) && isset($firstrow['lastname']) && isset($firstrow['username'])) {
-                $rows = $reader->all();
-                foreach ($rows as $row) {
-                    echo $row->firstname.' '.$row->lastname.' '.$row->username."<br />";
+            while (($row = fgetcsv($handle)) !== FALSE)
+            {
+                if (empty($columnHeaders) === true)
+                {
+                    $columnHeaders = $this->modifyColumnHeaders($row);
+                }
+                else
+                {
+                    if (count($columnHeaders) !== count($row))
+                    {
+                        // TODO: Throw an exception about invalid column header count
+                    }
+                    // Combines the columnHeaders(keys) with the row(values).
+                    $data[] = array_combine($columnHeaders, $row);
                 }
             }
-            else {
-                $isError = true;
+            fclose($handle);
+        }
 
+        return $data;
+    }
+    
+    protected function replaceExcelRowsWithNewHeaders(&$rows, $newColumnHeaders)
+    {
+        foreach ($rows as $rowIndex=>$rowData)
+        {
+            if (count($newColumnHeaders) !== count(array_keys($rowData)))
+            {
+                // TODO: Throw an exception about invalid column header count
             }
 
-        });
-        if ($isError) {
-            return View::make('error');
+            // Combines the columnHeaders(keys) with the rowData(values).
+            $rows[$rowIndex] = array_combine($newColumnHeaders, array_values($rowData));
         }
     }
 
-
-
-
-    public function temp1()
+    protected function modifyColumnHeaders($columnHeaders)
     {
-        //--------------------------
+        //$columnHeaders = array_keys($rows[0]);
+        //$modifiedColumnHeaders = [];
 
-        // Excel::load($filePath, function($reader) {
-        //
-        //     // ->all() is a wrapper for ->get() and will work the same
-        //     $results = $reader->all();
-        //
-        // });
+        // Gets the column headers without any delimiters, abbreviations.
+        foreach ($columnHeaders as &$header)
+        {
+            // Replaces one of more spaces with underscores.
+            $modifiedHeader = preg_replace('/\s+/', '_', $header);
+            // Replaces multiple underscores with one underscore.
+            $modifiedHeader = preg_replace('/_+/', '_', $modifiedHeader);
+            // Removes dots.
+            $modifiedHeader = preg_replace('/\./', '', $modifiedHeader);
+            // Converts the string to lowercase.
+            $modifiedHeader = strtolower($modifiedHeader);
 
-        //----------------------
+            $headerArray = explode('_', $modifiedHeader);
 
-        // $filePath = $fileDetails['file_path'];
-        // $csvFileName = str_replace($fileDetails['extension'], self::CSV_EXTENSION, $fileDetails['file_name']);
-        // $csvFilePath = $fileDetails['destination_folder'] . '/' . $csvFileName;
-        //
-        // $fileType = PHPExcel_IOFactory::identify($filePath);
-        // $objReader = PHPExcel_IOFactory::createReader($fileType);
-        //
-        // $objReader->setReadDataOnly(true);
-        // $objPHPExcel = $objReader->load($filePath);
-        //
-        // $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
-        // $objWriter->save($csvFilePath);
-
-        //-------------------------
-
-
-        // $csvFile = Excel::load($filePath, function($file) {
-        // })->setFileName('abc.csv')->download('csv');
-        //
-        // gettype($csvFile);
-
-        // Excel::load($filename, function($file) {
-        //     // modify file content
-        // })->setFileName($new_name)->store('xls');
-
-        // $csvFileName = str_replace($fileDetails['extension'], self::CSV_EXTENSION, $fileDetails['file_name']);
-        // $csvFile->move($fileDetails['destination_folder'], $csvFileName);
+            foreach($headerArray as &$substr)
+            {
+                if (array_key_exists($substr, self::MAPPINGS))
+                {
+                    $substr = self::MAPPINGS[$substr];
+                }
+            }
+            $header = implode('',$headerArray);
+        }
+        
+        return $columnHeaders;
     }
 }

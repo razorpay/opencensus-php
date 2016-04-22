@@ -4,10 +4,13 @@ namespace Reconciliator;
 
 class Orchestrator
 {
+    const EXCEL = 'excel';
+    const CSV = 'csv';
+    
     // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
     const FILE_TYPES_MAPPINGS = [
-            'excel' => ['xls', 'xlsx'],
-            'csv'   => ['txt', 'csv', 'text']
+            self::EXCEL => ['xls', 'xlsx'],
+            self::CSV   => ['txt', 'csv', 'text']
     ];
 
 
