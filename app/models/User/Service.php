@@ -251,8 +251,9 @@ class Service extends Base\Service
      */
     protected function signupPost($merchant, $user, $referer = '')
     {
-        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer);
-        $zapierData = $this->getZapierData($merchant, $user, $referer);
+        $phoneNumber = Input::get('contact_mobile', null);
+        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
+        $zapierData = $this->getZapierData($merchant, $user, $referer, $phoneNumber);
 
         // We want to keep environment conditional checks as late as possible
         if ($_ENV['SLACK_ENABLE'] === true)
@@ -269,7 +270,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getSortingHatData($merchant, $user, $referer)
+    protected function getSortingHatData($merchant, $user, $referer, $phoneNumber)
     {
         $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$merchant->id}/detail";
         $message = "[New Signup]($merchantLink) as {$user->name}";
@@ -277,6 +278,11 @@ class Service extends Base\Service
         if ($referer)
         {
             $message .= " | REF: $referer";
+        }
+
+        if ($phoneNumber)
+        {
+            $message .= " | [Call - {$phoneNumber}](tel:$phoneNumber)";
         }
 
         return [
@@ -288,7 +294,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getZapierData($merchant, $user, $referer)
+    protected function getZapierData($merchant, $user, $referer, $phoneNumber)
     {
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
@@ -301,6 +307,7 @@ class Service extends Base\Service
             'name'          => $merchant->name,
             'ref'           => $referer ? $referer : '',
             'timestamp'     => $timestamp,
+            'contact'       => $phoneNumber? $phoneNumber : ''
         ];
     }
 
