@@ -140,9 +140,15 @@ class Service extends Base\Service
     {
         $data = [
             'name'  =>  $merchant->name,
-            'id'    =>  $merchant->id,
-            'email' =>  $merchant->email
+            'id'    =>  $merchant->id
         ];
+
+        // Only send the email field if the email is not
+        // the same as the aggregator email
+        if ($merchant->email !== $aggregator->email)
+        {
+            $data['email'] = $merchant->email;
+        }
 
         $this->setApiCredentials($aggregator->id);
 
