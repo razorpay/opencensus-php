@@ -26,8 +26,7 @@ class HolidayNotificationTest extends TestCase
                     Mockery::on(function ($data)
                         {
                             $testData = array(
-                                'subject' => 'Notification of Bank Holiday',
-                            );
+                                'subject' => 'Razorpay | Notification of Bank Holiday');
 
                             $this->assertArraySelectiveEquals($testData, $data);
 
