@@ -112,6 +112,7 @@ class Holidays
 
     public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate)
     {
+        // fromDate should be less than or equal to (lte) than toDate
         assert($fromDate->lte($toDate));
 
         $date = $fromDate->copy();

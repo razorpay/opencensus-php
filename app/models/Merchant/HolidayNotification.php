@@ -25,7 +25,7 @@ class HolidayNotification
 
     public function send($input)
     {
-        $response = '';
+        $response = [];
 
         if (isset($input['action']))
         {
@@ -45,7 +45,7 @@ class HolidayNotification
         {
             $mailer = new Newsletter(
                 $input['lists'],
-                'Notification of Bank Holiday',
+                'Razorpay | Notification of Bank Holiday',
                 $msg);
 
             switch ($input['action'])
