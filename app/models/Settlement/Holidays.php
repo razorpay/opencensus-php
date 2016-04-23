@@ -60,9 +60,9 @@ class Holidays
      *     :bank holiday
      *     :non working saturday
      *     :sundays
+     *
+     * Supports banking holidays for 2016 now
      */
-
-    // Supports banking holidays for 2016 now
     public static function getNextWorkingDay($date)
     {
         $nextDay = $date->copy();
@@ -71,7 +71,7 @@ class Holidays
         {
             $nextDay->addDay();
         }
-        while(self::isWorkingDay($nextDay) === false);
+        while (self::isWorkingDay($nextDay) === false);
 
         return $nextDay;
     }
@@ -83,9 +83,11 @@ class Holidays
      *     :non working saturday
      *     :sundays
      *
-     *  Supports banking holidays for 2016 now
+     * Supports banking holidays for 2016 now
+     *
+     * @param Carbon\Carbon $date
+     * @return boolean
      */
-
     public static function isWorkingDay($date)
     {
         if (self::isSpecifiedBankHoliday($date))
@@ -98,8 +100,9 @@ class Holidays
             return false;
         }
 
-        if ($date->dayOfWeek === Carbon::SATURDAY
-            and self::isWorkingSaturday($date) === false)
+        // If it's a saturday, then check if it's a working saturday
+        if (($date->dayOfWeek === Carbon::SATURDAY) and
+            (self::isWorkingSaturday($date) === false))
         {
             return false;
         }
@@ -128,7 +131,7 @@ class Holidays
             }
 
         }
-        while($date->lt($toDate));
+        while ($date->lt($toDate));
 
         return $holidays;
     }
@@ -139,9 +142,9 @@ class Holidays
         $month = $date->month;
         $day = $date->day;
 
-        if (isset(self::$holidays[$year])
-            and isset(self::$holidays[$year][$month])
-            and isset(self::$holidays[$year][$month][$day]))
+        if ((isset(self::$holidays[$year])) and
+            (isset(self::$holidays[$year][$month])) and
+            (isset(self::$holidays[$year][$month][$day])))
         {
             return true;
         }
@@ -149,7 +152,12 @@ class Holidays
         return false;
     }
 
-    /** [getReasonForBankHoliday Private function to get reason for a holiday] */
+    /**
+     * Private function to get reason for a holiday
+     *
+     * @param  Carbon\Carbon $date
+     * @return boolean
+     */
     protected static function getReasonForBankHoliday($date)
     {
         return self::$holidays[$date->year][$date->month][$date->day];
@@ -157,10 +165,11 @@ class Holidays
 
     /**
      * Given a carbon day instance,
-     * returns whether that saturday was working or not
-     * Bank logic: Every non even week of the month is a working saturday
+     * Returns whether that saturday was working or not
+     * Bank logic: Every non-even week of the month is a working saturday
+     *
      * @param Carbon\Carbon $day Any Carbon Day
-     * return boolean;
+     * @return boolean
      */
     public static function isWorkingSaturday($day)
     {

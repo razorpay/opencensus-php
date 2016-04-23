@@ -87,18 +87,18 @@ class Settler
 
     protected function checkForHolidays()
     {
-        //Settlement files to not be generated on Public Holidays
-        //No public holiday in test mode
+        // Settlement files to not be generated on Public Holidays
+        // No public holiday in test mode
         $today = Carbon::today('Asia/Kolkata');
 
         if (($this->mode === Mode::LIVE) and
-            Holidays::isSpecifiedBankHoliday($today))
+            (Holidays::isSpecifiedBankHoliday($today)))
         {
             return true;
         }
 
-        //and on second saturdays due to bank leaves.
-        //Marks as holiday in test mode as well
+        // And on second saturdays due to bank leaves.
+        // Marks as holiday in test mode as well
         if (($today->dayOfWeek === Carbon::SATURDAY) and
             (Holidays::isWorkingSaturday($today) === false))
         {
