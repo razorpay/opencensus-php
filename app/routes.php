@@ -184,6 +184,7 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
         // EMI Plan Routes
         Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
+
         // Admin Payment Actions
         Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');

@@ -620,7 +620,7 @@ class Service extends Base\Service
                                     ->verify()
                                     ->toArray();
         }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        catch (\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
         }
