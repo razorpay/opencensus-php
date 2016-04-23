@@ -32,6 +32,8 @@ class PublicEntity extends UniqueIdEntity
 
     protected $publicSetters = array(self::ID, self::ENTITY);
 
+    protected $amounts = array();
+
     public function toArrayPublic()
     {
         $array = $this->toArray();
@@ -58,15 +60,11 @@ class PublicEntity extends UniqueIdEntity
 
         unset($array[self::ENTITY]);
 
-        if (isset($this->amounts))
+        foreach ($this->amounts as $key)
         {
-
-            foreach ($this->amounts as $key)
+            if (isset($array[$key]))
             {
-                if (isset($array[$key]))
-                {
-                    $array[$key] = $array[$key] / 100;
-                }
+                $array[$key] = $array[$key] / 100;
             }
         }
 
@@ -77,7 +75,7 @@ class PublicEntity extends UniqueIdEntity
             if ((isset($array[$key])) and
                 ($array[$key] !== null))
             {
-                $array[$key] = $this->getDateInFormatDMY($key);
+                $array[$key] = $this->getDateInFormatDMYHMS($key);
             }
         }
 
@@ -255,5 +253,12 @@ class PublicEntity extends UniqueIdEntity
         $value = $this->getAttribute($attribute);
 
         return date('d/m/y', $value);
+    }
+
+    public function getDateInFormatDMYHMS($attribute)
+    {
+        $value = $this->getAttribute($attribute);
+
+        return date('d/my/y h:i:s');
     }
 }

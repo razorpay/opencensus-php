@@ -5,6 +5,7 @@ namespace Models\Base;
 use Constants\Entity as E;
 use Carbon\Carbon;
 use EE\Exception;
+use Trace\TraceCode;
 
 class Report extends Service
 {
@@ -20,7 +21,7 @@ class Report extends Service
     {
         if (in_array($entity, $this->allowed) === false)
         {
-            Exception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');
         }
 
@@ -39,7 +40,7 @@ class Report extends Service
         date_default_timezone_set('Asia/Kolkata');
 
         $this->trace->debug(
-            'MISC_TRACE_CODE',
+            TraceCode::MERCHANT_REPORT_GENERATION,
             [
                 'entity'        => $entity,
                 'from'          => $from,
