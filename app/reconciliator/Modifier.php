@@ -10,12 +10,14 @@ class Modifier
 
     const MAPPINGS = [
         'no'   => 'number',
+        'num'  => 'number',
         'mer'  => 'merchant',
         'comm' => 'commission',
         'ac'   => 'account',
         'acc'  => 'account',
         'amt'  => 'amount',
         'txn'  => 'transaction',
+        'tran' => 'transaction',
         'msg'  => 'message',
         'c'    => 'credit',
         'd'    => 'debit',
