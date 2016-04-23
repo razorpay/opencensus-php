@@ -35,7 +35,7 @@ trait RepositoryFetch
 
         $query = $this->newQuery();
 
-        $this->addQueryParamMerchantId($query, $merchantId);
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
 
         $this->addDefaultParams($params);
 
@@ -161,10 +161,11 @@ trait RepositoryFetch
         }
     }
 
-    protected function addQueryParamMerchantId($query, $merchantId)
+    protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
         if ($merchantId !== null)
-        {
+        {s($merchantId);
+            sd('d');
             $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
