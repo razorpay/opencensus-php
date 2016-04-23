@@ -31,28 +31,11 @@ trait RepositoryFetch
      */
     public function fetch(array $params, $merchantId = null)
     {
-        if ($params === null)
-        {
-            throw new Exception\InvalidArgumentException('$params not provided');
-        }
+        $params = $this->unsetEmptyParams($params);
 
         $query = $this->newQuery();
 
-        if ($merchantId !== null)
-        {
-            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
-        }
-
-        if ($this->isMerchantIdRequiredForFetch())
-        {
-            if ($merchantId === null)
-            {
-                throw new Exception\InvalidArgumentException(
-                    'Merchant Id is required for fetch query');
-            }
-        }
-
-        $params = $this->unsetEmptyParams($params);
+        $this->addQueryParamMerchantId($query, $merchantId);
 
         $this->addDefaultParams($params);
 
@@ -128,7 +111,9 @@ trait RepositoryFetch
         foreach ($params as $key => $value)
         {
             if (($params[$key]) !== '')
+            {
                 $newParams[$key] = $value;
+            }
         }
 
         return $newParams;
@@ -173,6 +158,29 @@ trait RepositoryFetch
         else
         {
             $query = $query->where($key, '=', $params[$key]);
+        }
+    }
+
+    protected function addQueryParamMerchantId($query, $merchantId)
+    {
+        if ($merchantId !== null)
+        {
+            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
+        }
+
+        //
+        // We need to check whether merchant id is required or not
+        // to perform the query. This is important because when
+        // merchant is making a query, it needs to be enforced
+        // and should not be missing by mistake.
+        //
+        if ($this->isMerchantIdRequiredForFetch())
+        {
+            if ($merchantId === null)
+            {
+                throw new Exception\InvalidArgumentException(
+                    'Merchant Id is required for fetch query');
+            }
         }
     }
 
