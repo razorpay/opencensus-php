@@ -160,8 +160,8 @@ final class Route
         'send_test_newsletter'                  => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                       => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                                ],
         'gateway_payment_callback_axis'         => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                    ],
-        'gateway_payment_callback'              => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
-        'gateway_payment_callback'              => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
+        'gateway_payment_callback_get'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
+        'gateway_payment_callback_post'         => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel' => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
@@ -400,6 +400,8 @@ final class Route
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'gateway_payment_callback_get',
+        'gateway_payment_callback_post',
     );
 
     public static $internalApps = array(
