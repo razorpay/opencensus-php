@@ -164,8 +164,7 @@ trait RepositoryFetch
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
         if ($merchantId !== null)
-        {s($merchantId);
-            sd('d');
+        {
             $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
