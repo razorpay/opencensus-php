@@ -170,8 +170,10 @@ class TerminalPicker
 
             if ($terminal === null)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_WITH_TPV_NOT_FOUND);
+                throw new Exception\ServerErrorException(
+                    'A terminal with support for third party validation was not found.',
+                    ErrorCode::SERVER_ERROR
+                );
             }
 
             return $terminal;

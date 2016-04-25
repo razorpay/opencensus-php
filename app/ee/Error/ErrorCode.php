@@ -213,8 +213,6 @@ class ErrorCode
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                            = 'BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
 
-    const BAD_REQUEST_GATEWAY_TERMINAL_WITH_TPV_NOT_FOUND                           = 'BAD_REQUEST_GATEWAY_TERMINAL_WITH_TPV_NOT_FOUND';
-
     const BAD_REQUEST_KEY_EXPIRED                                                   = 'BAD_REQUEST_KEY_EXPIRED';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                             = 'BAD_REQUEST_KEY_EXPIRING_SOON';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                           = 'BAD_REQUEST_KEY_OF_DEMO_ACCOUNT';
@@ -229,6 +227,7 @@ class ErrorCode
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
+    const SERVER_ERROR_GATEWAY_TERMINAL_WITH_TPV_NOT_FOUND                          = 'SERVER_ERROR_GATEWAY_TERMINAL_WITH_TPV_NOT_FOUND';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
