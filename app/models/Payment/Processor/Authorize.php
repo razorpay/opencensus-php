@@ -376,7 +376,7 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi())
         {
-            // Create a global saved card entity
+            // Create a global or local saved card entity
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
 
             $savedCard = $payment->card;
@@ -584,7 +584,7 @@ trait Authorize
             'error' => $payment->getErrorDetails(),
         );
 
-        $message = 'Payment failed earlier converte to authorized';
+        $message = 'Payment failed earlier converted to authorized';
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
