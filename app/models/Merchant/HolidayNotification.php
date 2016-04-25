@@ -12,8 +12,13 @@ class HolidayNotification
 {
     use SlackPoster;
 
+    // Action to send test email to one email id
     const TEST_EMAIL  = 'test_email';
+
+    // Action to add the active email ids to mailing list
     const ADD_TO_LIST = 'add_to_list';
+
+    // Action to send the email to mailing list
     const EMAIL       = 'email';
 
     public function __construct()
@@ -35,9 +40,17 @@ class HolidayNotification
         return $response;
     }
 
+    /**
+     * sendMerchantNotifyHolidayEmail - Based on action sets the
+     *     mailer params to send a test email,
+     *     add members to mailing list,
+     *     set a mailing list name.
+     *
+     * @param  [type] $input [description]
+     */
     protected function sendMerchantNotifyHolidayEmail($input)
     {
-        list($msg, $holidays) = $this->getHolidayNotificationMsg();
+        list($msg, $holidays) = $this->getHolidayNotificationMsg($input);
 
         $tomorrow = Carbon::tomorrow('Asia/Kolkata');
 
@@ -97,7 +110,7 @@ class HolidayNotification
         $this->slackPost($slackMsg, $slackData, $slackSettings);
     }
 
-    protected function getHolidayNotificationMsg()
+    protected function getHolidayNotificationMsg($input)
     {
         $today = Carbon::today('Asia/Kolkata');
 
@@ -107,31 +120,25 @@ class HolidayNotification
 
         $holidays = Holidays::getSpecifiedBankHolidaysBetween($today, $nextWorkingDay);
 
-        $holidaysTableTemplate = $this->getHolidaysTableTemplate($holidays);
+        if ($input['action'] !== self::EMAIL)
+        {
+            $holidays = $this->getTestHolidayMessage();
+        }
 
-        $msg  = <<<EOT
-Settlements will not be processed on the following days due to bank holidays:
-$holidaysTableTemplate
-<br>
-<p><b>Settlements will next be processed on $nextWorkingDayString.<b></p>
-<p>Thank you for partnering with Razorpay.</p>
-EOT;
+        $msg  = \View::make('emails.partials.holiday_notification')
+                     ->with('holidays',$holidays)
+                     ->with('nextWorkingDayString', $nextWorkingDayString);
 
         return [$msg,$holidays];
     }
 
-    protected function getHolidaysTableTemplate($holidays)
+    protected function getTestHolidayMessage()
     {
-        $template = '<table cellpadding=\'5\'><tr><th width=\'90\'>Date</th><th width\'290\'>Reason</th></tr>';
+        $testHoliday = [
+            'date'   => Carbon::tomorrow('Asia/Kolkata'),
+            'reason' => 'Testing reason for holiday notification.',
+        ];
 
-        foreach ($holidays as $holiday)
-        {
-            $template .= '<tr><td width=\'90\'>'.$holiday['date']->toFormattedDateString().'</td>';
-            $template .= '<td width=\'290\'>'.$holiday['reason'].'</td></tr>';
-        }
-
-        $template .= '</table>';
-
-        return $template;
+        return [$testHoliday];
     }
 }

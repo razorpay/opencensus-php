@@ -130,6 +130,12 @@ class Holidays
         return true;
     }
 
+    /**
+     * getSpecifiedBankHolidaysBetween - fromDate and toDate
+     * @param  Carbon\Carbon $fromDate
+     * @param  Carbon\Carbon $toDate
+     * @return $holidays - All holidays between days
+     */
     public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate)
     {
         // fromDate should be less than or equal to (lte) than toDate
