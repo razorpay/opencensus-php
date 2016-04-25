@@ -259,6 +259,6 @@ class PublicEntity extends UniqueIdEntity
     {
         $value = $this->getAttribute($attribute);
 
-        return date('d/my/y h:i:s');
+        return date('d/m/y h:i:s');
     }
 }
