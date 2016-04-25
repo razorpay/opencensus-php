@@ -127,6 +127,7 @@ class OrderTest extends TestCase
         $this->setUpBillDeskGateway();
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'ANDB';
 
         // Not adding order_id in payment
 
@@ -150,6 +151,7 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        $payment['bank'] = 'ANDB';
         $payment['order_id'] = $order['id'];
 
         $this->doAuthAndCapturePayment($payment);
