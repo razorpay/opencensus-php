@@ -228,6 +228,7 @@ class ApiResponse
         $route = $router->currentRouteName();
 
         self::setContentTypeHtmlForSpecificRoutes($route, $response);
+        self::setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
 
         if ((self::$jsonp === null) and
             (self::isJsonpRoute($route)))
@@ -312,6 +313,23 @@ class ApiResponse
             // post for cards with no 3d-secure.
             //
             $response->headers->set('content-type', 'text/html; charset=UTF-8');
+        }
+    }
+
+    protected static function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
+    {
+        $routes = array(
+            'payment_create_ajax',
+            'payment_otp_submit');
+
+        if (in_array($route, $routes))
+        {
+            //
+            // The content-type is set to text/html instead of json
+            // because on android 2.* json content is not being read on form
+            // post for cards with no 3d-secure.
+            //
+            $response->headers->set('Access-Control-Allow-Origin', '*');
         }
     }
 

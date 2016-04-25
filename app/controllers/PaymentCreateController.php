@@ -143,9 +143,7 @@ class PaymentCreateController extends BaseController
 
         $data = $this->payment->process($input);
 
-        $response = ApiResponse::json($data);
-
-        return $response->header('Access-Control-Allow-Origin', '*');
+        return ApiResponse::json($data);
     }
 
     /**
