@@ -160,10 +160,23 @@ class TerminalPicker
 
         $bank = $this->payment->getBank();
 
+        $isTPVRequired = $this->payment->merchant->isTPVRequired();
+
+        if ($isTPVRequired)
+        {
+            $terminal = $this->selectSharedTPVTerminal();
+
+            if ($terminal === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_WITH_TPV_NOT_FOUND);
+            }
+
+            return $terminal;
+        }
+
         // First check if we have direct tie-up with this bank and fetch it's gateway.
         $terminal = $this->selectDirectNetbankingBankTerminal($terminals, $bank);
-
-        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS, ['netbanking_terminals_direct' => $terminal]);
 
         if ($terminal !== null)
         {
@@ -619,6 +632,18 @@ class TerminalPicker
             {
                 return $terminal;
             }
+        }
+    }
+
+    protected function selectSharedTPVTerminal()
+    {
+        $gateway = Gateway::BILLDESK;
+
+        $sharedTerminal = Shared::getSharedTerminalForGatewayWithCategory($gateway);
+
+        if ($this->terminalExists($sharedTerminal))
+        {
+            return $this->terminal;
         }
     }
 
