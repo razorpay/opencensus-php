@@ -116,6 +116,15 @@ class Netbanking
         Netbanking::LAVB_R,
     );
 
+    protected static $billdeskTPV = array(
+        IFSC::ANDB,
+        IFSC::CORP,
+        IFSC::IBKL,
+        IFSC::INDB,
+        IFSC::KVBL,
+        Netbanking::LAVB_R,
+    );
+
     protected static $sbiepay = array(
         IFSC::SBTR,
         IFSC::CSBK,
@@ -264,7 +273,7 @@ class Netbanking
         return self::$billdesk;
     }
 
-    public static function getSupportedBanks($mode = Mode::LIVE)
+    public static function getSupportedBanks($mode = Mode::LIVE, $isTPVRequired = false)
     {
         $banks = self::getSupportedBanksInLiveMode();
 
@@ -276,7 +285,12 @@ class Netbanking
             $banks = array_merge($banks, self::$sbiepay);
         }
 
-        return array_unique($banks);            
+        if ($isTPVRequired)
+        {
+            $banks = self::$billdeskTPV;
+        }
+
+        return array_unique($banks);
     }
 
     public static function getSupportedBanksInLiveMode()
@@ -287,6 +301,11 @@ class Netbanking
     public static function getSbiepaySupportedBanks()
     {
         return self::$sbiepay;
+    }
+
+    public static function getSupportedBanksForTPV()
+    {
+        return self::$billdeskTPV;
     }
 
     public static function isBankSupportedByGateway($bank, $gateway)
