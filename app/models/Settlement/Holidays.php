@@ -7,6 +7,26 @@ use Carbon\Carbon;
 class Holidays
 {
     public static $holidays = [
+        2015 => [
+            9 => [
+                17  => 'Ganesh Chaturthi',
+                25 => 'Bakri Id (Id-ul-Zuha)',
+            ],
+            10 => [
+                2  => 'Gandhi Jayanthi',
+                22 => 'Dussehra (Vijaya Dashmi)/Durga Puja',
+                24 => 'Moharram/Durga Puja (Dasain)',
+            ],
+            11 => [
+                11 => 'Diwali Amavasya (Laxmi Poojan)',
+                12 => 'Diwali (Balipratipada)/Deepavali',
+                25 => 'Guru Nanak Jayanti/Kartik Poornima',
+            ],
+            12 => [
+                24 => 'Id-e-Milad/Milad-un-Nabi/Christmas Eve',
+                25 => 'Christmas',
+            ],
+        ],
         2016 => [
             1 => [
                 26 => 'Republic Day',
