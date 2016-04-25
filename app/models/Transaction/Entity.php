@@ -410,7 +410,7 @@ class Entity extends Base\PublicEntity
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
-        $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY[self::SETTLED_AT];
+        $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
 
         if ($this->isTypePayment())
         {
