@@ -20,7 +20,7 @@ class OrderTest extends TestCase
 
     public function setUpBillDeskGateway()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 

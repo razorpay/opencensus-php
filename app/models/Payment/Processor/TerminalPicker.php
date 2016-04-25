@@ -160,11 +160,13 @@ class TerminalPicker
 
         $bank = $this->payment->getBank();
 
+        $category = $this->payment->merchant->getCategory();
+
         $isTPVRequired = $this->payment->merchant->isTPVRequired();
 
         if ($isTPVRequired)
         {
-            $terminal = $this->selectSharedTPVTerminal();
+            $terminal = $this->selectSharedTPVTerminal($category);
 
             if ($terminal === null)
             {
@@ -635,16 +637,14 @@ class TerminalPicker
         }
     }
 
-    protected function selectSharedTPVTerminal()
+    protected function selectSharedTPVTerminal($category)
     {
         $gateway = Gateway::BILLDESK;
 
-        $sharedTerminal = Shared::getSharedTerminalForGatewayWithCategory($gateway);
+        $sharedTerminal = $this->repo->getSharedTerminalForGatewayWithCategory(
+                                    $gateway, $category);
 
-        if ($this->terminalExists($sharedTerminal))
-        {
-            return $this->terminal;
-        }
+        return $this->terminalExists($sharedTerminal->getId());
     }
 
     protected function terminalExists($terminal)
