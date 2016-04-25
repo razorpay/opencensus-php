@@ -467,7 +467,7 @@ class Processor
         $validator->validateOrderNotPaid($this->order);
 
         $validator->validateMerchantSpecificData($this->order,
-                                                    $this->merchant);
+                                                 $payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
