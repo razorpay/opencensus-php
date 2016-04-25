@@ -477,7 +477,8 @@ class Entity extends Base\PublicEntity
     public function isTPVRequired()
     {
         // 9999 - Test MCC requiring TPV
-        $tpvCategories = array(9999 => 9999);
+        // 6211 - Live MCC requiring TPV
+        $tpvCategories = array(9999 => 9999, 6211 => 6211);
 
         $category = $this->getCategory();
 
