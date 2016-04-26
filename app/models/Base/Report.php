@@ -19,8 +19,7 @@ class Report extends Service
     );
 
     // Corresponds to 15th November 2015 00:00
-    const SB_CESS_START = 1447525800;
-
+    const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
     const SWACH_BHARAT_CESS = 'Swachh Bharat Cess';
     const SWACH_BHARAT_CESS_RATE = 0.005;
 
@@ -32,8 +31,8 @@ class Report extends Service
      * manually
      */
     const SB_COMPLEX_CASE = [
-        'month'  =>  11,
-        'year'   =>  2015
+        'month'  =>  '11',
+        'year'   =>  '2015'
     ];
 
     public function getReport($input, $entity)
@@ -78,38 +77,72 @@ class Report extends Service
 
         list($from, $to) = $this->getTimestamps($input);
 
-        $data = (new Transaction\Repository)->fetchDataForInvoice($merchantId, $from, $to);
+        if ($this->isComplexCessCase($input))
+        {
+            $before15Nov = (new Transaction\Repository)->fetchDataForInvoice(
+                $merchantId,
+                $from,
+                self::SWACH_BHARAT_CUTOFF_TIMESTAMP);
 
-        $data['taxes'] = $this->calculateTaxComponents($data, $input);
+            $after15Nov  = (new Transaction\Repository)->fetchDataForInvoice(
+                $merchantId,
+                self::SWACH_BHARAT_CUTOFF_TIMESTAMP,
+                $to);
+
+            // Now we calculate taxes on each individually
+            $before15Nov['taxes'] = $this->calculateTaxComponents($before15Nov, $input, false);
+            $after15Nov['taxes']  = $this->calculateTaxComponents($after15Nov, $input, true);
+
+
+            $data = $this->sumInvoiceData($before15Nov, $after15Nov);
+        }
+        else
+        {
+            $data = (new Transaction\Repository)->fetchDataForInvoice($merchantId, $from, $to);
+            $sbCessApplied = $this->isSwachBharatCessApplicable($input);
+            $data['taxes'] = $this->calculateTaxComponents($data, $input, $sbCessApplied);
+        }
 
         return $data;
     }
 
-    protected function calculateTaxComponents(&$data, $input)
+    /**
+     * Adds two invoice disjoint datasets together
+     * This is used for the november 2015 breakdown
+     * where we calculate separately for before and after
+     * 15th of november
+     */
+    protected function sumInvoiceData($beforeHalf, $afterHalf)
+    {
+        return [
+            'total_fee' => $beforeHalf['total_fee'] + $afterHalf['total_fee'],
+            'tax' => $beforeHalf['tax'] + $afterHalf['tax'],
+            'taxes' => [
+                self::SERVICE_TAX   =>  $beforeHalf['taxes'][self::SERVICE_TAX] +
+                    $afterHalf['taxes'][self::SERVICE_TAX],
+                // The first half doesn't have the swach bharat cess
+                self::SWACH_BHARAT_CESS => $afterHalf['taxes'][self::SWACH_BHARAT_CESS]
+            ]
+        ];
+    }
+
+    protected function calculateTaxComponents(&$data, $input, $sbCessApplied)
     {
         $taxes = [];
 
-        // For the month of November 2015
-        if ($this->isComplexCessCase($input))
+        $data['razorpay_fee'] = $data['total_fee'] - $data['tax'];
+
+        if ($sbCessApplied)
         {
-            // not implemented yet
+            $taxes[self::SWACH_BHARAT_CESS] = round($data['razorpay_fee'] * self::SWACH_BHARAT_CESS_RATE, 2);
+
+            // Back calculate just the service tax
+            $taxes[self::SERVICE_TAX] = round($data['tax'] - $taxes[self::SWACH_BHARAT_CESS], 2);
         }
+        // No SB CESS
         else
         {
-            $data['razorpay_fee'] = $data['total_fee'] - $data['tax'];
-
-            if ($this->isSwachBharatCessApplicable($input))
-            {
-                $taxes[self::SWACH_BHARAT_CESS] = $data['razorpay_fee'] * self::SWACH_BHARAT_CESS_RATE;
-
-                // Back calculate just the service tax
-                $taxes[self::SERVICE_TAX] = $data['tax'] - $taxes[self::SWACH_BHARAT_CESS];
-            }
-            // No SB CESS
-            else
-            {
-                $taxes[self::SERVICE_TAX] = $data['tax'];
-            }
+            $taxes[self::SERVICE_TAX] = $data['tax'];
         }
 
         return $taxes;
@@ -123,14 +156,13 @@ class Report extends Service
     protected function isSwachBharatCessApplicable($input)
     {
         return (($input['year'] >= 2016) or
-            (($input['year'] === 2015) and
-              $input['month'] === 12));
+                (($input['year'] === 2015) and ($input['month'] === 12)));
     }
 
     protected function isComplexCessCase($input)
     {
         return (($input['month'] === self::SB_COMPLEX_CASE['month']) and
-            $input['year'] === self::SB_COMPLEX_CASE['year']);
+                ($input['year'] === self::SB_COMPLEX_CASE['year']));
     }
 
     protected function getTimestamps($input)
