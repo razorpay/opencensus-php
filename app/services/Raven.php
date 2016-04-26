@@ -71,7 +71,7 @@ class Raven
         $headers['Authorization'] = $authHeader;
 
         $options = array(
-//            'proxy' => 'https://splunk.razorpay.com:8888'
+            'proxy' => 'https://splunk.razorpay.com:8888'
         );
 
         $request = array(
