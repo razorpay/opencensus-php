@@ -323,17 +323,17 @@ class Service extends Base\Service
 
     public function getInvoiceReportData($mode, array $input)
     {
-        set_time_limit(600);
-
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
             $data = $this->api
                          ->transaction
-                         ->generateEntityReport('payment', $input)
+                         ->getInvoiceData($input)
                          ->toArray();
 
-            $data = $this->summarizeReportData($input, $data);
+            $data['dates'] = $this->getDateRanges($input['year'], $input['month']);
+            $data['merchant'] = $this->merchant;
+            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
 
             return [null, $data];
         }
@@ -342,17 +342,6 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
 
             return array($error, null);
-        }
-        catch(\Exception $exception)
-        {
-            $error[] = "Could not generate report. Please try again later";
-            $error[] = $exception->getMessage();
-
-            Trace::critical('ERROR_EXCEPTION', [
-                'message'   => $exception->getMessage(),
-                'code'      => $exception->getCode(),
-                'stack'     => $exception->getTraceAsString(),
-            ]);
         }
 
         return array($error, null);
@@ -370,81 +359,6 @@ class Service extends Base\Service
             'startDate'      => $startDate->format('d/m/y'),
             'endDate'        => $startDate->endOfMonth()->format('d/m/y')
         ];
-    }
-
-    /**
-     * Assumes all values to be INR sums
-     */
-    protected function sumField(array $data, $field)
-    {
-        $value = 0;
-        array_walk($data, function($row) use ($field, &$value)
-        {
-            if (isset($row[$field]))
-            {
-                $value += $row[$field];
-            }
-        });
-
-        return $value;
-    }
-
-    protected function summarizeReportData($params, $data)
-    {
-        foreach ($data as &$row)
-        {
-            $row['effective_fee'] = $row['fee'] - $row['service_tax'];
-            $row['service_tax_only'] = $row['effective_fee'] * 0.14;
-
-            /**
-             * Note on the swach bharat cess. This was supposed to be flipped
-             * after the 15th November 2015. However, we made the flip a couple
-             * of days late, which is why we are re-calculating here again.
-             */
-            $timestamp = Carbon::createFromFormat('d/m/y h:i:s',
-                $row['created_at'], 'Asia/Calcutta')->getTimestamp();
-            if ($timestamp >= self::SB_CESS_START)
-            {
-                $row['sb_cess']          = $row['effective_fee'] * 0.005;
-            }
-        }
-
-        $effectiveFee = $this->sumField($data, 'effective_fee');
-        $sbCess       = $this->sumField($data, 'sb_cess');
-        $serviceTax   = $this->sumField($data, 'service_tax_only');
-
-        // This does not include swach bharat cess
-        $total        = $effectiveFee + $serviceTax;
-
-        return [
-            // 'data'  =>  $data,
-            'dates' =>  $this->getDateRanges($params['year'], $params['month']),
-            // These are INR values
-            'effectiveFee'      => $effectiveFee,
-            'sbCess'            => $sbCess,
-            'service_tax_only'  => $serviceTax,
-            'merchant'  =>  $this->merchant,
-            'invoice_id'=>  $this->getInvoiceId($params['year'], $params['month']),
-
-            // These are string values
-            'formatted' => [
-                'sbCess'        =>  $this->formatMoney($sbCess),
-                'effectiveFee'  =>  $this->formatMoney($effectiveFee),
-                'serviceTax'    =>  $this->formatMoney($serviceTax),
-                'total'         =>  $this->formatMoney($total)
-            ]
-        ];
-    }
-
-    /**
-     * Amount is in INR here
-     * @param  float $amount Amount in INR
-     * @return string Formatted money value with 2 decimals and commas
-     */
-    protected function formatMoney($amount)
-    {
-        setlocale(LC_MONETARY, 'en_IN');
-        return money_format('%!i', $amount);
     }
 
     protected function getInvoiceId($year, $month)

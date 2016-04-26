@@ -246,7 +246,7 @@ class TransactionController extends BaseController
         $file->download('xlsx');
     }
 
-    public function getMerchantInvoice($mode)
+    public function getInvoiceReport($mode)
     {
         $this->checkMode($mode);
         $input = Input::all();

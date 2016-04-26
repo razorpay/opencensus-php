@@ -467,37 +467,30 @@ td
   {{{$dates['startDate']}}} to
   <br>
   {{{$dates['endDate']}}}</td>
-  <td class=xl70>₹ {{{$effectiveFee}}}</td>
+  <td class=xl70>₹ @format_money($razorpay_fee)</td>
   <td colspan=5 style='mso-ignore:colspan'></td>
  </tr>
+@foreach($taxes as $taxName => $taxValue)
  <tr height=36 style='mso-height-source:userset;height:27.0pt'>
   <td colspan=2 height=36 class=xl88 width=370 style='border-right:.5pt solid white;
   height:27.0pt;width:278pt'>&nbsp;</td>
-  <td class=xl76 width=185 style='border-left:none;width:139pt'>Service Tax</td>
-  <td class=xl71 style='border-left:none'>₹ {{{$formatted['serviceTax']}}}</td>
+  <td class=xl76 width=185 style='border-left:none;width:139pt'>{{{$taxName}}}</td>
+  <td class=xl71 style='border-left:none'>₹ @format_money($taxValue)</td>
   <td colspan=5 style='mso-ignore:colspan'></td>
  </tr>
-@if($sbCess !== 0)
- <tr height=36 style='mso-height-source:userset;height:27.0pt'>
-  <td colspan=2 height=36 class=xl88 width=370 style='border-right:.5pt solid white;
-  height:27.0pt;width:278pt'>&nbsp;</td>
-  <td class=xl76 width=185 style='border-left:none;width:139pt'>Swachh Bharat Cess</td>
-  <td class=xl71 style='border-left:none'>₹ {{{$formatted['sbCess']}}}</td>
-  <td colspan=5 style='mso-ignore:colspan'></td>
- </tr>
-@endif
+@endforeach
  <tr height=35 style='mso-height-source:userset;height:26.0pt'>
   <td colspan=2 height=35 class=xl90 width=370 style='border-right:.5pt solid white;
   height:26.0pt;width:278pt'>&nbsp;</td>
   <td class=xl77 width=185 style='border-left:none;width:139pt'>Total</td>
-  <td class=xl72>₹ {{{$formatted['total']}}}</td>
+  <td class=xl72>₹ @format_money($total_fee)</td>
   <td colspan=5 style='mso-ignore:colspan'></td>
  </tr>
  <tr height=35 style='mso-height-source:userset;height:26.0pt'>
   <td colspan=2 height=35 class=xl90 width=370 style='border-right:.5pt solid white;
   height:26.0pt;width:278pt'>&nbsp;</td>
   <td class=xl77 width=185 style='border-left:none;width:139pt'>Already Done</td>
-  <td class=xl72>₹ {{{$formatted['serviceTax']}}}</td>
+  <td class=xl72>₹ @format_money($total_fee)</td>
   <td colspan=5 style='mso-ignore:colspan'></td>
  </tr>
  <tr height=33 style='mso-height-source:userset;height:25.0pt'>

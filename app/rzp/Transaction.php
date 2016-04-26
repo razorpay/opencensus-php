@@ -21,6 +21,13 @@ class Transaction extends Entity
         return $this->longRequest('GET', $relativeUrl, $params);
     }
 
+    public function getInvoiceData($params)
+    {
+        $relativeUrl = "reports/invoice";
+
+        return $this->request('GET', $relativeUrl, $params);
+    }
+
     /**
      * We are matching the Entity\request method, but with an extra
      * timeout being set to 60s
