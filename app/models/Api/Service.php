@@ -20,6 +20,7 @@ class Service extends Base\Service
         if ($loggedInUser)
         {
             $this->merchantId = $loggedInUser->getCurrentMerchantId();
+            $this->merchant   = $loggedInUser->currentMerchant;
         }
         else
         {
@@ -342,7 +343,7 @@ class Service extends Base\Service
 
             return array($error, null);
         }
-        /*catch(\Exception $exception)
+        catch(\Exception $exception)
         {
             $error[] = "Could not generate report. Please try again later";
             $error[] = $exception->getMessage();
@@ -352,7 +353,7 @@ class Service extends Base\Service
                 'code'      => $exception->getCode(),
                 'stack'     => $exception->getTraceAsString(),
             ]);
-        }*/
+        }
 
         return array($error, null);
     }
@@ -365,12 +366,15 @@ class Service extends Base\Service
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
 
         return [
-            'billingDate'    => $startDate->addMonth(),
-            'startDate'      => $startDate,
-            'endDate'        => $startDate->endOfMonth()
+            'billingDate'    => $startDate->addMonth()->format('d/m/y'),
+            'startDate'      => $startDate->format('d/m/y'),
+            'endDate'        => $startDate->endOfMonth()->format('d/m/y')
         ];
     }
 
+    /**
+     * Assumes all values to be INR sums
+     */
     protected function sumField(array $data, $field)
     {
         $value = 0;
@@ -405,12 +409,47 @@ class Service extends Base\Service
             }
         }
 
+        $effectiveFee = $this->sumField($data, 'effective_fee');
+        $sbCess       = $this->sumField($data, 'sb_cess');
+        $serviceTax   = $this->sumField($data, 'service_tax_only');
+
+        // This does not include swach bharat cess
+        $total        = $effectiveFee + $serviceTax;
+
         return [
-            'data'  =>  $data,
+            // 'data'  =>  $data,
             'dates' =>  $this->getDateRanges($params['year'], $params['month']),
-            'effective_fee' => $this->sumField($data, 'effective_fee'),
-            'sb_cess'       => $this->sumField($data, 'sb_cess'),
-            'service_tax_only' => $this->sumField($data, 'service_tax_only'),
+            // These are INR values
+            'effectiveFee'      => $effectiveFee,
+            'sbCess'            => $sbCess,
+            'service_tax_only'  => $serviceTax,
+            'merchant'  =>  $this->merchant,
+            'invoice_id'=>  $this->getInvoiceId($params['year'], $params['month']),
+
+            // These are string values
+            'formatted' => [
+                'sbCess'        =>  $this->formatMoney($sbCess),
+                'effectiveFee'  =>  $this->formatMoney($effectiveFee),
+                'serviceTax'    =>  $this->formatMoney($serviceTax),
+                'total'         =>  $this->formatMoney($total)
+            ]
         ];
+    }
+
+    /**
+     * Amount is in INR here
+     * @param  float $amount Amount in INR
+     * @return string Formatted money value with 2 decimals and commas
+     */
+    protected function formatMoney($amount)
+    {
+        setlocale(LC_MONETARY, 'en_IN');
+        return money_format('%!i', $amount);
+    }
+
+    protected function getInvoiceId($year, $month)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
+        return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
     }
 }

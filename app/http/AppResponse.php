@@ -42,6 +42,15 @@ class AppResponse
         return Response::json($response, 404);
     }
 
+    public static function validationErrorResponse($error)
+    {
+        $response = [
+            'success'   => false,
+            'data'      => $error
+        ];
+        return Response::json($response, 400);
+    }
+
     /**
      * Flattens an array recursively
      * Concatenating keys using periods

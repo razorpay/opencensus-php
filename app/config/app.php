@@ -128,6 +128,7 @@ return array(
         'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
         'Razorpay\Providers\UuidServiceProvider',
+        'Nitmedia\Wkhtml2pdf\Wkhtml2pdfServiceProvider'
 	),
 
 	/*
@@ -198,6 +199,7 @@ return array(
 		'Trace'           => 'Trace\Facade',
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
         'Uuid'            => 'Razorpay\Facades\Uuid',
+        'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
 	),
 
 	'context' => $_ENV['CONTEXT'],

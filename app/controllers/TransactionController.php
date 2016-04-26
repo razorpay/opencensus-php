@@ -253,6 +253,14 @@ class TransactionController extends BaseController
 
         list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
 
-        sd($data);
+        if ($error === null)
+        {
+            // PDF::setOutputMode('F');
+            return Response::view('merchant.invoice', $data);//->download('invoice.pdf');
+        }
+        else
+        {
+            return AppResponse::validationErrorResponse($data);
+        }
     }
 }
