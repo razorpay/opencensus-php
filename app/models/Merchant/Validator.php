@@ -13,7 +13,7 @@ class Validator extends Base\Validator
 
     protected static $createSubmerchantRules = array(
         'name'                  => 'required|alpha_space_num|max:200',
-        'email'                 => 'sometimes|email|unique:merchants',
+        'email'                 => 'sometimes|email',
     );
 
     protected static $unsetCreateInput = array(
