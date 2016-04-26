@@ -1,6 +1,7 @@
 <?php
 
 use Models\Api;
+use Models\Merchant;
 
 use Http\AppResponse;
 use Models\Transaction;
@@ -243,5 +244,15 @@ class TransactionController extends BaseController
         }
 
         $file->download('xlsx');
+    }
+
+    public function getMerchantInvoice($mode)
+    {
+        $this->checkMode($mode);
+        $input = Input::all();
+
+        list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
+
+        sd($data);
     }
 }

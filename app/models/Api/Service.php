@@ -2,6 +2,7 @@
 
 namespace Models\Api;
 
+use Carbon\Carbon;
 use Http\AppResponse;
 use Auth;
 use Models\Base;
@@ -9,6 +10,9 @@ use Trace;
 
 class Service extends Base\Service
 {
+    // Corresponds to 15th November 2015 00:00
+    const SB_CESS_START = 1447525800;
+
     public function __construct()
     {
         $loggedInUser = Auth::user()->user();
@@ -314,5 +318,99 @@ class Service extends Base\Service
         }
 
         return array($error, null);
+    }
+
+    public function getInvoiceReportData($mode, array $input)
+    {
+        set_time_limit(600);
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+            $data = $this->api
+                         ->transaction
+                         ->generateEntityReport('payment', $input)
+                         ->toArray();
+
+            $data = $this->summarizeReportData($input, $data);
+
+            return [null, $data];
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
+        /*catch(\Exception $exception)
+        {
+            $error[] = "Could not generate report. Please try again later";
+            $error[] = $exception->getMessage();
+
+            Trace::critical('ERROR_EXCEPTION', [
+                'message'   => $exception->getMessage(),
+                'code'      => $exception->getCode(),
+                'stack'     => $exception->getTraceAsString(),
+            ]);
+        }*/
+
+        return array($error, null);
+    }
+
+    /**
+     * Get the date ranges to be used in an invoice
+     */
+    protected function getDateRanges($year, $month)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
+
+        return [
+            'billingDate'    => $startDate->addMonth(),
+            'startDate'      => $startDate,
+            'endDate'        => $startDate->endOfMonth()
+        ];
+    }
+
+    protected function sumField(array $data, $field)
+    {
+        $value = 0;
+        array_walk($data, function($row) use ($field, &$value)
+        {
+            if (isset($row[$field]))
+            {
+                $value += $row[$field];
+            }
+        });
+
+        return $value;
+    }
+
+    protected function summarizeReportData($params, $data)
+    {
+        foreach ($data as &$row)
+        {
+            $row['effective_fee'] = $row['fee'] - $row['service_tax'];
+            $row['service_tax_only'] = $row['effective_fee'] * 0.14;
+
+            /**
+             * Note on the swach bharat cess. This was supposed to be flipped
+             * after the 15th November 2015. However, we made the flip a couple
+             * of days late, which is why we are re-calculating here again.
+             */
+            $timestamp = Carbon::createFromFormat('d/m/y h:i:s',
+                $row['created_at'], 'Asia/Calcutta')->getTimestamp();
+            if ($timestamp >= self::SB_CESS_START)
+            {
+                $row['sb_cess']          = $row['effective_fee'] * 0.005;
+            }
+        }
+
+        return [
+            'data'  =>  $data,
+            'dates' =>  $this->getDateRanges($params['year'], $params['month']),
+            'effective_fee' => $this->sumField($data, 'effective_fee'),
+            'sb_cess'       => $this->sumField($data, 'sb_cess'),
+            'service_tax_only' => $this->sumField($data, 'service_tax_only'),
+        ];
     }
 }
