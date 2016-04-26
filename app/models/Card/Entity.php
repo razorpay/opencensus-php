@@ -306,14 +306,7 @@ class Entity extends Base\PublicEntity
 
     public function getEmiAttribute()
     {
-        $emi = $this->attributes[self::EMI];
-
-        if ($emi === null)
-        {
-            return false;
-        }
-
-        return (bool) $emi;
+        return (bool) $this->attributes[self::EMI];;
     }
 
     public function isUnsupported()
