@@ -116,6 +116,7 @@ class Report extends Service
     {
         return [
             'total_fee' => $beforeHalf['total_fee'] + $afterHalf['total_fee'],
+            'razorpay_fee' => $beforeHalf['razorpay_fee'] + $afterHalf['razorpay_fee'],
             'tax' => $beforeHalf['tax'] + $afterHalf['tax'],
             'taxes' => [
                 self::SERVICE_TAX   =>  $beforeHalf['taxes'][self::SERVICE_TAX] +
