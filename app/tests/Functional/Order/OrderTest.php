@@ -127,9 +127,34 @@ class OrderTest extends TestCase
         $this->setUpBillDeskGateway();
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment['bank'] = 'ANDB';
 
         // Not adding order_id in payment
+
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function () use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testPaymentWithIncorrectBankForTPVMerchantWithOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpBillDeskGateway();
+
+        $order = $this->testCreateTPVOrder();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'CORP';
+
+        $payment['order_id'] = $order['id'];
 
         $this->runRequestResponseFlow(
             $this->testData[__FUNCTION__],
@@ -152,6 +177,7 @@ class OrderTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray();
 
         $payment['bank'] = 'ANDB';
+
         $payment['order_id'] = $order['id'];
 
         $this->doAuthAndCapturePayment($payment);

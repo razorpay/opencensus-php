@@ -43,6 +43,9 @@ class CreateOrders extends Migration {
 
             $table->text(Order::NOTES);
 
+            $table->string(Order::BANK, 10)
+                  ->nullable();
+
             $table->string(Order::METHOD, 10)
                   ->nullable();
 
