@@ -570,7 +570,9 @@ td
   <td colspan=6 style='mso-ignore:colspan'></td>
  </tr>
 </table>
-
+<script>
+window.print()
+</script>
 </body>
 
 </html>

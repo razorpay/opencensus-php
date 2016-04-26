@@ -17,11 +17,12 @@
             <option value="refund">Refund</option>
             <option value="settlement">Settlement</option>
             <option value="transaction">Combined</option>
+            <option value="invoice">Invoice</option>
           </select>
         </div>
 
         <div class="m-b col-sm-2">
-          <select name="type" ng-model="report.type" class="form-control" required>
+          <select name="type" ng-model="report.type" class="form-control" required ng-show="report.entity!='invoice'">
             <option value="daily">Daily</option>
             <option value="monthly">Monthly</option>
           </select>
