@@ -255,7 +255,9 @@ class TransactionController extends BaseController
 
         if ($error === null)
         {
+            // return PDF::url('http://google.com');
             // PDF::setOutputMode('F');
+            // return PDF::html('merchant.invoice', $data);//->download('invoice.pdf');
             return Response::view('merchant.invoice', $data);//->download('invoice.pdf');
         }
         else
