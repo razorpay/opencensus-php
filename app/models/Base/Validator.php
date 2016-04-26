@@ -8,9 +8,9 @@ use EE\Exception;
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
     protected static $reportRules = [
-        'year'  =>  'required',
-        'month' =>  'required',
-        'day'   =>  'sometimes',
+        'year'  =>  'required|digits:4',
+        'month' =>  'required|digits_between:1,2',
+        'day'   =>  'sometimes|digits_between:1,2',
     ];
 
     protected function throwExtraFieldsException($extraFields)
