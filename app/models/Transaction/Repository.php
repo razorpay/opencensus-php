@@ -76,11 +76,13 @@ class Repository extends Base\Repository
         $fee = $this->newQuery()
                       ->merchantId($merchantId)
                       ->where('type', 'payment')
+                      ->betweenTime($from, $to)
                       ->sum('fee');
 
         $serviceTax = $this->newQuery()
                            ->merchantId($merchantId)
                            ->where('type', 'payment')
+                           ->betweenTime($from, $to)
                            ->sum('service_tax');
 
         // Total fee includes our cut + service tax
