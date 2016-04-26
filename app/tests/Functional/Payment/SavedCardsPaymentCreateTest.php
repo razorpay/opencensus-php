@@ -15,8 +15,6 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->payment = $this->getDefaultPaymentArray();
-
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -31,6 +29,8 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testLocalSavedCardPaymentCreate()
     {
+        $this->payment = $this->getDefaultPaymentArray();
+
         $this->payment['card'] = array('cvv'  => 111);
         $this->payment['token'] = '10000cardtoken';
         $this->payment['customer_id'] = 'cust_100000customer';
@@ -49,10 +49,8 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment['card'] = array('cvv'  => 111);
-        $this->payment['method'] = 'emi';
-        $this->payment['emi_duration'] = 9;
-        $this->payment['amount'] = '300000';
+        $this->payment = $this->getDefaultPaymentArrayEmi(true);
+
         $this->payment['token'] = '10000cardtoken';
         $this->payment['customer_id'] = 'cust_100000customer';
 
@@ -68,6 +66,8 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testGlobalSavedCardPaymentCreate()
     {
+        $this->payment = $this->getDefaultPaymentArray();
+
         $this->payment['card'] = array(
             'cvv'  => 111
         );
@@ -92,10 +92,8 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->payment['card'] = array('cvv'  => 111);
-        $this->payment['method'] = 'emi';
-        $this->payment['emi_duration'] = 9;
-        $this->payment['amount'] = '300000';
+        $this->payment = $this->getDefaultPaymentArrayEmi(true);
+
         $this->payment['token'] = '1000gcardtoken';
         $this->payment['app_id'] = 'uuuu_1000000custapp';
 
@@ -114,6 +112,8 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testPaymentCreateAndSaveCardLocal()
     {
+        $this->payment = $this->getDefaultPaymentArray();
+
         $this->payment['save'] = 1;
         $this->payment['card']['number'] = '4000400000000004';
         $this->payment['customer_id'] = 'cust_100000customer';
@@ -145,11 +145,9 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->payment = $this->getDefaultPaymentArrayEmi(false);
+
         $this->payment['save'] = 1;
-        $this->payment['card']['number'] = '41476700000006';
-        $this->payment['method'] = 'emi';
-        $this->payment['emi_duration'] = 9;
-        $this->payment['amount'] = '300000';
         $this->payment['customer_id'] = 'cust_100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
@@ -164,9 +162,6 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->payment['token'] = $token['token'];
         $this->payment['customer_id'] = 'cust_100000customer';
-        $this->payment['method'] = 'emi';
-        $this->payment['emi_duration'] = 9;
-        $this->payment['amount'] = '300000';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
@@ -180,6 +175,7 @@ class SavedCardPaymentCreateTest extends TestCase
      */
     public function testPaymentCreateAndSaveCardGlobal()
     {
+        $this->payment = $this->getDefaultPaymentArray();
         $this->payment['save'] = 1;
         $this->payment['card']['number'] = '4000400000000004';
         $this->payment['app_id'] = 'uuuu_1000000custapp';
@@ -215,11 +211,8 @@ class SavedCardPaymentCreateTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->payment = $this->getDefaultPaymentArrayEmi(false);
         $this->payment['save'] = 1;
-        $this->payment['card']['number'] = '41476700000006';
-        $this->payment['method'] = 'emi';
-        $this->payment['emi_duration'] = 9;
-        $this->payment['amount'] = '300000';
         $this->payment['app_id'] = 'uuuu_1000000custapp';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
@@ -232,12 +225,8 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertNotEquals('card_'.$token['card_id'], $card['id']);
         $this->assertEquals($card['global_card_id'], $token['card_id']);
 
-        $this->payment['card'] = array('cvv'  => 111);
         $this->payment['token'] = $token['token'];
         $this->payment['app_id'] = 'uuuu_1000000custapp';
-        $this->payment['method'] = 'emi';
-        $this->payment['emi_duration'] = 9;
-        $this->payment['amount'] = '300000';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
