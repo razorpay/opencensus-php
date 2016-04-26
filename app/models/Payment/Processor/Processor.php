@@ -330,7 +330,7 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $input['terminal'] = $terminal;
-        $input['merchant'] = $terminal->merchant;
+        $input['merchant'] = $this->payment->merchant;
 
         if ($gateway === Payment\Gateway::KOTAK)
         {
