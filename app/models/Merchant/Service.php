@@ -37,15 +37,15 @@ class Service extends Base\Service
         }
     }
 
-    public static function register(User\Entity $user, $businessName, $referer = false)
+    public static function register(User\Entity $user, array $data, $referer = false)
     {
-        $data = [
-            'name'  =>  $businessName,
+        $merchantData = [
+            'name'  =>  $data['business_name'],
             'email' =>  $user->email,
         ];
 
         $error = (new Merchant\Validator)
-            ->validateInput('create', $data)->messages();
+            ->validateInput('create', $merchantData)->messages();
 
         $merchant = null;
 
@@ -53,7 +53,7 @@ class Service extends Base\Service
         // We can drop the extra fields sometime since they aren't really used
         if (empty($error))
         {
-            $merchant = Entity::createFromUser($user, $businessName);
+            $merchant = Entity::createFromUser($user, $data);
 
             // This is called for certain special email addresses
             $merchant->setCustomId();
@@ -66,8 +66,9 @@ class Service extends Base\Service
             $merchant->save();
 
             $details = [
-                'merchant_id'   => $merchant->id,
-                'contact_email' => $merchant->email
+                'merchant_id'    => $merchant->id,
+                'contact_email'  => $merchant->email,
+                'contact_mobile' => $data['contact_mobile']
             ];
 
             MerchantDetails\Entity::createOrFail($details);

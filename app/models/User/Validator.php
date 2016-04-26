@@ -7,8 +7,15 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     public static $createRules = array(
+        // Individual Name
         'name'                  => 'required|alpha_space|max:200',
+        // Merchant Business Name
         'business_name'         => 'alpha_space_num|max:200',
+
+        // Mobile Number (optional). Saved in merchant_details
+        'contact_mobile'        => 'sometimes|numeric|digits_between:8,11',
+
+        // Merchant email. Used for both merchant and user accounts
         'email'                 => 'required|email|unique:users',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',

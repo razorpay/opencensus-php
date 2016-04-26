@@ -109,7 +109,12 @@ class Service extends Base\Service
         {
             // See HACKING.md in the root of the repo for a detailed note
             assert(! $invitationToken);
-            list($error, $data) = $this->createMerchantFromUser($user, $input['business_name'], $referer);
+
+            $data = [
+                'business_name' =>  $input['business_name'],
+                'contact_mobile' =>  Input::get('contact_mobile', null)
+            ];
+            list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
         }
 
         elseif ($invitationToken)
@@ -220,9 +225,9 @@ class Service extends Base\Service
      * @param  string $referer      Could be false as well
      * @return array containing some minor details
      */
-    protected function createMerchantFromUser(User\Entity $user, $businessName, $referer = false)
+    protected function createMerchantFromUser(User\Entity $user, array $data, $referer = false)
     {
-        list($error, $merchant) = Merchant\Service::register($user, $businessName, $referer);
+        list($error, $merchant) = Merchant\Service::register($user, $data, $referer);
 
         if (! empty($error))
         {
@@ -246,8 +251,9 @@ class Service extends Base\Service
      */
     protected function signupPost($merchant, $user, $referer = '')
     {
-        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer);
-        $zapierData = $this->getZapierData($merchant, $user, $referer);
+        $phoneNumber = Input::get('contact_mobile', null);
+        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
+        $zapierData = $this->getZapierData($merchant, $user, $referer, $phoneNumber);
 
         // We want to keep environment conditional checks as late as possible
         if ($_ENV['SLACK_ENABLE'] === true)
@@ -256,11 +262,15 @@ class Service extends Base\Service
             Queue::push('Models\User\Service@postToZapier', $zapierData);
         }
 
-        // Requirement being a 'id' key in this array
-        return $sortingHatData;
+        // These are displayed on the frontend
+        return [
+            'id'    =>  $merchant->id,
+            'name'  =>  $merchant->name,
+            'email' =>  $user->email
+        ];
     }
 
-    protected function getSortingHatData($merchant, $user, $referer)
+    protected function getSortingHatData($merchant, $user, $referer, $phoneNumber)
     {
         $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$merchant->id}/detail";
         $message = "[New Signup]($merchantLink) as {$user->name}";
@@ -268,6 +278,11 @@ class Service extends Base\Service
         if ($referer)
         {
             $message .= " | REF: $referer";
+        }
+
+        if ($phoneNumber)
+        {
+            $message .= " | [Call - {$phoneNumber}](tel:$phoneNumber)";
         }
 
         return [
@@ -279,7 +294,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getZapierData($merchant, $user, $referer)
+    protected function getZapierData($merchant, $user, $referer, $phoneNumber)
     {
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
@@ -292,6 +307,7 @@ class Service extends Base\Service
             'name'          => $merchant->name,
             'ref'           => $referer ? $referer : '',
             'timestamp'     => $timestamp,
+            'contact'       => $phoneNumber? $phoneNumber : ''
         ];
     }
 
@@ -466,8 +482,12 @@ class Service extends Base\Service
             return [$error, null];
         }
 
+        $data = [
+            'business_name' =>  $input['business_name']
+        ];
+
         // We don't have a referrer for the upgrade
-        list($error, $data) = $this->createMerchantFromUser($user, $input['business_name']);
+        list($error, $data) = $this->createMerchantFromUser($user, $data);
 
         if (empty($error))
         {

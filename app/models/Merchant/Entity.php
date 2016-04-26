@@ -82,13 +82,13 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * @param Models\User\Entity $user
      * @return Models\Merchant\Entity $merchant
      */
-    public static function createFromUser(User\Entity $user, $businessName)
+    public static function createFromUser(User\Entity $user, $data)
     {
         $merchant = new static();
         $merchant->timestamps = false;
 
         $merchant->id = Uuid::generate();
-        $merchant->name = $businessName;
+        $merchant->name = $data['business_name'];
         $merchant->email = $user->email;
 
         $merchant->password = $user->password;
