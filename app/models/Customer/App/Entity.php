@@ -51,4 +51,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::DEVICE_ID);
     }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
 }

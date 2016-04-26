@@ -51,19 +51,17 @@ class Core extends Base\Core
 
         $response = array();
 
-        if (isset($data['success']) and $data['success'] === true)
+        if ((isset($data['success'])) and ($data['success'] === true))
         {
             $customer = $this->repo->findByContactForMerchant(
                 $input[Customer\Entity::CONTACT],
-                Account::SHARED_ACCOUNT
-            );
+                Account::SHARED_ACCOUNT);
 
             if ($customer === null)
             {
                 $custCreateInput = array(
                     Customer\Entity::CONTACT        =>   $input[Customer\Entity::CONTACT],
-                    Customer\Entity::MERCHANT_ID    =>   Account::SHARED_ACCOUNT,
-                );
+                    Customer\Entity::MERCHANT_ID    =>   Account::SHARED_ACCOUNT);
 
                 $customer = $this->create($custCreateInput);
             }
@@ -71,8 +69,7 @@ class Core extends Base\Core
             $custAppInput = array(
                 App\Entity::CUSTOMER_ID => $customer->getId(),
                 App\Entity::MERCHANT_ID => $input['context'],
-                App\Entity::DEVICE_ID   => $input[App\Entity::DEVICE_ID]
-            );
+                App\Entity::DEVICE_ID   => $input[App\Entity::DEVICE_ID]);
 
             $app = (new App\Core)->create($custAppInput);
 
@@ -106,7 +103,9 @@ class Core extends Base\Core
 
         if (empty($input[Payment\Entity::APP_ID]) === false)
         {
-            $appId = Customer\App\Entity::verifyIdAndStripSign($input[Payment\Entity::APP_ID]);
+            $appId = $input[Payment\Entity::APP_ID];
+
+            Customer\App\Entity::verifyIdAndStripSign($appId);
 
             $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
                 $appId,
@@ -114,21 +113,22 @@ class Core extends Base\Core
 
             assert($customerApp !== null);
 
-            $customerId = Customer\Entity::getIdPrefix() . $customerApp->customer->getId();
+            $customerId = $customerApp->getCustomerId();
+
             $merchantId = Account::SHARED_ACCOUNT;
         }
         else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $merchantId = $merchant->getId();
+
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
+
+            Customer\Entity::verifyIdAndStripSign($customerId);
         }
 
         if ($customerId !== null)
         {
-            Customer\Entity::verifyIdAndStripSign($customerId);
-
-            $customer = (new Customer\Repository)
-                                ->findByIdAndMerchantId($customerId, $merchantId);
+            $customer = $this->repo->findByIdAndMerchantId($customerId, $merchantId);
         }
 
         return array($customer, $customerApp);
@@ -136,7 +136,8 @@ class Core extends Base\Core
 
     protected function verifyUniqueCustomer($customer)
     {
-        $customer = $this->repo->findByContactForMerchant($customer->getContact(), $customer->merchant->getId());
+        $customer = $this->repo->findByContactForMerchant(
+                        $customer->getContact(), $customer->merchant->getId());
 
         if ($customer !== null)
         {

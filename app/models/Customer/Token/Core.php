@@ -118,7 +118,7 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if(($token->getBank()  === $newToken->getBank()) and
+            if (($token->getBank()  === $newToken->getBank()) and
                 ($token->getGatewayToken() === $newToken->getGatewayToken()))
             {
                 throw new Exception\BadRequestException(
@@ -131,7 +131,7 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if(($token->getWallet()  === $newToken->getWallet()) and
+            if (($token->getWallet()  === $newToken->getWallet()) and
                 ($token->getGatewayToken() === $newToken->getGatewayToken()))
             {
                 throw new Exception\BadRequestException(
