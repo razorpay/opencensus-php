@@ -16,10 +16,9 @@ class Tokenex
         {
             $cardNumber = $app['card.tokenex']->detokenize($vaultToken);
 
-            if (empty($cardNumber) === false)
-            {
-                $cardNumber = strval($cardNumber);
-            }
+            assert(empty($cardNumber) === false);
+
+            $cardNumber = strval($cardNumber);
         }
         catch (\Exception $e)
         {
