@@ -58,7 +58,7 @@ class HolidayNotification
         {
             $mailer = new Newsletter(
                 $input['lists'],
-                'Razorpay | Notification of Bank Holiday',
+                'Notification of Bank Holiday',
                 $msg);
 
             switch ($input['action'])
@@ -127,7 +127,8 @@ class HolidayNotification
 
         $msg  = \View::make('emails.partials.holiday_notification')
                      ->with('holidays',$holidays)
-                     ->with('nextWorkingDayString', $nextWorkingDayString);
+                     ->with('nextWorkingDayString', $nextWorkingDayString)
+                     ->render();
 
         return [$msg,$holidays];
     }
