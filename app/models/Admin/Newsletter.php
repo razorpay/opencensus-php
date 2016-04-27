@@ -309,7 +309,7 @@ class Newsletter
 
             $message->from($from, $config['from_name']);
 
-            $message->subject($this->data['subject']);
+            $message->subject('Razorpay | '.$this->data['subject']);
         });
 
         return [
