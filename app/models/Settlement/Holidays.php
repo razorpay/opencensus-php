@@ -83,14 +83,16 @@ class Holidays
      * @param Carbon\Carbon $date input date
      * @return Carbon\Carbon $date Next working date
      */
-    public static function getNextWorkingDay($date)
+    public static function getNextWorkingDay($date, $ignoreBankHolidays = false)
     {
         $countDays = 1;
 
-        return self::getNthWorkingDayFrom($date, $countDays);
+        return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
     }
 
-    public static function getNthWorkingDayFrom($date, $countDays)
+    public static function getNthWorkingDayFrom($date,
+                                                $countDays,
+                                                $ignoreBankHolidays = false)
     {
         $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
 
@@ -98,7 +100,7 @@ class Holidays
         {
             $workingDay->addDay();
 
-            if (self::isWorkingDay($workingDay))
+            if (self::isWorkingDay($workingDay, $ignoreBankHolidays))
             {
                 $countDays--;
             }
@@ -115,9 +117,10 @@ class Holidays
      * @param Carbon\Carbon $date
      * @return boolean
      */
-    public static function isWorkingDay($date)
+    public static function isWorkingDay($date, $ignoreBankHolidays = false)
     {
-        if (self::isSpecifiedBankHoliday($date))
+        if (($ignoreBankHolidays === false) and
+            (self::isSpecifiedBankHoliday($date)))
         {
             return false;
         }
@@ -139,6 +142,7 @@ class Holidays
 
     /**
      * getSpecifiedBankHolidaysBetween - fromDate and toDate
+     *
      * @param  Carbon\Carbon $fromDate
      * @param  Carbon\Carbon $toDate
      * @return $holidays - All holidays between days
