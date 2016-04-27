@@ -252,14 +252,21 @@ class Slack
 
         $mode = static::getMode();
 
-        if ($entity === 'payment' or $entity === 'merchant')
+        switch ($entity)
         {
-            $url = url("admin#/app/{$entity}s/$mode/$id");
+            case 'payment':
+                $url = url("admin#/app/payments/$mode/$id");
+                break;
+
+            case 'merchant':
+                $url = url("admin#/app/merchants/${id}/detail");
+                break;
+
+            default:
+                $url = url("admin#/app/entity/$mode/$entity/$id");
+                break;
         }
-        else
-        {
-            $url = url("admin#/app/entity/$mode/$entity/$id");
-        }
+
         // In the format <link|display_text>
         return '<'. $url . '|' . $label.'>';
     }
