@@ -78,12 +78,10 @@ class Holidays
      * getNextWorkingDay, getNthWorkingDayFrom
      * Given a Carbon Date get the next/Nth working date from a given date
      *
-     * This includes checks for :
-     *     :bank holidays | (2016/ currently supported)
-     *     :non working saturday
-     *     :sundays
+     * This includes checks for bank holidays, non working saturday, sundays
      *
-     * Supports banking holidays for 2016 now
+     * @param Carbon\Carbon $date input date
+     * @return Carbon\Carbon $date Next working date
      */
     public static function getNextWorkingDay($date)
     {
@@ -96,7 +94,7 @@ class Holidays
     {
         $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
 
-        while($countDays > 0)
+        while ($countDays > 0)
         {
             $workingDay->addDay();
 
@@ -110,13 +108,9 @@ class Holidays
     }
 
     /**
-     * getNextWorkingDay - Given a Carbon Date get the next working date
-     * This includes checks for :
-     *     :bank holiday
-     *     :non working saturday
-     *     :sundays
+     * Check if the given date is a working day or not
      *
-     * Supports banking holidays for 2016 now
+     * This includes checks for bank holiday, non working saturday, sundays
      *
      * @param Carbon\Carbon $date
      * @return boolean
