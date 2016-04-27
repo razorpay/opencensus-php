@@ -15,7 +15,7 @@ class HolidayNotification
     // Action to send test email to one email id
     const TEST_EMAIL  = 'test_email';
 
-    // Action to add the active email ids to mailing list
+    // Action to add email ids to mailing list
     const ADD_TO_LIST = 'add_to_list';
 
     // Action to send the email to mailing list
@@ -41,12 +41,24 @@ class HolidayNotification
     }
 
     /**
-     * sendMerchantNotifyHolidayEmail - Based on action sets the
-     *     mailer params to send a test email,
-     *     add members to mailing list,
-     *     set a mailing list name.
+     * Based on action sets the mailer params to :
+     * 1) Send a test email or,
+     * 2) Add members to mailing list or,
+     * 3) Send live email to mailing list.
      *
-     * @param  [type] $input [description]
+     * 1) Send a test email : TEST_EMAIL
+     *    The email passed in the `lists` param will be sent a test holiday
+     *    notification email
+     *
+     * 2) Add members to mailing list : ADD_TO_LIST
+     *    Members of the `lists` will be added to corresponding lists on
+     *    mailgun. eg. live or all. DOES NOT SEND EMAIL.
+     *
+     * 3) Send live email to mailing list : EMAIL
+     *    Mail the list in the `lists` parameter. eg. live or all.
+     *
+     * @param  array $input Requires an action, lists params
+     * @return array Can contain a message or email, count keys.
      */
     protected function sendMerchantNotifyHolidayEmail($input)
     {
@@ -61,27 +73,37 @@ class HolidayNotification
                 'Notification of Bank Holiday',
                 $msg);
 
+            // Handle based on action
             switch ($input['action'])
             {
+                // Action to send test email to one email id
                 case self::TEST_EMAIL:
+                    // Set the email to which test email is to be sent.
                     $mailer->setTestEmail($input['lists']);
                     break;
 
+                // Action to add email ids to mailing list
                 case self::ADD_TO_LIST:
+                    // Set the mailer to add the members to mailing list
                     $mailer->setTestListMembersAdd();
+
+                    // Set the mailing list name.
                     $mailer->setMailingListName($input['lists']);
                     break;
 
-                // For live mode, check if tomorrow is a holiday and send mail
+                // Action to send the email to mailing list
                 case self::EMAIL:
+                    // For live mode, check if tomorrow is a holiday
                     if (($this->mode === MODE::LIVE) and
                         (Holidays::isSpecifiedBankHoliday($tomorrow) === false))
                     {
                         return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
                     }
 
+                    // Send a notification to slack
                     $this->notifySettlementsChannel($holidays);
 
+                    // Set the mailing list name.
                     $mailer->setMailingListName($input['lists']);
                     break;
 
