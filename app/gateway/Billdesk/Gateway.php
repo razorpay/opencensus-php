@@ -238,7 +238,8 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($payment['received'] === false)
+        if (($payment['received'] === false) or
+            ($payment['AuthStatus'] !== $content['AuthStatus']))
         {
             unset(
                 $content['TxnAmount'],
