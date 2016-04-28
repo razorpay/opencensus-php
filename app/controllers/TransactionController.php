@@ -1,6 +1,7 @@
 <?php
 
 use Models\Api;
+use Models\Merchant;
 
 use Http\AppResponse;
 use Models\Transaction;
@@ -243,5 +244,25 @@ class TransactionController extends BaseController
         }
 
         $file->download('xlsx');
+    }
+
+    public function getInvoiceReport($mode)
+    {
+        $this->checkMode($mode);
+        $input = Input::all();
+
+        list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
+
+        if ($error === null)
+        {
+            // return PDF::url('http://google.com');
+            // PDF::setOutputMode('F');
+            // return PDF::html('merchant.invoice', $data);//->download('invoice.pdf');
+            return Response::view('merchant.invoice', $data);//->download('invoice.pdf');
+        }
+        else
+        {
+            return AppResponse::validationErrorResponse($data);
+        }
     }
 }

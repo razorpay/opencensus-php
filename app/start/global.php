@@ -79,6 +79,7 @@ require app_path().'/filters.php';
 
 require app_path().'/lib/utility.php';
 require app_path().'/lib/validation.php';
+require app_path().'/lib/blade.php';
 
 //Additional functionality during selenium testing, flag set in server.php
 if (getenv('selenium'))

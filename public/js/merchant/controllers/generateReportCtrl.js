@@ -1,14 +1,16 @@
+"use strict";
 //Add Funds Controller
 app.controller('GenerateReportCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
   'user',
-  'uiLoad',
-  'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost) {
+  function ($scope, $http, alertsFactory, user) {
     $scope.alerts = alertsFactory.getHandler();
-    var date = new Date();
+
+    user.identity().then(function (data) {
+      $scope.user = data;
+    });
 
     function range(start, stop, step) {
       if (typeof stop == 'undefined') {
@@ -31,7 +33,7 @@ app.controller('GenerateReportCtrl', [
       }
 
       return result;
-    };
+    }
 
     // Let's keep this 1-indexed
     $scope.numberOfDaysInMonth = [
@@ -50,7 +52,10 @@ app.controller('GenerateReportCtrl', [
 
     $scope.weeks = range(1,53);
 
-    $scope.updateNumberOfDays = function() {
+    $scope.update = function() {
+      if ($scope.report.entity === 'invoice') {
+        $scope.report.type = 'monthly';
+      }
       $scope.days = range(1, $scope.numberOfDaysInMonth[$scope.report.month]);
 
       // If the day is not present in the chosen month
@@ -60,8 +65,15 @@ app.controller('GenerateReportCtrl', [
       }
     };
 
-    $scope.$watch('report.month', $scope.updateNumberOfDays);
-    $scope.updateNumberOfDays();
+    $scope.$watch('report.month + report.entity', $scope.update);
+    $scope.update();
+
+    var openInvoicePopup = function (data) {
+      var url = '/' + $scope.mode  + '/reports/invoice?year=' +
+        data.year + '&month=' + data.month;
+        var win = window.open(url, '_blank');
+        win.focus();
+    };
 
     $scope.generateReport = function () {
 
@@ -70,9 +82,13 @@ app.controller('GenerateReportCtrl', [
         'year' : $scope.report.year,
       };
 
+      if ($scope.report.entity === 'invoice') {
+        return openInvoicePopup(data);
+      }
+
       if ($scope.report.type=='daily') {
         data.day = $scope.report.day;
-      };
+      }
 
       var request = $http({
         method: 'GET',

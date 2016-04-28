@@ -2,6 +2,7 @@
 
 namespace Models\Api;
 
+use Carbon\Carbon;
 use Http\AppResponse;
 use Auth;
 use Models\Base;
@@ -9,6 +10,9 @@ use Trace;
 
 class Service extends Base\Service
 {
+    // Corresponds to 15th November 2015 00:00
+    const SB_CESS_START = 1447525800;
+
     public function __construct()
     {
         $loggedInUser = Auth::user()->user();
@@ -16,6 +20,7 @@ class Service extends Base\Service
         if ($loggedInUser)
         {
             $this->merchantId = $loggedInUser->getCurrentMerchantId();
+            $this->merchant   = $loggedInUser->currentMerchant;
         }
         else
         {
@@ -314,5 +319,51 @@ class Service extends Base\Service
         }
 
         return array($error, null);
+    }
+
+    public function getInvoiceReportData($mode, array $input)
+    {
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+            $data = $this->api
+                         ->transaction
+                         ->getInvoiceData($input)
+                         ->toArray();
+
+            $data['dates'] = $this->getDateRanges($input['year'], $input['month']);
+            $data['merchant'] = $this->merchant;
+            $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
+
+            return [null, $data];
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+
+            return array($error, null);
+        }
+
+        return array($error, null);
+    }
+
+    /**
+     * Get the date ranges to be used in an invoice
+     */
+    protected function getDateRanges($year, $month)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
+
+        return [
+            'billingDate'    => $startDate->addMonth()->format('d/m/y'),
+            'startDate'      => $startDate->format('d/m/y'),
+            'endDate'        => $startDate->endOfMonth()->format('d/m/y')
+        ];
+    }
+
+    protected function getInvoiceId($year, $month)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
+        return $this->merchant->id . '/' . $startDate->addMonth()->format('m/y');
     }
 }
