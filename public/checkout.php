@@ -1,6 +1,19 @@
 <?php
 $fonts = 'https://cdn.razorpay.com/lato2';
+$host = $_SERVER['HTTP_HOST'];
+$scheme = $_SERVER['HTTP_SCHEME'];
 $checkout = 'https://checkout.razorpay.com';
+
+if ($host === 'beta.razorpay.com')
+{
+    $checkout = 'https://betacheckout.razorpay.com';
+
+    if (isset($_GET['checkout']))
+    {
+        $checkout = $_GET['checkout'];
+    }
+}
+
 header('Cache-Control: no-transform, no-store, no-cache, must-revalidate');
 ?>
 <!DOCTYPE html>
