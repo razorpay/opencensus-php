@@ -420,6 +420,13 @@ class MerchantController extends BaseController
         return (new Models\Base\Report)->getReport($input, $entity);
     }
 
+    public function getInvoiceReport()
+    {
+        $input = Input::all();
+
+        return (new Models\Base\Report)->getInvoice($input);
+    }
+
     /**
      * Sends an email to every merchant
      * with all transactions from yesterday
