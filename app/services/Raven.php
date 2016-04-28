@@ -21,6 +21,8 @@ class Raven
 
     protected $trace;
 
+    protected $proxy;
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -32,6 +34,8 @@ class Raven
         $this->key = 'rzp_' . $app['rzp.mode'];
 
         $this->secret = $this->config['secret'];
+
+        $this->proxy = $app['config']->get('gateway.proxy_address');
     }
 
     public function sendOtp($input)
@@ -71,7 +75,7 @@ class Raven
         $headers['Authorization'] = $authHeader;
 
         $options = array(
-            'proxy' => 'https://splunk.razorpay.com:8888'
+//            'proxy' => $this->proxy;
         );
 
         $request = array(

@@ -47,9 +47,18 @@ class Core extends Base\Core
 
     public function verifyOtp($input)
     {
-        $data = (new Customer\Raven)->verifyOtp($input);
-
         $response = array();
+        $data = null;
+
+        try
+        {
+            $data = (new Customer\Raven)->verifyOtp($input);
+        }
+        catch (\Exception $e)
+        {
+            $data['success'] = false;
+        }
+
 
         if ((isset($data['success'])) and ($data['success'] === true))
         {
@@ -79,7 +88,7 @@ class Core extends Base\Core
             $response['success'] = 1;
             $response['app_id'] = $app->getPublicId();
 
-            if ($tokens !== null)
+            if (($tokens !== null) and ($tokens->count() > 0))
             {
                 $response['tokens'] = $tokens->toArrayPublic();
             }
