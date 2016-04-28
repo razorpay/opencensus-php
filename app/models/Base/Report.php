@@ -219,22 +219,14 @@ class Report extends Service
                                   ->year($year)
                                   ->timestamp;
 
-            $endMonth = $month + 1;
+            $endOfMonth   = Carbon::today('Asia/Kolkata')
+                                  ->month($month)
+                                  ->startOfMonth()
+                                  ->year($year)
+                                  ->timestamp;
 
-            if ($endMonth === 13)
-            {
-                $endMonth = 1;
-                $year++;
-            }
-
-            $endOfMonth = Carbon::today('Asia/Kolkata')
-                                ->month($endMonth)
-                                ->startOfMonth()
-                                ->year($year)
-                                ->timestamp;
-
-            $from = $startOfMonth;
-            $to = $endOfMonth;
+            $from = $startOfMonth->timestamp;
+            $to = $endOfMonth->timestamp;
         }
 
         return [$from, $to];
