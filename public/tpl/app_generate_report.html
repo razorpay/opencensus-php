@@ -17,7 +17,9 @@
             <option value="refund">Refund</option>
             <option value="settlement">Settlement</option>
             <option value="transaction">Combined</option>
-            <option value="invoice">Monthly Invoice</option>
+            <option ng-show="user.tags.indexOf('Invoice') != -1" value="invoice">
+              Monthly Invoice
+            </option>
           </select>
         </div>
 

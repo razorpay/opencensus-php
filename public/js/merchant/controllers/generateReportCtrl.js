@@ -4,8 +4,13 @@ app.controller('GenerateReportCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
-  function ($scope, $http, alertsFactory) {
+  'user',
+  function ($scope, $http, alertsFactory, user) {
     $scope.alerts = alertsFactory.getHandler();
+
+    user.identity().then(function (data) {
+      $scope.user = data;
+    });
 
     function range(start, stop, step) {
       if (typeof stop == 'undefined') {
