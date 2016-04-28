@@ -133,12 +133,14 @@ class Report extends Service
 
         $data['razorpay_fee'] = $data['total_fee'] - $data['tax'];
 
+        // This is all in Paise
+        // so we can round to the nearest integer
         if ($sbCessApplied)
         {
-            $taxes[self::SWACH_BHARAT_CESS] = round($data['razorpay_fee'] * self::SWACH_BHARAT_CESS_RATE, 2);
+            $taxes[self::SWACH_BHARAT_CESS] = round($data['razorpay_fee'] * self::SWACH_BHARAT_CESS_RATE);
 
             // Back calculate just the service tax
-            $taxes[self::SERVICE_TAX] = round($data['tax'] - $taxes[self::SWACH_BHARAT_CESS], 2);
+            $taxes[self::SERVICE_TAX] = round($data['tax'] - $taxes[self::SWACH_BHARAT_CESS]);
         }
         // No SB CESS
         else
