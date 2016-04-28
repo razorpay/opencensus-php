@@ -431,7 +431,7 @@ app.controller('MerchantDetailCtrl', [
     $scope.changeBankAccountDetails = function (bankAccount) {
       var request = $http({
         method: 'put',
-        url: '/admin/merchant/' + $scope.merchant.id + '/bankdetails',
+        url: '/admin/merchant/' + $scope.merchant.id + '/bank_account',
         data: angular.toJson(bankAccount)
       });
       request.success(function (data) {

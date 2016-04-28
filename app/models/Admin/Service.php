@@ -459,43 +459,48 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    protected function dropFields(array &$array, array $fields)
+    {
+        foreach ($fields as $key)
+        {
+            unset($array[$key]);
+        }
+    }
+
     // this is a refrence
     public function postEditBankDetails($id, $input)
     {
         $error = array();
 
-        $validator = (new Validator)->validateInput('changeBankDetails', $input);
-
-        if($validator->fails())
-        {
-            return $validator->messages();
-        }
+        $this->dropFields($input, [
+            'id',
+            'merchant_id',
+            "beneficiary_code",
+            "beneficiary_address4",
+            "beneficiary_country",
+        ]);
 
         $this->setApiCredentials();
-
         $merchant_details = MerchantDetails\Entity::findorfail($id);
-
-        $bankAccount = array(
-            'ifsc_code'             => $input['bank_branch_ifsc'],
-            'beneficiary_name'      => $input['bank_account_name'],
-            'account_number'        => $input['bank_account_number'],
-            'beneficiary_address1'  => $input['bank_beneficiary_address1'],
-            'beneficiary_address2'  => $input['bank_beneficiary_address2'],
-            'beneficiary_address3'  => $input['bank_beneficiary_address3'],
-            'beneficiary_address4'  => '',
-            'beneficiary_pin'       => $input['bank_beneficiary_pin'],
-            'beneficiary_city'      => $input['bank_beneficiary_city'],
-            'beneficiary_state'     => $input['bank_beneficiary_state'],
-            'beneficiary_country'   => 'IN',
-            'beneficiary_email'     => $merchant_details['contact_email'],
-            'beneficiary_mobile'    => $merchant_details['contact_mobile']
-        );
-
         try
         {
-            $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
 
-            $merchant_details->fill($input);
+
+            $this->api->merchant->fetch($id)->setBankAccount($input);
+
+            $merchantDetails = array(
+                'bank_branch_ifsc'           => $input['ifsc_code'],
+                'bank_account_name'          => $input['beneficiary_name'],
+                'bank_account_number'        => $input['account_number'],
+                'bank_beneficiary_address1'  => $input['beneficiary_address1'],
+                'bank_beneficiary_address2'  => $input['beneficiary_address2'],
+                'bank_beneficiary_address3'  => $input['beneficiary_address3'],
+                'bank_beneficiary_pin'       => $input['beneficiary_pin'],
+                'bank_beneficiary_city'      => $input['beneficiary_city'],
+                'bank_beneficiary_state'     => $input['beneficiary_state']
+            );
+
+            $merchant_details->fill($merchantDetails);
             $merchant_details->save();
 
             $this->logActionToSlack($id, 'bank details edited', $input);

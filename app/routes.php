@@ -129,6 +129,7 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
     // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
+
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
     Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
@@ -228,7 +229,7 @@ Route::group(array('before' => 'auth.admin'), function()
             Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
             Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
             Route::put('/admin/merchant/{id}/name', 'AdminController@putEditMerchantName');
-            Route::put('/admin/merchant/{id}/bankdetails', 'AdminController@putEditBankDetails');
+            Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
         });
 
         Route::get('/admin/users', 'AdminController@getAdmins');
