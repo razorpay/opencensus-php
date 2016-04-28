@@ -826,8 +826,10 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            unset($input['gateway_terminal_password_confirmation']);
-            unset($input['mode']);
+            $this->dropFields($input, [
+                'gateway_terminal_password_confirmation',
+                'mode',
+            ]);
 
             $this->setApiCredentials(null, $mode);
 
