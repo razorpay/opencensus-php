@@ -103,8 +103,8 @@ class Report extends Service
                 $to);
 
             // Now we calculate taxes on each individually
-            $this->updateTaxComponents($before15Nov, $input, false);
-            $this->updateTaxComponents($after15Nov, $input, true);
+            $this->addTaxComponents($before15Nov, $input, false);
+            $this->addTaxComponents($after15Nov, $input, true);
 
 
             $data = $this->sumInvoiceData($before15Nov, $after15Nov);
@@ -113,7 +113,7 @@ class Report extends Service
         {
             $data = (new Transaction\Repository)->fetchDataForInvoice($merchantId, $from, $to);
             $sbCessApplied = $this->isSwachBharatCessApplicable($input);
-            $this->updateTaxComponents($data, $input, $sbCessApplied);
+            $this->addTaxComponents($data, $input, $sbCessApplied);
         }
 
         return $data;
@@ -140,7 +140,7 @@ class Report extends Service
         ];
     }
 
-    protected function updateTaxComponents(&$data, $input, $sbCessApplied)
+    protected function addTaxComponents(&$data, $input, $sbCessApplied)
     {
         $taxes = [];
 
