@@ -171,6 +171,43 @@ class Payment extends Base
         return $payment;
     }
 
+    public function createPurchased(array $attributes = array())
+    {
+        $cardAttributes = [
+            'iin'               =>  '502165',
+            'last4'             =>  '1111',
+            'network'           =>  'Maestro'
+        ];
+
+        $card = $this->fixtures->create('card', $cardAttributes);
+
+        $defaultValues = array(
+            'authorized_at' => time(),
+            'status' => 'authorized',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+            'card_id' => $card['id'],
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = parent::create($attributes);
+
+        $hdfcPayment = $this->fixtures->create('hdfc:purchased',
+            array(
+                'payment_id' => $payment->getKey(),
+                'amount' => $payment->getAmount(),
+                'created_at' => $payment->created_at,
+                'updated_at' => $payment->created_at,
+            ));
+
+        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        $txn->saveOrFail();
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
     public function createFailed(array $attributes = array())
     {
         $defaultValues = array(

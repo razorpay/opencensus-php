@@ -142,6 +142,33 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['authorized']);
     }
 
+    public function testRefundCalledOnPurchaseWithoutCapture()
+    {
+
+        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10);
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:purchased',
+            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+
+        $payments = $this->fixtures->times(2)->create('payment:purchased');
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(2, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(2, $content['authorized']);
+
+        $refundedEntities = $this->getEntities('hdfc', ['count' => 2], true);
+
+        foreach ($refundedEntities['items'] as $entity)
+        {
+            $this->assertEquals('refunded', $entity['status']);
+        }
+
+    }
+
     public function testFetchRefundById()
     {
         $payment = $this->fixtures->create('payment:captured');
