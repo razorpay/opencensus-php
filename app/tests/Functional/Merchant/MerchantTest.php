@@ -399,7 +399,7 @@ class MerchantTest extends TestCase
             'url' => '/checkout',
             'method' => 'get',
             'content' => [
-                'app_id' => 'uuuu_1000000custapp'
+                'app_id' => 'capp_1000000custapp'
             ],
         );
 

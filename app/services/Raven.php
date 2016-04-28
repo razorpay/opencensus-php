@@ -75,7 +75,7 @@ class Raven
         $headers['Authorization'] = $authHeader;
 
         $options = array(
-//            'proxy' => $this->proxy;
+            'proxy' => $this->proxy;
         );
 
         $request = array(
