@@ -213,20 +213,17 @@ class Report extends Service
             assert($month > 0);
             assert($month <= 12);
 
-            $startOfMonth = Carbon::today('Asia/Kolkata')
+            $from = Carbon::today('Asia/Kolkata')
                                   ->month($month)
-                                  ->startOfMonth()
                                   ->year($year)
+                                  ->startOfMonth()
                                   ->timestamp;
 
-            $endOfMonth   = Carbon::today('Asia/Kolkata')
+            $to   = Carbon::today('Asia/Kolkata')
                                   ->month($month)
-                                  ->startOfMonth()
                                   ->year($year)
+                                  ->endOfMonth()
                                   ->timestamp;
-
-            $from = $startOfMonth->timestamp;
-            $to = $endOfMonth->timestamp;
         }
 
         return [$from, $to];
