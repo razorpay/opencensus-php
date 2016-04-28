@@ -15,12 +15,6 @@ class SettledAtTimestampTest extends TestCase
 
     public function testSettledAtTimestampForNonWorkingSaturdayTxn()
     {
-        // Skipping these tests as these referred to the older logic
-        // These are now time dependent
-        // Current logic : Count number of working days from txn
-        $this->markTestSkipped();
-
-
         // Mapping of Payment day to Settlement day
         // Number refers to day of week
         $workingSaturdayWeek = false;
@@ -73,11 +67,6 @@ class SettledAtTimestampTest extends TestCase
 
     public function testSettledAtTimestampForWorkingSaturdayTxn()
     {
-        // Skipping these tests as these referred to the older logic
-        // These are current now time dependent
-        // Current logic : Count number of working days from txn
-        $this->markTestSkipped();
-
         // Mapping of Payment day to Settlement day
         // Number refers to day of week
         // This is a working saturday test
@@ -166,15 +155,23 @@ class SettledAtTimestampTest extends TestCase
     protected function runTestWith($capturedAt, $addDays, $key, $value)
     {
         $day = (int) $capturedAt->format('w');
+
         $capturedAddDays = $key - $day;
+
         $capturedAt->addDays($capturedAddDays);
 
         $day = (int) $capturedAt->format('w');
 
-        $settledAt = $this->method->invokeArgs($this->core, array($capturedAt->timestamp, $addDays));
+        $ignoreBankHolidays = true;
+
+        $arguments = array($capturedAt->timestamp, $addDays, $ignoreBankHolidays);
+
+        $settledAt = $this->method->invokeArgs($this->core, $arguments);
+
         $settledAt = Carbon::createFromTimestamp($settledAt, 'Asia/Kolkata');
 
         $diff = $settledAt->diffInDays($capturedAt);
+
         $day  += $diff;
 
         $this->assertEquals($value, $day);

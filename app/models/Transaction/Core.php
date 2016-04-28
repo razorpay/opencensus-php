@@ -396,12 +396,11 @@ class Core extends Base\Core
         return $this->calculateSettledAtTimestamp($capturedAt, $addDays);
     }
 
-    public function calculateSettledAtTimestamp($timestamp, $addDays)
+    public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
     {
         $capturedAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
 
-        $returnDay = Holidays::getNthWorkingDayFrom($capturedAt,
-                                                    $addDays);
+        $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
         return $returnDay->timestamp;
     }
