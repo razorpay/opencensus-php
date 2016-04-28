@@ -7,10 +7,16 @@ $checkout = 'https://checkout.razorpay.com';
 if ($host === 'beta.razorpay.com')
 {
     $checkout = 'https://betacheckout.razorpay.com';
+    $fonts = 'https://betacdn.razorpay.com/fonts/lato2';
 
     if (isset($_GET['checkout']))
     {
         $checkout = $_GET['checkout'];
+    }
+
+    if (isset($_GET['fonts']))
+    {
+        $checkout = $_GET['fonts'];
     }
 }
 

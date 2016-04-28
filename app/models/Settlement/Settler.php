@@ -384,22 +384,15 @@ class Settler
     {
         $ts = $this->initSettlementTimestamp($input);
 
-//        $all = $this->isInputValue($input, 'all', '1');
+        $ts = time();
 
-//        if ($all === true)
+        if (($this->mode === Mode::TEST) and
+            (empty($input['testSettleTimeStamp']) === false))
         {
-            //
-            // Fetch all txns whose expected settlement
-            // time is less than now
-            //
-            $ts = time();
-
-            $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
+            $ts = $input['testSettleTimeStamp'];
         }
-        // else
-        // {
-        //     $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
-        // }
+
+        $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
 
         foreach ($txns as $txn)
         {

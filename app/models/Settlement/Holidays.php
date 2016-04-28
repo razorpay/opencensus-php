@@ -75,42 +75,52 @@ class Holidays
     ];
 
     /**
-     * getNextWorkingDay - Given a Carbon Date get the next working date
-     * This includes checks for :
-     *     :bank holiday
-     *     :non working saturday
-     *     :sundays
+     * getNextWorkingDay, getNthWorkingDayFrom
+     * Given a Carbon Date get the next/Nth working date from a given date
      *
-     * Supports banking holidays for 2016 now
+     * This includes checks for bank holidays, non working saturday, sundays
+     *
+     * @param Carbon\Carbon $date input date
+     * @return Carbon\Carbon $date Next working date
      */
-    public static function getNextWorkingDay($date)
+    public static function getNextWorkingDay($date, $ignoreBankHolidays = false)
     {
-        $nextDay = $date->copy();
+        $countDays = 1;
 
-        do
+        return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
+    }
+
+    public static function getNthWorkingDayFrom($date,
+                                                $countDays,
+                                                $ignoreBankHolidays = false)
+    {
+        $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
+
+        while ($countDays > 0)
         {
-            $nextDay->addDay();
-        }
-        while (self::isWorkingDay($nextDay) === false);
+            $workingDay->addDay();
 
-        return $nextDay;
+            if (self::isWorkingDay($workingDay, $ignoreBankHolidays))
+            {
+                $countDays--;
+            }
+        }
+
+        return $workingDay;
     }
 
     /**
-     * getNextWorkingDay - Given a Carbon Date get the next working date
-     * This includes checks for :
-     *     :bank holiday
-     *     :non working saturday
-     *     :sundays
+     * Check if the given date is a working day or not
      *
-     * Supports banking holidays for 2016 now
+     * This includes checks for bank holiday, non working saturday, sundays
      *
      * @param Carbon\Carbon $date
      * @return boolean
      */
-    public static function isWorkingDay($date)
+    public static function isWorkingDay($date, $ignoreBankHolidays = false)
     {
-        if (self::isSpecifiedBankHoliday($date))
+        if (($ignoreBankHolidays === false) and
+            (self::isSpecifiedBankHoliday($date)))
         {
             return false;
         }
@@ -132,6 +142,7 @@ class Holidays
 
     /**
      * getSpecifiedBankHolidaysBetween - fromDate and toDate
+     *
      * @param  Carbon\Carbon $fromDate
      * @param  Carbon\Carbon $toDate
      * @return $holidays - All holidays between days
@@ -204,5 +215,4 @@ class Holidays
 
         return ($day->weekOfMonth % 2 !== 0);
     }
-
 }
