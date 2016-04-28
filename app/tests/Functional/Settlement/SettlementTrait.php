@@ -71,12 +71,19 @@ trait SettlementTrait
         $this->assertFileNotExists($mprFile);
     }
 
-    protected function initiateSettlements($channel = 'kotak')
+    protected function initiateSettlements($channel = 'kotak', $testTimeStamp = null)
     {
+        $content = ['all' => 1];
+
+        if ($testTimeStamp !== null)
+        {
+            $content['testSettleTimeStamp'] = $testTimeStamp;
+        }
+
         $request = [
             'url' => '/settlements/initiate/'.$channel,
             'method' => 'POST',
-            'content' => ['all' => 1],
+            'content' => $content,
         ];
 
         $this->ba->appAuth();

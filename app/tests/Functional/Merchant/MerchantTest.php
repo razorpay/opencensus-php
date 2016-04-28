@@ -3,6 +3,7 @@
 namespace Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use Models\Transaction;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\Settlement\SettlementTrait;
@@ -277,7 +278,9 @@ class MerchantTest extends TestCase
              'created_at' => $createdAt,
              'updated_at' => $createdAt + 10]);
 
-        $this->initiateSettlements();
+        $settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3) + 1;
+
+        $this->initiateSettlements('kotak', $settleAtTimestamp);
 
         $testData = & $this->testData['testChangeBankAccount'];
         $testData['response']['content']['beneficiary_code'] = 'TEST2';

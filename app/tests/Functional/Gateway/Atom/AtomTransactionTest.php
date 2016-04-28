@@ -5,6 +5,7 @@ namespace Tests\Functional\Gateway\Atom;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
+use Carbon\Carbon;
 class AtomTransactionTest extends TestCase
 {
     use PaymentTrait;
@@ -82,7 +83,7 @@ class AtomTransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
-        $testData['settled_at'] = (new \Models\Transaction\Core)->calculateSettledAtTimestamp(time(), 3);
+        $testData['settled_at'] = (new \Models\Transaction\Core)->calculateSettledAtTimestamp(Carbon::now('Asia/Kolkata')->timestamp, 3);
 
         $this->assertArraySelectiveEquals($testData, $txn);
     }
@@ -109,7 +110,7 @@ class AtomTransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
-        $testData['settled_at'] = (new \Models\Transaction\Core)->calculateSettledAtTimestamp(time(), 3);
+        $testData['settled_at'] = (new \Models\Transaction\Core)->calculateSettledAtTimestamp(Carbon::now('Asia/Kolkata')->timestamp, 3);
 
         $this->assertArraySelectiveEquals($testData, $txn);
     }
