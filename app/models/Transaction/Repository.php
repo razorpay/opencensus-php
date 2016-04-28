@@ -74,10 +74,10 @@ class Repository extends Base\Repository
     public function fetchDataForInvoice($merchantId, $from, $to)
     {
         $fee = $this->newQuery()
-                      ->merchantId($merchantId)
-                      ->where('type', 'payment')
-                      ->betweenTime($from, $to)
-                      ->sum('fee');
+                    ->merchantId($merchantId)
+                    ->where('type', 'payment')
+                    ->betweenTime($from, $to)
+                    ->sum('fee');
 
         $serviceTax = $this->newQuery()
                            ->merchantId($merchantId)
