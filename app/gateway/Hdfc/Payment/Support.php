@@ -331,7 +331,43 @@ trait Support
 
     protected function isRefundingAuthorizedPayment($input, $type)
     {
-        return (($type === 'refund') and
-                ($input['payment']['status'] === 'authorized'));
+        if ($type === 'refund')
+        {
+            $id = $input['payment']['id'];
+
+            $gatewayEntity = $this->repo->findByPaymentIdToVerify($id);
+
+            $gatewayAction = (int) $gatewayEntity->getAction();
+
+            $gatewayStatus = $gatewayEntity->getStatus();
+
+            // Now this is the first payment,
+            // either the action : purchase and status : captured
+            // or the action : authorize and status : authorized
+            if (($gatewayAction === Action::AUTHORIZE) and
+                ($gatewayStatus === Payment\Status::AUTHORIZED))
+            {
+                // Check if there exists a captured one as well
+                $capturedEntity = $this->repo->findByPaymentIdAndStatus($id, Payment\Status::CAPTURED);
+
+                $count = $capturedEntity->count();
+
+                if ($count === 0)
+                {
+                    return true;
+                }
+
+                return false;
+
+            }
+            else if (($gatewayAction === Action::PURCHASE) and
+                     ($gatewayStatus === Payment\Status::CAPTURED))
+            {
+                return false;
+            }
+
+        }
+
+        return false;
     }
 }

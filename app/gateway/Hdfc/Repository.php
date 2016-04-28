@@ -342,4 +342,13 @@ class Repository extends Base\Repository
         return $repo::where('payment_id', '=', $id)
                     ->get();
     }
+
+    public function findByPaymentIdAndStatus($id, $status)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                    ->where('status', '=', $status)
+                    ->get();
+    }
 }
