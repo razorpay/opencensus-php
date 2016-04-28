@@ -35,6 +35,7 @@ class TraceCode
     const PAYMENT_OTP_READ_FAILURE                  = 'PAYMENT_OTP_READ_FAILURE';
     const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
     const PAYMENT_METADATA                          = 'PAYMENT_METADATA';
+    const PAYMENT_CREATE_ON_PUBLIC                  = 'PAYMENT_CREATE_ON_PUBLIC';
 
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';

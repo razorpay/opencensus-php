@@ -724,6 +724,11 @@ class BasicAuth
         return $this->appAuth;
     }
 
+    public function isPublicAuth()
+    {
+        return ($this->type === Type::PUBLIC_AUTH);
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
