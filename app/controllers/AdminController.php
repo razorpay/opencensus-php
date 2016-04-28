@@ -694,4 +694,12 @@ class AdminController extends BaseController
         $company = new Admin\Company($cin);
         return AppResponse::jsonResponse([], $company->fetch());
     }
+
+    public function getMerchantBankAccount($merchantId)
+    {
+        list($error, $bankAccount) = (new Admin\Service)
+            ->fetchBankAccount($merchantId);
+
+        return AppResponse::jsonResponse($error, $bankAccount);
+    }
 }

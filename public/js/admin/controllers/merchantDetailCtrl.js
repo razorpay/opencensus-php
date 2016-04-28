@@ -1,3 +1,4 @@
+"use strict";
 // Merchant Details Controller
 app.controller('MerchantDetailCtrl', [
   '$scope',
@@ -27,7 +28,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.locked = 1;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -46,7 +47,7 @@ app.controller('MerchantDetailCtrl', [
           generateMerchant();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -63,7 +64,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.alerts.addAlert('success', 'Website screenshots capture started. Wait for notification on Slack', true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -80,7 +81,7 @@ app.controller('MerchantDetailCtrl', [
         }
       }
       return false;
-    }
+    };
 
     $scope.tagMerchant = function(tags) {
       // Tags will be a csv field
@@ -100,21 +101,21 @@ app.controller('MerchantDetailCtrl', [
           $scope.referer = getReferer(data.tags.tags);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
 
     $scope.markMerchantAsReferred = function(referral)
     {
       var tags = $scope.merchant.details.tags;
       tags.push('ref-'+referral);
       $scope.tagMerchant(tags);
-    }
+    };
 
     $scope.featureMerchant = function(features) {
       // Tags will be a csv field
@@ -133,14 +134,14 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.features = data.data.features;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
 
     $scope.unlockForm = function () {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unlock');
@@ -150,7 +151,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.locked = 0;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -162,8 +163,8 @@ app.controller('MerchantDetailCtrl', [
       var query = {};
 
       if (typeof dashboard!=="undefined"){
-        query.dashboard = true
-      };
+        query.dashboard = true;
+      }
 
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/activate', {
         params: query
@@ -174,7 +175,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.activated = 1;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -198,7 +199,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.live = 1;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -214,7 +215,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.live = 0;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -245,14 +246,14 @@ app.controller('MerchantDetailCtrl', [
             $.extend($scope.merchant.details.methods, methods);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    }
+    };
 
     $scope.enableMethod = function (method) {
       var methods = {};
@@ -273,7 +274,7 @@ app.controller('MerchantDetailCtrl', [
       $scope.editMerchant(editMerchant);
     };
     $scope.assignPricing = function (data) {
-      var data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
+      data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
 
       var request = $http({
         method: 'post',
@@ -287,7 +288,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.pricing_plan = data.data;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -311,7 +312,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.terminals.count = $scope.merchant.terminals.count + 1;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -336,7 +337,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.alerts.addAlert('success', 'Banks Assigned successfully', true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -356,7 +357,7 @@ app.controller('MerchantDetailCtrl', [
           fetchBalance();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -376,7 +377,7 @@ app.controller('MerchantDetailCtrl', [
           generateMerchant();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -396,7 +397,7 @@ app.controller('MerchantDetailCtrl', [
           generateMerchant();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -418,7 +419,7 @@ app.controller('MerchantDetailCtrl', [
           generateMerchant();
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -427,11 +428,11 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
-    $scope.changeBankAccountDetails = function (merchant) {
+    $scope.changeBankAccountDetails = function (bankAccount) {
       var request = $http({
         method: 'put',
         url: '/admin/merchant/' + $scope.merchant.id + '/bankdetails',
-        data: angular.toJson(merchant)
+        data: angular.toJson(bankAccount)
       });
       request.success(function (data) {
         if (data.success) {
@@ -439,7 +440,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.merchant_details = data.data;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -460,7 +461,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.merchant_details.comment = data.data;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -477,7 +478,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.credits.live = data.data.credits;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -493,7 +494,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.archived_at = Date.now() / 1000;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -509,7 +510,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant.details.archived_at = null;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -522,7 +523,7 @@ app.controller('MerchantDetailCtrl', [
       // Switch the default plan to Promotional Pricing
       if (currentPlan === '') {
         currentPlan = '1In3Yh5Mluj605';
-      };
+      }
 
       var modalInstance = $modal.open({
         templateUrl: 'assignPricingModalContent.html',
@@ -649,22 +650,35 @@ app.controller('MerchantDetailCtrl', [
       }, $.noop);
     };
     $scope.openChangeBankAccountDetails = function () {
-      var modalInstance = $modal.open({
-        templateUrl: 'changeBankAccountDetailsModalContent.html',
-        controller: 'changeBankAccountDetailsModalCtrl',
-        resolve: {
-          current: function () {
-            return $scope.merchant.details;
-          }
+      $scope.merchant.bank_account = {};
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/bank_account');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.merchant.bank_account = data.data;
+
+          var modalInstance = $modal.open({
+            templateUrl: 'changeBankAccountDetailsModalContent.html',
+            controller: 'changeBankAccountDetailsModalCtrl',
+            resolve: {
+              current: function () {
+                return $scope.merchant.bank_account;
+              }
+            }
+          });
+          modalInstance.result.then(function (bankAccount) {
+            $scope.changeBankAccountDetails(bankAccount);
+          }, $.noop);
+        }
+        else {
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       });
-      modalInstance.result.then(function (merchant_details) {
-        $scope.changeBankAccountDetails(merchant_details);
-      }, $.noop);
     };
     $scope.openUploadScreenshot = function () {
       var currentId = $scope.merchant.id;
-      var modalInstance = $modal.open({
+      $modal.open({
         templateUrl: 'uploadScreenshotModalContent.html',
         controller: 'uploadScreenshotModalCtrl',
         resolve: {
@@ -728,7 +742,7 @@ app.controller('MerchantDetailCtrl', [
     };
     $scope.openAutofillForms = function () {
       var merchant = $scope.merchant;
-      var modalInstance = $modal.open({
+      $modal.open({
         templateUrl: 'openAutofillForms.html',
         controller: 'openAutofillForms',
         windowClass: 'modal-print',
@@ -751,7 +765,7 @@ app.controller('MerchantDetailCtrl', [
           fetchBalance();
         } else {
           $scope.alerts.resetAlerts(true);
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
             if (data.errors[0] === 'Merchant not confirmed') {
               $scope.unconfirmed = true;
@@ -777,7 +791,7 @@ app.controller('MerchantDetailCtrl', [
           };
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -808,7 +822,8 @@ app.controller('MerchantDetailCtrl', [
 
     $scope.pricingPlansLength = function() {
       return Object.keys($scope.pricing_plans).length;
-    }
+    };
+
     $scope.ok = function (pricing_plan_id) {
       var pricingPlanName = $scope.pricing_plans[pricing_plan_id];
       $modalInstance.close({id: pricing_plan_id, name: pricingPlanName});
@@ -842,11 +857,11 @@ app.controller('MerchantDetailCtrl', [
 
       if (methods.hasOwnProperty(method)) {
         $scope.methods[method] = methods[method];
-      };
+      }
     });
 
     // This is the unedited methods
-    var defaultMethods = jQuery.extend({}, $scope.methods);;
+    var defaultMethods = jQuery.extend({}, $scope.methods);
 
     $scope.changedMethods = function() {
       var methods = $scope.methods;
@@ -1092,12 +1107,12 @@ app.controller('MerchantDetailCtrl', [
           }
         }
       });
-      request.success(function (data, status, headers, config) {
+      request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'File Uploaded Successfully', true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }

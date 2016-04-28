@@ -875,6 +875,30 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    /**
+     * Fetches bank account details for a merchant from the API
+     * @param  string $merchantId Merchant Id
+     * @return array Bank Account Details
+     */
+    public function fetchBankAccount($merchantId)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            $ba = $this->api->merchant
+                ->setId($merchantId)
+                ->fetchBankAccount()
+                ->toArray();
+
+            return [null, $ba];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
     public function activateMerchant($id, $dashboardOnly = false)
     {
         $merchant = Merchant\Entity::findorfail($id);

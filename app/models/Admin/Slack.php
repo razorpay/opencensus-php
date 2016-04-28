@@ -142,8 +142,8 @@ class Slack
     /**
      * This checks the first two characters of the message
      * to find a relevant code for the entity
-     * @param  [type] $m [description]
-     * @return [type]    [description]
+     * @param string $m message
+     * @return  string $m Entity type
      */
     protected function guessEntityFromMessageCode($m)
     {

@@ -127,13 +127,18 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
     Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
+    // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
+    // This is the merchant's bank account
+    Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
     Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
+
     Route::get('/admin/pricing/list', 'AdminController@getPricingList');
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
     Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
     Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
+
     Route::get('admin/{mode}/merchants/aggregations/{resource}', 'AdminController@getMerchantAggregations');
     Route::get('admin/{mode}/merchants/{merchant_id}/aggregations/{resource}', 'AdminController@getSingleMerchantAggregations');
 
