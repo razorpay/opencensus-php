@@ -86,9 +86,8 @@ class Core extends Base\Core
         }
         else
         {
-            $response['success'] = 0;
-
-            $response['error'] = "otp verification failed";
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OTP);
         }
 
         return $response;

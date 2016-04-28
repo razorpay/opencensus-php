@@ -144,4 +144,5 @@ class PublicErrorDescription
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                              = 'Card already exists for the customer';
     const BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS                              = 'Bank already exists for the customer';
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                            = 'Wallet already exists for the customer';
+    const BAD_REQUEST_INVALID_OTP                                               = 'otp verificaiton failed';
 }
