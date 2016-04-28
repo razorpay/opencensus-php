@@ -1,0 +1,14 @@
+{
+  "browser": true,
+  "esnext": true,
+  "globals": {
+    "app": true,
+    "angular": true,
+    "$": true,
+    "jQuery": true,
+    "doT": true
+  },
+  "strict": "global",
+  "undef": true,
+  "unused": true
+}
