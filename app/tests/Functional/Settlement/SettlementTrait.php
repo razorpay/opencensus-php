@@ -75,7 +75,7 @@ trait SettlementTrait
     {
         $content = ['all' => 1];
 
-        if (!empty($testTimeStamp))
+        if ($testTimeStamp !== null)
         {
             $content['testSettleTimeStamp'] = $testTimeStamp;
         }
