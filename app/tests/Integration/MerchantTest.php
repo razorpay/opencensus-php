@@ -320,11 +320,9 @@ class MerchantTest extends TestCase
         $this->browser
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-next'))
             ->waitForVisible('form[name="step4"]')
-            ->type(l::IdOrName('bank_name'), 'BankName')   // Fill name
             ->type(l::IdOrName('bank_account_number'), 'RZP123443')   // Fill slug, alphanumeric
             ->type(l::IdOrName('bank_account_name'), 'Tester')   // Fill slug
             ->type(l::IdOrName('bank_account_type'), 'savings')   // Fill slug
-            ->type(l::IdOrName('bank_branch_address'), 'Abcd')   // Fill slug
             ->type(l::IdOrName('bank_branch_ifsc'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address1'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address2'), 'abc123443')   // Fill slug
