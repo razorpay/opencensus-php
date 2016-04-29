@@ -21,7 +21,6 @@ class Validator
     const SUBJECT_FILTER = [];
 
     // Can add more to this as and when we add converters to CSV from different file types.
-    // Use https://github.com/jasonlewis/laravel.com/blob/master/application/config/mimes.php for mappings.
     const ACCEPTED_EXTENSIONS_MAP = [
         // TODO: Might need to add more mime types for the extensions.
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values'],
@@ -29,7 +28,11 @@ class Validator
         'text'  => ['text/plain'],
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel'],
+        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
+
+    // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
+    const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
     // Max allowed file size - 2M.
     const MAX_FILE_SIZE = 2*1024*1024;
@@ -49,15 +52,15 @@ class Validator
         $extension = $fileDetails['extension'];
         $mimeType = $fileDetails['mime_type'];
         $fileSize = $fileDetails['size'];
-        
+
         $this->validateExtensionMimeType($extension, $mimeType);
-        
+
         $this->validateFileSize($fileSize);
 
         // TODO: CSV and text file validations will be done directly while reading.
     }
-    
-    protected function validateExtensionMimeType($extension, $mimeType)
+
+    public function validateExtensionMimeType($extension, $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
 
@@ -67,7 +70,7 @@ class Validator
             // TODO: Throw an exception for bad extension/mime-type.
         }
     }
-    
+
     protected function validateFileSize($fileSize)
     {
         if ($fileSize > self::MAX_FILE_SIZE)

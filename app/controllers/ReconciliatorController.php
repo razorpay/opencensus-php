@@ -6,15 +6,18 @@ use EE\Exception;
 
 class ReconciliatorController extends BaseController
 {
+    protected $orchestrator;
+    
+    public function __construct()
+    {
+        $this->orchestrator = new Reconciliator\Orchestrator();
+    }
+
     public function receiveWebhook()
     {
         $input = Input::all();
-        
-        $orchestrator = new \Reconciliator\Orchestrator;
-        
-        $statusCode = $orchestrator->start($input);
-        
 
+        $statusCode = $this->orchestrator->start($input);
 
         return $statusCode;
         //return Response::make($contents, $statusCode);
