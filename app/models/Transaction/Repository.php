@@ -71,6 +71,29 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchDataForInvoice($merchantId, $from, $to)
+    {
+        $fee = $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where('type', 'payment')
+                    ->betweenTime($from, $to)
+                    ->sum('fee');
+
+        $serviceTax = $this->newQuery()
+                           ->merchantId($merchantId)
+                           ->where('type', 'payment')
+                           ->betweenTime($from, $to)
+                           ->sum('service_tax');
+
+        // Total fee includes our cut + service tax
+        return [
+            'total_fee'         =>  $fee,
+            // This is a combined tax column
+            // and includes more than just service_tax
+            'tax'               =>  $serviceTax
+        ];
+    }
+
     public function fetchTransactionsForAuthorizedRefundedPayments()
     {
         $repo = $this->repo;
