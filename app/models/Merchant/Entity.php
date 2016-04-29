@@ -3,6 +3,7 @@
 namespace Models\Merchant;
 
 use Models\Base;
+use Config;
 use Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
@@ -27,11 +28,14 @@ class Entity extends Base\PublicEntity
     const FEE_BEARER                = 'fee_bearer';
     const BRAND_COLOR               = 'brand_color';
     const RISK_RATING               = 'risk_rating';
+    const LOGO_URL                  = 'logo_url';
+    const AWS_LOGO_URL              = 'aws_logo_url';
 
     /**
      * Refers to methods relation and not a property;
      */
     const METHODS                   = 'methods';
+    const ORIGINAL_SIZE             = 'original';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -51,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::FEATURES,
+        self::LOGO_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
@@ -67,7 +72,8 @@ class Entity extends Base\PublicEntity
     const CONFIG_LIST = [
         Entity::ID,
         Entity::BRAND_COLOR,
-        Entity::TRANSACTION_REPORT_EMAIL
+        Entity::TRANSACTION_REPORT_EMAIL,
+        Entity::LOGO_URL,
     ];
 
     protected $public = array(
@@ -92,7 +98,8 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::RISK_RATING,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::LOGO_URL,
      );
 
     protected $defaults = array(
@@ -106,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER            => FeeBearer::PLATFORM,
         self::BRAND_COLOR           => null,
         self::RISK_RATING           => 3,
+        self::LOGO_URL              => null,
     );
 
     protected function generateTransactionReportEmail($input)
@@ -234,6 +242,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
     }
 
+    public function setLogoUrlAttribute($logoUrl)
+    {
+        $this->attributes[self::LOGO_URL] = $logoUrl ? $logoUrl : null;
+    }
+
     public function getBillingLabelElseName()
     {
         $label = $this->getBillingLabel();
@@ -333,6 +346,56 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getLogoUrl($size = self::ORIGINAL_SIZE)
+    {
+        // Different cdn urls for different contexts.
+        $context = Config::get('app.context');
+        $cdnUrl = Config::get('url.cdn')[$context];
+
+        // Sample base URL : 'https://cdn.razorpay.com' + '/logos/a.png'
+        // Sample actual URL : 'https://cdn.razorpay.com' + 'logos/' + 'a_medium.png'
+        $baseLogoUrl = $cdnUrl . $this->attributes[self::LOGO_URL];
+
+        // In DB, we are storing the base URL. The actual URL has the
+        // respective size appended to it.
+        $logoUrl = $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
+        return $logoUrl;
+
+    }
+
+    public function getAwsLogoUrl($size = self::ORIGINAL_SIZE)
+    {
+        $awsConfig = Config::get('aws::config');
+
+        $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
+        $bucketName = $awsConfig['logo_bucket'];
+        $regionName = $awsConfig['region'];
+
+        $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
+
+        // In DB, we are storing the base URL. The actual URL
+        // has the respective size appended to it.
+        $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
+        return $awsLogoUrl;
+    }
+
+    protected function getLogoUrlBasedOnSize($logoUrl, $size)
+    {
+        // Gets the position of last dot.
+        // Gets the substring until before the last dot.
+        // Appends '_size' to the substring.
+        // Appends the substring from the last dot to the end of url.
+
+        $extension_pos = strrpos($logoUrl, '.');
+        $logoUrlBasedOnSize = substr($logoUrl, 0, $extension_pos)
+                                .'_'
+                                .$size
+                                .substr($logoUrl, $extension_pos);
+
+
+        return $logoUrlBasedOnSize;
     }
 
     public function getTransactionReportEmailAttribute()
@@ -477,7 +540,8 @@ class Entity extends Base\PublicEntity
     public function isTPVRequired()
     {
         // 9999 - Test MCC requiring TPV
-        $tpvCategories = array(9999 => 9999);
+        // 6211 - Live MCC requiring TPV
+        $tpvCategories = array(9999 => 9999, 6211 => 6211);
 
         $category = $this->getCategory();
 

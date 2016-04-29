@@ -238,7 +238,8 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($payment['received'] === false)
+        if (($payment['received'] === false) or
+            ($payment['AuthStatus'] !== $content['AuthStatus']))
         {
             unset(
                 $content['TxnAmount'],
@@ -503,10 +504,12 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArrayForAuthorize($content, $input)
     {
-        $request = $this->getRequestArray($content);
+        $merchantTpvRequired = $input['merchant']->isTPVRequired();
+
+        $request = $this->getRequestArray($content, $merchantTpvRequired);
 
         // Change Content for Merchants with TPV Required
-        if ($input['merchant']->isTPVRequired())
+        if ($merchantTpvRequired)
         {
             $request['content']['hidRequestId'] = 'PGIME1000';
             $request['content']['hidOperation'] = 'ME100';
@@ -515,7 +518,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content)
+    protected function getRequestArray($content, $merchantTpvRequired = false)
     {
         $msg = $this->getMessageStringWithHash($content);
 
@@ -523,8 +526,16 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
             [$msg]);
 
+        $action = $this->action;
+
+        if (($merchantTpvRequired) and
+            ($this->action === Action::AUTHORIZE))
+        {
+            $action = 'authorize_tpv';
+        }
+
         $request = array(
-            'url' => $this->getUrl($this->action),
+            'url' => $this->getUrl($action),
             'method' => 'post',
             'content' => ['msg' => $msg],
         );

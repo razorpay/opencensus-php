@@ -256,7 +256,12 @@ trait Authorize
 
             $payment = $this->repo->lockForUpdate($payment->getKey());
 
-            assert ($payment->isStatusCreatedOrFailed());
+            if ($payment->isStatusCreatedOrFailed() === false)
+            {
+                throw new Exception\RuntimeException(
+                    'Payment being authorized is actually already authorized by some other thread.',
+                    ['payment_id' => $payment->getId()]);
+            }
 
             $payment->setErrorNull();
             $payment->setVerified(true);

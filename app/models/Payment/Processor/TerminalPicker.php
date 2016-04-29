@@ -160,10 +160,27 @@ class TerminalPicker
 
         $bank = $this->payment->getBank();
 
+        $category = $this->payment->merchant->getCategory();
+
+        $isTPVRequired = $this->payment->merchant->isTPVRequired();
+
+        if ($isTPVRequired)
+        {
+            $terminal = $this->selectSharedTPVTerminal($category);
+
+            if ($terminal === null)
+            {
+                throw new Exception\ServerErrorException(
+                    'A terminal with support for third party validation was not found.',
+                    ErrorCode::SERVER_ERROR
+                );
+            }
+
+            return $terminal;
+        }
+
         // First check if we have direct tie-up with this bank and fetch it's gateway.
         $terminal = $this->selectDirectNetbankingBankTerminal($terminals, $bank);
-
-        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS, ['netbanking_terminals_direct' => $terminal]);
 
         if ($terminal !== null)
         {
@@ -620,6 +637,16 @@ class TerminalPicker
                 return $terminal;
             }
         }
+    }
+
+    protected function selectSharedTPVTerminal($category)
+    {
+        $gateway = Gateway::BILLDESK;
+
+        $sharedTerminal = $this->repo->getSharedTerminalForGatewayWithCategory(
+                                    $gateway, $category);
+
+        return $this->terminalExists($sharedTerminal->getId());
     }
 
     protected function terminalExists($terminal)

@@ -3,9 +3,12 @@
 namespace Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use Models\Transaction;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\Settlement\SettlementTrait;
+use Models\Merchant;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class MerchantTest extends TestCase
 {
@@ -277,7 +280,9 @@ class MerchantTest extends TestCase
              'created_at' => $createdAt,
              'updated_at' => $createdAt + 10]);
 
-        $this->initiateSettlements();
+        $settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3) + 1;
+
+        $this->initiateSettlements('kotak', $settleAtTimestamp);
 
         $testData = & $this->testData['testChangeBankAccount'];
         $testData['response']['content']['beneficiary_code'] = 'TEST2';
@@ -529,5 +534,123 @@ class MerchantTest extends TestCase
         $this->assertArraySelectiveEquals($merchant, $content);
 
         return $content;
+    }
+
+    protected function createUploadedFile($file)
+    {
+        $this->assertFileExists($file);
+
+        $mimeType = "image/png";
+        $uploadedFile = new UploadedFile(
+                                            $file,
+                                            $file,
+                                            $mimeType,
+                                            filesize($file),
+                                            null,
+                                            true
+        );
+
+        return $uploadedFile;
+    }
+    
+    public function testStoreImageAndGetLogoUrl()
+    {
+        $originalFile = $this->createUploadedFile('app/tests/Functional/Storage/a.png');
+        copy($originalFile, 'app/tests/Functional/Storage/a2.png');
+        $testFile = $this->createUploadedFile('app/tests/Functional/Storage/a2.png');
+        
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testStoreImageAndGetLogoUrl'];
+
+        $testData['request']['files']['logo'] = $testFile;
+        
+        $response = $this->runRequestResponseFlow($testData);
+        
+        $this->assertContains('/logos/', $response['logo_url']);
+    }
+
+    public function testValidateImage()
+    {
+        $merchantValidator = new Merchant\Validator();
+
+        $mimeType = 'image/jpeg';
+        $extension = 'jpeg';
+
+        $merchantValidator->validateImage($mimeType, $extension);
+
+        $mimeType = 'image/gif';
+        $extension = 'gif';
+
+        try
+        {
+            $merchantValidator->validateImage($mimeType, $extension);
+            self::fail();
+        }
+        catch(\Exception $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE', $ex->getCode());
+        }
+
+
+        $mimeType = 'text/plain';
+        $extension = 'jpeg';
+
+        try
+        {
+            $merchantValidator->validateImage($mimeType, $extension);
+            self::fail();
+        }
+        catch(\Exception $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE', $ex->getCode());
+        }
+    }
+    
+    public function testValidateLogo()
+    {
+        $merchantValidator = new Merchant\Validator();
+
+        $imageDetails = ['size' => 1, 'width' => '1', 'height' => '1'];
+
+        try
+        {
+            $merchantValidator->validateLogo($imageDetails);
+            self::fail();
+        }
+        catch(\Exception $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE', $ex->getCode());
+        }
+
+        $imageDetails = ['size' => 1, 'width' => '300', 'height' => '310'];
+
+        try
+        {
+            $merchantValidator->validateLogo($imageDetails);
+            self::fail();
+        }
+        catch(\Exception $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE', $ex->getCode());
+        }
+
+        $imageDetails = ['size' => 1, 'width' => '300', 'height' => '300'];
+
+        $merchantValidator->validateLogo($imageDetails);
+
+        $imageDetails = ['size' => 1+(1024*1024), 'width' => '300', 'height' => '300'];
+
+        try
+        {
+            $merchantValidator->validateLogo($imageDetails);
+            self::fail();
+        }
+        catch(\Exception $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_TOO_BIG', $ex->getCode());
+        }
     }
 }

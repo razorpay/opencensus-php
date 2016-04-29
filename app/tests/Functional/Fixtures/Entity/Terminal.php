@@ -164,10 +164,30 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 1);
+            'shared'                => 1,
+        );
 
         return parent::create($attributes);
     }
+
+    public function createSharedBilldeskTpvTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '1MercShareTerm',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'shared'                => 1,
+            'category'              => 9999,
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedAxisGeniusTerminal()
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;

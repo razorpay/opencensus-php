@@ -31,6 +31,31 @@ return [
         ],
     ],
 
+    'testCreateMerchantWithDuplicateId' => [
+        'request' => [
+            'content' => [
+                'id'    => '10000000000000',
+                'name'  => 'Random Merchant Name',
+                'email' => 'test2@razorpay.com',
+            ],
+            'url' => '/merchants',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateMerchant' => [
         'request' => [
             'content' => [
@@ -145,8 +170,53 @@ return [
             'content' => [
                 'id' => 'NewSubmerchant',
                 'name' => 'Submerchant',
+                // Email is same as the test merchant
                 'email' => 'test@razorpay.com',
             ],
+        ],
+    ],
+
+    'testCreateSubMerchantWithEmail' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant 2',
+                'email' => 'submerchant@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'NewSubmerchant',
+                'name' => 'Submerchant 2',
+                'email' => 'submerchant@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantWithDuplicateEmail' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant 2',
+                'email' => 'test2@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ]
 ];

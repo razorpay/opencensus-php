@@ -22,5 +22,6 @@ class EntityReportTest extends TestCase
     		'day' => $dt->day);
 
     	$content = $this->fetchReport('payment', $input);
+        $content = $this->fetchReport('transaction', $input);
     }
 }

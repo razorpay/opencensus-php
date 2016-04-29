@@ -3,14 +3,19 @@
 namespace Models\Settlement;
 
 use Carbon\Carbon;
+
 use EE\Error\ErrorCode;
 use EE\Exception;
+
+use Constants\Mode;
 use Models\Base;
 use Models\Merchant;
 use Models\Settlement;
 use Models\Transaction;
 use Dashboard\Dashboard;
+
 use Trace\TraceCode;
+
 
 class Settler
 {
@@ -82,15 +87,18 @@ class Settler
 
     protected function checkForHolidays()
     {
-        //Settlement files to not be generated on Public Holidays
-        if (Holidays::isDayHoliday('today', $this->mode))
+        // Settlement files to not be generated on Public Holidays
+        // No public holiday in test mode
+        $today = Carbon::today('Asia/Kolkata');
+
+        if (($this->mode === Mode::LIVE) and
+            (Holidays::isSpecifiedBankHoliday($today)))
         {
             return true;
         }
 
-        $today = Carbon::today('Asia/Kolkata');
-
-        //and on second saturdays due to bank leaves.
+        // And on second saturdays due to bank leaves.
+        // Marks as holiday in test mode as well
         if (($today->dayOfWeek === Carbon::SATURDAY) and
             (Holidays::isWorkingSaturday($today) === false))
         {
@@ -376,22 +384,15 @@ class Settler
     {
         $ts = $this->initSettlementTimestamp($input);
 
-//        $all = $this->isInputValue($input, 'all', '1');
+        $ts = time();
 
-//        if ($all === true)
+        if (($this->mode === Mode::TEST) and
+            (empty($input['testSettleTimeStamp']) === false))
         {
-            //
-            // Fetch all txns whose expected settlement
-            // time is less than now
-            //
-            $ts = time();
-
-            $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
+            $ts = $input['testSettleTimeStamp'];
         }
-        // else
-        // {
-        //     $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
-        // }
+
+        $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
 
         foreach ($txns as $txn)
         {

@@ -71,6 +71,22 @@ trait Refund
         return $refund;
     }
 
+    protected function verifyRefund($id)
+    {
+        Refund\Entity::verifyIdAndStripSign($id);
+
+        $refund = (new Refund\Repository)->findOrFail($id);
+
+        $payment = $this->retrieve($refund->getPaymentId());
+
+        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+
+        $data = array(
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount());
+    }
+
     /**
      * Sends out refund related notifications
      * To 3 places in total:

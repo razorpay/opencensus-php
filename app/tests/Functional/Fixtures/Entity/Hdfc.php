@@ -6,6 +6,14 @@ use Models\Merchant\Account;
 
 class Hdfc extends Base
 {
+    public function createPurchased(array $attributes = array())
+    {
+        $attributes['action'] = 1;
+        $attributes['status'] = 'captured';
+
+        return $this->create($attributes);
+    }
+
     public function createAuthorized(array $attributes = array())
     {
         $attributes['action'] = 4;

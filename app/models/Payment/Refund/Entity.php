@@ -132,4 +132,17 @@ class Entity extends Base\PublicEntity
     {
         return $this->relations['payment']->getGateway();
     }
+
+    /**
+     * Adds the contact, email fields to the reports
+     */
+    public function toArrayReport()
+    {
+        $data = parent::toArrayReport();
+
+        $data[Payment\Entity::CONTACT] = $this->payment->getContact();
+        $data[Payment\Entity::EMAIL] = $this->payment->getEmail();
+
+        return $data;
+    }
 }

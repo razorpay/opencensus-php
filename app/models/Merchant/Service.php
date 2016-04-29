@@ -15,6 +15,7 @@ use Models\Terminal;
 use Models\Merchant\Webhook;
 use Models\Admin\Newsletter;
 use Models\Settlement\Holidays;
+
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -42,11 +43,6 @@ class Service extends Base\Service
     {
         $merchant = (new Merchant\Core)->create($input);
 
-        // The merchant is created on email confirmation on dashboard side
-        // This is when we send the welcome email
-
-        $this->sendMerchantCreationMail($merchant);
-
         return $merchant->toArrayPublic();
     }
 
@@ -56,7 +52,8 @@ class Service extends Base\Service
 
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
-        $this->sendMerchantCreationMail($subMerchant);
+        // This goes out to the aggregator
+        $this->sendSubMerchantCreationMail($subMerchant, $merchant);
 
         return $subMerchant->toArrayPublic();
     }
@@ -70,12 +67,26 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    protected function sendMerchantCreationMail($merchant)
+    /**
+     * Sends a mail to the aggregator telling them about
+     * sub-merchant account creation
+     */
+    protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
+        $data = [
+            'name'  =>  $subMerchant->name,
+            'email' =>  $subMerchant->email
+        ];
+
+        if ($subMerchant->email !== $aggregator->email)
+        {
+            $data['cc_email'] = $aggregator->email;
+        }
+
         $this->sendEmail(
             'emails.merchant.welcome',
             'Welcome to Razorpay',
-            $merchant->toArray());
+            $data);
     }
 
     public function editEmail($id, array $input)
@@ -90,7 +101,23 @@ class Service extends Base\Service
     // Proxy Auth.
     public function editConfig(array $input)
     {
+        // Adds uploaded logo's url to the input.
+        $this->uploadLogoIfFound($input);
+
         return (new Merchant\Core)->editConfig($this->merchant, $input);
+    }
+
+    protected function uploadLogoIfFound(&$input)
+    {
+        // if($input->hasFile('logo') and $input['logo']->isValid())
+        if (isset($input['logo']))
+        {
+            // Store the logos in AWS
+            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
+
+            $input['logo_url'] = $logoUrl;
+            unset($input['logo']);
+        }
     }
 
     public function addOrUpdateMerchantFeatures($id, array $input)
@@ -622,9 +649,12 @@ class Service extends Base\Service
     protected function sendEmail($template, $subject, $data)
     {
         Mail::queue($template, $data, function($message) use ($data, $subject){
-
-            $message->to($data['email'], $data['name'])
-                ->subject($subject);
+            $message = $message->to($data['email'], $data['name'])
+                        ->subject($subject);
+            if (isset($data['cc_email']))
+            {
+                $message->cc($data['cc_email'], $data['name']);
+            }
         });
     }
 
@@ -633,77 +663,13 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
-        $response = '';
+        $response = (new Merchant\HolidayNotification)->send($input);
 
-        if (isset($input['action']))
-        {
-            $response = $this->sendMerchantNotifyHolidayEmail($input);
-        }
-
-        // Log just the result of the settlement reports
         $this->trace->info(
             TraceCode::MERCHANT_NOTIFY_HOLIDAY,
             $response
         );
 
         return $response;
-    }
-
-    protected function sendMerchantNotifyHolidayEmail($input)
-    {
-        $msg = $this->getHolidayNotificationMsg();
-
-        if (empty($errors))
-        {
-            $mailer = new Newsletter(
-                $input['lists'],
-                'Notification of Bank Holiday',
-                $msg);
-
-            switch ($input['action'])
-            {
-                case 'test_email':
-                    $mailer->setTestEmail($input['lists']);
-                    break;
-
-                case 'add_to_list':
-                    $mailer->setTestListMembersAdd();
-                    $mailer->setMailingListName($input['lists']);
-                    break;
-
-                case 'email':
-                    if (Holidays::isDayHoliday('tomorrow', $this->mode, true) === false)
-                    {
-                        return ['message' => 'Not a holiday tomorrow! Nothing to send.'];
-                    }
-
-                    $mailer->setMailingListName($input['lists']);
-                    break;
-
-                default:
-                    return ['message' => 'No Appropriate action has been set. Nothing done.'];
-                    break;
-            }
-
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
-
-    }
-
-    protected function getHolidayNotificationMsg()
-    {
-        $date = Carbon::tomorrow('Asia/Kolkata')->toFormattedDateString();
-
-        $msg  = <<<EOT
-<b>As $date is a bank holiday, settlements will not be processed tomorrow.</b>
-Settlements expected on this date will be processed on the next working day.
-<p>Thank you for partnering with Razorpay.</p>
-EOT;
-
-        return $msg;
     }
 }

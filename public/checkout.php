@@ -1,6 +1,38 @@
 <?php
-$fonts = 'https://cdn.razorpay.com/lato2';
-$checkout = 'https://checkout.razorpay.com';
+$host = $_SERVER['HTTP_HOST'];
+$scheme = $_SERVER['HTTP_SCHEME'];
+
+$checkoutVersions = [
+    'live'  =>  'https://checkout.razorpay.com',
+    'beta'  =>  'https://betacheckout.razorpay.com',
+    'local' =>  getenv('CHECKOUT_URL')
+];
+
+$fontsVersions = [
+    'live'  =>  'https://cdn.razorpay.com/lato2',
+    'beta'  =>  'https://betacdn.razorpay.com/fonts/lato2',
+    'local' =>  getenv('FONTS_URL')
+];
+
+$checkout = $checkoutVersions[$_GET['checkout_version']];
+$fonts = $fontsVersions[$_GET['fonts_version']];
+
+if ($host === 'beta.razorpay.com')
+{
+    $fonts = $fontsVersions['beta'];
+    $checkout = $checkoutVersions['beta'];
+}
+
+if (! $checkout)
+{
+   $checkout = $checkoutVersions['live'];
+}
+
+if (! $fonts)
+{
+   $fonts = $fontsVersions['live'];
+}
+
 header('Cache-Control: no-transform, no-store, no-cache, must-revalidate');
 ?>
 <!DOCTYPE html>

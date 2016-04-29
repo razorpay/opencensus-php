@@ -4,6 +4,7 @@ namespace Models\Order;
 
 use Models\Base;
 use Models\Payment;
+use Models\Payment\Processor\Netbanking;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -17,6 +18,7 @@ class Validator extends Base\Validator
         Entity::NOTES          =>  'sometimes|notes',
         Entity::METHOD         =>  'sometimes|in:netbanking',
         Entity::ACCOUNT_NUMBER =>  'sometimes|string|max:50|min:5',
+        Entity::BANK           =>  'sometimes|in:ANDB,CORP,IBKL,INDB,KVBL,LAVB_R',
     );
 
     public function validateOrderNotPaid($order)
@@ -40,12 +42,12 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantSpecificData($order)
+    public function validateMerchantSpecificData($order, $payment = null)
     {
-        $this->validateOrderTpvChecks($order);
+        $this->validateOrderTpvChecks($order, $payment);
     }
 
-    public function validateOrderTpvChecks($order)
+    public function validateOrderTpvChecks($order, $payment = null)
     {
         // TPV - Third Party Validation
         $tpvRequired = $order->merchant->isTPVRequired();
@@ -65,6 +67,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order method needs to be netbanking for the merchant');
+        }
+
+        $tpvBanks = Netbanking::getSupportedBanksForTPV();
+
+        if (in_array($order->getBank(), $tpvBanks) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order bank does not support TPV');
+        }
+
+        if ((empty($payment) === false) and
+            ($order->getBank() !== $payment->getBank()))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Order bank does not match the payment bank');
         }
 
         if (empty($order->getAccountNumber()))

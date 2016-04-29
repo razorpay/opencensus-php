@@ -408,9 +408,13 @@ class Entity extends Base\PublicEntity
         $reportTxn['notes'] = null;
         $reportTxn['payment_id'] = null;
 
-        if ($txn->isTypePayment())
+        // settled_at will by default have date and time (d/m/y h:m:s) in it
+        // while we only want to provide date.
+        $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
+
+        if ($this->isTypePayment())
         {
-            $payment = $txn->source;
+            $payment = $this->source;
 
             $reportTxn['description'] = $payment->getDescription();
             $reportTxn['notes'] = $payment->getNotesJson();
@@ -421,9 +425,9 @@ class Entity extends Base\PublicEntity
                 return;
             }
         }
-        else if ($txn->isTypeRefund())
+        else if ($this->isTypeRefund())
         {
-            $refund = $txn->source;
+            $refund = $this->source;
             $payment = $refund->payment;
 
             // Skip if the payment was not captured.

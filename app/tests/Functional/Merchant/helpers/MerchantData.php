@@ -298,6 +298,22 @@ return [
         ]
     ],
 
+    'testStoreImageAndGetLogoUrl' => [
+        'request' => [
+            'content' => [],
+            'url' => '/account/config/logo',
+            'method' => 'post',
+            'files' => [
+                
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+            ]
+        ]
+    ],
+
     'testEditMerchantConfigWithEmail' => [
         'request' => [
             'content' => [

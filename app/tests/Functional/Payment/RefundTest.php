@@ -142,6 +142,58 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['authorized']);
     }
 
+    public function testRefundCalledOnPurchaseWithoutCapture()
+    {
+
+        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10);
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:purchased',
+            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+
+        $payments = $this->fixtures->times(2)->create('payment:purchased');
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(2, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(2, $content['authorized']);
+
+        $refundedEntities = $this->getEntities('hdfc', ['count' => 2], true);
+
+        foreach ($refundedEntities['items'] as $entity)
+        {
+            $this->assertEquals('refunded', $entity['status']);
+        }
+
+    }
+
+    // Testing Buggy Case where a payment is captured in hdfc gateway
+    // But is in authorised state in RZP db.
+    // This will also be picked up for a refund and refunded.
+    public function testRefundOnHdfcCapturedPaymentAuthorized()
+    {
+        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+
+        $payment = $this->fixtures->create(
+            'payment:captured',
+            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
+
+        $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(1, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(1, $content['authorized']);
+
+        $refunded = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals('refunded', $refunded['status']);
+    }
+
     public function testFetchRefundById()
     {
         $payment = $this->fixtures->create('payment:captured');

@@ -288,6 +288,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [$response->body]);
 
+        $url = null;
+
         try
         {
             $values = $this->getFormValues($response->body, $request['url']);
@@ -305,6 +307,8 @@ class Gateway extends Base\Gateway
                 throw new Exception\GatewayTimeoutException(
                     'Payment verify request to Hdfc nb gateway timed out');
             }
+
+            throw $e;
         }
 
         $content = [];

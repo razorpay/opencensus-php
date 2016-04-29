@@ -156,6 +156,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = array(
+        Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX);
 

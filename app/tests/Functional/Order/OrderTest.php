@@ -20,7 +20,7 @@ class OrderTest extends TestCase
 
     public function setUpBillDeskGateway()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -128,7 +128,33 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        $payment['bank'] = 'ANDB';
+
         // Not adding order_id in payment
+
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function () use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testPaymentWithIncorrectBankForTPVMerchantWithOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpBillDeskGateway();
+
+        $order = $this->testCreateTPVOrder();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'CORP';
+
+        $payment['order_id'] = $order['id'];
 
         $this->runRequestResponseFlow(
             $this->testData[__FUNCTION__],
@@ -149,6 +175,8 @@ class OrderTest extends TestCase
         $order = $this->testCreateTPVOrder();
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'ANDB';
 
         $payment['order_id'] = $order['id'];
 

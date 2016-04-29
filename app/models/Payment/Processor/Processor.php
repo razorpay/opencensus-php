@@ -330,7 +330,7 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $input['terminal'] = $terminal;
-        $input['merchant'] = $terminal->merchant;
+        $input['merchant'] = $this->payment->merchant;
 
         if ($gateway === Payment\Gateway::KOTAK)
         {
@@ -467,7 +467,7 @@ class Processor
         $validator->validateOrderNotPaid($this->order);
 
         $validator->validateMerchantSpecificData($this->order,
-                                                    $this->merchant);
+                                                 $payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 

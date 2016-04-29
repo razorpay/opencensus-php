@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     // this order is in authorized state
     const AUTHORIZED     = 'authorized';
     const METHOD         = 'method';
+    const BANK           = 'bank';
     const ACCOUNT_NUMBER = 'account_number';
 
     const CUSTOMER_ID    = 'customer_id';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::METHOD,
         self::ACCOUNT_NUMBER,
+        self::BANK,
     );
 
     protected $table = \Constants\Table::ORDER;
@@ -55,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::METHOD            => null,
         self::ACCOUNT_NUMBER    => null,
+        self::BANK              => null,
     );
 
     protected $public = array(
@@ -131,6 +134,11 @@ class Entity extends Base\PublicEntity
     public function getAttempts()
     {
         return $this->getAttemptsAttribute();
+    }
+
+    public function getBank()
+    {
+        return $this->attributes[self::BANK];
     }
 
     /** End Setters And Getters */

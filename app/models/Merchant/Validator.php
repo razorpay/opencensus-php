@@ -3,13 +3,22 @@
 namespace Models\Merchant;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Merchant;
 
 class Validator extends Base\Validator
 {
+    // Maximum image size - 1M.
+    const maxImageSize = 1024*1024;
+    const extensionMimeMap = array(
+        "jpeg"  => "image/jpeg",
+        "jpg"   => "image/jpeg",
+        "png"   => "image/png",
+    );
+
     protected static $createRules = array(
-        Entity::ID                          => 'required|alpha_num|size:14',
+        Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'required|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
     );
@@ -30,7 +39,8 @@ class Validator extends Base\Validator
     );
 
     protected static $uniqueEmailRules = array(
-        Entity::EMAIL                       => 'required|email|unique:merchants');
+        Entity::EMAIL                       => 'required|email|unique:merchants'
+    );
 
     protected static $editCreditsRules = array(
         Balance\Entity::CREDITS             => 'required|integer|min:0|max:50000000'
@@ -39,19 +49,58 @@ class Validator extends Base\Validator
     protected static $editEmailRules = array(
         Entity::EMAIL                       => 'sometimes|email|unique:merchants'
     );
-
+    
     protected static $editConfigRules = array(
         Entity::BRAND_COLOR                 => 'sometimes|regex:([0-9a-fA-F]{6})',
-        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array'
+        Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
+        Entity::LOGO_URL                    => 'sometimes|max:2000',
     );
 
     protected static $editConfigValidators = [
-        'csv_email'
+        'csv_email',
     ];
 
     protected static $editValidators = [
-        'csv_email', 'features'
+        'csv_email', 
+        'features',
     ];
+    
+    public function validateLogo($imageDetails)
+    {
+        $fileSize = $imageDetails['size'];
+        $width = $imageDetails['width'];
+        $height = $imageDetails['height'];
+
+        // File size should not be more than 1M.
+        if ($fileSize > self::maxImageSize)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG);
+        }
+        
+        // The image should be square and the minimum dimensions should be 256*256.
+        if (($width !== $height) or ($width < 256))
+        {
+            
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
+            );
+        }
+    }
+
+    public function validateImage($mimeType, $extension)
+    {
+        $acceptedMimeArray = self::extensionMimeMap;
+
+        // Checks if extension is defined in the array and if the extension and mime type match.
+        if ((!isset($acceptedMimeArray[$extension])) or
+            ($acceptedMimeArray[$extension] !== $mimeType))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE
+            );
+        }
+    }
 
     protected function validateCsvEmail($input)
     {

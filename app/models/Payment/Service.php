@@ -184,11 +184,19 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
+        $this->trace->info(TraceCode::PAYMENT_METADATA, $input);
+
         if (isset($input['otp_read']) === true)
         {
             $otpRead = $input['otp_read'];
 
+            if ($payment->isMethodCardOrEmi() === false)
+            {
+                return;
+            }
+
             $card = $payment->card;
+
             $cardIin = $card->iin;
             $repo = new Card\IIN\Repository;
             $iin = $repo->find($cardIin);

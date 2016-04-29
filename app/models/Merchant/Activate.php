@@ -26,6 +26,8 @@ class Activate
         $this->app = $app;
 
         $this->repo = new Merchant\Repository;
+
+        $this->trace = $app['trace'];
     }
 
     public function activate($merchant)
@@ -69,6 +71,10 @@ class Activate
         $merchant->activate();
 
         $this->repo->saveOrFail($merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
+            ['merchant_id' => $merchant->getId()]);
 
         $this->sendActivationEmail($merchant, $plan);
 
