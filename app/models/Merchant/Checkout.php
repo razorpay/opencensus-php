@@ -13,7 +13,6 @@ use Models\Pricing;
 use Models\Terminal;
 use Models\Merchant\Webhook;
 use EE\Exception;
-use EE\Error\ErrorCode;
 
 use Trace\TraceCode;
 
@@ -46,6 +45,7 @@ class Checkout
 
         $data['methods'] = $methodsArray;
         $data['options']['theme']['color'] = $merchant->getBrandColor();
+        $data['options']['theme']['logo'] = $merchant->getLogoUrl("medium");
         $data['fee_bearer'] = false;
         $data['version'] = 1;
 
