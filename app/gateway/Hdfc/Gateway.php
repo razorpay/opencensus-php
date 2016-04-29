@@ -346,6 +346,24 @@ class Gateway extends Base\Gateway
             'Hdfc gateway does not support voids');
     }
 
+    public function verifyRefund(array $input)
+    {
+        $isRefundRequired = $this->isRefundRequired($input);
+
+        if ($isRefundRequired)
+        {
+            $this->refund($input);
+
+            // Verified and refund performed
+            return false;
+        }
+        else
+        {
+            // Verified to not require any refund
+            return true;
+        }
+    }
+
     public function getPaymentOrRefundId($input)
     {
         return Hdfc\Mpr\Reconciler::getPaymentOrRefundId($input);

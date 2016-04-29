@@ -15,6 +15,7 @@ use Models\Transaction;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
+use Gateway\Hdfc;
 
 trait Refund
 {
@@ -85,6 +86,28 @@ trait Refund
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
             'amount'    => $refund->getAmount());
+
+        $method = $refund->payment->getMethod();
+
+        if ($method === Payment\Method::CARD)
+        {
+            $data['card'] = $refund->payment->card->toArray();
+        }
+
+        $verify = $this->callGatewayForVerifyRefund($data);
+
+        if ($verify === false)
+        {
+            $this->refund = $refund;
+
+            $this->payment = $payment;
+
+            $this->recordRefund();
+
+            $this->sendRefundNotification($payment, $refund);
+        }
+
+        return $verify;
     }
 
     /**
@@ -160,6 +183,22 @@ trait Refund
         }
 
         return $this->refund($id, $input);
+    }
+
+    protected function callGatewayForVerifyRefund($data)
+    {
+        try
+        {
+            $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
+        }
+        catch(BaseException $e)
+        {
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
+
+            throw $e;
+        }
     }
 
     protected function callGatewayForRefund($data)

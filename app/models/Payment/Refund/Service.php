@@ -119,4 +119,9 @@ class Service extends Base\Service
 
         return $refunds->toArrayPublic();
     }
+
+    public function verify($id)
+    {
+        return $this->processor()->verifyRefund($id);
+    }
 }

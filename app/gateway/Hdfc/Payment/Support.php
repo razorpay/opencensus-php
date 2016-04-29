@@ -370,4 +370,38 @@ trait Support
 
         return false;
     }
+
+    protected function isRefundRequired($input)
+    {
+        $id = $input['payment']['id'];
+
+        $gatewayEntities = $this->repo->findByPaymentId($id);
+
+        // No refund required for
+        // authorize, authorize is the only entity
+        // refunded entity is available.
+
+        $count = $gatewayEntities->count();
+
+        if ($count === 1)
+        {
+            $entity = $gatewayEntities->first();
+
+            //other possibility is the captured entity is available.
+            return (($entity->getAction() === Action::AUTHORIZE) and
+                    ($entity->getStatus() === Payment\Status::AUTHORIZED));
+        }
+        else
+        {
+            foreach ($gatewayEntities->all() as $entity)
+            {
+                if ($entity->getStatus() === Payment\Status::REFUNDED)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 }

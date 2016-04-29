@@ -14,6 +14,9 @@ class Gateway
 
         $gateway->setMode($mode);
 
+        // Laravel helper function converts snake case to camel case
+        $action = camel_case($action);
+
         return  $gateway->$action($input);
     }
 
