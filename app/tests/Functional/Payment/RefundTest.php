@@ -189,13 +189,9 @@ class RefundTest extends TestCase
         $this->assertArrayHasKey('authorized', $content);
         $this->assertEquals(1, $content['authorized']);
 
-        $refundedEntities = $this->getEntities('hdfc', ['count' => 1], true);
+        $refunded = $this->getLastEntity('hdfc', true);
 
-        foreach ($refundedEntities['items'] as $entity)
-        {
-            $this->assertEquals('refunded', $entity['status']);
-        }
-
+        $this->assertEquals('refunded', $refunded['status']);
     }
 
     public function testFetchRefundById()
