@@ -6,94 +6,123 @@ use DirectoryIterator;
 
 class Orchestrator
 {
-    const EXCEL = 'excel';
-    const CSV = 'csv';
-
     /******************
      * Bank constants
      ******************/
-
     const HDFC  = 'HDFC';
     const Axis  = 'Axis';
     const Kotak = 'Kotak';
 
-    // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
-    const FILE_TYPES_MAPPINGS = [
-        self::EXCEL => ['xls', 'xlsx'],
-        self::CSV   => ['txt', 'csv', 'text']
-    ];
 
+    /********************
+     * Complex constants
+     ********************/
+    // The gateway names should be the same name as the directories present under 'reconciliator'
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC => ['prashanth@razorpay.com'],
         self::Axis => ['prashanth.yv@razorpay.com'],
     ];
 
 
+    /*********************
+     * Instance variables
+     *********************/
+    protected $gateway;
+    protected $allFilesContents;
+
+
+    /********************
+     * Instance objects
+     ********************/
     protected $validator;
     protected $fileProcessor;
-    protected $deserializer;
+    protected $converter;
 
-    protected $gateway;
 
     public function __construct()
     {
         $this->validator = new Validator;
         $this->fileProcessor = new FileProcessor;
-        $this->deserializer = new Deserializer;
+        $this->converter = new Converter;
     }
 
     public function baseEntry($input)
     {
         if ((isset($input['manual'])) and ($input['manual'] === true))
         {
-            $allFileDetails = $this->manualEntry($input);
+            $allFilesDetails = $this->manualEntry($input);
         }
         else
         {
-            $allFileDetails = $this->mailGunEntry($input);
+            $allFilesDetails = $this->mailGunEntry($input);
         }
 
-        if (empty($allFileDetails) === true)
+        if (empty($allFilesDetails) === true)
         {
             // TODO: Throw an exception about having no file details
         }
 
-        $this->orchestrate($allFileDetails);
+        $this->orchestrate($allFilesDetails);
 
         return 200;
     }
 
-    protected function orchestrate($allFileDetails)
+    protected function orchestrate($allFilesDetails)
     {
-        // Run validations on each file
-        foreach ($allFileDetails as $file=>$fileDetails)
+        // Run validations and conversions on each file
+        foreach ($allFilesDetails as $file => $fileDetails)
         {
             // Validates the file type, size, etc..
             $this->validator->validateFile($fileDetails);
-        }
-        
-        // $files = $this->getAllFilesFromInput();
 
-        // Validates the file type, size, etc..
-        // $this->validator->validateFile($fileDetails);
-        //
-        // foreach(self::FILE_TYPES_MAPPINGS as $key=>$value)
-        // {
-        //     if(in_array($fileDetails['extension'], $value) === true)
-        //     {
-        //         $fileDetails['file_type'] = $key;
-        //         break;
-        //     }
-        //     else
-        //     {
-        //         // TODO: Throw an exception for an unsupported type.
-        //     }
-        // }
-        //
-        // $this->deserializer->deserialize($fileDetails);
-        //
-        // // Deletes the file.
-        // $this->fileProcessor->deleteFileLocally($fileDetails);
+            // Converts to in-memory array
+            // TODO: Might want to move this into Gateway implementation since
+            // conversion to array might be different for different gateways.
+            $this->getFileContentInArrayAndSet($fileDetails);
+
+            // Deletes the file.
+            $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+        }
+    }
+
+    protected function getFileContentInArrayAndSet($fileDetails)
+    {
+        $fileType = self::getKeyFromSubArrayMatch($fileDetails[FileProcessor::EXTENSION],
+                                                    FileProcessor::FILE_TYPES_MAPPINGS);
+
+        if (empty($fileType) === true)
+        {
+            // TODO: Throw an exception for an unsupported type.
+        }
+
+        // TODO: Figure out a way to move this logic to 'Converter'.
+        // Currently, the problem is with Excel files having multiple sheets.
+        // Hence, we get
+        // $allFileContents = [[file1sheet1dataArray, file1sheet2_ataArray], file2csv_data_array, file3csv_data_array]
+        if ($fileType === FileProcessor::EXCEL)
+        {
+            $sheets = $this->converter->getAllExcelSheets($fileDetails);
+            foreach ($sheets as $sheet)
+            {
+                $this->allFilesContents[] = $this->converter->convertExcelSheetToArray($sheet);
+            }
+        }
+        else if ($fileType === FileProcessor::CSV)
+        {
+            $this->allFilesContents[] = $this->converter->convertCsvToArray($fileDetails);
+        }
+    }
+
+    public static function getKeyFromSubArrayMatch($needle, $haystack)
+    {
+        foreach($haystack as $key => $subArray)
+        {
+            if (in_array($needle, $subArray) === true)
+            {
+                return $key;
+            }
+        }
+        return null;
     }
 
     protected function manualEntry(&$input)
@@ -111,9 +140,9 @@ class Orchestrator
         $this->gateway = $this->getGatewayFromEmailId($emailDetails);
 
         // Gets file details of all the attachments present in the email.
-        $allFileDetails = $this->getFileDetailsFromAllAttachments($emailDetails, $input);
+        $allFilesDetails = $this->getFileDetailsFromAllAttachments($emailDetails, $input);
 
-        return $allFileDetails;
+        return $allFilesDetails;
     }
 
     protected function getFileDetailsFromAllAttachments($emailDetails, $input)
@@ -136,32 +165,31 @@ class Orchestrator
                 {
                     if($unzippedFile->isFile() === true)
                     {
-                        $fileDetails[] = $this->fileProcessor->getStorageFileDetails($unzippedFile);
+                        $allFilesDetails[] = $this->fileProcessor->getStorageFileDetails($unzippedFile);
                     }
                 }
             }
             else
             {
-                $fileDetails[] = $this->fileProcessor->getUploadedFileDetails($file);
+                $allFilesDetails[] = $this->fileProcessor->getUploadedFileDetails($file);
             }
         }
 
-        return $fileDetails;
+        return $allFilesDetails;
     }
 
     protected function getGatewayFromEmailId($emailDetails)
     {
         $fromEmailId = $emailDetails['from'];
 
-        foreach (self::GATEWAY_SENDER_MAPPING as $gateway=>$senders)
+        $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
+
+        if (empty($gateway) === true)
         {
-            if (in_array($fromEmailId, $senders))
-            {
-                return $gateway;
-            }
+            // TODO: Throw exception for unknown email ID.
         }
 
-        // TODO: Throw exception for unknown email ID.
+        return $gateway;
     }
 
     protected function getEmailDetails($input)

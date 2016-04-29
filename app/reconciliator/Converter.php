@@ -4,7 +4,7 @@
 namespace Reconciliator;
 use Excel;
 
-class Modifier
+class Converter
 {
     const CSV_EXTENSION = 'csv';
 
@@ -23,21 +23,39 @@ class Modifier
         'd'    => 'debit',
         'ref'  => 'reference',
     ];
-
-    public function convertExcelToArray($fileDetails)
+    
+    protected $dataArray;
+    
+    public function convertFileContentToArray($fileDetails)
+    {
+        if ($fileDetails['file_type'] === FileProcessor::EXCEL)
+        {
+            $this->convertExcelToArray($fileDetails);
+        }
+        else if ($fileDetails['file_type'] === FileProcessor::CSV)
+        {
+            $this->dataArray = $this->convertCsvToArray($fileDetails);
+        }
+        else
+        {
+            // TODO: Ideally, shouldn't come here. But, if it comes, throw an exception for unsupported type.
+        }
+        
+        return $this->dataArray;
+    }
+    
+    public function getAllExcelSheets($fileDetails)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
         $sheets = Excel::load($filePath)->all();
+        
+        return $sheets;
+    }
 
-        // TODO: Handle multiple sheets in a workbook
-        $rows = $sheets[0]->toArray();
-
-        $modifiedColumnHeaders = $this->modifyColumnHeaders(array_keys($rows[0]));
-
-        // $rows is passed by reference
-        $this->replaceExcelRowsWithNewHeaders($rows, $modifiedColumnHeaders);
-
+    public function convertExcelSheetToArray($sheet)
+    {
+        $rows = $sheet->toArray();
         return $rows;
     }
 
@@ -54,7 +72,7 @@ class Modifier
             {
                 if (empty($columnHeaders) === true)
                 {
-                    $columnHeaders = $this->modifyColumnHeaders($row);
+                    $columnHeaders = $row;
                 }
                 else
                 {
@@ -62,6 +80,7 @@ class Modifier
                     {
                         // TODO: Throw an exception about invalid column header count
                     }
+                    
                     // Combines the columnHeaders(keys) with the row(values).
                     $data[] = array_combine($columnHeaders, $row);
                 }
@@ -69,9 +88,9 @@ class Modifier
             fclose($handle);
         }
 
-        return $data;
+        return $this->dataArray[] = $data;
     }
-    
+
     protected function replaceExcelRowsWithNewHeaders(&$rows, $newColumnHeaders)
     {
         foreach ($rows as $rowIndex=>$rowData)
@@ -114,7 +133,7 @@ class Modifier
             }
             $header = implode('',$headerArray);
         }
-        
+
         return $columnHeaders;
     }
 }

@@ -15,11 +15,21 @@ class FileProcessor
     const SIZE = 'size';
     const FILE_PATH = 'file_path';
     const DESTINATION_FOLDER = 'destination_folder';
+    const FILE_TYPE = 'file_type';
 
     const STORAGE = 'storage';
     const UPLOADED = 'uploaded';
 
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
+
+    const EXCEL = 'excel';
+    const CSV = 'csv';
+    
+    // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
+    const FILE_TYPES_MAPPINGS = [
+        self::EXCEL => ['xls', 'xlsx'],
+        self::CSV   => ['txt', 'csv', 'text']
+    ];
 
     protected $validator;
 
