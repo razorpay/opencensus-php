@@ -3,8 +3,8 @@ $host = $_SERVER['HTTP_HOST'];
 $scheme = $_SERVER['HTTP_SCHEME'];
 
 $checkoutVersions = [
-    'live'  =>  'https://checkout.razorpay.com/v1/',
-    'beta'  =>  'https://betacheckout.razorpay.com/v1/',
+    'live'  =>  'https://checkout.razorpay.com',
+    'beta'  =>  'https://betacheckout.razorpay.com',
     'local' =>  getenv('CHECKOUT_URL')
 ];
 

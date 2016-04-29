@@ -4,6 +4,7 @@ use Http\ApiResponse;
 use EE\Exception\RecoverableException;
 use Models\Payment;
 use Models\Card;
+use Trace\TraceCode;
 
 class PaymentCreateController extends BaseController
 {
@@ -11,6 +12,8 @@ class PaymentCreateController extends BaseController
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->payment = new Payment\Service();
     }
 
@@ -19,6 +22,14 @@ class PaymentCreateController extends BaseController
      */
     public function postCreatePayment()
     {
+        if ($this->app['basicauth']->isPublicAuth())
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CREATE_ON_PUBLIC,
+                ['merchant_id' => $this->app['basicauth']->getMerchantId()]);
+
+        }
+
         $ret = $this->createPayment();
 
         if ((is_array($ret)) and

@@ -190,7 +190,13 @@ class Service extends Base\Service
         {
             $otpRead = $input['otp_read'];
 
+            if ($payment->isMethodCardOrEmi() === false)
+            {
+                return;
+            }
+
             $card = $payment->card;
+
             $cardIin = $card->iin;
             $repo = new Card\IIN\Repository;
             $iin = $repo->find($cardIin);

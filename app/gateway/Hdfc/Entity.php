@@ -61,6 +61,11 @@ class Entity extends Base\Entity
         return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
     }
 
+    public function getAction()
+    {
+        return $this->getAttribute('action');
+    }
+
     public function getStatus()
     {
         return $this->getAttribute('status');
