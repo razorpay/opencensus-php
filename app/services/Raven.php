@@ -31,7 +31,7 @@ class Raven
 
         $this->baseUrl = $this->config['url'];
 
-        $this->key = 'rzp_' . $app['rzp.mode'];
+        $this->key = 'rzp';
 
         $this->secret = $this->config['secret'];
 
