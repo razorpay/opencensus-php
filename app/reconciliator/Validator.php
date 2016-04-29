@@ -27,7 +27,7 @@ class Validator
         'txt'   => ['text/plain'],
         'text'  => ['text/plain'],
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel'],
+        'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
 
@@ -57,7 +57,7 @@ class Validator
 
         $this->validateFileSize($fileSize);
 
-        // TODO: CSV and text file validations will be done directly while reading.
+        // TODO: CSV and text file validations (checking if they are valid CSV files) will be done directly while reading.
     }
 
     public function validateExtensionMimeType($extension, $mimeType)

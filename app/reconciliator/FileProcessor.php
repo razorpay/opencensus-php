@@ -3,6 +3,8 @@
 namespace Reconciliator;
 
 use EE\Exception;
+use Models\Base\UniqueIdEntity;
+
 use ZipArchive;
 
 class FileProcessor
@@ -14,6 +16,9 @@ class FileProcessor
     const FILE_PATH = 'file_path';
     const DESTINATION_FOLDER = 'destination_folder';
 
+    const STORAGE = 'storage';
+    const UPLOADED = 'uploaded';
+
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     protected $validator;
@@ -23,17 +28,33 @@ class FileProcessor
         $this->validator = new Validator;
     }
 
-    public function getFileDetails($file)
+    public function getFileDetails($file, $type)
     {
-        $mimeType = $file->getMimeType();
-        $extension = $file->getClientOriginalExtension();
-        $fileName = $file->getClientOriginalName();
+        if ($type === self::UPLOADED)
+        {
+            $this->getUploadedFileDetails($file);
+        }
+        else if ($type === self::STORAGE)
+        {
+            $this->getStorageFileDetails($file);
+        }
+        else
+        {
+            // TODO: Throw exception about wrong file type
+        }
+    }
+
+    // TODO: Abstract out the two fileDetails methods
+    public function getUploadedFileDetails($file)
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $fileName = strtolower($file->getClientOriginalName());
         $destinationPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
 
         $fileDetails = [
             self::FILE_NAME          => $fileName,
             self::EXTENSION          => $extension,
-            self::MIME_TYPE          => $mimeType,
+            self::MIME_TYPE          => $file->getMimeType(),
             self::SIZE               => $file->getClientSize(),
             self::FILE_PATH          => $destinationPath . '/' . $fileName,
             self::DESTINATION_FOLDER => $destinationPath,
@@ -44,10 +65,27 @@ class FileProcessor
         return $fileDetails;
     }
 
-    public function deleteFileLocally($fileDetails)
+    public function getStorageFileDetails($file)
     {
-        $filePath = $fileDetails[self::FILE_PATH];
+        $mimeType = mime_content_type($file->getRealPath());
 
+        $extension = strtolower($file->getExtension());
+        $fileName = strtolower($file->getFilename());
+
+        $fileDetails = [
+            self::FILE_NAME          => $fileName,
+            self::EXTENSION          => $extension,
+            self::MIME_TYPE          => $mimeType,
+            self::SIZE               => $file->getSize(),
+            self::FILE_PATH          => $file->getRealPath(),
+            self::DESTINATION_FOLDER => $file->getPath(),
+        ];
+
+        return $fileDetails;
+    }
+
+    public function deleteFileLocally($filePath)
+    {
         if (file_exists($filePath))
         {
             $success = unlink($filePath);
@@ -83,18 +121,24 @@ class FileProcessor
 
         // TODO: Review security issues.
 
+        // Since there can be multiple zip files which will need to get extracted.
+        $randomFolderName = UniqueIdEntity::generateUniqueId();
+        $extractToPath = $this->getFolderFromFilePath($filePath) . '/' . $randomFolderName;
+
         // Currently supporting only zip files
         if ($extension === 'zip')
         {
-            $this->extractZipFile($filePath);
+            $this->extractZipFile($filePath, $extractToPath);
         }
         else
         {
             // TODO: Throw error for being an unsupported zip file (g-zip, bz, etc).
         }
+
+        return $extractToPath;
     }
 
-    protected function extractZipFile($filePath, $password = null)
+    protected function extractZipFile($filePath, $extractToPath, $password = null)
     {
         $zip = new ZipArchive;
         $zipped = $zip->open($filePath);
@@ -102,6 +146,7 @@ class FileProcessor
         // Checking if it is actually a zipped file.
         if ($zipped === true)
         {
+            $password = 'T69801';
             // Use the password to extract if present.
             if (empty($password) === false)
             {
@@ -109,7 +154,7 @@ class FileProcessor
             }
 
             // Extract to the same folder as the zip file.
-            $extracted = $zip->extractTo($this->getFolderFromFilePath($filePath));
+            $extracted = $zip->extractTo($extractToPath);
 
             // Checking if it has been successfully extracted
             if ($extracted === true)

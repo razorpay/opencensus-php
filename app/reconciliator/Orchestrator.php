@@ -2,6 +2,8 @@
 
 namespace Reconciliator;
 
+use DirectoryIterator;
+
 class Orchestrator
 {
     const EXCEL = 'excel';
@@ -44,34 +46,32 @@ class Orchestrator
     {
         if ((isset($input['manual'])) and ($input['manual'] === true))
         {
-            $gateway = $this->manualEntry($input);
+            $allFileDetails = $this->manualEntry($input);
         }
         else
         {
-            $gateway = $this->mailGunEntry($input);
+            $allFileDetails = $this->mailGunEntry($input);
         }
 
-        $this->orchestrate($input, $gateway);
+        if (empty($allFileDetails) === true)
+        {
+            // TODO: Throw an exception about having no file details
+        }
 
-        // Attachment names have numbers starting with 1 and not 0 -- MailGun.
-        // Goes through each file and runs orchestrate on them.
-        // foreach (range(1, $emailDetails['attachment_count']) as $attachmentNumber)
-        // {
-        //     // TODO: Handle zip files
-        //     $file = $input['attachment-'.$attachmentNumber];
-        //
-        //     // Gets all the file details.
-        //     $fileDetails = $this->fileProcessor->getFileDetails($file);
-        //
-        //     // Let the orchestration begin!
-        //     $this->orchestrate($fileDetails);
-        // }
+        $this->orchestrate($allFileDetails);
 
         return 200;
     }
 
-    protected function orchestrate($input, $gateway)
+    protected function orchestrate($allFileDetails)
     {
+        // Run validations on each file
+        foreach ($allFileDetails as $file=>$fileDetails)
+        {
+            // Validates the file type, size, etc..
+            $this->validator->validateFile($fileDetails);
+        }
+        
         // $files = $this->getAllFilesFromInput();
 
         // Validates the file type, size, etc..
@@ -98,6 +98,7 @@ class Orchestrator
 
     protected function manualEntry(&$input)
     {
+        // TODO: Fill this up.
         return null;
     }
 
@@ -111,6 +112,8 @@ class Orchestrator
 
         // Gets file details of all the attachments present in the email.
         $allFileDetails = $this->getFileDetailsFromAllAttachments($emailDetails, $input);
+
+        return $allFileDetails;
     }
 
     protected function getFileDetailsFromAllAttachments($emailDetails, $input)
@@ -127,17 +130,19 @@ class Orchestrator
             // Else, get the file details of the attachment.
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
-                $zippedFileDetails = $this->fileProcessor->getFileDetails($file);
-                $unzippedFiles = $this->fileProcessor->unzipFile($zippedFileDetails, $this->gateway);
-
-                foreach ($unzippedFiles as $unzippedFile)
+                $zippedFileDetails = $this->fileProcessor->getUploadedFileDetails($file);
+                $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $this->gateway);
+                foreach (new DirectoryIterator($unzippedFolderPath) as $unzippedFile)
                 {
-                    $fileDetails[] = $this->fileProcessor->getFileDetails($unzippedFile);
+                    if($unzippedFile->isFile() === true)
+                    {
+                        $fileDetails[] = $this->fileProcessor->getStorageFileDetails($unzippedFile);
+                    }
                 }
             }
             else
             {
-                $fileDetails[] = $this->fileProcessor->getFileDetails($file);
+                $fileDetails[] = $this->fileProcessor->getUploadedFileDetails($file);
             }
         }
 

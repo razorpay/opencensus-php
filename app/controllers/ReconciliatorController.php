@@ -7,7 +7,7 @@ use EE\Exception;
 class ReconciliatorController extends BaseController
 {
     protected $orchestrator;
-    
+
     public function __construct()
     {
         $this->orchestrator = new Reconciliator\Orchestrator();
@@ -17,7 +17,7 @@ class ReconciliatorController extends BaseController
     {
         $input = Input::all();
 
-        $statusCode = $this->orchestrator->start($input);
+        $statusCode = $this->orchestrator->baseEntry($input);
 
         return $statusCode;
         //return Response::make($contents, $statusCode);
