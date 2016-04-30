@@ -60,42 +60,43 @@ class FileProcessor
     }
 
 
-    // TODO: Abstract out the two fileDetails methods
     public function getUploadedFileDetails($file)
     {
-        $extension = strtolower($file->getClientOriginalExtension());
         $fileName = strtolower($file->getClientOriginalName());
-        $destinationPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $extension = strtolower($file->getClientOriginalExtension());
+        $mimeType = $file->getMimeType();
+        $size = $file->getClientSize();
+        $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $filePath = $sourceFolderPath . '/' . $fileName;
 
-        $fileDetails = [
-            self::FILE_NAME          => $fileName,
-            self::EXTENSION          => $extension,
-            self::MIME_TYPE          => $file->getMimeType(),
-            self::SIZE               => $file->getClientSize(),
-            self::FILE_PATH          => $destinationPath . '/' . $fileName,
-            self::DESTINATION_FOLDER => $destinationPath,
-        ];
-
-        $file->move($destinationPath, $fileName);
-
-        return $fileDetails;
+        $file->move($sourceFolderPath, $fileName);
+        
+        return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
 
 
     public function getStorageFileDetails($file)
     {
-        $mimeType = mime_content_type($file->getRealPath());
-
-        $extension = strtolower($file->getExtension());
         $fileName = strtolower($file->getFilename());
-
+        $extension = strtolower($file->getExtension());
+        $mimeType = mime_content_type($file->getRealPath());
+        $size = $file->getSize();
+        $sourceFolderPath =  $file->getPath();
+        $filePath = $file->getRealPath();
+        
+        return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
+    }
+    
+    
+    public function fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath)
+    {
         $fileDetails = [
             self::FILE_NAME          => $fileName,
             self::EXTENSION          => $extension,
             self::MIME_TYPE          => $mimeType,
-            self::SIZE               => $file->getSize(),
-            self::FILE_PATH          => $file->getRealPath(),
-            self::DESTINATION_FOLDER => $file->getPath(),
+            self::SIZE               => $size,
+            self::DESTINATION_FOLDER => $sourceFolderPath,
+            self::FILE_PATH          => $filePath,
         ];
 
         return $fileDetails;

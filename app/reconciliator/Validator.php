@@ -48,7 +48,28 @@ class Validator
 
         // TODO: Filter against subject?
     }
+    
+    
+    public function validateEmailAttachments($input)
+    {
+        if ((isset($input['attachment-count']) === false) or ($input['attachment-count'] === 0))
+        {
+            throw new Exception\ReconciliationException(
+                'No attachments present in the email.'
+            );
+        }
+    }
+    
+    
+    
+    public function validateManualInput($input)
+    {
+        // TODO: Fill this up.
+        // Validate that there is at least one file.
+        // Validate that all the files in the input have the format - attachment-[1..n]
+    }
 
+    
     public function validateFile($fileDetails)
     {
         $extension = $fileDetails['extension'];
@@ -58,10 +79,9 @@ class Validator
         $this->validateExtensionMimeType($extension, $mimeType);
 
         $this->validateFileSize($fileSize);
-
-        // TODO: CSV and text file validations (checking if they are valid CSV files) will be done directly while reading.
     }
 
+    
     public function validateExtensionMimeType($extension, $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
@@ -76,6 +96,7 @@ class Validator
         }
     }
 
+    
     protected function validateFileSize($fileSize)
     {
         if ($fileSize > self::MAX_FILE_SIZE)

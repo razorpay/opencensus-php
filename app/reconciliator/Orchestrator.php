@@ -8,6 +8,8 @@ use EE\Exception;
 
 class Orchestrator
 {
+    const GATEWAY = 'gateway';
+
     /******************
      * Bank constants
      ******************/
@@ -74,6 +76,36 @@ class Orchestrator
     }
 
 
+    protected function manualEntry($input)
+    {
+        $this->validator->validateManualInput($input);
+
+        $inputDetails = $this->getManualInputDetails($input);
+
+        // Sets the gateway for the orchestrator
+        $this->setGatewayForManual($inputDetails);
+
+        $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
+
+        return $allFilesDetails;
+    }
+
+
+    protected function mailGunEntry($input)
+    {
+        $emailDetails = $this->getEmailDetails($input);
+        $this->validator->filterEmails($emailDetails);
+
+        // Sets the gateway for the orchestrator
+        $this->setGatewayFromEmailId($emailDetails);
+
+        // Sets file details of all the attachments present in the email, for the orchestrator.
+        $allFilesDetails = $this->getFileDetailsFromInput($emailDetails, $input);
+
+        return $allFilesDetails;
+    }
+
+
     protected function orchestrate()
     {
         // Run validations and conversions on each file
@@ -97,109 +129,73 @@ class Orchestrator
     }
 
 
-    protected function getFileContentInArrayAndSet($fileDetails)
+    protected function getManualInputDetails($input)
     {
-        $fileType = self::getKeyFromSubArrayMatch($fileDetails[FileProcessor::EXTENSION],
-                                                    FileProcessor::FILE_TYPES_MAPPINGS);
-
-        $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
-
-        if (empty($fileType) === true)
-        {
-            throw new Exception\ReconciliationException(
-                'Unsupported file type.', ['file_details' => $fileDetails, 'file_type' => $fileType]
-            );
-        }
-
-        // TODO: Figure out a way to move this logic to 'Converter'.
-        // Currently, the problem is with Excel files having multiple sheets.
-        // Hence, we get
-        // $allFilesContents = [[file1sheet1dataArray, file1sheet2_ataArray], file2csv_data_array, file3csv_data_array]
-        // Use array_merge for solving this.
-
-        if ($fileType === FileProcessor::EXCEL)
-        {
-            $this->handleSettingExcelContent($fileDetails);
-        }
-        else if ($fileType === FileProcessor::CSV)
-        {
-            $this->handleSettingCsvContent($fileDetails);
-        }
-        else
-        {
-            throw new Exception\ReconciliationException(
-                'File is neither an Excel nor a CSV type.',
-                ['file_details' => $fileDetails]
-            );
-        }
-    }
-
-
-    protected function handleSettingExcelContent($fileDetails)
-    {
-        $sheets = $this->converter->getAllExcelSheets($fileDetails);
-        // Every sheet is equivalent to a different file.
-        foreach ($sheets as $sheet)
-        {
-            $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
-            $sheetArray[FileProcessor::FILE_DETAILS] = $fileDetails;
-            $sheetArray[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME] = $sheet->getTitle();
-            $this->allFilesContents[] = $sheetArray;
-        }
-    }
-
-
-    protected function handleSettingCsvContent($fileDetails)
-    {
-        $csvArray = $this->converter->convertCsvToArray($fileDetails);
-        $csvArray[FileProcessor::FILE_DETAILS] = $fileDetails;
-        $this->allFilesContents[] = $csvArray;
-    }
-
-
-    public static function getKeyFromSubArrayMatch($needle, $haystack)
-    {
-        foreach($haystack as $key => $subArray)
-        {
-            if (in_array($needle, $subArray) === true)
-            {
-                return $key;
-            }
-        }
+        // TODO: Fill this up. (Get the number of attachments also in the input details.)
         return null;
     }
 
 
-    protected function manualEntry($input)
+    protected function getEmailDetails($input)
     {
-        // TODO: Fill this up.
-        return null;
+        $emailDetails = [
+            'from' => $input['sender'],
+            'subject' => $input['subject'],
+            'to' => $input['recipient'],
+            'timestamp' => $input['timestamp'],
+            'body' => $input['stripped-text'],
+        ];
+
+        $this->validator->validateEmailAttachments($input);
+
+        $emailDetails['attachment_count'] = $input['attachment-count'];
+
+        return $emailDetails;
     }
 
 
-    protected function mailGunEntry($input)
+    protected function setGatewayForManual($inputDetails)
     {
-        $emailDetails = $this->getEmailDetails($input);
-        $this->validator->filterEmails($emailDetails);
+        $gateway = $inputDetails[self::GATEWAY];
 
-        // Sets the gateway for the orchestrator
-        $this->gateway = $this->getGatewayFromEmailId($emailDetails);
+        if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
+        {
+            throw new Exception\ReconciliationException(
+                'Invalid gateway param. It should be either HDFC/Axis/Kotak. (case sensitive)',
+                ['gateway' => $gateway]
+            );
+        }
 
-        // Sets file details of all the attachments present in the email, for the orchestrator.
-        $allFilesDetails = $this->getFileDetailsFromAllAttachments($emailDetails, $input);
-
-        return $allFilesDetails;
+        $this->gateway = $gateway;
     }
 
 
-    protected function getFileDetailsFromAllAttachments($emailDetails, $input)
+    protected function setGatewayFromEmailId($emailDetails)
+    {
+        $fromEmailId = $emailDetails['from'];
+
+        $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
+
+        if (empty($gateway) === true)
+        {
+            throw new Exception\ReconciliationException(
+                'Email ID not present in Sender-Gateway mapping.',
+                ['email_id' => $fromEmailId]
+            );
+        }
+
+        $this->gateway = $gateway;
+    }
+
+
+    protected function getFileDetailsFromInput($inputDetails, $input)
     {
         $allFilesDetails = [];
 
-        // Attachment names have numbers starting with 1 and not 0 -- MailGun Specific.
         // Goes through each file and gets the file details.
-        foreach (range(1, $emailDetails['attachment_count']) as $attachmentNumber)
+        foreach (range(1, $inputDetails['attachment_count']) as $attachmentNumber)
         {
+            // Attachment files in MainGun are named as 'attachment-[1..n]'.
             $file = $input['attachment-'.$attachmentNumber];
 
             $fileType = $this->fileProcessor->getTypeOfFile($file);
@@ -233,6 +229,63 @@ class Orchestrator
         return $allFilesDetails;
     }
 
+
+    // Converts the data in file and sets to in-memory array.
+    protected function getFileContentInArrayAndSet($fileDetails)
+    {
+        $fileType = self::getKeyFromSubArrayMatch($fileDetails[FileProcessor::EXTENSION],
+                                                    FileProcessor::FILE_TYPES_MAPPINGS);
+
+        $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
+
+        if (empty($fileType) === true)
+        {
+            throw new Exception\ReconciliationException(
+                'Unsupported file type.', ['file_details' => $fileDetails, 'file_type' => $fileType]
+            );
+        }
+
+        if ($fileType === FileProcessor::EXCEL)
+        {
+            $this->handleSettingExcelContent($fileDetails);
+        }
+        else if ($fileType === FileProcessor::CSV)
+        {
+            $this->handleSettingCsvContent($fileDetails);
+        }
+        else
+        {
+            throw new Exception\ReconciliationException(
+                'File is neither an Excel nor a CSV type.',
+                ['file_details' => $fileDetails]
+            );
+        }
+    }
+
+
+    protected function handleSettingExcelContent($fileDetails)
+    {
+        $sheets = $this->converter->getAllExcelSheets($fileDetails);
+
+        // Every sheet is equivalent to a different file.
+        foreach ($sheets as $sheet)
+        {
+            $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
+            $sheetArray[FileProcessor::FILE_DETAILS] = $fileDetails;
+            $sheetArray[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME] = $sheet->getTitle();
+            $this->allFilesContents[] = $sheetArray;
+        }
+    }
+
+
+    protected function handleSettingCsvContent($fileDetails)
+    {
+        $csvArray = $this->converter->convertCsvToArray($fileDetails);
+        $csvArray[FileProcessor::FILE_DETAILS] = $fileDetails;
+        $this->allFilesContents[] = $csvArray;
+    }
+
+
     protected function getFileDetailsFromZipAttachment($file)
     {
         $allExtractedFilesDetails = [];
@@ -252,45 +305,15 @@ class Orchestrator
     }
 
 
-    protected function getGatewayFromEmailId($emailDetails)
+    public static function getKeyFromSubArrayMatch($needle, $haystack)
     {
-        $fromEmailId = $emailDetails['from'];
-
-        $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
-
-        if (empty($gateway) === true)
+        foreach($haystack as $key => $subArray)
         {
-            throw new Exception\ReconciliationException(
-                'Email ID not present in Sender-Gateway mapping.',
-                ['email_id' => $fromEmailId]
-            );
+            if (in_array($needle, $subArray) === true)
+            {
+                return $key;
+            }
         }
-
-        return $gateway;
-    }
-
-
-    protected function getEmailDetails($input)
-    {
-        $emailDetails = [
-            'from' => $input['sender'],
-            'subject' => $input['subject'],
-            'to' => $input['recipient'],
-            'timestamp' => $input['timestamp'],
-            'body' => $input['stripped-text'],
-        ];
-
-        if ((isset($input['attachment-count']) === true) and ($input['attachment-count'] > 0))
-        {
-            $emailDetails['attachment_count'] = $input['attachment-count'];
-        }
-        else
-        {
-            throw new Exception\ReconciliationException(
-                'No attachments present in the email.'
-            );
-        }
-
-        return $emailDetails;
+        return null;
     }
 }
