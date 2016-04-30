@@ -4,6 +4,8 @@ namespace Reconciliator;
 
 use DirectoryIterator;
 
+use EE\Exception;
+
 class Orchestrator
 {
     /******************
@@ -19,8 +21,8 @@ class Orchestrator
      ********************/
     // The gateway names should be the same name as the directories present under 'reconciliator'
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth@razorpay.com'],
-        self::Axis => ['prashanth.yv@razorpay.com'],
+        self::HDFC => ['prashanth.yv@razorpay.com'],
+        self::Axis => ['prashanth@razorpay.com'],
     ];
 
 
@@ -29,6 +31,7 @@ class Orchestrator
      *********************/
     protected $gateway;
     protected $allFilesContents;
+    protected $allFilesDetails;
 
 
     /********************
@@ -46,31 +49,35 @@ class Orchestrator
         $this->converter = new Converter;
     }
 
+
     public function baseEntry($input)
     {
         if ((isset($input['manual'])) and ($input['manual'] === true))
         {
-            $allFilesDetails = $this->manualEntry($input);
+            $this->allFilesDetails = $this->manualEntry($input);
         }
         else
         {
-            $allFilesDetails = $this->mailGunEntry($input);
+            $this->allFilesDetails = $this->mailGunEntry($input);
         }
 
-        if (empty($allFilesDetails) === true)
+        if (empty($this->allFilesDetails) === true)
         {
-            // TODO: Throw an exception about having no file details
+            throw new Exception\ReconciliationException(
+                'File details are empty.', ['all_files_details' => $this->allFilesDetails]
+            );
         }
 
-        $this->orchestrate($allFilesDetails);
+        $this->orchestrate();
 
         return 200;
     }
 
-    protected function orchestrate($allFilesDetails)
+
+    protected function orchestrate()
     {
         // Run validations and conversions on each file
-        foreach ($allFilesDetails as $file => $fileDetails)
+        foreach ($this->allFilesDetails as $file => $fileDetails)
         {
             // Validates the file type, size, etc..
             $this->validator->validateFile($fileDetails);
@@ -80,38 +87,75 @@ class Orchestrator
             // conversion to array might be different for different gateways.
             $this->getFileContentInArrayAndSet($fileDetails);
 
-            // Deletes the file.
+            // Delete the file. We have all the data in $allFilesContents.
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
+
+        $gatewayReconciliatorClassName = 'Reconciliator' . '\\' . $this->gateway . '\\' . 'Reconciliate';
+        $gatewayReconciliator = new $gatewayReconciliatorClassName;
+        $gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
+
 
     protected function getFileContentInArrayAndSet($fileDetails)
     {
         $fileType = self::getKeyFromSubArrayMatch($fileDetails[FileProcessor::EXTENSION],
                                                     FileProcessor::FILE_TYPES_MAPPINGS);
 
+        $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
+
         if (empty($fileType) === true)
         {
-            // TODO: Throw an exception for an unsupported type.
+            throw new Exception\ReconciliationException(
+                'Unsupported file type.', ['file_details' => $fileDetails, 'file_type' => $fileType]
+            );
         }
 
         // TODO: Figure out a way to move this logic to 'Converter'.
         // Currently, the problem is with Excel files having multiple sheets.
         // Hence, we get
-        // $allFileContents = [[file1sheet1dataArray, file1sheet2_ataArray], file2csv_data_array, file3csv_data_array]
+        // $allFilesContents = [[file1sheet1dataArray, file1sheet2_ataArray], file2csv_data_array, file3csv_data_array]
+        // Use array_merge for solving this.
+
         if ($fileType === FileProcessor::EXCEL)
         {
-            $sheets = $this->converter->getAllExcelSheets($fileDetails);
-            foreach ($sheets as $sheet)
-            {
-                $this->allFilesContents[] = $this->converter->convertExcelSheetToArray($sheet);
-            }
+            $this->handleSettingExcelContent($fileDetails);
         }
         else if ($fileType === FileProcessor::CSV)
         {
-            $this->allFilesContents[] = $this->converter->convertCsvToArray($fileDetails);
+            $this->handleSettingCsvContent($fileDetails);
+        }
+        else
+        {
+            throw new Exception\ReconciliationException(
+                'File is neither an Excel nor a CSV type.',
+                ['file_details' => $fileDetails]
+            );
         }
     }
+
+
+    protected function handleSettingExcelContent($fileDetails)
+    {
+        $sheets = $this->converter->getAllExcelSheets($fileDetails);
+        // Every sheet is equivalent to a different file.
+        foreach ($sheets as $sheet)
+        {
+            $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
+            $sheetArray[FileProcessor::FILE_DETAILS] = $fileDetails;
+            $sheetArray[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME] = $sheet->getTitle();
+            $this->allFilesContents[] = $sheetArray;
+        }
+    }
+
+
+    protected function handleSettingCsvContent($fileDetails)
+    {
+        $csvArray = $this->converter->convertCsvToArray($fileDetails);
+        $csvArray[FileProcessor::FILE_DETAILS] = $fileDetails;
+        $this->allFilesContents[] = $csvArray;
+    }
+
 
     public static function getKeyFromSubArrayMatch($needle, $haystack)
     {
@@ -125,13 +169,15 @@ class Orchestrator
         return null;
     }
 
-    protected function manualEntry(&$input)
+
+    protected function manualEntry($input)
     {
         // TODO: Fill this up.
         return null;
     }
 
-    protected function mailGunEntry(&$input)
+
+    protected function mailGunEntry($input)
     {
         $emailDetails = $this->getEmailDetails($input);
         $this->validator->filterEmails($emailDetails);
@@ -139,14 +185,17 @@ class Orchestrator
         // Sets the gateway for the orchestrator
         $this->gateway = $this->getGatewayFromEmailId($emailDetails);
 
-        // Gets file details of all the attachments present in the email.
+        // Sets file details of all the attachments present in the email, for the orchestrator.
         $allFilesDetails = $this->getFileDetailsFromAllAttachments($emailDetails, $input);
 
         return $allFilesDetails;
     }
 
+
     protected function getFileDetailsFromAllAttachments($emailDetails, $input)
     {
+        $allFilesDetails = [];
+
         // Attachment names have numbers starting with 1 and not 0 -- MailGun Specific.
         // Goes through each file and gets the file details.
         foreach (range(1, $emailDetails['attachment_count']) as $attachmentNumber)
@@ -159,24 +208,49 @@ class Orchestrator
             // Else, get the file details of the attachment.
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
-                $zippedFileDetails = $this->fileProcessor->getUploadedFileDetails($file);
-                $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $this->gateway);
-                foreach (new DirectoryIterator($unzippedFolderPath) as $unzippedFile)
+                $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
+
+                if (empty($extractedFileDetails) === true)
                 {
-                    if($unzippedFile->isFile() === true)
-                    {
-                        $allFilesDetails[] = $this->fileProcessor->getStorageFileDetails($unzippedFile);
-                    }
+                    throw new Exception\ReconciliationException(
+                        'No files present in the zip file attachment.',
+                        ['file_name' => $file->getClientOriginalName()]
+                    );
                 }
+
+                // Using array merge since $extractedFileDetails contains an
+                // array of file details of different files in the zip file.
+                array_merge($allFilesDetails, $extractedFileDetails);
             }
             else
             {
+                // Except zip, all other file types will return with a single element
+                // and not an array. Hence using push here instead of merge.
                 $allFilesDetails[] = $this->fileProcessor->getUploadedFileDetails($file);
             }
         }
 
         return $allFilesDetails;
     }
+
+    protected function getFileDetailsFromZipAttachment($file)
+    {
+        $allExtractedFilesDetails = [];
+
+        $zippedFileDetails = $this->fileProcessor->getUploadedFileDetails($file);
+        $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $this->gateway);
+
+        foreach (new DirectoryIterator($unzippedFolderPath) as $unzippedFile)
+        {
+            if($unzippedFile->isFile() === true)
+            {
+                $allExtractedFilesDetails[] = $this->fileProcessor->getStorageFileDetails($unzippedFile);
+            }
+        }
+
+        return $allExtractedFilesDetails;
+    }
+
 
     protected function getGatewayFromEmailId($emailDetails)
     {
@@ -186,11 +260,15 @@ class Orchestrator
 
         if (empty($gateway) === true)
         {
-            // TODO: Throw exception for unknown email ID.
+            throw new Exception\ReconciliationException(
+                'Email ID not present in Sender-Gateway mapping.',
+                ['email_id' => $fromEmailId]
+            );
         }
 
         return $gateway;
     }
+
 
     protected function getEmailDetails($input)
     {
@@ -208,7 +286,9 @@ class Orchestrator
         }
         else
         {
-            // TODO: Throw exception for having no attachments
+            throw new Exception\ReconciliationException(
+                'No attachments present in the email.'
+            );
         }
 
         return $emailDetails;

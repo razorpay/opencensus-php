@@ -41,7 +41,9 @@ class Validator
     {
         if (in_array($emailDetails['from'], self::FROM_EMAILS_FILTER) === false)
         {
-            // TODO: Throw exception for an invalid "from".
+            throw new Exception\ReconciliationException(
+                'The sender email ID is not whitelisted.', ['email_details' => $emailDetails]
+            );
         }
 
         // TODO: Filter against subject?
@@ -67,7 +69,10 @@ class Validator
         if ((isset($acceptedExtensionsMap[$extension]) === false) or
             (in_array($mimeType, $acceptedExtensionsMap[$extension]) === false))
         {
-            // TODO: Throw an exception for bad extension/mime-type.
+            throw new Exception\ReconciliationException(
+                'File has unsupported extension-mimeType mapping.', 
+                ['extension' => $extension, 'mime_type' => $mimeType]
+            );
         }
     }
 
@@ -75,7 +80,9 @@ class Validator
     {
         if ($fileSize > self::MAX_FILE_SIZE)
         {
-            // TODO: Throw an exception for exceeding file size limitation.
+            throw new Exception\ReconciliationException(
+                'File size exceeds the limit.', ['file_size' => $fileSize]
+            );
         }
     }
 }

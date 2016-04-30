@@ -2,7 +2,12 @@
 
 
 namespace Reconciliator;
+
+
 use Excel;
+
+use EE\Exception;
+
 
 class Converter
 {
@@ -38,7 +43,10 @@ class Converter
         }
         else
         {
-            // TODO: Ideally, shouldn't come here. But, if it comes, throw an exception for unsupported type.
+            throw new Exception\ReconciliationException(
+                'File is neither an Excel nor a CSV type.',
+                ['file_details' => $fileDetails]
+            );
         }
         
         return $this->dataArray;
@@ -78,7 +86,10 @@ class Converter
                 {
                     if (count($columnHeaders) !== count($row))
                     {
-                        // TODO: Throw an exception about invalid column header count
+                        throw new Exception\ReconciliationException(
+                            'The number of columns in the row does not match the column headers count.',
+                            ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
+                        );
                     }
                     
                     // Combines the columnHeaders(keys) with the row(values).
@@ -97,7 +108,10 @@ class Converter
         {
             if (count($newColumnHeaders) !== count(array_keys($rowData)))
             {
-                // TODO: Throw an exception about invalid column header count
+                throw new Exception\ReconciliationException(
+                    'The number of columns in the row does not match the column headers count.',
+                    ['column_headers' => $newColumnHeaders, 'row' => $rowData]
+                );
             }
 
             // Combines the columnHeaders(keys) with the rowData(values).

@@ -16,30 +16,39 @@ class FileProcessor
     const FILE_PATH = 'file_path';
     const DESTINATION_FOLDER = 'destination_folder';
     const FILE_TYPE = 'file_type';
+    const FILE_DETAILS = 'file_details';
+    const SHEET_NAME = 'sheet_name';
 
     const STORAGE = 'storage';
     const UPLOADED = 'uploaded';
 
-    const SETTLEMENT_STORAGE_PATH = 'files/settlement';
-
     const EXCEL = 'excel';
     const CSV = 'csv';
-    
+
     // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
     const FILE_TYPES_MAPPINGS = [
         self::EXCEL => ['xls', 'xlsx'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
+    const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
+
+    /********************
+     * Instance objects
+     ********************/
     protected $validator;
+
 
     public function __construct()
     {
         $this->validator = new Validator;
     }
 
+
     public function getFileDetails($file, $type)
     {
+        assert(in_array($type, [self::STORAGE, self::UPLOADED]), "Wrong file type [Uploaded/Storage]");
+
         if ($type === self::UPLOADED)
         {
             $this->getUploadedFileDetails($file);
@@ -48,11 +57,8 @@ class FileProcessor
         {
             $this->getStorageFileDetails($file);
         }
-        else
-        {
-            // TODO: Throw exception about wrong file type
-        }
     }
+
 
     // TODO: Abstract out the two fileDetails methods
     public function getUploadedFileDetails($file)
@@ -75,6 +81,7 @@ class FileProcessor
         return $fileDetails;
     }
 
+
     public function getStorageFileDetails($file)
     {
         $mimeType = mime_content_type($file->getRealPath());
@@ -94,6 +101,7 @@ class FileProcessor
         return $fileDetails;
     }
 
+
     public function deleteFileLocally($filePath)
     {
         if (file_exists($filePath))
@@ -101,15 +109,19 @@ class FileProcessor
             $success = unlink($filePath);
             if ($success === false)
             {
-                throw new Exception\RuntimeException(
-                    'Failed to delete file: ' . $filePath);
+                throw new Exception\ReconciliationException(
+                    'Failed to delete file.', ['file_path' => $filePath]
+                );
             }
         }
         else
         {
-            // TODO: Throw exception for file not found
+            throw new Exception\ReconciliationException(
+                'Cannot delete. File not present.', ['file_path' => $filePath]
+            );
         }
     }
+
 
     public function getTypeOfFile($file)
     {
@@ -121,6 +133,7 @@ class FileProcessor
         return $extension;
 
     }
+
 
     public function unzipFile($fileDetails, $gateway)
     {
@@ -136,17 +149,18 @@ class FileProcessor
         $extractToPath = $this->getFolderFromFilePath($filePath) . '/' . $randomFolderName;
 
         // Currently supporting only zip files
-        if ($extension === 'zip')
+        if ($extension !== 'zip')
         {
-            $this->extractZipFile($filePath, $extractToPath);
+            throw new Exception\ReconciliationException(
+                'Unsupported zip type. Currently supporting only zip files.', ['file_details' => $fileDetails]
+            );
         }
-        else
-        {
-            // TODO: Throw error for being an unsupported zip file (g-zip, bz, etc).
-        }
+
+        $this->extractZipFile($filePath, $extractToPath);
 
         return $extractToPath;
     }
+
 
     protected function extractZipFile($filePath, $extractToPath, $password = null)
     {
@@ -154,31 +168,38 @@ class FileProcessor
         $zipped = $zip->open($filePath);
 
         // Checking if it is actually a zipped file.
-        if ($zipped === true)
+        if ($zipped === false)
         {
-            $password = 'T69801';
-            // Use the password to extract if present.
-            if (empty($password) === false)
-            {
-                $zip->setPassword($password);
-            }
+            throw new Exception\ReconciliationException(
+                'Attempt to unzip a non-zip file.', ['file_path' => $filePath]
+            );
+        }
+        
+        //$password = 'T69801';
+        // Use the password to extract if present.
+        if (empty($password) === false)
+        {
+            $zip->setPassword($password);
+        }
 
-            // Extract to the same folder as the zip file.
-            $extracted = $zip->extractTo($extractToPath);
+        // Extract to the same folder as the zip file.
+        $extracted = $zip->extractTo($extractToPath);
 
-            // Checking if it has been successfully extracted
-            if ($extracted === true)
-            {
-                // Delete the original zip file.
-                $this->deleteFileLocally($filePath);
-                $zip->close();
-            }
+        // Checking if it has been successfully extracted
+        if ($extracted === true)
+        {
+            // Delete the original zip file.
+            $this->deleteFileLocally($filePath);
+            $zip->close();
         }
         else
         {
-            // TODO: Throw error for not being a zip file.
+            throw new Exception\ReconciliationException(
+                'Failed to unzip file.', ['file_path' => $filePath]
+            );
         }
     }
+
 
     public function getFolderFromFilePath($filePath)
     {

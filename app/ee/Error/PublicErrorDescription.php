@@ -148,4 +148,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE                                   = 'The image type is not jpg, jpeg or png.';
+    
+    const BAD_RECONCILIATION_EMPTY_FILE_DETAILS                                 = 'File details are empty. There could be no files present.';
+    const BAD_RECONCILIATION_UNSUPPORTED_FILE_TYPE                              = 'File type is not supported.';
 }
