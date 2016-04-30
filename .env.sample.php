@@ -133,5 +133,6 @@ return array(
     'TOKENEX_API_URL'                                   => 'https://test-api.tokenex.com/TokenServices.svc/',
     'TOKENEX_TOKEN_SCHEME'                              => '12',
 
-    'RAVEN_API_URL'                                     => 'http://raven/v1/',
+    'RAVEN_URL'                                         => '',
+    'RAVEN_SECRET'                                      => '',
 );

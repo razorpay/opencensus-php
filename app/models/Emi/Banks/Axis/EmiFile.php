@@ -5,6 +5,7 @@ namespace Models\Emi\Banks\Axis;
 use Carbon\Carbon;
 
 use Services\TokenEx;
+use Models\Card;
 use Models\Emi\Service;
 use Models\Emi\Banks\Base;
 
@@ -84,17 +85,6 @@ class EmiFile extends Base\EmiFile
         }
 
         return $data;
-    }
-
-    protected function getCardNumber($card)
-    {
-        $cardToken = $card->getVaultToken();
-
-        $app = \App::getFacadeRoot();
-
-        $cardNumber = $app['card.tokenex']->detokenize($cardToken);
-
-        return $cardNumber;
     }
 
     protected function getAuthCode($payment)

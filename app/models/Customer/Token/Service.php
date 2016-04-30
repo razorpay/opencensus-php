@@ -73,6 +73,8 @@ class Service extends Base\Service
 
     public function fetchTokensByAppId($appId)
     {
+        Customer\App\Entity::verifyIdAndStripSign($appId);
+
         $tokens = (new Customer\Token\Core)->fetchTokensByAppId($this->merchant->getKey(), $appId);
 
         return $tokens->toArrayPublic();
@@ -102,11 +104,16 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function delete($id, $token)
+    public function delete($id, $token, $merchantId = null)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
+        $customer = $this->repo->findByIdAndMerchantId($id, $merchantId);
 
         $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
 
@@ -128,8 +135,12 @@ class Service extends Base\Service
 
     public function deleteAppToken($appId, $token)
     {
-        $app = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $this->merchant->getId());
+        Customer\App\Entity::verifyIdAndStripSign($appId);
 
-        return $this->delete($app->getCustomerId(), $token);
+        $app = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $this->merchant->getId());
+
+        $customerId = $app->customer->getPublicId();
+
+        return $this->delete($customerId, $token, Account::SHARED_ACCOUNT);
     }
 }

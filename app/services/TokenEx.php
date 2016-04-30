@@ -53,7 +53,7 @@ class TokenEx
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::DATA          => $data,
-            self::TOKEN_SCHEME  => (int)$this->tokenScheme
+            self::TOKEN_SCHEME  => (int) $this->tokenScheme
         );
 
         $response = $this->sendRequest('REST/Tokenize', 'post', $input);
@@ -160,7 +160,7 @@ class TokenEx
                 'response' => $response
             ]);
 
-        if($success === false)
+        if ($success === false)
         {
             throw new Exception\RuntimeException('tokenex request: '. $referenceNumber . ' failed');
         }

@@ -5,6 +5,7 @@ namespace Models\Customer\Token;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
+use Models\Card;
 use Models\Customer;
 use Models\Customer\App;
 use Models\Customer\Token;
@@ -29,6 +30,20 @@ class Core extends Base\Core
 
         $token->customer()->associate($customer);
         $token->merchant()->associate($customer->merchant);
+
+        if (isset($input[Token\Entity::CARD_ID]))
+        {
+            $card = (new Card\Repository)->findOrFailPublic($input[Token\Entity::CARD_ID]);
+
+            $token->card()->associate($card);
+        }
+
+        if (isset($input[Token\Entity::TERMINAL_ID]))
+        {
+            $terminal = (new Card\Repository)->findOrFailPublic($input[Token\Entity::TERMINAL_ID]);
+
+            $token->terminal()->associate($terminal);
+        }
 
         $this->validateExistingToken($token);
 
@@ -57,61 +72,30 @@ class Core extends Base\Core
 
     public function fetchTokensByAppId($merchantId, $appId)
     {
-        $appEntity = (new Customer\App\Repository)->findByAppIdAndMerchantId($appId, $merchantId);
+        $appEntity = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $merchantId);
 
-        $tokens = $this->fetchTokensByCustomerId(Account::SHARED_ACCOUNT, $appEntity->getCustomerId());
+        $tokens = $this->fetchTokensByCustomerId(Account::SHARED_ACCOUNT, $appEntity->customer->getId());
 
         return $tokens;
     }
 
     public function fetchTokensByCustomerId($merchantId, $customerId)
     {
-        $customer = $this->custRepo->findOrFailPublic($customerId);
-
-        assert($customer->getMerchantId() === $merchantId);
+        $customer = $this->custRepo->findByIdAndMerchantId($customerId, $merchantId);
 
         $tokens = $this->repo->getByCustomerId($customerId);
 
         return $tokens;
     }
 
-    public function getCardNumberFromToken($token)
-    {
-        // Get card from token
-        $card = $token->card;
-
-        // Get vault token from card
-        $vaultToken = $card->getVaultToken();
-
-        // Get card number from vault service (tokenex) via vault token
-
-        $app = \App::getFacadeRoot();
-
-        try
-        {
-            $cardNumber = $app['card.tokenex']->detokenize($vaultToken);
-
-            if (empty($cardNumber) === false)
-            {
-                $cardNumber = strval($cardNumber);
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceExeption($e);
-        }
-
-        return $cardNumber;
-    }
-
     protected function validateExistingToken($token)
     {
         $params = array(
             Token\Entity::METHOD      => $token->getMethod(),
-            Token\Entity::CUSTOMER_ID => $token->getCustomerId());
+            Token\Entity::CUSTOMER_ID => $token->customer->getId());
 
         $existingTokens = $this->repo->getByMethodAndCustomerId(
-                                $token->getMethod(), $token->getCustomerId());
+                                $token->getMethod(), $token->customer->getId());
 
         $func = 'validateExistingToken'.$token->getMethod();
 
@@ -122,7 +106,7 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if ($token->getCardId() === $newToken->getCardId())
+            if ($token->card->getId() === $newToken->card->getId())
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS);
@@ -134,8 +118,8 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if(($token->getBank()  === $newToken->getBank()) and
-                ($token->getAccountKey() === $newToken->getAccountKey()))
+            if (($token->getBank()  === $newToken->getBank()) and
+                ($token->getGatewayToken() === $newToken->getGatewayToken()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS);
@@ -147,8 +131,8 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if(($token->getWallet()  === $newToken->getWallet()) and
-                ($token->getAccountKey() === $newToken->getAccountKey()))
+            if (($token->getWallet()  === $newToken->getWallet()) and
+                ($token->getGatewayToken() === $newToken->getGatewayToken()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);

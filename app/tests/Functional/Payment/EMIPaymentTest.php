@@ -72,8 +72,9 @@ class EmiPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         //Kotak Card
-        $this->makeEmiPaymentOnCard('4280951000002433', 9);
+        $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'capp_1000000custapp');
         $payment = $this->getLastEntity('payment', true);
+
         $this->fixtures->edit('payment', $payment['id'], [
             'created_at'  => $yesterdayAtTen - 2,
             'authorized_at' => $yesterdayAtTen,
@@ -107,12 +108,15 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
-    protected function makeEmiPaymentOnCard($card, $emiDuration)
+    protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appId = null, $customerId =  null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
         $this->payment['emi_duration'] = $emiDuration;
         $this->payment['card']['number'] = $card;
+        $this->payment['save'] = $save;
+        $this->payment['app_id'] = $appId;
+        $this->payment['customer_id'] = $customerId;
 
         $this->doAuthAndCapturePayment($this->payment);
     }

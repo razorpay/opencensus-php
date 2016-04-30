@@ -384,7 +384,7 @@ class MerchantTest extends TestCase
             'url' => '/checkout',
             'method' => 'get',
             'content' => [
-                'customer_id' => '100000customer'
+                'customer_id' => 'cust_100000customer'
             ],
         );
 
@@ -396,8 +396,6 @@ class MerchantTest extends TestCase
 
     public function testGetCheckoutRouteWithSavedGlobal()
     {
-        $this->markTestSkipped();
-
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
@@ -406,7 +404,7 @@ class MerchantTest extends TestCase
             'url' => '/checkout',
             'method' => 'get',
             'content' => [
-                'app_id' => '1000000custapp'
+                'app_id' => 'capp_1000000custapp'
             ],
         );
 

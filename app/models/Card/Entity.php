@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
+    const GLOBAL_CARD_ID    = 'global_card_id';
     const NAME              = 'name';
     const EXPIRY_MONTH      = 'expiry_month';
     const EXPIRY_YEAR       = 'expiry_year';
@@ -75,6 +76,7 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::MERCHANT_ID,
+        self::GLOBAL_CARD_ID,
         self::NAME,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
@@ -107,8 +109,9 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CODE);
 
     protected $defaults = array(
-        self::INTERNATIONAL => null,
-        self::EMI => false
+        self::INTERNATIONAL     => null,
+        self::EMI               => false,
+        self::GLOBAL_CARD_ID    => null,
     );
 
     public function merchant()
@@ -119,6 +122,11 @@ class Entity extends Base\PublicEntity
     public function iinRelation()
     {
         return $this->belongsTo('Models\Card\IIN\Entity', 'iin', 'iin');
+    }
+
+    public function globalCard()
+    {
+        return $this->belongsTo('Models\Card\Entity', self::GLOBAL_CARD_ID, self::ID);
     }
 
     public function generateLast4($input)
@@ -294,6 +302,11 @@ class Entity extends Base\PublicEntity
         }
 
         return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
+    public function getEmiAttribute()
+    {
+        return (bool) $this->attributes[self::EMI];;
     }
 
     public function isUnsupported()

@@ -47,8 +47,6 @@ class CustomerTest extends TestCase
 
     public function testOtpFlow()
     {
-        $this->markTestSkipped();
-
         $this->ba->publicAuth();
 
         $this->mockRaven();

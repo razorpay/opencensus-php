@@ -239,6 +239,6 @@ class ErrorCode
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                                = 'BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS';
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
-    const BAD_RECONCILIATION_EMPTY_FILE_DETAILS                                     = 'BAD_RECONCILIATION_EMPTY_FILE_DETAILS';
-    const BAD_RECONCILIATION_UNSUPPORTED_FILE_TYPE                                  = 'BAD_RECONCILIATION_UNSUPPORTED_FILE_TYPE';
+    
+    const BAD_REQUEST_INVALID_OTP                                                   = 'BAD_REQUEST_INVALID_OTP';
 }

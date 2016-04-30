@@ -144,6 +144,7 @@ trait RepositoryFetch
         $repo = $this->repo;
 
         $mechantIdWithTable = $repo::getAttributeWithTableName(Common::MERCHANT_ID);
+
         $query = $repo::where($mechantIdWithTable, '=', $merchantId);
 
         return $query->findOrFailPublic($id);
