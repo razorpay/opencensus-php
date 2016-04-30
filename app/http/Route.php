@@ -371,6 +371,7 @@ final class Route
         'order_update',
         'create_customer_token',
         'update_customer_token',
+        'refund_verify',
     );
 
     public static $proxy = array(

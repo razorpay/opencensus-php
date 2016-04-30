@@ -72,13 +72,11 @@ trait Refund
         return $refund;
     }
 
-    protected function verifyRefund($id)
+    public function verifyRefund($refund)
     {
-        Refund\Entity::verifyIdAndStripSign($id);
+        $payment = $refund->payment;
 
-        $refund = (new Refund\Repository)->findOrFail($id);
-
-        $payment = $this->retrieve($refund->getPaymentId());
+        $this->setPaymentAndRefundInfo($refund, $payment);
 
         assert ($payment->getGateway() === Payment\Gateway::HDFC);
 
@@ -96,18 +94,36 @@ trait Refund
 
         $verify = $this->callGatewayForVerifyRefund($data);
 
+        // Flag indicating if this is a buggy case fix.
+        $this->verifyRefundStatus = $verify;
+
+        $msg = 'Refund verification unsuccessful.';
+
         if ($verify === false)
         {
-            $this->refund = $refund;
-
-            $this->payment = $payment;
-
             $this->recordRefund();
 
             $this->sendRefundNotification($payment, $refund);
+
+            $msg = 'Refund verification failed and Refund performed.';
+        }
+        else if ($verify === true)
+        {
+            $msg = 'Refund verified successfully.';
         }
 
-        return $verify;
+        return ['verify_refund' => $msg];
+    }
+
+    protected function setPaymentAndRefundInfo($refund, $payment)
+    {
+        $this->merchant = $payment->merchant;
+
+        $this->methods = $payment->merchant->methods;
+
+        $this->refund = $refund;
+
+        $this->payment = $payment;
     }
 
     /**
@@ -187,9 +203,11 @@ trait Refund
 
     protected function callGatewayForVerifyRefund($data)
     {
+        $verifyRefundResult = null;
+
         try
         {
-            $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
+            $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
         }
         catch(BaseException $e)
         {
@@ -199,6 +217,8 @@ trait Refund
 
             throw $e;
         }
+
+        return $verifyRefundResult;
     }
 
     protected function callGatewayForRefund($data)
@@ -236,7 +256,15 @@ trait Refund
 
     protected function updatePaymentRefunded()
     {
-        $this->payment->refundAmount($this->refund->getAmount());
+        // Indicates buggy case where refund entity is already present
+        if ($this->verifyRefundStatus === false)
+        {
+            ; // No action required here.
+        }
+        else
+        {
+            $this->payment->refundAmount($this->refund->getAmount());
+        }
 
         $this->trace(TraceCode::PAYMENT_REFUND_SUCCESS);
     }

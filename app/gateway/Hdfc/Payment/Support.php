@@ -397,11 +397,11 @@ trait Support
             {
                 if ($entity->getStatus() === Payment\Status::REFUNDED)
                 {
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
     }
 }
