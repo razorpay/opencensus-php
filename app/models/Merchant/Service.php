@@ -101,7 +101,23 @@ class Service extends Base\Service
     // Proxy Auth.
     public function editConfig(array $input)
     {
+        // Adds uploaded logo's url to the input.
+        $this->uploadLogoIfFound($input);
+
         return (new Merchant\Core)->editConfig($this->merchant, $input);
+    }
+
+    protected function uploadLogoIfFound(&$input)
+    {
+        // if($input->hasFile('logo') and $input['logo']->isValid())
+        if (isset($input['logo']))
+        {
+            // Store the logos in AWS
+            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
+
+            $input['logo_url'] = $logoUrl;
+            unset($input['logo']);
+        }
     }
 
     public function addOrUpdateMerchantFeatures($id, array $input)

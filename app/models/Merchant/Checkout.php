@@ -48,6 +48,7 @@ class Checkout
 
         $data['methods'] = $methodsArray;
         $data['options']['theme']['color'] = $merchant->getBrandColor();
+        $data['options']['theme']['logo'] = $merchant->getLogoUrl("medium");
         $data['fee_bearer'] = false;
         $data['version'] = 1;
 

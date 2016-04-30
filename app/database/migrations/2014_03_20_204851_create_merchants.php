@@ -72,6 +72,10 @@ class CreateMerchants extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->text(Merchant::LOGO_URL)
+                  ->nullable()
+                  ->default(null);
+
             $table->tinyInteger(Merchant::RISK_RATING);
 
             $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)

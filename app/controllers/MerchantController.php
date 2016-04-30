@@ -5,6 +5,9 @@ use Models\Merchant;
 use Models\Terminal;
 use Models\Key;
 
+use EE\Exception;
+use EE\Error\ErrorCode;
+
 class MerchantController extends BaseController
 {
     public function postCreateMerchant()
@@ -54,6 +57,24 @@ class MerchantController extends BaseController
         $data = (new Merchant\Service)->editConfig($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function postMerchantConfigLogo()
+    {
+        if (Input::hasFile('logo'))
+        {
+            $input['logo'] = Input::file("logo");
+
+            $data = (new Merchant\Service)->editConfig($input);
+
+            return ApiResponse::json($data);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOGO_NOT_PRESENT
+            );
+        }
     }
 
     // This is on Internal Auth
