@@ -350,13 +350,20 @@ class Entity extends Base\PublicEntity
 
     public function getLogoUrl($size = self::ORIGINAL_SIZE)
     {
+        $relativeLogoUrl = $this->attributes[self::LOGO_URL];
+
+        if ($relativeLogoUrl === null)
+        {
+            return null;
+        }
+
         // Different cdn urls for different contexts.
         $context = Config::get('app.context');
         $cdnUrl = Config::get('url.cdn')[$context];
 
         // Sample base URL : 'https://cdn.razorpay.com' + '/logos/a.png'
         // Sample actual URL : 'https://cdn.razorpay.com' + 'logos/' + 'a_medium.png'
-        $baseLogoUrl = $cdnUrl . $this->attributes[self::LOGO_URL];
+        $baseLogoUrl = $cdnUrl . $relativeLogoUrl;
 
         // In DB, we are storing the base URL. The actual URL has the
         // respective size appended to it.
