@@ -282,10 +282,22 @@ trait Authorize
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
+        // if local card saving, associate customer with payment
+        if (($customer !== null) and ($customer->isLocal() === true))
+        {
+            $this->payment->customer()->associate($customer);
+        }
+
+        // for global card saving, associate app with payment
+        if (($customerApp !== null) and ($customer->isLocal() === false))
+        {
+            $this->payment->app()->associate($customerApp);
+        }
+
         // If token is set, then that means we have a saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->preProcessPaymentFromSavedCard($customer, $customerApp, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedCard($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -302,7 +314,7 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedCard($customer, $customerApp, $payment, & $input, & $gatewayInput)
+    protected function preProcessPaymentFromSavedCard($customer, $payment, & $input, & $gatewayInput)
     {
         $tokenInput = $input[Payment\Entity::TOKEN];
 
@@ -322,8 +334,6 @@ trait Authorize
         if ($customer->isLocal())
         {
             // Local customer, get token, get card, job done.
-            $this->payment->customer()->associate($customer);
-
             if ($payment->isMethodCardOrEmi())
             {
                 $gatewayInput['card'] = $this->getCardArrayForSavedToken($token, $input);
@@ -332,8 +342,6 @@ trait Authorize
         else
         {
             // Global customer
-            $this->payment->app()->associate($customerApp);
-
             if ($payment->isMethodCardOrEmi())
             {
                 $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);

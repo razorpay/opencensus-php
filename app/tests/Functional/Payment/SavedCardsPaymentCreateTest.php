@@ -189,6 +189,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals('card_'.$payment['card_id'], $card['id']);
         $this->assertNotEquals('card_'.$token['card_id'], $card['id']);
         $this->assertEquals($card['global_card_id'], $token['card_id']);
+        $this->assertEquals($payment['app_id'], 'capp_1000000custapp');
 
         $this->payment['card'] = array('cvv'  => 111);
         $this->payment['token'] = $token['token'];
@@ -224,6 +225,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals('card_'.$payment['card_id'], $card['id']);
         $this->assertNotEquals('card_'.$token['card_id'], $card['id']);
         $this->assertEquals($card['global_card_id'], $token['card_id']);
+        $this->assertEquals($payment['app_id'], 'capp_1000000custapp');
 
         $this->payment['token'] = $token['token'];
         $this->payment['app_id'] = 'capp_1000000custapp';
