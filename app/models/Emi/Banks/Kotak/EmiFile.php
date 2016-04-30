@@ -119,7 +119,7 @@ class EmiFile extends Base\EmiFile
 
         $cardNumber = $app['card.tokenex']->detokenize($cardToken);
 
-        return $cardNumber['Value'];
+        return $cardNumber;
     }
 
     protected function getGatewayEntity($payment)
