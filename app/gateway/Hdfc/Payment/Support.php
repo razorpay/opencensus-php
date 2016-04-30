@@ -378,8 +378,8 @@ trait Support
         $gatewayEntities = $this->repo->findByPaymentId($id);
 
         // No refund required for
-        // authorize, authorize is the only entity
-        // refunded entity is available.
+        // - authorize, authorize is the only entity
+        // - refunded entity is available.
 
         $count = $gatewayEntities->count();
 
@@ -387,9 +387,28 @@ trait Support
         {
             $entity = $gatewayEntities->first();
 
-            //other possibility is the captured entity is available.
-            return (($entity->getAction() === Action::AUTHORIZE) and
-                    ($entity->getStatus() === Payment\Status::AUTHORIZED));
+            $gatewayAction = (int) $entity->getAction();
+
+            $gatewayStatus = $entity->getStatus();
+
+            if (($gatewayAction === Action::PURCHASE) and
+                ($gatewayStatus === Payment\Status::CAPTURED))
+            {
+                    return true;
+            }
+            else if (($entity->getAction() === Action::AUTHORIZE) and
+                     ($entity->getStatus() === Payment\Status::AUTHORIZED))
+            {
+                    return false;
+            }
+            else
+            {
+                //should not reach here
+                throw new Exception\LogicException(
+                    'Only available entity for hdfc gateway payment is in an'.
+                    'unacceptable state.',
+                    $input);
+            }
         }
         else
         {
