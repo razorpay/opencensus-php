@@ -3,11 +3,15 @@
 namespace Models\Merchant\BankAccount;
 
 use EE\Exception;
+use Razorpay\IFSC\IFSC;
 use Models\Base;
 use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator
 {
+
+    const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code';
+
     protected static $addBankAccountRules = array(
         'ifsc_code'             => 'required|alpha_num|size:11',
         'account_number'        => 'required|alpha_num|between:5,20',
@@ -52,22 +56,10 @@ class Validator extends Base\Validator
 
         $ifsc = strtoupper($ifsc);
 
-        $message = null;
-
-        if (ctype_upper(substr($ifsc, 0, 4)) === false)
-        {
-            $message = 'First four letters of ifsc_code must be alphabets';
-        }
-
-        if ($ifsc[4] !== '0')
-        {
-            $message = 'IFSC code fifth letter must be 0';
-        }
-
-        if ($message !== null)
+        if (!IFSC::validate($ifsc))
         {
             $messages = new MessageBag;
-            $messages->add('ifsc_code', $message);
+            $messages->add('ifsc_code', self::INVALID_IFSC_CODE_MESSAGE);
 
             $this->processValidationFailure($messages, 'validateBankAccountInput', $input);
         }
