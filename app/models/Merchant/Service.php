@@ -146,7 +146,8 @@ class Service extends Base\Service
 
         // Only send the email field if the email is not
         // the same as the aggregator email
-        if ($merchant->email !== $aggregator->email)
+        if ( (!empty($merchant->email)) and
+             ($merchant->email !== $aggregator->email))
         {
             $data['email'] = $merchant->email;
         }
