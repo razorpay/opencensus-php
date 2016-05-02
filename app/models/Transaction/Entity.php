@@ -135,6 +135,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo($class, self::ENTITY_ID);
     }
 
+    /**
+     * Associates the entity id and validates that the entity id is unique.
+     */
+    public function sourceAssociate($entity)
+    {
+        $this->source()->associate($entity);
+        $this->validateEntityIdUnique($entity->getId());
+        $entity->transaction()->associate($this);
+    }
+
     public function payment()
     {
         if ($this->isTypePayment())
@@ -186,6 +196,11 @@ class Entity extends Base\PublicEntity
     public function getSettledAt()
     {
         return $this->getAttribute(self::SETTLED_AT);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
 /* ----------------------------- Accessors -----------------------------------*/
@@ -440,5 +455,12 @@ class Entity extends Base\PublicEntity
         }
 
         return $reportTxn;
+    }
+
+    public function validateEntityIdUnique()
+    {
+        $entityId = [self::ENTITY_ID => $this->getEntityId()];
+
+        $this->getValidator()->validateInput('unique_entity_id', $entityId);
     }
 }

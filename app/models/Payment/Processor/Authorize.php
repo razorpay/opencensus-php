@@ -15,6 +15,7 @@ use Models\Customer\Token;
 use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
+use Models\Payment\Status;
 use Models\Transaction;
 use Models\Order;
 use Trace\Trace;
@@ -78,6 +79,13 @@ trait Authorize
         return $payment->toArrayAdmin();
     }
 
+    /**
+     * This is a hack authorize function specially for authorizing
+     * migs pg payments. The limit there is that, migs provides
+     * reconciliation only for three days. If we miss any failed payment
+     * reconciliation there then we need to do it manually later.
+     *
+     */
     public function forceAuthorizeFailedPayment($payment, $input)
     {
         $this->setPayment($payment);
@@ -107,7 +115,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $this->repo->lockForUpdate($payment->getKey());
+            $payment = $this->lockForUpdateAndRetrievePayment($payment);
 
             assert ($payment->isFailed() === true);
 
@@ -254,7 +262,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $payment = $this->repo->lockForUpdate($payment->getKey());
+            $payment = $this->lockForUpdateAndRetrievePayment($payment);
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
@@ -543,9 +551,9 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
-        $this->eventPaymentAuthorized($payment);
+        $this->eventPaymentAuthorized();
 
-        $this->notifyAuthorized($payment, $wasFailed);
+        $this->notifyAuthorized($wasFailed);
     }
 
     protected function updateAuthorizedOrderStatus($payment)
@@ -581,10 +589,10 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function notifyAuthorized($payment, $wasFailed)
+    protected function notifyAuthorized($wasFailed)
     {
         // Trigger notification events for authorization
-        $notifier = new Notify($payment);
+        $notifier = new Notify($this->payment);
 
         if ($wasFailed)
         {
@@ -598,9 +606,9 @@ trait Authorize
         $notifier->trigger($trigger);
     }
 
-    protected function eventPaymentAuthorized($payment)
+    protected function eventPaymentAuthorized()
     {
-        $this->app['events']->fire('api.payment.authorized', array($payment));
+        $this->app['events']->fire('api.payment.authorized', array($this->payment));
     }
 
     protected function checkForRecentFailedPayment($payment)
@@ -985,7 +993,12 @@ trait Authorize
     {
         $this->repo->transaction(function()
         {
-            $payment = $this->payment;
+            $payment = $this->lockForUpdateAndRetrievePayment($this->payment);
+
+            if ($payment->getStatus() === Status::AUTHORIZED)
+            {
+               return;
+            }
 
             $payment->setAmountAuthorized();
 

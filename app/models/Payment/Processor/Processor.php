@@ -507,6 +507,15 @@ class Processor
         return $this->payment;
     }
 
+    protected function lockForUpdateAndRetrievePayment(& $payment)
+    {
+        $payment = $this->repo->lockForUpdate($payment->getKey());
+
+        $this->payment = $payment;
+
+        return $this->payment;
+    }
+
     protected function setPayment($payment)
     {
         $this->payment = $payment;
