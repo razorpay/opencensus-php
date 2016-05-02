@@ -111,17 +111,6 @@ class EmiFile extends Base\EmiFile
         return $data;
     }
 
-    protected function getCardNumber($card)
-    {
-        $cardToken = $card->getVaultToken();
-
-        $app = \App::getFacadeRoot();
-
-        $cardNumber = $app['card.tokenex']->detokenize($cardToken);
-
-        return $cardNumber['Value'];
-    }
-
     protected function getGatewayEntity($payment)
     {
         $gateway = ucfirst($payment->gateway);

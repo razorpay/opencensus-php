@@ -82,19 +82,7 @@ class Core extends Base\Core
             Entity::NAME            =>  $input[Entity::NAME],
         );
 
-        $card = null;
-
-        if (isset($input[Entity::VAULT_TOKEN]))
-        {
-            $card = $this->findExistingCards($createInput, $merchant);
-
-            $this->card = $card;
-        }
-
-        if ($card === null)
-        {
-            $card = $this->create($createInput, $merchant);
-        }
+        $card = $this->create($createInput, $merchant);
 
         return $card;
     }

@@ -50,8 +50,6 @@ class CustomerTokenTest extends TestCase
 
     public function testGetCustomerToken()
     {
-        $this->markTestSkipped();
-
         $this->ba->privateAuth();
 
         return $this->startTest();
@@ -66,8 +64,6 @@ class CustomerTokenTest extends TestCase
 
     public function testGetCustomerTokensByAppId()
     {
-        $this->markTestSkipped();
-
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -75,8 +71,6 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchSavedTokensStatusSaved()
     {
-        $this->markTestSkipped();
-
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -84,8 +78,6 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchSavedTokensStatusNotSaved()
     {
-        $this->markTestSkipped();
-
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -93,8 +85,6 @@ class CustomerTokenTest extends TestCase
 
     public function testDeleteAppToken()
     {
-        $this->markTestSkipped();
-
         $this->ba->publicAuth();
 
         $this->startTest();

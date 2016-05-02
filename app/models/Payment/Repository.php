@@ -76,6 +76,7 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
+                    ->with('card.globalCard')
                     ->get();
     }
 

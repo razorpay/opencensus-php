@@ -12,13 +12,4 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'CustomerApps';
-
-    public function findByAppIdAndMerchantId($appId, $merchantId)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(App\Entity::APP_ID, '=', $appId)
-                    ->where(App\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->first();
-    }
 }

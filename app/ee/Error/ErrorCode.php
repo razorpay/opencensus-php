@@ -209,6 +209,10 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                          = 'BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                                = 'BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                        = 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED';
+    const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                         = 'BAD_REQUEST_MERCHANT_LOGO_TOO_BIG';
+    const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                      = 'BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE';
+    const BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE                                       = 'BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE';
+    const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
 
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                            = 'BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
@@ -227,9 +231,11 @@ class ErrorCode
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
     const SERVER_ERROR_PAYMENT_ABORTED                                              = 'SERVER_ERROR_PAYMENT_ABORTED';
     const SERVER_ERROR_TO_STRING_EXCEPTION                                          = 'SERVER_ERROR_TO_STRING_EXCEPTION';
+    const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                                = 'BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS';
+    const BAD_REQUEST_INVALID_OTP                                                   = 'BAD_REQUEST_INVALID_OTP';
 }

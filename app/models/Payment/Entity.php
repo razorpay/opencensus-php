@@ -633,11 +633,6 @@ class Entity extends Base\PublicEntity
         return $this->card->getFormatted();
     }
 
-    public function getCustomerId()
-    {
-        return $this->getAttribute(self::CUSTOMER_ID);
-    }
-
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
@@ -887,6 +882,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo('Models\Customer\Entity');
+    }
+
+    public function app()
+    {
+        return $this->belongsTo('Models\Customer\App\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

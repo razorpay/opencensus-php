@@ -8,6 +8,7 @@ use Models\Merchant;
 use Models\Pricing;
 use Models\Terminal;
 use Trace\TraceCode;
+use EE\Exception;
 
 class Core extends Base\Core
 {

@@ -13,9 +13,15 @@ class Raven
 
     protected $baseUrl;
 
+    protected $key;
+
+    protected $secret;
+
     protected $config;
 
     protected $trace;
+
+    protected $proxy;
 
     public function __construct($app)
     {
@@ -24,6 +30,12 @@ class Raven
         $this->config = $app['config']->get('applications.raven');
 
         $this->baseUrl = $this->config['url'];
+
+        $this->key = 'rzp';
+
+        $this->secret = $this->config['secret'];
+
+        $this->proxy = $app['config']->get('gateway.proxy_address');
     }
 
     public function sendOtp($input)
@@ -56,11 +68,14 @@ class Raven
         if ($data === null)
             $data = '';
 
+        $authHeader = 'Basic '. base64_encode($this->key . ':' . $this->secret);
+
         $headers['Content-Type'] = 'application/json';
         $headers['Accept'] = 'application/json';
+        $headers['Authorization'] = $authHeader;
 
         $options = array(
-            'proxy' => 'https://splunk.razorpay.com:8888'
+            'proxy' => $this->proxy
         );
 
         $request = array(
@@ -100,7 +115,12 @@ class Raven
 
     protected function checkErrors($response)
     {
-        $success = $response[self::SUCCESS];
+        $success = false;
+
+        if (isset($response[self::SUCCESS]))
+        {
+            $success = $response[self::SUCCESS];
+        }
 
         $this->trace->info(
             TraceCode::RAVEN_REQUEST,

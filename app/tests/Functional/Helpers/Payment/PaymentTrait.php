@@ -704,6 +704,42 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultPaymentArrayEmi($saved)
+    {
+        $card = null;
+
+        if ($saved == true)
+        {
+            $card = array(
+                'cvv'   => 111);
+        }
+        else
+        {
+            $card = array(
+                'number'            => '41476700000006',
+                'name'              => 'Harshil',
+                'expiry_month'      => '12',
+                'expiry_year'       => '2017',
+                'cvv'               => '566');
+        }
+
+        $payment = [
+            'amount'            =>  '300000',
+            'currency'          =>  'INR',
+            'method'            =>  'emi',
+            'emi_duration'      =>  '9',
+            'card'              => $card,
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'notes'             => array(
+                'merchant_order_id' => 'random order id'),
+            'description'       => 'random description',
+            'bank'              => 'ICIC',
+        ];
+
+        return $payment;
+    }
+
     protected function generateRefundsExcelForHdfcNB()
     {
         $this->ba->appAuth();

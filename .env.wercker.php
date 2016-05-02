@@ -127,6 +127,7 @@ return array(
 
     'AWS_S3_MOCK'                                   => true,
     'AWS_S3_SETTLEMENT_BUCKET'                      => '',
+    'AWS_S3_LOGO_BUCKET'                            => '',
 
     'CRON_PASSWORD'                                 => 'a923r8u98uwaf98uw9w8fu',
 
@@ -140,5 +141,6 @@ return array(
     'TOKENEX_API_URL'                               => getenv('TOKENEX_API_URL'),
     'TOKENEX_TOKEN_SCHEME'                          => '12',
 
-    'RAVEN_API_URL'                                 => 'https://raven.razorpay.com/v1/',
+    'RAVEN_URL'                                     => 'https://raven.razorpay.com/v1/',
+    'RAVEN_SECRET'                                  => '',
 );

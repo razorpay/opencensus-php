@@ -79,11 +79,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT);
     }
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function isActive()
     {
         return (bool)$this->getAttribute(self::ACTIVE);

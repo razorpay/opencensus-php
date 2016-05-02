@@ -66,4 +66,6 @@ return array(
     'mock' => $_ENV['AWS_S3_MOCK'],
 
     'settlement_bucket' => $_ENV['AWS_S3_SETTLEMENT_BUCKET'],
+
+    'logo_bucket' => 'placeholder', //$_ENV['AWS_S3_LOGO_BUCKET'],
 );

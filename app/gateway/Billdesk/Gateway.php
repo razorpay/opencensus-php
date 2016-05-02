@@ -504,12 +504,11 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArrayForAuthorize($content, $input)
     {
-        $merchantTpvRequired = $input['merchant']->isTPVRequired();
+        $request = $this->getRequestArray($content, $input);
 
-        $request = $this->getRequestArray($content, $merchantTpvRequired);
-
+        // Modify payment authorize request for experimental MCC 9998
         // Change Content for Merchants with TPV Required
-        if ($merchantTpvRequired)
+        if ($this->useDirectBilldeskUrl($input))
         {
             $request['content']['hidRequestId'] = 'PGIME1000';
             $request['content']['hidOperation'] = 'ME100';
@@ -518,7 +517,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getRequestArray($content, $merchantTpvRequired = false)
+    protected function getRequestArray($content, $input = null)
     {
         $msg = $this->getMessageStringWithHash($content);
 
@@ -528,8 +527,12 @@ class Gateway extends Base\Gateway
 
         $action = $this->action;
 
-        if (($merchantTpvRequired) and
-            ($this->action === Action::AUTHORIZE))
+        // Modify payment authorize request for experimental MCC 9998
+        // Change Content for Merchants with TPV Required
+        // On action authorize, input will be set.
+        // On other actions this should not be used
+        if (($this->action === Action::AUTHORIZE) and
+             $this->useDirectBilldeskUrl($input))
         {
             $action = 'authorize_tpv';
         }
@@ -541,6 +544,20 @@ class Gateway extends Base\Gateway
         );
 
         return $request;
+    }
+
+    /**
+     * Checks if direct billdesk url is to be hit
+     *
+     * Uses merchant info
+     * Used for TPV and Experimental merchant code.
+     */
+    protected function useDirectBilldeskUrl($input)
+    {
+        $merchantTpvRequired = $input['merchant']->isTPVRequired();
+
+        return ($merchantTpvRequired or
+                ($input['merchant']->getCategory() === 9998));
     }
 
     protected function getSecurityId()
