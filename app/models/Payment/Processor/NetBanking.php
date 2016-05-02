@@ -74,7 +74,7 @@ class Netbanking
         IFSC::DLXB,
         IFSC::FDRL,
         IFSC::IBKL,
-        IFSC::ICIC,
+        // IFSC::ICIC, Temporarily disabling this while billdesk issue is resolved
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::IOBA,
