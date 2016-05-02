@@ -18,6 +18,8 @@ class TraceCode
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
+    const PAYMENT_VERIFY_REFUND_FAILURE             = 'PAYMENT_VERIFY_REFUND_FAILURE';
+    const PAYMENT_CAPTURE_REQUEST                   = 'PAYMENT_CAPTURE_REQUEST';
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';

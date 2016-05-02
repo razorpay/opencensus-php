@@ -42,6 +42,8 @@ class Processor
 
     protected $repo;
 
+    protected $verifyRefundStatus;
+
     public function __construct(
         Merchant\Entity $merchant,
         Payment\Core $core,
@@ -62,6 +64,9 @@ class Processor
         $this->orderRepo = new Order\Repository;
 
         $this->app = App::getFacadeRoot();
+
+        // Only used in hdfc verify refund flow
+        $this->verifyRefundStatus = null;
     }
 
     public static function create($bindings)
