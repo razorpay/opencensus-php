@@ -5,6 +5,7 @@ namespace Gateway\Hdfc\Payment;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Hdfc;
+use Models\Payment as PaymentModel;
 use Gateway\Hdfc\Payment;
 use Models\Card;
 use Trace\Trace;
@@ -385,6 +386,11 @@ trait Support
 
         if ($count === 1)
         {
+            // If there is only one entity, implies the transaction
+            // for capture never happened. Adding a check on payment for the
+            // same.
+            $this->assertPaymentRefundedWithoutCapture($input);
+
             $entity = $gatewayEntities->first();
 
             $gatewayAction = (int) $entity->getAction();
@@ -422,5 +428,12 @@ trait Support
 
             return true;
         }
+    }
+
+    protected function assertPaymentRefundedWithoutCapture($input)
+    {
+        assert($input['payment']['status'] === PaymentModel\Status::REFUNDED);
+
+        assert($input['payment']['captured'] === false);
     }
 }
