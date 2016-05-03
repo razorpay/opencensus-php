@@ -405,6 +405,8 @@ class MerchantController extends BaseController
 
     public function getCheckout()
     {
+        $input = Input::all();
+
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
         $app = $this->app;
