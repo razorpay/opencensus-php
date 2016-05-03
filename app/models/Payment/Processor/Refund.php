@@ -52,7 +52,7 @@ trait Refund
 
         $method = $refund->payment->getMethod();
 
-        if ($method === Payment\Method::CARD)
+        if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $refund->payment->card->toArray();
         }
@@ -87,7 +87,7 @@ trait Refund
 
         $method = $refund->payment->getMethod();
 
-        if ($method === Payment\Method::CARD)
+        if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $refund->payment->card->toArray();
         }
