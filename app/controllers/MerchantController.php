@@ -444,7 +444,7 @@ class MerchantController extends BaseController
         $data['checkout'] = $url;
         $data['preferences'] = $prefs;
         $data['framejs'] = $url . $framejs;
-        $data['font'] = $font;
+        $data['font'] = 'https://cdn.razorpay.com/'.$font;
 
         return ApiResponse::generateResponse($data);
     }
