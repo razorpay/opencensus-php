@@ -81,7 +81,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
         ],
     ],
 
@@ -102,7 +102,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_FIFTEEN_DIGITS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
         ],
     ],
 

@@ -40,8 +40,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS                                = 'Contact number can only contain digits and + symbol';
-    const BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS                            = 'Contact number should be at least 10 digits';
-    const BAD_REQUEST_PAYMENT_CONTACT_MAX_FIFTEEN_DIGITS                        = 'Contact number should not be greater than 15 digits, including country code';
+    const BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT                                 = 'Contact number should be at least 8 digits, including country code';
+    const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
