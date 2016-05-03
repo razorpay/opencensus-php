@@ -419,9 +419,19 @@ class MerchantController extends BaseController
             'production'    => 'https://checkout.razorpay.com',
             'beta'          => 'https://betacheckout.razorpay.com');
 
+        $framejs = '/v1/checkout-frame.js';
+
+        $data = [];
+
         if (in_array($context, array_keys($urlMap)))
         {
             $url = $urlMap[$context];
+
+            if ((isset($input['new'])) and
+                ($input['new'] === '1'))
+            {
+                $framejs = '/v1/checkout-frame-new.js';
+            }
         }
         else if (isset($input['checkout']))
         {
@@ -430,6 +440,7 @@ class MerchantController extends BaseController
 
         $data['checkout'] = $url;
         $data['preferences'] = $prefs;
+        $data['framejs'] = $url . $framejs;
 
         return ApiResponse::generateResponse($data);
     }

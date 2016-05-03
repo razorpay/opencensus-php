@@ -1,6 +1,5 @@
 <?php
 $fonts = 'https://cdn.razorpay.com/lato2';
-// $checkout = 'http://checkout.pronav.in/dist';
 ?>
 <!DOCTYPE html>
 <html dir="ltr">
@@ -51,7 +50,7 @@ else
     var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
     var preferences = <?= json_encode($preferences) ?>;
   </script>
-  <script src="<?= $checkout ?>/v1/checkout-frame.js"></script>
+  <script src="<?= $framejs ?>"></script>
 
 <?php
 }
