@@ -141,17 +141,29 @@ class Validator extends Base\Validator
                 $field);
         }
 
-        if (strlen($contact) < 10)
+        /**
+         * The minimum contact number length including international
+         * prefix (country code) is theoritically 8 digits.
+         *
+         * See http://stackoverflow.com/a/17814276/368328
+         *
+         * The correct way to do this would be to use libphonennumber
+         */
+        if (strlen($contact) < 8)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
                 $field);
         }
 
-        if (strlen($contact) > 12)
+        /**
+         * See https://en.wikipedia.org/wiki/Telephone_numbering_plan#International_numbering_plan
+         * for why 15
+         */
+        if (strlen($contact) > 15)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
                 $field);
         }
     }
