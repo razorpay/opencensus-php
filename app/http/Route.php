@@ -68,7 +68,7 @@ final class Route
         'merchant_edit_config_logo'             => ['post',     'account/config/logo',                      'MerchantController@postMerchantConfigLogo'                         ],
         'submerchant_create'                    => ['post',     'submerchants',                             'MerchantController@postCreateSubMerchant'                          ],
         'account_fetch_balance'                 => ['get',      'balance',                                  'MerchantController@getAccountBalance'                              ],
-        'fetch_bank_account'                    => ['get',      'bank_account',                             'MerchantController@getOwnBankAccount'                              ],
+        'fetch_bank_account'                    => ['get',      'account/bank_account',                     'MerchantController@getOwnBankAccount'                              ],
         'account_fetch_config'                  => ['get',      'account/config',                           'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'               => ['get',      'merchants',                                'MerchantController@getMerchants'                                   ],
