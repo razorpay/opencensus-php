@@ -31,6 +31,8 @@ class Entity extends Base\PublicEntity
 
     const IFSC_CODE_LENGTH = 11;
 
+    const SPECIAL_IFSC_CODE = 'RZPB0000000';
+
     protected $primaryKey = self::ID;
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
