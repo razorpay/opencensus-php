@@ -6,11 +6,13 @@ use AWS;
 use Auth;
 use Hash;
 use Config;
+
 use Models\Base;
 use Models\Admin;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Models\Transaction;
+
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
@@ -1572,8 +1574,11 @@ class Service extends Base\Service
     public function makeRawApiCall($path)
     {
         $input = \Input::all();
+        $error = [];
 
-        $error = (new Admin\Validator)->validateInput('api_call', $input)->messages();
+        $validator = (new Admin\Validator);
+        $validator->setStrictFalse();
+        $error = $validator->validateInput('api_call', $input)->messages();
 
         if ($error)
         {

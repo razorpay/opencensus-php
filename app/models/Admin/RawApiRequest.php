@@ -10,8 +10,11 @@ use GuzzleHttp\Post\PostFile;
 
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors as RZPErrors;
+
 // This is the default class we use for making requests
 use RZP\Api as Api;
+
+use Request;
 
 class RawApiRequest
 {
@@ -46,6 +49,11 @@ class RawApiRequest
         $this->setupCredentials($input);
         $this->input = $input;
         $this->path = $path;
+
+        if (!empty(Request::query()))
+        {
+            $this->path .= '?' . http_build_query(Request::query());
+        }
     }
 
     protected function setupCredentials($input)
