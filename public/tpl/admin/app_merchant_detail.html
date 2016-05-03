@@ -302,6 +302,10 @@
           Card
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.netbanking == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.netbanking == true, 'fa-times text-danger':merchant.details.methods.netbanking == false}"></i></span>
+          Netbanking
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
           Archived
         </a>

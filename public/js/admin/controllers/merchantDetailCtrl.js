@@ -847,7 +847,8 @@ app.controller('MerchantDetailCtrl', [
       'payumoney',
       'emi',
       'card',
-      'amex'
+      'amex',
+      'netbanking'
     ];
     $scope.methods = {};
 
