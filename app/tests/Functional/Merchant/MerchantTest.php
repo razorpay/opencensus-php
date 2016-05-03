@@ -246,6 +246,11 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBankAccountWithInvalidIFSC()
+    {
+        $this->startTest();
+    }
+
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
@@ -550,13 +555,13 @@ class MerchantTest extends TestCase
 
         return $uploadedFile;
     }
-    
+
     public function testStoreImageAndGetLogoUrl()
     {
         $originalFile = $this->createUploadedFile('app/tests/Functional/Storage/a.png');
         copy($originalFile, 'app/tests/Functional/Storage/a2.png');
         $testFile = $this->createUploadedFile('app/tests/Functional/Storage/a2.png');
-        
+
         $this->createMerchant();
 
         $this->ba->proxyAuth();
@@ -564,9 +569,9 @@ class MerchantTest extends TestCase
         $testData = $this->testData['testStoreImageAndGetLogoUrl'];
 
         $testData['request']['files']['logo'] = $testFile;
-        
+
         $response = $this->runRequestResponseFlow($testData);
-        
+
         $this->assertContains('/logos/', $response['logo_url']);
     }
 
@@ -606,7 +611,7 @@ class MerchantTest extends TestCase
             $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE', $ex->getCode());
         }
     }
-    
+
     public function testValidateLogo()
     {
         $merchantValidator = new Merchant\Validator();

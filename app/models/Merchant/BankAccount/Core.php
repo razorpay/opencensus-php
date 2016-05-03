@@ -63,7 +63,7 @@ class Core extends Base\Core
     public function createTestBankAccount($merchant)
     {
         $input = array(
-            'ifsc_code'             => 'RZPB0000000',
+            'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => $merchant->getAttribute('name'),
             'beneficiary_email'     => $merchant->getAttribute('email'),
             'account_number'        => random_integer(11),
