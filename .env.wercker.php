@@ -17,17 +17,14 @@ return array(
     'DB_TEST_USERNAME'                              => 'root',
     'DB_TEST_PASSWORD'                              => 'root',
 
-    'SLAVE_DB_LIVE_DRIVER'                          => 'mysql',
     'SLAVE_DB_LIVE_HOST'                            => '',
     'SLAVE_DB_LIVE_PORT'                            => '',
-    'SLAVE_DB_LIVE_DATABASE'                        => 'api_sqlite.db',
     'SLAVE_DB_LIVE_USERNAME'                        => '',
     'SLAVE_DB_LIVE_PASSWORD'                        => '',
 
-    'SLAVE_DB_TEST_DRIVER'                          => 'mysql',
+    // Comes from the wercker docker config. Environment variables are set there.
     'SLAVE_DB_TEST_HOST'                            => getenv('MYSQL_PORT_3306_TCP_ADDR'),
     'SLAVE_DB_TEST_PORT'                            => getenv('MYSQL_PORT_3306_TCP_PORT'),
-    'SLAVE_DB_TEST_DATABASE'                        => 'root',
     'SLAVE_DB_TEST_USERNAME'                        => 'root',
     'SLAVE_DB_TEST_PASSWORD'                        => 'root',
 

@@ -17,17 +17,13 @@ return array(
     'DB_TEST_USERNAME'                                  => 'user',
     'DB_TEST_PASSWORD'                                  => 'password',
 
-    'SLAVE_DB_LIVE_DRIVER'                              => 'mysql',
     'SLAVE_DB_LIVE_HOST'                                => 'localhost',
     'SLAVE_DB_LIVE_PORT'                                => '3306',
-    'SLAVE_DB_LIVE_DATABASE'                            => 'api_live',
     'SLAVE_DB_LIVE_USERNAME'                            => 'user',
     'SLAVE_DB_LIVE_PASSWORD'                            => 'password',
 
-    'SLAVE_DB_TEST_DRIVER'                              => 'mysql',
     'SLAVE_DB_TEST_HOST'                                => 'localhost',
     'SLAVE_DB_TEST_PORT'                                => '3306',
-    'SLAVE_DB_TEST_DATABASE'                            => 'api_test',
     'SLAVE_DB_TEST_USERNAME'                            => 'user',
     'SLAVE_DB_TEST_PASSWORD'                            => 'password',
 
