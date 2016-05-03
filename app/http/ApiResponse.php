@@ -14,6 +14,13 @@ class ApiResponse
     protected static $jsonp;
 
     /**
+     * In case the callback parameter in the query string
+     * is invalid like ?callback=<script>
+     * We will use this instead
+     */
+    const JSONP_FALLBACK_CALLBACK = 'Razorpay.jsonp_callback';
+
+    /**
      * Tells the browser that HTTP AUTH is expected
      * and hence to provide basic auth user and pwd
      */
@@ -67,14 +74,26 @@ class ApiResponse
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
-    protected static function attachJsonpCallback($request, $response, $callback = null)
+    /**
+     * setCallback can throw an exception in case of an invalid
+     * parameter (callback), which is not validated at all. The setCallback
+     * call validates it internally and throws an exception. We
+     * catch that exception here and make sure that we have a fallback
+     * communication mechanism. Checkout ensures that Razorpay.jsonp_callback
+     * is defined and works properly.
+     */
+    protected static function attachJsonpCallback($request, $response)
     {
-        if ($callback === null)
-        {
-            $callback = $request->input('callback');
-        }
+        $callback = $request->input('callback');
 
-        $response->setCallback($callback);
+        try
+        {
+            $response->setCallback($callback);
+        }
+        catch(\InvalidArgumentException $e)
+        {
+            $response->setCallback(self::JSONP_FALLBACK_CALLBACK);
+        }
     }
 
     public static function generateErrorResponse($code)
@@ -239,22 +258,7 @@ class ApiResponse
             $data['http_status_code'] = $status;
             $status = 200;
 
-            /**
-             * attachJsonp callback can throw an exception in case of an invalid
-             * parameter (callback), which is not validated at all. The setCallback
-             * call validates it internally and throws an exception. We
-             * catch that exception here and make sure that we have a fallback
-             * communication mechanism. Checkout ensures that Razorpay.jsonp_callback
-             * is defined and works properly.
-             */
-            try
-            {
-                self::attachJsonpCallback($request, $response);
-            }
-            catch(\InvalidArgumentException $e)
-            {
-                self::attachJsonpCallback($request, $response, 'Razorpay.jsonp_callback');
-            }
+            self::attachJsonpCallback($request, $response);
         }
 
         $response->setData($data);
