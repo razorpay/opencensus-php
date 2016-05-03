@@ -423,6 +423,8 @@ class MerchantController extends BaseController
 
         $data = [];
 
+        $font = 'lato2';
+
         if (in_array($context, array_keys($urlMap)))
         {
             $url = $urlMap[$context];
@@ -431,6 +433,7 @@ class MerchantController extends BaseController
                 ($input['new'] === '1'))
             {
                 $framejs = '/v1/checkout-frame-new.js';
+                $font = 'lato3';
             }
         }
         else if (isset($input['checkout']))
@@ -441,6 +444,7 @@ class MerchantController extends BaseController
         $data['checkout'] = $url;
         $data['preferences'] = $prefs;
         $data['framejs'] = $url . $framejs;
+        $data['font'] = $font;
 
         return ApiResponse::generateResponse($data);
     }
