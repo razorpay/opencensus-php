@@ -449,6 +449,53 @@ class MerchantController extends BaseController
         return ApiResponse::generateResponse($data);
     }
 
+    public function getCheckoutPublic()
+    {
+        $input = Input::all();
+
+        $app = \App::getFacadeRoot();
+
+        $context = $app['config']->get('app.context');
+
+        $url = $app['config']->get('app.checkout');
+
+        $urlMap = array(
+            'production'    => 'https://checkout.razorpay.com',
+            'beta'          => 'https://betacheckout.razorpay.com');
+
+        $framejs = '/v1/checkout-frame.js';
+        $css = '/v1/css/checkout.css';
+
+        $data = [];
+
+        $font = 'lato2';
+
+        if (in_array($context, array_keys($urlMap)))
+        {
+            $url = $urlMap[$context];
+
+            if ((isset($input['new'])) and
+                ($input['new'] === '1'))
+            {
+                $framejs = '/v1/checkout-frame-new.js';
+                $css = '/v1/css/checkout-new.css';
+                $font = 'lato3';
+            }
+        }
+        else if (isset($input['checkout']))
+        {
+            $url = $input['checkout'];
+        }
+
+        $data['checkout'] = $url;
+        $data['framejs'] = $url . $framejs;
+        $data['css'] = $url . $css;
+        $data['font'] = $font;
+
+        return \View::make('checkout.checkout-public')
+                    ->with($data);
+    }
+
     public function getPublicEntityReport($entity)
     {
         $input = Input::all();
