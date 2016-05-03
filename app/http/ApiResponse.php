@@ -239,6 +239,14 @@ class ApiResponse
             $data['http_status_code'] = $status;
             $status = 200;
 
+            /**
+             * attachJsonp callback can throw an exception in case of an invalid
+             * parameter (callback), which is not validated at all. The setCallback
+             * call validates it internally and throws an exception. We
+             * catch that exception here and make sure that we have a fallback
+             * communication mechanism. Checkout ensures that Razorpay.jsonp_callback
+             * is defined and works properly.
+             */
             try
             {
                 self::attachJsonpCallback($request, $response);
