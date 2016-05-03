@@ -405,11 +405,9 @@ class MerchantController extends BaseController
 
     public function getCheckout()
     {
-        $input = Input::all();
-
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
-        $app = \App::getFacadeRoot();
+        $app = $this->app;
 
         $context = $app['config']->get('app.context');
 
@@ -450,6 +448,14 @@ class MerchantController extends BaseController
     }
 
     public function getCheckoutPublic()
+    {
+        $data = $this->getCheckoutCommon();
+
+        return \View::make('checkout.checkout-public')
+                    ->with($data);
+    }
+
+    protected function getCheckoutCommon()
     {
         $input = Input::all();
 
@@ -492,8 +498,7 @@ class MerchantController extends BaseController
         $data['css'] = $url . $css;
         $data['font'] = $font;
 
-        return \View::make('checkout.checkout-public')
-                    ->with($data);
+        return $data;
     }
 
     public function getPublicEntityReport($entity)
