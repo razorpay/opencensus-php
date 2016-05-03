@@ -409,42 +409,9 @@ class MerchantController extends BaseController
 
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
-        $app = $this->app;
+        $data = $this->getCheckoutCommon();
 
-        $context = $app['config']->get('app.context');
-
-        $url = $app['config']->get('app.checkout');
-
-        $urlMap = array(
-            'production'    => 'https://checkout.razorpay.com',
-            'beta'          => 'https://betacheckout.razorpay.com');
-
-        $framejs = '/v1/checkout-frame.js';
-
-        $data = [];
-
-        $font = 'lato2';
-
-        if (in_array($context, array_keys($urlMap)))
-        {
-            $url = $urlMap[$context];
-
-            if ((isset($input['new'])) and
-                ($input['new'] === '1'))
-            {
-                $framejs = '/v1/checkout-frame-new.js';
-                $font = 'lato3';
-            }
-        }
-        else if (isset($input['checkout']))
-        {
-            $url = $input['checkout'];
-        }
-
-        $data['checkout'] = $url;
         $data['preferences'] = $prefs;
-        $data['framejs'] = $url . $framejs;
-        $data['font'] = 'https://cdn.razorpay.com/' . $font;
 
         return ApiResponse::generateResponse($data);
     }
@@ -498,7 +465,7 @@ class MerchantController extends BaseController
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;
-        $data['font'] = $font;
+        $data['font'] = 'https://cdn.razorpay.com/' . $font;
 
         return $data;
     }
