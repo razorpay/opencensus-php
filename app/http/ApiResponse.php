@@ -210,8 +210,7 @@ class ApiResponse
         }
         else if (self::isCheckoutRoute($route))
         {
-            return \View::make('checkout.checkout')
-                        ->with($data);
+            return self::generateCheckoutView($data);
         }
 
         return self::json($data, $status);
@@ -251,6 +250,17 @@ class ApiResponse
         self::$jsonp = null;
 
         return $response;
+    }
+
+    protected static function generateCheckoutView($data)
+    {
+        if (isset($data['font']) === false)
+        {
+            $data['font'] = 'https://cdn.razorpay.com/lato2';
+        }
+
+        return \View::make('checkout.checkout')
+                    ->with($data);
     }
 
     protected static function isJsonpRequired($path)
