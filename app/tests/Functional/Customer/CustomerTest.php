@@ -45,6 +45,21 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    public function testDeleteCustomer()
+    {
+        $this->testCreateCustomer();
+
+        $customer = $this->getLastEntity('customer', true);
+        
+        $request = &$this->testData['testDeleteCustomer']['request'];
+        $request['url'] = '/customers/'.$customer['id'];
+
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testOtpFlow()
     {
         $this->ba->publicAuth();

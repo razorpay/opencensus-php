@@ -269,7 +269,7 @@ final class Route
         'customer_create',
         'customer_update',
         'customer_get',
-        // 'customer_delete',
+        'customer_delete',
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
@@ -461,6 +461,7 @@ final class Route
         'customer_create'       =>  'tokens',
         'customer_update'       =>  'tokens',
         'customer_get'          =>  'tokens',
+        'customer_delete'       =>  'tokens',
         'customer_delete_token' =>  'tokens',
         'customer_fetch_tokens' =>  'tokens',
     );

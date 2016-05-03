@@ -58,6 +58,19 @@ return [
         ],
     ],
 
+    'testDeleteCustomer' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer',
+            'method' => 'delete',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCustomerTokens' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens',
