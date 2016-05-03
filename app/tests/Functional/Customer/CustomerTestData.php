@@ -25,6 +25,102 @@ return [
         ],
     ],
 
+    'testCreateCustomerEmailOnly' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateCustomerContactOnly' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'contact' => '1234567888',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'    => 'testc',
+                'contact'   => '1234567888',
+            ],
+        ],
+    ],
+
+    'testCreateCustomerDuplicatePhone' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test11@razorpay.com',
+                'contact' => '1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test11@razorpay.com',
+                'contact' => '1234567890'
+            ],
+        ],
+    ],
+
+    'testCreateCustomerDuplicateEmail' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567888'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567888'
+            ],
+        ],
+    ],
+
+    'testCreateCustomerDuplicate' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS,
+        ],
+    ],
+
     'testUpdateCustomer' => [
         'request' => [
             'url' => '/customers/cust_100000customer',

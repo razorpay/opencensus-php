@@ -4,6 +4,7 @@ namespace Models\Merchant;
 
 use Models\Base;
 use Config;
+use Models\Merchant\Account;
 use Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
@@ -558,5 +559,10 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function isShared()
+    {
+        return ($this->getId() === Account::SHARED_ACCOUNT);
     }
 }
