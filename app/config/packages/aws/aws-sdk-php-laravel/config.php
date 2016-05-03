@@ -67,5 +67,5 @@ return array(
 
     'settlement_bucket' => $_ENV['AWS_S3_SETTLEMENT_BUCKET'],
 
-    'logo_bucket' => 'placeholder', //$_ENV['AWS_S3_LOGO_BUCKET'],
+    'logo_bucket' => $_ENV['AWS_S3_LOGO_BUCKET'],
 );
