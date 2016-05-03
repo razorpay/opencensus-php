@@ -58,10 +58,8 @@ class Validator extends Base\Validator
 
         if (!IFSC::validate($ifsc))
         {
-            $messages = new MessageBag;
-            $messages->add('ifsc_code', self::INVALID_IFSC_CODE_MESSAGE);
-
-            $this->processValidationFailure($messages, 'validateBankAccountInput', $input);
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid IFSC Code in Bank Account");
         }
     }
 }
