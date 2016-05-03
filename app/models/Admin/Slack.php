@@ -4,6 +4,7 @@ namespace Models\Admin;
 
 use Carbon\Carbon;
 use Models\Api;
+use Models\MerchantDetails;
 
 class Slack
 {
@@ -193,6 +194,9 @@ class Slack
     // Converts timestamps and entity ids to links
     protected function decorateEntity($data)
     {
+        // Enhance it to include additional
+        $data = $this->enhanceEntity($data);
+
         $strategies = [
             'isDate'   =>  'formatDate',
             'isId'     =>  'formatId'
@@ -207,6 +211,32 @@ class Slack
                     $data[$key] = $this->$formatMethod($key, $value);
                 }
             }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Attaches more data to the entity
+     * if possible/needed
+     */
+    protected function enhanceEntity(array $data)
+    {
+        if (!isset($data['entity']))
+        {
+            return $data;
+        }
+
+        switch ($data['entity'])
+        {
+            case 'merchant':
+                $id = $data['id'];
+                $merchant_details = MerchantDetails\Entity::findorfail($id);
+                $data['contact'] = $merchant_details->contact_mobile;
+                break;
+
+            default:
+                break;
         }
 
         return $data;
