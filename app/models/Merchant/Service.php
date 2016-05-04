@@ -349,6 +349,10 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function getOwnBankAccount()
+    {
+        return $this->getBankAccount($this->merchant->id);
+    }
 
     public function generateBankAccountIds()
     {
