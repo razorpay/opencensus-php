@@ -15,7 +15,7 @@ class Trace extends TraceWriter
 
         $context = $this->getContext($traceCode, $context);
 
-        parent::addRecord($level, $traceCode, $context);
+        return parent::addRecord($level, $traceCode, $context);
     }
 
     /**
