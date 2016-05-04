@@ -792,7 +792,7 @@ class BasicAuth
         if ($this->merchant->isActivated() === false)
         {
             throw new Exception\LogicException(
-                'Must not be able to make live requst when not activated');
+                'Must not be able to make live request when not activated');
         }
     }
 

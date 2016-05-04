@@ -12,12 +12,16 @@ trait RepositoryFetch
         'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
+      // Merchant allowed
 //    protected $entityFetchParamRules = array();
 
+      // Admin allowed
 //    protected $appFetchParamRules = array();
 
+      // Proxy allowed
 //    protected $proxyFetchParamRules = array();
 
+      // Default params
 //    protected $defaultFetchParams = array();
 
     protected $params = array();
@@ -31,15 +35,26 @@ trait RepositoryFetch
      */
     public function fetch(array $params, $merchantId = null)
     {
+        // In case there are keys, but no values in the query params.
         $params = $this->unsetEmptyParams($params);
 
         $query = $this->newQuery();
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
+        // In case some params like count are not mentioned in the query params.
         $this->addDefaultParams($params);
 
+        // Validate the rules against each query param.
         $this->validateFetchParams($params);
+
+        // Check if the params need to be searched via ES.
+        $isEs = $this->isEsFetch($params);
+
+        if ($isEs === true)
+        {
+            return $this->runEsFetch($params, $merchantId);
+        }
 
         /*
          * Create the query.
@@ -47,6 +62,49 @@ trait RepositoryFetch
         $query = $this->buildFetchQuery($query, $params);
 
         return $query->get();
+    }
+
+
+    protected function isEsFetch($params)
+    {
+        // Checks if esWhitelistedParams has been set for the entity.
+        if (isset($this->esWhitelistedParams) === true)
+        {
+            // Gets the query param list without the default params
+            // array_flip is needed because it's a list array and not an associative array.
+            $rawParams = array_diff_key($params, array_flip(['count']));
+
+            if (isset($this->defaultFetchParams) === true)
+            {
+                // array_flip is not required here since defaultFetchparams will be an associative array.
+                // array_diff_key is used when only the key needs to be considered and not the value.
+                $rawParams = array_diff_key($rawParams, $this->defaultFetchParams);
+            }
+
+            // If there are no raw query params, don't do ES search.
+            if (empty($rawParams) === true)
+            {
+                return false;
+            }
+
+            // Checks if the raw query params are present in the esWhitelistedParams list.
+            // ($params - $esWhitelistedParams) should be 0.
+            // Currently, not supporting ES+MySQL search through query params.
+            if (empty(array_diff_key($rawParams, array_flip($this->esWhitelistedParams))) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function runEsFetch($params, $merchantId)
+    {
+        $esRepoClassPath = join('\\', explode('\\', __CLASS__, -1)) . '\\' . 'EsRepository';
+        $esRepo = new $esRepoClassPath;
+
+        return $esRepo->fetch($params, $merchantId);
     }
 
     protected function buildFetchQuery($query, $params)
@@ -79,6 +137,8 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
+        // TODO: Check for uniqueness. Privileged auth should override proxy auth and so on.
+
         if (isset($this->entityFetchParamRules))
         {
             $this->fetchParamRules = array_merge(
@@ -102,6 +162,21 @@ trait RepositoryFetch
         validate($this->fetchParamRules, $params);
 
         $this->validateAdditional($params);
+    }
+
+    protected function customEsValidations($params)
+    {
+        $esRepoClassPath = join('\\', explode('\\', __CLASS__, -1)) . '\\' . 'EsRepository';
+        $esRepo = new $esRepoClassPath;
+        foreach ($params as $key => $value)
+        {
+            $func = 'validateParam'.studly_case($key);
+
+            if (method_exists($esRepo, $func))
+            {
+                $esRepo->$func([$key => $value]);
+            }
+        }
     }
 
     protected function unsetEmptyParams(array $params)
@@ -164,6 +239,9 @@ trait RepositoryFetch
 
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
+        // For admins, merchant ID may not be required.
+        // For merchants, the ID is always required.
+
         if ($merchantId !== null)
         {
             $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
@@ -231,8 +309,6 @@ trait RepositoryFetch
 
     protected function addDefaultParamCount(array & $params)
     {
-        $max = $count = null;
-
         if ($this->auth->isPrivilegeAuth() === false)
         {
             $max = 100;

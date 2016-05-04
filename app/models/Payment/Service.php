@@ -168,14 +168,21 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $payments = (new Payment\Repository)->fetch($input, $this->merchant->getKey());
+        $merchantId = $this->merchant->getId();
+
+        $payments = (new Payment\Repository)->fetch($input, $merchantId);
+
+        if (empty($payments) === true)
+        {
+            return [];
+        }
 
         return $payments->toArrayPublic();
     }
 
     public function fetch($id)
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
 
         return $payment->toArrayPublic();
     }

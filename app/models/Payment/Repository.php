@@ -17,15 +17,19 @@ class Repository extends Base\Repository
 
     protected $entity = 'Payment';
 
+    // These are merchant allowed params to search on. These also act as default params.
     protected $entityFetchParamRules = array(
         Entity::ORDER_ID        => 'sometimes|string|size:20',
     );
 
+    // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = array(
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
+        Entity::NOTES           => 'sometimes|string|max:500',
     );
 
+    // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|string',
         Entity::VERIFIED        => 'sometimes|in:null,0,1,2',
@@ -41,6 +45,21 @@ class Repository extends Base\Repository
         Card\Entity::IIN        => 'sometimes|integer|digits:6',
         Card\Entity::LAST4      => 'sometimes|string|digits:4',
     );
+
+    protected $esWhitelistedParams = [
+        Entity::NOTES
+    ];
+
+    public function fetchAllWithLimit($skip, $count)
+    {
+        $repo = $this->repo;
+
+        return $repo::select('id', 'notes', 'merchant_id', 'created_at')
+                    ->orderBy('id', 'desc')
+                    ->skip($skip)
+                    ->take($count)
+                    ->get();
+    }
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
@@ -270,4 +289,5 @@ class Repository extends Base\Repository
 
         $query->join(Card\Entity::getTableName(), $paymentCardId, '=', $cardId);
     }
+
 }

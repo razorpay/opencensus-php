@@ -18,6 +18,11 @@ class ServerErrorException extends BaseException
 
     protected $code = null;
 
+    // To the clients, SERVER_ERROR code is used to display.
+    // The trace will have a different error code and description,
+    // which is provided at the place where ServerErrorException is thrown in the code.
+    // We do not want the clients to know about our internal server error descriptions.
+
     public function __construct(
         $message,
         $code,
@@ -26,7 +31,7 @@ class ServerErrorException extends BaseException
     {
         $this->data = $data;
 
-        $error = new \EE\Error\Error($code, null, null, $data, $message);
+        $error = new \EE\Error\Error($code, null, null, $data);
 
         $this->error = $error;
 

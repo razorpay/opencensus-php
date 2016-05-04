@@ -4,6 +4,7 @@ namespace Tests\Functional\Payment;
 
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
+use Mockery;
 
 class PaymentCreateTest extends TestCase
 {
@@ -86,5 +87,50 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['status'], 'failed');
         $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
         $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED');
+    }
+
+    public function testCreatePaymentInEs()
+    {
+        $this->markTestSkipped();
+        
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldReceive('update')
+               ->once()
+               ->with(
+                   Mockery::on(function ($data)
+                   {
+                       $testData = array(
+                           'type' => 'payments',
+                           'body' => [
+                               'doc' => [
+                                   'notes' => [
+                                       'merchant_order_id' => 'random order id'
+                                   ],
+                               ],
+                               'upsert' => [
+                                   'merchant_id' => '10000000000000',
+                                   'notes' => [
+                                       'merchant_order_id' => 'random order id'
+                                   ]
+                               ],
+                           ],
+                       );
+
+                       $this->assertArraySelectiveEquals($testData, $data);
+                       return true;
+                   })
+               );
+
+        $this->doAuthPaymentViaCheckoutRoute($this->payment);
+    }
+
+    protected function mockEsClient()
+    {
+        $clientBuilder = Mockery::mock('Services\EsClient')->makePartial();
+
+        $this->app->instance('es', $clientBuilder);
+
+        return $clientBuilder;
     }
 }

@@ -17,6 +17,11 @@ return array(
     'DB_TEST_USERNAME'                                  => 'user',
     'DB_TEST_PASSWORD'                                  => 'password',
 
+    'ES_HOST'                                           => 'localhost',
+    'ES_LIVE_INDEX'                                     => 'test',
+    'ES_TEST_INDEX'                                     => 'test',
+    'ES_MOCK'                                           => true,
+
     'SLAVE_DB_LIVE_HOST'                                => 'localhost',
     'SLAVE_DB_LIVE_PORT'                                => '3306',
     'SLAVE_DB_LIVE_USERNAME'                            => 'user',

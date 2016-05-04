@@ -157,11 +157,7 @@ class Inferno
         {
             return null;
         }
-
-        //
-        // TODO: payload should be of type string.
-        // Throws up an error otherwise. Should we handle?
-        //
+        
         $hmac = hash_hmac(self::HASH_ALGO, $payload, $secret);
 
         return $hmac;
