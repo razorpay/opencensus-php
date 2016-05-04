@@ -229,7 +229,17 @@ class Core extends Base\Core
         }
         else
         {
-            throw new Exception\LogicException('Should not have reached here');
+            // Exceptional case where we have to perform a refund.
+            // that is acceptable.
+            if (($payment->getGateway() === Payment\Gateway::HDFC) and
+                ($payment->getStatus() === Payment\Status::REFUNDED))
+            {
+                ;
+            }
+            else
+            {
+                throw new Exception\LogicException('Should not have reached here');
+            }
         }
 
         return $txn;

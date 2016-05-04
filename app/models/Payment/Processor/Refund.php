@@ -15,6 +15,7 @@ use Models\Transaction;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
+use Gateway\Hdfc;
 
 trait Refund
 {
@@ -51,7 +52,7 @@ trait Refund
 
         $method = $refund->payment->getMethod();
 
-        if ($method === Payment\Method::CARD)
+        if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $refund->payment->card->toArray();
         }
@@ -71,13 +72,11 @@ trait Refund
         return $refund;
     }
 
-    protected function verifyRefund($id)
+    public function verifyRefund($refund)
     {
-        Refund\Entity::verifyIdAndStripSign($id);
+        $payment = $refund->payment;
 
-        $refund = (new Refund\Repository)->findOrFail($id);
-
-        $payment = $this->retrieve($refund->getPaymentId());
+        $this->setPaymentAndRefundInfo($refund, $payment);
 
         assert ($payment->getGateway() === Payment\Gateway::HDFC);
 
@@ -85,6 +84,46 @@ trait Refund
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
             'amount'    => $refund->getAmount());
+
+        $method = $refund->payment->getMethod();
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $refund->payment->card->toArray();
+        }
+
+        $verify = $this->callGatewayForVerifyRefund($data);
+
+        // Flag indicating if this is a buggy case fix.
+        $this->verifyRefundStatus = $verify;
+
+        $msg = 'Refund verification unsuccessful.';
+
+        if ($verify === false)
+        {
+            $this->recordRefund();
+
+            $this->sendRefundNotification($payment, $refund);
+
+            $msg = 'Refund verification failed and Refund performed.';
+        }
+        else if ($verify === true)
+        {
+            $msg = 'Refund verified successfully.';
+        }
+
+        return ['verify_refund' => $msg];
+    }
+
+    protected function setPaymentAndRefundInfo($refund, $payment)
+    {
+        $this->merchant = $payment->merchant;
+
+        $this->methods = $payment->merchant->methods;
+
+        $this->refund = $refund;
+
+        $this->payment = $payment;
     }
 
     /**
@@ -162,6 +201,26 @@ trait Refund
         return $this->refund($id, $input);
     }
 
+    protected function callGatewayForVerifyRefund($data)
+    {
+        $verifyRefundResult = null;
+
+        try
+        {
+            $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
+        }
+        catch(BaseException $e)
+        {
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
+
+            throw $e;
+        }
+
+        return $verifyRefundResult;
+    }
+
     protected function callGatewayForRefund($data)
     {
         try
@@ -197,7 +256,15 @@ trait Refund
 
     protected function updatePaymentRefunded()
     {
-        $this->payment->refundAmount($this->refund->getAmount());
+        // Indicates buggy case where refund entity is already present
+        if ($this->verifyRefundStatus === false)
+        {
+            ; // No action required here.
+        }
+        else
+        {
+            $this->payment->refundAmount($this->refund->getAmount());
+        }
 
         $this->trace(TraceCode::PAYMENT_REFUND_SUCCESS);
     }

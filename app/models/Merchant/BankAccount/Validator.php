@@ -2,12 +2,16 @@
 
 namespace Models\Merchant\BankAccount;
 
+use Constants\Mode;
 use EE\Exception;
+use Razorpay\IFSC\IFSC;
 use Models\Base;
 use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator
 {
+    const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code in Bank Account';
+
     protected static $addBankAccountRules = array(
         'ifsc_code'             => 'required|alpha_num|size:11',
         'account_number'        => 'required|alpha_num|between:5,20',
@@ -52,24 +56,31 @@ class Validator extends Base\Validator
 
         $ifsc = strtoupper($ifsc);
 
-        $message = null;
-
-        if (ctype_upper(substr($ifsc, 0, 4)) === false)
+        // We allow a special IFSC code to pass through
+        if ($this->isSpecialIfscCode($ifsc))
         {
-            $message = 'First four letters of ifsc_code must be alphabets';
+            return;
         }
 
-        if ($ifsc[4] !== '0')
+        if (!IFSC::validate($ifsc))
         {
-            $message = 'IFSC code fifth letter must be 0';
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_IFSC_CODE_MESSAGE);
         }
+    }
 
-        if ($message !== null)
-        {
-            $messages = new MessageBag;
-            $messages->add('ifsc_code', $message);
+    /**
+     * We allow using the special IFSC code only
+     * for the test mode
+     * @param  string  $ifsc IFSC code, uppercase
+     */
+    protected function isSpecialIfscCode($ifsc)
+    {
+        $app = \App::getFacadeRoot();
 
-            $this->processValidationFailure($messages, 'validateBankAccountInput', $input);
-        }
+        $mode = $app['rzp.mode'];
+
+        return (($mode === Mode::TEST) and
+                ($ifsc === Entity::SPECIAL_IFSC_CODE));
     }
 }

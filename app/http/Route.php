@@ -47,6 +47,7 @@ final class Route
         'refund_fetch_by_id'                    => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                       ],
         'refund_fetch_multiple'                 => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'      => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
+        'refund_verify'                         => ['get',      'refunds/{id}/verify',                      'PaymentController@getRefundVerify'                                 ],
         'card_fetch_by_id'                      => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                   => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
         'iin_fetch_by_iin'                      => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
@@ -67,6 +68,7 @@ final class Route
         'merchant_edit_config_logo'             => ['post',     'account/config/logo',                      'MerchantController@postMerchantConfigLogo'                         ],
         'submerchant_create'                    => ['post',     'submerchants',                             'MerchantController@postCreateSubMerchant'                          ],
         'account_fetch_balance'                 => ['get',      'balance',                                  'MerchantController@getAccountBalance'                              ],
+        'fetch_bank_account'                    => ['get',      'account/bank_account',                     'MerchantController@getOwnBankAccount'                              ],
         'account_fetch_config'                  => ['get',      'account/config',                           'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                   => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'               => ['get',      'merchants',                                'MerchantController@getMerchants'                                   ],
@@ -372,6 +374,7 @@ final class Route
         'order_update',
         'customer_create_token',
         'customer_update_token',
+        'refund_verify',
     );
 
     public static $proxy = array(
@@ -393,6 +396,7 @@ final class Route
         'webhook_fetch_multiple',
         'merchant_fetch_balance',
         'reports_monthly_invoice',
+        'fetch_bank_account',
         'reports_public_entity',
         'merchant_edit_config',
         'merchant_edit_config_logo',

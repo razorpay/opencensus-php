@@ -44,9 +44,9 @@ return array(
     |
     */
 
-    'connections' => array(
+    'connections' => [
 
-        'live' => array(
+        'live' => [
             'driver'    => $_ENV['DB_LIVE_DRIVER'],
             'host'      => $_ENV['DB_LIVE_HOST'],
             'port'      => $_ENV['DB_LIVE_PORT'],
@@ -57,9 +57,9 @@ return array(
             'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true
-        ),
+        ],
 
-        'test' => array(
+        'test' => [
             'driver'    => $_ENV['DB_TEST_DRIVER'],
             'host'      => $_ENV['DB_TEST_HOST'],
             'port'      => $_ENV['DB_TEST_PORT'],
@@ -70,8 +70,37 @@ return array(
             'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true
-        ),
-    ),
+        ],
+
+        // TODO: Currently using master data. Add slave credentials later.
+
+        'slave.live' => [
+            // Slave must have the same driver and DB names as the master.
+            'driver'    => $_ENV['DB_LIVE_DRIVER'],
+            'host'      => $_ENV['DB_LIVE_HOST'],
+            'port'      => $_ENV['DB_LIVE_PORT'],
+            'database'  => $_ENV['DB_LIVE_DATABASE'],
+            'username'  => $_ENV['DB_LIVE_USERNAME'],
+            'password'  => $_ENV['DB_LIVE_PASSWORD'],
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true
+        ],
+
+        'slave.test' => [
+            'driver'    => $_ENV['DB_TEST_DRIVER'],
+            'host'      => $_ENV['DB_TEST_HOST'],
+            'port'      => $_ENV['DB_TEST_PORT'],
+            'database'  => $_ENV['DB_TEST_DATABASE'],
+            'username'  => $_ENV['DB_TEST_USERNAME'],
+            'password'  => $_ENV['DB_TEST_PASSWORD'],
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------

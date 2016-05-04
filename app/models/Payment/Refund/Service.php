@@ -7,6 +7,7 @@ use Models\Bank\IFSC;
 use Models\Base;
 use Models\Gateway;
 use Models\Payment;
+use Models\Merchant;
 use Models\Payment\Refund;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -118,5 +119,40 @@ class Service extends Base\Service
         $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
 
         return $refunds->toArrayPublic();
+    }
+
+    public function verify($id)
+    {
+        Refund\Entity::verifyIdAndStripSign($id);
+
+        $refund = (new Refund\Repository)->findOrFail($id);
+
+        $merchantId = $refund->getMerchantId();
+
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor($merchant)->verifyRefund($refund);
+
+        return $data;
+    }
+
+    protected function processor($merchant = null)
+    {
+        $bindings = $this->getBindings($merchant);
+
+        return Payment\Processor\Processor::create($bindings);
+    }
+
+    protected function getBindings(Merchant\Entity $merchant = null)
+    {
+        $trace = \Trace::getFacadeRoot();
+
+        $bindings = array(
+            'merchant'  => $merchant,
+            'core'      => new Payment\Core(),
+            'trace'     => $this->trace,
+            'mode'      => $this->mode);
+
+        return $bindings;
     }
 }

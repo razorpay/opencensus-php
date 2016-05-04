@@ -5,6 +5,7 @@ namespace Gateway\Hdfc\Payment;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Hdfc;
+use Models\Payment as PaymentModel;
 use Gateway\Hdfc\Payment;
 use Models\Card;
 use Trace\Trace;
@@ -369,5 +370,70 @@ trait Support
         }
 
         return false;
+    }
+
+    protected function isRefundRequired($input)
+    {
+        $id = $input['payment']['id'];
+
+        $gatewayEntities = $this->repo->findByPaymentId($id);
+
+        // No refund required for
+        // - authorize, authorize is the only entity
+        // - refunded entity is available.
+
+        $count = $gatewayEntities->count();
+
+        if ($count === 1)
+        {
+            // If there is only one entity, implies the transaction
+            // for capture never happened. Adding a check on payment for the
+            // same.
+            $this->assertPaymentRefundedWithoutCapture($input);
+
+            $entity = $gatewayEntities->first();
+
+            $gatewayAction = (int) $entity->getAction();
+
+            $gatewayStatus = $entity->getStatus();
+
+            if (($gatewayAction === Action::PURCHASE) and
+                ($gatewayStatus === Payment\Status::CAPTURED))
+            {
+                    return true;
+            }
+            else if (($entity->getAction() === Action::AUTHORIZE) and
+                     ($entity->getStatus() === Payment\Status::AUTHORIZED))
+            {
+                    return false;
+            }
+            else
+            {
+                //should not reach here
+                throw new Exception\LogicException(
+                    'Only available entity for hdfc gateway payment is in an'.
+                    'unacceptable state.',
+                    $input);
+            }
+        }
+        else
+        {
+            foreach ($gatewayEntities->all() as $entity)
+            {
+                if ($entity->getStatus() === Payment\Status::REFUNDED)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    protected function assertPaymentRefundedWithoutCapture($input)
+    {
+        assert($input['payment']['status'] === PaymentModel\Status::REFUNDED);
+
+        assert($input['payment']['captured'] === false);
     }
 }

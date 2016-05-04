@@ -239,4 +239,13 @@ class PaymentController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getRefundVerify($id)
+    {
+        $input = Input::all();
+
+        $data = (new Payment\Refund\Service)->verify($id);
+
+        return ApiResponse::json($data);
+    }
 }

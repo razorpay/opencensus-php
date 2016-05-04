@@ -42,6 +42,8 @@ class Processor
 
     protected $repo;
 
+    protected $verifyRefundStatus;
+
     public function __construct(
         Merchant\Entity $merchant,
         Payment\Core $core,
@@ -62,6 +64,9 @@ class Processor
         $this->orderRepo = new Order\Repository;
 
         $this->app = App::getFacadeRoot();
+
+        // Only used in hdfc verify refund flow
+        $this->verifyRefundStatus = null;
     }
 
     public static function create($bindings)
@@ -540,7 +545,7 @@ class Processor
 
         $attributes = array(
             'merchant_id'           => $merchant->getId(),
-            'ifsc_code'             => 'RZPB0000000',
+            'ifsc_code'             => BankAccount\Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => $merchant->getAttribute('name'),
             'beneficiary_code'      => strtoupper(random_alpha_string(4)),
             'account_number'        => random_integer(11),
