@@ -548,13 +548,6 @@ class Service extends Base\Service
 
         $preferences = (new Checkout)->getPreferences($merchant, $this->mode, $input);
 
-        // Disabling ICICI on netbanking without breaking tests.
-        // TEMPORARY ONLY
-        if (isset($preferences['methods']['netbanking']['ICIC']))
-        {
-            unset($preferences['methods']['netbanking']['ICIC']);
-        }
-
         return $preferences;
     }
 
