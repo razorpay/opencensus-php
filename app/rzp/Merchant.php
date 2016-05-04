@@ -6,7 +6,7 @@ class Merchant extends Entity
 {
     const CONFIG_URL = 'account/config';
     const SUBMERCHANT_CREATE_URL = 'submerchants';
-    const BANK_ACCOUNT_URL = 'bank_account';
+    const BANK_ACCOUNT_URL = 'account/bank_account';
 
     public function create($params = null)
     {
