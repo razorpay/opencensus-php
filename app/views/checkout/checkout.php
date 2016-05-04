@@ -1,7 +1,3 @@
-<?php
-$fonts = 'https://cdn.razorpay.com/lato2';
-// $checkout = 'http://checkout.pronav.in/dist';
-?>
 <!DOCTYPE html>
 <html dir="ltr">
   <head>
@@ -11,7 +7,7 @@ $fonts = 'https://cdn.razorpay.com/lato2';
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
-    <style>@font-face{font-family:'lato';src:url("<?= $fonts ?>.eot?#iefix") format('embedded-opentype'),url("<?= $fonts ?>.woff2") format('woff2'),url("<?= $fonts ?>.woff") format('woff'),url("<?= $fonts ?>.ttf") format('truetype'),url("<?= $fonts ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
+    <style>@font-face{font-family:'lato';src:url("<?= $font ?>.eot?#iefix") format('embedded-opentype'),url("<?= $font ?>.woff2") format('woff2'),url("<?= $font ?>.woff") format('woff'),url("<?= $font ?>.ttf") format('truetype'),url("<?= $font ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
  </head>
   <body>
 <?php
@@ -47,11 +43,10 @@ else
     <link rel="stylesheet" href="<?= $checkout ?>/v1/css/checkout.css">
   </body>
   <script>
-    var payment_methods = <?= json_encode($preferences['methods']) ?>;
     var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
     var preferences = <?= json_encode($preferences) ?>;
   </script>
-  <script src="<?= $checkout ?>/v1/checkout-frame.js"></script>
+  <script src="<?= $framejs ?>"></script>
 
 <?php
 }
