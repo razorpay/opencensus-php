@@ -75,10 +75,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
-        self::ID,
-        self::MERCHANT_ID,
         self::ENTITY,
-        self::BENEFICIARY_CODE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -92,9 +89,6 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
-        self::CREATED_AT,
-        self::UPDATED_AT,
-        self::DELETED_AT,
     );
 
     protected $guarded = array(self::ID);

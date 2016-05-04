@@ -351,7 +351,15 @@ class Service extends Base\Service
 
     public function getOwnBankAccount()
     {
-        return $this->getBankAccount($this->merchant->id);
+        $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+
+        return $ba->toArrayPublic();
     }
 
     public function generateBankAccountIds()
