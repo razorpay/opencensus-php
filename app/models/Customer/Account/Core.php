@@ -19,9 +19,11 @@ class Core extends Base\Core
         $this->repo = new Customer\Repository;
     }
 
-    public function create($input)
+    public function create($input, $merchant)
     {
         $customer = (new Customer\Entity)->build($input);
+
+        $customer->merchant()->associate($merchant);
 
         $this->verifyUniqueCustomer($customer);
 
@@ -144,10 +146,23 @@ class Core extends Base\Core
 
     protected function verifyUniqueCustomer($customer)
     {
-        $customer = $this->repo->findByContactForMerchant(
-                        $customer->getContact(), $customer->merchant->getId());
+        $customers = null;
 
-        if ($customer !== null)
+        if ($customer->merchant->isShared() === true)
+        {
+            $customers = $this->repo->findByContactForMerchant(
+                $customer->getContact(),
+                $customer->merchant->getId());
+        }
+        else
+        {
+            $customers = $this->repo->findByContactEmailForMerchant(
+                $customer->getContact(),
+                $customer->getEmail(),
+                $customer->merchant->getId());
+        }
+
+        if ($customers !== null)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);

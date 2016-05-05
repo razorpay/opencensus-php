@@ -4,6 +4,7 @@ namespace Models\Customer;
 
 use Models\Base;
 use Models\Customer;
+use Models\Merchant;
 use Models\Merchant\Account;
 
 class Service extends Base\Service
@@ -19,16 +20,16 @@ class Service extends Base\Service
 
     public function create($input)
     {
-        $input['merchant_id'] = $this->merchant->getId();
-
-        return $this->createCustomer($input);
+        return $this->createCustomer($input, $this->merchant);
     }
 
     public function createGlobalCustomer($input)
     {
-        $input['merchant_id'] = Account::SHARED_ACCOUNT;
+        assert(isset($input[Customer\Entity::CONTACT]));
 
-        return $this->createCustomer($input);
+        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+
+        return $this->createCustomer($input, $merchant);
     }
 
     public function edit($id, $input)
@@ -94,9 +95,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function createCustomer($input)
+    protected function createCustomer($input, $merchant)
     {
-        $customer = (new Customer\Core)->create($input);
+        $customer = (new Customer\Core)->create($input, $merchant);
 
         return $customer->toArrayPublic();
     }

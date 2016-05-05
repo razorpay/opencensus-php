@@ -117,6 +117,11 @@ class Service extends Base\Service
     public function fetchMultiple($input)
     {
         $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
+        
+        if (empty($refunds) === true)
+        {
+            return [];
+        }
 
         return $refunds->toArrayPublic();
     }

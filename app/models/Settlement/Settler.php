@@ -523,7 +523,7 @@ class Settler
             ($crossed === true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Please settlements before 6 pm everyday');
+                'Please do settlements before 6 pm everyday');
         }
     }
 

@@ -31,6 +31,57 @@ class CustomerTest extends TestCase
         $this->assertNotNull($customer);
     }
 
+    public function testCreateCustomerEmailOnly()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertNotNull($customer);
+    }
+
+    public function testCreateCustomerContactOnly()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertNotNull($customer);
+    }
+
+    public function testCreateCustomerDuplicatePhone()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertNotNull($customer);
+    }
+
+    public function testCreateCustomerDuplicateEmail()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertNotNull($customer);
+    }
+
+    public function testCreateCustomerDuplicate()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateCustomer()
     {
         $this->ba->privateAuth();
@@ -41,6 +92,20 @@ class CustomerTest extends TestCase
     public function testGetCustomer()
     {
         $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteCustomer()
+    {
+        $this->testCreateCustomer();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $request = &$this->testData['testDeleteCustomer']['request'];
+        $request['url'] = '/customers/'.$customer['id'];
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }

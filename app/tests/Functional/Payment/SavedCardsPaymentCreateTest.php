@@ -241,4 +241,26 @@ class SavedCardPaymentCreateTest extends TestCase
         $this->assertEquals($payment['app_id'], '1000000custapp');
         $this->assertEquals($card['global_card_id'], $token['card_id']);
     }
+
+    /**
+     * test card multiple payments with save card local, only one card should be saved
+     */
+    public function testMultiplePaymentsCreateAndSaveCardLocal()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+        $this->payment['card']['number'] = '4000400000000004';
+        $this->payment['card']['expiry_year'] = '20';
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment1['card_id'], $payment2['card_id']);
+    }
+
 }

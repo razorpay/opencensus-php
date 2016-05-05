@@ -7,6 +7,8 @@ use Tests\Functional\Helpers\Payment\PaymentTrait;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
+use Mockery;
+use Models\Payment;
 
 /**
  * Tests that retreieving of payments is working fine.
@@ -225,5 +227,188 @@ class PaymentRetrieveTest extends TestCase
         }
 
         $this->assertEquals('EE\Exception\BadRequestValidationFailureException', get_class($e));
+    }
+
+    public function testSearchEsForNotes()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $paymentId = $payment->getId();
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldReceive('searchNotes')
+               ->once()
+               ->with(
+                    Mockery::on(function ($data)
+                    {
+                        $testData = array(
+                            'type' => 'payments',
+                            'body' => [
+                                'size' => 10,
+                                'query' => [
+                                    'filtered' => [
+                                        'query' => [
+                                            'multi_match' => [
+                                                'query' => 'es_random_1',
+                                                'type' => 'cross_fields',
+                                                'fields' => ['notes.*']
+                                            ]
+                                        ],
+                                        'filter' => [
+                                            'term' => [
+                                                'merchant_id' => "10000000000000"
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ],
+                        );
+                        $this->assertArraySelectiveEquals($testData, $data);
+                        return true;
+                    }))
+               ->andReturn([$paymentId]);
+
+        $testData = [
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['notes' => 'es_random_1'],
+            ],
+            'response' => [
+                'content' => ['count' => 1],
+            ],
+        ];
+
+        $response = $this->startTest($testData);
+        $this->assertEquals('es_random_1', $response['items'][0]['notes']['order_id']);
+    }
+
+    public function testSearchEsWithoutQueryParams()
+    {
+        $this->ba->proxyAuth();
+
+        //$this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldNotReceive('searchNotes');
+
+        $testData = [
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => [],
+            ],
+            'response' => [
+                'content' => ['count' => 1]
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testSearchEsEntityNotPresentInMySql()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldReceive('searchNotes')
+               ->once()
+               ->with(Mockery::any())
+               ->andReturn(['rand_payment_id']);
+
+        $testData = [
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['notes' => 'es_random_1'],
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::SERVER_ERROR,
+                        'description' => PublicErrorDescription::SERVER_ERROR,
+                    ],
+                ],
+                'status_code' => 500,
+            ],
+            'exception' => [
+                'class' => 'EE\Exception\ServerErrorException',
+                'internal_error_code' => ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testSearchEsForNotesPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldNotReceive('searchNotes');
+
+        $testData = [
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['notes' => 'es_random_1'],
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'EE\Exception\ExtraFieldsException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testSearchEsForStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldNotReceive('searchNotes');
+
+        $testData = [
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['status' => 'authorized'],
+            ],
+            'response' => [
+                'content' => ['count' => 1]
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    protected function mockEsClient()
+    {
+        $clientBuilder = Mockery::mock('Services\EsClient')->makePartial();
+
+        $this->app->instance('es', $clientBuilder);
+
+        return $clientBuilder;
     }
 }

@@ -50,7 +50,9 @@ class Core extends Base\Core
 
         if (isset($input[Entity::VAULT_TOKEN]))
         {
-            $card = $this->findExistingCards($input, $merchant);
+            $newCard = (new Card\Entity)->build($input);
+
+            $card = $this->findExistingCards($newCard, $merchant);
 
             $this->card = $card;
         }
@@ -151,14 +153,14 @@ class Core extends Base\Core
         }
     }
 
-    protected function findExistingCards($input, $merchant)
+    protected function findExistingCards($newCard, $merchant)
     {
         $params = array(
             Card\Entity::MERCHANT_ID     => $merchant->getId(),
-            Card\Entity::EXPIRY_MONTH    => $input[Card\Entity::EXPIRY_MONTH],
-            Card\Entity::EXPIRY_YEAR     => $input[Card\Entity::EXPIRY_YEAR],
-            Card\Entity::VAULT_TOKEN     => $input[Card\Entity::VAULT_TOKEN],
-            Card\Entity::VAULT           => $input[Card\Entity::VAULT],
+            Card\Entity::EXPIRY_MONTH    => $newCard->getExpiryMonth(),
+            Card\Entity::EXPIRY_YEAR     => $newCard->getExpiryYear(),
+            Card\Entity::VAULT_TOKEN     => $newCard->getVaultToken(),
+            Card\Entity::VAULT           => $newCard->getVault(),
         );
 
         $cards = (new Card\Repository)->getByParams($params);

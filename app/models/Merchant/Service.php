@@ -351,7 +351,15 @@ class Service extends Base\Service
 
     public function getOwnBankAccount()
     {
-        return $this->getBankAccount($this->merchant->id);
+        $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+
+        return $ba->toArrayPublic();
     }
 
     public function generateBankAccountIds()
@@ -539,13 +547,6 @@ class Service extends Base\Service
         $merchant = $this->merchant;
 
         $preferences = (new Checkout)->getPreferences($merchant, $this->mode, $input);
-
-        // Disabling ICICI on netbanking without breaking tests.
-        // TEMPORARY ONLY
-        if (isset($preferences['methods']['netbanking']['ICIC']))
-        {
-            unset($preferences['methods']['netbanking']['ICIC']);
-        }
 
         return $preferences;
     }

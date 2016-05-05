@@ -141,7 +141,7 @@ class PublicEntity extends UniqueIdEntity
 
         $entity = $this->entity . 's';
 
-        // It's always needed for live mdoe. Not taking care of test for now.
+        // It's always needed for live mode. Not taking care of test for now.
         $url = "https://dashboard.razorpay.com/admin#/app/$entity/live/$id";
 
         return $url;

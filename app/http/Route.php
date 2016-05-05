@@ -11,7 +11,8 @@ final class Route
      */
 
     protected static $apiRoutes = array(
-        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getcheckout'                                    ],
+        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
+        'checkout_public'                       => ['get',      'checkout/public',                          'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                      => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
         'merchant_checkout_preferences'         => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                        => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
@@ -189,7 +190,7 @@ final class Route
         'order_fetch_by_id'                     => ['get',      'orders/{id}',                              'OrderController@fetchOrderById'                                    ],
         'order_update'                          => ['put',      'orders/{id}',                              'OrderController@updateOrder'                                       ],
         'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
-        'reports_monthly_invoice'               => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                          ],
+        'reports_monthly_invoice'               => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
         'customer_create'                       => ['post',     'customers',                                'CustomerController@createCustomer'                                 ],
         'customer_update'                       => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
@@ -206,6 +207,7 @@ final class Route
         'otp_post'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'otp_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
+        'migrate_entity'                        => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
     );
 
     public static $public = array(
@@ -271,7 +273,6 @@ final class Route
         'customer_create',
         'customer_update',
         'customer_get',
-        // 'customer_delete',
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
@@ -372,9 +373,11 @@ final class Route
         'get_emi_plan_by_id',
         'emi_generate_excel',
         'order_update',
+        'customer_delete',
         'customer_create_token',
         'customer_update_token',
         'refund_verify',
+        'migrate_entity',
     );
 
     public static $proxy = array(
@@ -407,6 +410,7 @@ final class Route
 
     public static $direct = array(
         'dummy_route',
+        'checkout_public',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
@@ -441,6 +445,7 @@ final class Route
                 'payment_refund_authorized',
                 'payment_capture_reminder',
                 'emi_generate_excel',
+                'migrate_entity',
             ),
 
             'mailgun' => array(
@@ -465,6 +470,7 @@ final class Route
         'customer_create'       =>  'tokens',
         'customer_update'       =>  'tokens',
         'customer_get'          =>  'tokens',
+        'customer_delete'       =>  'tokens',
         'customer_delete_token' =>  'tokens',
         'customer_fetch_tokens' =>  'tokens',
     );

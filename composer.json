@@ -14,6 +14,7 @@
         "symfony/event-dispatcher": "~2.2",
         "maknz/slack": "dev-queue",
         "cebe/markdown": "~1.0.1",
+        "elasticsearch/elasticsearch": "^2.1",
         "razorpay/ifsc": "~0.1.0"
     },
     "repositories": [

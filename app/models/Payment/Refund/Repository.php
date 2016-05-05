@@ -13,11 +13,19 @@ class Repository extends Base\Repository
 
     protected $entity = 'Refund';
 
+    protected $proxyFetchParamRules = [
+        Entity::NOTES           => 'sometimes|string|max:500',
+    ];
+
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
     );
+
+    protected $esWhitelistedParams = [
+        Entity::NOTES
+    ];
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
@@ -103,4 +111,5 @@ class Repository extends Base\Repository
 
         return $refunds;
     }
+    
 }
