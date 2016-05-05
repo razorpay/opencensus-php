@@ -123,7 +123,7 @@ class MigrateNotesToEs extends Command
         }
         catch(Exception $ex)
         {
-            $this->error("<error>Type Name : $this->entityType \n Index Name : $this->indexName \n Entity : ". json_encode($entityData). "</error>");
+            $this->error("<error>Type Name : $this->entityType \n Index Name : $this->indexName \n Entity : ". json_encode($params). "</error>");
         }
     }
 
