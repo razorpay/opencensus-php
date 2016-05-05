@@ -11,7 +11,8 @@ final class Route
      */
 
     protected static $apiRoutes = array(
-        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getcheckout'                                    ],
+        'checkout'                              => ['get',      'checkout',                                 'MerchantController@getCheckout'                                    ],
+        'checkout_public'                       => ['get',      'checkout/public',                          'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                      => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                              ],
         'merchant_checkout_preferences'         => ['get',      'preferences',                              'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                        => ['post',     'payments',                                 'PaymentCreateController@postCreatePayment'                         ],
@@ -408,6 +409,7 @@ final class Route
 
     public static $direct = array(
         'dummy_route',
+        'checkout_public',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',

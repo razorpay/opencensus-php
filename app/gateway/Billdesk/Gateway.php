@@ -506,13 +506,8 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getRequestArray($content, $input);
 
-        // Modify payment authorize request for experimental MCC 9998
-        // Change Content for Merchants with TPV Required
-        if ($this->useDirectBilldeskUrl($input))
-        {
-            $request['content']['hidRequestId'] = 'PGIME1000';
-            $request['content']['hidOperation'] = 'ME100';
-        }
+        $request['content']['hidRequestId'] = 'PGIME1000';
+        $request['content']['hidOperation'] = 'ME100';
 
         return $request;
     }
@@ -525,39 +520,13 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
             [$msg]);
 
-        $action = $this->action;
-
-        // Modify payment authorize request for experimental MCC 9998
-        // Change Content for Merchants with TPV Required
-        // On action authorize, input will be set.
-        // On other actions this should not be used
-        if (($this->action === Action::AUTHORIZE) and
-             $this->useDirectBilldeskUrl($input))
-        {
-            $action = 'authorize_tpv';
-        }
-
         $request = array(
-            'url' => $this->getUrl($action),
+            'url' => $this->getUrl($this->action),
             'method' => 'post',
             'content' => ['msg' => $msg],
         );
 
         return $request;
-    }
-
-    /**
-     * Checks if direct billdesk url is to be hit
-     *
-     * Uses merchant info
-     * Used for TPV and Experimental merchant code.
-     */
-    protected function useDirectBilldeskUrl($input)
-    {
-        $merchantTpvRequired = $input['merchant']->isTPVRequired();
-
-        return ($merchantTpvRequired or
-                ($input['merchant']->getCategory() === 9998));
     }
 
     protected function getSecurityId()
