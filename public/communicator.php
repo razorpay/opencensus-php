@@ -34,12 +34,19 @@ header('Pragma: no-cache');
 			return null;
 		}
 		setInterval(function(){
-			var msg = localStorage.getItem('onComplete') || readCookie('onComplete');
+			var msg;
+			try {
+				msg = localStorage.getItem('onComplete');
+			} catch(e) {}
+
+			msg = msg || readCookie('onComplete');
 
 			if(msg) {
 				parent.postMessage(msg, '*')
 				rm('onComplete');
-				localStorage.removeItem('onComplete');
+				try {
+					localStorage.removeItem('onComplete');
+				} catch(e) {}
 			}
 		}, 150)
 	</script>
