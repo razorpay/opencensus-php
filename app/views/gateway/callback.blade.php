@@ -32,7 +32,11 @@ data = JSON.stringify(data);
 if(window.CheckoutBridge){
   if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(data)}
 } else {
-  document.cookie = "onComplete="+data+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+  try {
+    localStorage.setItem('on_payment_complete', data);
+  } catch (e) {
+    document.cookie = "onComplete="+data+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+  }
 }
 
 function g(id){return document.getElementById(id)}
