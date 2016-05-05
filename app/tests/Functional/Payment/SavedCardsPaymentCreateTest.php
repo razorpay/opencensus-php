@@ -251,6 +251,7 @@ class SavedCardPaymentCreateTest extends TestCase
 
         $this->payment['save'] = 1;
         $this->payment['card']['number'] = '4000400000000004';
+        $this->payment['card']['expiry_year'] = '20';
         $this->payment['customer_id'] = 'cust_100000customer';
 
         $content = $this->doAuthAndCapturePayment($this->payment);
