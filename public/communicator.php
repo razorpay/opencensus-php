@@ -34,13 +34,12 @@ header('Pragma: no-cache');
 			return null;
 		}
 		setInterval(function(){
-			var paymentData = localStorage.getItem('on_payment_complete');
-			var msg = paymentData || readCookie('onComplete');
+			var msg = localStorage.getItem('onComplete') || readCookie('onComplete');
 
 			if(msg) {
 				parent.postMessage(msg, '*')
 				rm('onComplete');
-				localStorage.removeItem('on_payment_complete');
+				localStorage.removeItem('onComplete');
 			}
 		}, 150)
 	</script>
