@@ -7,8 +7,7 @@ class Url
     const TEST_DOMAIN   = 'https://pgi.billdesk.com';
     const LIVE_DOMAIN   = 'https://pgi.billdesk.com';
 
-    const AUTHORIZE_TPV = '/pgidsk/PGIMerchantRequestHandler';
-    const AUTHORIZE     = '/pgidsk/pgmerc/RZRPYRedirect.jsp';
+    const AUTHORIZE     = '/pgidsk/PGIMerchantRequestHandler';
     const REFUND        = '/pgidsk/PGIRefundController';
     const VERIFY        = '/pgidsk/PGIQueryController';
 }
