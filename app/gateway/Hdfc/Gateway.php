@@ -300,14 +300,13 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
-        \Log::info($input['gateway']);
         parent::callback($input);
 
         if ($input['card']['network'] === 'RuPay')
         {
-            echo "Gateway returned following fields in response: <br />" . PHP_EOL;
-            var_dump($input['gateway']);
-            die();
+            $this->trace->info(
+                TraceCode::GATEWAY_RUPAY_CALLBACK,
+                $input['gateway']);
         }
 
         validate($this->bankAcsResponseRules, $input['gateway'], false);
