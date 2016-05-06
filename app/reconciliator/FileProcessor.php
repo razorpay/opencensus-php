@@ -70,7 +70,7 @@ class FileProcessor
         $filePath = $sourceFolderPath . '/' . $fileName;
 
         $file->move($sourceFolderPath, $fileName);
-        
+
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
 
@@ -83,11 +83,11 @@ class FileProcessor
         $size = $file->getSize();
         $sourceFolderPath =  $file->getPath();
         $filePath = $file->getRealPath();
-        
+
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
-    
-    
+
+
     public function fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath)
     {
         $fileDetails = [
@@ -129,6 +129,7 @@ class FileProcessor
         $mimeType = $file->getMimeType();
         $extension = $file->getClientOriginalExtension();
 
+        // Validates the mime type + extension.
         $this->validator->validateExtensionMimeType($extension, $mimeType);
 
         return $extension;
@@ -136,7 +137,7 @@ class FileProcessor
     }
 
 
-    public function unzipFile($fileDetails, $gateway)
+    public function unzipFile($fileDetails)
     {
         $filePath = $fileDetails[self::FILE_PATH];
         $extension = $fileDetails[self::EXTENSION];
@@ -145,11 +146,14 @@ class FileProcessor
 
         // TODO: Review security issues.
 
-        // Since there can be multiple zip files which will need to get extracted.
+        // Since there can be multiple zip files which will need to get extracted,
+        // will be storing each zip file's extracted files in a separate directory.
         $randomFolderName = UniqueIdEntity::generateUniqueId();
         $extractToPath = $this->getFolderFromFilePath($filePath) . '/' . $randomFolderName;
 
         // Currently supporting only zip files
+        // When other types of zip needs to be supported,
+        // handle for each type separately using the conditional statements.
         if ($extension !== 'zip')
         {
             throw new Exception\ReconciliationException(
@@ -157,6 +161,7 @@ class FileProcessor
             );
         }
 
+        // Extracts the zip file to the given path.
         $this->extractZipFile($filePath, $extractToPath);
 
         return $extractToPath;
@@ -175,15 +180,14 @@ class FileProcessor
                 'Attempt to unzip a non-zip file.', ['file_path' => $filePath]
             );
         }
-        
-        //$password = 'T69801';
+
+        $password = 'T69801';
         // Use the password to extract if present.
         if (empty($password) === false)
         {
             $zip->setPassword($password);
         }
 
-        // Extract to the same folder as the zip file.
         $extracted = $zip->extractTo($extractToPath);
 
         // Checking if it has been successfully extracted

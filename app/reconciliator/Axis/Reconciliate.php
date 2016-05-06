@@ -9,7 +9,8 @@ use Reconciliator\Orchestrator;
 class Reconciliate extends Base\Reconciliate
 {
     // TODO: Implement interface and use trait instead of abstract class (Base\Reconciliate).
-
+    const SALE = 'sale';
+    const acceptedSheetNames = ['b', 'a', 'Refund', 'Sale'];
 
     /*********************
      * Instance variables
@@ -19,8 +20,6 @@ class Reconciliate extends Base\Reconciliate
 
     public function startReconciliation($allFilesContents)
     {
-        // TODO: While reading the file contents, exclude file_details and sheet_name params.
-
         foreach ($allFilesContents as $fileContents)
         {
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
@@ -36,6 +35,10 @@ class Reconciliate extends Base\Reconciliate
         {
             $typeName = self::REFUND;
         }
+        else if (strpos(self::SALE, $fileName) !== false)
+        {
+            $typeName = self::PAYMENT;
+        }
         else
         {
             // TODO: Throw exception for not being able to find which reconciliation type is it.
@@ -47,7 +50,6 @@ class Reconciliate extends Base\Reconciliate
 
     public function getSheetNames()
     {
-        // TODO: Return all sheet names possible for this gateway. If not present, function will ignore.
-        return ['b', 'a', 'Refund'];
+        return self::acceptedSheetNames;
     }
 }

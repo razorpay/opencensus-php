@@ -24,8 +24,9 @@ class Validator
     const ACCEPTED_EXTENSIONS_MAP = [
         // TODO: Might need to add more mime types for the extensions.
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values'],
-        'txt'   => ['text/plain'],
-        'text'  => ['text/plain'],
+        // TODO: Handle ridiculous text files.
+        // 'txt'   => ['text/plain'],
+        // 'text'  => ['text/plain'],
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
@@ -76,9 +77,15 @@ class Validator
         $mimeType = $fileDetails['mime_type'];
         $fileSize = $fileDetails['size'];
 
-        $this->validateExtensionMimeType($extension, $mimeType);
-
-        $this->validateFileSize($fileSize);
+        if ($this->validateExtensionMimeType($extension, $mimeType) and
+            $this->validateFileSize($fileSize))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     
@@ -89,11 +96,15 @@ class Validator
         if ((isset($acceptedExtensionsMap[$extension]) === false) or
             (in_array($mimeType, $acceptedExtensionsMap[$extension]) === false))
         {
-            throw new Exception\ReconciliationException(
-                'File has unsupported extension-mimeType mapping.', 
-                ['extension' => $extension, 'mime_type' => $mimeType]
-            );
+            return false;
+            
+            // throw new Exception\ReconciliationException(
+            //     'File has unsupported extension-mimeType mapping.', 
+            //     ['extension' => $extension, 'mime_type' => $mimeType]
+            // );
         }
+        
+        return true;
     }
 
     
@@ -101,9 +112,12 @@ class Validator
     {
         if ($fileSize > self::MAX_FILE_SIZE)
         {
-            throw new Exception\ReconciliationException(
-                'File size exceeds the limit.', ['file_size' => $fileSize]
-            );
+            return false;
+            // throw new Exception\ReconciliationException(
+            //     'File size exceeds the limit.', ['file_size' => $fileSize]
+            // );
         }
+        
+        return true;
     }
 }

@@ -16,6 +16,8 @@ class Reconciliate
     const PAYMENT = 'payment';
     const REFUND  = 'refund';
 
+    const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND];
+
 
     public function getSheetNames()
     {
@@ -38,25 +40,21 @@ class Reconciliate
         // different sheet names/file names for reconciliation types.
         $reconciliationType = $this->getTypeName($fileName);
 
+        // Ideally, should never come here.
+        if (in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false)
+        {
+            // TODO: Move this to validator?
+            // TODO: Throw an exception about wrong reconciliation type.
+        }
+
         return $reconciliationType;
     }
 
 
     protected function setSubReconciliator($reconciliationType)
     {
-        switch ($reconciliationType)
-        {
-            case self::REFUND:
-                $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
-                $this->subReconciliator = new $subReconciliatorClassName;
-                break;
-            case self::PAYMENT:
-                break;
-            case self::NODAL:
-                break;
-            default:
-                // TODO: Throw exception for not being any of the recognized reconciliation types.
-        }
+        $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
+        $this->subReconciliator = new $subReconciliatorClassName;
     }
 
 
@@ -65,7 +63,8 @@ class Reconciliate
         $parentNamespace = $this->getParentNamespace();
         $subReconciliatorClassName = $parentNamespace . '\\'
                                     . 'SubReconciliator' . '\\'
-                                    . ucfirst($reconciliationType);
+                                    . ucfirst($reconciliationType)
+                                    . 'Reconciliate';
 
         return $subReconciliatorClassName;
     }

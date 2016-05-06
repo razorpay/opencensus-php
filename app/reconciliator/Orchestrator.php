@@ -33,11 +33,9 @@ class Orchestrator
     /*********************
      * Instance variables
      *********************/
-    protected $gateway;
     protected $allFilesContents;
     protected $allFilesDetails;
     protected $emailDetails;
-    protected $gatewayReconciliator;
 
 
     /********************
@@ -46,6 +44,7 @@ class Orchestrator
     protected $validator;
     protected $fileProcessor;
     protected $converter;
+    protected $gatewayReconciliator;
 
 
     public function __construct()
@@ -58,15 +57,19 @@ class Orchestrator
 
     public function baseEntry($input)
     {
+        // Checks if it's manual call or mailgun call
         if ((isset($input['manual'])) and ($input['manual'] === true))
         {
+            // Gets all the file details from the input.
             $this->allFilesDetails = $this->manualEntry($input);
         }
         else
         {
+            // Gets all the file details from the input.
             $this->allFilesDetails = $this->mailGunEntry($input);
         }
 
+        // There must be at least one file. Otherwise, error.
         if (empty($this->allFilesDetails) === true)
         {
             throw new Exception\ReconciliationException(
@@ -74,6 +77,7 @@ class Orchestrator
             );
         }
 
+        // Starts the orchestration.
         $this->orchestrate();
 
         return 200;
@@ -82,13 +86,18 @@ class Orchestrator
 
     protected function manualEntry($input)
     {
+        // Validates the input received.
         $this->validator->validateManualInput($input);
 
+        // Gets the input details.
         $inputDetails = $this->getManualInputDetails($input);
 
-        // Sets the gateway for the orchestrator
+        // Figures out the gateway and
+        // sets the gateway reconciliator object for the orchestrator,
+        // using the input details.
         $this->setGatewayForManual($inputDetails);
 
+        // Gets all the file details.
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
         return $allFilesDetails;
@@ -97,13 +106,16 @@ class Orchestrator
 
     protected function mailGunEntry($input)
     {
+        // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
         $this->validator->filterEmails($this->emailDetails);
 
-        // Sets the gateway for the orchestrator
+        // Figures out the gateway and
+        // sets the gateway reconciliator object for the orchestrator,
+        // using the input details.
         $this->setGatewayFromEmailId();
 
-        // Sets file details of all the attachments present in the email, for the orchestrator.
+        // Gets all the file details.
         $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
 
         return $allFilesDetails;
@@ -116,9 +128,23 @@ class Orchestrator
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
             // Validates the file type, size, etc..
-            $this->validator->validateFile($fileDetails);
+            $validate = $this->validator->validateFile($fileDetails);
 
-            // Converts to in-memory array
+            if ($validate === false)
+            {
+                // Delete it locally.
+                $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+
+                // Remove the file from allFiles variable.
+                unset($this->allFilesDetails[$file]);
+
+                // Don't get the content of the file.
+                continue;
+                
+                // TODO: Raise an alert about skipping the file.
+            }
+
+            // Converts to in-memory array and stores it in instance variable.
             // TODO: Might want to move this into Gateway implementation since
             // conversion to array might be different for different gateways.
             $this->getFileContentInArrayAndSet($fileDetails);
@@ -158,8 +184,10 @@ class Orchestrator
 
     protected function setGatewayForManual($inputDetails)
     {
+        // In manual, the input params should contain what gateway is it.
         $gateway = $inputDetails[self::GATEWAY];
 
+        // This is a validation for the value of the gateway input received.
         if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
         {
             throw new Exception\ReconciliationException(
@@ -168,6 +196,7 @@ class Orchestrator
             );
         }
 
+        // Sets the gateway reconciliator object for the orchestrator.
         $this->setGatewayReconciliatorClass($gateway);
     }
 
@@ -197,17 +226,21 @@ class Orchestrator
         // Goes through each file and gets the file details.
         foreach (range(1, $inputDetails['attachment_count']) as $attachmentNumber)
         {
-            // Attachment files in MainGun are named as 'attachment-[1..n]'.
+            // All the attachment files have to be named as 'attachment-{number}'
+            // Validations should take care of this.
             $file = $input['attachment-'.$attachmentNumber];
 
+            // This step is mainly to figure out whether the file is of zip type.
             $fileType = $this->fileProcessor->getTypeOfFile($file);
 
             // If it's a zip file, get all the details of all the files present in it.
             // Else, get the file details of the attachment.
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
+                // Gets all files details present in the zip file.
                 $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
 
+                // Throw an error if there's not even file in the zip. Ideally, shouldn't happen.
                 if (empty($extractedFileDetails) === true)
                 {
                     throw new Exception\ReconciliationException(
@@ -266,8 +299,6 @@ class Orchestrator
 
     protected function setGatewayReconciliatorClass($gateway)
     {
-        $this->gateway = $gateway;
-
         $gatewayReconciliatorClassName = 'Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
@@ -310,9 +341,13 @@ class Orchestrator
     {
         $allExtractedFilesDetails = [];
 
+        // Gets the actual zip file's details first.
         $zippedFileDetails = $this->fileProcessor->getUploadedFileDetails($file);
-        $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $this->gateway);
 
+        // unzipFile unzips the file and stores it in a location.
+        $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails);
+
+        // Iterates through each zip file and gets the file details for them.
         foreach (new DirectoryIterator($unzippedFolderPath) as $unzippedFile)
         {
             if($unzippedFile->isFile() === true)
