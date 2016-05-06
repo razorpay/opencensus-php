@@ -19,32 +19,29 @@ class SubReconciliate
 
     public function startReconciliation($fileContents)
     {
-        // TODO: While reading the file contents, exclude file_details and sheet_name params.
         //$extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
         foreach ($fileContents as $row)
         {
-            // TODO: Consider setting rowDetails to instance.
             $rowDetails = $this->getRowDetailsStructured($row);
 
             if (empty($rowDetails) === true)
             {
                 continue;
             }
-
+            
             // Validates that the payment status is not failed.
-            // TODO: Instead validate that it's refunded?
             $this->validatePaymentStatus();
-
+            
             // Stores the gateway fees
             $this->recordGatewayFees();
-
+            
             // Stores the gateway service tax
             $this->recordGatewayServiceTax();
-
+            
             $this->setCardTypeIfAbsent($rowDetails);
-
+            
             $this->recordRrn();
         }
     }

@@ -68,11 +68,11 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         {
             $cardType = strtolower($row[self::ROW_CARD_TYPE]);
 
-            if ($cardType === 'cc')
+            if ($cardType === 'dc')
             {
                 $cardType = self::CREDIT;
             }
-            else if ($cardType === 'dc')
+            else if ($cardType === 'dd')
             {
                 $cardType = self::DEBIT;
             }

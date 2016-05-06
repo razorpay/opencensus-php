@@ -27,7 +27,8 @@ class Validator
         // TODO: Handle ridiculous text files.
         // 'txt'   => ['text/plain'],
         // 'text'  => ['text/plain'],
-        'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        // Don't know why but, getting application/zip as mimetype for xlsx files.
+        'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];

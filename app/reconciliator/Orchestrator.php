@@ -25,8 +25,8 @@ class Orchestrator
      ********************/
     // The gateway names should be the same name as the directories present under 'reconciliator'
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth@razorpay.com'],
-        self::Axis => ['prashanth.yv@razorpay.com'],
+        self::HDFC => ['prashanth.yv@razorpay.com'],
+        self::Axis => ['prashanth@razorpay.com'],
     ];
 
 
@@ -140,7 +140,7 @@ class Orchestrator
 
                 // Don't get the content of the file.
                 continue;
-                
+
                 // TODO: Raise an alert about skipping the file.
             }
 
