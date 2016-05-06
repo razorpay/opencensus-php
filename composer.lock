@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.29",
+            "version": "2.8.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "83b86d1bbbca452b00a1f0bbea6fcbb506c76650"
+                "reference": "2d7183cd22381237bce25f11d741a77bdeb2d0b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/83b86d1bbbca452b00a1f0bbea6fcbb506c76650",
-                "reference": "83b86d1bbbca452b00a1f0bbea6fcbb506c76650",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2d7183cd22381237bce25f11d741a77bdeb2d0b8",
+                "reference": "2d7183cd22381237bce25f11d741a77bdeb2d0b8",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-04-11 17:00:10"
+            "time": "2016-05-03 17:42:24"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -2075,16 +2075,16 @@
         },
         {
             "name": "react/promise",
-            "version": "v2.4.0",
+            "version": "v2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/promise.git",
-                "reference": "f942da7b505d1a294284ab343d05df42d02ad6d9"
+                "reference": "8025426794f1944de806618671d4fa476dc7626f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/f942da7b505d1a294284ab343d05df42d02ad6d9",
-                "reference": "f942da7b505d1a294284ab343d05df42d02ad6d9",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/8025426794f1944de806618671d4fa476dc7626f",
+                "reference": "8025426794f1944de806618671d4fa476dc7626f",
                 "shasum": ""
             },
             "require": {
@@ -2115,7 +2115,7 @@
                 }
             ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
-            "time": "2016-03-31 13:10:33"
+            "time": "2016-05-03 17:50:52"
         },
         {
             "name": "rmccue/requests",
@@ -4118,16 +4118,16 @@
         },
         {
             "name": "sebastian/environment",
-            "version": "1.3.5",
+            "version": "1.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "dc7a29032cf72b54f36dac15a1ca5b3a1b6029bf"
+                "reference": "2292b116f43c272ff4328083096114f84ea46a56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/dc7a29032cf72b54f36dac15a1ca5b3a1b6029bf",
-                "reference": "dc7a29032cf72b54f36dac15a1ca5b3a1b6029bf",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/2292b116f43c272ff4328083096114f84ea46a56",
+                "reference": "2292b116f43c272ff4328083096114f84ea46a56",
                 "shasum": ""
             },
             "require": {
@@ -4164,7 +4164,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2016-02-26 18:40:46"
+            "time": "2016-05-04 07:59:13"
         },
         {
             "name": "sebastian/exporter",
