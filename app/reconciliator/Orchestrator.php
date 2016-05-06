@@ -9,6 +9,8 @@ use EE\Exception;
 class Orchestrator
 {
     const GATEWAY = 'gateway';
+    const EXTRA_DETAILS = 'extra_details';
+    const EMAIL_DETAILS = 'email_details';
 
     /******************
      * Bank constants
@@ -23,8 +25,8 @@ class Orchestrator
      ********************/
     // The gateway names should be the same name as the directories present under 'reconciliator'
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth.yv@razorpay.com'],
-        self::Axis => ['prashanth@razorpay.com'],
+        self::HDFC => ['prashanth@razorpay.com'],
+        self::Axis => ['prashanth.yv@razorpay.com'],
     ];
 
 
@@ -34,6 +36,8 @@ class Orchestrator
     protected $gateway;
     protected $allFilesContents;
     protected $allFilesDetails;
+    protected $emailDetails;
+    protected $gatewayReconciliator;
 
 
     /********************
@@ -93,14 +97,14 @@ class Orchestrator
 
     protected function mailGunEntry($input)
     {
-        $emailDetails = $this->getEmailDetails($input);
-        $this->validator->filterEmails($emailDetails);
+        $this->emailDetails = $this->getEmailDetails($input);
+        $this->validator->filterEmails($this->emailDetails);
 
         // Sets the gateway for the orchestrator
-        $this->setGatewayFromEmailId($emailDetails);
+        $this->setGatewayFromEmailId();
 
         // Sets file details of all the attachments present in the email, for the orchestrator.
-        $allFilesDetails = $this->getFileDetailsFromInput($emailDetails, $input);
+        $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
 
         return $allFilesDetails;
     }
@@ -123,9 +127,7 @@ class Orchestrator
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
-        $gatewayReconciliatorClassName = 'Reconciliator' . '\\' . $this->gateway . '\\' . 'Reconciliate';
-        $gatewayReconciliator = new $gatewayReconciliatorClassName;
-        $gatewayReconciliator->startReconciliation($this->allFilesContents);
+        $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
 
@@ -166,13 +168,13 @@ class Orchestrator
             );
         }
 
-        $this->gateway = $gateway;
+        $this->setGatewayReconciliatorClass($gateway);
     }
 
 
-    protected function setGatewayFromEmailId($emailDetails)
+    protected function setGatewayFromEmailId()
     {
-        $fromEmailId = $emailDetails['from'];
+        $fromEmailId = $this->emailDetails['from'];
 
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -184,7 +186,7 @@ class Orchestrator
             );
         }
 
-        $this->gateway = $gateway;
+        $this->setGatewayReconciliatorClass($gateway);
     }
 
 
@@ -262,17 +264,27 @@ class Orchestrator
         }
     }
 
+    protected function setGatewayReconciliatorClass($gateway)
+    {
+        $this->gateway = $gateway;
+
+        $gatewayReconciliatorClassName = 'Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
+    }
 
     protected function handleSettingExcelContent($fileDetails)
     {
-        $sheets = $this->converter->getAllExcelSheets($fileDetails);
+
+        $sheetNames = $this->gatewayReconciliator->getSheetNames();
+        $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
 
         // Every sheet is equivalent to a different file.
         foreach ($sheets as $sheet)
         {
             $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
-            $sheetArray[FileProcessor::FILE_DETAILS] = $fileDetails;
-            $sheetArray[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME] = $sheet->getTitle();
+            $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
+
+            $this->setExtraDetails($sheetArray, $fileDetails);
             $this->allFilesContents[] = $sheetArray;
         }
     }
@@ -281,8 +293,16 @@ class Orchestrator
     protected function handleSettingCsvContent($fileDetails)
     {
         $csvArray = $this->converter->convertCsvToArray($fileDetails);
-        $csvArray[FileProcessor::FILE_DETAILS] = $fileDetails;
+
+        $this->setExtraDetails($csvArray, $fileDetails);
+
         $this->allFilesContents[] = $csvArray;
+    }
+
+    protected function setExtraDetails(&$arrayContent, $fileDetails)
+    {
+        $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
+        $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
     }
 
 

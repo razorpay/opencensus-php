@@ -28,9 +28,9 @@ class Converter
         'd'    => 'debit',
         'ref'  => 'reference',
     ];
-    
+
     protected $dataArray;
-    
+
     public function convertFileContentToArray($fileDetails)
     {
         if ($fileDetails['file_type'] === FileProcessor::EXCEL)
@@ -48,24 +48,60 @@ class Converter
                 ['file_details' => $fileDetails]
             );
         }
-        
+
         return $this->dataArray;
     }
-    
-    public function getAllExcelSheets($fileDetails)
+
+    // Gets all the sheets with given set of sheet names.
+    public function getAllExcelSheets($fileDetails, $sheetNames = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        $sheets = Excel::load($filePath)->all();
-        
+        if (empty($sheetNames) === true)
+        {
+            $sheets = Excel::load($filePath)->all();
+        }
+        else
+        {
+            $sheets = Excel::selectSheets($sheetNames)->load($filePath)->all();
+        }
+
         return $sheets;
     }
+
+
+    public function getValidSheetNames($fileDetails)
+    {
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        $validSheetNames = [];
+
+        Excel::load($filePath, function($reader) use (&$validSheetNames)
+        {
+            $sheetNames = $reader->getSheetNames();
+
+            foreach ($sheetNames as $sheetName)
+            {
+                // Discards all the sheets with names starting with "sheet"
+                if (substr(strtolower($sheetName), 0, 5) === "sheet")
+                {
+                    continue;
+                }
+
+                $validSheetNames[] = $sheetName;
+            }
+        });
+
+        return $validSheetNames;
+    }
+
 
     public function convertExcelSheetToArray($sheet)
     {
         $rows = $sheet->toArray();
         return $rows;
     }
+
 
     public function convertCsvToArray($fileDetails)
     {
@@ -91,7 +127,7 @@ class Converter
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
                         );
                     }
-                    
+
                     // Combines the columnHeaders(keys) with the row(values).
                     $data[] = array_combine($columnHeaders, $row);
                 }
