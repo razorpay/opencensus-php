@@ -42,8 +42,8 @@ class Server extends Base\Mock\Server
 
     protected $onlyPurchaseCardNetworks = array(
         Network::RUPAY,
-        Network::MAESTRO,
-        Network::DICL)
+        Network::MAES,
+        Network::DICL);
 
     public function __construct()
     {
@@ -151,7 +151,7 @@ class Server extends Base\Mock\Server
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
-        if (in_array$card['network'], $this->onlyPurchaseCardNetworks)
+        if (in_array($card['network'], $this->onlyPurchaseCardNetworks))
         {
             $res['result'] = 'CAPTURED';
         }
