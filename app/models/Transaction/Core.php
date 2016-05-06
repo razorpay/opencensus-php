@@ -93,9 +93,8 @@ class Core extends Base\Core
 
         $txn->fill($txnData);
 
-        $txn->source()->associate($payment);
+        $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
-        $payment->transaction()->associate($txn);
     }
 
     protected function fillTxnFeesAndAmount($txn, $payment)
@@ -214,9 +213,8 @@ class Core extends Base\Core
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
 
-        $txn->source()->associate($refund);
+        $txn->sourceAssociate($refund);
         $txn->merchant()->associate($refund->merchant);
-        $refund->transaction()->associate($txn);
 
         if ($payment->isAuthorized())
         {
@@ -281,7 +279,7 @@ class Core extends Base\Core
 
         $txn->merchant()->associate($adj->merchant);
 
-        $txn->source()->associate($adj);
+        $txn->sourceAssociate($adj);
 
         $adj->transaction()->associate($txn);
 
