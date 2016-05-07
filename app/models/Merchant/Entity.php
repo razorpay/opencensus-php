@@ -351,7 +351,14 @@ class Entity extends Base\PublicEntity
 
     public function getBrandColorAttribute()
     {
-        return '#'.$this->attributes[self::BRAND_COLOR];
+        $storedBrandColor = $this->attributes[self::BRAND_COLOR];
+
+        if ($storedBrandColor === null)
+        {
+            return null;
+        }
+
+        return '#' . $storedBrandColor;
     }
 
     public function getLogoUrl($size = self::ORIGINAL_SIZE)
