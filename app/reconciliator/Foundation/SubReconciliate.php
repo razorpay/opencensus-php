@@ -30,7 +30,7 @@ class SubReconciliate
             {
                 continue;
             }
-            
+
             // Validates that the payment status is not failed.
             $this->validatePaymentStatus();
             

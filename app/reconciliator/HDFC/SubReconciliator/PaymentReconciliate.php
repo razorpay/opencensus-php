@@ -61,6 +61,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             return null;
         }
 
+        // TODO: If payment not found, return null. Raise an alert too.
         $this->payment = $this->paymentRepo->findOrFail($paymentId);
 
         /* GET CARD TYPE DETAILS */

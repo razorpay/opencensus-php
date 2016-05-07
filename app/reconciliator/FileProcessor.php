@@ -181,6 +181,7 @@ class FileProcessor
             );
         }
 
+        // TODO: Remove this and handle properly.
         $password = 'T69801';
         // Use the password to extract if present.
         if (empty($password) === false)
