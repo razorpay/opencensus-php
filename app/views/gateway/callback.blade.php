@@ -33,6 +33,9 @@ if(window.CheckoutBridge){
   if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(data)}
 } else {
   document.cookie = "onComplete="+data+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+  try {
+    localStorage.setItem('onComplete', data);
+  } catch(e) {}
 }
 
 function g(id){return document.getElementById(id)}
