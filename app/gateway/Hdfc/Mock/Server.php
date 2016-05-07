@@ -151,7 +151,8 @@ class Server extends Base\Mock\Server
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
-        if (in_array($card['network'], $this->onlyPurchaseCardNetworks))
+        $networkCode = Network::getCode($card['network']);
+        if (in_array($networkCode, $this->onlyPurchaseCardNetworks))
         {
             $res['result'] = 'CAPTURED';
         }
