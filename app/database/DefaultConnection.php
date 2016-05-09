@@ -52,13 +52,13 @@ class DefaultConnection
     }
 
 
-    public function getSlaveRoutes()
+    public static function getSlaveRoutes()
     {
         return Route::$slaveRoutes;
     }
 
 
-    public function getCurrentRoute()
+    public static function getCurrentRoute()
     {
         $app = App::getFacadeRoot();
         return $app['router']->currentRouteName();
