@@ -18,15 +18,15 @@ class DefaultConnection
 
         if (in_array($currentRoute, $slaveRoutes) === true)
         {
-            self::setSlaveDb($mode);
+            self::setSlaveConnection($mode);
             return;
         }
 
-        self::setMasterDb($mode);
+        self::setMasterConnection($mode);
     }
 
 
-    public static function setSlaveDb($mode)
+    public static function setSlaveConnection($mode)
     {
         if ($mode === Mode::TEST)
         {
@@ -39,7 +39,7 @@ class DefaultConnection
     }
 
 
-    public static function setMasterDb($mode)
+    public static function setMasterConnection($mode)
     {
         if ($mode === Mode::TEST)
         {
