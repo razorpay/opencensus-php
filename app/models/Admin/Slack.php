@@ -8,7 +8,7 @@ use Models\MerchantDetails;
 
 class Slack
 {
-    protected static $entityPrefixes = [
+    const ENTITY_PREFIXES = [
         'pay_'  =>  'payment',
         'setl_' =>  'settlement',
         'card_' =>  'card',
@@ -91,7 +91,7 @@ class Slack
     protected function checkEntityWithPrefix($message)
     {
         // First we try to find a entity with a prefix
-        foreach (static::$entityPrefixes as $prefix => $entity)
+        foreach (self::ENTITY_PREFIXES as $prefix => $entity)
         {
             preg_match("/$prefix([A-Za-z0-9]{14})/", $message, $matches);
 
