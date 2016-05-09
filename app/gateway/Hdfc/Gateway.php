@@ -319,7 +319,7 @@ class Gateway extends Base\Gateway
 
             $this->verifyAuthResponse($input, $authResponse);
 
-            $this->verify($input);
+            // $this->verify($input);
 
             return;
         }
