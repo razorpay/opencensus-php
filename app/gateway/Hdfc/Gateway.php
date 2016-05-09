@@ -309,6 +309,19 @@ class Gateway extends Base\Gateway
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
                 $input['gateway']);
+
+            $authResponse['data'] = $input['gateway'];
+            $authResponse['error'] = [];
+
+            $trackid = $authResponse['data']['paymentid'];
+
+            $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackid);
+
+            $this->verifyAuthResponse($input, $authResponse);
+
+            $this->verify($input);
+
+            return;
         }
 
         $this->validateCallbackGatewayFields($input, $network);
