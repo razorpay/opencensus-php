@@ -241,6 +241,7 @@ class Slack
                 $id = $data['id'];
                 $merchant_details = MerchantDetails\Entity::findorfail($id);
                 $data['contact'] = $merchant_details->contact_mobile;
+                $data['contact_name'] = $merchant_details->contact_name;
                 break;
 
             default:
