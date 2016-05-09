@@ -6,6 +6,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
 use Models\Customer;
+use Models\Merchant;
 use Models\Merchant\Account;
 use Models\Payment;
 use Trace\TraceCode;
@@ -71,10 +72,11 @@ class Core extends Base\Core
             if ($customer === null)
             {
                 $custCreateInput = array(
-                    Customer\Entity::CONTACT        =>   $input[Customer\Entity::CONTACT],
-                    Customer\Entity::MERCHANT_ID    =>   Account::SHARED_ACCOUNT);
+                    Customer\Entity::CONTACT        =>   $input[Customer\Entity::CONTACT]);
 
-                $customer = $this->create($custCreateInput);
+                $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+
+                $customer = $this->create($custCreateInput, $merchant);
             }
 
             $custAppInput = array(
