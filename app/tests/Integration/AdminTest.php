@@ -61,10 +61,11 @@ class AdminTest extends TestCase
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             try
             {
-                $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
+                $error = (new Models\Merchant\Service)
+                    ->confirmMerchantById($this->merchant->id);
             }
 
-            catch(\Razorpay\Api\Errors\ServerError $e)
+            catch(\Razorpay\Api\Errors\Error $e)
             {
                 $error = [$e->getMessage()];
             }
