@@ -122,11 +122,7 @@ class EsDao
                                 'fields' => ['notes.*']
                             ]
                         ],
-                        'filter' => [
-                            'term' => [
-                                'merchant_id' => $merchantId
-                            ]
-                        ]
+                        'filter' => [],
                     ]
                 ],
                 'sort' => [
@@ -139,6 +135,11 @@ class EsDao
             ]
         ];
 
+        if ($merchantId !== null)
+        {
+            $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
+        }
+        
         $entityIds = $this->es->searchNotes($params);
 
         return $entityIds;

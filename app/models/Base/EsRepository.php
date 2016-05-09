@@ -34,7 +34,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             // Get the entity data from MySQL.
             $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
-
+            
             // MySQL should contain all entities present in ES.
             if ($entities->count() !== count($entityIds))
             {

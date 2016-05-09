@@ -50,7 +50,7 @@ trait RepositoryFetch
 
         // Check if the params need to be searched via ES.
         $isEs = $this->isEsFetch($params);
-
+        
         if ($isEs === true)
         {
             return $this->runEsFetch($params, $merchantId);

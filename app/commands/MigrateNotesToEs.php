@@ -3,6 +3,8 @@
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 
+use Constants\Mode;
+
 use Elasticsearch\ClientBuilder;
 
 class MigrateNotesToEs extends Command
@@ -47,7 +49,8 @@ class MigrateNotesToEs extends Command
         $this->entityType = $this->option('entity');
 
         assert(in_array($this->entityType, ['payments', 'refunds']));
-        assert(in_array($this->databaseMode, ['live', 'test']));
+        // TODO: Change assert to slave_live, slave_test
+        assert(in_array($this->databaseMode, [Mode::LIVE, Mode::TEST]));
         assert(!empty($this->databaseMode));
         assert(!empty($this->entityType));
 

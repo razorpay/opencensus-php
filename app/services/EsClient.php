@@ -32,7 +32,7 @@ class EsClient
 
         return $this->client->update($params);
     }
-    
+
     public function bulkUpdate($params)
     {
         // If ES mock is set to true.

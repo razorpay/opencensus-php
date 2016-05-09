@@ -21,6 +21,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::PAYMENT_ID      => 'sometimes|alpha_num',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
+        Entity::NOTES           => 'sometimes|string|max:500',
     );
 
     protected $esWhitelistedParams = [
@@ -111,5 +112,5 @@ class Repository extends Base\Repository
 
         return $refunds;
     }
-    
+
 }

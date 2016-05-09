@@ -4,8 +4,6 @@ use Models\Base\EsDao;
 
 class EsController extends BaseController
 {
-    protected $mode;
-    protected $app;
     protected $esDao;
 
     public function __construct()
