@@ -49,11 +49,11 @@ class MigrateNotesToEs extends Command
         $this->entityType = $this->option('entity');
 
         assert(in_array($this->entityType, ['payments', 'refunds']));
-        // TODO: Change assert to slave_live, slave_test
         assert(in_array($this->databaseMode, [Mode::LIVE, Mode::TEST]));
         assert(!empty($this->databaseMode));
         assert(!empty($this->entityType));
 
+        // TODO: Change to setSlaveDb later
         Database\DefaultConnection::set($this->databaseMode);
         $this->setUpEs();
 
