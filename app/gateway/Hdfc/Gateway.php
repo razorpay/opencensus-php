@@ -302,14 +302,16 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ($input['card']['network'] === 'RuPay')
+        $network = $input['card']['network'];
+
+        if ($network === 'RuPay')
         {
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
                 $input['gateway']);
         }
 
-        validate($this->bankAcsResponseRules, $input['gateway'], false);
+        $this->validateCallbackGatewayFields($input, $network);
 
         $this->id = $input['payment']['id'];
 
@@ -392,6 +394,23 @@ class Gateway extends Base\Gateway
     }
 
 // ----------------------Gateway operations end --------------------------------
+
+    protected function validateCallbackGatewayFields($input, $network)
+    {
+        if ($network === 'RuPay')
+        {
+            return;
+        }
+
+        try
+        {
+            validate($this->bankAcsResponseRules, $input['gateway'], false);
+        }
+        catch (Exception\RecoverableException $e)
+        {
+            $this->trace->traceException($e);
+        }
+    }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
