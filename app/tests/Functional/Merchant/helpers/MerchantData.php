@@ -293,7 +293,7 @@ return [
         'response' => [
             'content' => [
                 'id' => '10000000000000',
-                'brand_color' => '00BCD4'
+                'brand_color' => '#00BCD4'
             ]
         ]
     ],

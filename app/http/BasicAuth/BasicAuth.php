@@ -413,7 +413,7 @@ class BasicAuth
 
         // If we are on a production host and HTTP is being used
         // Throw an error
-        if ( in_array($host, self::PRODUCTION_HOSTS) and
+        if ((in_array($host, self::PRODUCTION_HOSTS)) and
             ($this->request->secure() === false))
         {
             return ApiResponse::generateErrorResponse(

@@ -351,15 +351,17 @@ class ApiResponse
     protected static function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
     {
         $routes = array(
+            'payment_cancel',
             'payment_create_ajax',
             'payment_otp_submit');
 
         if (in_array($route, $routes))
         {
             //
-            // The content-type is set to text/html instead of json
-            // because on android 2.* json content is not being read on form
-            // post for cards with no 3d-secure.
+            // These routes are being hit from razorpay.js which is being called
+            // not from our own domain but someone else's. We need to allow for that
+            // otherwise these routes will not work there. Read furhter on CORS
+            // to understand better.
             //
             $response->headers->set('Access-Control-Allow-Origin', '*');
         }

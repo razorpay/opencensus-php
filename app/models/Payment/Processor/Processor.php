@@ -111,6 +111,11 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        //
+        // We only create a dummy payment entity for purpose
+        // of pre-calculating fees and returning it.
+        // It's not going to be saved in the database.
+        //
         $payment = $this->createDummyPaymentEntity($input);
 
         // Performing dummy set of processing for the same
