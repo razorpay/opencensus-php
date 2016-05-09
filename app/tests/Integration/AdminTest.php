@@ -54,7 +54,8 @@ class AdminTest extends TestCase
 
             $this->merchant_details = $this->createEntity('merchant_details',[
                 'merchant_id'   =>  $this->merchant->id,
-                'business_name' =>  $data['business_name']
+                'business_name' =>  $data['business_name'],
+                'bank_branch_ifsc' => 'KKBK0000261'
             ]);
 
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
