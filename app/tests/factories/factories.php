@@ -59,7 +59,7 @@ $factory('Models\MerchantDetails\Entity', [
     'bank_account_name' => substr(md5(time()), 0, 5),
     'bank_account_type' => $faker->word,
     'bank_branch'   => $faker->word,
-    'bank_branch_ifsc'  => 'ABCD0123456',
+    'bank_branch_ifsc'  => 'KKBK0000261',
     'bank_beneficiary_address1' => $faker->word,
     'bank_beneficiary_address2' => $faker->word,
     'bank_beneficiary_address3' => $faker->word,
