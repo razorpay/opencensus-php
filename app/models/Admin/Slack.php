@@ -16,6 +16,9 @@ class Slack
         'rfnd_' =>  'refund',
     ];
 
+    const DIRECT_MESSAGE = 'directmessage';
+    const DIRECT_MESSAGE_ERROR = 'This query will only work on public channels';
+
     const EMAIL_REGEX = "/[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})/";
 
     function __construct($message, $user, $channel)
@@ -25,6 +28,11 @@ class Slack
 
         try
         {
+            if ($channel === self::DIRECT_MESSAGE)
+            {
+                throw new \Exception(self::DIRECT_MESSAGE_ERROR);
+            }
+
             $entity = $this->getEntity($message);
             $text = $this->getFormattedLinkForSlack($entity['entity'], $entity['id']);
 
