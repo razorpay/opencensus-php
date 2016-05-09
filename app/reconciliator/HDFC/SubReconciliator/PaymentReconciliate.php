@@ -8,9 +8,9 @@ use Models\Card\IIN;
 use Models\Payment;
 use Gateway\AxisMigs;
 
-use Reconciliator\Base\SubReconciliator;
+use Reconciliator\Base;
 
-class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const CREDIT = 'credit';
     const DEBIT = 'debit';
@@ -43,17 +43,19 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     public function __construct()
     {
         // These are being used by the parent classes.
-        $this->paymentRepo = new Payment\Repository;
         $this->gatewayRepo = new AxisMigs\Repository;
+        
+        // TODO: Move these to parent class.
+        $this->paymentRepo = new Payment\Repository;
         $this->iinRepo     = new IIN\Repository;
     }
 
 
+    // TODO: Try moving this to parent class
     protected function getRowDetailsStructured($row)
     {
-        /* GET PAYMENT ID DETAILS */
-        $paymentId = $row[self::ROW_PAYMENT_ID];
-        $paymentId = str_replace("'", '', $paymentId);
+        // Gets payment ID
+        $paymentId = $this->getPaymentId($row);
 
         // If payment id is not present, return. No point of evaluating the row.
         if (empty($paymentId) === true)
@@ -61,10 +63,43 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        // TODO: If payment not found, return null. Raise an alert too.
-        $this->payment = $this->paymentRepo->findOrFail($paymentId);
+        try
+        {
+            $this->payment = $this->paymentRepo->findOrFail($paymentId);
+        }
+        catch (\Exception $ex)
+        {
+            // TODO: Raise an alert for not finding the payment in the db.
+            return null;
+        }
 
-        /* GET CARD TYPE DETAILS */
+        // Gets the card type
+        $cardType = $this->getCardType($row);
+
+        // Gets the service tax
+        $serviceTax = $this->getServiceTax($row);
+
+        // Assign values to return
+        $rowDetails = [
+            self::PAYMENT_ID  => $paymentId,
+            self::CARD_TYPE   => $cardType,
+            self::SERVICE_TAX => $serviceTax,
+        ];
+
+        return $rowDetails;
+    }
+
+    
+    protected function getServiceTax($row)
+    {
+        $serviceTax = $row[self::ROW_SERVICE_TAX];
+        
+        return $serviceTax;
+    }
+    
+    
+    protected function getCardType($row)
+    {
         if (isset($row[self::ROW_CARD_TYPE]) === true)
         {
             $cardType = strtolower($row[self::ROW_CARD_TYPE]);
@@ -88,16 +123,15 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $cardType = null;
         }
 
-        /* GET SERVICE TAX DETAILS */
-        $serviceTax = $row[self::ROW_SERVICE_TAX];
+        return $cardType;
+    }
 
-        /* ASSIGN VALUES TO RETURN */
-        $rowDetails = [
-            self::PAYMENT_ID  => $paymentId,
-            self::CARD_TYPE   => $cardType,
-            self::SERVICE_TAX => $serviceTax,
-        ];
 
-        return $rowDetails;
+    protected function getPaymentId($row)
+    {
+        $paymentId = $row[self::ROW_PAYMENT_ID];
+        $paymentId = str_replace("'", '', $paymentId);
+
+        return $paymentId;
     }
 }

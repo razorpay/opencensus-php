@@ -4,6 +4,7 @@ namespace Reconciliator\Base;
 
 
 use Reconciliator\FileProcessor;
+use Reconciliator\Orchestrator;
 
 
 class Reconciliate
@@ -18,6 +19,17 @@ class Reconciliate
 
     const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND];
 
+
+    public function startReconciliation($allFilesContents)
+    {
+        foreach ($allFilesContents as $fileContents)
+        {
+            $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
+            $this->setSubReconciliator($reconciliationType);
+            $this->subReconciliator->startReconciliation($fileContents);
+        }
+    }
+    
 
     public function getSheetNames()
     {

@@ -18,17 +18,6 @@ class Reconciliate extends Base\Reconciliate
     protected $subReconciliator;
 
 
-    public function startReconciliation($allFilesContents)
-    {
-        foreach ($allFilesContents as $fileContents)
-        {
-            $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
-            $this->setSubReconciliator($reconciliationType);
-            $this->subReconciliator->startReconciliation($fileContents);
-        }
-    }
-
-
     protected function getTypeName($fileName)
     {
         if (strpos(self::REFUND, $fileName) !== false)
