@@ -267,8 +267,9 @@ trait Authorize
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
-                throw new Exception\RuntimeException(
+                throw new Exception\BadRequestValidationFailureException(
                     'Payment being authorized is actually already authorized by some other thread.',
+                    null,
                     ['payment_id' => $payment->getId()]);
             }
 
