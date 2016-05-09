@@ -18,6 +18,13 @@ class Gateway
     const TIMEOUT = 30;
 
     /**
+     * The application instance.
+     *
+     * @var \Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
      * Trace instance for tracing
      * @var Trace\Trace
      */
@@ -89,9 +96,11 @@ class Gateway
 
     public function __construct()
     {
-        $this->trace = \Trace::getFacadeRoot();
+        $this->app = \App::getFacadeRoot();
 
-        $this->env = \App::getFacadeRoot()['env'];
+        $this->trace = $this->app['trace'];
+
+        $this->env = $this->app['env'];
 
         if ($this->env === 'testing')
         {
@@ -408,10 +417,9 @@ class Gateway
     {
         $configGatewayStr = 'gateway.'.$this->gateway;
 
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get($configGatewayStr);
+        $this->config = $this->app['config']->get($configGatewayStr);
 
-        $this->proxy = $app['config']->get('gateway.proxy_address');
+        $this->proxy = $this->app['config']->get('gateway.proxy_address');
     }
 
     protected function getFormValues($form, $url)
