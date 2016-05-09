@@ -158,7 +158,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IFSC_CODE] = $code;
     }
 
-    protected function getIfscCOdeAttribute($code)
+    protected function getIfscCodeAttribute($code)
     {
         $code = $this->attributes[self::IFSC_CODE] = $code;
 
