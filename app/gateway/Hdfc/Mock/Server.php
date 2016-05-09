@@ -38,6 +38,7 @@ class Server extends Base\Mock\Server
         '4012001037167778',
         '4012001037490014',
         '4012001037141112',
+        '6073849700004947',
         );
 
     protected $onlyPurchaseCardNetworks = array(
@@ -54,6 +55,21 @@ class Server extends Base\Mock\Server
 
     public function threeDSecure($input)
     {
+        $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($input['MD']);
+        $card = $gatewayTransaction->payment->card;
+        $networkCode = Network::getCode($card['network']);
+
+        if ($networkCode === Network::RUPAY)
+        {
+            $this->data['paymentid'] = $input['MD'];
+            $ret = $this->getAuthResponse($input['MD']);
+            // sd($input);
+            $ret['TermUrl'] = $input['TermUrl'];
+            $ret['MD'] = $input['MD'];
+
+            return $ret;
+        }
+
         return $input;
     }
 
@@ -130,9 +146,18 @@ class Server extends Base\Mock\Server
         $this->processInput('authEnrolled');
         $this->setAction('authorize');
 
-        $txnId = $this->data['paymentid'];
+        $res = $this->getAuthResponse($this->data['paymentid']);
 
-        $gatewayTransaction = (new Hdfc\Repository)->findByGatewayTransactionIdOrFail($txnId);
+        $res = $this->content($res, $this->action);
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $this->makeResponse($xml);
+    }
+
+    protected function getAuthResponse($txnId)
+    {
+        $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($txnId);
         $card = $gatewayTransaction->payment->card;
 
         if ($gatewayTransaction === null)
@@ -159,11 +184,7 @@ class Server extends Base\Mock\Server
 
 //        $this->copyUdfValues($res);
 
-        $res = $this->content($res, $this->action);
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $this->makeResponse($xml);
+        return $res;
     }
 
     protected function authNotEnrolledOnGateway()
@@ -224,12 +245,8 @@ class Server extends Base\Mock\Server
         $network = Card\Network::detectNetwork($cardNumber);
         $type = $this->getCardType($cardNumber, $iin);
 
-        $iin = substr($cardNumber, 0, 6);
-
-        $network = Card\Network::detectNetwork($cardNumber);
-        $type = $this->getCardType($cardNumber, $iin);
-
         $res = array();
+
         if ($type === 'debit')
         {
             $res = $this->getResponseParamsForEnrollDebit();
@@ -359,7 +376,7 @@ class Server extends Base\Mock\Server
 
         $gatewayTxnId = $this->data['transid'];
 
-        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+        $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
             $gatewayTxnId, 'authorized');
 
         if ($txn === null)
@@ -389,13 +406,13 @@ class Server extends Base\Mock\Server
     {
         $gatewayTxnId = $this->data['transid'];
 
-        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+        $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
                                         $gatewayTxnId, $status);
 
         if (($txn === null) and
             ($status === 'captured'))
         {
-            $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndErrorCode(
+            $txn = $this->getRepo()->findByGatewayTransactionIdAndErrorCode(
                                             $gatewayTxnId, Hdfc\ErrorCode::GW00176);
         }
 
