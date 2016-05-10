@@ -168,29 +168,6 @@ class Processor
         return true;
     }
 
-    protected function captureSignedPayment($payment)
-    {
-        $amount = $payment->getAmount();
-
-        $payment = $this->capturePayment($payment, $amount);
-
-        $data = array(
-            'razorpay_payment_id'   => $payment->getPublicId(),
-            'amount'                => $payment->getAmount(),
-            'currency'              => $payment->getCurrency(),
-            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
-        );
-
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $str = implode('|', $sortedData);
-
-        $data['signature'] = $this->getSignature($str);
-
-        return $data;
-    }
-
     protected function verifySignature($input, $payment)
     {
         $data = array(

@@ -56,6 +56,12 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized($payment);
 
+        if ($payment->isSigned())
+        {
+            // If payment is signed, then we capture it in this step only.
+            $payment = $this->capturePayment($payment, $payment->getAmount());
+        }
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -160,6 +166,22 @@ trait Authorize
 
         $this->verifyHash($hash, $payment->getPublicId());
 
+        if ($payment->isCreated() === false)
+        {
+            $diff = time() - $payment->getCreatedAt();
+
+            if (($payment->isAuthorized()) and
+                ($diff < 5 * 60))
+            {
+                return $this->postPaymentAuthorizeProcessing($payment);
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        }
+
+        $this->checkForRecentFailedPayment($payment);
+
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
@@ -167,10 +189,6 @@ trait Authorize
         {
             $input['card'] = $payment->card->toArray();
         }
-
-        $this->checkForRecentFailedPayment($payment);
-
-        Payment\Validator::bankAcsCallbackValidate($payment, $input);
 
         try
         {
@@ -186,6 +204,12 @@ trait Authorize
         }
 
         $this->updateAndNotifyPaymentAuthorized($payment);
+
+        if ($payment->isSigned())
+        {
+            // If payment is signed, then we capture it in this step only.
+            $payment = $this->capturePayment($payment, $payment->getAmount());
+        }
 
         return $this->postPaymentAuthorizeProcessing($payment);
     }
@@ -549,17 +573,26 @@ trait Authorize
         }
     }
 
+    /**
+     * This function is just meant for preparing the return value
+     * after payment authorize processing. This should not contain
+     * any state updating statements.
+     */
     protected function postPaymentAuthorizeProcessing($payment)
     {
         //
-        // The returned value could be either Payment
-        // model or an array containing callback data.
-        // We convert payment model to array
-        // if it's a payment model
+        // If it's signed payment, then we return signed data from our
+        // end as well.
         //
+        // If callback url has been set, then we need to redirect
+        // to the callback url and prepare data using coproto protocol.
+        //
+        // Otherwise we simply return 'razorpay_payment_id' as is normal.
+        //
+
         if ($payment->isSigned())
         {
-            return $this->captureSignedPayment($payment);
+            return $this->getReturnDataForSignedPayment($payment);
         }
 
         if ($payment->getCallbackUrl())
@@ -568,6 +601,25 @@ trait Authorize
         }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function getReturnDataForSignedPayment($payment)
+    {
+        $data = array(
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'amount'                => $payment->getAmount(),
+            'currency'              => $payment->getCurrency(),
+            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $sortedData = $data;
+        ksort($sortedData);
+
+        $str = implode('|', $sortedData);
+
+        $data['signature'] = $this->getSignature($str);
+
+        return $data;
     }
 
     protected function notifyAuthorized($wasFailed)
