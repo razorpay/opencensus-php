@@ -195,6 +195,10 @@ trait Inquiry
 
         $this->inquiryResponse['data'] = [];
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $inquiryRequest);
+
         $this->runRequestResponseFlow(
             $this->inquiryRequest,
             $this->inquiryResponse);
