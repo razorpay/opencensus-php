@@ -239,7 +239,6 @@ final class Route
         'mock_sbiepay_payment',
         'mock_wallet_payment',
         'dummy_return_callback',
-        'dummy_critical_error',
         'get_emi_plans',
         'cusotmer_saved_status',
         'app_fetch_tokens',
@@ -377,6 +376,7 @@ final class Route
         'customer_update_token',
         'refund_verify',
         'migrate_entity',
+        'dummy_critical_error',
     );
 
     public static $proxy = array(
