@@ -71,13 +71,13 @@ app.controller('ActivationCtrl', [
         });
         if (parseInt(data.data.submitted)) {
           user.identity().then(function (data) {
-            if (parseInt(data.data.activated)) {
-              $scope.formAlerts.addAlert('info', 'User is already live');
+            if (data.activated == 1) {
+              $scope.formAlerts.addAlert('info', 'Your account is already activated');
             } else
               $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
           });
         }
-        if (parseInt(data.data.locked)) {
+        if (data.locked == 0) {
           $scope.locked = true;
           $scope.formAlerts.addAlert('warning', 'Form has been locked by admin, changes are not allowed.');
         }
