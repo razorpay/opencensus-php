@@ -356,57 +356,46 @@ class FeeCalculator
     }
 
     /**
-     * Earlier with preCalculationOfFees, we were calculating fees using
-     * getRzpFeesUsingPercentOfTotalAmount . However due to popular demand,
-     * we are switching to the same method of fee calculation for all customers.
-     * i.e Using getRzpFeesUsingPercentOfOriginalAmount
+     * Irrespective of preCalculationOfFees, Use the percent of original amount
+     * to calculate razorpay fees. Service tax is not included here.
      *
      * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
      * @param int $fixed
      * @param int $serviceTaxPercentage  14.5
      * @param boolean $preCalculationOfFees
-     * @return int fees
+     * @return fees
      */
     protected function getUnroundedFees($amount, $percent, $fixed, $serviceTaxPercentage, $preCalculationOfFees = false)
     {
-        // if ($preCalculationOfFees === true)
-        // {
-        //     // list($numerator, $denominator) = $this->getRzpFeesUsingPercentOfTotalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
-
-        //     return $numerator / $denominator;
-        // }
-        // else
-        // {
-        //     return (($amount * $percent) / 10000) + $fixed;
-        // }
-
-        return (($amount * $percent) / 10000) + $fixed;
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
     }
 
+    /** getRzpFeesUsingPercentOfTotalAmount
+     * This formula is only to be used if support is required for the following
+     * formula.
+     *
+     * amount + rzpFees + serviceTax = totalAmount
+     *                       rzpFees = percent * totalAmount + fixed
+     *                    serviceTax = serviceTaxPercentage * rzpFees
+     */
     protected function getRzpFeesUsingPercentOfTotalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
     {
-        // Using the following :
-        // amount + rzpFees + serviceTax = totalAmount
-        //                       rzpFees = percent * totalAmount + fixed
-        //                    serviceTax = serviceTaxPercentage * rzpFees
-
         $numerator =   (100 * ( $fixed * 100 + ($percent * $amount) / 100 ));
 
         $denominator = (10000 - ($percent) - ($percent * $serviceTaxPercentage / 100));
 
-        return [$numerator, $denominator];
+        return $numerator / $denominator;
     }
 
+    /** getRzpFeesUsingPercentOfOriginalAmount
+     *
+     * Uses the following formula for fees calculation
+     *
+     * rzpFees = percent * amount + fixed
+     */
     protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage)
     {
-        // Using the following :
-        // amount + rzpFees + serviceTaxPercentage * rzpFees = totalAmount
-        //                       rzpFees = percent * amount + fixed
-        //                    serviceTax = serviceTaxPercentage * rzpFees
-
-        // amount + rzpFees (1 + serviceTaxPercentage) = totalAmount
-
         return (($amount * $percent) / 10000) + $fixed;
     }
 
