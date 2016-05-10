@@ -50,7 +50,7 @@ class Checkout
 
         $data['methods'] = $methodsArray;
         $data['options']['theme']['color'] = $merchant->getBrandColor();
-        $data['options']['logo'] = $merchant->getLogoUrl(self::CHECKOUT_LOGO_SIZE);
+        $data['options']['image'] = $merchant->getLogoUrl(self::CHECKOUT_LOGO_SIZE);
         $data['fee_bearer'] = false;
         $data['version'] = 1;
 
