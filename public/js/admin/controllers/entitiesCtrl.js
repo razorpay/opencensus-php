@@ -61,12 +61,13 @@ app.controller('EntitiesCtrl', [
       'ezeclick',
       'hdfc',
       'kotak',
-      'paytm',
       'mobikwik',
-      'wallet_payzapp',
-      'wallet_payumoney',
       'netbanking_hdfc',
-      'sharp'
+      'netbanking_kotak',
+      'paytm',
+      'sharp',
+      'wallet_payumoney',
+      'wallet_payzapp'
     ];
     var booleanList = [
       'all',
@@ -397,7 +398,7 @@ app.controller('EntitiesCtrl', [
             type: entity
           });
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -472,9 +473,9 @@ app.controller('EntitiesCtrl', [
         filters.merchant.methods = JSON.stringify(methods);
       }
       for (var filterName in filters[entity]) {
-        var value = filters[entity][filterName];
-        if (value !== 'all' && value !== '' && value !== 'true' && value !== 'false') {
-          query[filterName] = value;
+        var val = filters[entity][filterName];
+        if (val !== 'all' && val !== '' && val !== 'true' && val !== 'false') {
+          query[filterName] = val;
         }
       }
       return query;
