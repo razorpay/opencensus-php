@@ -557,8 +557,6 @@ class BasicAuth
             return false;
         }
 
-        $app = $this->internalApp;
-
         $appRoutes = Route::$internalApps[$this->internalApp];
 
         // Now that the secret matches, check whether the current

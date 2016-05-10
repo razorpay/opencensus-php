@@ -454,6 +454,10 @@ final class Route
                 'merchant_secret',
             ),
         );
+    
+    public static $slaveRoutes = [
+        'migrate_entity',
+    ];
 
     protected static $jsonpRoutes = array(
         'checkout',
