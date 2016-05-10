@@ -34,7 +34,7 @@ class Admin extends Entity
 
     public function triggerError()
     {
-        $relativeUrl = $this->getEntityUrl(). 'trigger/error';
+        $relativeUrl = 'trigger/error';
         $response = null;
         try
         {
