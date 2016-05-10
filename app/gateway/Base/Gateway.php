@@ -237,8 +237,7 @@ class Gateway
         $payment = $this->getPaymentToVerify($verify->input, $verify);
 
         if (($payment === null) and
-            (($verify->input['payment']['status'] === 'failed') or
-             ($verify->input['payment']['status'] === 'created')))
+            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -262,6 +261,17 @@ class Gateway
         }
 
         return $verify->getDataToTrace();
+    }
+
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        if (($verify->input['payment']['status'] === 'failed') or
+            ($verify->input['payment']['status'] === 'created'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function traceGatewayPaymentRequest($request, $input)

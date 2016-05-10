@@ -606,6 +606,11 @@ class Gateway extends Base\Gateway
         return $wallet;
     }
 
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        return false;
+    }
+
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
