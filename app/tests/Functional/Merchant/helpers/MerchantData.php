@@ -298,6 +298,28 @@ return [
         ]
     ],
 
+    'testEditMerchantInvalidBrandColor' => [
+        'request' => [
+            'content' => [
+                'brand_color' => '#00bcd4',
+            ],
+            'url' => '/account/config',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testStoreImageAndGetLogoUrl' => [
         'request' => [
             'content' => [],
