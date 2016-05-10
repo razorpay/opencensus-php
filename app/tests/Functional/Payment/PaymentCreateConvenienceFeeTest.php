@@ -64,9 +64,9 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment = $this->getLastPayment();
 
-        assert($payment['fee'] === 1173);
+        assert($payment['fee'] === 1145);
 
-        assert($payment['service_tax'] === 149);
+        assert($payment['service_tax'] === 145);
     }
 
     public function testAmountMismatch()
@@ -123,9 +123,9 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         assert($payment['order_id'] === $order['id']);
 
-        assert($payment['fee'] === 1173);
+        assert($payment['fee'] === 1145);
 
-        assert($payment['service_tax'] === 149);
+        assert($payment['service_tax'] === 145);
     }
 
     // TODO Fail tests for create with order
