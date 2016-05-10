@@ -49,8 +49,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::EMAIL,
-        self::NOTES,
         self::CONTACT,
+        self::NOTES,
         self::CREATED_AT,
     );
 
