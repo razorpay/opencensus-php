@@ -431,11 +431,6 @@ class Entity extends Base\PublicEntity
         return ($this->attributes[self::CAPTURED_AT] !== null);
     }
 
-    public function getCreatedAttribute()
-    {
-        return ($this->attributes[self::CREATED_AT] !== null);
-    }
-
     public function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];

@@ -212,6 +212,8 @@ class RefundTest extends TestCase
 
     public function testVerifyBuggyRefund()
     {
+        $this->markTestIncomplete();
+
         // Case where refunded payment has no entry in hdfc
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
