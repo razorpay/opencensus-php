@@ -181,6 +181,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $amounts = array(
+        self::AMOUNT,
         self::FEE,
         self::SERVICE_TAX);
 
