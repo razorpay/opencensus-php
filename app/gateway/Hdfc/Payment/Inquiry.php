@@ -237,7 +237,7 @@ trait Inquiry
 
         if ($network === 'RuPay')
         {
-            $content['udf5'] = 'TransID';
+            $content['udf5'] = 'PaymentID';
         }
 
         return $content;
