@@ -142,6 +142,7 @@ class NodalAccount
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ifsc,
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
+                'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId());
 
