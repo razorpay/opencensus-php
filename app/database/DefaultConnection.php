@@ -12,9 +12,9 @@ class DefaultConnection
 {
     public static function set($mode)
     {
-        $currentRoute = self::getCurrentRoute();
+        $currentRoute = Route::getCurrentRouteName();
 
-        $slaveRoutes = self::getSlaveRoutes();
+        $slaveRoutes = Route::getSlaveRoutes();
 
         if (in_array($currentRoute, $slaveRoutes) === true)
         {
@@ -49,18 +49,5 @@ class DefaultConnection
         {
             Config::set('database.default', 'live');
         }
-    }
-
-
-    public static function getSlaveRoutes()
-    {
-        return Route::$slaveRoutes;
-    }
-
-
-    public static function getCurrentRoute()
-    {
-        $app = App::getFacadeRoot();
-        return $app['router']->currentRouteName();
     }
 }

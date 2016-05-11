@@ -483,6 +483,17 @@ final class Route
     {
         self::$router = $router;
     }
+    
+    public static function getCurrentRouteName()
+    {
+        $router = self::$router;
+        return $router->currentRouteName();
+    }
+    
+    public static function getSlaveRoutes()
+    {
+        return self::$slaveRoutes;
+    }
 
     public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
