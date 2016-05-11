@@ -239,7 +239,7 @@ trait Inquiry
         {
             $content['amt'] = $verify->input['payment']['amount']/100;
             $content['udf5'] = 'PaymentID';
-            $content['member'] = $verify->input['card']['member'];
+            $content['member'] = $verify->input['card']['name'];
             $content['trackid'] = $verify->input['payment']['id'];
         }
 
