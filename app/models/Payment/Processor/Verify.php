@@ -25,6 +25,11 @@ trait Verify
             'refunds' => $refunds->toArray(),
         );
 
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $payment->card->toArray();
+        }
+
         try
         {
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);

@@ -233,6 +233,13 @@ trait Inquiry
         $content['transid'] = $payment['gateway_transaction_id'];
         $content['udf5'] = $payment['gateway_transaction_id'];
 
+        $network = $verify->input['card']['network'];
+
+        if ($network === 'RuPay')
+        {
+            $content['udf5'] = 'TransID';
+        }
+
         return $content;
     }
 }

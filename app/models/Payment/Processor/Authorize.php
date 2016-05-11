@@ -280,6 +280,11 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray());
 
+            if ($payment->isMethodCardOrEmi())
+            {
+                $data['card'] = $payment->card->toArray();
+            }
+
             $flag = $this->callGatewayFunction('authorizeFailed', $data);
 
             if ($flag === false)
