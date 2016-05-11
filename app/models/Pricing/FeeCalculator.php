@@ -234,16 +234,14 @@ class FeeCalculator
         return $matchRules;
     }
 
+    /**
+     * We are modifying Customer subvention to choose rule based on original
+     * amount only. This implies that only the merchant subvention rule selection
+     * will be applied, irrespective of the subvention type.
+     */
     protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
-        if ($subventionType === Merchant\FeeBearer::CUSTOMER)
-        {
-            return $this->chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType);
-        }
-        else
-        {
-            return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
-        }
+        return $this->chooseRuleWithAmountForMerchantSubvention($rules, $amount);
     }
 
     /**
@@ -285,16 +283,18 @@ class FeeCalculator
         return $relevantRule;
     }
 
+    /**
+     * NOT USED CURRENTLY
+     *
+     * In customer subvention,
+     * If the rule before applying the amount
+     * and the new amount after using merchant
+     * subvention is same then use the given rule
+     */
     protected function chooseRuleWithAmountForCustomerSubvention($rules, $amount, $subventionType)
     {
         $fees = [];
 
-        //
-        // In customer subvention,
-        // If the rule before applying the amount
-        // and the new amount after using merchant
-        // subvention is same then use the given rule
-        //
         foreach ($rules as $rule)
         {
             list($fee, $st) = $this->getFees($rule, $amount);
@@ -307,7 +307,6 @@ class FeeCalculator
 
             if ($rule === $newRule)
             {
-
                 return $rule;
             }
         }
