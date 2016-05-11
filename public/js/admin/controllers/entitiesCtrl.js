@@ -299,6 +299,9 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id']
       },
+      wallet: {
+        payment_id: ['Payment Id']
+      },
       webhook: {
         merchant_id: ['Merchant Id'],
       }
