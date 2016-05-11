@@ -502,8 +502,7 @@ class Gateway
 
                 throw new Exception\RuntimeException(
                     'Failed to convert json to array',
-                    ['json' => $json],
-                    $e);
+                    ['json' => $json]);
         }
     }
 }
