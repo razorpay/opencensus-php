@@ -237,7 +237,7 @@ trait Inquiry
 
         if ($network === 'RuPay')
         {
-            $content['amt'] = $input['amount']/100;
+            $content['amt'] = $verify->input['payment']['amount']/100;
             $content['udf5'] = 'PaymentID';
             $content['member'] = $verify->input['card']['member'];
             $content['trackid'] = $verify->input['payment']['id'];
