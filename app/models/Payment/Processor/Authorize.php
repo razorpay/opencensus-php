@@ -170,17 +170,19 @@ trait Authorize
         {
             $diff = time() - $payment->getCreatedAt();
 
+            // If it was authorized recently then send back authorized again.
             if (($payment->isAuthorized()) and
                 ($diff < 5 * 60))
             {
                 return $this->postPaymentAuthorizeProcessing($payment);
             }
 
+            // If it failed recently, then return the failure directly.
+            $this->checkForRecentFailedPayment($payment);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
         }
-
-        $this->checkForRecentFailedPayment($payment);
 
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
