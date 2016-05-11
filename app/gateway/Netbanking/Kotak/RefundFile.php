@@ -19,7 +19,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $txt = $this->getRefundData($input);
+        list($txt, $totalAmount) = $this->getRefundData($input);
 
         $name = $this->getFileToWriteName();
 
@@ -102,6 +102,6 @@ class RefundFile extends Base\RefundFile
 
         $txt = $this->getTextData($data, $initialLine);
 
-        return $txt;
+        return [$txt, $totalAmount];
     }
 }
