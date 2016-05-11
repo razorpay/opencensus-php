@@ -62,6 +62,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getVerifyRequestArray($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->response = $response;
