@@ -262,7 +262,7 @@ class TransactionController extends BaseController
         }
         else
         {
-            return AppResponse::validationErrorResponse($data);
+            return AppResponse::validationErrorResponse($error);
         }
     }
 }
