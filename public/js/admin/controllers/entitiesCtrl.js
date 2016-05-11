@@ -242,7 +242,7 @@ app.controller('EntitiesCtrl', [
           'null',
           0,
           1,
-          2,
+          2
         ],
         wallet: [
           'all',
@@ -253,7 +253,8 @@ app.controller('EntitiesCtrl', [
           'ezeclick'
         ],
         iin: ['Card IIN'],
-        last4: ['Card Last 4']
+        last4: ['Card Last 4'],
+        notes: ['Notes']
       },
       paytm: {
         payment_id: ['Payment Id'],

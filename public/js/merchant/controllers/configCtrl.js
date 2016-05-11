@@ -11,10 +11,11 @@ app.controller('ConfigCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.config = {};
+    
     $scope.showColorPicker = false;
 
     $scope.setConfig = function(config) {
-      $scope.config.brand_color = config.brand_color ? "#" + config.brand_color : null
+      $scope.config.brand_color = config.brand_color ? "#" + config.brand_color : null;
       // This always stays as a string, except when we send it back
       $scope.config.transaction_report_email = config.transaction_report_email.join(',');
     }
