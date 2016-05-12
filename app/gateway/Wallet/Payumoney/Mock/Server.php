@@ -103,6 +103,15 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpsubmit');
 
+        $response = array(
+            'status'        => -1,
+            'message'       => 'Verification code has expired - Please generate a new verification code',
+            'errorCode'     => '3010008',
+            'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
+            'result'        => null,
+            'userVaultDTO'  => null
+        );
+
         if ($input['otp'] === '123456')
         {
             $response = array(
@@ -134,18 +143,19 @@ class Server extends Base\Mock\Server
                     'maxLimit' => null
                 )
             );
-
-            return $this->makeResponse($response);
         }
 
-        $response = array(
-            'status'        => -1,
-            'message'       => 'Verification code has expired - Please generate a new verification code',
-            'errorCode'     => '3010008',
-            'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
-            'result'        => null,
-            'userVaultDTO'  => null
-        );
+        if ($input['otp'] === '121212')
+        {
+            $response = array(
+                'status'        => -1,
+                'message'       => 'Verification code is incorrect',
+                'errorCode'     => '3010007',
+                'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
+                'result'        => null,
+                'userVaultDTO'  => null
+            );
+        }
 
         return $this->makeResponse($response);
     }

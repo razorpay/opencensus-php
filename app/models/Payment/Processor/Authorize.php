@@ -198,11 +198,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
+            $this->processPaymentException($e);
         }
 
         $this->updateAndNotifyPaymentAuthorized($payment);
@@ -214,6 +210,20 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function processPaymentException($e)
+    {
+        $code = $e->getError()->getInternalErrorCode();
+
+        if (Error\Error::hasAction($code) === false)
+        {
+            $this->updatePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+        }
+
+        throw $e;
     }
 
     protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)

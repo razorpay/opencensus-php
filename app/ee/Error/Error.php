@@ -15,6 +15,7 @@ class Error extends Support\Fluent
     const FIELD                 = 'field';
     const ERROR_CLASS           = 'class';
     const DATA                  = 'data';
+    const ACTION                = 'action';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
 
@@ -42,6 +43,8 @@ class Error extends Support\Fluent
         $this->setPublicErrorDetails($code);
 
         $this->setDesc($desc);
+
+        $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
     }
@@ -115,6 +118,16 @@ class Error extends Support\Fluent
         $this->setAttribute(self::DESCRIPTION, $desc);
     }
 
+    protected function setAction($code = null)
+    {
+        $actionCode = Action::class . '::' . $code;
+
+        if (defined($actionCode))
+        {
+            $this->setAttribute(self::ACTION, constant($actionCode));
+        }
+    }
+
     protected function setPublicErrorCode($code)
     {
         $this->setAttribute(self::PUBLIC_ERROR_CODE, $code);
@@ -127,7 +140,12 @@ class Error extends Support\Fluent
 
     protected function getAttribute($attr)
     {
-        return $this->attributes[$attr];
+        if (isset($this->attributes[$attr]))
+        {
+            return $this->attributes[$attr];
+        }
+
+        return null;
     }
 
     protected function setPublicErrorDetails()
@@ -276,6 +294,16 @@ class Error extends Support\Fluent
         }
 
         return $class;
+    }
+
+    public static function hasAction($code)
+    {
+        if (defined(Action::class . '::' . $code))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function checkErrorCode($code)

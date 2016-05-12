@@ -51,7 +51,7 @@ class Gateway
      * Whether the gateway supports otp flow.
      * @var boolean
      */
-    protected $otpFlow = false;
+    protected $canRunOtpFlow = false;
 
     /**
      * The state in which the api is operating
@@ -148,7 +148,7 @@ class Gateway
 
     public function canRunOtpFlow()
     {
-        return $this->otpFlow;
+        return $this->canRunOtpFlow;
     }
 
     public function setTerminal($terminal)
