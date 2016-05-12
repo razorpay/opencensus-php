@@ -49,8 +49,7 @@ trait Inquiry
 
         if ((isset($content['result'])) and
             (($content['result'] === Result::APPROVED) or
-             ($content['result'] === Result::CAPTURED) or
-             ($content['result'] === Result::SUCCESS)))
+             ($content['result'] === Result::CAPTURED)))
         {
             $verify->gatewaySuccess = true;
 
@@ -135,7 +134,6 @@ trait Inquiry
 
         if ($verify->gatewaySuccess === true)
         {
-
             if ($content['result'] === Result::APPROVED)
             {
                 $status = Status::AUTHORIZED;
@@ -204,8 +202,13 @@ trait Inquiry
             $this->inquiryRequest,
             $this->inquiryResponse);
 
-        $inquiryResponse = $this->inquiryResponse;
+        if ((isset($this->inquiryResponse['data']['result'])) and
+            ($this->inquiryResponse['data']['result'] === 'SUCCESS'))
+        {
+            $this->inquiryResponse['data']['result'] = Result::CAPTURED;
+        }
 
+        $inquiryResponse = $this->inquiryResponse;
         $content = $this->inquiryResponse['data'];
 
         $this->trace->info(
