@@ -182,4 +182,14 @@ return [
 //        'refund_id' => null,
         'entity'        => 'mobikwik',
     ],
+
+    'otpRetryRequest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '123456'
+            ]
+        ]
+    ],
 ];

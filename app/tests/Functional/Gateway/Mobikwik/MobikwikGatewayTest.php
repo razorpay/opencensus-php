@@ -89,7 +89,10 @@ class MobikwikGatewayTest extends TestCase
 
         $this->step = null;
 
-        $authPayment = $this->doAuthPayment($payment);
+        $data = $this->testData['otpRetryRequest'];
+        $data['request']['url'] = $this->otpSubmitUrl;
+
+        $authPayment = $this->makeRequestAndGetContent($data['request']);
 
         $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
 

@@ -19,6 +19,8 @@ trait PaymentMobikwikTrait
 
             if (isset($this->type) and $this->type === 'otp')
             {
+                $this->otpSubmitUrl = $url;
+
                 $content['otp'] = '123456';
 
                 if (isset($this->step))

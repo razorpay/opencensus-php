@@ -93,4 +93,14 @@ return [
         'status_code'           => '0',
         'entity'                => 'wallet',
     ],
+
+    'otpRetryRequest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '123456'
+            ]
+        ]
+    ],
 ];

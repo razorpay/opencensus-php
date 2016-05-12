@@ -57,6 +57,10 @@ class PayumoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+
         $this->step = null;
     }
 
@@ -74,7 +78,10 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->step = null;
 
-        $authPayment = $this->doAuthPayment($payment);
+        $data = $this->testData['otpRetryRequest'];
+        $data['request']['url'] = $this->otpSubmitUrl;
+
+        $authPayment = $this->makeRequestAndGetContent($data['request']);
 
         $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
 
@@ -130,6 +137,8 @@ class PayumoneyGatewayTest extends TestCase
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
+        $this->otpSubmitUrl = $url;
+
         if ($mock)
         {
             $content['otp'] = '123456';
@@ -157,5 +166,4 @@ class PayumoneyGatewayTest extends TestCase
 
         return null;
     }
-
 }
