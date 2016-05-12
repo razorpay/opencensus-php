@@ -605,10 +605,40 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    /**
+     * Makes sure that the hex color is in proper
+     * format for the API. Just drops the first
+     * character if it is 7 characters in length
+     * also, uppercases
+     * @param  array $input Input Data
+     * @return array Input data
+     */
+    protected function fixHexColor(array $input)
+    {
+        if (isset($input['brand_color']))
+        {
+            $color = $input['brand_color'];
+            $len = strlen($color);
+
+            if ($len === 7)
+            {
+                $color = substr($color, 1);
+            }
+
+            $color = strtoupper($color);
+        }
+
+        $input['brand_color'] = $color;
+
+        return $input;
+    }
+
     public function updateMerchantConfig($merchantId, $input)
     {
         $this->setApiCredentials($merchantId);
         $error = $data = null;
+
+        $input = $this->fixHexColor($input);
 
         try
         {

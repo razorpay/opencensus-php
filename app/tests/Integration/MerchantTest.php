@@ -323,7 +323,7 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('bank_account_number'), 'RZP123443')   // Fill slug, alphanumeric
             ->type(l::IdOrName('bank_account_name'), 'Tester')   // Fill slug
             ->type(l::IdOrName('bank_account_type'), 'savings')   // Fill slug
-            ->type(l::IdOrName('bank_branch_ifsc'), 'abc123443')   // Fill slug
+            ->type(l::IdOrName('bank_branch_ifsc'), 'KKBK0000261')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address1'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address2'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address3'), 'abc123443')

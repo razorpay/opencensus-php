@@ -61,12 +61,21 @@ app.controller('EntitiesCtrl', [
       'ezeclick',
       'hdfc',
       'kotak',
+      'mobikwik',
+      'netbanking_hdfc',
+      'netbanking_kotak',
+      'paytm',
+      'sharp',
+      'wallet_payumoney',
+      'wallet_payzapp'
+    ];
+    var walletList = [
+      'all',
       'paytm',
       'mobikwik',
-      'wallet_payzapp',
-      'wallet_payumoney',
-      'netbanking_hdfc',
-      'sharp'
+      'payzapp',
+      'payumoney',
+      'ezeclick'
     ];
     var booleanList = [
       'all',
@@ -85,6 +94,13 @@ app.controller('EntitiesCtrl', [
       'failed',
       'captured',
       'refunded'
+    ];
+    var methodList = [
+      'all',
+      'card',
+      'emi',
+      'netbanking',
+      'wallet'
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -222,13 +238,7 @@ app.controller('EntitiesCtrl', [
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id'],
-        method: [
-          'all',
-          'card',
-          'emi',
-          'netbanking',
-          'wallet'
-        ],
+        method: methodList,
         refund_status: [
           'all',
           'null',
@@ -243,16 +253,10 @@ app.controller('EntitiesCtrl', [
           1,
           2,
         ],
-        wallet: [
-          'all',
-          'paytm',
-          'mobikwik',
-          'payzapp',
-          'payumoney',
-          'ezeclick'
-        ],
+        wallet: walletList,
         iin: ['Card IIN'],
-        last4: ['Card Last 4']
+        last4: ['Card Last 4'],
+        international: ['International']
       },
       paytm: {
         payment_id: ['Payment Id'],
@@ -297,6 +301,10 @@ app.controller('EntitiesCtrl', [
         customer_id: ['Customer Id'],
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id']
+      },
+      wallet: {
+        payment_id: ['Payment Id'],
+        wallet: walletList
       },
       webhook: {
         merchant_id: ['Merchant Id'],
@@ -397,7 +405,7 @@ app.controller('EntitiesCtrl', [
             type: entity
           });
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -472,9 +480,9 @@ app.controller('EntitiesCtrl', [
         filters.merchant.methods = JSON.stringify(methods);
       }
       for (var filterName in filters[entity]) {
-        var value = filters[entity][filterName];
-        if (value !== 'all' && value !== '' && value !== 'true' && value !== 'false') {
-          query[filterName] = value;
+        var val = filters[entity][filterName];
+        if (val !== 'all' && val !== '' && val !== 'true' && val !== 'false') {
+          query[filterName] = val;
         }
       }
       return query;

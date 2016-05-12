@@ -54,16 +54,18 @@ class AdminTest extends TestCase
 
             $this->merchant_details = $this->createEntity('merchant_details',[
                 'merchant_id'   =>  $this->merchant->id,
-                'business_name' =>  $data['business_name']
+                'business_name' =>  $data['business_name'],
+                'bank_branch_ifsc' => 'KKBK0000261'
             ]);
 
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             try
             {
-                $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
+                $error = (new Models\Merchant\Service)
+                    ->confirmMerchantById($this->merchant->id);
             }
 
-            catch(\Razorpay\Api\Errors\ServerError $e)
+            catch(\Razorpay\Api\Errors\Error $e)
             {
                 $error = [$e->getMessage()];
             }

@@ -224,7 +224,7 @@ class Service extends Base\Service
 
         // We also send over details to slack
         $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
-        $this->slackPost('New activation form submitted', $customer, '#sales', $link);
+        $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
     }
 
     protected function isLockedError()
