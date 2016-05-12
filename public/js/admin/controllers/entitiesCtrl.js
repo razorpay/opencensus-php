@@ -255,7 +255,8 @@ app.controller('EntitiesCtrl', [
         ],
         wallet: walletList,
         iin: ['Card IIN'],
-        last4: ['Card Last 4']
+        last4: ['Card Last 4'],
+        international: ['International']
       },
       paytm: {
         payment_id: ['Payment Id'],
