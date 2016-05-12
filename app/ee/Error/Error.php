@@ -259,6 +259,11 @@ class Error extends Support\Fluent
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $this->getDescription());
 
+        $action = $this->getAttribute(self::ACTION);
+
+        if ($action !== null)
+            $array[self::ACTION] = $action;
+
         $field = $this->getAttribute(self::FIELD);
 
         if ($field !== null)

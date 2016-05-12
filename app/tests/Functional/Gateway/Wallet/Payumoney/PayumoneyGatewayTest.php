@@ -45,6 +45,48 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testOtpRetryPayment()
+    {
+        $this->step = 'RETRY';
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+    }
+
+    public function testOtpRetrySuccessPayment()
+    {
+        $this->step = 'RETRY';
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
@@ -91,6 +133,17 @@ class PayumoneyGatewayTest extends TestCase
         if ($mock)
         {
             $content['otp'] = '123456';
+
+            if (isset($this->step))
+            {
+                switch ($this->step)
+                {
+                    case 'RETRY':
+                        $content['otp'] = '121212';
+                        break;
+                }
+            }
+
             $content['type'] = 'otp';
 
             $request = array(
