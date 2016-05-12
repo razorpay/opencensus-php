@@ -24,9 +24,13 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'wallet_payumoney';
 
+    protected $wallet  = 'payumoney';
+
     protected $sortRequestContent = false;
 
     protected $canRunOtpFlow = true;
+
+    protected $topup = true;
 
     protected $map = array(
         'email'         => 'email',
@@ -213,9 +217,14 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function checkExistingUser($input)
+    public function topup($input)
     {
 
+    }
+
+    public function checkExistingUser($input)
+    {
+        ;
     }
 
     public function otpGenerate($input)
@@ -290,7 +299,7 @@ class Gateway extends Base\Gateway
     {
         $this->checkBalance($input);
 
-        $this->action($input, Action::AUTHORIZE);
+        $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
 
@@ -318,6 +327,8 @@ class Gateway extends Base\Gateway
             'message'  => $content['message'],
             'received' => true
         );
+
+        $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($contentToSave);
     }

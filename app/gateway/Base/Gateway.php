@@ -49,6 +49,12 @@ class Gateway
     protected $action;
 
     /**
+     * Whether the gateway supports topup payments
+     * @var boolean
+     */
+    protected $topup = false;
+
+    /**
      * Whether the gateway supports authorizing payments.
      * @var boolean
      */
@@ -169,6 +175,11 @@ class Gateway
     public function canRunOtpFlow(array $input = [])
     {
         return $this->canRunOtpFlow;
+    }
+
+    public function canTopup()
+    {
+        return $this->topup;
     }
 
     public function setTerminal($terminal)

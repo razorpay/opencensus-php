@@ -19,6 +19,9 @@ class TraceCode
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE             = 'PAYMENT_VERIFY_REFUND_FAILURE';
+    const PAYMENT_TOPUP_REQUEST                     = 'PAYMENT_TOPUP_REQUEST';
+    const PAYMENT_TOPUP_RESPONSE                    = 'PAYMENT_TOPUP_RESPONSE';
+    const PAYMENT_TOPUP_FAILURE                     = 'PAYMENT_TOPUP_FAILURE';
     const PAYMENT_CAPTURE_REQUEST                   = 'PAYMENT_CAPTURE_REQUEST';
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';

@@ -24,6 +24,8 @@ class Gateway extends Base\Gateway
     protected $gateway = 'wallet_payzapp';
     protected $pgname  = 'hdfcpg';
 
+    protected $wallet  = 'payzapp';
+
     protected $map = array(
         'custEmail'         => 'email',
         'custMobile'        => 'contact',

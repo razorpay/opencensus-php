@@ -13,6 +13,14 @@ class Gateway extends Payumoney\Gateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        $request = parent::authorize($input);
+
+        $url = \Http\Route::getUrlWithPublicAuth(
+                                'mock_wallet_payment',
+                                ['wallet' => $this->wallet]);
+
+        $request['url'] = $url;
+
+        return $request;
     }
 }

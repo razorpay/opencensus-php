@@ -52,6 +52,18 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    /*
+     * Topup
+     */
+    public function postTopupAjax($id)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->topup($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Refund a payment.
      */

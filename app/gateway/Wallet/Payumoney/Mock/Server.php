@@ -16,6 +16,19 @@ class Server extends Base\Mock\Server
 
     protected $authHeader = 'Bearer 8c31d80b-83ed-4f52-8377-71301790ccaa';
 
+    public function authorize($input)
+    {
+        parent::authorize($input);
+
+        $this->validateActionInput($input);
+
+        $response = array(
+
+        );
+
+        return $this->makeResponse($response);
+    }
+
     public function verify($input)
     {
         parent::verify($input);
@@ -160,11 +173,9 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    public function authorize($input)
+    public function debitWallet($input)
     {
-        parent::authorize($input);
-
-        $this->validateActionInput($input, 'authorize');
+        $this->validateActionInput($input, 'debitWallet');
 
         if (!isset($this->mockRequest['headers']['Authorization']))
         {

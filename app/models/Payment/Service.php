@@ -55,14 +55,29 @@ class Service extends Base\Service
     /**
      * Resend OTP
      *
-     * @param  string   $id
+     * @param string  $id
+     * @param array   $input
      *
-     * @return Payment\Entity
-     *
+     * @return array
      */
     public function otpResend($id, $input)
     {
         return $this->processor()->otpResend($id, $input);
+    }
+
+    /*
+     * Topup a wallet
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function topup($id, $input)
+    {
+        $data = $this->processor()->topup($id, $input);
+
+        return $data;
     }
 
     /**

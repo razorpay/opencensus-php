@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
 
     protected $canRunOtpFlow = true;
 
+    protected $topup = true;
+
     public function authorize(array $input)
     {
         parent::authorize($input);

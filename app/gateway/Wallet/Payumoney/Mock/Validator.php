@@ -6,7 +6,12 @@ use Models\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $authorizeRules = array(
+    protected static $authorizeRules   = array(
+        'paymentId'             => 'required|string',
+        'accessToken'           => 'required|string'
+    );
+
+    protected static $debitWalletRules = array(
         'key'                   => 'required|string',
         'totalAmount'           => 'required|numeric',
         'client_id'             => 'required|string',
