@@ -379,7 +379,12 @@ class Server extends Base\Mock\Server
         $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
             $gatewayTxnId, 'authorized');
 
-        $network = Card\Network::detectNetwork($this->data['card']);
+        $network = null;
+
+        if (isset($this->data['card']))
+        {
+            $network = Card\Network::detectNetwork($this->data['card']);
+        }
 
         if ($txn === null)
         {
