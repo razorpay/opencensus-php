@@ -45,6 +45,7 @@ class Repository extends Base\Repository
         Entity::NOTES           => 'sometimes|string|max:500',
         Card\Entity::IIN        => 'sometimes|integer|digits:6',
         Card\Entity::LAST4      => 'sometimes|string|digits:4',
+        Card\Entity::INTERNATIONAL => 'sometimes|in:0,1',
     );
 
     protected $esWhitelistedParams = [
@@ -244,6 +245,15 @@ class Repository extends Base\Repository
         $this->joinQueryCard($query);
 
         $query->where(Card\Entity::LAST4, '=', $params[Card\Entity::LAST4]);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamInternational($query, $params)
+    {
+        $this->joinQueryCard($query);
+
+        $query->where(Card\Entity::INTERNATIONAL, '=', $params[Card\Entity::INTERNATIONAL]);
 
         $query->select($query->getModel()->getTable().'.*');
     }
