@@ -107,6 +107,8 @@ class Core extends Base\Core
 
         $ba = $ba->build($input);
 
+        $ba->getValidator()->validateIfscCode($mode);
+
         $ba->merchant()->associate($merchant);
 
         return $ba;
