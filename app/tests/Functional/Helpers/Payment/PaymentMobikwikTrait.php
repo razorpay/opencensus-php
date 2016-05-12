@@ -16,6 +16,32 @@ trait PaymentMobikwikTrait
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
 
         if ($mock) {
+
+            if (isset($this->type) and $this->type === 'otp')
+            {
+                $content['otp'] = '123456';
+
+                if (isset($this->step))
+                {
+                    switch ($this->step)
+                    {
+                        case 'RETRY':
+                            $content['otp'] = '121212';
+                            break;
+                    }
+                }
+
+                $content['type'] = 'otp';
+
+                $request = array(
+                    'url'       => $url,
+                    'method'    => $method,
+                    'content'   => $content
+                );
+
+                return $this->makeRequest($request);
+            }
+
             $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
 
             return $this->submitPaymentCallbackRedirect($url);
