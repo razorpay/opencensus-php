@@ -51,4 +51,11 @@ class Validator extends Base\Validator
         'client_id'             => 'required|string',
         'hash'                  => 'required|string|regex:"^[a-f0-9]+$"'
     );
+
+    protected static $topupWalletRules = array(
+        'key'                   => 'required|string',
+        'totalAmount'           => 'required|numeric',
+        'txnDetails'            => 'required|array',
+        'client_id'             => 'required|string'
+    );
 }

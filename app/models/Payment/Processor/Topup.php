@@ -13,11 +13,10 @@ trait Topup
         $payment = $this->retrieve($id);
 
         $gatewayInput = [];
-        $gatewayInput['gateway'] = $input;
 
         try
         {
-            $this->prePaymentTopupProcessing($payment, $gatewayInput);
+            $this->prePaymentTopupProcessing($payment, $input, $gatewayInput);
 
             return $this->callGatewayTopup($payment, $gatewayInput);
         }
@@ -29,6 +28,8 @@ trait Topup
 
             throw $e;
         }
+
+        assert(false, 'Shouldn\'t reach here.');
     }
 
     protected function callGatewayTopup($payment, array $data)
@@ -41,11 +42,18 @@ trait Topup
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
+
+        return [];
     }
 
-    protected function prePaymentTopupProcessing($payment, array & $gatewayInput)
+    protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
     {
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+        if ($payment->customer === null)
+        {
+            throw new Exception(
+
+                );
+        }
 
         $canTopup = $this->callGatewayFunction('canTopup', []);
 
@@ -55,18 +63,18 @@ trait Topup
 
                 );
         }
+
+        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
         //
         // Call gateway input
         //
+        $gatewayInput['gateway'] = $input;
+
         $gatewayInput['payment'] = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->customer->toArray();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
-
-        if ($payment->order)
-        {
-            $gatewayInput['order'] = $payment->order->toArray();
-        }
     }
 }

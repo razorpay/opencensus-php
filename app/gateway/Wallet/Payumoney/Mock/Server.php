@@ -23,7 +23,60 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input);
 
         $response = array(
-
+            'mihpayid'              => '403993715514441547',
+            'mode'                  => 'test',
+            'status'                => 'success',
+            'unmappedstatus'        => 'captured',
+            'key'                   => 'Hlbv4P',
+            'txnid'                 => 'pmwallet1110628236',
+            'amount'                => '1000.0',
+            'addedon'               => date('Y-m-d H:i:s'),
+            'productinfo'           => 'productInfo',
+            'firstname'             => 'vivek',
+            'lastname'              => '',
+            'address1'              => '',
+            'address2'              => '',
+            'city'                  => '',
+            'state'                 => '',
+            'country'               => '',
+            'zipcode'               => '',
+            'email'                 => 'vivek@gmail.com',
+            'phone'                 => '8199080070',
+            'udf1'                  => '',
+            'udf2'                  => '',
+            'udf3'                  => '',
+            'udf4'                  => '',
+            'udf5'                  => '',
+            'udf6'                  => '',
+            'udf7'                  => '',
+            'udf8'                  => '',
+            'udf9'                  => '',
+            'udf10'                 => '',
+            'hash'                  => '2451471f3b2e8cf5fbebf255b0034cd433274ab1fba20bebcb34c7d36d060d82d37327eae07c7eff7141d470f00aeb142987ac5746087de01a2d692a953da0e7',
+            'field1'                => '613361387628',
+            'field2'                => '999999',
+            'field3'                => '1152205592161331',
+            'field4'                => '2270245592161330',
+            'field5'                => '',
+            'field6'                => '',
+            'field7'                => '',
+            'field8'                => '',
+            'field9'                => 'SUCCESS',
+            'PG_TYPE'               => 'HDFCPG',
+            'encryptedPaymentId'    => $input['paymentId'],
+            'bank_ref_num'          => '1152205592161331',
+            'bankcode'              => 'CC',
+            'error'                 => 'E000',
+            'error_Message'         => 'No Error',
+            'cardToken'             => '32a29ce86dff3609ba8696db46a5647542027988',
+            'name_on_card'          => 'payu',
+            'cardnum'               => '512345XXXXXX2346',
+            'cardhash'              => 'This field is no longer supported in postback params.',
+            'card_merchant_param'   => '7fc8c60f4d8013bfdbefe054690e',
+            'amount_split'          => '{\'PAYU\': \'1000.0\'}',
+            'payuMoneyId'           => '1110628236',
+            'discount'              => '0.00',
+            'net_amount_debit'      => '1000'
         );
 
         return $this->makeResponse($response);
@@ -169,6 +222,30 @@ class Server extends Base\Mock\Server
                 'userVaultDTO'  => null
             );
         }
+
+        return $this->makeResponse($response);
+    }
+
+    public function topupWallet($input)
+    {
+        if (isset($input['txnDetails']))
+        {
+            $input['txnDetails'] = json_decode($input['txnDetails'], true);
+        }
+
+        $this->validateActionInput($input, 'topupWallet');
+
+        $this->topupRequest = $input;
+
+        $response = array(
+            'status' => 0,
+            'message' => 'Payment added successfully',
+            'errorCode' => null,
+            'guid' => null,
+            'result' => '0B663A7D4700F95709A3F5761254B406',
+            'userVaultDTO' => null,
+            'mode' => 'test'
+        );
 
         return $this->makeResponse($response);
     }

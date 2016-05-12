@@ -57,11 +57,13 @@ class Gateway extends Base\Gateway
             ($input['gateway']['type'] === 'otp'))
         {
             $this->callbackOtpSubmit($input);
-
-            return $this->debit($input);
+        }
+        else
+        {
+            $this->callbackTopupFlow($input);
         }
 
-        assert(false, 'Shouldn\'t reach here');
+        return $this->debit($input);
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -219,7 +221,27 @@ class Gateway extends Base\Gateway
 
     public function topup($input)
     {
+        $this->action($input, Action::TOPUP_WALLET);
 
+        $this->customer = $input['customer'];
+
+        $request = $this->getTopupWalletRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return $this->getTopupWalletRedirectRequestArray($content);
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $content['status'],
+            $content['message']);
     }
 
     public function checkExistingUser($input)
@@ -293,6 +315,13 @@ class Gateway extends Base\Gateway
                 $content['status'],
                 $content['message']);
         }
+    }
+
+    public function callbackTopupFlow($input)
+    {
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_TOPUP_CALLBACK, $input['gateway']);
+
+        $content = $input['gateway'];
     }
 
     protected function debit($input)
@@ -421,7 +450,7 @@ class Gateway extends Base\Gateway
             'merchantTransactionId' => $input['payment']['id'],
         );
 
-        $content['hash'] = $this->getHashForUseWallet($content);
+        $content['hash'] = $this->getHashForDebitWallet($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -513,6 +542,49 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getTopupWalletRequestArray($input)
+    {
+        $content = [];
+
+        $content = array(
+            'key'           => $this->getMerchantId($input['terminal']),
+            'txnDetails'    => json_encode(array(
+                'email' => $input['payment']['email'],
+                'surl'  => $input['callbackUrl'],
+                'furl'  => $input['callbackUrl'],
+            )),
+            'totalAmount'   => $input['payment']['amount'] / 100,
+            'client_id'     => $this->getClientId($input['terminal']),
+        );
+
+        $content['hash'] = $this->getHashForTopupWallet($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::PAYMENT_TOPUP_REQUEST, $request);
+
+        $request['headers'] = array(
+            'Accept'        => 'application/json',
+            'Authorization' => 'Bearer ' . $this->accessToken
+        );
+
+        return $request;
+    }
+
+    protected function getTopupWalletRedirectRequestArray($input)
+    {
+        $this->action($input, Action::TOPUP_REDIRECT);
+
+        $content = array(
+            'paymentId'     => $input['result'],
+            'accessToken'   => $this->accessToken
+        );
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
+
     protected function getAuthHeader($terminal)
     {
         if ($this->mode === Mode::TEST)
@@ -590,7 +662,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getHashForUseWallet($content)
+    protected function getHashForDebitWallet($content)
     {
         $fieldsInOrder = array(
             'key',
@@ -600,6 +672,21 @@ class Gateway extends Base\Gateway
         );
 
         $content['productInfo'] = '';
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getHashForTopupWallet($content)
+    {
+        $fieldsInOrder = array(
+            'key',
+            'totalAmount',
+            'dummy',
+        );
+
+        $content['dummy'] = '';
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
