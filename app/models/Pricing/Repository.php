@@ -87,11 +87,13 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getPricingPlans()
+    public function getPricingPlansOrderedByPlanId()
     {
         $repo = $this->repo;
 
-        return $repo::orderBy(Pricing\Entity::ID, 'desc')->get();
+        return $repo::orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->get();
     }
 
     public function getMerchantPricingPlans()
