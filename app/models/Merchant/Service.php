@@ -242,7 +242,7 @@ class Service extends Base\Service
 
         // This is internal auth as of now
         // We need to shift this to some other auth
-        $this->setApiCredentials(null, 'test');
+        $this->setApiCredentials();
 
         try
         {
