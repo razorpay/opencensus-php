@@ -4,5 +4,7 @@ namespace EE\Error;
 
 class Action
 {
-    const BAD_REQUEST_PAYMENT_OTP_INCORRECT                 = 'RETRY';
+    const RETRY = 'RETRY';
+
+    const BAD_REQUEST_PAYMENT_OTP_INCORRECT = self::RETRY;
 }
