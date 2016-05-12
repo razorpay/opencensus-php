@@ -379,6 +379,8 @@ class Server extends Base\Mock\Server
         $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
             $gatewayTxnId, 'authorized');
 
+        $network = Card\Network::detectNetwork($this->data['card']);
+
         if ($txn === null)
         {
             $res = $this->getTxnNotFoundError();
@@ -394,6 +396,11 @@ class Server extends Base\Mock\Server
             'trackid'   => $txn['payment_id'],
             'payid'     => '-1',
             'amt'       => $txn['amount'] / 100);
+
+        if ($network === Card\Network::RUPAY)
+        {
+            $res['result'] = 'SUCCESS';
+        }
 
         $res = $this->content($res, $this->action);
 

@@ -49,7 +49,8 @@ trait Inquiry
 
         if ((isset($content['result'])) and
             (($content['result'] === Result::APPROVED) or
-             ($content['result'] === Result::CAPTURED)))
+             ($content['result'] === Result::CAPTURED) or
+             ($content['result'] === Result::SUCCESS)))
         {
             $verify->gatewaySuccess = true;
 

@@ -70,12 +70,13 @@ final class Result
     /**
      * Result codes received in response for payment
      */
-    const CAPTURED = 'CAPTURED';
-    const APPROVED = 'APPROVED';
-    const NOT_CAPTURED = 'NOT CAPTURED';
-    const NOT_APPROVED = 'NOT APPROVED';
-    const DENIED_BY_RISK = 'DENIED BY RISK';
-    const HOST_TIMEOUT = 'HOST TIMEOUT';
+    const CAPTURED          = 'CAPTURED';
+    const APPROVED          = 'APPROVED';
+    const SUCCESS           = 'SUCCESS';
+    const NOT_CAPTURED      = 'NOT CAPTURED';
+    const NOT_APPROVED      = 'NOT APPROVED';
+    const DENIED_BY_RISK    = 'DENIED BY RISK';
+    const HOST_TIMEOUT      = 'HOST TIMEOUT';
 
     public static function getResultCode($result)
     {
