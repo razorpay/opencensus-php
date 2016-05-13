@@ -9,6 +9,11 @@ class Repository extends Base\Repository
 {
     protected $entity = 'Wallet';
 
+    protected $appFetchParamRules = array(
+        Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
+        Entity::WALLET        => 'sometimes|in:payumoney,payzapp'
+    );
+
     public function fetchGatewayPaymentId2ByPaymentId($paymentId)
     {
         $repo = $this->repo;
