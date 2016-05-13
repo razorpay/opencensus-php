@@ -157,7 +157,7 @@ class Inferno
         {
             return null;
         }
-        
+
         $hmac = hash_hmac(self::HASH_ALGO, $payload, $secret);
 
         return $hmac;
@@ -350,8 +350,8 @@ class Inferno
         $msg = $e->getMessage();
         $msg = strtolower($msg);
 
-        if ((strpos($msg, 'Empty reply from server') !== false) or
-            (strpos($msg, 'SSL certificate problem: certificate has expired') !== false))
+        if ((strpos($msg, 'empty reply from server') !== false) or
+            (strpos($msg, 'ssl certificate problem: certificate has expired') !== false))
         {
             return true;
         }
