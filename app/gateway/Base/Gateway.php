@@ -522,29 +522,4 @@ class Gateway
                     ['json' => $json]);
         }
     }
-
-    /* OTP increment and verify functions */
-    protected function incrementOtpAttempts($input)
-    {
-        $payment = (new \Models\Payment\Repository)
-                        ->findByIdAndMerchantId(
-                            $input['payment']['id'],
-                            $input['merchant']['id']);
-
-        $payment->incrementOtpAttempts();
-
-        $payment->saveOrFail();
-    }
-
-    protected function verifyOtpAttempts($input)
-    {
-        $attemptsExceeded = (new \Models\Payment\Core)
-                        ->verifyOtpAttempts($input['payment']['id']);
-
-        if ($attemptsExceeded)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
-        }
-    }
 }

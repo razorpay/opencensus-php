@@ -226,7 +226,8 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::OTP_SUBMIT);
 
-        $this->verifyOtpAttempts($input);
+        (new \Models\Payment\Core)
+            ->verifyOtpAttempts($input['payment']['id']);
 
         $request = $this->getOtpSubmitRequestArray($input);
 
@@ -254,7 +255,10 @@ class Gateway extends Base\Gateway
             switch ($errorCode)
             {
                 case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
-                    $this->incrementOtpAttempts($input);
+                    (new \Models\Payment\Core)
+                        ->incrementOtpAttempts(
+                            $input['payment']['id'],
+                            $input['merchant']['id']);
                     break;
             }
 

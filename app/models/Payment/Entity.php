@@ -977,7 +977,5 @@ class Entity extends Base\PublicEntity
     public function resetOtpAttempts()
     {
         $this->setOtpAttempts(0);
-
-        return $this;
     }
 }

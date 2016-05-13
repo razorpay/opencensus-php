@@ -101,12 +101,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function countOtpAttempts($paymentId, $attempts = 3)
+    public function countOtpAttempts($paymentId, $limit)
     {
         $repo = $this->repo;
 
         return $repo::where(Entity::ID, '=', $paymentId)
-                        ->where(ENTITY::OTP_ATTEMPTS, '>=', $attempts)
+                        ->where(ENTITY::OTP_ATTEMPTS, '>=', $limit)
                         ->count();
     }
 
