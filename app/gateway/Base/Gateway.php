@@ -126,6 +126,13 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::CAPTURE;
+
+        if ($input['payment']['status'] !== 'authorized')
+        {
+            throw new Exception\RuntimeException(
+                'Payment status should be authorized',
+                ['payment_id' => $input['payment']['id']]);
+        }
     }
 
     public function refund(array $input)

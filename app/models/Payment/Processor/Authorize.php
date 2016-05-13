@@ -56,6 +56,8 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized($payment);
 
+        $payment = $this->payment;
+
         if ($payment->isSigned())
         {
             // If payment is signed, then we capture it in this step only.
@@ -206,6 +208,8 @@ trait Authorize
         }
 
         $this->updateAndNotifyPaymentAuthorized($payment);
+
+        $payment = $this->payment;
 
         if ($payment->isSigned())
         {
