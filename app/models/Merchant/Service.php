@@ -14,6 +14,7 @@ use Models\MerchantDetails;
 
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
+use Razorpay\Api\Errors\Error as ApiError;
 
 class Service extends Base\Service
 {
@@ -104,7 +105,12 @@ class Service extends Base\Service
         {
             $businessName = $input['name'];
 
-            $email = \Input::get('email', $currentMerchant->email);
+            $email = \Input::get('email');
+
+            if (!$email or empty($email))
+            {
+                $email = $currentMerchant->email;
+            }
 
             $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email);
 
@@ -124,7 +130,7 @@ class Service extends Base\Service
             {
                 $this->createSubMerchantOnApi($merchant, $currentMerchant);
             }
-            catch(BadRequestError $e)
+            catch(ApiError $e)
             {
                 return [[$e->getMessage()], null];
             }
@@ -146,8 +152,7 @@ class Service extends Base\Service
 
         // Only send the email field if the email is not
         // the same as the aggregator email
-        if ( (!empty($merchant->email)) and
-             ($merchant->email !== $aggregator->email))
+        if ($merchant->email !== $aggregator->email)
         {
             $data['email'] = $merchant->email;
         }
