@@ -25,6 +25,10 @@ trait OtpResend
         {
             $data = $this->runOtpPaymentFlow($gatewayInput, $payment);
 
+            $payment->resetOtpAttempts();
+
+            $payment->saveOrFail();
+
             return $data;
         }
 

@@ -226,6 +226,8 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::OTP_SUBMIT);
 
+        $this->verifyOtpAttempts($input);
+
         $request = $this->getOtpSubmitRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -248,6 +250,13 @@ class Gateway extends Base\Gateway
             (isset($content['result']['body']['access_token']) === false))
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
+
+            switch ($errorCode)
+            {
+                case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
+                    $this->incrementOtpAttempts($input);
+                    break;
+            }
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(

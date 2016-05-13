@@ -98,7 +98,7 @@ class MobikwikGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment, 'testPayment');
+        $this->assertTestResponse($payment, 'testPaymentWithOtpAttempts');
 
         $mobikwik = $this->getLastEntity('mobikwik', true);
 

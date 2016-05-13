@@ -331,6 +331,13 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
+            switch ($errorCode)
+            {
+                case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
+                    $this->incrementOtpAttempts($input);
+                    break;
+            }
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 $errorCode,

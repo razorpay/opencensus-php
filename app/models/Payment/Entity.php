@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
     const VERIFIED              = 'verified';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
+    const OTP_ATTEMPTS          = 'otp_attempts';
     const FEE                   = 'fee';
     const SAVE                  = 'save';
 
@@ -125,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
+        self::OTP_ATTEMPTS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -377,6 +379,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI_PLAN_ID, $planId);
     }
 
+    public function setOtpAttempts($attempts)
+    {
+        $this->setAttribute(self::OTP_ATTEMPTS, $attempts);
+    }
+
+    public function incrementOtpAttempts()
+    {
+        $attempts = $this->getOtpAttempts() + 1;
+
+        $this->setOtpAttempts($attempts);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -450,6 +464,11 @@ class Entity extends Base\PublicEntity
     public function getSaveAttribute()
     {
         return (bool) $this->attributes[self::SAVE];
+    }
+
+    public function getOtpAttempts()
+    {
+        return (int) $this->attributes[self::OTP_ATTEMPTS];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -954,4 +973,11 @@ class Entity extends Base\PublicEntity
     }
 
 // --------------------- Query scopes section ends -----------------------------
+
+    public function resetOtpAttempts()
+    {
+        $this->setOtpAttempts(0);
+
+        return $this;
+    }
 }

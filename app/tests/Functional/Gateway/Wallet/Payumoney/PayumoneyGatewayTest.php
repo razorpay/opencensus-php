@@ -87,7 +87,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment, 'testPayment');
+        $this->assertTestResponse($payment, 'testPaymentWithOtpAttempts');
 
         $wallet = $this->getLastEntity('wallet', true);
 

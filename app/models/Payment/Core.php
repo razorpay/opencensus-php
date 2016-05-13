@@ -54,9 +54,15 @@ class Core extends Base\Core
         return $this->paymentRepo->findOrFail($id);
     }
 
-
     public function retrieveRefundById($refundId)
     {
         return (new Refund\Repository)->findOrFail($refundId);
+    }
+
+    public function verifyOtpAttempts($paymentId)
+    {
+        $repo = $this->paymentRepo;
+
+        return (bool) $repo->countOtpAttempts($paymentId);
     }
 }
