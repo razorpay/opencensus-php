@@ -74,6 +74,12 @@ trait Support
             $this->supportPaymentRequest,
             $this->supportPaymentResponse);
 
+        if ((isset($this->supportPaymentResponse['data']['result'])) and
+            ($this->supportPaymentResponse['data']['result'] === 'SUCCESS'))
+        {
+            $this->supportPaymentResponse['data']['result'] = Result::CAPTURED;
+        }
+
         if ($this->error === false)
         {
             $this->validateSupportPaymentResponse();

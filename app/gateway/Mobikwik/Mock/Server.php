@@ -97,7 +97,7 @@ class Server extends Base\Mock\Server
             'status'            => 'SUCCESS',
             'statuscode'        => '0',
             'statusdescription' => 'User Exists',
-            'emailaddress'      =>  'random@gmail.com',
+            'emailaddress'      => 'random@gmail.com',
             'range'             => '100-500',
             'statuscode'        => '0',
             'statusdescription' => 'User exists',
@@ -118,7 +118,7 @@ class Server extends Base\Mock\Server
             'status'            => 'SUCCESS',
             'statuscode'        => '0',
             'statusdescription' => 'Message Sent to xxxxxx784',
-            'emailaddress'      =>  'random@gmail.com',
+            'emailaddress'      => 'random@gmail.com',
             'range'             => '100-500',
             'statuscode'        => '0',
             'statusdescription' => 'User exists',
@@ -142,6 +142,15 @@ class Server extends Base\Mock\Server
             'balanceamount'     => random_integer(4),
             'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
         );
+
+        if ($input['otp'] === '121212')
+        {
+            $content = array(
+                'status'            => 'FAILURE',
+                'statuscode'        => '164',
+                'statusdescription' => Mobikwik\ResponseCode::getResponseMessage('164')
+            );
+        }
 
         $responseContent = $this->generateXMLResponse($content);
 

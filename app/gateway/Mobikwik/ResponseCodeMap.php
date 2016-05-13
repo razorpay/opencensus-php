@@ -45,12 +45,13 @@ class ResponseCodeMap
         '151' => 'Invalid Request Parameters',
         '152' => 'User with the input email is already registered',
         '153' => 'User with the input cell is already registered',
-        '155' => 'OTP mismatch can be due to mismatched order id or amount or OTP code mismatch',
+        '155' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         '156' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_MOBILE,
         '157' => 'Either Email or Mobile is required for OTP generation',
         '158' => 'Provide either Email or cell to uniquely identify you',
         '159' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST,
         '160' => 'Our record suggests that no mobile is registered with your email',
+        '164' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         '170' => 'Wallet is not semi closed',
     );
 

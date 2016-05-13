@@ -48,6 +48,14 @@ class ResponseCode
         '158' => 'Provide either Email or cell to uniquely identify you',
         '159' => 'No Wallet Account is associated with specified cell',
         '160' => 'Our record suggests that no mobile is registered with your email',
+        '164' => 'Either Invalid OTP (Expiry or OTP mismatch) or OTP mismatched due to mismatch in order id or transaction amount',
         '170' => 'Wallet is not semi closed',
     );
+
+    public static function getResponseMessage($code)
+    {
+        $codes = self::$codes;
+
+        return $codes[(int)$code];
+    }
 }
