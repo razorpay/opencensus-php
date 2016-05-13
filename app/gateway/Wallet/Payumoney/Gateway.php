@@ -26,6 +26,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
+    protected $canRunOtpFlow = true;
+
     protected $map = array(
         'email'         => 'email',
         'mobile'        => 'contact',
