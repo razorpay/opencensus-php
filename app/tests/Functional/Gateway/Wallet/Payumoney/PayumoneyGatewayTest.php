@@ -141,7 +141,7 @@ class PayumoneyGatewayTest extends TestCase
 
         if ($mock)
         {
-            $content['otp'] = '123456';
+            $content['otp'] = '111111';
 
             if (isset($this->step))
             {

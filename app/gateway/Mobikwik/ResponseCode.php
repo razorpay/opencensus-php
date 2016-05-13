@@ -51,4 +51,11 @@ class ResponseCode
         '164' => 'Either Invalid OTP (Expiry or OTP mismatch) or OTP mismatched due to mismatch in order id or transaction amount',
         '170' => 'Wallet is not semi closed',
     );
+
+    public static function getResponseMessage($code)
+    {
+        $codes = self::$codes;
+
+        return $codes[(int)$code];
+    }
 }

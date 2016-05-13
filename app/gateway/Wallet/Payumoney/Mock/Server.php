@@ -104,44 +104,44 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'otpsubmit');
 
         $response = array(
-            'status'        => -1,
-            'message'       => 'Verification code has expired - Please generate a new verification code',
-            'errorCode'     => '3010008',
-            'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
-            'result'        => null,
-            'userVaultDTO'  => null
+            'status' => 0,
+            'message' => 'access token',
+            'errorCode' => null,
+            'guid' => null,
+            'result' => array(
+                'headers' => array(
+                    'Cache-Control' => array(
+                        'no-store'
+                    ),
+                    'Pragma' => array(
+                        'no-cache'
+                    )
+                ),
+                'body' => array(
+                    'access_token' => $this->accessToken,
+                    'token_type' => 'bearer',
+                    'refresh_token' => 'bfd54a5a-d10a-4e5f-ad51-1d0fd310a4d1',
+                    'expires_in' => 7690192,
+                    'scope' => 'read trust write'
+                ),
+                'statusCode' => 'OK'
+            ),
+            'userVaultDTO' => array(
+                'availableAmount' => 22,
+                'minLimit' => null,
+                'maxLimit' => null
+            )
         );
 
         if ($input['otp'] === '123456')
         {
             $response = array(
-                'status' => 0,
-                'message' => 'access token',
-                'errorCode' => null,
-                'guid' => null,
-                'result' => array(
-                    'headers' => array(
-                        'Cache-Control' => array(
-                            'no-store'
-                        ),
-                        'Pragma' => array(
-                            'no-cache'
-                        )
-                    ),
-                    'body' => array(
-                        'access_token' => $this->accessToken,
-                        'token_type' => 'bearer',
-                        'refresh_token' => 'bfd54a5a-d10a-4e5f-ad51-1d0fd310a4d1',
-                        'expires_in' => 7690192,
-                        'scope' => 'read trust write'
-                    ),
-                    'statusCode' => 'OK'
-                ),
-                'userVaultDTO' => array(
-                    'availableAmount' => 22,
-                    'minLimit' => null,
-                    'maxLimit' => null
-                )
+                'status'        => -1,
+                'message'       => Payumoney\ResponseCode::getResponseMessage('3010008'),
+                'errorCode'     => '3010008',
+                'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
+                'result'        => null,
+                'userVaultDTO'  => null
             );
         }
 
@@ -149,7 +149,7 @@ class Server extends Base\Mock\Server
         {
             $response = array(
                 'status'        => -1,
-                'message'       => 'Verification code is incorrect',
+                'message'       => Payumoney\ResponseCode::getResponseMessage('3010007'),
                 'errorCode'     => '3010007',
                 'guid'          => 'nnhg6878duq7ihb2dtfj6apff',
                 'result'        => null,
@@ -192,7 +192,7 @@ class Server extends Base\Mock\Server
 
         $response = array(
             'error'              => 'invalid_token',
-            'error_description'  => 'Invalid access token: ' . $this->makeResponse($response),
+            'error_description'  => 'Invalid access token: ' . $this->mockRequest['headers']['Authorization'],
         );
 
         return $this->makeResponse($response);

@@ -99,7 +99,7 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'type'  => 'otp',
-                'otp'   => '123456'
+                'otp'   => '111111'
             ]
         ]
     ],

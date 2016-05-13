@@ -97,7 +97,7 @@ class Server extends Base\Mock\Server
             'status'            => 'SUCCESS',
             'statuscode'        => '0',
             'statusdescription' => 'User Exists',
-            'emailaddress'      =>  'random@gmail.com',
+            'emailaddress'      => 'random@gmail.com',
             'range'             => '100-500',
             'statuscode'        => '0',
             'statusdescription' => 'User exists',
@@ -133,25 +133,22 @@ class Server extends Base\Mock\Server
 
     public function otpSubmit($input)
     {
-        if ($input['otp'] === '123456')
-        {
-            $content = array(
-                'messagecode'       => '503',
-                'status'            => 'SUCCESS',
-                'statuscode'        => '0',
-                'statusdescription' => 'Amount Debited',
-                'debitedamount'     => $input['amount'],
-                'balanceamount'     => random_integer(4),
-                'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
-            );
-        }
+        $content = array(
+            'messagecode'       => '503',
+            'status'            => 'SUCCESS',
+            'statuscode'        => '0',
+            'statusdescription' => 'Amount Debited',
+            'debitedamount'     => $input['amount'],
+            'balanceamount'     => random_integer(4),
+            'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
+        );
 
         if ($input['otp'] === '121212')
         {
             $content = array(
                 'status'            => 'FAILURE',
                 'statuscode'        => '164',
-                'statusdescription' => 'Either Invalid OTP (Expiry or OTP mismatch) or OTP mismatched due to mismatch in order id or transaction amount'
+                'statusdescription' => Mobikwik\ResponseCode::getResponseMessage('164')
             );
         }
 

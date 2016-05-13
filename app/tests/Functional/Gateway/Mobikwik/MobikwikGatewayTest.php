@@ -100,6 +100,10 @@ class MobikwikGatewayTest extends TestCase
 
         $this->assertTestResponse($payment, 'testPayment');
 
+        $mobikwik = $this->getLastEntity('mobikwik', true);
+
+        $this->assertNull($mobikwik);
+
         $this->type = null;
     }
 
