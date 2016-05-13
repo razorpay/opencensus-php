@@ -54,6 +54,8 @@ class Gateway extends Base\Gateway
 
             return $this->debit($input);
         }
+
+        assert(false, 'Shouldn\'t reach here');
     }
 
     public function sendPaymentVerifyRequest($verify)
