@@ -30,6 +30,7 @@ return [
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
+        'otp_attempts'      => 0
     ],
 
     'testPaymentWithOtpAttempts' => [
@@ -103,9 +104,35 @@ return [
         ],
         'response'  => [
             'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testOtpResendPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'type' => 'otp',
+                'request' => [
+                    'method' => 'post'
+                ],
             ],
             'status_code' => 200,
-        ],
+        ]
     ],
 
     'testPaymentWalletEntity' => [

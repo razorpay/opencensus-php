@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Http\Route;
 
 class PayumoneyGatewayTest extends TestCase
 {
@@ -92,6 +93,64 @@ class PayumoneyGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testOtpRetryExceededPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment', [
+                            'method'        => 'wallet',
+                            'wallet'        => 'payumoney',
+                            'gateway'       => 'wallet_payumoney',
+                            'otp_attempts'  => 3,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $secret = \App::make('config')->get('app.key');
+
+        $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
+
+        $params = ['id' => $payment->getPublicId(), 'hash' => $hash, 'key_id' => $this->ba->getKey()];
+
+        $url = \URL::route('payment_otp_submit', $params, false);
+        $url = 'http://localhost' . $url;
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testOtpResendPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment', [
+                            'method'        => 'wallet',
+                            'wallet'        => 'payumoney',
+                            'gateway'       => 'wallet_payumoney',
+                            'contact'       => '9111111111',
+                            'otp_attempts'  => 2,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $params = ['id' => $payment->getPublicId(), 'key_id' => $this->ba->getKey()];
+        $wallet = $this->getLastEntity('terminal', true);
+
+        $url = \URL::route('payment_otp_resend', $params, false);
+        $url = 'http://localhost' . $url;
+
+        $data['request']['url'] = $url;
+
+        $a = $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['otp_attempts'], 0);
     }
 
     public function testVerifyPayment()

@@ -100,6 +100,49 @@ return [
         ],
     ],
 
+    'testOtpRetryExceededPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '121212'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testOtpResendPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                '_' => [
+                    'source' => 'checkoutjs'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'type' => 'otp',
+                'request' => [
+                    'method' => 'post'
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testPaymentMobikwikEntity' => [
         'action'        => 'authorize',
         'method'        => 'wallet',

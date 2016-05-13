@@ -9,15 +9,13 @@ use EE\Exception\LogicException;
 
 trait OtpResend
 {
-    public function otpResend($id)
+    public function otpResend($id, array $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
         $payment = $this->retrieve($id);
 
         $gatewayInput = [];
-
-        $input = [];
 
         $this->prePaymentOtpResendProcessing($payment, $input, $gatewayInput);
 

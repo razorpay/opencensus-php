@@ -3,6 +3,7 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Card;
 use Models\Transaction;
@@ -77,7 +78,7 @@ class Core extends Base\Core
 
         if ($attemptsExceeded)
         {
-            throw new Exception\GatewayErrorException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
     }

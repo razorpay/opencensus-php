@@ -41,6 +41,19 @@ class Service extends Base\Service
     }
 
     /**
+     * Resend OTP
+     *
+     * @param  string   $id
+     *
+     * @return Payment\Entity
+     *
+     */
+    public function otpResend($id, $input)
+    {
+        return $this->processor()->otpResend($id, $input);
+    }
+
+    /**
      * Refunds a payment
      *
      * @param  string   $id
