@@ -126,6 +126,10 @@ class CreatePayments  extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->tinyInteger(Payment::OTP_ATTEMPTS)
+                  ->unsigned()
+                  ->default(0);
+
             $table->boolean(Payment::SAVE)
                   ->default(0);
 
