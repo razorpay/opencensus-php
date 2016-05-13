@@ -386,7 +386,7 @@ class Entity extends Base\PublicEntity
 
     public function incrementOtpAttempts()
     {
-        $attempts = $this->getOtpAttempts() + 1;
+        $attempts = $this->getOtpAttemptsAttribute() + 1;
 
         $this->setOtpAttempts($attempts);
     }
@@ -466,7 +466,7 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SAVE];
     }
 
-    public function getOtpAttempts()
+    public function getOtpAttemptsAttribute()
     {
         return (int) $this->attributes[self::OTP_ATTEMPTS];
     }

@@ -59,27 +59,4 @@ class Core extends Base\Core
     {
         return (new Refund\Repository)->findOrFail($refundId);
     }
-
-    public function incrementOtpAttempts($paymentId, $merchantId)
-    {
-        $payment = (new \Models\Payment\Repository)
-                        ->findByIdAndMerchantId($paymentId, $merchantId);
-
-        $payment->incrementOtpAttempts();
-
-        $payment->saveOrFail();
-    }
-
-    public function verifyOtpAttempts($paymentId, $limit = 3)
-    {
-        $repo = $this->paymentRepo;
-
-        $attemptsExceeded = (bool) $repo->countOtpAttempts($paymentId, $limit);
-
-        if ($attemptsExceeded)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
-        }
-    }
 }
