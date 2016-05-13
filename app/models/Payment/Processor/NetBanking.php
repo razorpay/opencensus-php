@@ -74,7 +74,7 @@ class Netbanking
         IFSC::DLXB,
         IFSC::FDRL,
         IFSC::IBKL,
-        IFSC::ICIC, //Temporarily disabling this while billdesk issue is resolved
+        IFSC::ICIC,
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::IOBA,
@@ -95,6 +95,7 @@ class Netbanking
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
+        IFSC::SCBL,
         IFSC::SIBL,
         IFSC::SRCB,
         IFSC::SVCB,
