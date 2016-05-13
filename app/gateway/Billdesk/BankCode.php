@@ -57,6 +57,7 @@ class BankCodes
         IFSC::SBHY => 'SBH',
         IFSC::SBIN => 'SBI',
         IFSC::SBMY => 'SBM',
+        IFSC::SCBL => 'SCB',
         IFSC::STBP => 'SBP',
         IFSC::SBTR => 'SBT',
         Netbanking::BARB_C => 'BBC',
