@@ -351,7 +351,9 @@ class Inferno
         $msg = strtolower($msg);
 
         if ((strpos($msg, 'empty reply from server') !== false) or
-            (strpos($msg, 'ssl certificate problem: certificate has expired') !== false))
+            (strpos($msg, 'ssl certificate problem: certificate has expired') !== false) or
+            (strpos($msg, '<url> malformed') !== false) or
+            (strpos($msg, 'Server error response')))
         {
             return true;
         }
