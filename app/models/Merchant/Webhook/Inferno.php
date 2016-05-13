@@ -353,7 +353,7 @@ class Inferno
         if ((strpos($msg, 'empty reply from server') !== false) or
             (strpos($msg, 'ssl certificate problem: certificate has expired') !== false) or
             (strpos($msg, '<url> malformed') !== false) or
-            (strpos($msg, 'Server error response')))
+            (strpos($msg, 'server error response') !== false))
         {
             return true;
         }
