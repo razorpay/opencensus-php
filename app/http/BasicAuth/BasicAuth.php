@@ -676,7 +676,7 @@ class BasicAuth
 
     protected function getCurrentRouteName()
     {
-        return $this->router->currentRouteName();
+        return Route::getCurrentRouteName();
     }
 
     public function getAuthType()
