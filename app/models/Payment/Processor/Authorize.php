@@ -779,6 +779,9 @@ trait Authorize
 
             $this->callGatewayFunction('otpGenerate', $data);
 
+            $payment->incrementOtpCount();
+            $payment->save();
+
             return array(
                 'type' => 'otp',
                 'request' => [

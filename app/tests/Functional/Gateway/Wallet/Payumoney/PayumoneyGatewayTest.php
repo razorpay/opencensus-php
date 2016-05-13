@@ -133,6 +133,7 @@ class PayumoneyGatewayTest extends TestCase
                             'gateway'       => 'wallet_payumoney',
                             'contact'       => '9111111111',
                             'otp_attempts'  => 2,
+                            'otp_count'     => 1,
                             'terminal_id'   => $this->sharedTerminal->id
                         ]);
 
@@ -146,11 +147,12 @@ class PayumoneyGatewayTest extends TestCase
 
         $data['request']['url'] = $url;
 
-        $a = $this->runRequestResponseFlow($data);
+        $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['otp_attempts'], 0);
+        $this->assertSame($payment['otp_attempts'], 0);
+        $this->assertSame($payment['otp_count'], 2);
     }
 
     public function testVerifyPayment()
@@ -161,7 +163,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
 
-        $this->assertEquals($this->payment['payment']['verified'], 1);
+        $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
     public function testRefundPayment()

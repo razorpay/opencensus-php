@@ -145,6 +145,7 @@ class MobikwikGatewayTest extends TestCase
                             'gateway'       => 'mobikwik',
                             'contact'       => '9111111111',
                             'otp_attempts'  => 2,
+                            'otp_count'     => 1,
                             'terminal_id'   => $this->sharedTerminal->id
                         ]);
 
@@ -158,11 +159,12 @@ class MobikwikGatewayTest extends TestCase
 
         $data['request']['url'] = $url;
 
-        $a = $this->runRequestResponseFlow($data);
+        $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['otp_attempts'], 0);
+        $this->assertSame($payment['otp_attempts'], 0);
+        $this->assertSame($payment['otp_count'], 2);
     }
 
     public function testVerifyPayment()

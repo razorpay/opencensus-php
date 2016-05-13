@@ -24,14 +24,14 @@ trait OtpResend
             $data = $this->runOtpPaymentFlow($gatewayInput, $payment);
 
             $payment->resetOtpAttempts();
-
             $payment->saveOrFail();
 
             return $data;
         }
 
-        throw new LogicException('Gateway doesn\'t support OTP resend',
-                ['payment_id' => $id]);
+        throw new LogicException(
+            'Gateway doesn\'t support OTP resend',
+            ['payment_id' => $id]);
     }
 
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
