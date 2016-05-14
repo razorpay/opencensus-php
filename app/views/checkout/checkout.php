@@ -40,7 +40,7 @@ if (isset($error))
 else
 {
 ?>
-    <link rel="stylesheet" href="<?= $checkout ?>/v1/css/checkout.css">
+    <link rel="stylesheet" href="<?= $css ?>">
   </body>
   <script>
     var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
