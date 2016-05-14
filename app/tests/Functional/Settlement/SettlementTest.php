@@ -91,6 +91,8 @@ class SettlementTest extends TestCase
 
     public function testHoldFundsDuringSettlement()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->holdFunds('10000000000000');
 
         // Create payments and refunds with timestamps two days back
