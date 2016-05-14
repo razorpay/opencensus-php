@@ -162,7 +162,7 @@ class Gateway extends Base\Gateway
     protected $supportPaymentRequest = array(
         'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => '',
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
+        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
         'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
