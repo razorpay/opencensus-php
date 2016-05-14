@@ -122,7 +122,7 @@ is now active. The pricing details associated with your account are:
     <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['high']}}</li>
   @endif
   @foreach ($rules['otherRules'] as $pricing => $methodDisplay)
-    <li style="text-align:left;" align="left">{{implode(' ,', $methodDisplay)}} - {{$pricing}}</li>
+    <li style="text-align:left;" align="left">{{implode(', ', $methodDisplay)}} - {{$pricing}}</li>
   @endforeach
 </ul>
 <p><i> Service Taxes Extra (14.5%)</i></p>
