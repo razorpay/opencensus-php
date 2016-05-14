@@ -6,6 +6,8 @@ use Gateway\Base;
 
 class Entity extends Base\Entity
 {
+    const WALLET    = 'wallet';
+
     protected $table = 'wallet';
 
     protected $entity = 'wallet';
