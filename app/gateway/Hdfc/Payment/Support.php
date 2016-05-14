@@ -264,7 +264,7 @@ trait Support
             $data['trackid'] = $input['payment']['id'];
         }
 
-        $content['udf5'] = 'PaymentID';
+        $data['udf5'] = 'PaymentID';
     }
 
     protected function validateSupportPaymentResponse()
