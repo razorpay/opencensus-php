@@ -4,7 +4,7 @@ namespace Gateway\Wallet\Payumoney;
 
 class Url
 {
-    const LIVE_DOMAIN   = 'https://payumoney.com';
+    const LIVE_DOMAIN   = 'https://www.payumoney.com';
     const TEST_DOMAIN   = 'https://test.payumoney.com';
 
     const REFUND        = '/payment/merchant/refundPayment';
