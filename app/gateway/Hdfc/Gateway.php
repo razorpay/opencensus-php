@@ -616,8 +616,12 @@ class Gateway extends Base\Gateway
             $e = $this->exception;
             $msg = $e->getMessage();
         }
+        else
+        {
+            $msg = ErrorCode::$errorMessages[$code];
+        }
 
-        $exception = new Exception\GatewayTimeoutException($e->getMessage(), $e);
+        $exception = new Exception\GatewayTimeoutException($msg, $e);
 
         $desc = Hdfc\ErrorCode::$errorMessages[$code];
 
