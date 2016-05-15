@@ -483,13 +483,27 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function checkForServiceUnavailability($response)
+    {
+        $body = $response['response']->body;
+
+        return (strpos($body, 'Service Unavailable') !== false);
+    }
+
     protected function checkResponseStatusCode(& $response)
     {
         $status_code = (int) $response['response']->status_code;
 
         if ($status_code >= 500)
         {
-            Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+            if ($this->checkForServiceUnavailability($response) === true)
+            {
+                Hdfc\ErrorHandler::setTimeoutError($response);
+            }
+            else
+            {
+                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+            }
 
             $this->error = true;
         }
