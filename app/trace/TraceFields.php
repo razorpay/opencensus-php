@@ -200,7 +200,7 @@ class TraceFields
 
         if (count($missingFields) > 0)
         {
-            // @todo: Finalize the fields to be logged and remote the extra ones.
+            // @todo: Finalize the fields to be logged and remove the extra ones.
             // Currently all log messages have invalid fields defined.
             // throw new Exception\InvalidArgumentException(
             //     implode(',', $missingFields) . ' are missing from trace record');

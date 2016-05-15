@@ -86,7 +86,6 @@ trait Authorize
         return $request;
     }
 
-
     public function postAuthEnrolledRequest($input)
     {
         $this->createAuthEnrolledRequestFields($input);
@@ -114,18 +113,23 @@ trait Authorize
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
 
-        if ($this->isAuthSuccess($this->authEnrolledResponse) === true)
+        return $this->verifyAuthResponse($input, $this->authEnrolledResponse);
+    }
+
+    protected function verifyAuthResponse($input, $auth)
+    {
+        if ($this->isAuthSuccess($auth) === true)
         {
             ; //$this->validateAuthEnrolledResponse($this->authEnrolledResponse);
         }
 
-        $this->traceAuthEnrolledResponse();
+        $this->traceAuthEnrolledResponse($auth);
 
-        $this->persistAfterAuthEnrolled();
+        $this->persistAfterAuthEnrolled($auth);
 
         if ($this->error)
         {
-            $this->throwException($this->authEnrolledResponse['error']);
+            $this->throwException($auth['error']);
         }
     }
 
@@ -228,6 +232,7 @@ trait Authorize
 
         $data['addr'] = '';
 
+        $this->authNotEnrolledRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL;
         $this->authNotEnrolledRequest['data'] = $data;
 
         $this->trace(
@@ -257,21 +262,21 @@ trait Authorize
 
     }
 
-    protected function traceAuthEnrolledResponse()
+    protected function traceAuthEnrolledResponse($authResponse)
     {
         if ($this->error)
         {
             $this->trace(
                 Trace::ERROR,
                 TraceCode::GATEWAY_ENROLLED_AUTH_ERROR,
-                $this->authEnrolledResponse);
+                $authResponse);
         }
         else
         {
             $this->trace(
                 Trace::INFO,
                 TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
-                $this->authEnrolledResponse);
+                $authResponse);
         }
     }
 
@@ -291,24 +296,25 @@ trait Authorize
         }
     }
 
-    protected function persistAfterAuthEnrolled()
+    protected function persistAfterAuthEnrolled($authEnrolledResponse)
     {
         if ($this->error)
         {
             $this->repo->persistAfterAuthEnrolledError(
                 $this->model,
-                $this->authEnrolledResponse['error']);
+                $authEnrolledResponse['error']);
         }
         else
         {
             $this->repo->persistAfterAuthEnrolled(
                 $this->model,
-                $this->authEnrolledResponse['data']);
+                $authEnrolledResponse['data']);
         }
     }
 
     protected function createAuthEnrolledRequestFields($input)
     {
+        $this->authEnrolledRequest['url'] = Hdfc\Urls::AUTH_ENROLLED_URL;
         $this->authEnrolledRequest['data']['paymentid'] = $input['gateway']['MD'];
 
         $this->authEnrolledRequest['data']['PaRes'] = $input['gateway']['PaRes'];

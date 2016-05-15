@@ -458,6 +458,11 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        return false;
+    }
+
     protected function getHashForVerifyRequest($mid, $orderId)
     {
         $str = "'" . $mid . "''" . $orderId . "'";
@@ -633,4 +638,3 @@ class Gateway extends Base\Gateway
         return substr($contact, -10);
     }
 }
-

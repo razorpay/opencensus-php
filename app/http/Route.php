@@ -207,7 +207,7 @@ final class Route
         'otp_post'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
         'otp_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
-        'migrate_entity'                        => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
+        'es_migrate_entity'                     => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
     );
 
     public static $public = array(
@@ -240,7 +240,6 @@ final class Route
         'mock_sbiepay_payment',
         'mock_wallet_payment',
         'dummy_return_callback',
-        'dummy_critical_error',
         'get_emi_plans',
         'cusotmer_saved_status',
         'app_fetch_tokens',
@@ -377,7 +376,8 @@ final class Route
         'customer_create_token',
         'customer_update_token',
         'refund_verify',
-        'migrate_entity',
+        'es_migrate_entity',
+        'dummy_critical_error',
     );
 
     public static $proxy = array(
@@ -445,7 +445,7 @@ final class Route
                 'payment_refund_authorized',
                 'payment_capture_reminder',
                 'emi_generate_excel',
-                'migrate_entity',
+                'es_migrate_entity',
             ),
 
             'mailgun' => array(
@@ -456,6 +456,10 @@ final class Route
                 'merchant_secret',
             ),
         );
+
+    public static $slaveRoutes = [
+        'es_migrate_entity',
+    ];
 
     protected static $jsonpRoutes = array(
         'checkout',
@@ -480,6 +484,17 @@ final class Route
     public static function setRouter($router)
     {
         self::$router = $router;
+    }
+    
+    public static function getCurrentRouteName()
+    {
+        $router = self::$router;
+        return $router->currentRouteName();
+    }
+    
+    public static function getSlaveRoutes()
+    {
+        return self::$slaveRoutes;
     }
 
     public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')

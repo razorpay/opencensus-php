@@ -23,7 +23,7 @@ class EsRepository extends Base\EsRepository
 
         return $payments;
     }
-    
+
     public function getEsType()
     {
         return Table::PAYMENT;

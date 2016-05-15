@@ -181,6 +181,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $amounts = array(
+        self::AMOUNT,
         self::FEE,
         self::SERVICE_TAX);
 
@@ -429,11 +430,6 @@ class Entity extends Base\PublicEntity
     public function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
-    }
-
-    public function getCreatedAttribute()
-    {
-        return ($this->attributes[self::CREATED_AT] !== null);
     }
 
     public function getFeeAttribute()

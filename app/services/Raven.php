@@ -70,7 +70,6 @@ class Raven
 
         $authHeader = 'Basic '. base64_encode($this->key . ':' . $this->secret);
 
-        $headers['Content-Type'] = 'application/json';
         $headers['Accept'] = 'application/json';
         $headers['Authorization'] = $authHeader;
 
@@ -102,7 +101,7 @@ class Raven
             $response = Requests::$method(
                 $request['url'],
                 $request['headers'],
-                json_encode($request['content']),
+                $request['content'],
                 $request['options']);
         }
         catch(\Requests_Exception $e)

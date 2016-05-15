@@ -16,6 +16,7 @@ use Models\Customer\Token;
 use Models\Emi;
 use Models\Payment;
 use Models\Payment\Method;
+use Models\Payment\Status;
 use Models\Transaction;
 use Models\Order;
 use Trace\Trace;
@@ -55,6 +56,14 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized($payment);
 
+        $payment = $this->payment;
+
+        if ($payment->isSigned())
+        {
+            // If payment is signed, then we capture it in this step only.
+            $payment = $this->capturePayment($payment, $payment->getAmount());
+        }
+
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
@@ -79,6 +88,13 @@ trait Authorize
         return $payment->toArrayAdmin();
     }
 
+    /**
+     * This is a hack authorize function specially for authorizing
+     * migs pg payments. The limit there is that, migs provides
+     * reconciliation only for three days. If we miss any failed payment
+     * reconciliation there then we need to do it manually later.
+     *
+     */
     public function forceAuthorizeFailedPayment($payment, $input)
     {
         $this->setPayment($payment);
@@ -108,7 +124,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $this->repo->lockForUpdate($payment->getKey());
+            $payment = $this->lockForUpdateAndRetrievePayment($payment);
 
             assert ($payment->isFailed() === true);
 
@@ -152,6 +168,24 @@ trait Authorize
 
         $this->verifyHash($hash, $payment->getPublicId());
 
+        if ($payment->isCreated() === false)
+        {
+            $diff = time() - $payment->getCreatedAt();
+
+            // If it was authorized recently then send back authorized again.
+            if (($payment->isAuthorized()) and
+                ($diff < 5 * 60))
+            {
+                return $this->postPaymentAuthorizeProcessing($payment);
+            }
+
+            // If it failed recently, then return the failure directly.
+            $this->checkForRecentFailedPayment($payment);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        }
+
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
@@ -160,26 +194,40 @@ trait Authorize
             $input['card'] = $payment->card->toArray();
         }
 
-        $this->checkForRecentFailedPayment($payment);
-
-        Payment\Validator::bankAcsCallbackValidate($payment, $input);
-
         try
         {
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
+            $this->processPaymentException($e);
         }
 
         $this->updateAndNotifyPaymentAuthorized($payment);
 
+        $payment = $this->payment;
+
+        if ($payment->isSigned())
+        {
+            // If payment is signed, then we capture it in this step only.
+            $payment = $this->capturePayment($payment, $payment->getAmount());
+        }
+
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function processPaymentException($e)
+    {
+        $code = $e->getError()->getInternalErrorCode();
+
+        if (Error\Error::hasAction($code) === false)
+        {
+            $this->updatePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_AUTH_FAILURE);
+        }
+
+        throw $e;
     }
 
     protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
@@ -246,6 +294,11 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray());
 
+            if ($payment->isMethodCardOrEmi())
+            {
+                $data['card'] = $payment->card->toArray();
+            }
+
             $flag = $this->callGatewayFunction('authorizeFailed', $data);
 
             if ($flag === false)
@@ -255,12 +308,13 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $payment = $this->repo->lockForUpdate($payment->getKey());
+            $payment = $this->lockForUpdateAndRetrievePayment($payment);
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
-                throw new Exception\RuntimeException(
+                throw new Exception\BadRequestValidationFailureException(
                     'Payment being authorized is actually already authorized by some other thread.',
+                    null,
                     ['payment_id' => $payment->getId()]);
             }
 
@@ -523,9 +577,9 @@ trait Authorize
     {
         $this->updatePaymentAuthorized();
 
-        $this->eventPaymentAuthorized($payment);
+        $this->eventPaymentAuthorized();
 
-        $this->notifyAuthorized($payment, $wasFailed);
+        $this->notifyAuthorized($wasFailed);
     }
 
     protected function updateAuthorizedOrderStatus($payment)
@@ -540,17 +594,26 @@ trait Authorize
         }
     }
 
+    /**
+     * This function is just meant for preparing the return value
+     * after payment authorize processing. This should not contain
+     * any state updating statements.
+     */
     protected function postPaymentAuthorizeProcessing($payment)
     {
         //
-        // The returned value could be either Payment
-        // model or an array containing callback data.
-        // We convert payment model to array
-        // if it's a payment model
+        // If it's signed payment, then we return signed data from our
+        // end as well.
         //
+        // If callback url has been set, then we need to redirect
+        // to the callback url and prepare data using coproto protocol.
+        //
+        // Otherwise we simply return 'razorpay_payment_id' as is normal.
+        //
+
         if ($payment->isSigned())
         {
-            return $this->captureSignedPayment($payment);
+            return $this->getReturnDataForSignedPayment($payment);
         }
 
         if ($payment->getCallbackUrl())
@@ -561,10 +624,29 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function notifyAuthorized($payment, $wasFailed)
+    protected function getReturnDataForSignedPayment($payment)
+    {
+        $data = array(
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'amount'                => $payment->getAmount(),
+            'currency'              => $payment->getCurrency(),
+            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $sortedData = $data;
+        ksort($sortedData);
+
+        $str = implode('|', $sortedData);
+
+        $data['signature'] = $this->getSignature($str);
+
+        return $data;
+    }
+
+    protected function notifyAuthorized($wasFailed)
     {
         // Trigger notification events for authorization
-        $notifier = new Notify($payment);
+        $notifier = new Notify($this->payment);
 
         if ($wasFailed)
         {
@@ -578,9 +660,9 @@ trait Authorize
         $notifier->trigger($trigger);
     }
 
-    protected function eventPaymentAuthorized($payment)
+    protected function eventPaymentAuthorized()
     {
-        $this->app['events']->fire('api.payment.authorized', array($payment));
+        $this->app['events']->fire('api.payment.authorized', array($this->payment));
     }
 
     protected function checkForRecentFailedPayment($payment)
@@ -888,7 +970,12 @@ trait Authorize
     {
         $this->repo->transaction(function()
         {
-            $payment = $this->payment;
+            $payment = $this->lockForUpdateAndRetrievePayment($this->payment);
+
+            if ($payment->getStatus() === Status::AUTHORIZED)
+            {
+               return;
+            }
 
             $payment->setAmountAuthorized();
 

@@ -11,6 +11,10 @@ class MobikwikGatewayTest extends TestCase
 
     protected $payment;
 
+    protected $step = null;
+
+    protected $type = null;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/MobikwikGatewayTestData.php';
@@ -50,6 +54,58 @@ class MobikwikGatewayTest extends TestCase
 //    {
 //        $this->markTestIncomplete();
 //    }
+
+    public function testPowerWalletPayment()
+    {
+        $this->type = 'otp';
+
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $this->type = null;
+    }
+
+    public function testPowerWalletOtpRetryPayment()
+    {
+        $this->type = 'otp';
+        $this->step = 'RETRY';
+
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+
+        $data = $this->testData['otpRetryRequest'];
+        $data['request']['url'] = $this->otpSubmitUrl;
+
+        $authPayment = $this->makeRequestAndGetContent($data['request']);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $mobikwik = $this->getLastEntity('mobikwik', true);
+
+        $this->assertNull($mobikwik);
+
+        $this->type = null;
+    }
 
     public function testVerifyPayment()
     {

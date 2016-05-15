@@ -75,7 +75,7 @@ class Service extends Base\Service
 
     public function getPricingPlans()
     {
-        $pricingPlans = $this->repo->getPricingPlans();
+        $pricingPlans = $this->repo->getPricingPlansOrderedByPlanId();
 
         return $pricingPlans->toArrayMultiplePlansPublic();
     }

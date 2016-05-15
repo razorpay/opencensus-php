@@ -285,6 +285,99 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals('es_random_1', $response['items'][0]['notes']['order_id']);
     }
 
+    public function testSearchEsForNotesWithMerchantIdInQueryParamsOnProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldNotReceive('searchNotes');
+
+        $testData = [
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['notes' => 'es_random_1', 'merchant_id' => '12345678901234'],
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'EE\Exception\ExtraFieldsException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+            ],
+        ];
+
+        $this->startTest($testData);
+    }
+
+    public function testSearchEsForNotesOnAdminAuth()
+    {
+        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_random_1']]);
+        $paymentIds[] = $payment->getId();
+
+        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_rand_1']]);
+        $paymentIds[] = $payment->getId();
+
+        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_random_2']]);
+        $paymentIds[] = $payment->getId();
+
+        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_random']]);
+        $paymentIds[] = $payment->getId();
+
+        $mockEs = $this->mockEsClient();
+
+        $mockEs->shouldReceive('searchNotes')
+            ->once()
+            ->with(
+                Mockery::on(function ($data)
+                {
+                    $testData = array(
+                        'type' => 'payments',
+                        'body' => [
+                            'size' => 1000,
+                            'query' => [
+                                'filtered' => [
+                                    'query' => [
+                                        'multi_match' => [
+                                            'query' => 'es',
+                                            'type' => 'cross_fields',
+                                            'fields' => ['notes.*']
+                                        ]
+                                    ],
+                                    'filter' => []
+                                ]
+                            ]
+                        ],
+                    );
+                    $this->assertArraySelectiveEquals($testData, $data);
+                    return true;
+                }))
+            ->andReturn($paymentIds);
+
+        $this->ba->appAuth();
+
+        $testData = [
+            'request' => [
+                'url' => '/admin/payment',
+                'method' => 'get',
+                'content' => ['notes' => 'es'],
+            ],
+            'response' => [
+                'content' => ['count' => 4]
+            ]
+        ];
+
+        $this->startTest($testData);
+    }
+
     public function testSearchEsWithoutQueryParams()
     {
         $this->ba->proxyAuth();

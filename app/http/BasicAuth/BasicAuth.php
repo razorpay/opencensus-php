@@ -413,7 +413,7 @@ class BasicAuth
 
         // If we are on a production host and HTTP is being used
         // Throw an error
-        if ( in_array($host, self::PRODUCTION_HOSTS) and
+        if ((in_array($host, self::PRODUCTION_HOSTS)) and
             ($this->request->secure() === false))
         {
             return ApiResponse::generateErrorResponse(
@@ -557,8 +557,6 @@ class BasicAuth
             return false;
         }
 
-        $app = $this->internalApp;
-
         $appRoutes = Route::$internalApps[$this->internalApp];
 
         // Now that the secret matches, check whether the current
@@ -678,7 +676,7 @@ class BasicAuth
 
     protected function getCurrentRouteName()
     {
-        return $this->router->currentRouteName();
+        return Route::getCurrentRouteName();
     }
 
     public function getAuthType()

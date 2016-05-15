@@ -58,6 +58,21 @@ class HdfcGatewayTest extends TestCase
         $this->assertNotNull($payment['transaction_id']);
     }
 
+    public function testRupayCard()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+        $this->assertNotNull($payment['transaction_id']);
+
+        $this->verifyPayment($payment['id']);
+        $this->capturePayment($payment['id'], $payment['amount']);
+        $this->refundPayment($payment['id']);
+    }
+
     public function testHdfcEntityAfterPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment();

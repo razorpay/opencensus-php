@@ -230,6 +230,13 @@ class Repository extends Base\Repository
                 break;
         }
 
+        $result = null;
+
+        if (isset($error['result']))
+        {
+            $result = $error['result'];
+        }
+
         $attributes = array(
             'received'                  => '1',
             'payment_id'                => $paymentId,
@@ -237,7 +244,7 @@ class Repository extends Base\Repository
             'gateway_transaction_id'    => $requestdata['transid'],
             'amount'                    => $requestdata['amt'],
             'error_code'                => $error['code'],
-            'error_text'                => $error['result'],
+            'error_text'                => $result,
             'action'                    => $action,
             'status'                    => $status);
 

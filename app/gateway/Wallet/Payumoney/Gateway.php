@@ -26,6 +26,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
+    protected $canRunOtpFlow = true;
+
     protected $map = array(
         'email'         => 'email',
         'mobile'        => 'contact',
@@ -54,6 +56,8 @@ class Gateway extends Base\Gateway
 
             return $this->debit($input);
         }
+
+        assert(false, 'Shouldn\'t reach here');
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -61,6 +65,10 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $request = $this->getVerifyRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -604,6 +612,11 @@ class Gateway extends Base\Gateway
         }
 
         return $wallet;
+    }
+
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        return false;
     }
 
     protected function getFormattedContact($contact)

@@ -140,14 +140,15 @@ class Notify
      */
     protected function sendMail($view, $subject, $to, $from = 'reports')
     {
-        $from    = $this->getCompleteEmail($from);
-        $replyTo = $this->getCompleteEmail('support');
-        $domain  = $this->domain;
+        $from       = $this->getCompleteEmail($from);
+        $replyTo    = $this->getCompleteEmail('support');
+        $domain     = $this->domain;
+        $fromHeader = 'Team Razorpay';
 
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $replyTo, $domain)
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain)
             {
                 // Bug fix because some from addresses were
                 // not generated properly and are in the queue
@@ -172,7 +173,7 @@ class Notify
                     $message->to($to);
                 }
 
-                $message->from($from);
+                $message->from($from, $fromHeader);
                 $message->subject($subject);
                 $message->replyTo($replyTo);
             }

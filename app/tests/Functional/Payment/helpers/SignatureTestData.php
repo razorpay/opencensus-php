@@ -20,7 +20,7 @@ return [
         ],
     ],
 
-    'testPaymentStatusAfterSignedRequest' => [
+    'testPaymentStatusAfterSignedRequestWith3dSecure' => [
         'request' => [
             'method' => 'GET',
         ],
@@ -37,7 +37,24 @@ return [
         ],
     ],
 
-    'testCaptureAfterSignedRequest' => [
+    'testPaymentStatusAfterSignedRequestWithout3dSecure' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+                'amount' => 50000,
+                'currency' => 'INR',
+                'notes' => [
+                    'merchant_order_id' => 'Grü-1234'
+                ]
+            ],
+        ],
+    ],
+
+    'testCaptureFailAfterSignedRequest' => [
         'request' => [
             'method' => 'POST',
         ],

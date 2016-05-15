@@ -16,6 +16,11 @@ class Type
             return self::CREDIT;
         }
 
+        if ($network === Network::RUPAY)
+        {
+            return self::DEBIT;
+        }
+
         if (empty($type))
         {
             return self::UNKNOWN;

@@ -31,6 +31,49 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testPowerWalletPayment'     => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'wallet',
+        'status'            => 'captured',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '9918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'mobikwik',
+        'terminal_id'       => '1000MobiKwikTl',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+    ],
+
+
+    'testPowerWalletOtpRetryPayment'     => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                    'action'      => 'RETRY'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ],
+    ],
+
     'testPaymentMobikwikEntity' => [
         'action'        => 'authorize',
         'method'        => 'wallet',
@@ -138,5 +181,15 @@ return [
 //        'ispartial'
 //        'refund_id' => null,
         'entity'        => 'mobikwik',
+    ],
+
+    'otpRetryRequest' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ]
     ],
 ];

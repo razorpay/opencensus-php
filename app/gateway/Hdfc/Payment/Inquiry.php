@@ -134,7 +134,6 @@ trait Inquiry
 
         if ($verify->gatewaySuccess === true)
         {
-
             if ($content['result'] === Result::APPROVED)
             {
                 $status = Status::AUTHORIZED;
@@ -191,16 +190,26 @@ trait Inquiry
         $inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
 
         $data = &$this->inquiryRequest['data'];
+        $data = [];
         $data = $content;
 
         $this->inquiryResponse['data'] = [];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $inquiryRequest);
 
         $this->runRequestResponseFlow(
             $this->inquiryRequest,
             $this->inquiryResponse);
 
-        $inquiryResponse = $this->inquiryResponse;
+        if ((isset($this->inquiryResponse['data']['result'])) and
+            ($this->inquiryResponse['data']['result'] === 'SUCCESS'))
+        {
+            $this->inquiryResponse['data']['result'] = Result::CAPTURED;
+        }
 
+        $inquiryResponse = $this->inquiryResponse;
         $content = $this->inquiryResponse['data'];
 
         $this->trace->info(
@@ -227,7 +236,11 @@ trait Inquiry
 
         $content['action'] = Payment\Action::INQUIRY;
         $content['transid'] = $payment['gateway_transaction_id'];
-        $content['udf5'] = $payment['gateway_transaction_id'];
+        $content['udf5'] = 'PaymentID';
+
+        $content['amt'] = $verify->input['payment']['amount']/100;
+        $content['member'] = $verify->input['card']['name'];
+        $content['trackid'] = $verify->input['payment']['id'];
 
         return $content;
     }

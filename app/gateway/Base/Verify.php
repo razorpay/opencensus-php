@@ -60,6 +60,13 @@ class Verify
 
     public function getDataToTrace()
     {
+        $payment = [];
+
+        if ($this->payment !== null)
+        {
+            $payment = $this->payment->toArray();
+        }
+
         return array(
             'status'                    => $this->status,
             'gateway'                   => $this->gateway,
@@ -67,7 +74,7 @@ class Verify
             'apiSuccess'                => $this->apiSuccess,
             'verifyRequest'             => $this->verifyRequest,
             'gatewaySuccess'            => $this->gatewaySuccess,
-            'gatewayPayment'            => $this->payment->toArray(),
+            'gatewayPayment'            => $payment,
         );
     }
 }

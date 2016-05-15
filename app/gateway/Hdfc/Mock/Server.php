@@ -9,6 +9,7 @@ use Gateway\Hdfc;
 use Gateway\Hdfc\Payment\Action;
 use Gateway\Hdfc\Mock;
 use Models\Card;
+use Models\Card\Network;
 
 class Server extends Base\Mock\Server
 {
@@ -37,7 +38,13 @@ class Server extends Base\Mock\Server
         '4012001037167778',
         '4012001037490014',
         '4012001037141112',
+        '6073849700004947',
         );
+
+    protected $onlyPurchaseCardNetworks = array(
+        Network::RUPAY,
+        Network::MAES,
+        Network::DICL);
 
     public function __construct()
     {
@@ -48,6 +55,21 @@ class Server extends Base\Mock\Server
 
     public function threeDSecure($input)
     {
+        $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($input['MD']);
+        $card = $gatewayTransaction->payment->card;
+        $networkCode = Network::getCode($card['network']);
+
+        if ($networkCode === Network::RUPAY)
+        {
+            $this->data['paymentid'] = $input['MD'];
+            $ret = $this->getAuthResponse($input['MD']);
+            // sd($input);
+            $ret['TermUrl'] = $input['TermUrl'];
+            $ret['MD'] = $input['MD'];
+
+            return $ret;
+        }
+
         return $input;
     }
 
@@ -124,9 +146,18 @@ class Server extends Base\Mock\Server
         $this->processInput('authEnrolled');
         $this->setAction('authorize');
 
-        $txnId = $this->data['paymentid'];
+        $res = $this->getAuthResponse($this->data['paymentid']);
 
-        $gatewayTransaction = (new Hdfc\Repository)->findByGatewayTransactionIdOrFail($txnId);
+        $res = $this->content($res, $this->action);
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $this->makeResponse($xml);
+    }
+
+    protected function getAuthResponse($txnId)
+    {
+        $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($txnId);
         $card = $gatewayTransaction->payment->card;
 
         if ($gatewayTransaction === null)
@@ -145,16 +176,15 @@ class Server extends Base\Mock\Server
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
-        if ($card['network'] === 'Maestro')
+        $networkCode = Network::getCode($card['network']);
+        if (in_array($networkCode, $this->onlyPurchaseCardNetworks))
+        {
             $res['result'] = 'CAPTURED';
+        }
 
 //        $this->copyUdfValues($res);
 
-        $res = $this->content($res, $this->action);
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $this->makeResponse($xml);
+        return $res;
     }
 
     protected function authNotEnrolledOnGateway()
@@ -215,12 +245,8 @@ class Server extends Base\Mock\Server
         $network = Card\Network::detectNetwork($cardNumber);
         $type = $this->getCardType($cardNumber, $iin);
 
-        $iin = substr($cardNumber, 0, 6);
-
-        $network = Card\Network::detectNetwork($cardNumber);
-        $type = $this->getCardType($cardNumber, $iin);
-
         $res = array();
+
         if ($type === 'debit')
         {
             $res = $this->getResponseParamsForEnrollDebit();
@@ -322,6 +348,8 @@ class Server extends Base\Mock\Server
     {
         $this->processInput('supportPayment');
 
+        // assert ($this->data['udf5'] === 'PaymentID');
+
         $payment = $this->getByGatewayTxnIdAndStatusExist('captured');
 
         if ($payment === false)
@@ -350,8 +378,15 @@ class Server extends Base\Mock\Server
 
         $gatewayTxnId = $this->data['transid'];
 
-        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+        $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
             $gatewayTxnId, 'authorized');
+
+        $network = null;
+
+        if (isset($this->data['card']))
+        {
+            $network = Card\Network::detectNetwork($this->data['card']);
+        }
 
         if ($txn === null)
         {
@@ -369,6 +404,11 @@ class Server extends Base\Mock\Server
             'payid'     => '-1',
             'amt'       => $txn['amount'] / 100);
 
+        if ($network === Card\Network::RUPAY)
+        {
+            $res['result'] = 'SUCCESS';
+        }
+
         $res = $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
@@ -380,13 +420,13 @@ class Server extends Base\Mock\Server
     {
         $gatewayTxnId = $this->data['transid'];
 
-        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+        $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
                                         $gatewayTxnId, $status);
 
         if (($txn === null) and
             ($status === 'captured'))
         {
-            $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndErrorCode(
+            $txn = $this->getRepo()->findByGatewayTransactionIdAndErrorCode(
                                             $gatewayTxnId, Hdfc\ErrorCode::GW00176);
         }
 
@@ -399,6 +439,8 @@ class Server extends Base\Mock\Server
 
         $this->gateway = new Gateway;
         $fields = $this->gateway->getRequestFields($name);
+
+        $this->data = [];
 
         Hdfc\Utility::getFieldsFromXML(
             $input,
@@ -448,6 +490,22 @@ class Server extends Base\Mock\Server
         $res['error_service_tag'] = '';
 
         return $res;
+    }
+
+    protected function getHostTimeoutErrorAuthResponse()
+    {
+        $res = array(
+            'auth' => '999999',
+            'avr' => 'N',
+            'paymentid' => '2515498181561350',
+            'postdate' => '0514',
+            'ref' => '613515344880',
+            'result' => 'HOST TIMEOUT',
+            'trackid' => $gatewayTransaction['payment_id'],
+            'tranid' => $txnId,
+        );
+
+        return $rest;
     }
 
     protected function isSpecialCardNumber($cardNumber)

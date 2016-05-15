@@ -43,7 +43,7 @@ class SignatureTest extends TestCase
         return $content;
     }
 
-    public function testPaymentStatusAfterSignedRequest()
+    public function testPaymentStatusAfterSignedRequestWith3dSecure()
     {
         $content = $this->testValidSignature();
 
@@ -56,7 +56,21 @@ class SignatureTest extends TestCase
         $this->startTest();
     }
 
-    public function testCaptureAfterSignedRequest()
+    public function testPaymentStatusAfterSignedRequestWithout3dSecure()
+    {
+        $payment = &$this->payment;
+        $payment['card']['number'] = '4111111111111111';
+
+        $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
+
+        $content = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertSignatureMatches($content, 'TheKeySecretForTests');
+    }
+
+    public function testCaptureFailAfterSignedRequest()
     {
         $content = $this->testValidSignature();
 

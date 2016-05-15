@@ -45,6 +45,55 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testOtpRetryPayment()
+    {
+        $this->step = 'RETRY';
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
+
+        $this->step = null;
+    }
+
+    public function testOtpRetrySuccessPayment()
+    {
+        $this->step = 'RETRY';
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+
+        $data = $this->testData['otpRetryRequest'];
+        $data['request']['url'] = $this->otpSubmitUrl;
+
+        $authPayment = $this->makeRequestAndGetContent($data['request']);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
@@ -88,9 +137,22 @@ class PayumoneyGatewayTest extends TestCase
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
+        $this->otpSubmitUrl = $url;
+
         if ($mock)
         {
-            $content['otp'] = '123456';
+            $content['otp'] = '111111';
+
+            if (isset($this->step))
+            {
+                switch ($this->step)
+                {
+                    case 'RETRY':
+                        $content['otp'] = '121212';
+                        break;
+                }
+            }
+
             $content['type'] = 'otp';
 
             $request = array(
@@ -104,5 +166,4 @@ class PayumoneyGatewayTest extends TestCase
 
         return null;
     }
-
 }

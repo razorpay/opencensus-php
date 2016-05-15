@@ -18,6 +18,13 @@ class Gateway
     const TIMEOUT = 30;
 
     /**
+     * The application instance.
+     *
+     * @var \Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
      * Trace instance for tracing
      * @var Trace\Trace
      */
@@ -44,7 +51,7 @@ class Gateway
      * Whether the gateway supports otp flow.
      * @var boolean
      */
-    protected $otpFlow = false;
+    protected $canRunOtpFlow = false;
 
     /**
      * The state in which the api is operating
@@ -89,9 +96,11 @@ class Gateway
 
     public function __construct()
     {
-        $this->trace = \Trace::getFacadeRoot();
+        $this->app = \App::getFacadeRoot();
 
-        $this->env = \App::getFacadeRoot()['env'];
+        $this->trace = $this->app['trace'];
+
+        $this->env = $this->app['env'];
 
         if ($this->env === 'testing')
         {
@@ -117,6 +126,13 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::CAPTURE;
+
+        if ($input['payment']['status'] !== 'authorized')
+        {
+            throw new Exception\RuntimeException(
+                'Payment status should be authorized',
+                ['payment_id' => $input['payment']['id']]);
+        }
     }
 
     public function refund(array $input)
@@ -139,7 +155,7 @@ class Gateway
 
     public function canRunOtpFlow()
     {
-        return $this->otpFlow;
+        return $this->canRunOtpFlow;
     }
 
     public function setTerminal($terminal)
@@ -228,8 +244,7 @@ class Gateway
         $payment = $this->getPaymentToVerify($verify->input, $verify);
 
         if (($payment === null) and
-            (($verify->input['payment']['status'] === 'failed') or
-             ($verify->input['payment']['status'] === 'created')))
+            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -253,6 +268,17 @@ class Gateway
         }
 
         return $verify->getDataToTrace();
+    }
+
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        if (($verify->input['payment']['status'] === 'failed') or
+            ($verify->input['payment']['status'] === 'created'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function traceGatewayPaymentRequest($request, $input)
@@ -408,10 +434,9 @@ class Gateway
     {
         $configGatewayStr = 'gateway.'.$this->gateway;
 
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get($configGatewayStr);
+        $this->config = $this->app['config']->get($configGatewayStr);
 
-        $this->proxy = $app['config']->get('gateway.proxy_address');
+        $this->proxy = $this->app['config']->get('gateway.proxy_address');
     }
 
     protected function getFormValues($form, $url)
@@ -494,8 +519,7 @@ class Gateway
 
                 throw new Exception\RuntimeException(
                     'Failed to convert json to array',
-                    ['json' => $json],
-                    $e);
+                    ['json' => $json]);
         }
     }
 }

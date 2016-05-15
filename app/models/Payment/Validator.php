@@ -246,15 +246,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function bankAcsCallbackValidate($payment, $input)
-    {
-        if ($payment->isCreated() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-        }
-    }
-
     public function captureValidate($payment, $input)
     {
         $this->failIfCaptured($payment);

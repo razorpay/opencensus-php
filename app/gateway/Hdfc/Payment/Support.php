@@ -63,7 +63,7 @@ trait Support
         //
         // Fill the fields required for the payment
         //
-        $this->createSupportPaymentRequestFields($input);
+        $this->createSupportPaymentRequestFields($input, $type);
 
         $this->trace(
             TRACE::DEBUG,
@@ -73,6 +73,12 @@ trait Support
         $this->runRequestResponseFlow(
             $this->supportPaymentRequest,
             $this->supportPaymentResponse);
+
+        if ((isset($this->supportPaymentResponse['data']['result'])) and
+            ($this->supportPaymentResponse['data']['result'] === 'SUCCESS'))
+        {
+            $this->supportPaymentResponse['data']['result'] = Result::CAPTURED;
+        }
 
         if ($this->error === false)
         {
@@ -226,13 +232,16 @@ trait Support
      * @param  array $input
      * Contains the 'payment' details
      */
-    protected function createSupportPaymentRequestFields($input)
+    protected function createSupportPaymentRequestFields($input, $type)
     {
         $payment = $input['payment'];
 
         $card = $input['card'];
 
+        $this->supportPaymentRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
+
         $data = &$this->supportPaymentRequest['data'];
+        $data = [];
 
         $type = $this->supportPaymentRequest['type'];
 
@@ -256,6 +265,19 @@ trait Support
         else if ($type === 'capture')
         {
             $data['trackid'] = $input['payment']['id'];
+        }
+
+        // For refund, udf should not be PaymentID
+        if ($type !== 'refund')
+        {
+            $data['udf5'] = 'PaymentID';
+        }
+
+        // However if it's Rupay, then udf5 need to be PaymentID
+        // even for RuPay
+        if ($input['card']['network'] === 'RuPay')
+        {
+            $data['udf5'] = 'PaymentID';
         }
     }
 

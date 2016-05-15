@@ -29,7 +29,6 @@ class Validator extends Base\Validator
     );
 
     protected static $addBankAccountValidators = array(
-        'ifsc_code',
         'beneficiary_state');
 
     protected static $beneficiaryStateCodes = array(
@@ -50,14 +49,14 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIfscCode($input)
+    public function validateIfscCode($mode)
     {
-        $ifsc = $input['ifsc_code'];
+        $ifsc = $this->entity->getIfscCode();
 
         $ifsc = strtoupper($ifsc);
 
         // We allow a special IFSC code to pass through
-        if ($this->isSpecialIfscCode($ifsc))
+        if ($this->isSpecialIfscCode($ifsc, $mode))
         {
             return;
         }
@@ -74,12 +73,8 @@ class Validator extends Base\Validator
      * for the test mode
      * @param  string  $ifsc IFSC code, uppercase
      */
-    protected function isSpecialIfscCode($ifsc)
+    protected function isSpecialIfscCode($ifsc, $mode)
     {
-        $app = \App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'];
-
         return (($mode === Mode::TEST) and
                 ($ifsc === Entity::SPECIAL_IFSC_CODE));
     }

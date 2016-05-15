@@ -162,7 +162,7 @@ class Gateway extends Base\Gateway
     protected $supportPaymentRequest = array(
         'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => '',
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
+        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
         'headers' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
@@ -178,7 +178,7 @@ class Gateway extends Base\Gateway
 
     protected $inquiryRequest = array(
         'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'fields' => array('action', 'transid'),
+        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
         'type' => 'inquiry',
         'xml' => '',
         'data' => array(),
@@ -198,7 +198,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $stripFieldsList = array(
-        'password', 'amt', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'member',
+        'password', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
         'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
     );
 
@@ -300,17 +300,31 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
-        \Log::info($input['gateway']);
         parent::callback($input);
 
-        if ($input['card']['network'] === 'RuPay')
+        $network = $input['card']['network'];
+
+        if ($network === 'RuPay')
         {
-            echo "Gateway returned following fields in response: <br />" . PHP_EOL;
-            var_dump($input['gateway']);
-            die();
+            $this->trace->info(
+                TraceCode::GATEWAY_RUPAY_CALLBACK,
+                $input['gateway']);
+
+            $authResponse['data'] = $input['gateway'];
+            $authResponse['error'] = [];
+
+            $trackid = $authResponse['data']['paymentid'];
+
+            $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackid);
+
+            $this->verifyAuthResponse($input, $authResponse);
+
+            // $this->verify($input);
+
+            return;
         }
 
-        validate($this->bankAcsResponseRules, $input['gateway'], false);
+        $this->validateCallbackGatewayFields($input, $network);
 
         $this->id = $input['payment']['id'];
 
@@ -394,6 +408,24 @@ class Gateway extends Base\Gateway
 
 // ----------------------Gateway operations end --------------------------------
 
+    protected function validateCallbackGatewayFields($input, $network)
+    {
+        if ($network === 'RuPay')
+        {
+            return;
+        }
+
+        try
+        {
+            validate($this->bankAcsResponseRules, $input['gateway'], false);
+        }
+        catch (Exception\RecoverableException $e)
+        {
+            $this->trace->info($input['gateway']);
+            $this->trace->traceException($e);
+        }
+    }
+
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $this->setTerminalInRequest($request);
@@ -452,13 +484,27 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function checkForServiceUnavailability($response)
+    {
+        $body = $response['response']->body;
+
+        return (strpos($body, 'Service Unavailable') !== false);
+    }
+
     protected function checkResponseStatusCode(& $response)
     {
         $status_code = (int) $response['response']->status_code;
 
         if ($status_code >= 500)
         {
-            Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+            if ($this->checkForServiceUnavailability($response) === true)
+            {
+                Hdfc\ErrorHandler::setTimeoutError($response);
+            }
+            else
+            {
+                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+            }
 
             $this->error = true;
         }
@@ -585,8 +631,12 @@ class Gateway extends Base\Gateway
             $e = $this->exception;
             $msg = $e->getMessage();
         }
+        else
+        {
+            $msg = ErrorCode::$errorMessages[$code];
+        }
 
-        $exception = new Exception\GatewayTimeoutException($e->getMessage(), $e);
+        $exception = new Exception\GatewayTimeoutException($msg, $e);
 
         $desc = Hdfc\ErrorCode::$errorMessages[$code];
 

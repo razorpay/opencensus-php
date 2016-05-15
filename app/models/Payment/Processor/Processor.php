@@ -111,6 +111,11 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        //
+        // We only create a dummy payment entity for purpose
+        // of pre-calculating fees and returning it.
+        // It's not going to be saved in the database.
+        //
         $payment = $this->createDummyPaymentEntity($input);
 
         // Performing dummy set of processing for the same
@@ -161,29 +166,6 @@ class Processor
         $this->verifySignature($input, $payment);
 
         return true;
-    }
-
-    protected function captureSignedPayment($payment)
-    {
-        $amount = $payment->getAmount();
-
-        $payment = $this->capturePayment($payment, $amount);
-
-        $data = array(
-            'razorpay_payment_id'   => $payment->getPublicId(),
-            'amount'                => $payment->getAmount(),
-            'currency'              => $payment->getCurrency(),
-            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
-        );
-
-        $sortedData = $data;
-        ksort($sortedData);
-
-        $str = implode('|', $sortedData);
-
-        $data['signature'] = $this->getSignature($str);
-
-        return $data;
     }
 
     protected function verifySignature($input, $payment)
@@ -508,6 +490,15 @@ class Processor
                                     $id, $this->merchant->getKey());
 
         $card = $this->payment->card()->first();
+
+        return $this->payment;
+    }
+
+    protected function lockForUpdateAndRetrievePayment(& $payment)
+    {
+        $payment = $this->repo->lockForUpdate($payment->getKey());
+
+        $this->payment = $payment;
 
         return $this->payment;
     }
