@@ -348,7 +348,7 @@ class Server extends Base\Mock\Server
     {
         $this->processInput('supportPayment');
 
-        assert ($this->data['udf5'] === 'PaymentID');
+        // assert ($this->data['udf5'] === 'PaymentID');
 
         $payment = $this->getByGatewayTxnIdAndStatusExist('captured');
 
