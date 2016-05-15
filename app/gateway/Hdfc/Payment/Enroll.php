@@ -112,6 +112,8 @@ trait Enroll
 
         $card = $input['card'];
 
+        $this->enrollRequest['url'] = Hdfc\Urls::ENROLL_URL;
+
         $data = &$this->enrollRequest['data'];
 
         $data['trackid'] = $payment['id'];

@@ -238,6 +238,8 @@ trait Support
 
         $card = $input['card'];
 
+        $this->supportPaymentRequest['url'] = Hdfc\Url::SUPPORT_PAYMENT_URL;
+
         $data = &$this->supportPaymentRequest['data'];
 
         $type = $this->supportPaymentRequest['type'];

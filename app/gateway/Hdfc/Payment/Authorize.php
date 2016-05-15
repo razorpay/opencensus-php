@@ -232,6 +232,7 @@ trait Authorize
 
         $data['addr'] = '';
 
+        $this->authNotEnrolledRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL;
         $this->authNotEnrolledRequest['data'] = $data;
 
         $this->trace(
@@ -313,6 +314,7 @@ trait Authorize
 
     protected function createAuthEnrolledRequestFields($input)
     {
+        $this->authEnrolledRequest['url'] = Hdfc\Urls::AUTH_ENROLLED_URL;
         $this->authEnrolledRequest['data']['paymentid'] = $input['gateway']['MD'];
 
         $this->authEnrolledRequest['data']['PaRes'] = $input['gateway']['PaRes'];
