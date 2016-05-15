@@ -198,7 +198,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $stripFieldsList = array(
-        'password', 'amt', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'member',
+        'password', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
         'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
     );
 
