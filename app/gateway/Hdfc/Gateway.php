@@ -178,7 +178,7 @@ class Gateway extends Base\Gateway
 
     protected $inquiryRequest = array(
         'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'fields' => array('action', 'transid'),
+        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
         'type' => 'inquiry',
         'xml' => '',
         'data' => array(),

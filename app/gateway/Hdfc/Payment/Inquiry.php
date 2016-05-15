@@ -237,14 +237,9 @@ trait Inquiry
         $content['transid'] = $payment['gateway_transaction_id'];
         $content['udf5'] = 'PaymentID';
 
-        $network = $verify->input['card']['network'];
-
-        if ($network === 'RuPay')
-        {
-            $content['amt'] = $verify->input['payment']['amount']/100;
-            $content['member'] = $verify->input['card']['name'];
-            $content['trackid'] = $verify->input['payment']['id'];
-        }
+        $content['amt'] = $verify->input['payment']['amount']/100;
+        $content['member'] = $verify->input['card']['name'];
+        $content['trackid'] = $verify->input['payment']['id'];
 
         return $content;
     }
