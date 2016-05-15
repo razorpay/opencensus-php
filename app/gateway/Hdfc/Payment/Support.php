@@ -63,7 +63,7 @@ trait Support
         //
         // Fill the fields required for the payment
         //
-        $this->createSupportPaymentRequestFields($input);
+        $this->createSupportPaymentRequestFields($input, $type);
 
         $this->trace(
             TRACE::DEBUG,
@@ -232,7 +232,7 @@ trait Support
      * @param  array $input
      * Contains the 'payment' details
      */
-    protected function createSupportPaymentRequestFields($input)
+    protected function createSupportPaymentRequestFields($input, $type)
     {
         $payment = $input['payment'];
 
@@ -267,7 +267,10 @@ trait Support
             $data['trackid'] = $input['payment']['id'];
         }
 
-        $data['udf5'] = 'PaymentID';
+        if ($type !== 'refund')
+        {
+            $data['udf5'] = 'PaymentID';
+        }
     }
 
     protected function validateSupportPaymentResponse()
