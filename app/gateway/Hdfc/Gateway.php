@@ -421,6 +421,7 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\RecoverableException $e)
         {
+            $this->trace->info($input['gateway']);
             $this->trace->traceException($e);
         }
     }
