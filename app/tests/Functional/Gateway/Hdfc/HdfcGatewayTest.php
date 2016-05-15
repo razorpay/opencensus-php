@@ -69,6 +69,8 @@ class HdfcGatewayTest extends TestCase
         $this->assertNotNull($payment['transaction_id']);
 
         $this->verifyPayment($payment['id']);
+        $this->capturePayment($payment['id'], $payment['amount']);
+        $this->refundPayment($payment['id']);
     }
 
     public function testHdfcEntityAfterPaymentRefund()

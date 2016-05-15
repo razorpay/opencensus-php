@@ -267,7 +267,15 @@ trait Support
             $data['trackid'] = $input['payment']['id'];
         }
 
+        // For refund, udf should not be PaymentID
         if ($type !== 'refund')
+        {
+            $data['udf5'] = 'PaymentID';
+        }
+
+        // However if it's Rupay, then udf5 need to be PaymentID
+        // even for RuPay
+        if ($input['card']['network'] === 'RuPay')
         {
             $data['udf5'] = 'PaymentID';
         }
