@@ -163,7 +163,7 @@ class MobikwikGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertSame($payment['otp_attempts'], 0);
+        $this->assertSame($payment['otp_attempts'], null);
         $this->assertSame($payment['otp_count'], 2);
     }
 

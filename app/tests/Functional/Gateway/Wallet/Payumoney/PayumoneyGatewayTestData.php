@@ -30,7 +30,7 @@ return [
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
-        'otp_attempts'      => 0
+        'otp_attempts'      => null
     ],
 
     'testPaymentWithOtpAttempts' => [
