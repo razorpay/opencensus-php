@@ -190,6 +190,7 @@ trait Inquiry
         $inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
 
         $data = &$this->inquiryRequest['data'];
+        $data = [];
         $data = $content;
 
         $this->inquiryResponse['data'] = [];
