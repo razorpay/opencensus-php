@@ -421,7 +421,7 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\RecoverableException $e)
         {
-            $this->trace->info($input['gateway']);
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
             $this->trace->traceException($e);
         }
     }
