@@ -281,6 +281,21 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, $bankAccounts['count']);
     }
 
+    public function testChangeBankAccountWithZeroes()
+    {
+        $this->testAddBankAccount();
+
+        $content = $this->startTest();
+
+        $bankAccounts = $this->getEntities(
+                            'bank_account', ['with_trashed' => true], true);
+
+        // The old account should get deleted (hard delete) as there are
+        // no settlements attached to it.
+        $this->assertEquals(1, $bankAccounts['count']);
+        $this->assertEquals('2020000304030434', $bankAccounts['items'][0]['account_number']);
+    }
+
     public function testChangeBankAccountWithSettlement()
     {
         $this->testAddBankAccount();

@@ -21,30 +21,36 @@ class Core extends Base\Core
 
     public function createOrChangeBankAccount($input, $merchant)
     {
-        $bankAccount = $this->repo->getBankAccount($merchant);
+        $oldBankAccount = $this->repo->getBankAccount($merchant);
 
-        if ($bankAccount === null)
+        if ($oldBankAccount === null)
         {
             return $this->createBankAccount($input, $merchant, $this->mode);
         }
 
-        $ba = $this->buildBankAccount($input, $merchant, $this->mode);
+        $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
 
-        if ($ba->equals($bankAccount))
+        if ($newBankAccount->equals($oldBankAccount))
         {
             $this->trace->info(
                 TraceCode::MISC_TRACE_CODE,
                 [
-                    'old' => $ba->toArray(),
-                    'new' => $bankAccount->toArray(),
+                    'new' => $newBankAccount->toArray(),
+                    'old' => $oldBankAccount->toArray(),
                 ]);
 
-            return $bankAccount;
+            return $oldBankAccount;
         }
 
-        return $this->changeBankAccount($input, $merchant, $bankAccount);
+        return $this->changeBankAccount($input, $merchant, $oldBankAccount);
     }
 
+    /**
+     * This takes the oldBank Account as it's last parameter
+     * @param  Array $input Input Array with new bank account details
+     * @param  Merchant\Entity $merchant
+     * @param  BankAccount\Entity $oldBankAccount
+     */
     protected function changeBankAccount($input, $merchant, $oldBankAccount)
     {
         return $this->repo->transaction(
