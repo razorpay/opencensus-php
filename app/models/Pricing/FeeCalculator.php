@@ -96,7 +96,39 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForMethod($rules)
     {
-        return $this->validateAndGetOnePricingRule($rules);
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        //return $this->validateAndGetOnePricingRule($rules);
+
+        $payment = $this->payment;
+
+        $this->traceAllRules($rules);
+
+        // Current Implementation
+        // * Filter based on AmountRange
+        // * Choose based on Amount
+
+        $filter = array(
+            [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        $amount = $payment->getAmount();
+
+        $subventionType = $payment->merchant->getSubventionType();
+        
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException(
+                'Failed to find a valid pricing rule for the payment');
+        }
+
+        return $rule;
     }
 
     protected function getRelevantPricingRuleForCard($rules)

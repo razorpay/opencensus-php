@@ -140,12 +140,46 @@ class MerchantFeeTest extends TestCase
                 'international' => 0,
             ));
 
+        $pricingPlanNetB = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt3x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 0,
+                'amount_range_max' => 100000,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanNetB1 = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt4x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 100000,
+                'amount_range_max' => 100000000000,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
         $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
             $pricingRuleThree,
             $pricingPlanAmex,
             $pricingPlanDicl,
+            $pricingPlanNetB,
+            $pricingPlanNetB1
         ];
 
         if ($withCreditCardRule)
@@ -296,6 +330,18 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
     }
 
+    public function testNetBankingRuleSelection()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        $this->runMerchantFeeTestNetB("100", "1fq0OXpgrfrt3x");
+
+        $this->runMerchantFeeTestNetB("200000", "1fq0OXpgrfrt4x");
+
+        $this->runMerchantFeeTestNetB("200100", "1fq0OXpgrfrt4x");
+
+    }
+
     protected function runMerchantFeeTest($amount, $network, $expectedRule, $cardType, $isCardInternational = false)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
@@ -313,6 +359,21 @@ class MerchantFeeTest extends TestCase
         $payment->card->setType($cardType);
 
         $payment->card->setInternational($isCardInternational);
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($expectedRule, $ruleKey);
+    }
+
+    protected function runMerchantFeeTestNetB($amount, $expectedRule)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = $amount;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
+
+        $payment = new Payment\Entity($paymentArray);
 
         list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
 
