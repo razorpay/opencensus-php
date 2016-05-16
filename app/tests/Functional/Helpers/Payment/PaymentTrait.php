@@ -3,6 +3,8 @@
 namespace Tests\Functional\Helpers\Payment;
 
 use EE\Exception\BaseException;
+use EE\Exception;
+use EE\Error\ErrorCode;
 use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -1280,7 +1282,14 @@ trait PaymentTrait
                         switch ($route)
                         {
                             case 'REST/Tokenize':
-                                $response['Token'] = $cardToTokenMap[$input['Data']];
+                                if(isset($cardToTokenMap[$input['Data']]))
+                                {
+                                    $response['Token'] = $cardToTokenMap[$input['Data']];
+                                }
+                                else
+                                {
+                                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                                }
                                 break;
 
                             case 'REST/Detokenize':
