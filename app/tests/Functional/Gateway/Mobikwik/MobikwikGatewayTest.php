@@ -164,7 +164,7 @@ class MobikwikGatewayTest extends TestCase
 
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
-        $this->assertTestResponse($mobikwik, 'testMobikwikWalletVerifyEntity');
+        $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
 
     }
 

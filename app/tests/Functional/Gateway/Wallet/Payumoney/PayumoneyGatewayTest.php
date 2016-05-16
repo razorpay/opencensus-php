@@ -105,6 +105,34 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertEquals($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'method'        => 'wallet',
+                            'wallet'        => 'payumoney',
+                            'gateway'       => 'wallet_payumoney',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id) {
+            $this->verifyPayment($id);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');

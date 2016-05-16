@@ -73,12 +73,26 @@ return [
         'received'              => true,
         'email'                 => 'a@b.com',
         'contact'               => '9918899029',
-        'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_description'  => 'Use wallet successful',
         'status_code'           => '0',
         'refund_id'             => null,
         'entity'                => 'wallet',
+    ],
+
+    'testVerifyFailedPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\PaymentVerificationException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ],
     ],
 
     'testRefundPayment'       => [

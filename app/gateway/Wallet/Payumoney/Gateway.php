@@ -157,7 +157,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $this->saveVerifyContentIfNeeded($payment, $content);
+        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
 
         return $verify->status;
     }
@@ -166,13 +166,15 @@ class Gateway extends Base\Gateway
     {
         $content = $response['result'][0];
 
-        if (isset($content['status']) and $content['status'] === Status::SUCCESS)
+        $this->action = Action::AUTHORIZE;
+
+        if (isset($content['status']) and $content['status'] === Status::VERIFY_SUCCESS)
         {
             $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
 
             if ($payment === null)
             {
-                $this->createGatewayPaymentEntity($walletAttributes);
+                $payment = $this->createGatewayPaymentEntity($walletAttributes);
             }
             else if ($payment['received'] === false)
             {
@@ -180,6 +182,10 @@ class Gateway extends Base\Gateway
                 $payment->saveOrFail();
             }
         }
+
+        $this->action = Action::VERIFY;
+
+        return $payment;
     }
 
     public function refund(array $input)
@@ -607,17 +613,17 @@ class Gateway extends Base\Gateway
     protected function getWalletContentFromVerify($payment, array $content)
     {
         $contentToSave = array(
-            'key'      => $this->getMerchantId($this->input['terminal']),
-            'email'    => $this->input['payment']['email'],
-            'mobile'   => $this->getFormattedContact($this->input['payment']['contact']),
-            'status'   => $content['status'],
-            'txnId'    => $content['paymentId'],
-            'received' => true
+            'key'                   => $this->getMerchantId($this->input['terminal']),
+            'email'                 => $this->input['payment']['email'],
+            'mobile'                => $this->getFormattedContact($this->input['payment']['contact']),
+            'status'                => Status::SUCCESS,
+            'txnId'                 => $content['paymentId'],
+            'received'              => true
         );
 
         if (isset($payment['amount']) === false)
         {
-            $contentToSave['amount'] = $content['amount'];
+            $contentToSave['amount'] = $this->input['payment']['amount'];
         }
 
         return $contentToSave;

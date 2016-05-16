@@ -188,6 +188,8 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContentIfNeeded($payment, $content)
     {
+        $this->action = Action::AUTHORIZE;
+
         if ($payment === null)
         {
             $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
@@ -199,6 +201,8 @@ class Gateway extends Base\Gateway
             $payment->fill($content);
             $payment->saveOrFail();
         }
+
+        $this->action = Action::VERIFY;
 
         return $payment;
     }
@@ -363,7 +367,7 @@ class Gateway extends Base\Gateway
             $content['statusmessage'] = $responseArray['statusdescription'];
         }
 
-        $this->action($input, Action::AUTHORIZE);
+        $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($content);
     }
@@ -672,7 +676,6 @@ class Gateway extends Base\Gateway
             'cell'     => $this->getFormattedContact($this->input['payment']['contact']),
             'msgcode'  => MessageCode::OTP_SUBMIT,
             'orderid'  => $this->input['payment']['id'],
-            'txntype'  => 'debit',
             'received' => true
         );
 

@@ -165,22 +165,6 @@ return [
         ],
     ],
 
-    'testMobikwikWalletVerifyEntity'  => [
-        'action'        => 'verify',
-        'method'        => 'wallet',
-//        'orderid' => '',
-//        'merchantname' => '',
-        'email'         => 'a@b.com',
-        'amount'        => '500',
-        'cell'          => '9918899029',
-        'showmobile'    => null,
-        'statuscode'    => '0',
-//        'refid',
-//        'ispartial'
-        'refund_id'     => null,
-        'entity'        => 'mobikwik',
-    ],
-
     'testPowerWalletVerifyFailedPayment'   => [
         'response'  => [
             'content'     => [
