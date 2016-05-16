@@ -331,8 +331,8 @@ class Service extends Base\Service
                          ->getInvoiceData($input)
                          ->toArray();
 
-            $data['dates'] = $this->getDateRanges($input['year'], $input['month']);
-            $data['merchant'] = $this->merchant;
+            $data['dates']      = $this->getDateRanges($input['year'], $input['month']);
+            $data['merchant']   = $this->merchant;
             $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
 
             return [null, $data];
@@ -344,7 +344,7 @@ class Service extends Base\Service
             return array($error, null);
         }
 
-        return array($error, null);
+        return [$error, null];
     }
 
     /**
@@ -355,10 +355,15 @@ class Service extends Base\Service
         $startDate = Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
 
         return [
-            'billingDate'    => $startDate->addMonth()->format('d/m/y'),
-            'startDate'      => $startDate->format('d/m/y'),
-            'endDate'        => $startDate->endOfMonth()->format('d/m/y')
+            'startDate'      => $this->getDate($year, $month)->format('d/m/y'),
+            'billingDate'    => $this->getDate($year, $month)->endOfMonth()->format('d/m/y'),
+            'endDate'        => $this->getDate($year, $month)->endOfMonth()->format('d/m/y')
         ];
+    }
+
+    protected function getDate($year,$month)
+    {
+        return Carbon::createFromDate($year, $month, 1, 'Asia/Calcutta');
     }
 
     protected function getInvoiceId($year, $month)

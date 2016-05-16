@@ -69,6 +69,14 @@ app.controller('EntitiesCtrl', [
       'wallet_payumoney',
       'wallet_payzapp'
     ];
+    var walletList = [
+      'all',
+      'paytm',
+      'mobikwik',
+      'payzapp',
+      'payumoney',
+      'ezeclick'
+    ];
     var booleanList = [
       'all',
       0,
@@ -86,6 +94,13 @@ app.controller('EntitiesCtrl', [
       'failed',
       'captured',
       'refunded'
+    ];
+    var methodList = [
+      'all',
+      'card',
+      'emi',
+      'netbanking',
+      'wallet'
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -223,13 +238,7 @@ app.controller('EntitiesCtrl', [
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id'],
-        method: [
-          'all',
-          'card',
-          'emi',
-          'netbanking',
-          'wallet'
-        ],
+        method: methodList,
         refund_status: [
           'all',
           'null',
@@ -244,17 +253,11 @@ app.controller('EntitiesCtrl', [
           1,
           2
         ],
-        wallet: [
-          'all',
-          'paytm',
-          'mobikwik',
-          'payzapp',
-          'payumoney',
-          'ezeclick'
-        ],
+        wallet: walletList,
         iin: ['Card IIN'],
         last4: ['Card Last 4'],
-        notes: ['Notes']
+        notes: ['Notes'],
+        international: ['International']
       },
       paytm: {
         payment_id: ['Payment Id'],
@@ -299,6 +302,10 @@ app.controller('EntitiesCtrl', [
         customer_id: ['Customer Id'],
         merchant_id: ['Merchant Id'],
         card_id: ['Card Id']
+      },
+      wallet: {
+        payment_id: ['Payment Id'],
+        wallet: walletList
       },
       webhook: {
         merchant_id: ['Merchant Id'],

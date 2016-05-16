@@ -32,7 +32,7 @@
           >
         </div>
 
-        <div class="col-sm-2">
+        <div class="col-sm-2" ng-show="user.tags.indexOf('Notes-Search') != -1">
           Notes:
           <input type="notes" class="form-control input-sm w-sm inline" ng-model="query.notes" placeholder="Notes"
             name="notes" ng-enter="regenerate();"
