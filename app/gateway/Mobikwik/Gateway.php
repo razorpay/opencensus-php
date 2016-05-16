@@ -302,6 +302,8 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::OTP_SUBMIT);
 
+        $this->verifyOtpAttempts($input['payment']);
+
         $content = array(
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),

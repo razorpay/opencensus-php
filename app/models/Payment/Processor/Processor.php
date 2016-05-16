@@ -27,6 +27,7 @@ class Processor
     use Callback;
     use Refund;
     use Verify;
+    use OtpResend;
 
     protected $merchant;
 

@@ -214,9 +214,16 @@ class Gateway extends Base\Gateway
 
         if ($code !== Status::SUCCESS)
         {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+            if (isset($content['errorCode']))
+            {
+                $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
+            }
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $errorCode,
                 $content['status'],
                 $content['message']);
         }
@@ -225,6 +232,8 @@ class Gateway extends Base\Gateway
     public function callbackOtpSubmit($input)
     {
         $this->action($input, Action::OTP_SUBMIT);
+
+        $this->verifyOtpAttempts($input['payment']);
 
         $request = $this->getOtpSubmitRequestArray($input);
 

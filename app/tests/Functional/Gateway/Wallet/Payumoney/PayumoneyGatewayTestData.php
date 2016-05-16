@@ -30,6 +30,34 @@ return [
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
+        'otp_attempts'      => null
+    ],
+
+    'testPaymentWithOtpAttempts' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'wallet',
+        'status'            => 'captured',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'wallet'            => 'payumoney',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '9918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'wallet_payumoney',
+        'terminal_id'       => '100PayumnyTmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => 1
     ],
 
     'testOtpRetryPayment'       => [
@@ -64,6 +92,47 @@ return [
             'class'               => 'EE\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ],
+    ],
+
+    'testOtpRetryExceededPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '121212'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testOtpResendPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'type' => 'otp',
+                'request' => [
+                    'method' => 'post'
+                ],
+            ],
+            'status_code' => 200,
+        ]
     ],
 
     'testPaymentWalletEntity' => [

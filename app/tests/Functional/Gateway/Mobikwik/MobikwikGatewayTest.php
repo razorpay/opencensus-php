@@ -98,13 +98,73 @@ class MobikwikGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment, 'testPayment');
+        $this->assertTestResponse($payment, 'testPaymentWithOtpAttempts');
 
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
         $this->assertNull($mobikwik);
 
         $this->type = null;
+    }
+
+    public function testOtpRetryExceededPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment', [
+                            'method'        => 'wallet',
+                            'wallet'        => 'mobikwik',
+                            'gateway'       => 'mobikwik',
+                            'otp_attempts'  => 3,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $secret = \App::make('config')->get('app.key');
+
+        $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
+
+        $params = ['id' => $payment->getPublicId(), 'hash' => $hash, 'key_id' => $this->ba->getKey()];
+
+        $url = \URL::route('payment_otp_submit', $params, false);
+        $url = 'http://localhost' . $url;
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testOtpResendPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment', [
+                            'method'        => 'wallet',
+                            'wallet'        => 'mobikwik',
+                            'gateway'       => 'mobikwik',
+                            'contact'       => '9111111111',
+                            'otp_attempts'  => 2,
+                            'otp_count'     => 1,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $params = ['id' => $payment->getPublicId(), 'key_id' => $this->ba->getKey()];
+        $wallet = $this->getLastEntity('terminal', true);
+
+        $url = \URL::route('payment_otp_resend', $params, false);
+        $url = 'http://localhost' . $url;
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame($payment['otp_attempts'], null);
+        $this->assertSame($payment['otp_count'], 2);
     }
 
     public function testVerifyPayment()
