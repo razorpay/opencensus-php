@@ -157,15 +157,29 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($content['status'] === Status::SUCCESS)
-        {
-            $wallet = $this->getWalletContentFromVerify($payment, $content);
-
-            $payment->fill($wallet);
-            $payment->saveOrFail();
-        }
+        $this->saveVerifyContentIfNeeded($payment, $content);
 
         return $verify->status;
+    }
+
+    protected function saveVerifyContentIfNeeded($payment, $response)
+    {
+        $content = $response['result'][0];
+
+        if (isset($content['status']) and $content['status'] === Status::SUCCESS)
+        {
+            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+
+            if ($payment === null)
+            {
+                $this->createGatewayPaymentEntity($walletAttributes);
+            }
+            else if ($payment['received'] === false)
+            {
+                $payment->fill($walletAttributes);
+                $payment->saveOrFail();
+            }
+        }
     }
 
     public function refund(array $input)
@@ -590,28 +604,23 @@ class Gateway extends Base\Gateway
         return strtolower(hash('sha512', $str, false));
     }
 
-    protected function getWalletContentFromVerify($payment, array $response)
+    protected function getWalletContentFromVerify($payment, array $content)
     {
-        $content = $response['result'][0];
-
-        $status = $content['status'] === 'success' ? Status::SUCCESS : Status::FAILURE;
-
-        $wallet = array(
-            'gateway_payment_id'    => $content['paymentId'],
-            'status'                => $status
+        $contentToSave = array(
+            'key'      => $this->getMerchantId($this->input['terminal']),
+            'email'    => $this->input['payment']['email'],
+            'mobile'   => $this->getFormattedContact($this->input['payment']['contact']),
+            'status'   => $content['status'],
+            'txnId'    => $content['paymentId'],
+            'received' => true
         );
-
-        if (isset($payment['payment_id']) === false)
-        {
-            $wallet['payment_id'] = $content['merchantTransactionId'];
-        }
 
         if (isset($payment['amount']) === false)
         {
-            $wallet['amount'] = $content['amount'];
+            $contentToSave['amount'] = $content['amount'];
         }
 
-        return $wallet;
+        return $contentToSave;
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)

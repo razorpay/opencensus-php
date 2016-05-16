@@ -70,6 +70,10 @@ class MobikwikGatewayTest extends TestCase
 
         $this->assertTestResponse($payment, 'testPayment');
 
+        $mobikwik = $this->getLastEntity('mobikwik', true);
+
+        $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
+
         $this->type = null;
     }
 
@@ -102,7 +106,7 @@ class MobikwikGatewayTest extends TestCase
 
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
-        $this->assertNull($mobikwik);
+        $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
 
         $this->type = null;
     }
@@ -113,6 +117,55 @@ class MobikwikGatewayTest extends TestCase
         $id = $this->payment['id'];
         $this->payment = $this->verifyPayment($id);
         $this->assertEquals($this->payment['payment']['verified'], 1);
+    }
+
+    public function testPowerWalletVerifyPayment()
+    {
+        $this->type = 'otp';
+
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $id = $capturePayment['id'];
+
+        $response = $this->verifyPayment($id);
+
+        $this->assertEquals($response['payment']['verified'], 1);
+
+        $this->type = null;
+    }
+
+    public function testPowerWalletVerifyFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'method'        => 'wallet',
+                            'wallet'        => 'mobikwik',
+                            'gateway'       => 'mobikwik',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->id
+                        ]);
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id) {
+            $this->verifyPayment($id);
+        });
+
+        $mobikwik = $this->getLastEntity('mobikwik', true);
+
+        $this->assertTestResponse($mobikwik, 'testMobikwikWalletVerifyEntity');
+
     }
 
     public function testRefundPayment()

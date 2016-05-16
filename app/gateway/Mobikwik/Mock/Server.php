@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Gateway\Mobikwik;
 use Gateway\Base;
 use Gateway\Base\Action;
+use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -44,8 +45,8 @@ class Server extends Base\Mock\Server
         $input = $inputArray;
         $id = $input['orderid'];
 //        $merchantId = $input['mid'];
-        $payment = (new Mobikwik\Repository)->findByPaymentIdAndAction(
-            $id, Action::AUTHORIZE);
+        $payment = (new Payment\Repository)->findOrFailPublic($id);
+
         $content = array(
             'statuscode'    => '0',
             'orderid'       => $input['orderid'],
