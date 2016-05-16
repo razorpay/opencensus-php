@@ -30,11 +30,11 @@ class DefaultConnection
     {
         if ($mode === Mode::TEST)
         {
-            Config::set('database.default', 'slave.test');
+            Config::set('database.default', 'slave-test');
         }
         else if ($mode === Mode::LIVE)
         {
-            Config::set('database.default', 'slave.live');
+            Config::set('database.default', 'slave-live');
         }
     }
 

@@ -74,7 +74,7 @@ return array(
 
         // TODO: Currently using master data. Add slave credentials later.
 
-        'slave.live' => [
+        'slave-live' => [
             // Slave must have the same driver and DB names as the master.
             'driver'    => $_ENV['DB_LIVE_DRIVER'],
             'host'      => $_ENV['DB_LIVE_HOST'],
@@ -88,7 +88,7 @@ return array(
             'strict'    => true
         ],
 
-        'slave.test' => [
+        'slave-test' => [
             'driver'    => $_ENV['DB_TEST_DRIVER'],
             'host'      => $_ENV['DB_TEST_HOST'],
             'port'      => $_ENV['DB_TEST_PORT'],
