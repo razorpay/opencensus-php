@@ -158,6 +158,36 @@ class PaymentCreateController extends BaseController
     }
 
     /**
+     * Creates a wallet payment
+     */
+    public function postCreateWalletPayment($wallet)
+    {
+        $input = Input::all();
+
+        // Just a hack to get around mobikwik normal flow
+        $input['_']['source'] = 's2s';
+        $input['method'] = 'wallet';
+        $input['wallet'] = $wallet;
+
+        $data = $this->payment->processWallet($input);
+
+        if (isset($data['request']))
+        {
+            if ($data['type'] === 'otp')
+            {
+                $data = [
+                    'request' => [
+                        'url'       => $data['request']['url'],
+                        'method'    => $data['request']['method']
+                    ]
+                ];
+            }
+        }
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      * Creates a dummy payments and
      * return corresponding fees and service_tax
      */
@@ -205,6 +235,8 @@ class PaymentCreateController extends BaseController
     public function postOtpSubmit($id, $hash)
     {
         $input = Input::all();
+
+        $input['type'] = 'otp';
 
         $data = $this->payment->callback($id, $hash, $input);
 

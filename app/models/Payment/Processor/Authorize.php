@@ -759,7 +759,8 @@ trait Authorize
     {
         return ($payment->getMethod() === Method::WALLET and
                     (((isset($input['_']['source'])) and
-                        ($input['_']['source'] === 'checkoutjs') and
+                        (($input['_']['source'] === 'checkoutjs') or
+                            ($input['_']['source'] === 's2s')) and
                         ($payment->getWallet() === Wallet::MOBIKWIK)) or
                     $payment->getWallet() === Wallet::PAYUMONEY));
     }
