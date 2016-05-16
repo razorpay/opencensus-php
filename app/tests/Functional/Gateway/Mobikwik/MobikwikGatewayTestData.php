@@ -183,7 +183,6 @@ return [
         'cell'          => '9918899029',
         'showmobile'    => null,
         'statuscode'    => '0',
-        'statusmessage' => 'Transaction completed Successfully',
 //        'refid',
 //        'ispartial'
         'refund_id'     => null,
@@ -232,6 +231,22 @@ return [
         'exception' => [
             'class'               => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT
+        ],
+    ],
+
+    'testPowerWalletVerifyFailedPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\PaymentVerificationException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],
 
