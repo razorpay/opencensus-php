@@ -124,7 +124,7 @@
             <span class="pull-right">{{entity.contact}}</span>
             Contact
           </a>
-          <a href class="list-group-item" ng-init="isCollapsed = true">
+          <a href class="list-group-item" ng-init="isCollapsed = false">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.notes.length != 0">Show/Hide</button>
               <span ng-hide="entity.notes.length != 0">No Notes</span>
