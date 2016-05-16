@@ -65,6 +65,14 @@ class PublicCollection extends Collection
         return $publicIds;
     }
 
+    public function filterEntitiesFromEntityIds($entityIds)
+    {
+        $filteredEntities = $this->only($entityIds)->items;
+        
+        // This is required to remove all null entries from the array
+        return array_filter($filteredEntities);
+    }
+
     protected function itemsToArrayPublic()
     {
         return array_map(function($item)

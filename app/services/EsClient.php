@@ -51,7 +51,7 @@ class EsClient
         {
             return null;
         }
-
+        
         $searchResponse = $this->client->search($params);
 
         if ($searchResponse['hits']['total'] === 0)
@@ -72,6 +72,11 @@ class EsClient
     public function get($params)
     {
         return $this->client->get($params);
+    }
+
+    public function multiGet($params)
+    {
+        return $this->client->mget($params);
     }
 
     public function delete($params)

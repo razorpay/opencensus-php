@@ -14,18 +14,13 @@ class EsRepository extends Base\EsRepository
 
     public function fetch($params, $merchantId)
     {
-        $payments = [];
+        $payments = new Base\PublicCollection;
 
         if (isset($params['notes']))
         {
-            $payments = $this->fetchNotes($this->getEsType(), $params, $merchantId);
+            $payments = $this->fetchNotes(Table::PAYMENT, $params, $merchantId);
         }
 
         return $payments;
-    }
-
-    public function getEsType()
-    {
-        return Table::PAYMENT;
     }
 }

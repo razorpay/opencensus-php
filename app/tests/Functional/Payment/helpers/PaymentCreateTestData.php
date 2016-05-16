@@ -20,5 +20,23 @@ return [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED
         ],
-    ],
+   ], 
+   
+   'testCreatePaymentInEs' => [
+       'type' => 'payments',
+       'body' => [
+           'doc' => [
+               'notes' => [
+                   'merchant_order_id' => 'random order id'
+               ],
+           ],
+           'upsert' => [
+               'merchant_id' => '10000000000000', 
+               'notes' => [
+                   'merchant_order_id' => 'random order id'
+               ]
+           ],
+       ],
+   ],
+    
 ];

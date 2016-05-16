@@ -185,11 +185,6 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->fetch($input, $merchantId);
 
-        if (empty($payments) === true)
-        {
-            return [];
-        }
-
         return $payments->toArrayPublic();
     }
 

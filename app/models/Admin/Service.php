@@ -31,11 +31,6 @@ class Service extends Base\Service
 
         $entities = $repo->fetch($input);
 
-        if (empty($entities) === true)
-        {
-            return [];
-        }
-
         return $entities->toArrayAdmin();
     }
 
