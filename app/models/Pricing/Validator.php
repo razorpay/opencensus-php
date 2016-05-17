@@ -8,6 +8,7 @@ use EE\Error\PublicErrorDescription;
 use Models\Base;
 use Models\Card\Network;
 use Models\Payment;
+use Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
