@@ -755,21 +755,51 @@ trait Authorize
         }
     }
 
+    /**
+     * Do we support the OTP flow for a given payment
+     * and input combination
+     * @param  Payment\Entity $payment
+     * @param  array $input
+     * @return boolean
+     */
     protected function canRunOtpPaymentFlow($payment, $input)
     {
-        if ($payment->getMethod() === Method::WALLET)
+        $wallet = $payment->getWallet();
+
+        return (($payment->getMethod() === Method::WALLET) and
+            ($this->validateOtpFlowSource($input)) and
+            ($this->walletSupportsOtpFlow($wallet)));
+    }
+
+    /**
+     * We only allow checkout and a server-to-server flow
+     * to use the OTP flow currently. It is not allowed
+     * on razorpay.js for eg.
+     * @param  array $input
+     * @return boolean
+     */
+    protected function validateOtpFlowSource($input)
+    {
+        if (isset($input['_']['source']))
         {
-            if (((isset($input['_']['source'])) and
-                        (($input['_']['source'] === 'checkoutjs') or
-                            ($input['_']['source'] === 's2s')) and
-                        ($payment->getWallet() === Wallet::MOBIKWIK)) or
-                    $payment->getWallet() === Wallet::PAYUMONEY)
-            {
-                return true;
-            }
+            return in_array($input['_']['source'], [
+                'checkoutjs',
+                's2s'
+            ]);
         }
 
-        return false;
+        return true;
+    }
+
+    /**
+     * List of wallets where we support
+     * the OTP Flow
+     * @param  string $wallet
+     * @return boolean
+     */
+    protected function walletSupportsOtpFlow($wallet)
+    {
+        return in_array($wallet, [Wallet::MOBIKWIK, Wallet::PAYUMONEY]);
     }
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)
