@@ -31,14 +31,14 @@ class Validator extends Base\Validator
         'merchantTransactionId' => 'required|string'
     );
 
-    protected static $generateotpRules = array(
+    protected static $otpGenerateRules = array(
         'email'                 => 'required|email',
         'mobile'                => 'required|regex:"^[789]\d{9}$"',
         'client_id'             => 'required|string',
         'hash'                  => 'required|regex:"^[a-f0-9]+$"'
     );
 
-    protected static $otpsubmitRules = array(
+    protected static $otpSubmitRules = array(
         'email'                 => 'required|email',
         'mobile'                => 'required|string|regex:"^[789]\d{9}$"',
         'client_id'             => 'required|string',
@@ -56,6 +56,7 @@ class Validator extends Base\Validator
         'key'                   => 'required|string',
         'totalAmount'           => 'required|numeric',
         'txnDetails'            => 'required|array',
-        'client_id'             => 'required|string'
+        'client_id'             => 'required|string',
+        'hash'                  => 'required|string|regex:"^[a-f0-9]+$"'
     );
 }

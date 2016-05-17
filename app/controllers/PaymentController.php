@@ -41,30 +41,6 @@ class PaymentController extends BaseController
     }
 
     /**
-     * Resend OTP
-     */
-    public function postOtpResend($id)
-    {
-        $input = Input::all();
-
-        $payment = $this->payment->otpResend($id, $input);
-
-        return ApiResponse::json($payment);
-    }
-
-    /*
-     * Topup
-     */
-    public function postTopupAjax($id)
-    {
-        $input = Input::all();
-
-        $data = $this->payment->topup($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
      * Refund a payment.
      */
     public function postRefund($id)

@@ -7,6 +7,7 @@ use EE\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Customer;
+use Models\Terminal;
 use Models\Customer\App;
 use Models\Customer\Token;
 use Models\Merchant\Account;
@@ -26,10 +27,7 @@ class Core extends Base\Core
 
     public function create($customer, $input)
     {
-        $token = (new Token\Entity)->build($input);
-
-        $token->customer()->associate($customer);
-        $token->merchant()->associate($customer->merchant);
+        $token = new Token\Entity;
 
         if (isset($input[Token\Entity::CARD_ID]))
         {
@@ -40,11 +38,17 @@ class Core extends Base\Core
 
         if (isset($input[Token\Entity::TERMINAL_ID]))
         {
-            $terminal = (new Card\Repository)->findOrFailPublic($input[Token\Entity::TERMINAL_ID]);
+            $terminal = (new Terminal\Repository)->findOrFailPublic($input[Token\Entity::TERMINAL_ID]);
 
             $token->terminal()->associate($terminal);
+
+            unset($input[Token\Entity::TERMINAL_ID]);
         }
 
+        $token->customer()->associate($customer);
+        $token->merchant()->associate($customer->merchant);
+
+        $token->build($input);
         $this->validateExistingToken($token);
 
         $this->repo->saveOrFail($token);

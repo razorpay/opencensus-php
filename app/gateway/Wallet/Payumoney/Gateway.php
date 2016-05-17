@@ -4,6 +4,8 @@ namespace Gateway\Wallet\Payumoney;
 
 use View;
 use Constants\Mode;
+use Models\Customer;
+use Models\Merchant;
 use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
@@ -13,6 +15,7 @@ use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
+use Models\Customer\Token;
 use Gateway\Base\VerifyResult;
 use Gateway\Base\AuthorizeFailed;
 use Gateway\Wallet\Payumoney\Action;
@@ -23,8 +26,6 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed;
 
     protected $gateway = 'wallet_payumoney';
-
-    protected $wallet  = 'payumoney';
 
     protected $sortRequestContent = false;
 
@@ -57,6 +58,8 @@ class Gateway extends Base\Gateway
             ($input['gateway']['type'] === 'otp'))
         {
             $this->callbackOtpSubmit($input);
+
+            $this->checkBalance($input);
         }
         else
         {
@@ -223,7 +226,18 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::TOPUP_WALLET);
 
-        $this->customer = $input['customer'];
+        $token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+        if ($token === null or $token->expires_at <= time())
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $this->accessToken = $token->gateway_token;
 
         $request = $this->getTopupWalletRequestArray($input);
 
@@ -294,6 +308,58 @@ class Gateway extends Base\Gateway
 
         if (isset($content['result']['body']['access_token']))
         {
+            if (isset($input['customer']) === false)
+            {
+                $contact = $this->getFormattedContact($input['payment']['contact']);
+
+                $input['customer'] = (new Customer\Repository)
+                                        ->findByContactForMerchant(
+                                            $contact, Merchant\Account::SHARED_ACCOUNT);
+
+                if ($input['customer'] === null)
+                {
+                    $customerAttributes = array(
+                        'contact'   => $contact,
+                        'email'     => $input['payment']['email']
+                    );
+
+                    $input['customer'] = (new Customer\Core)
+                                        ->createGlobalCustomer($customerAttributes);
+                }
+            }
+
+            $token = (new Customer\Token\Repository)->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+            $tokenAttributes = array(
+                Token\Entity::METHOD           => 'wallet',
+                Token\Entity::WALLET           => $input['payment']['wallet'],
+                Token\Entity::TERMINAL_ID      => $input['terminal']->id,
+                Token\Entity::GATEWAY_TOKEN    => $content['result']['body']['access_token'],
+                Token\Entity::GATEWAY_TOKEN2   => $content['result']['body']['refresh_token'],
+                Token\Entity::EXPIRES_AT       => time() + $content['result']['body']['expires_in'],
+            );
+
+            if ($token === null)
+            {
+                $token = (new Customer\Token\Core)
+                            ->create($input['customer'], $tokenAttributes);
+            }
+
+            $token->fill($tokenAttributes);
+            $token->saveOrFail();
+
+            $payment = (new \Models\Payment\Repository)
+                            ->findByIdAndMerchantId(
+                                $input['payment']['id'],
+                                $input['merchant']['id']);
+
+            $payment->customer()->associate($input['customer']);
+
+            $payment->saveOrFail();
+
             $this->accessToken = $content['result']['body']['access_token'];
 
             $content['result']['body']['access_token'] = '';
@@ -322,12 +388,31 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_TOPUP_CALLBACK, $input['gateway']);
 
         $content = $input['gateway'];
+
+        if (isset($content['status']) and
+            $content['status'] === Status::TOPUP_SUCCESS)
+        {
+            $token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+            if ($token !== null and $token->expires_at > time())
+            {
+                $this->accessToken = $token->gateway_token;
+                return;
+            }
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $content['status'],
+            $content['error_Message']);
     }
 
     protected function debit($input)
     {
-        $this->checkBalance($input);
-
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
@@ -360,6 +445,8 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
 
         $this->createGatewayPaymentEntity($contentToSave);
+
+        $this->action = Action::DEBIT_WALLET;
     }
 
     protected function checkBalance($input)
@@ -369,7 +456,7 @@ class Gateway extends Base\Gateway
         if ($input['payment']['amount'] > $userBalance)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
     }
 
@@ -556,6 +643,11 @@ class Gateway extends Base\Gateway
             'totalAmount'   => $input['payment']['amount'] / 100,
             'client_id'     => $this->getClientId($input['terminal']),
         );
+
+        if (isset($input['gateway']['amount']))
+        {
+            $content['totalAmount'] = $input['gateway']['amount'] / 100;
+        }
 
         $content['hash'] = $this->getHashForTopupWallet($content);
 

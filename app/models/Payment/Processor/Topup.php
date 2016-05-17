@@ -2,8 +2,9 @@
 
 namespace Models\Payment\Processor;
 
-use Models\Merchant;
+use EE\Exception;
 use Models\Payment;
+use Models\Merchant;
 use Trace\TraceCode;
 
 trait Topup
@@ -43,16 +44,16 @@ trait Topup
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        return [];
+        assert(false, 'Shouldn\'t reach here.');
     }
 
     protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
     {
         if ($payment->customer === null)
         {
-            throw new Exception(
-
-                );
+            throw new Exception\BaseException(
+                'Customer doesn\'t exist'
+            );
         }
 
         $canTopup = $this->callGatewayFunction('canTopup', []);
@@ -60,8 +61,8 @@ trait Topup
         if ($canTopup === false)
         {
             throw new Exception\BaseException(
-
-                );
+                'Gateway doesn\'t support topup'
+            );
         }
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
@@ -69,11 +70,11 @@ trait Topup
         //
         // Call gateway input
         //
-        $gatewayInput['gateway'] = $input;
+        $gatewayInput['gateway']  = $input;
 
-        $gatewayInput['payment'] = $payment->toArray();
+        $gatewayInput['payment']  = $payment->toArray();
 
-        $gatewayInput['customer'] = $payment->customer->toArray();
+        $gatewayInput['customer'] = $payment->customer;
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

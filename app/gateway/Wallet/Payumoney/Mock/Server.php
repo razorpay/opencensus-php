@@ -2,13 +2,14 @@
 
 namespace Gateway\Wallet\Payumoney\Mock;
 
-use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use Http\Route;
 use Gateway\Base;
+use EE\Exception;
+use Carbon\Carbon;
+use Models\Payment;
+use EE\Error\ErrorCode;
 use Gateway\Base\Action;
 use Gateway\Wallet\Payumoney;
-use Models\Card;
 
 class Server extends Base\Mock\Server
 {
@@ -22,7 +23,11 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $response = array(
+        $args = func_get_args();
+
+        $paymentId = $args[1];
+
+        $content = array(
             'mihpayid'              => '403993715514441547',
             'mode'                  => 'test',
             'status'                => 'success',
@@ -79,7 +84,19 @@ class Server extends Base\Mock\Server
             'net_amount_debit'      => '1000'
         );
 
-        return $this->makeResponse($response);
+        $payment = (new Payment\Repository)->find($paymentId);
+
+        $secret = $this->app->config->get('app.key');
+
+        $publicId = $payment->getPublicId();
+
+        $hash = hash_hmac('sha1', $publicId, $secret);
+
+        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
+
+        $url .= '?' . http_build_query($content);
+
+        return Redirect::to($url);
     }
 
     public function verify($input)
@@ -128,7 +145,7 @@ class Server extends Base\Mock\Server
 
     public function otpGenerate($input)
     {
-        $this->validateActionInput($input, 'generateotp');
+        $this->validateActionInput($input, 'otpGenerate');
 
         $mobile = $input['mobile'];
 
@@ -167,7 +184,7 @@ class Server extends Base\Mock\Server
 
     public function otpSubmit($input)
     {
-        $this->validateActionInput($input, 'otpsubmit');
+        $this->validateActionInput($input, 'otpSubmit');
 
         $response = array(
             'status' => 0,

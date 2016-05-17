@@ -223,6 +223,11 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function topup($input)
+    {
+        return $this->authorize($input);
+    }
+
     public function checkExistingUser($input)
     {
         $this->action($input, Action::CHECK_USER);

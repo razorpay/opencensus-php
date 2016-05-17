@@ -33,6 +33,15 @@ class Core extends Base\Core
         return $customer;
     }
 
+    public function createGlobalCustomer($input)
+    {
+        assert(isset($input[Customer\Entity::CONTACT]));
+
+        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+
+        return $this->create($input, $merchant);
+    }
+
     public function edit($customer, $input)
     {
         $customer->edit($input);
@@ -169,5 +178,13 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
+    }
+
+    public function getGlobalCustomer($contact)
+    {
+        $customer = $this->repo->findByContactForMerchant($contact,
+                            Merchant\Account::SHARED_ACCOUNT);
+
+        return $customer;
     }
 }

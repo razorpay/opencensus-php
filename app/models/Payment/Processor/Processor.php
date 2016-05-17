@@ -28,6 +28,7 @@ class Processor
     use Refund;
     use Verify;
     use OtpResend;
+    use Topup;
 
     protected $merchant;
 

@@ -38,6 +38,7 @@ trait Authorize
 
         $this->prePaymentAuthorizeProcessing($payment, $input, $gatewayInput);
 
+        // TODO: Change it to power wallet
         if ($this->canRunOtpPaymentFlow($payment, $input))
         {
             return $this->runOtpPaymentFlow($gatewayInput, $payment);
@@ -188,6 +189,11 @@ trait Authorize
 
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
+
+        if ($payment->customer !== null)
+        {
+            $input['customer'] = $payment->customer->toArray();
+        }
 
         if ($payment->card !== null)
         {

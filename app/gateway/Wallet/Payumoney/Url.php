@@ -10,7 +10,8 @@ class Url
     const REFUND        = '/payment/merchant/refundPayment';
 
     const DEBIT_WALLET  = '/payment/ext/wallet/useWallet';
-    const LOAD_WALLET   = '/payment/ext/wallet/loadWalletPayment';
+    const TOPUP_WALLET  = '/payment/ext/wallet/loadWalletPayment';
+    const TOPUP_REDIRECT= '/payment/payment/extTxn';
 
     const VERIFY        = '/vault/ext/getTransactionStatus';
 

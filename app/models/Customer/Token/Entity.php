@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
     const BANK                  = 'bank';
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
+    const GATEWAY_TOKEN2        = 'gateway_token2';
+    const EXPIRES_AT            = 'expires_at';
 
     protected static $sign      = 'token';
 
@@ -32,6 +34,8 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::TOKEN,
         self::GATEWAY_TOKEN,
+        self::GATEWAY_TOKEN2,
+        self::EXPIRES_AT,
     );
 
     protected $visible = array(
@@ -46,6 +50,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
+        self::GATEWAY_TOKEN2,
+        self::EXPIRES_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
@@ -59,9 +65,11 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::WALLET    => null,
-        self::BANK      => null,
-        self::CARD_ID   => null,
+        self::WALLET         => null,
+        self::BANK           => null,
+        self::CARD_ID        => null,
+        self::GATEWAY_TOKEN2 => null,
+        self::EXPIRES_AT     => null
     );
 
     protected $publicSetters = array(
