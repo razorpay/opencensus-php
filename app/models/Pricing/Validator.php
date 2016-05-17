@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorDescription;
 use Models\Base;
+use Models\Card\Network;
 use Models\Payment;
 
 class Validator extends Base\Validator
@@ -66,7 +67,7 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) and
-            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI) and 
+            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI) and
             ($input[Entity::PAYMENT_METHOD] !== Payment\Method::WALLET))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -75,11 +76,7 @@ class Validator extends Base\Validator
 
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::WALLET)
         {
-            if(!in_array($input[Entity::PAYMENT_NETWORK], array(
-                                                            Payment\Processor\Wallet::PAYTM, 
-                                                            Payment\Processor\Wallet::PAYZAPP, 
-                                                            Payment\Processor\Wallet::PAYUMONEY, 
-                                                            Payment\Processor\Wallet::MOBIKWIK)))
+            if (Wallet::exists($input[Entity::PAYMENT_NETWORK]))
             {
                 throw new Exception\BadRequestValidationFailureException(
                 'Payment network for wallet should be a valid wallet name');
@@ -88,8 +85,10 @@ class Validator extends Base\Validator
 
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
         {
-            if(!in_array($input[Entity::PAYMENT_NETWORK], array(
-                                                            'VISA','MC','DICL','RP','MAES','RUPAY','AMEX')))
+            $network = $input[Entity::PAYMENT_NETWORK];
+
+            if ((Network::isValidNetwork($network) === false) or
+                (Network::isUnsupportedNetwork($network) === true))
             {
                 throw new Exception\BadRequestValidationFailureException(
                 'Payment network for wallet/card should be a valid wallet/card name');

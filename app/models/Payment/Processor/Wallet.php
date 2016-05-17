@@ -8,4 +8,9 @@ class Wallet
     const PAYZAPP   = 'payzapp';
     const MOBIKWIK  = 'mobikwik';
     const PAYUMONEY = 'payumoney';
+
+    public static function exists($wallet)
+    {
+        return defined(get_class().'::'.$wallet);
+    }
 }
