@@ -203,7 +203,7 @@ class MerchantFeeTest extends TestCase
                 'fixed_rate' => 0,
                 'international' => 0,
             ));
-        
+
         $pricingPlanWallet2 = new Pricing\Entity(array(
                 'id' => '1fq0O3dewex3ef',
                 'plan_id' => '1hDYlICobzOCYt',
@@ -243,7 +243,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanAmex,
             $pricingPlanDicl,
             $pricingPlanNetB,
-            $pricingPlanNetB1
+            $pricingPlanNetB1,
             $pricingPlanWallet,
             $pricingPlanWallet1,
             $pricingPlanWallet2,

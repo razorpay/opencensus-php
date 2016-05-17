@@ -43,7 +43,6 @@ class Validator extends Base\Validator
         {
             $fields = array(
                 Entity::PAYMENT_METHOD_TYPE,
-                Entity::PAYMENT_NETWORK,
                 Entity::PAYMENT_ISSUER);
 
             foreach ($fields as $field)
@@ -65,14 +64,6 @@ class Validator extends Base\Validator
             ($input[Entity::PAYMENT_NETWORK] === null))
         {
             return;
-        }
-
-        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) and
-            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI) and
-            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::WALLET))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment network only needs to be passed when payment method is card or emi or wallet');
         }
 
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::WALLET)

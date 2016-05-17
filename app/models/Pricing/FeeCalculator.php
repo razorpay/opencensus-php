@@ -84,6 +84,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForWallet($rules);  
         }
+        elseif ($method === Payment\Method::NETBANKING)
+        {
+            $rule = $this->getRelevantPricingRuleForNB($rules);
+        }
         else
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
@@ -100,11 +104,15 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForMethod($rules)
     {
+        return $this->validateAndGetOnePricingRule($rules);
+
+    }
+
+    protected function getRelevantPricingRuleForNB($rules)
+    {
         // All the rules for the current pricing plan will be put
         // through various filters till the right pricing rule
         // for the current case remains.
-
-        //return $this->validateAndGetOnePricingRule($rules);
 
         $payment = $this->payment;
 
