@@ -124,19 +124,8 @@ class FeeCalculator
             [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
         );
 
-        $otherfilter = array(
-            [Pricing\Entity::PAYMENT_NETWORK, "others", true, null]
-        );
-
-        $others = $this->applyFiltersOnRules($rules, $otherfilter); 
-
         $rules = $this->applyFiltersOnRules($rules, $filter);   
 
-        if(count($rules) < 1)
-        {
-            $rules = $others;
-        }     
-        
         if (count($rules) !== 1)
         {
             throw new Exception\LogicException(

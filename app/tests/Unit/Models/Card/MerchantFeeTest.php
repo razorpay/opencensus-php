@@ -194,7 +194,7 @@ class MerchantFeeTest extends TestCase
                 'plan_name' => 'testDefaultPlan',
                 'payment_method' => 'wallet',
                 'payment_method_type' => null,
-                'payment_network' => "others",
+                'payment_network' => null,
                 'payment_issuer' => null,
                 'amount_range_active' => false,
                 'amount_range_min' => 0,
