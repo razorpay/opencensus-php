@@ -156,6 +156,22 @@ class MerchantFeeTest extends TestCase
                 'international' => 0,
             ));
 
+        $pricingPlanNetB1 = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt4x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 100000,
+                'amount_range_max' => 100000000000,
+                'percent_rate' => 0,
+                'fixed_rate' => 50,
+                'international' => 0,
+            ));
+
         $pricingPlanWallet = new Pricing\Entity(array(
                 'id' => '1fq0O3dewex3df',
                 'plan_id' => '1hDYlICobzOCYt',
@@ -183,22 +199,6 @@ class MerchantFeeTest extends TestCase
                 'amount_range_active' => false,
                 'amount_range_min' => 0,
                 'amount_range_max' => 0,
-                'percent_rate' => 300,
-                'fixed_rate' => 0,
-                'international' => 0,
-            ));
-
-        $pricingPlanNetB1 = new Pricing\Entity(array(
-                'id' => '1fq0OXpgrfrt4x',
-                'plan_id' => '1hDYlICobzOCYt',
-                'plan_name' => 'testDefaultPlan',
-                'payment_method' => 'netbanking',
-                'payment_method_type' => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'amount_range_active' => true,
-                'amount_range_min' => 100000,
-                'amount_range_max' => 100000000000,
                 'percent_rate' => 300,
                 'fixed_rate' => 0,
                 'international' => 0,
