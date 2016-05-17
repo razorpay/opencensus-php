@@ -620,6 +620,7 @@ class Service extends Base\Service
      */
     protected function fixHexColor(array $input)
     {
+
         if (isset($input['brand_color']))
         {
             $color = $input['brand_color'];
@@ -631,9 +632,8 @@ class Service extends Base\Service
             }
 
             $color = strtoupper($color);
+            $input['brand_color'] = $color;
         }
-
-        $input['brand_color'] = $color;
 
         return $input;
     }
