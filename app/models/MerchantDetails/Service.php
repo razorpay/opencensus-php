@@ -140,7 +140,7 @@ class Service extends Base\Service
     public function saveUploadedFile($input)
     {
         $merchantDetails = $this->merchantDetails;
-
+        
         if ($merchantDetails->locked)
         {
             return $this->isLockedError();

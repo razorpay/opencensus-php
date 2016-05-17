@@ -630,9 +630,9 @@ class Service extends Base\Service
             }
 
             $color = strtoupper($color);
-        }
 
-        $input['brand_color'] = $color;
+            $input['brand_color'] = $color;
+        }
 
         return $input;
     }
@@ -641,9 +641,8 @@ class Service extends Base\Service
     {
         $this->setApiCredentials($merchantId);
         $error = $data = null;
-
         $input = $this->fixHexColor($input);
-
+        
         try
         {
             $data = $this->api->merchant->updateConfig($input)->toArray();
