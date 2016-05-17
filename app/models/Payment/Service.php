@@ -41,6 +41,19 @@ class Service extends Base\Service
     }
 
     /**
+     * Resend OTP
+     *
+     * @param  string   $id
+     *
+     * @return Payment\Entity
+     *
+     */
+    public function otpResend($id, $input)
+    {
+        return $this->processor()->otpResend($id, $input);
+    }
+
+    /**
      * Refunds a payment
      *
      * @param  string   $id
@@ -171,11 +184,6 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $payments = (new Payment\Repository)->fetch($input, $merchantId);
-
-        if (empty($payments) === true)
-        {
-            return [];
-        }
 
         return $payments->toArrayPublic();
     }

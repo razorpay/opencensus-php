@@ -91,32 +91,15 @@ class PaymentCreateTest extends TestCase
 
     public function testCreatePaymentInEs()
     {
-        $this->markTestSkipped();
-        
         $mockEs = $this->mockEsClient();
+
+        $testData = $this->testData[__FUNCTION__];
 
         $mockEs->shouldReceive('update')
                ->once()
                ->with(
-                   Mockery::on(function ($data)
+                   Mockery::on(function ($data) use ($testData)
                    {
-                       $testData = array(
-                           'type' => 'payments',
-                           'body' => [
-                               'doc' => [
-                                   'notes' => [
-                                       'merchant_order_id' => 'random order id'
-                                   ],
-                               ],
-                               'upsert' => [
-                                   'merchant_id' => '10000000000000',
-                                   'notes' => [
-                                       'merchant_order_id' => 'random order id'
-                                   ]
-                               ],
-                           ],
-                       );
-
                        $this->assertArraySelectiveEquals($testData, $data);
                        return true;
                    })

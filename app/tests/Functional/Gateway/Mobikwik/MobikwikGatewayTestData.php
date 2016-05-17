@@ -56,6 +56,32 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testPaymentWithOtpAttempts' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'wallet',
+        'status'            => 'captured',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'wallet'            => 'mobikwik',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '9918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'mobikwik',
+        'terminal_id'       => '1000MobiKwikTl',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => 1
+    ],
 
     'testPowerWalletOtpRetryPayment'     => [
         'response'  => [
@@ -72,6 +98,49 @@ return [
             'class'               => 'EE\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ],
+    ],
+
+    'testOtpRetryExceededPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '121212'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        ],
+    ],
+
+    'testOtpResendPayment' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                '_' => [
+                    'source' => 'checkoutjs'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'type' => 'otp',
+                'request' => [
+                    'method' => 'post'
+                ],
+            ],
+            'status_code' => 200,
+        ]
     ],
 
     'testPaymentMobikwikEntity' => [
@@ -114,7 +183,6 @@ return [
         'cell'          => '9918899029',
         'showmobile'    => null,
         'statuscode'    => '0',
-        'statusmessage' => 'Transaction completed Successfully',
 //        'refid',
 //        'ispartial'
         'refund_id'     => null,
@@ -163,6 +231,22 @@ return [
         'exception' => [
             'class'               => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT
+        ],
+    ],
+
+    'testPowerWalletVerifyFailedPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\PaymentVerificationException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],
 

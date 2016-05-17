@@ -22,6 +22,8 @@ class PaymentRetrieveTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/PaymentRetrieveTestData.php';
+
         parent::setUp();
 
         $this->ba->privateAuth();
@@ -270,16 +272,7 @@ class PaymentRetrieveTest extends TestCase
                     }))
                ->andReturn([$paymentId]);
 
-        $testData = [
-            'request' => [
-                'url' => '/payments',
-                'method' => 'get',
-                'content' => ['notes' => 'es_random_1'],
-            ],
-            'response' => [
-                'content' => ['count' => 1],
-            ],
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $response = $this->startTest($testData);
         $this->assertEquals('es_random_1', $response['items'][0]['notes']['order_id']);
@@ -295,42 +288,19 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs->shouldNotReceive('searchNotes');
 
-        $testData = [
-            'request' => [
-                'url' => '/payments',
-                'method' => 'get',
-                'content' => ['notes' => 'es_random_1', 'merchant_id' => '12345678901234'],
-            ],
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class' => 'EE\Exception\ExtraFieldsException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
-            ],
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
     }
 
     public function testSearchEsForNotesOnAdminAuth()
     {
-        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_random_1']]);
-        $paymentIds[] = $payment->getId();
+        $payments = $this->fixtures->times(4)->create('payment:authorized', ['notes'=>['order_id' => 'es_random_1']]);
 
-        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_rand_1']]);
-        $paymentIds[] = $payment->getId();
-
-        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_random_2']]);
-        $paymentIds[] = $payment->getId();
-
-        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id' => 'es_random']]);
-        $paymentIds[] = $payment->getId();
+        foreach ($payments as $payment)
+        {
+            $paymentIds[] = $payment->getId();
+        }
 
         $mockEs = $this->mockEsClient();
 
@@ -364,16 +334,7 @@ class PaymentRetrieveTest extends TestCase
 
         $this->ba->appAuth();
 
-        $testData = [
-            'request' => [
-                'url' => '/admin/payment',
-                'method' => 'get',
-                'content' => ['notes' => 'es'],
-            ],
-            'response' => [
-                'content' => ['count' => 4]
-            ]
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
     }
@@ -382,22 +343,11 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        //$this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
-
         $mockEs = $this->mockEsClient();
 
         $mockEs->shouldNotReceive('searchNotes');
 
-        $testData = [
-            'request' => [
-                'url' => '/payments',
-                'method' => 'get',
-                'content' => [],
-            ],
-            'response' => [
-                'content' => ['count' => 1]
-            ],
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
     }
@@ -415,26 +365,7 @@ class PaymentRetrieveTest extends TestCase
                ->with(Mockery::any())
                ->andReturn(['rand_payment_id']);
 
-        $testData = [
-            'request' => [
-                'url' => '/payments',
-                'method' => 'get',
-                'content' => ['notes' => 'es_random_1'],
-            ],
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code' => PublicErrorCode::SERVER_ERROR,
-                        'description' => PublicErrorDescription::SERVER_ERROR,
-                    ],
-                ],
-                'status_code' => 500,
-            ],
-            'exception' => [
-                'class' => 'EE\Exception\ServerErrorException',
-                'internal_error_code' => ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND
-            ],
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
     }
@@ -449,25 +380,7 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs->shouldNotReceive('searchNotes');
 
-        $testData = [
-            'request' => [
-                'url' => '/payments',
-                'method' => 'get',
-                'content' => ['notes' => 'es_random_1'],
-            ],
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class' => 'EE\Exception\ExtraFieldsException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
-            ],
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
     }
@@ -482,16 +395,7 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs->shouldNotReceive('searchNotes');
 
-        $testData = [
-            'request' => [
-                'url' => '/payments',
-                'method' => 'get',
-                'content' => ['status' => 'authorized'],
-            ],
-            'response' => [
-                'content' => ['count' => 1]
-            ],
-        ];
+        $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
     }

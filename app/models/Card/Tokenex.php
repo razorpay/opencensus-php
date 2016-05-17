@@ -22,7 +22,7 @@ class Tokenex
         }
         catch (\Exception $e)
         {
-            $this->trace->error(
+            $app['trace']->error(
                 TraceCode::TOKENEX_REQUEST,
                 [
                     'vault_token'   => $vaultToken,
@@ -30,7 +30,7 @@ class Tokenex
                 ]
             );
 
-            $this->trace->traceException($e);
+            $app['trace']->traceException($e);
         }
 
         return $cardNumber;
@@ -46,14 +46,14 @@ class Tokenex
         }
         catch (Exception $e)
         {
-            $this->trace->error(
+            $app['trace']->error(
                 TraceCode::TOKENEX_REQUEST,
                 [
                     'message'       => 'Failed to tokenize data'
                 ]
             );
 
-            $this->trace->traceException($e);
+            $app['trace']->traceException($e);
         }
 
         return $token;

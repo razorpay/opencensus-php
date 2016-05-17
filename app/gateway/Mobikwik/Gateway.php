@@ -181,14 +181,30 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (($payment !== null) and
-            ($payment['received'] === false))
+        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
+
+        return $verify->status;
+    }
+
+    protected function saveVerifyContentIfNeeded($payment, $content)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        if ($payment === null)
+        {
+            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+
+            $payment = $this->createGatewayPaymentEntity($walletAttributes);
+        }
+        else if ($payment['received'] === false)
         {
             $payment->fill($content);
             $payment->saveOrFail();
         }
 
-        return $verify->status;
+        $this->action = Action::VERIFY;
+
+        return $payment;
     }
 
     public function refund(array $input)
@@ -302,6 +318,8 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::OTP_SUBMIT);
 
+        $this->verifyOtpAttempts($input['payment']);
+
         $content = array(
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
@@ -321,22 +339,39 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
-        $content = $this->xmlToArray($response->body);
+        $responseArray = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseArray);
 
-        $code = $content['statuscode'];
+        $code = $responseArray['statuscode'];
 
-        if ($content['statuscode'] !== Status::SUCCESS)
+        if ($responseArray['statuscode'] !== Status::SUCCESS)
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 $errorCode,
-                $content['statuscode'],
-                $content['statusdescription']);
+                $responseArray['statuscode'],
+                $responseArray['statusdescription']);
         }
+
+        $content['email'] = $input['payment']['email'];
+        $content['received'] = true;
+
+        if (isset($responseArray['statuscode']))
+        {
+            $content['statuscode'] = $responseArray['statuscode'];
+        }
+
+        if (isset($responseArray['statusdescription']))
+        {
+            $content['statusmessage'] = $responseArray['statusdescription'];
+        }
+
+        $this->action = Action::AUTHORIZE;
+
+        $this->createGatewayPaymentEntity($content);
     }
 
     protected function getRefundRequestContentArray($input)
@@ -631,6 +666,32 @@ class Gateway extends Base\Gateway
         }
 
         return (array) $res;
+    }
+
+
+    protected function getWalletContentFromVerify($payment, array $content)
+    {
+        $contentToSave = array(
+            'mid'      => $this->getMobikwikMerchantId($this->input['terminal']),
+            'amount'   => (string) ($this->input['payment']['amount'] / 100),
+            'email'    => $this->input['payment']['email'],
+            'cell'     => $this->getFormattedContact($this->input['payment']['contact']),
+            'msgcode'  => MessageCode::OTP_SUBMIT,
+            'orderid'  => $this->input['payment']['id'],
+            'received' => true
+        );
+
+        if (isset($content['statuscode']))
+        {
+            $contentToSave['statuscode'] = $content['statuscode'];
+        }
+
+        if (isset($responseArray['statusmessage']))
+        {
+            $contentToSave['statusmessage'] = $content['statusmessage'];
+        }
+
+        return $contentToSave;
     }
 
     protected function getFormattedContact($contact)

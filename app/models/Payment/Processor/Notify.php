@@ -4,13 +4,11 @@ namespace Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
-use Config;
 use Constants\Mode;
 use Mail;
 use Models\Payment;
 use Services\SlackPoster;
 use Trace\TraceCode;
-use Constants\Table;
 
 class Notify
 {
@@ -92,6 +90,7 @@ class Notify
     protected $payment;
     protected $refund;
     protected $mode;
+    protected $trace;
 
     /**
      * Creates a new Notify instance
@@ -312,13 +311,6 @@ class Notify
          */
         try
         {
-            if ($event === self::AUTHORIZED)
-            {
-                // Store the payment in ES
-                // Uncomment later
-                // $this->storeInEs(Table::PAYMENT, $this->payment);
-            }
-
             // Send out notification for Slack
             $this->notifyViaSlack($event);
 
@@ -338,19 +330,6 @@ class Notify
             );
 
             $this->trace->traceException($e);
-        }
-    }
-
-    protected function storeInEs($entityType, $entity)
-    {
-        $esEntities = [Table::PAYMENT => 'Payments\\EsRepository'];
-
-        if (array_key_exists($entityType, $esEntities) === true)
-        {
-            $esRepo = new $esEntities[$entityType];
-
-            // Saving the entity in ES.
-            $esRepo->storeEntity($esRepo->getEsType(), $entity);
         }
     }
 
