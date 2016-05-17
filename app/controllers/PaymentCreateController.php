@@ -164,16 +164,11 @@ class PaymentCreateController extends BaseController
     {
         $input = Input::all();
 
-        // Just a hack to get around mobikwik normal flow
-        $input['_']['source'] = 's2s';
-        $input['method'] = 'wallet';
-        $input['wallet'] = $wallet;
+        $data = $this->payment->processWallet($input, $wallet);
 
-        $data = $this->payment->processWallet($input);
-
-        if (isset($data['request']))
+        if (isset($data['request']) or isset($data['error']))
         {
-            if ($data['type'] === 'otp')
+            if (isset($data['request']))
             {
                 $data = [
                     'request' => [
@@ -182,9 +177,12 @@ class PaymentCreateController extends BaseController
                     ]
                 ];
             }
+
+            return ApiResponse::json($data);
         }
 
-        return ApiResponse::json($data);
+        new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
     }
 
     /**
@@ -236,6 +234,7 @@ class PaymentCreateController extends BaseController
     {
         $input = Input::all();
 
+        // Type should be OTP since it's an OTP callback
         $input['type'] = 'otp';
 
         $data = $this->payment->callback($id, $hash, $input);
