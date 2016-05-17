@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         Entity::PLAN_NAME           => 'sometimes|',
         Entity::PAYMENT_METHOD      => 'required|alpha|in:card,netbanking,wallet,emi',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'sometimes_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY,AMEX',
+        Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
@@ -66,10 +66,34 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD ) and
-            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI))
+            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::EMI) and 
+            ($input[Entity::PAYMENT_METHOD] !== Payment\Method::WALLET))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment network only needs to be passed when payment method is card or emi');
+                'Payment network only needs to be passed when payment method is card or emi or wallet');
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::WALLET)
+        {
+            if(!in_array($input[Entity::PAYMENT_NETWORK], array(
+                                                            Payment\Processor\Wallet::PAYTM, 
+                                                            Payment\Processor\Wallet::PAYZAPP, 
+                                                            Payment\Processor\Wallet::PAYUMONEY, 
+                                                            Payment\Processor\Wallet::MOBIKWIK)))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                'Payment network for wallet should be a valid wallet name');
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
+        {
+            if(!in_array($input[Entity::PAYMENT_NETWORK], array(
+                                                            'VISA','MC','DICL','RP','MAES','RUPAY','AMEX')))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                'Payment network for wallet/card should be a valid wallet/card name');
+            }
         }
     }
 
