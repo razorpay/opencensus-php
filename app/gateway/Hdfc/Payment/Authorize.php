@@ -99,7 +99,8 @@ trait Authorize
 
         if ($this->model->status !== Status::ENROLLED)
         {
-            throw new Exception\InvalidArgumentException('Gateway Exception: Status not valid');
+            throw new Exception\InvalidArgumentException(
+                'Gateway Exception: Status not valid. Status: ' . $this->model->status);
         }
 
         $this->trace(

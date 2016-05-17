@@ -218,6 +218,8 @@ trait Authorize
 
     protected function processPaymentException($e)
     {
+        $payment = $this->payment;
+
         $code = $e->getError()->getInternalErrorCode();
 
         if (Error\Error::hasAction($code) === false)
@@ -225,6 +227,14 @@ trait Authorize
             $this->updatePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_AUTH_FAILURE);
+        }
+
+        switch ($code)
+        {
+            case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
+                $payment->incrementOtpAttempts();
+                $payment->saveOrFail();
+                break;
         }
 
         throw $e;
@@ -768,6 +778,9 @@ trait Authorize
             $this->callGatewayFunction('checkExistingUser', $data);
 
             $this->callGatewayFunction('otpGenerate', $data);
+
+            $payment->incrementOtpCount();
+            $payment->save();
 
             return array(
                 'type' => 'otp',

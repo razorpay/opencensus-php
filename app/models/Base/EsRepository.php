@@ -4,17 +4,27 @@ namespace Models\Base;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Trace\TraceCode;
+use App;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
     protected $esDao;
     protected $indexName;
 
+    protected $trace;
+
+    const MAX_JOB_ATTEMPTS = 10;
+    // This is in seconds
+    const JOB_RELEASE_WAIT = 120;
+
     public function __construct()
     {
         parent::__construct();
 
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
 
         $this->indexName = $app['config']->get('database.es_index');
 
@@ -25,7 +35,7 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
         $params['merchant_id'] = $merchantId;
 
-        $entities = [];
+        $entities = new PublicCollection;
 
         // Returns all the entity IDs matching the notes search.
         $entityIds = $this->esDao->getNotes($typeName, $params);
@@ -34,7 +44,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             // Get the entity data from MySQL.
             $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
-            
+
             // MySQL should contain all entities present in ES.
             if ($entities->count() !== count($entityIds))
             {
@@ -48,16 +58,68 @@ class EsRepository extends \Razorpay\Spine\Repository
     }
 
     // Currently storing only notes and merchant ID.
-    public function storeEntity($typeName, $entity)
+    public function storeEntity($typeName, $entityArray, $esDao = null)
     {
-        $entityId = $entity->getId();
-        $merchantId = $entity->getMerchantId();
-        $notes = $entity->getNotes();
+        $params['notes'] = $entityArray['notes'];
+        $params['merchant_id'] = $entityArray['merchant_id'];
+        $params['entity_id'] = $entityArray['id'];
 
-        $params['notes'] = $notes;
-        $params['merchant_id'] = $merchantId;
-        $params['entity_id'] = $entityId;
+        if ($esDao === null)
+        {
+            $esDao = $this->esDao;
+        }
 
-        $this->esDao->storeNotes($typeName, $params);
+        $esDao->storeNotes($typeName, $params);
+    }
+
+
+    // Called through queue
+    // Called through the entity repository
+    public function fireStoreEntity($job, $data)
+    {
+        $esType = $data['es_type'];
+        $entityArray = $data['entity'];
+        $mode = $data['mode'];
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::ES_SAVE_REQUEST,
+                [
+                    $data,
+                ]
+            );
+
+            // Creating a new EsDao object because,
+            // in the queue flow, the mode needs to be passed
+            // to the constructor.
+            $esDao = new EsDao($mode);
+            // Calls the entity es repository
+            $this->storeEntity($esType, $entityArray, $esDao);
+
+            $job->delete();
+        }
+        catch (\Exception $ex)
+        {
+            $data['job_attempts'] = $job->attempts();
+
+            $this->trace->error(
+                TraceCode::ES_SAVE_FAILED,
+                [
+                    $data
+                ]
+            );
+
+            $this->trace->traceException($ex);
+
+            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
+            {
+                $job->delete();
+            }
+            else
+            {
+                $job->release(self::JOB_RELEASE_WAIT);
+            }
+        }
     }
 }

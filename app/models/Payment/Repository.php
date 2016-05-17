@@ -52,17 +52,6 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
-    public function fetchAllWithLimit($skip, $count)
-    {
-        $repo = $this->repo;
-
-        return $repo::select('id', 'notes', 'merchant_id', 'created_at')
-                    ->orderBy('id', 'desc')
-                    ->skip($skip)
-                    ->take($count)
-                    ->get();
-    }
-
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
         $repo = $this->repo;

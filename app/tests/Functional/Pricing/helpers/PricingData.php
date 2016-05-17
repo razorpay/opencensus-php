@@ -97,6 +97,27 @@ return [
         ],
     ],
 
+    'testAddPricingPlanWalletRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'wallet',
+                'payment_network' => 'paytm',
+                'percent_rate' => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'paytm',
+                'payment_issuer' => null,
+                'percent_rate' => 1000
+            ],
+        ],
+    ],
+
     'testAddDuplicatePricingPlanRule' => [
         'request' => [
             'method' => 'POST',

@@ -118,11 +118,6 @@ class Service extends Base\Service
     {
         $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
         
-        if (empty($refunds) === true)
-        {
-            return [];
-        }
-
         return $refunds->toArrayPublic();
     }
 

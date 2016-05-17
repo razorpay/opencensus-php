@@ -157,15 +157,35 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($content['status'] === Status::SUCCESS)
-        {
-            $wallet = $this->getWalletContentFromVerify($payment, $content);
-
-            $payment->fill($wallet);
-            $payment->saveOrFail();
-        }
+        $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
 
         return $verify->status;
+    }
+
+    protected function saveVerifyContentIfNeeded($payment, $response)
+    {
+        $content = $response['result'][0];
+
+        $this->action = Action::AUTHORIZE;
+
+        if (isset($content['status']) and $content['status'] === Status::VERIFY_SUCCESS)
+        {
+            $walletAttributes = $this->getWalletContentFromVerify($payment, $content);
+
+            if ($payment === null)
+            {
+                $payment = $this->createGatewayPaymentEntity($walletAttributes);
+            }
+            else if ($payment['received'] === false)
+            {
+                $payment->fill($walletAttributes);
+                $payment->saveOrFail();
+            }
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $payment;
     }
 
     public function refund(array $input)
@@ -214,9 +234,16 @@ class Gateway extends Base\Gateway
 
         if ($code !== Status::SUCCESS)
         {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+            if (isset($content['errorCode']))
+            {
+                $errorCode = ResponseCodeMap::getApiErrorCode($content['errorCode']);
+            }
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $errorCode,
                 $content['status'],
                 $content['message']);
         }
@@ -225,6 +252,8 @@ class Gateway extends Base\Gateway
     public function callbackOtpSubmit($input)
     {
         $this->action($input, Action::OTP_SUBMIT);
+
+        $this->verifyOtpAttempts($input['payment']);
 
         $request = $this->getOtpSubmitRequestArray($input);
 
@@ -590,28 +619,23 @@ class Gateway extends Base\Gateway
         return strtolower(hash('sha512', $str, false));
     }
 
-    protected function getWalletContentFromVerify($payment, array $response)
+    protected function getWalletContentFromVerify($payment, array $content)
     {
-        $content = $response['result'][0];
-
-        $status = $content['status'] === 'success' ? Status::SUCCESS : Status::FAILURE;
-
-        $wallet = array(
-            'gateway_payment_id'    => $content['paymentId'],
-            'status'                => $status
+        $contentToSave = array(
+            'key'                   => $this->getMerchantId($this->input['terminal']),
+            'email'                 => $this->input['payment']['email'],
+            'mobile'                => $this->getFormattedContact($this->input['payment']['contact']),
+            'status'                => Status::SUCCESS,
+            'txnId'                 => $content['paymentId'],
+            'received'              => true
         );
-
-        if (isset($payment['payment_id']) === false)
-        {
-            $wallet['payment_id'] = $content['merchantTransactionId'];
-        }
 
         if (isset($payment['amount']) === false)
         {
-            $wallet['amount'] = $content['amount'];
+            $contentToSave['amount'] = $this->input['payment']['amount'];
         }
 
-        return $wallet;
+        return $contentToSave;
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
