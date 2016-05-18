@@ -8,7 +8,7 @@ use GuzzleHttp\Client as Guzzle;
 use Config;
 use Input;
 
-use Razorpay\Api\Request as ApiRequest;
+use Razorpay\Api\Entity as ApiEntity;
 use Razorpay\Api\Errors as RZPErrors;
 
 // This is the default class we use for making requests
@@ -214,49 +214,91 @@ class Merchant extends Entity
     // This is on proxy auth, doesn't take merchant ID
     public function updateConfig($input)
     {
+        // If logo needs to be updated, use this block.
         if (isset($input['logo']) === true)
         {
+            // Makes a guzzle file request
+            $response = $this->makeGuzzleFileRequest($input);
 
-            // $file = $input['logo'];
-            //
-            // // Now that we have added all POST params, we add the file itself
-            // // This contains the field name to be used for the file field
-            // $fileFieldName = 'logo';
-            // // This contains the original file name with extension
-            // $fileName = $file->getClientOriginalName();
-            //
-            // // This is as per guzzle 5, will need to get changed for 6
-            // $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
-            //
-            // $input[$fileFieldName] = $postFile;
-            //
-            // $client = new Guzzle([
-            //     'base_url' => Config::get('api.url'),
-            //     // We already have a few headers initialized for this class
-            //     // including the X-Dashboard and Razorpay-API Header
-            //     'headers'   =>  ApiRequest::getHeaders() + [
-            //             'X-Dashboard' => 'true',
-            //             'User-Agent'  => 'Razorpay-PHP/guzzle6'
-            //         ]
-            // ]);
-            //
-            // $response = $client->post(self::CONFIG_LOGO_URL, $input)->json();
+            // Builds an entity from the response received
+            $response = ApiEntity::buildEntity($response);
 
-            $path = 'account/config/logo';
-
-            $input['file_name'] = 'logo';
-
-            $input['auth'] = 'proxy';
-
-            $input['method'] = 'post';
-
-            $request = new Admin\RawApiRequest($input, $path);
-
-            return $request->send();
-
-            return $this->request('POST', self::CONFIG_LOGO_URL, $input);
+            return $response;
         }
 
         return $this->request('PUT', self::CONFIG_URL, $input);
+    }
+
+    public function makeGuzzleFileRequest($input)
+    {
+        // Creates a new Guzzle client
+        $client = new Guzzle(['base_url' => Config::get('api.url')]);
+
+        // Sets the options for the request. Auth should be part of this.
+        $options['auth'] = $this->setApiCredentials($input['merchant_id']);
+
+        // Creates a request instance
+        $request = $client->createRequest("POST", self::CONFIG_LOGO_URL, $options);
+
+        // Creates an object to insert post body data
+        $postBody = $request->getBody();
+
+        $file = $input['logo'];
+
+        $fileDetails = $this->moveAndGetFileDetails($file);
+
+        $filePath = $fileDetails['file_path'];
+
+        $postFile = new PostFile('logo', fopen($filePath, 'r'));
+
+        // Inserts file into the post body data
+        $postBody->addFile($postFile);
+
+        // json() gets the response body
+        $response = $client->send($request)->json();
+
+        $this->deleteFileLocally($fileDetails);
+
+        return $response;
+    }
+
+    protected function moveAndGetFileDetails($file)
+    {
+        $fileDetails = [
+            'destination_path' => storage_path('files/logos'),
+            'file_name' => $file->getFilename() . '.' . $file->getClientOriginalExtension(),
+        ];
+
+        $fileDetails['file_path'] = $fileDetails['destination_path'] . '/' . $fileDetails['file_name'];
+
+        $file->move($fileDetails['destination_path'], $fileDetails['file_name']);
+
+        return $fileDetails;
+    }
+
+    public function deleteFileLocally($fileDetails)
+    {
+        $filePath = $fileDetails['file_path'];
+
+        if (file_exists($filePath))
+        {
+            $success = unlink($filePath);
+
+            if ($success === false)
+            {
+                // TODO: What do we do?
+            }
+        }
+    }
+
+    protected function setApiCredentials($merchantId)
+    {
+        $mode = 'live';
+
+        $id = 'rzp_' . $mode . '_' . $merchantId;
+
+        $secret = Config::get('api.auth_pass');
+
+        return [$id, $secret];
     }
 }
