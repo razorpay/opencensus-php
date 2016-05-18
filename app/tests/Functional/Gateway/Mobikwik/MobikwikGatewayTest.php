@@ -171,6 +171,26 @@ class MobikwikGatewayTest extends TestCase
         $this->assertSame($payment['otp_count'], 2);
     }
 
+    public function testInsufficientBalancePayment()
+    {
+        $this->type = 'otp';
+        $this->step = 'TOPUP';
+
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment) {
+            return $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+        $this->type = null;
+
+        return $response;
+    }
+
     public function testVerifyPayment()
     {
         $this->payment = $this->doAuthAndCapturePayment($this->payment);

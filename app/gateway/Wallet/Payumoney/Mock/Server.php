@@ -96,7 +96,7 @@ class Server extends Base\Mock\Server
 
         $url .= '?' . http_build_query($content);
 
-        return Redirect::to($url);
+        return \Redirect::to($url);
     }
 
     public function verify($input)

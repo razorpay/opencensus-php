@@ -144,6 +144,15 @@ class Server extends Base\Mock\Server
             'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
         );
 
+        if ($input['otp'] === '131313')
+        {
+            $content = array(
+                'status'            => 'FAILURE',
+                'statuscode'        => '33',
+                'statusdescription' => Mobikwik\ResponseCode::getResponseMessage('33')
+            );
+        }
+
         if ($input['otp'] === '121212')
         {
             $content = array(
