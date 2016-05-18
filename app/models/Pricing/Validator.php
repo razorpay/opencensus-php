@@ -80,7 +80,7 @@ class Validator extends Base\Validator
             if (Wallet::exists($input[Entity::PAYMENT_NETWORK]))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                'Payment network for wallet should be a valid wallet name');
+                    'Payment network for wallet should be a valid wallet name');
             }
         }
 
@@ -88,11 +88,16 @@ class Validator extends Base\Validator
         {
             $network = $input[Entity::PAYMENT_NETWORK];
 
-            if ((Network::isValidNetwork($network) === false) or
-                (Network::isUnsupportedNetwork($network) === true))
+            if (Network::isValidNetwork($network) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                'Payment network for wallet/card should be a valid wallet/card name');
+                    'Payment network for card should be a valid card name');
+            }
+
+            if (Network::isUnsupportedNetwork($network) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'This card payment network is not supported');
             }
         }
     }
