@@ -515,5 +515,69 @@ return [
                 'error_description' => null,
             ],
         ]
+    ],
+
+    'testPaymentViaWalletS2SWoAuth' =>[
+        'request' => [
+            'url' => '/payments/create/wallet/payumoney',
+            'method' => 'POST',
+            'content' => [
+                'amount'    => 10000,
+                'currency'  => 'INR',
+                'contact'   => '9999999999',
+                'email'     => 'a@b.com'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED,
+                ],
+            ],
+            'status_code' => 401,
+        ]
+    ],
+
+    'testPayumoneyPaymentViaWalletS2S' =>[
+        'request' => [
+            'url' => '/payments/create/wallet/payumoney',
+            'method' => 'POST',
+            'content' => [
+                'amount'    => 10000,
+                'currency'  => 'INR',
+                'contact'   => '9999999999',
+                'email'     => 'a@b.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'request' => [
+                    'method'    => 'post'
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testMobikwikPaymentViaWalletS2S' =>[
+        'request' => [
+            'url' => '/payments/create/wallet/mobikwik',
+            'method' => 'POST',
+            'content' => [
+                'amount'    => 10000,
+                'currency'  => 'INR',
+                'contact'   => '9999999999',
+                'email'     => 'a@b.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'request' => [
+                    'method'    => 'post'
+                ]
+            ],
+            'status_code' => 200,
+        ]
     ]
 ];
