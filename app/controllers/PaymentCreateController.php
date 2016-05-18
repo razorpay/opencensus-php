@@ -166,23 +166,19 @@ class PaymentCreateController extends BaseController
 
         $data = $this->payment->processWallet($input, $wallet);
 
-        if (isset($data['request']) or isset($data['error']))
+        if (isset($data['request']))
         {
-            if (isset($data['request']))
-            {
-                $data = [
-                    'request' => [
-                        'url'       => $data['request']['url'],
-                        'method'    => $data['request']['method']
-                    ]
-                ];
-            }
+            $data = [
+                'request' => [
+                    'url'       => $data['request']['url'],
+                    'method'    => $data['request']['method']
+                ]
+            ];
 
             return ApiResponse::json($data);
         }
 
-        new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        assert(false, 'Shouldn\'t reach here');
     }
 
     /**
