@@ -77,7 +77,7 @@ class Validator extends Base\Validator
 
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::WALLET)
         {
-            if (Wallet::exists($input[Entity::PAYMENT_NETWORK]))
+            if (Wallet::exists($input[Entity::PAYMENT_NETWORK]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment network for wallet should be a valid wallet name');
