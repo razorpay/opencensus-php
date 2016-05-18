@@ -755,13 +755,16 @@ trait Authorize
         }
     }
 
+    /**
+     * Do we support the OTP flow for a given payment
+     * and input combination
+     * @param  Payment\Entity $payment
+     * @param  array $input
+     * @return boolean
+     */
     protected function canRunOtpPaymentFlow($payment, $input)
     {
-        return ($payment->getMethod() === Method::WALLET and
-                    (((isset($input['_']['source'])) and
-                        ($input['_']['source'] === 'checkoutjs') and
-                        ($payment->getWallet() === Wallet::MOBIKWIK)) or
-                    $payment->getWallet() === Wallet::PAYUMONEY));
+        return $this->callGatewayFunction('canRunOtpFlow', $input);
     }
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)

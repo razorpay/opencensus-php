@@ -160,7 +160,10 @@ class Gateway
         $this->input = $input;
     }
 
-    public function canRunOtpFlow()
+    /**
+     * @param  array  $input
+     */
+    public function canRunOtpFlow(array $input = [])
     {
         return $this->canRunOtpFlow;
     }
