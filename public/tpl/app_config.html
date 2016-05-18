@@ -29,13 +29,13 @@
         </div>
         <!--Upload logo image file 2-->
         <div class="form-group">
-          <label class="col-sm-2 control-label">Logo Image File 2 <a href ng-click="isLogoHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
+          <label class="col-sm-2 control-label">Logo Image</label>
           <div class="col-sm-10">
-            <span class="help-block" ng-show="isLogoHelpOpen">
-                Upload scan of following:
-              <li>Sales Tax/Service Tax or Shop Act Registration (Mandatory, if Partnership/Proprietership firm)</li>
-              <li>Certificate of Incorporation (Mandatory if private limited)</li>
-              <li>Trust/Society/NGO etc. registration proof</li>
+            <span class="help-block m-b-none">
+              <li>Max image size - 1MB</li>
+              <li>Image should be square (width = height) </li>
+              <li>Minimum image dimensions - 256*256</li>
+              <li>Image types should be either jpg, jpeg or png only</li><br>
             </span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="logo" ng-file-select="onFileSelect($files, 'logo')">
           </div>

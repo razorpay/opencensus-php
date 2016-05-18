@@ -208,16 +208,23 @@ class Merchant extends Entity
         // If logo needs to be updated, use this block.
         if (isset($input['logo']) === true)
         {
-            // Makes a guzzle file request
-            $response = $this->makeGuzzleFileRequest($input);
-
-            // Builds an entity from the response received
-            $response = ApiEntity::buildEntity($response);
+            $response = updateLogo($input);
 
             return $response;
         }
 
         return $this->request('PUT', self::CONFIG_URL, $input);
+    }
+
+    protected function updateLogo($input)
+    {
+        // Makes a guzzle file request
+        $response = $this->makeGuzzleFileRequest($input);
+
+        // Builds an entity from the response received
+        $response = ApiEntity::buildEntity($response);
+
+        return $response;
     }
 
     public function makeGuzzleFileRequest($input)
