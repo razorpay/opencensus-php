@@ -208,7 +208,7 @@ class Merchant extends Entity
         // If logo needs to be updated, use this block.
         if (isset($input['logo']) === true)
         {
-            $response = updateLogo($input);
+            $response = $this->updateLogo($input);
 
             return $response;
         }
