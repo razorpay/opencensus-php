@@ -12,7 +12,7 @@ app.controller('ConfigCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.config = {};
-    
+
     $scope.showColorPicker = false;
 
     $scope.onFileSelect = saveFile;
@@ -53,8 +53,7 @@ app.controller('ConfigCtrl', [
     $scope.save = function(config) {
       var data = {
         brand_color: config.brand_color ? config.brand_color.substr(1).toUpperCase() : null,
-        transaction_report_email: config.transaction_report_email ? config.transaction_report_email.split(',') : null,
-        logo: config.logo ? config.logo : null
+        transaction_report_email: config.transaction_report_email ? config.transaction_report_email.split(',') : null
       }
       var request = $http({
         "method": 'PUT',

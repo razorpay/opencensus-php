@@ -256,9 +256,8 @@ class MerchantController extends BaseController
     {
         $merchantId = Auth::user()->user()->getCurrentMerchantId();
         $input = Input::all();
-        
+
         $input['merchant_id'] = $merchantId;
-        $input['mode'] = 'live';
 
         list($error, $data) = (new Merchant\Service)->updateMerchantConfig($merchantId, $input);
 

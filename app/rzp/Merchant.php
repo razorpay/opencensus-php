@@ -6,17 +6,7 @@ use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 
 use Config;
-use Input;
-
 use Razorpay\Api\Entity as ApiEntity;
-use Razorpay\Api\Errors as RZPErrors;
-
-// This is the default class we use for making requests
-use RZP\Api as Api;
-
-use Request;
-
-use Models\Admin;
 
 class Merchant extends Entity
 {

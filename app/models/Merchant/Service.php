@@ -643,6 +643,7 @@ class Service extends Base\Service
     {
         $this->setApiCredentials($merchantId);
         $error = $data = null;
+
         $input = $this->fixHexColor($input);
 
         try
