@@ -23,6 +23,7 @@ class Merchant extends Entity
     const CONFIG_URL = 'account/config';
     const CONFIG_LOGO_URL = 'account/config/logo';
     const SUBMERCHANT_CREATE_URL = 'submerchants';
+    const BANK_ACCOUNT_URL = 'account/bank_account';
 
     public function create($params = null)
     {
@@ -300,5 +301,10 @@ class Merchant extends Entity
         $secret = Config::get('api.auth_pass');
 
         return [$id, $secret];
+    }
+
+    public function fetchProxyBankAccount()
+    {
+        return $this->request('GET', self::BANK_ACCOUNT_URL);
     }
 }

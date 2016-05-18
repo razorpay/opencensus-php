@@ -279,4 +279,12 @@ class MerchantController extends BaseController
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function getBankAccount()
+    {
+        list($error, $data) = (new Merchant\Service)
+            ->fetchBankAccount();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

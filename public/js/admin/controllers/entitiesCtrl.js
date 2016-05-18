@@ -251,11 +251,12 @@ app.controller('EntitiesCtrl', [
           'null',
           0,
           1,
-          2,
+          2
         ],
         wallet: walletList,
         iin: ['Card IIN'],
         last4: ['Card Last 4'],
+        notes: ['Notes'],
         international: ['International']
       },
       paytm: {

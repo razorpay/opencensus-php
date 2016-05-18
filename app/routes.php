@@ -32,24 +32,32 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
     Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds');
+
     Route::get('/{mode}/refunds', 'TransactionController@getRefunds');
     Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund');
+
     Route::get('/{mode}/settlements', 'TransactionController@getSettlements');
     Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement');
+
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
     Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
+
     Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
     Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
+
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
     Route::get('/keys/csv', 'MerchantController@getCsv');
     Route::get('/apihost', 'MerchantController@getApihost');
+
     Route::get('/config', 'MerchantController@getMerchantConfig');
     Route::put('/config', 'MerchantController@putMerchantConfig');
     Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo');
+
     Route::get('/referrals', 'MerchantController@getReferredMerchants');
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
     Route::get('/{mode}/balance', 'MerchantController@getBalance');
+    Route::get('/bank_account', 'MerchantController@getBankAccount');
 
     // Invitation and Team Support
     Route::get('settings/merchants/owned', 'UserController@getOwnedMerchantForUser');

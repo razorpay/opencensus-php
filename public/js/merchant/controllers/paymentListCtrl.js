@@ -6,8 +6,13 @@ app.controller('PaymentListCtrl', [
   'alertsFactory',
   '$state',
   'statusClass',
-  function ($scope, $http, alertsFactory, $state, getStatusClass) {
+  'user',
+  function ($scope, $http, alertsFactory, $state, getStatusClass, user) {
     $scope.getStatusClass = getStatusClass;
+
+    user.identity().then(function (data) {
+      $scope.user = data;
+    });
 
     // This stores the orderIds, since we can't maintain that
     // inside items itself

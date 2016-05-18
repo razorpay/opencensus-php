@@ -12,6 +12,7 @@ app.controller('ConfigCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.config = {};
+    
     $scope.showColorPicker = false;
 
     $scope.onFileSelect = saveFile;

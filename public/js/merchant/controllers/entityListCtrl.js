@@ -25,7 +25,8 @@ app.controller('EntityListCtrl', [
       status: 'all',
       contact: '',
       email: '',
-      amount: ''
+      amount: '',
+      notes: ''
     };
 
     $scope.generate = function (entity) {
