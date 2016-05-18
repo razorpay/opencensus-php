@@ -273,7 +273,7 @@ class AuthorizeTest extends TestCase
     public function testPaymentViaWalletS2SWoAuth()
     {
         // No Auth
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testPayumoneyPaymentViaWalletS2S()
@@ -285,6 +285,8 @@ class AuthorizeTest extends TestCase
         $this->ba->privateAuth();
 
         $content = $this->startTest();
+
+        $this->assertArrayHasKey('url', $content['request']);
     }
 
     public function testMobikwikPaymentViaWalletS2S()
@@ -296,6 +298,8 @@ class AuthorizeTest extends TestCase
         $this->ba->privateAuth();
 
         $content = $this->startTest();
+
+        $this->assertArrayHasKey('url', $content['request']);
     }
 
     public function startTest($testDataToReplace = [])

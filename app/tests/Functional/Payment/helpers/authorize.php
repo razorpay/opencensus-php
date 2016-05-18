@@ -544,10 +544,14 @@ return [
             'url' => '/payments/create/wallet/payumoney',
             'method' => 'POST',
             'content' => [
-                'amount'    => 10000,
-                'currency'  => 'INR',
-                'contact'   => '9999999999',
-                'email'     => 'a@b.com'
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ]
             ],
         ],
         'response' => [
