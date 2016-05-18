@@ -9,9 +9,12 @@ use Models\Pricing;
 use Models\Terminal;
 use Trace\TraceCode;
 use EE\Exception;
+use Services\SlackPoster;
 
 class Core extends Base\Core
 {
+    use SlackPoster;
+
     public function __construct()
     {
         parent::__construct();
@@ -74,7 +77,14 @@ class Core extends Base\Core
     {
         $merchant->edit($input);
 
+        $data = $this->getEditedMerchantDifference($merchant);
+
         $this->repo->saveOrFail($merchant);
+
+        if (empty($data) === false)
+        {
+            $this->postToSlack($merchant, $data);
+        }
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -134,5 +144,39 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchant);
 
         return $merchant;
+    }
+
+    protected function postToSlack($merchant, $data)
+    {
+        $message = $this->getMerchantDashboardSlackText($merchant);
+
+        $this->slackPost($message, $data, ['channel' => '#operations_log']);
+    }
+
+    protected function getEditedMerchantDifference($merchant)
+    {
+        $dirtyAttributes    = $merchant->getDirty();
+
+        $originalAttributes = array_intersect_key($merchant->getOriginal(), $dirtyAttributes);
+
+        $data = array();
+
+        foreach ($originalAttributes as $key => $value)
+        {
+            $data[$key] = $value;
+            $data['Updated '.$key] = $dirtyAttributes[$key];
+        }
+
+        return $data;
+    }
+
+    protected function getMerchantDashboardSlackText($merchant)
+    {
+        $id = $merchant->id;
+        $link = "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
+
+        $label = $merchant->getBillingLabel();
+
+        return "<$link|$label> ($id)";
     }
 }
