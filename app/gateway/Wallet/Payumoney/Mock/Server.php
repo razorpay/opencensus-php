@@ -216,6 +216,7 @@ class Server extends Base\Mock\Server
             )
         );
 
+        // OTP 123456 is for expired verification code.
         if ($input['otp'] === '123456')
         {
             $response = array(
@@ -228,6 +229,7 @@ class Server extends Base\Mock\Server
             );
         }
 
+        // OTP 121212 is for incorrect verification code
         if ($input['otp'] === '121212')
         {
             $response = array(

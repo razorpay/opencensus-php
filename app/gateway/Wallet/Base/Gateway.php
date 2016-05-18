@@ -6,8 +6,6 @@ use Gateway\Wallet;
 
 class Gateway extends \Gateway\Base\Gateway
 {
-    protected $wallet = null;
-
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);

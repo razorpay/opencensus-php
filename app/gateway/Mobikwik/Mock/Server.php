@@ -144,6 +144,7 @@ class Server extends Base\Mock\Server
             'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
         );
 
+        // OTP 131313 is for insufficient balance
         if ($input['otp'] === '131313')
         {
             $content = array(
@@ -153,6 +154,7 @@ class Server extends Base\Mock\Server
             );
         }
 
+        // OTP 121212 is for incorrect OTP
         if ($input['otp'] === '121212')
         {
             $content = array(
