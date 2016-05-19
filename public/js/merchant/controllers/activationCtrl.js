@@ -141,9 +141,7 @@ app.controller('ActivationCtrl', [
           }
         }
       });
-      request.progress(function (evt) {
-        console.log('percent: ' + parseInt(100 * evt.loaded / evt.total));
-      }).success(function (data, status, headers, config) {
+      request.success(function (data, status, headers, config) {
         if (data.success) {
           $scope.fileAlerts[fieldname].addAlert('success', 'File Uploaded Successfully', true);
         } else {
