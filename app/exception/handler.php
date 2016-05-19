@@ -57,14 +57,17 @@ class Handler
 
     public function PHP7ExceptionHandler(\Throwable $e, $code)
     {
-        if ($this->debug === false)
+        $data = [
+            'success' => false,
+            'errors'  => [self::PHP7_500_ERROR]
+        ];
+
+        if ($this->debug === true)
         {
-            return Response::json(array('success' => false, 'errors' => [self::PHP7_500_ERROR]));
+            $data['details'] = $this->getExceptionDetails($e);
         }
-        else
-        {
-            sd($e);
-        }
+
+        return Response::json($data);
     }
 
     public function genericExceptionHandler(\Exception $exception, $code)
@@ -76,15 +79,17 @@ class Handler
         else
         {
             $this->traceException($exception);
+            $data = [
+                'success' => false,
+                'errors'  => [self::PHP7_500_ERROR]
+            ];
 
-            if ($this->debug === false)
+            if ($this->debug === true)
             {
-                return Response::json(array('success' => false, 'errors' => [self::SERVER_ERROR]));
+                $data['details'] = $this->getExceptionDetails($exception);
             }
-            else
-            {
-                sd($exception);
-            }
+
+            return Response::json($data);
         }
     }
 
