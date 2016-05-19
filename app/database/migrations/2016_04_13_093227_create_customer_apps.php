@@ -28,7 +28,7 @@ class CreateCustomerApps extends Migration {
 
             $table->char(App::CUSTOMER_ID, 14);
 
-            $table->string(App::DEVICE_ID, 50);
+            $table->char(App::DEVICE_TOKEN, 14);
 
             $table->integer(App::CREATED_AT);
 

@@ -261,7 +261,7 @@ $factory(Models\Customer\Token\Entity::class, [
 
 $factory(Models\Customer\App\Entity::class, [
     'id' => $faker->uniqueid,
-    'customer_id' => '10000gcustomer',
-    'device_id' => 'test',
+    'customer_id'  => '10000gcustomer',
+    'device_token' => 'test',
     'merchant_id'  => '10000000000000'
 ]);

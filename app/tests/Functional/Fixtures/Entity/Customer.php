@@ -32,7 +32,6 @@ class Customer extends Base
     protected $customerApps = array(
         array(
             'customer_id'   => '10000gcustomer',
-            'device_id'     => 'test',
             'id'            => '1000000custapp',
         ),
     );

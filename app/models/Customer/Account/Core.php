@@ -81,8 +81,7 @@ class Core extends Base\Core
 
             $custAppInput = array(
                 App\Entity::CUSTOMER_ID => $customer->getId(),
-                App\Entity::MERCHANT_ID => $input['context'],
-                App\Entity::DEVICE_ID   => $input[App\Entity::DEVICE_ID]);
+                App\Entity::MERCHANT_ID => $input['context']);
 
             $app = (new App\Core)->create($custAppInput);
 

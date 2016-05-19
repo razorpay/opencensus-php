@@ -8,7 +8,7 @@ class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       =       'merchant_id';
     const CUSTOMER_ID       =       'customer_id';
-    const DEVICE_ID         =       'device_id';
+    const DEVICE_TOKEN      =       'device_token';
 
     protected static $sign      = 'capp';
 
@@ -20,21 +20,25 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ID,
-        self::DEVICE_ID,
+        self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
     );
 
     protected $visible = array(
         self::ID,
-        self::DEVICE_ID,
+        self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
     );
 
     protected $public = array(
-        self::DEVICE_ID,
+        self::DEVICE_TOKEN,
         self::CUSTOMER_ID,
+    );
+
+    protected static $generators = array(
+        self::DEVICE_TOKEN,
     );
 
     public function merchant()
@@ -49,11 +53,18 @@ class Entity extends Base\PublicEntity
 
     public function getDeviceId()
     {
-        return $this->getAttribute(self::DEVICE_ID);
+        return $this->getAttribute(self::DEVICE_TOKEN);
     }
 
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function generateDeviceToken()
+    {
+        $deviceToken = self::generateUniqueId();
+
+        $this->setAttribute(self::DEVICE_TOKEN, $deviceToken);
     }
 }

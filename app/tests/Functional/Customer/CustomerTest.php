@@ -134,8 +134,7 @@ class CustomerTest extends TestCase
             'method' => 'post',
             'content' => [
                 'contact' => '1234567890',
-                'otp' => '233323',
-                'device_id' => 'rzp_device_id'
+                'otp' => '233323'
             ],
         );
 
