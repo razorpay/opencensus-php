@@ -12,6 +12,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler
 {
+    const PHP7_500_ERROR     = 'Internal Server Error.';
+    const SERVER_ERROR       = 'Internal Server Error';
+    const METHOD_NOT_ALLOWED = 'Method not allowed';
+
     protected $app;
 
     protected $debug;
@@ -34,7 +38,7 @@ class Handler
 
         $this->app->error(function(MethodNotAllowedHttpException $e)
         {
-            return Response::json(array('success' => false, 'errors' => ['Method not allowed']));
+            return Response::json(array('success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]));
         });
 
         $this->app->error(function(NotFoundHttpException $e)
@@ -42,23 +46,28 @@ class Handler
             return Redirect::to('/#/404');
         });
 
-        $this->app->error(function(\Throwable $e, $code)
+        if (PHP_MAJOR_VERSION >=7)
         {
-            return $this->PHP7ExceptionHandler($e, $code);
-        });
-
-
+            $this->app->error(function(\Throwable $e, $code)
+            {
+                return $this->PHP7ExceptionHandler($e, $code);
+            });
+        }
     }
+
     public function PHP7ExceptionHandler(\Throwable $e, $code)
     {
-        if ($this->debug === false)
+        $data = [
+            'success' => false,
+            'errors'  => [self::PHP7_500_ERROR]
+        ];
+
+        if ($this->debug === true)
         {
-            return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
+            $data['details'] = $this->getExceptionDetails($e);
         }
-        else
-        {
-            sd($e);
-        }
+
+        return Response::json($data);
     }
 
     public function genericExceptionHandler(\Exception $exception, $code)
@@ -70,15 +79,17 @@ class Handler
         else
         {
             $this->traceException($exception);
+            $data = [
+                'success' => false,
+                'errors'  => [self::PHP7_500_ERROR]
+            ];
 
-            if ($this->debug === false)
+            if ($this->debug === true)
             {
-                return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
+                $data['details'] = $this->getExceptionDetails($exception);
             }
-            else
-            {
-                sd($exception);
-            }
+
+            return Response::json($data);
         }
     }
 

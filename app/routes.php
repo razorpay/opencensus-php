@@ -154,6 +154,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
     // Might delete this route later if its not used
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
+    Route::get('/admin/triggererror', 'AdminController@undefinedMethod');
 
     Route::group(array('before' => 'csrf'), function()
     {
