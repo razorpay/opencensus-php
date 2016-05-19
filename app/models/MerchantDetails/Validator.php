@@ -56,7 +56,6 @@ class Validator extends Base\Validator
     );
 
     protected static $step4Rules = array(
-        'bank_name'             => 'sometimes|alpha_space|max:255',
         'bank_account_number'   => 'required|alpha_num|between:5,20',
         'bank_account_name'     => 'required|alpha_space_num|max:40',
         'bank_account_type'     => 'required|alpha_space|max:20',
@@ -116,8 +115,7 @@ class Validator extends Base\Validator
         'website_refund'                => 'Refund Policy URL',
         'website_pricing'               => 'Pricing URL',
         'website_login'                 => 'Login URL',
-        'bank_name'                     => 'Beneficiary Bank Name',
-        'bank_account_number'           => 'Beneficiary Account Number',
+        'bank_account_number'           => 'Bank Account Number',
         'bank_account_name'             => 'Beneficiary Name',
         'bank_account_type'             => 'Beneficiary Account Type',
         'bank_branch'                   => 'Beneficiary Branch',
