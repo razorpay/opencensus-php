@@ -12,6 +12,7 @@ use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
+use Models\Order;
 use Models\Merchant\Webhook;
 use EE\Exception;
 use EE\Error;
@@ -69,6 +70,19 @@ class Checkout
             {
                 $data['customer'] = $custData;
             }
+        }
+
+        // If merchant is TPV enabled pass details for
+        // current order as part of preferences
+        if ($merchant->isTPVRequired() and
+            isset($input[Payment\Entity::ORDER_ID]))
+        {
+            $order = (new Order\Service)->fetch($input[Payment\Entity::ORDER_ID]);
+
+            $data['order'] = [
+                'bank'           => $order->getBank(),
+                'account_number' => $order->getMaskedAccountNumber(),
+            ];
         }
 
         return $data;

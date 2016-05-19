@@ -141,6 +141,19 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BANK];
     }
 
+    public function getMaskedAccountNumber()
+    {
+        $accountNumber = $this->getAccountNumber();
+
+        $accountNumberLength = strlen($accountNumber);
+
+        $last2Digits = substr($accountNumber, -3, -1);
+
+        $formattedNumber = str_repeat('X',$accountNumberLength - 2).$last2Digits;
+
+        return $formattedNumber;
+    }
+
     /** End Setters And Getters */
 
     /** Mutators */
