@@ -6,7 +6,10 @@ use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 
 use Config;
+use Mockery\CountValidator\Exception;
 use Razorpay\Api\Entity as ApiEntity;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+use Razorpay\Api\Errors\ServerError as ServerError;
 
 class Merchant extends Entity
 {
@@ -216,7 +219,7 @@ class Merchant extends Entity
         return $this->request('PUT', self::CONFIG_URL, $input);
     }
 
-    protected function updateLogo($input)
+    public function updateLogoConfig($input)
     {
         // Makes a guzzle file request
         $response = $this->makeGuzzleFileRequest($input);
@@ -233,7 +236,7 @@ class Merchant extends Entity
         $client = new Guzzle(['base_url' => Config::get('api.url')]);
 
         // Sets the options for the request. Auth should be part of this.
-        $options['auth'] = $this->setApiCredentials($input['merchant_id']);
+        $options['auth'] = $this->getApiCredentials($input['merchant_id']);
 
         // Creates a request instance
         $request = $client->createRequest("POST", self::CONFIG_LOGO_URL, $options);
@@ -241,43 +244,68 @@ class Merchant extends Entity
         // Creates an object to insert post body data
         $postBody = $request->getBody();
 
-        $file = $input['logo'];
-
-        $fileDetails = $this->moveAndGetFileDetails($file);
-
-        $filePath = $fileDetails['file_path'];
+        $filePath = $this->moveAndGetFilePath($input['logo']);
 
         $postFile = new PostFile('logo', fopen($filePath, 'r'));
 
         // Inserts file into the post body data
         $postBody->addFile($postFile);
 
-        // json() gets the response body
-        $response = $client->send($request)->json();
+        try
+        {
+            // json() gets the response body
+            $response = $client->send($request);
+            $jsonResponse = $response->json();
+            return $jsonResponse;
+        }
+        catch (\Exception $ex)
+        {
+            $exceptionResponse = $ex->getResponse();
 
-        $this->deleteFileLocally($fileDetails);
-
-        return $response;
+            if ($exceptionResponse->getReasonPhrase() === 'Bad Request')
+            {
+                // Bad request error is being handled in Merchant/Service
+                throw new BadRequestError(
+                    $exceptionResponse->json()['error']['description'], $ex->getCode(),
+                    $exceptionResponse->getStatusCode()
+                );
+            }
+            else
+            {
+                throw new ServerError(
+                    $exceptionResponse->json()['error']['description'], $ex->getCode(),
+                    $exceptionResponse->getStatusCode());
+            }
+        }
+        finally
+        {
+            // Delete the local file created after the request is made.
+            $this->deleteFileLocally($filePath);
+        }
     }
 
-    protected function moveAndGetFileDetails($file)
+    protected function getGuzzleInstance()
     {
-        $fileDetails = [
-            'destination_path' => storage_path('files/logos'),
-            'file_name' => $file->getFilename() . '.' . $file->getClientOriginalExtension(),
-        ];
-
-        $fileDetails['file_path'] = $fileDetails['destination_path'] . '/' . $fileDetails['file_name'];
-
-        $file->move($fileDetails['destination_path'], $fileDetails['file_name']);
-
-        return $fileDetails;
+        return new Guzzle([
+            'base_uri' => Config::get('api.url'),
+            'timeout'  => 200,
+        ]);
     }
 
-    public function deleteFileLocally($fileDetails)
+    protected function moveAndGetFilePath($file)
     {
-        $filePath = $fileDetails['file_path'];
+        $destinationPath = storage_path('files/logos');
+        $fileName = $file->getFilename() . '.' . $file->getClientOriginalExtension();
 
+        $file->move($destinationPath, $fileName);
+
+        $filePath = $destinationPath . '/' . $fileName;
+
+        return $filePath;
+    }
+
+    public function deleteFileLocally($filePath)
+    {
         if (file_exists($filePath))
         {
             $success = unlink($filePath);
@@ -289,7 +317,7 @@ class Merchant extends Entity
         }
     }
 
-    protected function setApiCredentials($merchantId)
+    protected function getApiCredentials($merchantId)
     {
         $mode = 'live';
 

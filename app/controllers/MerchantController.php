@@ -254,12 +254,12 @@ class MerchantController extends BaseController
 
     public function postMerchantConfigLogo()
     {
-        $merchantId = Auth::user()->user()->getCurrentMerchantId();
         $input = Input::all();
 
+        $merchantId = Auth::user()->user()->getCurrentMerchantId();
         $input['merchant_id'] = $merchantId;
 
-        list($error, $data) = (new Merchant\Service)->updateMerchantConfig($merchantId, $input);
+        list($error, $data) = (new Merchant\Service)->updateMerchantLogoConfig($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }

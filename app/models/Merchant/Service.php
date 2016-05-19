@@ -4,6 +4,7 @@ namespace Models\Merchant;
 
 use Auth;
 use Hash;
+use Mockery\CountValidator\Exception;
 use Requests;
 
 use Models\Base;
@@ -15,6 +16,7 @@ use Models\MerchantDetails;
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Service extends Base\Service
 {
@@ -653,6 +655,33 @@ class Service extends Base\Service
         catch(BadRequestError $e)
         {
             $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function updateMerchantLogoConfig($merchantId, $input)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        if (isset($input['logo']) === false)
+        {
+            $error = ['Internal Server Error. Contact support for help.'];
+            return [$error, $data];
+        }
+
+        try
+        {
+            $data = $this->api->merchant->updateLogoConfig($input)->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+        catch(\Exception $e)
+        {
+            $error = ['Internal Server Error. Contact support for help.'];
         }
 
         return [$error, $data];
