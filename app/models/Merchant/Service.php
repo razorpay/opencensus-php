@@ -4,7 +4,6 @@ namespace Models\Merchant;
 
 use Auth;
 use Hash;
-use Mockery\CountValidator\Exception;
 use Requests;
 
 use Models\Base;
@@ -16,7 +15,6 @@ use Models\MerchantDetails;
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Service extends Base\Service
 {

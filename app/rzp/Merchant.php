@@ -6,7 +6,6 @@ use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 
 use Config;
-use Mockery\CountValidator\Exception;
 use Razorpay\Api\Entity as ApiEntity;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Razorpay\Api\Errors\ServerError as ServerError;
@@ -208,14 +207,6 @@ class Merchant extends Entity
     // This is on proxy auth, doesn't take merchant ID
     public function updateConfig($input)
     {
-        // If logo needs to be updated, use this block.
-        if (isset($input['logo']) === true)
-        {
-            $response = $this->updateLogo($input);
-
-            return $response;
-        }
-
         return $this->request('PUT', self::CONFIG_URL, $input);
     }
 
@@ -251,6 +242,11 @@ class Merchant extends Entity
         // Inserts file into the post body data
         $postBody->addFile($postFile);
 
+        return $this->sendGuzzleFileRequest($client, $request, $filePath);
+    }
+
+    protected function sendGuzzleFileRequest($client, $request, $filePath)
+    {
         try
         {
             // json() gets the response body
