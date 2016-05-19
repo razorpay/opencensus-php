@@ -298,6 +298,8 @@ class BasicAuth
 
             $this->checkForDashboardMerchantHeader();
 
+            $this->setDashboardHeaders();
+
             return;
         }
 
@@ -323,6 +325,8 @@ class BasicAuth
         // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setDashboardHeaders();
+
             return;
         }
 
@@ -607,6 +611,17 @@ class BasicAuth
             $this->trace->warning(
                 TraceCode::DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED);
         }
+    }
+
+    protected function setDashboardHeaders()
+    {
+        $headers = $this->request->headers;
+
+        $this->app['app_info'] = array(
+            'dashboard'     => $headers->get('X-Dashboard'),
+            'merchant'      => $headers->get('X-Dashboard-Merchant'),
+            'admin_user'    => $headers->get('X-Dashboard-Username')
+        );
     }
 
     protected function verifyInternalAppSecret()

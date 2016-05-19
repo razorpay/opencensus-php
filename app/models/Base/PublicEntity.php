@@ -135,6 +135,11 @@ class PublicEntity extends UniqueIdEntity
         return $this->getPublicId();
     }
 
+    /**
+     * Get dashboard link for any entity
+     *
+     * @return string
+     */
     public function getDashboardEntityLink()
     {
         $id = $this->getId();
@@ -142,19 +147,37 @@ class PublicEntity extends UniqueIdEntity
         $entity = $this->entity . 's';
 
         // It's always needed for live mode. Not taking care of test for now.
-        $url = "https://dashboard.razorpay.com/admin#/app/$entity/live/$id";
+        switch ($entity)
+        {
+            // Entity URL for merchants is different from other entities
+            case 'merchants':
+                $url = "https://dashboard.razorpay.com/admin#/app/$entity/$id/detail";
+                break;
+            default:
+                $url = "https://dashboard.razorpay.com/admin#/app/$entity/live/$id";
+                break;
+        }
 
         return $url;
     }
 
-    public function getDashboardEntityLinkForSlack()
+    /**
+     * Get slack formatted dashboard entity link
+     *
+     * @param string $text
+     * @return string
+     */
+    public function getDashboardEntityLinkForSlack($text = null)
     {
-        $id = $this->getId();
+        if ($text === null)
+        {
+            $text = $this->getId();
+        }
 
         $url = $this->getDashboardEntityLink();
 
         // In the format <link|display_text>
-        return '<'. $url . '|' . $id.'>';
+        return '<'. $url . '|' . $text.'>';
     }
 
     public static function verifyIdAndStripSign(& $id)

@@ -32,6 +32,9 @@ trait SlackPoster
             // If our data is nested, we need to flatten it
             $postdata = flatten_array($postdata);
 
+            $settings['username'] = isset($settings['username']) ? $settings['username'] : null;
+            $settings['icon']     = isset($settings['icon']) ? $settings['icon'] : null;
+
             /**
              * Attach all the extra fields
              */
@@ -49,7 +52,11 @@ trait SlackPoster
 
             if (isset($settings['channel']))
             {
-                Slack::to($settings['channel'])->attach($data)->queue($headline);
+                Slack::to($settings['channel'])
+                        ->from($settings['username'])
+                        ->withIcon($settings['icon'])
+                        ->attach($data)
+                        ->queue($headline);
             }
             else
             {

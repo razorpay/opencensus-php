@@ -73,18 +73,18 @@ class Core extends Base\Core
         (new Methods\Core)->setDefaultMethods($merchant);
     }
 
+    /**
+     * Edit merchant entity
+     *
+     * @param \Models\Merchant\Entity $merchant
+     * @param array $input
+     * @return \Models\Merchant\Entity
+     */
     public function edit($merchant, $input)
     {
         $merchant->edit($input);
 
-        $data = $this->getEditedMerchantDifference($merchant);
-
-        $this->repo->saveOrFail($merchant);
-
-        if (empty($data) === false)
-        {
-            $this->postToSlack($merchant, $data);
-        }
+        $this->saveAndNotify($merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -93,6 +93,13 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * Edit merchant email
+     *
+     * @param \Models\Merchant\Entity $merchant
+     * @param array $input
+     * @return \Models\Merchant\Entity
+     */
     public function editEmail($merchant, $input)
     {
         $this->trace->info(
@@ -102,11 +109,18 @@ class Core extends Base\Core
 
         $merchant->edit($input, 'editEmail');
 
-        $this->repo->saveOrFail($merchant);
+        $this->saveAndNotify($merchant);
 
         return $merchant;
     }
 
+    /**
+     * Edit merchant configuration
+     *
+     * @param \Models\Merchant\Entity $merchant
+     * @param array $input
+     * @return \Models\Merchant\Entity
+     */
     public function editConfig($merchant, $input)
     {
         $this->trace->info(
@@ -115,10 +129,11 @@ class Core extends Base\Core
 
         $merchant->edit($input, 'editConfig');
 
-        $this->repo->saveOrFail($merchant);
+        $this->saveAndNotify($merchant);
 
-        // Proxy Auth, take care not to return the entire merchant entity
-        return $this->repo->findOrFailPublic($merchant->id, Entity::CONFIG_LIST);
+        $attr = array_only($merchant->getAttributes(), Entity::CONFIG_LIST);
+
+        return $merchant->newInstance($attr);
     }
 
     public function createBalance($merchant, $mode)
@@ -146,37 +161,55 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    protected function postToSlack($merchant, $data)
+    /**
+     * Save merchant entity and notify on slack
+     *
+     * @param \Models\Merchant\Entity $merchant
+     * @return null
+     */
+    protected function saveAndNotify($merchant)
     {
-        $message = $this->getMerchantDashboardSlackText($merchant);
+        $data = $this->getEditedMerchantDifference($merchant);
 
-        $this->slackPost($message, $data, ['channel' => '#operations_log']);
+        $this->repo->saveOrFail($merchant);
+
+        if (empty($data) === false)
+        {
+            $label   = $merchant->getBillingLabel();
+            $message = $merchant->getDashboardEntityLinkForSlack($label);
+
+            $user = $this->app['app_info']['admin_user'] ?: $this->app['app_info']['merchant'];
+
+            $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
+
+            $this->slackPost($message, $data, ['channel' => '#operations_log',
+                                               'username' => 'Jordan Belfort',
+                                               'icon' => ':boom:']);
+        }
     }
 
+    /**
+     * Get difference between the original and updated attributes
+     *
+     * @param \Models\Merchant\Entity $merchant
+     * @return array|null
+     */
     protected function getEditedMerchantDifference($merchant)
     {
-        $dirtyAttributes    = $merchant->getDirty();
+        $dirtyAttributes = $merchant->getDirty();
 
-        $originalAttributes = array_intersect_key($merchant->getOriginal(), $dirtyAttributes);
-
-        $data = array();
-
-        foreach ($originalAttributes as $key => $value)
+        if (empty($dirtyAttributes) === false)
         {
-            $data[$key] = $value;
-            $data['Updated '.$key] = $dirtyAttributes[$key];
+            $originalAttributes = array_intersect_key($merchant->getOriginal(), $dirtyAttributes);
+
+            $data = array();
+
+            foreach ($originalAttributes as $key => $value)
+            {
+                $data[$key] = '*Old*: ' . $value . PHP_EOL . '*New*: ' . $dirtyAttributes[$key];
+            }
+
+            return $data;
         }
-
-        return $data;
-    }
-
-    protected function getMerchantDashboardSlackText($merchant)
-    {
-        $id = $merchant->id;
-        $link = "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
-
-        $label = $merchant->getBillingLabel();
-
-        return "<$link|$label> ($id)";
     }
 }
