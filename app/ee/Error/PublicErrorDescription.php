@@ -114,7 +114,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                         = 'The merchant is not live currently';
-    const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please drop a mail to contact@razorpay.com with your email-id and we will look into the issue immediately.';
+    const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                             = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                              = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';

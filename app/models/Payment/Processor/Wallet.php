@@ -11,6 +11,6 @@ class Wallet
 
     public static function exists($wallet)
     {
-        return defined(get_class().'::'.$wallet);
+        return defined(get_class().'::'.strtoupper($wallet));
     }
 }

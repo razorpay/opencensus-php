@@ -21,6 +21,7 @@ final class Route
         'payment_create_jsonp'                  => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                   => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                   => ['post',     'payments/create/fees',                     'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_create_wallet'                 => ['post',     'payments/create/wallet/{wallet}',          'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_callback_post'                 => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                  => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'        => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
@@ -256,6 +257,7 @@ final class Route
     );
 
     public static $private = array(
+        'payment_create_wallet',
         'payment_refund',
         'payment_capture',
         'payment_fetch_by_id',
@@ -485,13 +487,13 @@ final class Route
     {
         self::$router = $router;
     }
-    
+
     public static function getCurrentRouteName()
     {
         $router = self::$router;
         return $router->currentRouteName();
     }
-    
+
     public static function getSlaveRoutes()
     {
         return self::$slaveRoutes;

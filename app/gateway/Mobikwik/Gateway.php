@@ -314,6 +314,23 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * We only allow OTP flow for mobikwik in 2 cases
+     * @param  array  $input
+     */
+    public function canRunOtpFlow(array $input = [])
+    {
+        if (isset($input['_']['source']))
+        {
+            return in_array($input['_']['source'], [
+                'checkoutjs',
+                's2s'
+            ]);
+        }
+
+        return false;
+    }
+
     public function callbackOtpSubmit($input)
     {
         $this->action($input, Action::OTP_SUBMIT);
