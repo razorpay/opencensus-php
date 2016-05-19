@@ -217,6 +217,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                      = 'BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE                                       = 'BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE';
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
+    const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
 
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                            = 'BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
