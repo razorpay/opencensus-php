@@ -1,4 +1,8 @@
 #!/bin/bash
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -euo pipefail
+IFS=$'\n\t'
+
 # Deployment Script
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
 
