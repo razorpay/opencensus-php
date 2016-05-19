@@ -81,7 +81,7 @@ class Handler
             $this->traceException($exception);
             $data = [
                 'success' => false,
-                'errors'  => [self::PHP7_500_ERROR]
+                'errors'  => [self::SERVER_ERROR]
             ];
 
             if ($this->debug === true)
