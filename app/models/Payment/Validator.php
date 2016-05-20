@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         'bank'          =>  'required_if:method,netbanking',
         'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney',
         'emi_duration'  =>  'required_with:emi|integer|in:3,6,9,12,18,24',
-        'description'   =>  'sometimes',
+        'description'   =>  'sometimes|max:255',
         'email'         =>  'required|email',
         'contact'       =>  'required',
         'signature'     =>  'sometimes',
