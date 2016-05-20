@@ -414,6 +414,7 @@ final class Route
     public static $direct = array(
         'dummy_route',
         'checkout_public',
+        'mockhdfc_3dsecure',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
@@ -501,7 +502,8 @@ final class Route
 
     public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
-        if ($secret === '')
+        if (($secret === '') and
+            ($key !== ''))
         {
             // It's a public auth.
             $parameters['key_id'] = $key;
@@ -602,16 +604,9 @@ final class Route
         $router->$method($uri, array('as' => $name, 'uses' => $action));
     }
 
-    protected static function add3dSecureRoute()
-    {
-        self::addRoute('mockhdfc_3dsecure');
-    }
-
     public static function defineApiRoutes()
     {
         $router = self::$router;
-
-        self::add3dSecureRoute();
 
         $router->group(array('prefix' => 'v1'), function () use ($router)
         {

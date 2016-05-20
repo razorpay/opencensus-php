@@ -56,6 +56,7 @@ final class Result
      | • DENIED BY RISK - Risk denied the payment processing
      | • HOST TIMEOUT - The authorization system did not respond within the Time out
      | limit
+     | • AUTH ERROR - For certain cases when in case card is invalid.
      | • SUCCESS – The payment is successful (For Action Code “8” i.e. "INQUIRY" if original requested
      | payment is successful at Payment Gateway)
      | Payment Gateway Services

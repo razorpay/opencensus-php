@@ -171,6 +171,8 @@ trait Authorize
 
         $result = &$authResponse['data']['result'];
 
+        $errorCode = null;
+
         //
         // Check enroll result code.
         //
@@ -183,39 +185,33 @@ trait Authorize
                 break;
 
             case Payment\Result::NOT_APPROVED:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00006);
-                $this->error = true;
+                $errorCode = Hdfc\ErrorCode::RP00006;
                 break;
 
             case Payment\Result::NOT_CAPTURED:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00007);
-                $this->error = true;
+                $errorCode = Hdfc\ErrorCode::RP00007;
                 break;
 
             case Payment\Result::HOST_TIMEOUT:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00004);
-                $this->error = true;
+                $errorCode = Hdfc\ErrorCode::RP00004;
                 break;
 
             case Payment\Result::DENIED_BY_RISK:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00005);
-                $this->error = true;
+                $errorCode = Hdfc\ErrorCode::RP00005;
                 break;
 
+            case Payment\Result::AUTH_ERROR:
+                $errorCode = Hdfc\ErrorCode::RP00010;
+
             default:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $authResponse,
-                    Hdfc\ErrorCode::RP00002);
-                $this->error = true;
+                $errorCode = Hdfc\ErrorCode::RP00002;
                 break;
+        }
+
+        if ($errorCode !== null)
+        {
+            Hdfc\ErrorHandler::setErrorInResponse($authResponse, $errorCode);
+            $this->error = true;
         }
 
         return ! ($this->error);
