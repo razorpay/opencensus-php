@@ -2,6 +2,7 @@
 
 namespace Services;
 
+use Constants\Mode;
 use EE\Exception;
 use Requests;
 use Trace\Trace;
@@ -23,6 +24,8 @@ class Raven
 
     protected $proxy;
 
+    protected $mode;
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -30,6 +33,8 @@ class Raven
         $this->config = $app['config']->get('applications.raven');
 
         $this->baseUrl = $this->config['url'];
+
+        $this->mode = $app['rzp.mode'];
 
         $this->key = 'rzp';
 
@@ -40,14 +45,32 @@ class Raven
 
     public function sendOtp($input)
     {
-        $response = $this->sendRequest('sms/send-otp', 'post', $input);
+        $response = null;
+
+        if($this->mode === Mode::TEST)
+        {
+            $response['success'] = true;
+        }
+        else
+        {
+            $response = $this->sendRequest('sms/send-otp', 'post', $input);
+        }
 
         return $response;
     }
 
     public function verifyOtp($input)
     {
-        $response = $this->sendRequest('sms/verify-otp', 'post', $input);
+        $response = null;
+
+        if($this->mode === Mode::TEST)
+        {
+            $response['success'] = true;
+        }
+        else
+        {
+            $response = $this->sendRequest('sms/verify-otp', 'post', $input);
+        }
 
         return $response;
     }
