@@ -61,6 +61,17 @@ class Reconciliate
 
 
     /**
+     * This should be implemented in the child class if the gateway requires certain
+     * files to be excluded from doing the reconciliation.
+     *
+     */
+    public function inExcludeList($fileDetails)
+    {
+        return false;
+    }
+
+
+    /**
      * Gets the reconciliation type by either the sheet name in case of excel files
      * or by the file name in case of csv files.
      *

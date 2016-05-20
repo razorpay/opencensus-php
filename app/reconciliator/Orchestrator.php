@@ -141,6 +141,19 @@ class Orchestrator
         // Run validations and conversions on each file
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
+            // Checks if this particular file needs to be excluded for the gateway
+            $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
+            
+            if ($inExclude === true)
+            {
+                // TODO: Raise an alert about skipping the file because it's in the exclude list of gateway.
+                
+                $this->handleInvalidFile($file, $fileDetails);
+
+                // Don't get the content of the file.
+                continue;
+            }
+            
             // Validates the file type, size, etc..
             $validate = $this->validator->validateFile($fileDetails);
 
@@ -163,10 +176,11 @@ class Orchestrator
             }
             catch (\Exception $ex)
             {
-                // TODO: Raise an alert about not being able to convert file content to array.
+                // TODO: Raise an alert about skipping the file for not being able to convert file content to array.
 
                 $this->handleInvalidFile($file, $fileDetails);
 
+                // Don't get the content of the file.
                 continue;
             }
 

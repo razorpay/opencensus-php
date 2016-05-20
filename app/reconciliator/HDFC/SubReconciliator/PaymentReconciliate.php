@@ -47,23 +47,23 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $this->paymentRepo = new Payment\Repository;
         $this->iinRepo     = new IIN\Repository;
     }
-    
-    
+
+
     protected function getServiceTax($row)
     {
         $serviceTax = $row[self::ROW_SERVICE_TAX];
-        
+
         return $serviceTax;
     }
-    
-    
+
+
     protected function getCardType($row)
     {
         if (isset($row[self::ROW_CARD_TYPE]) === false)
         {
             return null;
         }
-        
+
         $cardType = strtolower($row[self::ROW_CARD_TYPE]);
 
         if ($cardType === 'dc')
@@ -90,5 +90,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $paymentId = str_replace("'", '', $paymentId);
 
         return $paymentId;
+    }
+
+    public function inExcludeList($fileDetails)
+    {
+        if (strpos($fileDetails['file_name'], 'detailed') !== false)
+        {
+            return true;
+        }
+        
+        return false;
     }
 }
