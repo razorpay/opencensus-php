@@ -104,7 +104,12 @@ class Service extends Base\Service
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
 
-        return (new Merchant\Core)->editConfig($this->merchant, $input);
+        $merchant = (new Merchant\Core)->editConfig($this->merchant, $input);
+
+        $attributes = array_only($merchant->getAttributes(), Entity::CONFIG_LIST);
+
+        // Cannot use toArrayPublic as it returns all the data
+        return $merchant->newInstance($attributes)->toArray();
     }
 
     protected function uploadLogoIfFound(&$input)
