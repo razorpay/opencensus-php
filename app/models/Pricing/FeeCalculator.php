@@ -76,6 +76,8 @@ class FeeCalculator
             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
             ['count' => count($rules)]);
 
+        $this->traceAllRules($rules);
+
         if ($method === Payment\Method::CARD)
         {
             $rule = $this->getRelevantPricingRuleForCard($rules);
@@ -116,17 +118,23 @@ class FeeCalculator
 
         $payment = $this->payment;
 
-        $this->traceAllRules($rules);
+        $bank = $payment->getBank();
 
         // Current Implementation
         // * Filter based on AmountRange
         // * Choose based on Amount
 
         $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);   
+
+        $filter1 = array(
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
         );
 
-        $rules = $this->applyFiltersOnRules($rules, $filter);
+        $rules = $this->applyFiltersOnRules($rules, $filter1);
 
         $amount = $payment->getAmount();
 
@@ -152,8 +160,6 @@ class FeeCalculator
         $payment = $this->payment;
 
         $wallet = $payment->getWallet();
-
-        $this->traceAllRules($rules);
 
         // Current Implementation
         // * Filter based on wallet
@@ -189,8 +195,6 @@ class FeeCalculator
         $international = $payment->isInternational();
 
         $network = Card\Network::getCode($payment->card->getNetwork());
-
-        $this->traceAllRules($rules);
 
         // Current Implementation
         // * Filter based on international
