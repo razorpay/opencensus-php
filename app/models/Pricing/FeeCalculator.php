@@ -80,6 +80,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForCard($rules);
         }
+        elseif ($method === Payment\Method::WALLET)
+        {
+            $rule = $this->getRelevantPricingRuleForWallet($rules);  
+        }
         else
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
@@ -96,6 +100,32 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForMethod($rules)
     {
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForWallet($rules)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        $payment = $this->payment;
+
+        $wallet = $payment->getWallet();
+
+        $this->traceAllRules($rules);
+
+        // Current Implementation
+        // * Filter based on wallet
+        
+        // Structure is as follows:
+        // Field name, Field value, Choose default (true/false), default value
+        $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);   
+
         return $this->validateAndGetOnePricingRule($rules);
     }
 
@@ -140,13 +170,7 @@ class FeeCalculator
 
         if ($network === Card\Network::AMEX)
         {
-            if (count($rules) !== 1)
-            {
-                throw new Exception\LogicException(
-                    'Invalid rule count: ' . count($rules));
-            }
-
-            return $rules[0];
+            return $this->validateAndGetOnePricingRule($rules);
         }
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

@@ -29,7 +29,7 @@ class TraceCodeProcessor
 
         $record = ['code' => $code] + $record;
 
-        $record['context']['mode'] = \BasicAuth::getMode();
+        $record['mode'] = \BasicAuth::getMode();
 
         return $record;
     }

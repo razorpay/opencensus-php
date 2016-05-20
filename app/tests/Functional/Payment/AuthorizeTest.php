@@ -270,6 +270,38 @@ class AuthorizeTest extends TestCase
         $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
+    public function testPaymentViaWalletS2SWoAuth()
+    {
+        // No Auth
+        $this->startTest();
+    }
+
+    public function testPayumoneyPaymentViaWalletS2S()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->privateAuth();
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('url', $content['request']);
+    }
+
+    public function testMobikwikPaymentViaWalletS2S()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
+
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
+        $this->ba->privateAuth();
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('url', $content['request']);
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -4,6 +4,7 @@ namespace Gateway\Base;
 
 use Constants\Mode;
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
@@ -16,6 +17,12 @@ class Gateway
      * @var  integer
      */
     const TIMEOUT = 30;
+
+    /**
+     * Default OTP attempts limit
+     * @var integer
+     */
+    const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
      * The application instance.
@@ -153,7 +160,10 @@ class Gateway
         $this->input = $input;
     }
 
-    public function canRunOtpFlow()
+    /**
+     * @param  array  $input
+     */
+    public function canRunOtpFlow(array $input = [])
     {
         return $this->canRunOtpFlow;
     }
@@ -520,6 +530,20 @@ class Gateway
                 throw new Exception\RuntimeException(
                     'Failed to convert json to array',
                     ['json' => $json]);
+        }
+    }
+
+    protected function verifyOtpAttempts($payment, $limit = null)
+    {
+        if ($limit === null)
+        {
+            $limit = self::OTP_ATTEMPTS_LIMIT;
+        }
+
+        if ($payment['otp_attempts'] >= $limit)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
     }
 }

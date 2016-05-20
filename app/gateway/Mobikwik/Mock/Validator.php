@@ -7,16 +7,17 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        'mid'          => 'required|alpha_num',
-        'orderid'      => 'required|size:14|alpha_num',
-        'amount'       => 'required|numeric',
-        'cell'         => 'required|numeric',
-        'email'        => 'required|email',
-        'merchantname' => 'required|alpha_num',
-        'redirecturl'  => 'required|url',
-        'showmobile'   => 'sometimes|',
-        'version'      => 'sometimes|numeric',
-        'checksum'     => 'required'
+        'mid'           => 'required|alpha_num',
+        'orderid'       => 'required|size:14|alpha_num',
+        'amount'        => 'required|numeric',
+        'cell'          => 'required|numeric',
+        'email'         => 'required|email',
+        'merchantname'  => 'required|alpha_num',
+        'redirecturl'   => 'required|url',
+        'showmobile'    => 'sometimes|',
+        'version'       => 'sometimes|numeric',
+        'checksum'      => 'required',
+        'merchantAlias' => 'sometimes',
     );
 
     protected static $refundRules = array(

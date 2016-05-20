@@ -218,6 +218,8 @@ trait Authorize
 
     protected function processPaymentException($e)
     {
+        $payment = $this->payment;
+
         $code = $e->getError()->getInternalErrorCode();
 
         if (Error\Error::hasAction($code) === false)
@@ -225,6 +227,14 @@ trait Authorize
             $this->updatePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_AUTH_FAILURE);
+        }
+
+        switch ($code)
+        {
+            case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
+                $payment->incrementOtpAttempts();
+                $payment->saveOrFail();
+                break;
         }
 
         throw $e;
@@ -745,13 +755,16 @@ trait Authorize
         }
     }
 
+    /**
+     * Do we support the OTP flow for a given payment
+     * and input combination
+     * @param  Payment\Entity $payment
+     * @param  array $input
+     * @return boolean
+     */
     protected function canRunOtpPaymentFlow($payment, $input)
     {
-        return ($payment->getMethod() === Method::WALLET and
-                    (((isset($input['_']['source'])) and
-                        ($input['_']['source'] === 'checkoutjs') and
-                        ($payment->getWallet() === Wallet::MOBIKWIK)) or
-                    $payment->getWallet() === Wallet::PAYUMONEY));
+        return $this->callGatewayFunction('canRunOtpFlow', $input);
     }
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)
@@ -768,6 +781,9 @@ trait Authorize
             $this->callGatewayFunction('checkExistingUser', $data);
 
             $this->callGatewayFunction('otpGenerate', $data);
+
+            $payment->incrementOtpCount();
+            $payment->save();
 
             return array(
                 'type' => 'otp',

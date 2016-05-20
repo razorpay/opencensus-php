@@ -52,6 +52,8 @@ class Entity extends Base\PublicEntity
     const VERIFIED              = 'verified';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
+    const OTP_ATTEMPTS          = 'otp_attempts';
+    const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
     const SAVE                  = 'save';
 
@@ -125,6 +127,8 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
+        self::OTP_ATTEMPTS,
+        self::OTP_COUNT,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -178,6 +182,8 @@ class Entity extends Base\PublicEntity
         self::SAVE              => false,
         self::FEE               => null,
         self::SERVICE_TAX       => null,
+        self::OTP_ATTEMPTS      => null,
+        self::OTP_COUNT         => null
     );
 
     protected $amounts = array(
@@ -377,6 +383,30 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI_PLAN_ID, $planId);
     }
 
+    public function setOtpAttempts($attempts)
+    {
+        $this->setAttribute(self::OTP_ATTEMPTS, $attempts);
+    }
+
+    public function setOtpCount($count)
+    {
+        $this->setAttribute(self::OTP_COUNT, $count);
+    }
+
+    public function incrementOtpAttempts()
+    {
+        $attempts = $this->getOtpAttemptsAttribute() + 1;
+
+        $this->setOtpAttempts($attempts);
+    }
+
+    public function incrementOtpCount()
+    {
+        $count = $this->getOtpCountAttribute() + 1;
+
+        $this->setOtpCount($count);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -450,6 +480,16 @@ class Entity extends Base\PublicEntity
     public function getSaveAttribute()
     {
         return (bool) $this->attributes[self::SAVE];
+    }
+
+    public function getOtpAttemptsAttribute()
+    {
+        return $this->attributes[self::OTP_ATTEMPTS];
+    }
+
+    public function getOtpCountAttribute()
+    {
+        return $this->attributes[self::OTP_COUNT];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -954,4 +994,9 @@ class Entity extends Base\PublicEntity
     }
 
 // --------------------- Query scopes section ends -----------------------------
+
+    public function resetOtpAttempts()
+    {
+        $this->setOtpAttempts(null);
+    }
 }

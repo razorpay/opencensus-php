@@ -7,7 +7,6 @@ use App;
 use Http\Route;
 use Constants\Mode;
 
-
 class DefaultConnection
 {
     public static function set($mode)
@@ -25,16 +24,15 @@ class DefaultConnection
         self::setMasterConnection($mode);
     }
 
-
     public static function setSlaveConnection($mode)
     {
         if ($mode === Mode::TEST)
         {
-            Config::set('database.default', 'slave.test');
+            Config::set('database.default', 'slave-test');
         }
         else if ($mode === Mode::LIVE)
         {
-            Config::set('database.default', 'slave.live');
+            Config::set('database.default', 'slave-live');
         }
     }
 

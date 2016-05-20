@@ -3,6 +3,7 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Card;
 use Models\Transaction;
@@ -53,7 +54,6 @@ class Core extends Base\Core
     {
         return $this->paymentRepo->findOrFail($id);
     }
-
 
     public function retrieveRefundById($refundId)
     {

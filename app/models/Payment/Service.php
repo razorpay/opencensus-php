@@ -35,9 +35,35 @@ class Service extends Base\Service
         return $this->processor()->process($input);
     }
 
+    /**
+     * Processes a wallet payment
+     */
+    public function processWallet(array $input, $wallet)
+    {
+        // Just a hack to get around mobikwik normal flow
+        $input['_']['source']   = 's2s';
+        $input['method']        = 'wallet';
+        $input['wallet']        = $wallet;
+
+        return $this->processor()->process($input);
+    }
+
     public function processAndReturnFees(array & $input)
     {
         return $this->processor()->processAndReturnFees($input);
+    }
+
+    /**
+     * Resend OTP
+     *
+     * @param  string   $id
+     *
+     * @return Payment\Entity
+     *
+     */
+    public function otpResend($id, $input)
+    {
+        return $this->processor()->otpResend($id, $input);
     }
 
     /**
@@ -171,11 +197,6 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $payments = (new Payment\Repository)->fetch($input, $merchantId);
-
-        if (empty($payments) === true)
-        {
-            return [];
-        }
 
         return $payments->toArrayPublic();
     }

@@ -130,6 +130,12 @@ class BasicAuth
     protected $trace;
 
     /**
+     * Array of dashboard headers
+     * @var array
+     */
+    protected $dashboardHeaders = array();
+
+    /**
      * Contains valid lengths of key.
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
@@ -298,6 +304,8 @@ class BasicAuth
 
             $this->checkForDashboardMerchantHeader();
 
+            $this->setDashboardHeaders();
+
             return;
         }
 
@@ -323,6 +331,8 @@ class BasicAuth
         // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setDashboardHeaders();
+
             return;
         }
 
@@ -607,6 +617,22 @@ class BasicAuth
             $this->trace->warning(
                 TraceCode::DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED);
         }
+    }
+
+    protected function setDashboardHeaders()
+    {
+        $headers = $this->request->headers;
+
+        $this->dashboardHeaders = array(
+            'dashboard'     => $headers->get('X-Dashboard'),
+            'merchant'      => $headers->get('X-Dashboard-Merchant'),
+            'admin_user'    => $headers->get('X-Dashboard-Username')
+        );
+    }
+
+    public function getDashboardHeaders()
+    {
+        return $this->dashboardHeaders;
     }
 
     protected function verifyInternalAppSecret()

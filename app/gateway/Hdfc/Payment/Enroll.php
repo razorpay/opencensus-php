@@ -363,8 +363,6 @@ trait Enroll
 
         //
         // Check enroll result code.
-        // 'enrollSuccess' variable tells us whether
-        // its a success code or failure.
         //
         list($result, $success) = Payment\Result::getResultCode($result);
 
@@ -411,6 +409,12 @@ trait Enroll
 
                 $this->enrollResponse['error'] =
                     Hdfc\ErrorHandler::getInvalidResultCodeError();
+                break;
+
+            case Payment\Result::AUTH_ERROR:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $this->enrollResponse,
+                    Hdfc\ErrorCode::RP00010);
                 break;
 
             default:

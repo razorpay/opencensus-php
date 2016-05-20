@@ -8,6 +8,7 @@ use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment\Action;
 use Gateway\Hdfc\Mock;
+use Http\Route;
 use Models\Card;
 use Models\Card\Network;
 
@@ -120,12 +121,18 @@ class Server extends Base\Mock\Server
 
         $res = [];
         if (($cardNumber === '4012001038488884') or
-            ($cardNumber === '4012001036298889'))
+            ($cardNumber === '4012001036298889') or
+            ($cardNumber === '6073840000000008'))
         {
             $res['result'] = 'FSS0001-Authentication Not Available';
             $res['PAReq'] = 'abcd';
             $res['paymentid'] = $this->getNewPaymentId();
             $res['trackid'] = $this->data['trackid'];
+
+            if ($cardNumber === '6073840000000008')
+            {
+                $res['result'] = 'AUTH ERROR';
+            }
         }
         else
         {
@@ -272,11 +279,7 @@ class Server extends Base\Mock\Server
     {
         $res['result'] = 'ENROLLED';
 
-        $request = \Request::getFacadeRoot();
-        $scheme = $request->getScheme().'://';
-        $host = $request->getHost();
-
-        $res['url'] = $scheme . $host . '/gateway/3dsecure';
+        $res['url'] = Route::getUrl('mockhdfc_3dsecure');
 
         return $res;
     }

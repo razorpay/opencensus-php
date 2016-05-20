@@ -140,12 +140,80 @@ class MerchantFeeTest extends TestCase
                 'international' => 0,
             ));
 
+        $pricingPlanWallet = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3df',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'mobikwik',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet1 = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3ff',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'payumoney',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet2 = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3ef',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'paytm',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet3 = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3gf',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
         $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
             $pricingRuleThree,
             $pricingPlanAmex,
             $pricingPlanDicl,
+            $pricingPlanWallet,
+            $pricingPlanWallet1,
+            $pricingPlanWallet2,
+            $pricingPlanWallet3
         ];
 
         if ($withCreditCardRule)
@@ -296,6 +364,23 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
     }
 
+    public function testWalletRuleSelection()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        // Credit Card rule not available in plan,
+        // Card type unknown will be treated as
+        // debit card and their rules will be applied
+
+        $this->runMerchantFeeTestWallet("mobikwik", "1fq0O3dewex3df");
+
+        $this->runMerchantFeeTestWallet("paytm", "1fq0O3dewex3ef");
+
+        $this->runMerchantFeeTestWallet("payumoney", "1fq0O3dewex3ff");
+
+        $this->runMerchantFeeTestWallet("payzapp", "1fq0O3dewex3gf");
+    }
+
     protected function runMerchantFeeTest($amount, $network, $expectedRule, $cardType, $isCardInternational = false)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
@@ -313,6 +398,21 @@ class MerchantFeeTest extends TestCase
         $payment->card->setType($cardType);
 
         $payment->card->setInternational($isCardInternational);
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($expectedRule, $ruleKey);
+    }
+
+    protected function runMerchantFeeTestWallet($wallet, $expectedRule)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['wallet'] = $wallet;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::WALLET;
+
+        $payment = new Payment\Entity($paymentArray);
 
         list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
 

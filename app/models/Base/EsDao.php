@@ -4,8 +4,7 @@ namespace Models\Base;
 
 
 use App;
-use Config;
-
+use Constants\Mode;
 
 class EsDao
 {
@@ -14,22 +13,27 @@ class EsDao
 
     protected $indexName;
 
-    public function __construct()
+    protected $config;
+
+    protected $mode;
+
+    public function __construct($mode = null)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
+
+        $this->config = $this->app['config'];
 
         // Host name will be retrieved from the ENV.
-        $hostName = Config::get('database.es_host');
+        $hostName = $this->config->get('database.es_host');
 
         // Since, we are using only one index, declaring the index name
         // in this class itself. If we have different indices based on some
         // logic, it makes sense to move it to an appropriate class then.
 
         // Live and Test have different index names in the ES cluster.
-        $mode = $app['rzp.mode'];
-        $this->indexName = Config::get('database.es_index')[$mode];
+        $this->setIndexName($mode);
 
-        $this->es = $app['es'];
+        $this->es = $this->app['es'];
 
         $params = [
             'hosts' => [
@@ -41,6 +45,25 @@ class EsDao
         // instance is used to perform any operations on the client.
         $this->es->setEsClient($params);
     }
+
+
+    public function setIndexName($mode)
+    {
+        if (empty($mode) === true)
+        {
+            if (isset($this->app['rzp.mode']) === true)
+            {
+                $mode = $this->app['rzp.mode'];
+            }
+            else
+            {
+                $mode = Mode::TEST;
+            }
+        }
+
+        $this->indexName = $this->config->get('database.es_index')[$mode];
+    }
+
 
     // If a document with entity ID is already present, only the notes key is updated.
     // Otherwise, creates a new document.
@@ -64,7 +87,7 @@ class EsDao
                     'notes' => $notes
                 ],
                 'doc' => [
-                    'notes' => $notes
+                    'notes' => $notes,
                 ]
             ]
         ];
@@ -97,7 +120,9 @@ class EsDao
             ];
         }
 
-        return $this->es->bulkUpdate($params);
+        $bulkUpdateResponse = $this->es->bulkUpdate($params);
+
+        return $bulkUpdateResponse;
     }
 
     public function getNotes($typeName, $params)
@@ -105,7 +130,6 @@ class EsDao
         $merchantId = $params['merchant_id'];
         $searchString = $params['notes'];
         $count = $params['count'];
-
 
         // Defaults: from : 0
         $params = [
@@ -139,10 +163,25 @@ class EsDao
         {
             $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
         }
-        
+
         $entityIds = $this->es->searchNotes($params);
 
         return $entityIds;
+    }
+
+    public function findMultipleDocumentsByIds($typeName, $entityIds)
+    {
+        $params = [
+            'index' => $this->indexName,
+            'type' => $typeName,
+            // This method just needs to find the documents and not get the data of the documents found.
+            // Hence, source is set to false.
+            '_source' => false,
+            'body' => [
+                'ids' => $entityIds
+            ]
+        ];
+        return $this->es->multiGet($params);
     }
 
     public function getPaymentById($typeName, $documentId)

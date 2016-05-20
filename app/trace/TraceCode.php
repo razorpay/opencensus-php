@@ -140,6 +140,11 @@ class TraceCode
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
 
+    const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
+    const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
+    const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
+    const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
+
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
@@ -174,7 +179,12 @@ class TraceCode
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                 => 'Recoverable exception occurred',
-        self::MISC_TRACE_CODE                       => 'Miscellaneous trace code');
+        self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
+        self::ES_SAVE_FAILED                        => 'Failed while trying to save the entity to ES',
+        self::ES_BULK_UPDATE_FAILED                 => 'Failed while bulk updating in ES',
+        self::ES_BULK_UPDATE                        => 'Bulk update for ES',
+        self::ES_SAVE_REQUEST                       => 'Request for saving in ES',
+    );
 
     /**
      * Translate event code to message
