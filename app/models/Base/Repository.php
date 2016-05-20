@@ -73,15 +73,32 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function fetchEntitiesForReport($merchantId, $from, $to)
     {
-        return $this->fetchBetweenTimestamp($merchantId, $from, $to);
+        return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to);
     }
 
-    public function fetchBetweenTimestamp($merchantId, $from, $to)
+    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $relations = [])
+    {
+        $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
+        }
+
+        return $query->get();
+    }
+
+    public function fetchBetweenTimestamp($merchantId, $from, $to, $relations = [])
+    {
+        return $this->getFetchBetweenTimestampQuery($merchantId, $from, $to)
+                    ->get();
+    }
+
+    protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
-                    ->merchantId($merchantId)
-                    ->get();
+                    ->merchantId($merchantId);
     }
 
     public function saveOrFail($entity, array $options = array())
