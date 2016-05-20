@@ -70,12 +70,12 @@ class Entity extends Base\PublicEntity
     );
 
     // Requires PHP 5.6
-    const CONFIG_LIST = [
-        Entity::ID,
-        Entity::BRAND_COLOR,
-        Entity::TRANSACTION_REPORT_EMAIL,
-        Entity::LOGO_URL,
-    ];
+    const CONFIG_LIST = array(
+        self::ID,
+        self::BRAND_COLOR,
+        self::TRANSACTION_REPORT_EMAIL,
+        self::LOGO_URL,
+    );
 
     protected $public = array(
         self::ID,
@@ -576,5 +576,10 @@ class Entity extends Base\PublicEntity
     public function isShared()
     {
         return ($this->getId() === Account::SHARED_ACCOUNT);
+    }
+
+    public function toArrayConfig()
+    {
+        return array_only($this->getAttributes(), self::CONFIG_LIST);
     }
 }
