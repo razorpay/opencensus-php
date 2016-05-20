@@ -3,7 +3,7 @@
 namespace Gateway\Wallet\Payumoney;
 
 use Carbon\Carbon;
-use Gateway\Netbanking\Base;
+use Gateway\Wallet\Base;
 
 class RefundFile extends Base\RefundFile
 {

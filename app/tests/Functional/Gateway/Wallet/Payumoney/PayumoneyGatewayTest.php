@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Carbon\Carbon;
 use Http\Route;
 
 class PayumoneyGatewayTest extends TestCase
@@ -363,6 +364,51 @@ class PayumoneyGatewayTest extends TestCase
         $this->refundPayment($capturePayment['id']);
 
         $refund = $this->getLastEntity('wallet', true);
+    }
+
+    public function testRefundExcelFile()
+    {
+        $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForPayumoneyWallet();
+
+        $this->assertEquals($data['wallet_payumoney']['count'], 3);
+    }
+
+    protected function generateRefundsExcelForPayumoneyWallet()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/wallet/excel/monthly',
+            'method' => 'post',
+            'content' => [
+                'wallet'  => 'payumoney'
+            ],
+        );
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function runPaymentCallbackFlowWalletPayumoney($response, &$callback = null)
