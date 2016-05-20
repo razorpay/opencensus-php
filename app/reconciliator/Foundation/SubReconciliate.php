@@ -136,7 +136,7 @@ class SubReconciliate
         {
             if ($iinCardType !== $rowDetails[self::CARD_TYPE])
             {
-                // TODO: Raise an alert for mismatch of card types.
+                // TODO: Raise a critical alert for mismatch of card types.
             }
         }
     }

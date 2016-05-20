@@ -20,7 +20,7 @@ class FileProcessor
     const FILE_TYPE = 'file_type';
     const FILE_DETAILS = 'file_details';
     const SHEET_NAME = 'sheet_name';
-    
+
     const ZIP_EXTENSION = 'zip';
 
     const STORAGE = 'storage';
@@ -131,29 +131,25 @@ class FileProcessor
 
     public function deleteFileLocally($filePath)
     {
-        if (file_exists($filePath))
+        if (file_exists($filePath) === false)
         {
-            $success = unlink($filePath);
-            if ($success === false)
-            {
-                throw new Exception\ReconciliationException(
-                    'Failed to delete file.', ['file_path' => $filePath]
-                );
-            }
+            // TODO: Raise an alert about file not being present.
+            return;
         }
-        else
+
+        $success = unlink($filePath);
+        if ($success === false)
         {
-            throw new Exception\ReconciliationException(
-                'Cannot delete. File not present.', ['file_path' => $filePath]
-            );
+            // TODO: Raise a critical alert about not being able to delete the file.
         }
+
     }
 
 
     /**
      * Gets the extension of the file.
      * Also validates the (mime type + extension) combination.
-     * 
+     *
      * @param UploadedFile $file
      * @return string Extension of the file
      */
@@ -253,7 +249,7 @@ class FileProcessor
         }
     }
 
-    
+
     public function getFolderFromFilePath($filePath)
     {
         return pathinfo(realpath($filePath), PATHINFO_DIRNAME);

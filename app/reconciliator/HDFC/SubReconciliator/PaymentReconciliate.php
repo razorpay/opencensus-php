@@ -59,27 +59,25 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     
     protected function getCardType($row)
     {
-        if (isset($row[self::ROW_CARD_TYPE]) === true)
+        if (isset($row[self::ROW_CARD_TYPE]) === false)
         {
-            $cardType = strtolower($row[self::ROW_CARD_TYPE]);
+            return null;
+        }
+        
+        $cardType = strtolower($row[self::ROW_CARD_TYPE]);
 
-            if ($cardType === 'dc')
-            {
-                $cardType = self::CREDIT;
-            }
-            else if ($cardType === 'dd')
-            {
-                $cardType = self::DEBIT;
-            }
-            else
-            {
-                // TODO: Raise an alert for card type being present in the row
-                // but the value is not what was expected.
-            }
+        if ($cardType === 'dc')
+        {
+            $cardType = self::CREDIT;
+        }
+        else if ($cardType === 'dd')
+        {
+            $cardType = self::DEBIT;
         }
         else
         {
-            $cardType = null;
+            // TODO: Raise an alert for card type being present in the row
+            // but the value is not what was expected.
         }
 
         return $cardType;

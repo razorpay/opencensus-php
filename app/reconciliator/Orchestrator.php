@@ -115,7 +115,7 @@ class Orchestrator
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
         $this->validator->filterEmails($this->emailDetails);
-        
+
         // Figures out the gateway and sets the gateway reconciliator object for the orchestrator,
         // using the input details.
         $this->setGatewayFromEmailId();
@@ -146,28 +146,45 @@ class Orchestrator
 
             if ($validate === false)
             {
-                // Delete it locally.
-                $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+                // TODO: Raise an alert about skipping the file because validation failed.
 
-                // Remove the file from allFiles variable.
-                unset($this->allFilesDetails[$file]);
+                $this->handleInvalidFile($file, $fileDetails);
 
                 // Don't get the content of the file.
                 continue;
-
-                // TODO: Raise an alert about skipping the file.
             }
 
-            // Converts to in-memory array and stores it in instance variable.
-            // TODO: Might want to move this into Gateway implementation since
-            // conversion to array might be different for different gateways.
-            $this->getFileContentInArrayAndSet($fileDetails);
+            try
+            {
+                // Converts to in-memory array and stores it in instance variable.
+                // TODO: Might want to move this into Gateway implementation since
+                // conversion to array might be different for different gateways.
+                $this->getFileContentInArrayAndSet($fileDetails);
+            }
+            catch (\Exception $ex)
+            {
+                // TODO: Raise an alert about not being able to convert file content to array.
+
+                $this->handleInvalidFile($file, $fileDetails);
+
+                continue;
+            }
 
             // Delete the file. We have all the data in $allFilesContents.
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
         $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
+    }
+
+
+    protected function handleInvalidFile($file, $fileDetails)
+    {
+        // Delete it locally.
+        $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+
+        // Remove the file from allFiles variable.
+        unset($this->allFilesDetails[$file]);
     }
 
 
@@ -257,21 +274,28 @@ class Orchestrator
             // Else, get the file details of the attachment.
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
-                // Gets all files details present in the zip file.
-                $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
+                try
+                {    // Gets all files details present in the zip file.
+                    $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
 
-                // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
-                if (empty($extractedFileDetails) === true)
-                {
-                    throw new Exception\ReconciliationException(
-                        'No files present in the zip file attachment.',
-                        ['file_name' => $file->getClientOriginalName()]
-                    );
+                    // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
+                    if (empty($extractedFileDetails) === true)
+                    {
+                        throw new Exception\ReconciliationException(
+                            'No files present in the zip file attachment.',
+                            ['file_name' => $file->getClientOriginalName()]
+                        );
+                    }
+
+                    // Using array merge since $extractedFileDetails contains an
+                    // array of file details of different files in the zip file.
+                    array_merge($allFilesDetails, $extractedFileDetails);
                 }
-
-                // Using array merge since $extractedFileDetails contains an
-                // array of file details of different files in the zip file.
-                array_merge($allFilesDetails, $extractedFileDetails);
+                catch (\Exception $ex)
+                {
+                    // TODO: Raise an alert about skipping a file because of zip exception
+                    continue;
+                }
             }
             else
             {

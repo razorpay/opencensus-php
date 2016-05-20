@@ -103,12 +103,10 @@ class Converter
             foreach ($sheetNames as $sheetName)
             {
                 // Discards all the sheets with names starting with "sheet"
-                if (substr(strtolower($sheetName), 0, 5) === "sheet")
+                if (substr(strtolower($sheetName), 0, 5) !== "sheet")
                 {
-                    continue;
+                    $validSheetNames[] = $sheetName;
                 }
-
-                $validSheetNames[] = $sheetName;
             }
         });
 
@@ -152,10 +150,11 @@ class Converter
                     $data[] = array_combine($columnHeaders, $row);
                 }
             }
+            // TODO: Handle this for when an exception is thrown.
             fclose($handle);
         }
 
-        return $this->dataArray[] = $data;
+        return $data;
     }
 
 
