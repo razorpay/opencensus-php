@@ -3,57 +3,51 @@
 namespace Reconciliator\HDFC\SubReconciliator;
 
 
-use Models\Card\IIN;
+use Reconciliator\Base\SubReconciliator;
+use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-use Models\Payment;
-use Gateway\AxisMigs;
 
-use Reconciliator\Base;
-
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
-    const CREDIT = 'credit';
-    const DEBIT = 'debit';
-
-
     /*******************
      * Row Header Names
      *******************/
-
     const ROW_PAYMENT_ID  = 'merchant_trackid';
     const ROW_CARD_TYPE   = 'debitcredit_type';
     const ROW_SERVICE_TAX = 'serv_tax';
-
-
-    /*******************
-     * Instance objects
-     *******************/
-
-    protected $paymentRepo;
-    protected $gatewayRepo;
-    protected $iinRepo;
-
-
-    /*********************
-     * Instance variables
-     *********************/
-
-    protected $payment;
-
+    const ROW_SB_CESS     = 'sb_cess';
+    const ROW_FEES        = 'msf';
+    
+    
     public function __construct()
     {
-        // These are being used by the parent classes.
-        $this->gatewayRepo = new AxisMigs\Repository;
-        $this->paymentRepo = new Payment\Repository;
-        $this->iinRepo     = new IIN\Repository;
+        parent::__construct();
     }
 
 
+    protected function getPaymentId($row)
+    {
+        $paymentId = $row[self::ROW_PAYMENT_ID];
+        $paymentId = str_replace("'", '', $paymentId);
+
+        return $paymentId;
+    }
+    
+
     protected function getServiceTax($row)
     {
-        $serviceTax = $row[self::ROW_SERVICE_TAX];
+        // HDFC reconciliation files have service tax and sb cess fields separately
+        $serviceTax = floatval($row[self::ROW_SERVICE_TAX]) + floatval($row[self::ROW_SB_CESS]);
 
         return $serviceTax;
+    }
+
+
+    protected function getFees($row)
+    {
+        $fees = $row[self::ROW_FEES];
+
+        return floatval($fees);
     }
 
 
@@ -68,11 +62,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if ($cardType === 'dc')
         {
-            $cardType = self::CREDIT;
+            $cardType = BaseReconciliate::CREDIT;
         }
         else if ($cardType === 'dd')
         {
-            $cardType = self::DEBIT;
+            $cardType = BaseReconciliate::DEBIT;
         }
         else
         {
@@ -81,24 +75,5 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $cardType;
-    }
-
-
-    protected function getPaymentId($row)
-    {
-        $paymentId = $row[self::ROW_PAYMENT_ID];
-        $paymentId = str_replace("'", '', $paymentId);
-
-        return $paymentId;
-    }
-
-    public function inExcludeList($fileDetails)
-    {
-        if (strpos($fileDetails['file_name'], 'detailed') !== false)
-        {
-            return true;
-        }
-        
-        return false;
     }
 }

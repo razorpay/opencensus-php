@@ -8,19 +8,7 @@ use Models\Payment;
 
 class SubReconciliate
 {
-    /*************************
-     * Internal Header Names
-     *************************/
-
-    const PAYMENT_ID  = 'payment_id';
-    const CARD_TYPE   = 'card_type';
-    const SERVICE_TAX = 'service_tax';
-
-
-    public function __construct()
-    {
-
-    }
+    
 
 
     /**
@@ -50,112 +38,26 @@ class SubReconciliate
                 continue;
             }
 
-            // Validates that the payment status is not failed.
-            $this->validatePaymentStatus();
-
-            // Stores the gateway fees
-            $this->recordGatewayFees();
-
-            // Stores the gateway service tax
-            $this->recordGatewayServiceTax();
-
-            $this->setCardTypeIfAbsent($rowDetails);
-
-            $this->recordRrn();
-        }
-    }
-
-    protected function getRowDetailsStructured($row)
-    {
-        // Gets payment ID
-        $paymentId = $this->getPaymentId($row);
-
-        // If payment id is not present, return. No point of evaluating the row.
-        if (empty($paymentId) === true)
-        {
-            return null;
-        }
-
-        try
-        {
-            $this->payment = $this->paymentRepo->findOrFail($paymentId);
-        }
-        catch (\Exception $ex)
-        {
-            // TODO: Raise an alert for not finding the payment in the db.
-            return null;
-        }
-
-        // Gets the card type details
-        $cardType = $this->getCardType($row);
-
-        // Gets the service tax
-        $serviceTax = $this->getServiceTax($row);
-
-        // Assign values to return
-        $rowDetails = [
-            self::PAYMENT_ID  => $paymentId,
-            self::CARD_TYPE   => $cardType,
-            self::SERVICE_TAX => $serviceTax,
-        ];
-
-        return $rowDetails;
-    }
-
-
-    protected function validatePaymentStatus()
-    {
-        $paymentStatus = $this->payment->getStatus();
-
-        //$this->getAttribute(self::STATUS) === Status::FAILED
-
-        if ($paymentStatus === Payment\Status::FAILED)
-        {
-            // TODO: Raise a critical alert for payment status being failed.
-        }
-    }
-
-
-    protected function setCardTypeIfAbsent($rowDetails)
-    {
-        if (empty($rowDetails[self::CARD_TYPE]) === true)
-        {
-            return;
-        }
-
-        $paymentIin = $this->payment->card->iinRelation;
-
-        $iinCardType = $paymentIin->getType();
-
-        if (empty($iinCardType) === true)
-        {
-            $paymentIin->setType($rowDetails[self::CARD_TYPE]);
-            $this->iinRepo->saveOrFail($paymentIin);
-        }
-        else
-        {
-            if ($iinCardType !== $rowDetails[self::CARD_TYPE])
+            try
             {
-                // TODO: Raise a critical alert for mismatch of card types.
+                // Validates that the payment status is not failed.
+                $this->validatePaymentStatus();
+
+                // Stores the gateway fees
+                $this->recordGatewayFees();
+
+                // Stores the gateway service tax
+                $this->recordGatewayServiceTax();
+
+                $this->setCardTypeIfAbsent($rowDetails);
+
+                $this->recordRrn();
+            }
+            catch (\Exception $ex)
+            {
+                // Raise a critical alert for not being able to perform one of the reconciliation actions.
+                continue;
             }
         }
-    }
-
-
-    protected function recordRrn()
-    {
-
-    }
-
-
-    protected function recordGatewayFees()
-    {
-        // TODO: Store in payments table
-    }
-
-
-    protected function recordGatewayServiceTax()
-    {
-        // TODO: Store in payments table
     }
 }

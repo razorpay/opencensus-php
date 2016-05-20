@@ -3,56 +3,32 @@
 namespace Reconciliator\Axis\SubReconciliator;
 
 
-use Models\Payment;
-use Gateway\AxisMigs;
-use Models\Card\IIN;
-
 use Reconciliator\Base\SubReconciliator;
+use Reconciliator\Base\Reconciliate as BaseReconciliate;
+
 
 class RefundReconciliate extends SubReconciliator\RefundReconciliate
 {
-    const CREDIT = 'credit';
-    const DEBIT = 'debit';
-
-
     /*******************
      * Row Header Names
      *******************/
-
-    const ROW_PAYMENT_ID  = 'merchant_trans_ref';
+    const ROW_REFUND_ID   = 'merchant_trans_ref';
     const ROW_CARD_TYPE   = 'card_type';
     const ROW_SERVICE_TAX = 'service_tax145';
+    const ROW_FEES        = 'commission';
 
-
-    /*******************
-     * Instance objects
-     *******************/
-
-    protected $gatewayRepo;
-    protected $paymentRepo;
-    protected $iinRepo;
-
-
-    /*********************
-     * Instance variables
-     *********************/
-
-    protected $payment;
-
+    
     public function __construct()
     {
-        // These are being used by the parent classes.
-        $this->paymentRepo = new Payment\Repository;
-        $this->iinRepo     = new IIN\Repository;
-        $this->gatewayRepo = new AxisMigs\Repository;
+        parent::__construct();
     }
+    
 
-
-    protected function getPaymentId($row)
+    protected function getRefundId($row)
     {
-        $paymentId = $row[self::ROW_PAYMENT_ID];
+        $refundId = $row[self::ROW_REFUND_ID];
 
-        return $paymentId;
+        return $refundId;
     }
 
 
@@ -60,7 +36,17 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     {
         $serviceTax = $row[self::ROW_SERVICE_TAX];
 
-        return $serviceTax;
+        // TODO: Verify this with shk.
+        return floatval($serviceTax);
+    }
+
+
+    protected function getFees($row)
+    {
+        $fees = $row[self::ROW_FEES];
+
+        // TODO: Verify this with shk.
+        return floatval($fees);
     }
 
 
@@ -75,11 +61,11 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
         if ($cardType === 'c')
         {
-            $cardType = self::CREDIT;
+            $cardType = BaseReconciliate::CREDIT;
         }
         else if ($cardType === 'd')
         {
-            $cardType = self::DEBIT;
+            $cardType = BaseReconciliate::DEBIT;
         }
         else
         {

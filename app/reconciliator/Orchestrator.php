@@ -115,7 +115,7 @@ class Orchestrator
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
         $this->validator->filterEmails($this->emailDetails);
-
+        
         // Figures out the gateway and sets the gateway reconciliator object for the orchestrator,
         // using the input details.
         $this->setGatewayFromEmailId();
@@ -143,17 +143,17 @@ class Orchestrator
         {
             // Checks if this particular file needs to be excluded for the gateway
             $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
-            
+
             if ($inExclude === true)
             {
                 // TODO: Raise an alert about skipping the file because it's in the exclude list of gateway.
-                
+
                 $this->handleInvalidFile($file, $fileDetails);
 
                 // Don't get the content of the file.
                 continue;
             }
-            
+
             // Validates the file type, size, etc..
             $validate = $this->validator->validateFile($fileDetails);
 
