@@ -135,11 +135,6 @@ class HdfcGatewayTest extends TestCase
 
     public function testRupayPaymentAuthError()
     {
-        $this->authErrorOnRupayPayment();
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = 'http://planetcalc.com/2464/';
-
         $testData = [
             'response' => [
                 'content' => [
@@ -158,7 +153,10 @@ class HdfcGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($testData, function()
         {
-            $this->doAuthPayment();
+            $payment = $this->getDefaultPaymentArray();
+            $payment['card']['number'] = '6073840000000008';
+
+            $this->doAuthPayment($payment);
         });
     }
 
