@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         'bank'          =>  'required_if:method,netbanking',
         'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney',
         'emi_duration'  =>  'required_with:emi|integer|in:3,6,9,12,18,24',
-        'description'   =>  'sometimes|max:255',
+        'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
         'signature'     =>  'sometimes',
@@ -182,7 +182,7 @@ class Validator extends Base\Validator
                 Entity::DESCRIPTION);
         }
 
-        if (strlen($desc) > 1000)
+        if (strlen($desc) > 255)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
