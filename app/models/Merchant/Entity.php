@@ -580,6 +580,6 @@ class Entity extends Base\PublicEntity
 
     public function toArrayConfig()
     {
-        return array_only($this->getAttributes(), self::CONFIG_LIST);
+        return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 }
