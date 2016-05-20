@@ -12,6 +12,7 @@ use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
+use Models\Order;
 use Models\Merchant\Webhook;
 use EE\Exception;
 use EE\Error;
@@ -71,7 +72,37 @@ class Checkout
             }
         }
 
+        // If merchant is TPV enabled pass details for
+        // current order as part of preferences
+        if (($merchant->isTPVRequired()) and
+            (isset($input[Payment\Entity::ORDER_ID])))
+        {
+            $orderData = $this->fetchTPVOrderInfo($input, $merchant);
+
+            if ($orderData !== null)
+            {
+                $data['order'] = $orderData;
+            }
+        }
+
         return $data;
+    }
+
+    protected function fetchTPVOrderInfo($input, $merchant)
+    {
+        $orderData = null;
+
+        try
+        {
+            $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
+                                    $input[Payment\Entity::ORDER_ID], $merchant->getId());
+        }
+        catch(\Exception $ex)
+        {
+            //;
+        }
+
+        return $orderData ;
     }
 
     protected function fetchCustomerData($input, $merchant)

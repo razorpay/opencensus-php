@@ -8,6 +8,7 @@ use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment\Action;
 use Gateway\Hdfc\Mock;
+use Http\Route;
 use Models\Card;
 use Models\Card\Network;
 
@@ -272,11 +273,7 @@ class Server extends Base\Mock\Server
     {
         $res['result'] = 'ENROLLED';
 
-        $request = \Request::getFacadeRoot();
-        $scheme = $request->getScheme().'://';
-        $host = $request->getHost();
-
-        $res['url'] = $scheme . $host . '/gateway/3dsecure';
+        $res['url'] = Route::getUrl('mockhdfc_3dsecure');
 
         return $res;
     }

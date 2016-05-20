@@ -50,6 +50,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                              = 'Card details entered by the user is/are invalid.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
+    const BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID                      = 'The payment failed most possibly due to an invalid card number';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT          = 'The bank has declined the payment as this card cannot be used for this type of payment. Please use an alternate credit card for the purpose.';
     const BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE                     = 'The card cvv length should only be 3 digits';
@@ -154,4 +155,5 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE                                   = 'The image type is not jpg, jpeg or png.';
+    const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                   = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
 }
