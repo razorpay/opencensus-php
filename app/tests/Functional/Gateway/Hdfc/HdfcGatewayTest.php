@@ -215,8 +215,9 @@ class HdfcGatewayTest extends TestCase
     {
         $server = $this->mockServerContentFunction(function (& $content)
                         {
+                            $content['amt'] = '1.0';
                             $content['result'] = 'AUTH ERROR';
-                            unset($content['PAReq']);
+                            unset($content['PAReq'], $content['eci']);
                             return $content;
                         });
     }
