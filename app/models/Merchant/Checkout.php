@@ -77,7 +77,7 @@ class Checkout
         if (($merchant->isTPVRequired()) and
             (isset($input[Payment\Entity::ORDER_ID])))
         {
-            $orderData = $this->fetchTPVOrderInfo();
+            $orderData = $this->fetchTPVOrderInfo($input, $merchant);
 
             if ($orderData !== null)
             {
