@@ -52,4 +52,16 @@ class Service extends Base\Service
 
         return $payments->toArrayPublic();
     }
+
+    public function fetchOrderBankAndAccountNumberForMerchant($id, $merchant)
+    {
+        Order\Entity::verifyIdAndStripSign($id);
+
+        $order = (new Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        return [
+            'bank'           => $order->getBank(),
+            'account_number' => $order->getMaskedAccountNumber(),
+        ];
+    }
 }

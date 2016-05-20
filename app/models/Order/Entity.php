@@ -147,7 +147,7 @@ class Entity extends Base\PublicEntity
 
         $accountNumberLength = strlen($accountNumber);
 
-        $last2Digits = substr($accountNumber, -3, -1);
+        $last2Digits = substr($accountNumber, -2);
 
         $formattedNumber = str_repeat('X',$accountNumberLength - 2).$last2Digits;
 
