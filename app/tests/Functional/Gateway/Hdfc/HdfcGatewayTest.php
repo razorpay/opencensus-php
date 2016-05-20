@@ -3,6 +3,8 @@
 namespace Tests\Functional\Gateway\Hdfc;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
+use EE\Error\PublicErrorCode;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
@@ -131,6 +133,35 @@ class HdfcGatewayTest extends TestCase
         $this->verifyPayment($payment['razorpay_payment_id']);
     }
 
+    public function testRupayPaymentAuthError()
+    {
+        $this->authErrorOnRupayPayment();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = 'http://planetcalc.com/2464/';
+
+        $testData = [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'The payment failed most possibly due to an invalid card number',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'EE\Exception\GatewayErrorException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
+            ],
+        ];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testAuthorizeFailedPayment()
     {
         $this->timeoutHdfcAuthorizePayment();
@@ -176,6 +207,16 @@ class HdfcGatewayTest extends TestCase
                             $content['RESPMSG'] = 'Transaction succeeded';
                             $content['STATUS'] = 'TXN_SUCCESS';
 
+                            return $content;
+                        });
+    }
+
+    protected function authErrorOnRupayPayment()
+    {
+        $server = $this->mockServerContentFunction(function (& $content)
+                        {
+                            $content['result'] = 'AUTH ERROR';
+                            unset($content['PAReq']);
                             return $content;
                         });
     }

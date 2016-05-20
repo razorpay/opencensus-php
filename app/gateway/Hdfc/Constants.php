@@ -4,7 +4,7 @@ namespace Gateway\Hdfc;
 
 final class Constants
 {
-    const ENROLL_RESULT_LENGTH = 2;
+    const ENROLL_RESULT_LENGTH = 20;
 
     const STATUS_LENGTH = 50;
 
