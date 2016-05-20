@@ -77,6 +77,7 @@ final class Result
     const NOT_APPROVED      = 'NOT APPROVED';
     const DENIED_BY_RISK    = 'DENIED BY RISK';
     const HOST_TIMEOUT      = 'HOST TIMEOUT';
+    const AUTH_ERROR        = 'AUTH ERROR';
 
     public static function getResultCode($result)
     {
@@ -95,6 +96,10 @@ final class Result
                 break;
             case 'FSS0001-Authentication Not Available':
                 $result = self::FSS0001_ENROLLED;
+                $success = false;
+                break;
+            case 'AUTH ERROR':
+                $result = self::AUTH_ERROR;
                 $success = false;
                 break;
             default:
