@@ -37,6 +37,68 @@ class Service extends Base\Service
         return $returnValue;
     }
 
+    public function getWalletRefundsFile(array $input = array(), $frequency = null)
+    {
+        $input['frequency'] = $frequency;
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        $returnValue = [];
+
+        if (isset($input['wallet']))
+        {
+            $gateway = Payment\Gateway::$walletToGatewayMap[$input['wallet']];
+
+            $returnValue[$gateway] = $this->generateRefundFileForWallet($input['wallet'], $from, $to, $gateway);
+        }
+        else
+        {
+            foreach (Payment\Gateway::$walletToGatewayMap as $wallet => $walletGateway)
+            {
+                $returnValue[$walletGateway] = $this->generateRefundFileForWallet($wallet, $from, $to, $walletGateway);
+            }
+        }
+
+        return $returnValue;
+    }
+
+    protected function generateRefundFileForWallet($wallet, $from, $to, $gateway)
+    {
+        $refunds = (new Refund\Repository)->fetchRefundsForWalletBetweenTimestamps(
+                                                $wallet, $from, $to, $gateway);
+
+        $count = $refunds->count();
+
+        if ($count === 0)
+        {
+            return ['count' => $count];
+        }
+
+        $data = [];
+
+        foreach ($refunds as $refund)
+        {
+            $payment = $refund->payment;
+            $terminal = $payment->terminal;
+
+            $col['refund'] = $refund->toArray();
+            $col['payment'] = $refund->payment->toArray();
+            $col['terminal'] = $refund->payment->terminal->toArray();
+
+            $data[] = $col;
+        }
+
+        $input['data'] = $data;
+
+        $gateway = $terminal->getGateway();
+
+        $action = 'generateRefunds';
+
+        $file = Gateway::call($gateway, $action, $input, $this->mode);
+
+        return ['file' => $file, 'count' => $count];
+    }
+
     protected function generateNBRefundFileForBank($bankCode, $from, $to, $gateway)
     {
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
@@ -89,6 +151,10 @@ class Service extends Base\Service
 
             $from = $fromTimeStamp;
         }
+        else if(isset($input['frequency']) and $input['frequency'] === 'monthly')
+        {
+            $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
+        }
         else
         {
             if (isset($input['from']))
@@ -117,7 +183,7 @@ class Service extends Base\Service
     public function fetchMultiple($input)
     {
         $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
-        
+
         return $refunds->toArrayPublic();
     }
 

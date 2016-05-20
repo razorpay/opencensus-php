@@ -119,4 +119,37 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
+    public function fetchRefundsForWalletBetweenTimestamps($wallet, $from, $to, $gateway)
+    {
+        $repo = $this->repo;
+
+        $ptable = Payment\Entity::getTableName();
+
+        $attrs = Refund\Entity::getTableName() . '.*';
+
+        $query = $this->newQuery();
+
+        $refunds = $query->select($attrs)->join(
+            $ptable,
+            function ($join) use ($from, $to, $wallet, $gateway)
+            {
+                $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
+
+                $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
+                $pwallet = Payment\Entity::getAttributeWithTableName(Payment\Entity::WALLET);
+                $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+                $join->on($rPaymentId, '=', $pid)
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->where($pwallet, '=', $wallet)
+                     ->where($pgateway, '=', $gateway);
+            })
+            ->with('payment')
+            ->get();
+
+        return $refunds;
+    }
+
 }

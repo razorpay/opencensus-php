@@ -153,6 +153,15 @@ class PaymentController extends BaseController
         return ApiResponse::json($refundExcel);
     }
 
+    public function generateWalletRefunds($frequency = null)
+    {
+        $input = Input::all();
+
+        $refundExcel = (new Payment\Refund\Service)->getWalletRefundsFile($input, $frequency);
+
+        return ApiResponse::json($refundExcel);
+    }
+
     public function postTimeout()
     {
         $data = $this->payment->timeoutOldPayments();

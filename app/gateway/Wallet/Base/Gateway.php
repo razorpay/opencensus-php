@@ -2,9 +2,10 @@
 
 namespace Gateway\Wallet\Base;
 
+use Gateway\Base;
 use Gateway\Wallet;
 
-class Gateway extends \Gateway\Base\Gateway
+class Gateway extends Base\Gateway
 {
     protected function createGatewayPaymentEntity($attributes)
     {
@@ -39,6 +40,22 @@ class Gateway extends \Gateway\Base\Gateway
     protected function getNewGatewayPaymentEntity()
     {
         return new Wallet\Base\Entity;
+    }
+
+    public function generateRefunds($input)
+    {
+        foreach ($input['data'] as & $row)
+        {
+            $payment = $this->getRepo()->findByPaymentIdAndAction(
+                                $row['payment']['id'], Base\Action::AUTHORIZE);
+
+            $row['gateway'] = $payment->toArray();
+        }
+
+        $ns = $this->getGatewayNamespace();
+        $class = $ns . '\\' . 'RefundFile';
+
+        return (new $class)->generate($input);
     }
 
     protected function getMappedAttributes($attributes)
