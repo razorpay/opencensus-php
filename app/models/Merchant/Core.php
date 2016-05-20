@@ -131,9 +131,7 @@ class Core extends Base\Core
 
         $this->saveAndNotify($merchant);
 
-        $attr = array_only($merchant->getAttributes(), Entity::CONFIG_LIST);
-
-        return $merchant->newInstance($attr);
+        return $merchant;
     }
 
     public function createBalance($merchant, $mode)
@@ -178,7 +176,9 @@ class Core extends Base\Core
             $label   = $merchant->getBillingLabel();
             $message = $merchant->getDashboardEntityLinkForSlack($label);
 
-            $user = $this->app['app_info']['admin_user'] ?: $this->app['app_info']['merchant'];
+            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+            $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
@@ -196,15 +196,15 @@ class Core extends Base\Core
      */
     protected function getEditedMerchantDifference($merchant)
     {
-        $dirtyAttributes = $merchant->getDirty();
+        $original = $merchant->getOriginalAttributesAgainstDirty();
 
-        if (empty($dirtyAttributes) === false)
+        if ($original !== null)
         {
-            $originalAttributes = array_intersect_key($merchant->getOriginal(), $dirtyAttributes);
+            $dirtyAttributes = $merchant->getDirty();
 
             $data = array();
 
-            foreach ($originalAttributes as $key => $value)
+            foreach ($original as $key => $value)
             {
                 $data[$key] = '*Old*: ' . $value . PHP_EOL . '*New*: ' . $dirtyAttributes[$key];
             }

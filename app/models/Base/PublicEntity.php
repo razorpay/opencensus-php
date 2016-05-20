@@ -147,16 +147,7 @@ class PublicEntity extends UniqueIdEntity
         $entity = $this->entity . 's';
 
         // It's always needed for live mode. Not taking care of test for now.
-        switch ($entity)
-        {
-            // Entity URL for merchants is different from other entities
-            case 'merchants':
-                $url = "https://dashboard.razorpay.com/admin#/app/$entity/$id/detail";
-                break;
-            default:
-                $url = "https://dashboard.razorpay.com/admin#/app/$entity/live/$id";
-                break;
-        }
+        $url = "https://dashboard.razorpay.com/admin#/app/$entity/live/$id";
 
         return $url;
     }
@@ -178,6 +169,25 @@ class PublicEntity extends UniqueIdEntity
 
         // In the format <link|display_text>
         return '<'. $url . '|' . $text.'>';
+    }
+
+    /**
+     * Get original attributes against updated attributes
+     *
+     * @return array|null
+     */
+    public function getOriginalAttributesAgainstDirty()
+    {
+        $dirtyAttributes = $this->getDirty();
+
+        if (empty($dirtyAttributes) === false)
+        {
+            $attributes = $this->getOriginal();
+
+            $originalAttributes = array_intersect_key($attributes, $dirtyAttributes);
+
+            return $originalAttributes;
+        }
     }
 
     public static function verifyIdAndStripSign(& $id)

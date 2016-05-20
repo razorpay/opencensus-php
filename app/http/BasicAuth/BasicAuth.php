@@ -130,6 +130,12 @@ class BasicAuth
     protected $trace;
 
     /**
+     * Array of dashboard headers
+     * @var array
+     */
+    protected $dashboardHeaders = array();
+
+    /**
      * Contains valid lengths of key.
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
@@ -617,11 +623,16 @@ class BasicAuth
     {
         $headers = $this->request->headers;
 
-        $this->app['app_info'] = array(
+        $this->dashboardHeaders = array(
             'dashboard'     => $headers->get('X-Dashboard'),
             'merchant'      => $headers->get('X-Dashboard-Merchant'),
             'admin_user'    => $headers->get('X-Dashboard-Username')
         );
+    }
+
+    public function getDashboardHeaders()
+    {
+        return $this->dashboardHeaders;
     }
 
     protected function verifyInternalAppSecret()
