@@ -15,7 +15,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     const ROW_REFUND_ID   = 'merchant_trans_ref';
     const ROW_CARD_TYPE   = 'card_type';
     const ROW_SERVICE_TAX = 'service_tax145';
-    const ROW_FEES        = 'commission';
+    const ROW_FEE         = 'commission';
 
     
     public function __construct()
@@ -41,12 +41,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     }
 
 
-    protected function getFees($row)
+    protected function getFee($row)
     {
-        $fees = $row[self::ROW_FEES];
+        $fee = $row[self::ROW_FEE];
 
         // TODO: Verify this with shk.
-        return floatval($fees);
+        return floatval($fee);
     }
 
 

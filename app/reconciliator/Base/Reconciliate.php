@@ -27,7 +27,7 @@ class Reconciliate
     const REFUND_ID           = 'refund_id';
     const CARD_TYPE           = 'card_type';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
-    const GATEWAY_FEES        = 'gateway_fees';
+    const GATEWAY_FEE         = 'gateway_fee';
 
     /*************************
      * Card types

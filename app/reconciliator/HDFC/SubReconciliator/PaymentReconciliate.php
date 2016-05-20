@@ -16,7 +16,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     const ROW_CARD_TYPE   = 'debitcredit_type';
     const ROW_SERVICE_TAX = 'serv_tax';
     const ROW_SB_CESS     = 'sb_cess';
-    const ROW_FEES        = 'msf';
+    const ROW_FEE         = 'msf';
     
     
     public function __construct()
@@ -43,11 +43,11 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     }
 
 
-    protected function getFees($row)
+    protected function getFee($row)
     {
-        $fees = $row[self::ROW_FEES];
+        $fee = $row[self::ROW_FEE];
 
-        return floatval($fees);
+        return floatval($fee);
     }
 
 

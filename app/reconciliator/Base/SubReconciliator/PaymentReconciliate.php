@@ -6,7 +6,6 @@ namespace Reconciliator\Base\SubReconciliator;
 use Models\Payment;
 use Models\Card\IIN;
 use Models\Transaction;
-use Models\Payment\Refund;
 
 use Gateway\AxisMigs;
 
@@ -71,14 +70,12 @@ class PaymentReconciliate
                 $this->validatePaymentStatus();
 
                 // Stores the gateway fees
-                $this->recordGatewayFees($rowDetails);
+                $this->recordGatewayFee($rowDetails[BaseReconciliate::GATEWAY_FEE]);
 
                 // Stores the gateway service tax
-                $this->recordGatewayServiceTax($rowDetails);
+                $this->recordGatewayServiceTax($rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX]);
 
-                $this->setCardTypeIfAbsent($rowDetails);
-
-                $this->recordRrn();
+                $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
             }
             catch (\Exception $ex)
             {
@@ -117,14 +114,14 @@ class PaymentReconciliate
         $serviceTax = $this->getServiceTax($row);
 
         // Gets the gateway fees
-        $fees = $this->getFees($row);
+        $fee = $this->getFee($row);
 
         // Assign values to return
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
             BaseReconciliate::CARD_TYPE           => $cardType,
             BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEES        => $fees,
+            BaseReconciliate::GATEWAY_FEE         => $fee,
         ];
 
         return $rowDetails;
@@ -144,9 +141,9 @@ class PaymentReconciliate
     }
 
 
-    protected function setCardTypeIfAbsent($rowDetails)
+    protected function setCardTypeIfAbsent($reconCardType)
     {
-        if (empty($rowDetails[BaseReconciliate::CARD_TYPE]) === true)
+        if (empty($reconCardType) === true)
         {
             return;
         }
@@ -157,50 +154,44 @@ class PaymentReconciliate
 
         if (empty($iinCardType) === true)
         {
-            $paymentIin->setType($rowDetails[BaseReconciliate::CARD_TYPE]);
+            $paymentIin->setType($reconCardType);
             $this->iinRepo->saveOrFail($paymentIin);
         }
         else
         {
-            if ($iinCardType !== $rowDetails[BaseReconciliate::CARD_TYPE])
+            if ($iinCardType !== $reconCardType)
             {
                 // TODO: Raise a critical alert for mismatch of card types.
             }
         }
     }
+
     
-
-    /**
-     * Gets the transaction corresponding to the payment ID.
-     * Sets the gateway fees for that transaction.
-     */
-    protected function recordGatewayFees($rowDetails)
+    protected function recordGatewayFee($reconGatewayFee)
     {
-        // TODO: Understand transactions.
-        // Check if there's a different transaction for refund and payment.
-        // If there's a different transaction for payment and refund,
-        // the entity id of payment should be used in payment reconciliate
-        // and the entity id of refund should be used in refund reconciliate.
+        if ($reconGatewayFee === null)
+        {
+            return;
+        }
 
+        $paymentId = $this->payment->getId();
 
-        $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
-        
         $transaction = $this->transactionRepo->findByEntityId($paymentId);
 
         if ($transaction === null)
         {
             // TODO: raise an alert about transaction being absent for an entity id.
         }
-        
-        $currentGatewayFees = $transaction->getGatewayFees();
-        
-        if ($currentGatewayFees === null)
+
+        $currentGatewayFee = $transaction->getGatewayFee();
+
+        if ($currentGatewayFee === null)
         {
-            $transaction->setGatewayFees($rowDetails[BaseReconciliate::GATEWAY_FEES]);
+            $transaction->setGatewayFee($reconGatewayFee);
         }
         else
         {
-            if ($currentGatewayFees !== $rowDetails[BaseReconciliate::GATEWAY_FEES])
+            if ($currentGatewayFee !== $reconGatewayFee)
             {
                 // TODO: raise an alert about stored service tax and recon service tax not being the same
             }
@@ -208,26 +199,31 @@ class PaymentReconciliate
     }
 
 
-    protected function recordGatewayServiceTax($rowDetails)
+    protected function recordGatewayServiceTax($reconServiceTax)
     {
-        $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
-        
+        if ($reconServiceTax === null)
+        {
+            return;
+        }
+
+        $paymentId = $this->payment->getId();
+
         $transaction = $this->transactionRepo->findByEntityId($paymentId);
-        
+
         if ($transaction === null)
         {
             // TODO: raise an alert about transaction being absent for an entity id.
         }
-        
+
         $currentGatewayServiceTax = $transaction->getGatewayServiceTax();
-        
+
         if ($currentGatewayServiceTax === null)
         {
-            $transaction->setGatewayServiceTax($rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX]);
+            $transaction->setGatewayServiceTax($reconServiceTax);
         }
         else
         {
-            if ($currentGatewayServiceTax !== $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX])
+            if ($currentGatewayServiceTax !== $reconServiceTax)
             {
                 // TODO: raise an alert about stored service tax and recon service tax not being the same
             }

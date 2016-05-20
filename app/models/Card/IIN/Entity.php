@@ -3,6 +3,7 @@
 namespace Models\Card\IIN;
 
 use Models\Base;
+use Models\Card;
 use Constants\Table;
 
 class Entity extends Base\PublicEntity
@@ -89,6 +90,7 @@ class Entity extends Base\PublicEntity
 
     public function setType($type)
     {
+        Card\Type::checkType($type);
         $this->setAttribute(self::TYPE, $type);
     }
 
