@@ -31,6 +31,14 @@ class Converter
 
     protected $dataArray;
 
+
+    /**
+     * Not being used anywhere currently. Might use it later.
+     *
+     * @param $fileDetails
+     * @return array
+     * @throws Exception\ReconciliationException
+     */
     public function convertFileContentToArray($fileDetails)
     {
         if ($fileDetails['file_type'] === FileProcessor::EXCEL)
@@ -52,7 +60,13 @@ class Converter
         return $this->dataArray;
     }
 
-    // Gets all the sheets with given set of sheet names.
+
+    /**
+     * @param array $fileDetails The excel file details
+     * @param array $sheetNames The sheets that need to be collected from the file.
+     *                          If empty, collects all the sheets present in the excel file.
+     * @return mixed Sheet objects retrieved from the excel file
+     */
     public function getAllExcelSheets($fileDetails, $sheetNames = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
@@ -70,6 +84,12 @@ class Converter
     }
 
 
+    /**
+     * Not being used anywhere currently. Might use it later.
+     *
+     * @param $fileDetails
+     * @return array
+     */
     public function getValidSheetNames($fileDetails)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
@@ -138,6 +158,14 @@ class Converter
         return $this->dataArray[] = $data;
     }
 
+
+    /**
+     * Not being used anywhere currently. Might use it later.
+     *
+     * @param $rows
+     * @param $newColumnHeaders
+     * @throws Exception\ReconciliationException
+     */
     protected function replaceExcelRowsWithNewHeaders(&$rows, $newColumnHeaders)
     {
         foreach ($rows as $rowIndex=>$rowData)
@@ -155,6 +183,13 @@ class Converter
         }
     }
 
+
+    /**
+     * Not being used anywhere currently. Might use it later.
+     *
+     * @param $columnHeaders
+     * @return array
+     */
     protected function modifyColumnHeaders($columnHeaders)
     {
         //$columnHeaders = array_keys($rows[0]);

@@ -5,6 +5,7 @@ namespace Reconciliator\Base;
 
 use Reconciliator\FileProcessor;
 use Reconciliator\Orchestrator;
+use EE\Exception;
 
 
 class Reconciliate
@@ -19,24 +20,53 @@ class Reconciliate
 
     const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND];
 
+    /*********************
+     * Instance objects
+     *********************/
+    protected $subReconciliator;
 
+
+    /**
+     * This is the start of the reconciliation. This is executed from the orchestrator.
+     * For each file, it figures out which type of reconciliation is it (nodal, payment, refund)
+     * and calls the startReconciliation of the respective reconciliation type.
+     *
+     * @param $allFilesContents
+     */
     public function startReconciliation($allFilesContents)
     {
         foreach ($allFilesContents as $fileContents)
         {
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
+            // If unable to get the reconciliation type.
+            if ($reconciliationType === null)
+            {
+                continue;
+            }
             $this->setSubReconciliator($reconciliationType);
             $this->subReconciliator->startReconciliation($fileContents);
         }
     }
-    
 
+
+    /**
+     * This should be implemented in the child class if the gateway needs to
+     * look at only certain sheets present in the excel file and not all of them.
+     *
+     */
     public function getSheetNames()
     {
         return null;
     }
 
 
+    /**
+     * Gets the reconciliation type by either the sheet name in case of excel files
+     * or by the file name in case of csv files.
+     *
+     * @param $extraDetails
+     * @return mixed
+     */
     protected function getReconciliationType($extraDetails)
     {
         if (isset($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
@@ -53,10 +83,11 @@ class Reconciliate
         $reconciliationType = $this->getTypeName($fileName);
 
         // Ideally, should never come here.
-        if (in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false)
+        if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or 
+            ($reconciliationType === null))
         {
-            // TODO: Move this to validator?
-            // TODO: Throw an exception about wrong reconciliation type.
+            // TODO: Raise an alert for not being able to recognize the reconciliation type.
+            return null;
         }
 
         return $reconciliationType;
@@ -73,6 +104,7 @@ class Reconciliate
     protected function getSubReconciliatorClassName($reconciliationType)
     {
         $parentNamespace = $this->getParentNamespace();
+
         $subReconciliatorClassName = $parentNamespace . '\\'
                                     . 'SubReconciliator' . '\\'
                                     . ucfirst($reconciliationType)

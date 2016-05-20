@@ -44,51 +44,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         // These are being used by the parent classes.
         $this->gatewayRepo = new AxisMigs\Repository;
-        
-        // TODO: Move these to parent class.
         $this->paymentRepo = new Payment\Repository;
         $this->iinRepo     = new IIN\Repository;
     }
-
-
-    // TODO: Try moving this to parent class
-    protected function getRowDetailsStructured($row)
-    {
-        // Gets payment ID
-        $paymentId = $this->getPaymentId($row);
-
-        // If payment id is not present, return. No point of evaluating the row.
-        if (empty($paymentId) === true)
-        {
-            return null;
-        }
-
-        try
-        {
-            $this->payment = $this->paymentRepo->findOrFail($paymentId);
-        }
-        catch (\Exception $ex)
-        {
-            // TODO: Raise an alert for not finding the payment in the db.
-            return null;
-        }
-
-        // Gets the card type
-        $cardType = $this->getCardType($row);
-
-        // Gets the service tax
-        $serviceTax = $this->getServiceTax($row);
-
-        // Assign values to return
-        $rowDetails = [
-            self::PAYMENT_ID  => $paymentId,
-            self::CARD_TYPE   => $cardType,
-            self::SERVICE_TAX => $serviceTax,
-        ];
-
-        return $rowDetails;
-    }
-
+    
     
     protected function getServiceTax($row)
     {

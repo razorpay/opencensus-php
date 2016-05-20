@@ -17,6 +17,23 @@ class SubReconciliate
     const SERVICE_TAX = 'service_tax';
 
 
+    public function __construct()
+    {
+
+    }
+
+
+    /**
+     * This is the start of the actual reconciliation.
+     * Reconciliation is done for each row in the file content.
+     * Validates payment status.
+     * Records gateway fees.
+     * Records gateway service tax.
+     * Sets card type (debit/credit).
+     * Records rrn.
+     *
+     * @param array $fileContents
+     */
     public function startReconciliation($fileContents)
     {
         //$extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
@@ -24,6 +41,8 @@ class SubReconciliate
 
         foreach ($fileContents as $row)
         {
+            // Every gateway has its own headers which have different meanings.
+            // Hence, this is present in the gateway sub reconciliate class.
             $rowDetails = $this->getRowDetailsStructured($row);
 
             if (empty($rowDetails) === true)
@@ -33,17 +52,54 @@ class SubReconciliate
 
             // Validates that the payment status is not failed.
             $this->validatePaymentStatus();
-            
+
             // Stores the gateway fees
             $this->recordGatewayFees();
-            
+
             // Stores the gateway service tax
             $this->recordGatewayServiceTax();
-            
+
             $this->setCardTypeIfAbsent($rowDetails);
-            
+
             $this->recordRrn();
         }
+    }
+
+    protected function getRowDetailsStructured($row)
+    {
+        // Gets payment ID
+        $paymentId = $this->getPaymentId($row);
+
+        // If payment id is not present, return. No point of evaluating the row.
+        if (empty($paymentId) === true)
+        {
+            return null;
+        }
+
+        try
+        {
+            $this->payment = $this->paymentRepo->findOrFail($paymentId);
+        }
+        catch (\Exception $ex)
+        {
+            // TODO: Raise an alert for not finding the payment in the db.
+            return null;
+        }
+
+        // Gets the card type details
+        $cardType = $this->getCardType($row);
+
+        // Gets the service tax
+        $serviceTax = $this->getServiceTax($row);
+
+        // Assign values to return
+        $rowDetails = [
+            self::PAYMENT_ID  => $paymentId,
+            self::CARD_TYPE   => $cardType,
+            self::SERVICE_TAX => $serviceTax,
+        ];
+
+        return $rowDetails;
     }
 
 
@@ -55,7 +111,7 @@ class SubReconciliate
 
         if ($paymentStatus === Payment\Status::FAILED)
         {
-            // TODO: Throw an exception for status being failed.
+            // TODO: Raise a critical alert for payment status being failed.
         }
     }
 

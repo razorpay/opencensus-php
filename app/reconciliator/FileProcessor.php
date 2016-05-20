@@ -2,9 +2,11 @@
 
 namespace Reconciliator;
 
+use Doctrine\DBAL\Types\IntegerType;
 use EE\Exception;
 use Models\Base\UniqueIdEntity;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 
 class FileProcessor
@@ -18,6 +20,8 @@ class FileProcessor
     const FILE_TYPE = 'file_type';
     const FILE_DETAILS = 'file_details';
     const SHEET_NAME = 'sheet_name';
+    
+    const ZIP_EXTENSION = 'zip';
 
     const STORAGE = 'storage';
     const UPLOADED = 'uploaded';
@@ -45,22 +49,28 @@ class FileProcessor
     }
 
 
-    public function getFileDetails($file, $type)
+    public function getFileDetails($file, $type=self::UPLOADED)
     {
         assert(in_array($type, [self::STORAGE, self::UPLOADED]), "Wrong file type [Uploaded/Storage]");
 
         if ($type === self::UPLOADED)
         {
-            $this->getUploadedFileDetails($file);
+            return $this->getUploadedFileDetails($file);
         }
         else if ($type === self::STORAGE)
         {
-            $this->getStorageFileDetails($file);
+            return $this->getStorageFileDetails($file);
         }
     }
 
 
-    public function getUploadedFileDetails($file)
+    /**
+     * This method is used to get the file details of files received through a route directly
+     *
+     * @param UploadedFile $file
+     * @return array
+     */
+    protected function getUploadedFileDetails($file)
     {
         $fileName = strtolower($file->getClientOriginalName());
         $extension = strtolower($file->getClientOriginalExtension());
@@ -75,7 +85,14 @@ class FileProcessor
     }
 
 
-    public function getStorageFileDetails($file)
+    /**
+     * This methods is used to get the file details of files which are already present on the storage.
+     * getUploadedFileDetails() cannot be used because the file object class is different here.
+     *
+     * @param $file
+     * @return array
+     */
+    protected function getStorageFileDetails($file)
     {
         $fileName = strtolower($file->getFilename());
         $extension = strtolower($file->getExtension());
@@ -88,7 +105,16 @@ class FileProcessor
     }
 
 
-    public function fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath)
+    /**
+     * @param string $fileName String name of the file to be stored
+     * @param string $extension String extension of the file
+     * @param string $mimeType String mimetype of the type
+     * @param int $size Integer Size of the file
+     * @param string $sourceFolderPath Path of the folder in which the file is present
+     * @param string $filePath Full path of the file
+     * @return array
+     */
+    protected function fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath)
     {
         $fileDetails = [
             self::FILE_NAME          => $fileName,
@@ -124,6 +150,13 @@ class FileProcessor
     }
 
 
+    /**
+     * Gets the extension of the file.
+     * Also validates the (mime type + extension) combination.
+     * 
+     * @param UploadedFile $file
+     * @return string Extension of the file
+     */
     public function getTypeOfFile($file)
     {
         $mimeType = $file->getMimeType();
@@ -133,10 +166,16 @@ class FileProcessor
         $this->validator->validateExtensionMimeType($extension, $mimeType);
 
         return $extension;
-
     }
 
 
+    /**
+     * Unzips the file to a folder which is created in the same folder in which the zip file is present.
+     *
+     * @param array $fileDetails
+     * @return string The folder path of the extracted file
+     * @throws Exception\ReconciliationException
+     */
     public function unzipFile($fileDetails)
     {
         $filePath = $fileDetails[self::FILE_PATH];
@@ -154,7 +193,7 @@ class FileProcessor
         // Currently supporting only zip files
         // When other types of zip needs to be supported,
         // handle for each type separately using the conditional statements.
-        if ($extension !== 'zip')
+        if ($extension !== self::ZIP_EXTENSION)
         {
             throw new Exception\ReconciliationException(
                 'Unsupported zip type. Currently supporting only zip files.', ['file_details' => $fileDetails]
@@ -168,6 +207,14 @@ class FileProcessor
     }
 
 
+    /**
+     * Extracts the given zip file to a given extract location. Throws an exception if unable to extract.
+     *
+     * @param string $filePath The complete file path of the zip file that needs to be extracted
+     * @param string $extractToPath The folder path to where the zip file needs to be extracted
+     * @param string $password Optional Password for the zip file, if present
+     * @throws Exception\ReconciliationException
+     */
     protected function extractZipFile($filePath, $extractToPath, $password = null)
     {
         $zip = new ZipArchive;
@@ -206,7 +253,7 @@ class FileProcessor
         }
     }
 
-
+    
     public function getFolderFromFilePath($filePath)
     {
         return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
