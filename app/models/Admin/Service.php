@@ -427,8 +427,6 @@ class Service extends Base\Service
                 // Only when it is changed on API side we update on the dashboard side as well
                 $error = MerchantDetails\Service::changeTransactionEmail($id, $csvEmail);
             }
-
-            $this->logActionToSlack($id, 'merchant edited', $input);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -486,8 +484,6 @@ class Service extends Base\Service
         $merchant_details = MerchantDetails\Entity::findorfail($id);
         try
         {
-
-
             $this->api->merchant->fetch($id)->setBankAccount($input);
 
             $merchantDetails = array(
