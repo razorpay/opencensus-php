@@ -162,6 +162,7 @@ class Gateway
 
     /**
      * @param  array  $input
+     * @return boolean
      */
     public function canRunOtpFlow(array $input = [])
     {
