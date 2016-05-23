@@ -336,6 +336,11 @@ class Gateway
         return (in_array($gateway, self::$authAndCapture));
     }
 
+    public static function isPowerWallet($wallet)
+    {
+        return (in_array($wallet, self::POWER_WALLETS));
+    }
+
     public static function isCardNetworkSupported($network, $gateway)
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
