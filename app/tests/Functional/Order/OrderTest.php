@@ -188,4 +188,23 @@ class OrderTest extends TestCase
 
         $this->fixtures->merchant->disableTPV();
     }
+
+    public function testPreferencesForTPVMerchants()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpBillDeskGateway();
+
+        $this->testCreateTPVOrder();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $preferences = $this->startTest($testData);
+
+        $this->fixtures->merchant->disableTPV();
+    }
 }
