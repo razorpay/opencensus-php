@@ -484,22 +484,26 @@ class Entity extends Base\PublicEntity
 
     public function getOtpAttemptsAttribute()
     {
-        if ($this->attributes[self::OTP_ATTEMPTS] === null)
+        $attempts = $this->attributes[self::OTP_ATTEMPTS];
+
+        if ($attempts !== null)
         {
-            return null;
+            $attempts = (int) $attempts;
         }
 
-        return (int) $this->attributes[self::OTP_ATTEMPTS];
+        return $attempts;
     }
 
     public function getOtpCountAttribute()
     {
-        if ($this->attributes[self::OTP_COUNT] === null)
+        $count = $this->attributes[self::OTP_COUNT];
+
+        if ($count !== null)
         {
-            return null;
+            $count = (int) $count;
         }
 
-        return (int) $this->attributes[self::OTP_COUNT];
+        return $count;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -865,9 +869,9 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        $data['id'] = $this->getPublicId();
+        $data[self::ID] = $this->getPublicId();
 
-        if ($this->getAttribute(self::METHOD) === Payment\Method::CARD)
+        if ($this->isMethodCardOrEmi())
         {
             $card = $this->card()->firstOrFail();
 
@@ -883,7 +887,13 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $data['notes'] = $this->getNotesJson();
+        $data[self::NOTES] = $this->getNotesJson();
+
+        if ($this->isMethodCardOrEmi())
+        {
+            $data['card_type'] = $this->card->getType();
+            $data['card_network'] = $this->card->getNetwork();
+        }
 
         return $data;
     }
