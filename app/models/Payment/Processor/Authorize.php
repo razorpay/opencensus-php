@@ -764,7 +764,11 @@ trait Authorize
      */
     protected function canRunOtpPaymentFlow($payment, $input)
     {
-        return $this->callGatewayFunction('canRunOtpFlow', $input);
+        return ($payment->getMethod() === Method::WALLET and
+                (((isset($input['_']['source'])) and
+                    in_array($input['_']['source'], ['checkoutjs', 's2s']) and
+                ($payment->getWallet() === Wallet::MOBIKWIK)) or
+                $payment->getWallet() === Wallet::PAYUMONEY));
     }
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)
