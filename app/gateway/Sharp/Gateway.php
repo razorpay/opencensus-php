@@ -58,6 +58,14 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if (($input['payment']['method'] === 'card') and
+            ($input['card']['iin'] === '501010') and
+            ($input['card']['last4'] === '1015'))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+        }
+
         if ((isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp'))
         {
