@@ -74,7 +74,9 @@ class Gateway extends Base\Gateway
 
     public function canRunOtpFlow(array $input = [])
     {
-        return ($input['method'] === 'wallet' and
+        return (isset($input['_']['source']) and
+                in_array($input['_']['source'], ['checkoutjs', 's2s']) and
+                $input['method'] === 'wallet' and
                 in_array($input['wallet'], Payment\Gateway::POWER_WALLETS));
     }
 
