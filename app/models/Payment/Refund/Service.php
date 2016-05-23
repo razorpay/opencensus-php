@@ -39,8 +39,6 @@ class Service extends Base\Service
 
     public function getWalletRefundsFile(array $input = array(), $frequency = null)
     {
-        $input['frequency'] = $frequency;
-
         list($from, $to) = $this->getTimestamps($input);
 
         $returnValue = [];
@@ -67,36 +65,7 @@ class Service extends Base\Service
         $refunds = (new Refund\Repository)->fetchRefundsForWalletBetweenTimestamps(
                                                 $wallet, $from, $to, $gateway);
 
-        $count = $refunds->count();
-
-        if ($count === 0)
-        {
-            return ['count' => $count];
-        }
-
-        $data = [];
-
-        foreach ($refunds as $refund)
-        {
-            $payment = $refund->payment;
-            $terminal = $payment->terminal;
-
-            $col['refund'] = $refund->toArray();
-            $col['payment'] = $refund->payment->toArray();
-            $col['terminal'] = $refund->payment->terminal->toArray();
-
-            $data[] = $col;
-        }
-
-        $input['data'] = $data;
-
-        $gateway = $terminal->getGateway();
-
-        $action = 'generateRefunds';
-
-        $file = Gateway::call($gateway, $action, $input, $this->mode);
-
-        return ['file' => $file, 'count' => $count];
+        return $this->generateRefundFile($refunds);
     }
 
     protected function generateNBRefundFileForBank($bankCode, $from, $to, $gateway)
@@ -104,6 +73,11 @@ class Service extends Base\Service
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
                                                 $bankCode, $from, $to, $gateway);
 
+        return $this->generateRefundFile($refunds);
+    }
+
+    protected function generateRefundFile($refunds)
+    {
         $count = $refunds->count();
 
         if ($count === 0)

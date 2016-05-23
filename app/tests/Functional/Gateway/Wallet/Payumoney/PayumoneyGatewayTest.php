@@ -401,7 +401,7 @@ class PayumoneyGatewayTest extends TestCase
         $this->ba->appAuth();
 
         $request = array(
-            'url' => '/refunds/wallet/excel/monthly',
+            'url' => '/refunds/wallet/excel?frequency=monthly',
             'method' => 'post',
             'content' => [
                 'wallet'  => 'payumoney'

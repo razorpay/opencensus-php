@@ -51,7 +51,7 @@ final class Route
         'refund_fetch_by_id'                    => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                       ],
         'refund_fetch_multiple'                 => ['get',      'refunds',                                  'PaymentController@getRefunds'                                      ],
         'refund_netbanking_generate_excel'      => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                       ],
-        'refund_wallet_generate_excel'          => ['post',     'refunds/wallet/excel/{frequency}',         'PaymentController@generateWalletRefunds'                           ],
+        'refund_wallet_generate_excel'          => ['post',     'refunds/wallet/excel',                     'PaymentController@generateWalletRefunds'                           ],
         'refund_verify'                         => ['get',      'refunds/{id}/verify',                      'PaymentController@getRefundVerify'                                 ],
         'card_fetch_by_id'                      => ['get',      'cards/{id}',                               'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                   => ['get',      'cards',                                    'PaymentController@getCards'                                        ],
