@@ -484,12 +484,22 @@ class Entity extends Base\PublicEntity
 
     public function getOtpAttemptsAttribute()
     {
-        return $this->attributes[self::OTP_ATTEMPTS];
+        if ($this->attributes[self::OTP_ATTEMPTS] === null)
+        {
+            return null;
+        }
+
+        return (int) $this->attributes[self::OTP_ATTEMPTS];
     }
 
     public function getOtpCountAttribute()
     {
-        return $this->attributes[self::OTP_COUNT];
+        if ($this->attributes[self::OTP_COUNT] === null)
+        {
+            return null;
+        }
+
+        return (int) $this->attributes[self::OTP_COUNT];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
