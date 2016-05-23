@@ -764,7 +764,34 @@ trait Authorize
      */
     protected function canRunOtpPaymentFlow($payment, $input)
     {
-        return $this->callGatewayFunction('canRunOtpFlow', $input);
+        $wallet = $payment->getWallet();
+
+        // Only wallets have otp flow currently.
+        // Plus, only power wallets support otp flow.
+        if (($payment->isWallet() === false) or
+            (Payment\Gateway::isPowerWallet($wallet) === false))
+        {
+            return false;
+        }
+
+        //
+        // Special case check for mobikwik
+        // Only checkout currently supports otp flow
+        // not on android so we need to check for source. Slightly hacky.
+        //
+
+        if ($wallet === Wallet::MOBIKWIK)
+        {
+            $sources = ['checkoutjs', 's2s'];
+
+            if ((isset($input['_']['source']) === false) or
+                (in_array($input['_']['source'], $sources) === false))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function runOtpPaymentFlow($gatewayInput, $payment)

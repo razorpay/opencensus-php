@@ -26,6 +26,11 @@ class Gateway
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
+    const POWER_WALLETS = array(
+        Wallet::MOBIKWIK,
+        Wallet::PAYUMONEY
+    );
+
     public static $channels = array(
         self::AMEX              => Settlement\Channel::KOTAK,
         self::ATOM              => Settlement\Channel::ATOM,
@@ -329,6 +334,11 @@ class Gateway
     public static function supportsAuthAndCapture($gateway)
     {
         return (in_array($gateway, self::$authAndCapture));
+    }
+
+    public static function isPowerWallet($wallet)
+    {
+        return (in_array($wallet, self::POWER_WALLETS));
     }
 
     public static function isCardNetworkSupported($network, $gateway)

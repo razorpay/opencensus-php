@@ -9,6 +9,7 @@ use Gateway\Base;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
+use Models\Payment;
 
 class Gateway extends Base\Gateway
 {
