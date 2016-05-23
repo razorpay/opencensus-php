@@ -202,6 +202,7 @@ trait Authorize
 
             case Payment\Result::AUTH_ERROR:
                 $errorCode = Hdfc\ErrorCode::RP00010;
+                break;
 
             default:
                 $errorCode = Hdfc\ErrorCode::RP00002;
