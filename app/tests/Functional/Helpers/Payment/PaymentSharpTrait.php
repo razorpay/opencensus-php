@@ -36,6 +36,10 @@ trait PaymentSharpTrait
         $method = 'get';
         $content = [];
 
+        $this->recorder = new PaymentStateRecorder;
+
+        $this->recorder->callbackUrl = $url;
+
         return $this->submitPaymentCallbackData($url, $method, $content);
     }
 }

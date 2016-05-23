@@ -129,14 +129,21 @@ class EsDao
     {
         $merchantId = $params['merchant_id'];
         $searchString = $params['notes'];
-        $count = $params['count'];
+        $count = (int) $params['count'];
 
-        // Defaults: from : 0
+        // For pagination
+        $skip = 0;
+        if (isset($params['skip']) === true)
+        {
+            $skip = (int) $params['skip'];
+        }
+
         $params = [
             'index' => $this->indexName,
             'type' => $typeName,
             'body' => [
                 'size' => $count,
+                'from' => $skip,
                 'query' => [
                     'filtered' => [
                         'query' => [
@@ -163,7 +170,7 @@ class EsDao
         {
             $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
         }
-
+        
         $entityIds = $this->es->searchNotes($params);
 
         return $entityIds;

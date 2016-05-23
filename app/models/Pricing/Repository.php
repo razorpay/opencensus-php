@@ -102,7 +102,9 @@ class Repository extends Base\Repository
 
         // For merchant pricing plans, gateway will not be specified
         return $repo::whereNull(Pricing\Entity::GATEWAY)
-                    ->orderBy(Pricing\Entity::ID, 'desc')->get();
+                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->get();
     }
 
     public function getGatewayPricingPlans()
