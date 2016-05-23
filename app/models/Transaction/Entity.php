@@ -145,14 +145,6 @@ class Entity extends Base\PublicEntity
         $entity->transaction()->associate($this);
     }
 
-    public function payment()
-    {
-        if ($this->isTypePayment())
-        {
-            return $this->belongsTo('Models\Payment\Entity', self::ENTITY_ID);
-        }
-    }
-
     public function settlement()
     {
         return $this->belongsTo('Models\Settlement\Entity');

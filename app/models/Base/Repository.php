@@ -2,6 +2,7 @@
 
 namespace Models\Base;
 
+use Constants\Entity as E;
 use Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
@@ -35,6 +36,11 @@ class Repository extends \Razorpay\Spine\Repository
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);
+    }
+
+    public function findMany($ids, $columns = array('*'))
+    {
+        return $this->newQuery()->findMany($ids, $columns);
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -86,6 +92,31 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $query->get();
+    }
+
+    public function fetchAssociatedRelations($entities, $relation, $idCol = 'entity_id', $typeCol = 'type')
+    {
+        $relationships = array();
+        $objects = array();
+
+        foreach ($entities as $entity)
+        {
+            $relationships[$entity->$typeCol][] = $entity->$idCol;
+        }
+
+        foreach ($relationships as $type => $ids)
+        {
+            $repo = E::getEntityRepository($type);
+
+            $objects[$type] = (new $repo)->findMany($ids);
+        }
+
+        foreach ($entities as $entity)
+        {
+            $entity->setRelation($relation, $objects[$entity->$typeCol]->find($entity->$idCol));
+        }
+
+        return $entities;
     }
 
     public function fetchBetweenTimestamp($merchantId, $from, $to, $relations = [])
