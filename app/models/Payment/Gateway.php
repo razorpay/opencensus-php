@@ -26,6 +26,11 @@ class Gateway
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
+    const POWER_WALLETS = array(
+        Wallet::MOBIKWIK,
+        Wallet::PAYUMONEY
+    );
+
     public static $channels = array(
         self::AMEX              => Settlement\Channel::KOTAK,
         self::ATOM              => Settlement\Channel::ATOM,

@@ -9,6 +9,7 @@ use Gateway\Base;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
+use Models\Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -69,6 +70,12 @@ class Gateway extends Base\Gateway
     protected function callbackOtpSubmit($input)
     {
         ;
+    }
+
+    public function canRunOtpFlow(array $input = [])
+    {
+        return ($input['method'] === 'wallet' and
+                in_array($input['wallet'], Payment\Gateway::POWER_WALLETS));
     }
 
     public function capture(array $input)
