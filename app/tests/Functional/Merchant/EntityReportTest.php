@@ -12,7 +12,7 @@ class EntityReportTest extends TestCase
 
     public function testEntityReports()
     {
-    	$this->doAuthAndCapturePayment();
+        $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
     	$dt = Carbon::today('Asia/Kolkata');
@@ -22,11 +22,10 @@ class EntityReportTest extends TestCase
     		'month' => $dt->month,
     		'day' => $dt->day);
 
-    	$paymentReport = $this->fetchReport('payment', $input);
+        $paymentReport = $this->fetchReport('payment', $input);
         $refundReport =  $this->fetchReport('refund', $input);
         $combinedReport = $this->fetchReport('transaction', $input);
 
         assert((count($paymentReport) + count($refundReport)) === count($combinedReport));
-
     }
 }
