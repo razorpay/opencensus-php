@@ -41,11 +41,13 @@ class FileProcessor
      * Instance objects
      ********************/
     protected $validator;
+    protected $messenger;
 
 
     public function __construct()
     {
         $this->validator = new Validator;
+        $this->messenger = new Messenger();
     }
 
 
@@ -133,14 +135,17 @@ class FileProcessor
     {
         if (file_exists($filePath) === false)
         {
-            // TODO: Raise an alert about file not being present.
+            $this->messenger->raiseReconAlert(['message' => 'File not present, to delete locally.',
+                                               'file_path' => $filePath], true);
             return;
         }
 
         $success = unlink($filePath);
+
         if ($success === false)
         {
-            // TODO: Raise a critical alert about not being able to delete the file.
+            $this->messenger->raiseReconAlert(['message' => 'Unable to delete the file, locally.',
+                                               'file_path' => $filePath], true);
         }
 
     }

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: prashanth.yv
- * Date: 21/04/16
- * Time: 4:04 PM
- */
 
 namespace Reconciliator;
 

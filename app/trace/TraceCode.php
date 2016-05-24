@@ -145,6 +145,12 @@ class TraceCode
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
 
+    const RECONCILIATION_ALERT                      = 'RECONCILIATION_ALERT';
+    const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
+    const RECON_MISMATCH                            = 'RECON_MISMATCH';
+    const RECON_PARSE_ERROR                         = 'RECON_PARSE_ERROR';
+    const RECON_FAILURE                             = 'RECON_FAILURE';
+
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
@@ -184,6 +190,12 @@ class TraceCode
         self::ES_BULK_UPDATE_FAILED                 => 'Failed while bulk updating in ES',
         self::ES_BULK_UPDATE                        => 'Bulk update for ES',
         self::ES_SAVE_REQUEST                       => 'Request for saving in ES',
+
+        self::RECONCILIATION_ALERT                  => 'Alert raised for reconciliation',
+        self::RECON_FILE_SKIP                       => 'Skipping a reconciliation file',
+        self::RECON_MISMATCH                        => 'Mismatch between the data present in DB and recon file',
+        self::RECON_PARSE_ERROR                     => 'Not able to parse some content of the recon file',
+        self::RECON_FAILURE                         => 'Reconciliation could not happen'
     );
 
     /**

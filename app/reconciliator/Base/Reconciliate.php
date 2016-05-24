@@ -112,7 +112,13 @@ class Reconciliate
         if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or 
             ($reconciliationType === null))
         {
-            // TODO: Raise an alert for not being able to recognize the reconciliation type.
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
+                                                'message' => 'Unable to figure out the reconciliation type.',
+                                                'reconciliation_type' => $reconciliationType,
+                                                'extra_details' => $extraDetails,
+                                                'gateway' => get_called_class()], true
+            );
+            
             return null;
         }
 

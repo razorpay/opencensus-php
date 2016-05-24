@@ -5,6 +5,8 @@ namespace Reconciliator\HDFC\SubReconciliator;
 
 use Reconciliator\Base\SubReconciliator;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
+use Reconciliator\Messenger;
+use Trace\TraceCode;
 
 
 class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
@@ -17,10 +19,13 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     const ROW_SERVICE_TAX = 'serv_tax';
     const ROW_SB_CESS     = 'sb_cess';
     const ROW_FEE         = 'msf';
+
+    protected $messenger;
     
-    
+
     public function __construct()
     {
+        $this->messenger = new Messenger();
         parent::__construct();
     }
 
@@ -32,7 +37,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         return $paymentId;
     }
-    
+
 
     protected function getServiceTax($row)
     {
@@ -70,8 +75,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         }
         else
         {
-            // TODO: Raise an alert for card type being present in the row
-            // but the value is not what was expected.
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
+                                                'message' => 'Unable to figure out the card type.',
+                                                'recon_card_type' => $cardType,
+                                                'row' => $row,
+                                                'gateway' => get_class()], true
+            );
         }
 
         return $cardType;

@@ -4,7 +4,9 @@ namespace Reconciliator;
 
 use DirectoryIterator;
 
+use App;
 use EE\Exception;
+use Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Orchestrator
@@ -47,10 +49,14 @@ class Orchestrator
     protected $fileProcessor;
     protected $converter;
     protected $gatewayReconciliator;
+    protected $app;
+    protected $messenger;
 
 
     public function __construct()
     {
+        $this->messenger = new Messenger();
+
         $this->validator = new Validator;
         $this->fileProcessor = new FileProcessor;
         $this->converter = new Converter;
@@ -115,7 +121,7 @@ class Orchestrator
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
         $this->validator->filterEmails($this->emailDetails);
-        
+
         // Figures out the gateway and sets the gateway reconciliator object for the orchestrator,
         // using the input details.
         $this->setGatewayFromEmailId();
@@ -146,7 +152,13 @@ class Orchestrator
 
             if ($inExclude === true)
             {
-                // TODO: Raise an alert about skipping the file because it's in the exclude list of gateway.
+                $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
+                                                    'message' => 'Skipping file because it is present 
+                                                                    in the exclude list of the gateway.',
+                                                    'file_details' => $fileDetails,
+                                                    'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
+                                                                        ->getNamespaceName()]
+                );
 
                 $this->handleInvalidFile($file, $fileDetails);
 
@@ -159,7 +171,12 @@ class Orchestrator
 
             if ($validate === false)
             {
-                // TODO: Raise an alert about skipping the file because validation failed.
+                $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
+                                                    'message' => 'Skipping file because validations failed.',
+                                                    'file_details' => $fileDetails,
+                                                    'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
+                                                        ->getNamespaceName()], true
+                );
 
                 $this->handleInvalidFile($file, $fileDetails);
 
@@ -176,7 +193,12 @@ class Orchestrator
             }
             catch (\Exception $ex)
             {
-                // TODO: Raise an alert about skipping the file for not being able to convert file content to array.
+                $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
+                                                    'message' => 'Skipping file because not able to convert file content to array.',
+                                                    'file_details' => $fileDetails,
+                                                    'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
+                                                        ->getNamespaceName()], true
+                );
 
                 $this->handleInvalidFile($file, $fileDetails);
 
@@ -307,7 +329,13 @@ class Orchestrator
                 }
                 catch (\Exception $ex)
                 {
-                    // TODO: Raise an alert about skipping a file because of zip exception
+                    $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
+                                                        'message' => 'Skipping file because unzip file 
+                                                                      caused an exception -> ' . $ex->getMessage(),
+                                                        'file_details' => $extractedFileDetails ?  $extractedFileDetails : null,
+                                                        'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
+                                                                    ->getNamespaceName()], true
+                    );
                     continue;
                 }
             }

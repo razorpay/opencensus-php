@@ -5,6 +5,8 @@ namespace Reconciliator\Axis\SubReconciliator;
 
 use Reconciliator\Base\SubReconciliator;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
+use Reconciliator\Messenger;
+use Trace\TraceCode;
 
 
 class RefundReconciliate extends SubReconciliator\RefundReconciliate
@@ -17,9 +19,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     const ROW_SERVICE_TAX = 'service_tax145';
     const ROW_FEE         = 'commission';
 
+    protected $messenger;
+    
     
     public function __construct()
     {
+        $this->messenger = new Messenger();
         parent::__construct();
     }
     
@@ -69,8 +74,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
         }
         else
         {
-            // TODO: Raise an alert for card type being present in the row
-            // but the value is not what was expected.
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
+                                                'message' => 'Unable to figure out the card type.',
+                                                'recon_card_type' => $cardType,
+                                                'row' => $row,
+                                                'gateway' => get_class()], true
+            );
         }
 
         return $cardType;
