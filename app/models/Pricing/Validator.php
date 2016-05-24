@@ -9,6 +9,7 @@ use Models\Base;
 use Models\Card\Network;
 use Models\Payment;
 use Models\Payment\Processor\Wallet;
+use Models\Bank\IFSC;
 
 class Validator extends Base\Validator
 {
@@ -89,6 +90,15 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'This card payment network is not supported');
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
+        {
+            if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment network for bank should be a valid bank name');
             }
         }
     }

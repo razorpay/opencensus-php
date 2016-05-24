@@ -81,6 +81,27 @@ return [
         'request' => [
             'content' => [
                 'payment_method' => 'netbanking',
+                'percent_rate' => 1000,
+                'payment_network' => 'SIBL'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => 'SIBL',
+                'payment_issuer' => null,
+                'percent_rate' => 1000
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanNBNoNetworkRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'netbanking',
                 'percent_rate' => 1000
             ],
             'method' => 'POST'
@@ -96,6 +117,7 @@ return [
             ],
         ],
     ],
+
 
     'testAddPricingPlanWalletRule' => [
         'request' => [
