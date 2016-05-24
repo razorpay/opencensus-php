@@ -37,7 +37,7 @@ class Transaction extends Entity
         // This is an instance of RZP\Request now
         // which includes the setOption method
         $request = new Request();
-        $request->setOption('timeout', 180);
+        $request->setOption('timeout', 60);
 
         $response = $request->request($method, $relativeUrl, $data);
 
