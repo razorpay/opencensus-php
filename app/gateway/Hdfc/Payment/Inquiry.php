@@ -26,9 +26,15 @@ trait Inquiry
 
     protected function verifyPayment($verify)
     {
+        // gateway entity in db
         $payment = $verify->payment;
+
+        // Gateway response from verify_payment
         $content = $verify->verifyResponseContent;
+
         $error = $verify->verifyResponse['error'];
+
+        // payment entity in db
         $input = $verify->input;
 
         $verify->status = VerifyResult::STATUS_MATCH;
