@@ -158,6 +158,30 @@ class PaymentCreateController extends BaseController
     }
 
     /**
+     * Creates a wallet payment
+     */
+    public function postCreateWalletPayment($wallet)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->processWallet($input, $wallet);
+
+        if (isset($data['request']))
+        {
+            $data = [
+                'request' => [
+                    'url'       => $data['request']['url'],
+                    'method'    => $data['request']['method']
+                ]
+            ];
+
+            return ApiResponse::json($data);
+        }
+
+        assert(false, 'Shouldn\'t reach here');
+    }
+
+    /**
      * Creates a dummy payments and
      * return corresponding fees and service_tax
      */
@@ -205,6 +229,9 @@ class PaymentCreateController extends BaseController
     public function postOtpSubmit($id, $hash)
     {
         $input = Input::all();
+
+        // Type should be OTP since it's an OTP callback
+        $input['type'] = 'otp';
 
         $data = $this->payment->callback($id, $hash, $input);
 

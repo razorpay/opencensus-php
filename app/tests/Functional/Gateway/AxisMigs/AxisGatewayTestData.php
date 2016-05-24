@@ -119,7 +119,7 @@ return [
         'admin' => true,
     ],
 
-    'testMaestroOnMigs' => [
+    'testMaestroOnMigsFailOnLive' => [
         'response' => [
             'content' => [
                 'error' => [

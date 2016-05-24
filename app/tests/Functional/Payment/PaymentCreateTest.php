@@ -108,6 +108,39 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPaymentViaCheckoutRoute($this->payment);
     }
 
+    public function testPaymentCreateCallingCallbackRouteTwiceForSuccess()
+    {
+        $payment = $this->doAuthPayment();
+
+        $callbackUrl = $this->recorder->callbackUrl;
+
+        $response = $this->submitPaymentCallbackData($callbackUrl, 'get', []);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($payment, $content);
+    }
+
+    public function testPaymentCreateCallingCallbackRouteTwiceForError()
+    {
+        // This will have raised an insufficient balance error.
+        $this->makeRequestAndCatchException(function()
+        {
+            $this->payment['card']['number'] = '5010101010101015';
+            $content = $this->doAuthPayment($this->payment);
+            $this->doAuthPayment();
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $callbackUrl = $this->recorder->callbackUrl;
+
+            $response = $this->submitPaymentCallbackData($callbackUrl, 'get', []);
+        });
+    }
+
     protected function mockEsClient()
     {
         $clientBuilder = Mockery::mock('Services\EsClient')->makePartial();

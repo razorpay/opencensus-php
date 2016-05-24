@@ -61,8 +61,9 @@ class Entity extends Base\PublicEntity
     protected $defaults = array();
 
     protected $publicSetters = array(
-        self::CARD,
-    );
+        self::ID,
+        self::ENTITY,
+        self::CARD);
 
     protected static $generators = array(
         self::TOKEN

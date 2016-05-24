@@ -56,6 +56,7 @@ final class Result
      | • DENIED BY RISK - Risk denied the payment processing
      | • HOST TIMEOUT - The authorization system did not respond within the Time out
      | limit
+     | • AUTH ERROR - For certain cases when in case card is invalid.
      | • SUCCESS – The payment is successful (For Action Code “8” i.e. "INQUIRY" if original requested
      | payment is successful at Payment Gateway)
      | Payment Gateway Services
@@ -77,6 +78,7 @@ final class Result
     const NOT_APPROVED      = 'NOT APPROVED';
     const DENIED_BY_RISK    = 'DENIED BY RISK';
     const HOST_TIMEOUT      = 'HOST TIMEOUT';
+    const AUTH_ERROR        = 'AUTH ERROR';
 
     public static function getResultCode($result)
     {
@@ -95,6 +97,10 @@ final class Result
                 break;
             case 'FSS0001-Authentication Not Available':
                 $result = self::FSS0001_ENROLLED;
+                $success = false;
+                break;
+            case 'AUTH ERROR':
+                $result = self::AUTH_ERROR;
                 $success = false;
                 break;
             default:

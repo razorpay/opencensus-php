@@ -100,13 +100,16 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_YEAR,
         self::LAST4,
         self::NETWORK,
-        self::EMI,
-        self::ISSUER,
         self::INTERNATIONAL,
     );
 
     protected $appends = array(
         self::NETWORK_CODE);
+
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::EMI);
 
     protected $defaults = array(
         self::INTERNATIONAL     => null,
@@ -265,6 +268,15 @@ class Entity extends Base\PublicEntity
     public function setTrivia($trivia)
     {
         $this->setAttribute(self::TRIVIA, $trivia);
+    }
+
+    public function setPublicEmiAttribute(array & $array)
+    {
+        if ($this->getEmi() === true)
+        {
+            $array[self::EMI] = true;
+            $array[self::ISSUER] = $this->getIssuer();
+        }
     }
 
     public function getIin()

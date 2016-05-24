@@ -21,6 +21,7 @@ final class Route
         'payment_create_jsonp'                  => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                   => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                   => ['post',     'payments/create/fees',                     'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_create_wallet'                 => ['post',     'payments/create/wallet/{wallet}',          'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_callback_post'                 => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                  => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'        => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
@@ -256,6 +257,7 @@ final class Route
     );
 
     public static $private = array(
+        'payment_create_wallet',
         'payment_refund',
         'payment_capture',
         'payment_fetch_by_id',
@@ -412,6 +414,7 @@ final class Route
     public static $direct = array(
         'dummy_route',
         'checkout_public',
+        'mockhdfc_3dsecure',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
@@ -485,13 +488,13 @@ final class Route
     {
         self::$router = $router;
     }
-    
+
     public static function getCurrentRouteName()
     {
         $router = self::$router;
         return $router->currentRouteName();
     }
-    
+
     public static function getSlaveRoutes()
     {
         return self::$slaveRoutes;
@@ -499,7 +502,8 @@ final class Route
 
     public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
-        if ($secret === '')
+        if (($secret === '') and
+            ($key !== ''))
         {
             // It's a public auth.
             $parameters['key_id'] = $key;
@@ -600,16 +604,9 @@ final class Route
         $router->$method($uri, array('as' => $name, 'uses' => $action));
     }
 
-    protected static function add3dSecureRoute()
-    {
-        self::addRoute('mockhdfc_3dsecure');
-    }
-
     public static function defineApiRoutes()
     {
         $router = self::$router;
-
-        self::add3dSecureRoute();
 
         $router->group(array('prefix' => 'v1'), function () use ($router)
         {

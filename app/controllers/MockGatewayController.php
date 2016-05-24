@@ -1,5 +1,8 @@
 <?php
 
+use Constants\Mode;
+use Database\DefaultConnection;
+
 class MockGatewayController extends BaseController
 {
     public function __construct()
@@ -8,8 +11,9 @@ class MockGatewayController extends BaseController
 
         $input = file_get_contents('php://input');
 
-        $app = \App::getFacadeRoot();
-        $this->gateway = $app['gateway'];
+        \Database\DefaultConnection::set(Mode::TEST);
+
+        $this->gateway = $this->app['gateway'];
 
         $this->mockHdfcGatewayServer = $this->gateway->server('hdfc');
         $this->mockHdfcGatewayServer->setInput($input);

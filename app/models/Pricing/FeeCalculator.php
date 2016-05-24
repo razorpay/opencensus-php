@@ -166,13 +166,7 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($rules, $filter);   
 
-        if (count($rules) !== 1)
-        {
-            throw new Exception\LogicException(
-                'Invalid rule count: ' . count($rules));
-        }
-
-        return $rules[0];
+        return $this->validateAndGetOnePricingRule($rules);
     }
 
     protected function getRelevantPricingRuleForCard($rules)
@@ -216,13 +210,7 @@ class FeeCalculator
 
         if ($network === Card\Network::AMEX)
         {
-            if (count($rules) !== 1)
-            {
-                throw new Exception\LogicException(
-                    'Invalid rule count: ' . count($rules));
-            }
-
-            return $rules[0];
+            return $this->validateAndGetOnePricingRule($rules);
         }
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

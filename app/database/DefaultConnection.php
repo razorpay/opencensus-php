@@ -7,7 +7,6 @@ use App;
 use Http\Route;
 use Constants\Mode;
 
-
 class DefaultConnection
 {
     public static function set($mode)
@@ -24,7 +23,6 @@ class DefaultConnection
 
         self::setMasterConnection($mode);
     }
-
 
     public static function setSlaveConnection($mode)
     {

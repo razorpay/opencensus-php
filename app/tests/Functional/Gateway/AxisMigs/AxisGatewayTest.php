@@ -90,15 +90,19 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($amount, $refund['vpc_amount']);
     }
 
-    public function testMaestroOnMigs()
+    public function testMaestroOnMigsFailOnLive()
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5081597022059105';
+
+        $this->fixtures->on('live')->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->activate();
 
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
+            $this->ba->publicLiveAuth();
             $this->doAuthPayment($payment);
         });
     }

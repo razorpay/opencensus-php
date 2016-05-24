@@ -364,7 +364,8 @@ class TerminalPicker
     {
         $networks = Gateway::$partiallySupportedCardNetworks;
 
-        if (in_array($network, $networks))
+        if ((in_array($network, $networks)) and
+            ($this->mode === Mode::LIVE))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
