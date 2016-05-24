@@ -27,24 +27,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = array(
-            'email'       => $input['payment']['email'],
-            'amount'      => $input['payment']['amount'] / 100,
-            'cell'        => $this->getFormattedContact($input['payment']['contact']),
-            'orderid'     => $input['payment']['id'],
-//            'merchantname'  => $input['terminal']['gateway_terminal_id'],
-            'mid'         => $input['terminal']['gateway_merchant_id'],
-            'redirecturl' => $input['callbackUrl'],
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $this->addTerminalDetailsInTest($content);
-        }
-
-        $payment = $this->createGatewayPaymentEntity($content);
-        $content['checksum'] = $this->getHashForAuthorizeRequest($content);
-        $content['merchantAlias'] = $input['merchant']['billing_label'];
+        $content = $this->getAuthorizeRequestContent($input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -242,15 +225,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::CHECK_USER);
 
-        $content = array(
-            'action'        => 'existingusercheck',
-            'cell'          => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname'  => 'Razorpay',
-            'mid'           => $this->getMobikwikMerchantId($input['terminal']),
-            'msgcode'       => '500',
-        );
-
-        $content['checksum'] = $this->getHashForCheckExistingUserRequest($content);
+        $content = $this->getCheckExistingUserRequestContent($input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -376,6 +351,29 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($content);
     }
 
+    protected function getAuthorizeRequestContent($input)
+    {
+        $content = array(
+            'email'       => $input['payment']['email'],
+            'amount'      => $input['payment']['amount'] / 100,
+            'cell'        => $this->getFormattedContact($input['payment']['contact']),
+            'orderid'     => $input['payment']['id'],
+            'mid'         => $input['terminal']['gateway_merchant_id'],
+            'redirecturl' => $input['callbackUrl'],
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTerminalDetailsInTest($content);
+        }
+
+        $payment = $this->createGatewayPaymentEntity($content);
+        $content['checksum'] = $this->getHashForAuthorizeRequest($content);
+        $content['merchantAlias'] = $input['merchant']['billing_label'];
+
+        return $content;
+    }
+
     protected function getRefundRequestContentArray($input)
     {
         $content = [];
@@ -401,6 +399,21 @@ class Gateway extends Base\Gateway
         {
             $content['ispartial'] = 'yes';
         }
+
+        return $content;
+    }
+
+    protected function getCheckExistingUserRequestContent($input)
+    {
+        $content = array(
+            'action'        => 'existingusercheck',
+            'cell'          => $this->getFormattedContact($input['payment']['contact']),
+            'merchantname'  => 'Razorpay',
+            'mid'           => $this->getMobikwikMerchantId($input['terminal']),
+            'msgcode'       => '500',
+        );
+
+        $content['checksum'] = $this->getHashForCheckExistingUserRequest($content);
 
         return $content;
     }
