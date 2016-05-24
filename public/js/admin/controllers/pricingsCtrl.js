@@ -45,6 +45,95 @@ app.controller('PricingsCtrl', [
       $scope.show_plan = {};
       $scope.create_plan = true;
     };
+    $scope.itemList = [];
+    
+    $scope.loadNetworks = function (item) {
+      $scope.new_plan.payment_network = null;
+      if (item == "card") {
+        $scope.getCardNetworks();
+      } else if (item == "netbanking") {
+        $scope.getBankNetworks();
+      } else if (item == "wallet") {
+        $scope.getWalletNetworks();
+      } else {
+        $scope.itemList = [];
+      }
+    }
+
+    $scope.getCardNetworks = function () {
+      var request = $http({
+        url: '/admin/cards' ,
+        method: 'GET'
+      });
+      
+      request.success(function (data) {
+        if (data.success) {
+          var cards = data.data;
+          var card_networks = [];
+          angular.forEach(cards, function (value, key) {
+            card_networks.push({id:key, name:value});
+          });
+          $scope.itemList = card_networks;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+     };
+
+     $scope.getBankNetworks = function () {
+      var request = $http({
+        url: '/admin/banks' ,
+        method: 'GET'
+      });
+      
+      request.success(function (data) {
+        if (data.success) {
+          var banks = data.data;
+          var nb_networks = [];
+          angular.forEach(banks, function (value, key) {
+            nb_networks.push({id:key, name:value});
+          });
+          $scope.itemList = nb_networks;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+     };
+
+     $scope.getWalletNetworks = function () {
+      var request = $http({
+        url: '/admin/wallets' ,
+        method: 'GET'
+      });
+      
+      request.success(function (data) {
+        if (data.success) {
+          var wallets = data.data;
+          var wallet_networks = [];
+          angular.forEach(wallets, function (value, key) {
+            wallet_networks.push({id:key, name:value});
+          });
+          $scope.itemList = wallet_networks;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+     };
 
     $scope.savePlan = function () {
 
@@ -179,5 +268,10 @@ app.controller('PricingsCtrl', [
 
       return range;
     }
+
+    var init = function () {
+      $scope.itemList = $scope.getCardNetworks();
+    }
+    init();
   }
 ]);

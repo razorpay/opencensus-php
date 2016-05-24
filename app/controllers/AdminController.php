@@ -233,6 +233,27 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getSupportedBanks()
+    {
+        $data = (new Admin\Service)->fetchSupportedBanks();
+
+        return AppResponse::jsonResponse([], $data->toArray());
+    }
+
+    public function getSupportedCards()
+    {
+        $data = (new Admin\Service)->fetchSupportedCards();
+
+        return AppResponse::jsonResponse([], $data->toArray());
+    }
+
+    public function getSupportedWallets()
+    {
+        $data = (new Admin\Service)->fetchSupportedWallets();
+
+        return AppResponse::jsonResponse([], $data->toArray());
+    }
+
     public function postEditMerchant($id)
     {
         $input = Input::all();
@@ -242,6 +263,7 @@ class AdminController extends BaseController
         assert(isset($input['name']) === false);
 
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
+
 
         return AppResponse::jsonResponse($error, $data);
     }

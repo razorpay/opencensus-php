@@ -209,7 +209,7 @@
           </tr>
           <tr>
             <td>
-              <select class="form-control" name="payment_method" ng-model="new_plan.payment_method" required>
+              <select class="form-control" name="payment_method" ng-model="new_plan.payment_method" ng-change="loadNetworks(new_plan.payment_method)" required>
                   <option value="card">Card</option>
                   <option value="netbanking">NetBanking</option>
                   <option value="wallet">Wallet</option>
@@ -225,13 +225,7 @@
             </td>
             <td>
               <select class="form-control" name="payment_network" ng-model="new_plan.payment_network">
-                  <option value="">All</option>
-                  <option value="VISA">VISA</option>
-                  <option value="MC">MasterCard</option>
-                  <option value="MAES">Maestro</option>
-                  <option value="DICL">Diner's Club</option>
-                  <option value="RP">Rupay</option>
-                  <option value="AMEX">Amex</option>
+                  <option ng-repeat="item in itemList" value="{{item.id}}">{{item.name}}</option>
               </select>
             </td>
             <td>

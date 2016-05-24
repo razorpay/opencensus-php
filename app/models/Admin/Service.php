@@ -1808,5 +1808,31 @@ class Service extends Base\Service
        return [$error, $data];
     }
 
+    public function fetchSupportedBanks()
+    {
+        $this->setApiCredentials(null, 'live');
+
+        $data = $this->api->payment->fetchBanksPublic();
+
+        return $data;
+    }
+
+    public function fetchSupportedCards()
+    {
+        $this->setApiCredentials(null, 'live');
+
+        $data = $this->api->payment->fetchCardsPublic();
+
+        return $data;
+    }
+
+    public function fetchSupportedWallets()
+    {
+        $this->setApiCredentials(null, 'live');
+
+        $data = $this->api->payment->fetchWalletsPublic();
+
+        return $data;
+    }
 }
 
