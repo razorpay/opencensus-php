@@ -98,6 +98,26 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNBNoNetworkRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'netbanking',
+                'percent_rate' => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 1000
+            ],
+        ],
+    ],
+
 
     'testAddPricingPlanWalletRule' => [
         'request' => [
