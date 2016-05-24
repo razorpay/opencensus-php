@@ -27,6 +27,20 @@
             is specified at the time of payment. Please use the color picker or specify a color code in hexadecimal (4AA3DF)</span>
           </div>
         </div>
+        <!--Upload logo image file 2-->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Logo Image</label>
+          <div class="col-sm-10">
+            <span class="help-block m-b-none">
+              <li>Max image size - 1MB</li>
+              <li>Image should be square (width = height) </li>
+              <li>Minimum image dimensions - 256*256</li>
+              <li>Image types should be either jpg, jpeg or png only</li><br>
+            </span>
+            <input ui-jq="filestyle" accept="image/*" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="logo" ng-file-select="onFileSelect($files, 'logo')">
+          </div>
+        </div>
+        <!--End-->
         <div class="m-t m-b text-center prev-next">
           <button ng-click="save(config)" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
         </div>

@@ -632,6 +632,7 @@ class Service extends Base\Service
             }
 
             $color = strtoupper($color);
+
             $input['brand_color'] = $color;
         }
 
@@ -652,6 +653,33 @@ class Service extends Base\Service
         catch(BadRequestError $e)
         {
             $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function updateMerchantLogoConfig($merchantId, $input)
+    {
+        $this->setApiCredentials($merchantId);
+        $error = $data = null;
+
+        if (isset($input['logo']) === false)
+        {
+            $error = ['Internal Server Error. Contact support for help.'];
+            return [$error, $data];
+        }
+
+        try
+        {
+            $data = $this->api->merchant->updateLogoConfig($input)->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+        catch(\Exception $e)
+        {
+            $error = ['Internal Server Error. Contact support for help.'];
         }
 
         return [$error, $data];

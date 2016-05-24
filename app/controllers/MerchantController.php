@@ -252,6 +252,18 @@ class MerchantController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postMerchantConfigLogo()
+    {
+        $input = Input::all();
+
+        $merchantId = Auth::user()->user()->getCurrentMerchantId();
+        $input['merchant_id'] = $merchantId;
+
+        list($error, $data) = (new Merchant\Service)->updateMerchantLogoConfig($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     /**
      * Registers a new sub-merchant account
      * This will automatically have the correct

@@ -52,6 +52,7 @@ Route::group(array('before' => 'auth.user'), function()
 
     Route::get('/config', 'MerchantController@getMerchantConfig');
     Route::put('/config', 'MerchantController@putMerchantConfig');
+    Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo');
 
     Route::get('/referrals', 'MerchantController@getReferredMerchants');
     Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks');
