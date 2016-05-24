@@ -14,7 +14,7 @@ use Trace\TraceCode;
 
 class FeeCalculator
 {
-    const SERVICE_TAX_PERCENT = 14.5;
+    const SERVICE_TAX_PERCENT = 15.0;
 
     /**
      * For which fees needs to be calculate.
@@ -82,7 +82,7 @@ class FeeCalculator
         }
         elseif ($method === Payment\Method::WALLET)
         {
-            $rule = $this->getRelevantPricingRuleForWallet($rules);  
+            $rule = $this->getRelevantPricingRuleForWallet($rules);
         }
         else
         {
@@ -117,14 +117,14 @@ class FeeCalculator
 
         // Current Implementation
         // * Filter based on wallet
-        
+
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
         $filter = array(
             [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
         );
 
-        $rules = $this->applyFiltersOnRules($rules, $filter);   
+        $rules = $this->applyFiltersOnRules($rules, $filter);
 
         return $this->validateAndGetOnePricingRule($rules);
     }

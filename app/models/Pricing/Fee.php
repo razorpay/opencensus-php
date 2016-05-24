@@ -16,7 +16,7 @@ class Fee
     use SlackPoster;
     use AtomFeeTrait;
 
-    const SERVICE_TAX_PERCENT = 14.5;
+    const SERVICE_TAX_PERCENT = 15.0;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
