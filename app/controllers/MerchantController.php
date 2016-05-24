@@ -1,6 +1,5 @@
 <?php
 
-use Constants\Mode;
 use Http\ApiResponse;
 use Models\Merchant;
 use Models\Terminal;
@@ -458,9 +457,8 @@ class MerchantController extends BaseController
         {
             $url = $urlMap[$context];
 
-            if (((isset($input['new'])) and
-                 ($input['new'] === '1')) or
-                ($this->app['rzp.mode'] === Mode::TEST))
+            if ((isset($input['new'])) and
+                ($input['new'] === '1'))
             {
                 $framejs = '/v1/checkout-frame-new.js';
                 $css = '/v1/css/checkout-new.css';
