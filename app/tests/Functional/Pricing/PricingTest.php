@@ -86,6 +86,20 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetPricingPlansGrouping()
+    {
+        $content = $this->createPricingPlan();
+        $this->createPricingPlan2();
+
+        $this->addPricingPlanRule($content['id']);
+        
+        $this->ba->appAuth('rzp_test');
+        $this->startTest();
+
+        $this->ba->appAuth('rzp_live');
+        $this->startTest();
+    }
+
     public function testMerchantAssignPricingPlan()
     {
         $id = $this->createPricingPlan()['id'];
@@ -273,6 +287,30 @@ class PricingTest extends TestCase
         $this->assertArrayHasKey('rules', $content);
 
         $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
+
+        return $content;
+    }
+
+    protected function addPricingPlanRule($id)
+    {
+        $rule = array(
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+        );
+        
+        $request = array(
+            'method' => 'POST',
+            'url' => '/pricing/'.$id.'/rule',
+            'content' => $rule);
+
+        $content = $this->makeRequestAndGetContent($request);
 
         return $content;
     }

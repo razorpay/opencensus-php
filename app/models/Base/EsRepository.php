@@ -50,7 +50,8 @@ class EsRepository extends \Razorpay\Spine\Repository
             {
                 throw new Exception\ServerErrorException(
                     'Did not find corresponding entity data in MySQL' ,
-                    ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND);
+                    ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
+                    ['es_entity_ids' => $entityIds]);
             }
         }
 

@@ -121,12 +121,18 @@ class Server extends Base\Mock\Server
 
         $res = [];
         if (($cardNumber === '4012001038488884') or
-            ($cardNumber === '4012001036298889'))
+            ($cardNumber === '4012001036298889') or
+            ($cardNumber === '6073840000000008'))
         {
             $res['result'] = 'FSS0001-Authentication Not Available';
             $res['PAReq'] = 'abcd';
             $res['paymentid'] = $this->getNewPaymentId();
             $res['trackid'] = $this->data['trackid'];
+
+            if ($cardNumber === '6073840000000008')
+            {
+                $res['result'] = 'AUTH ERROR';
+            }
         }
         else
         {

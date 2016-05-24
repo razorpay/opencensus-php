@@ -19,9 +19,9 @@ class EsDao
 
     public function __construct($mode = null)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->config = $app['config'];
+        $this->config = $this->app['config'];
 
         // Host name will be retrieved from the ENV.
         $hostName = $this->config->get('database.es_host');
@@ -33,7 +33,7 @@ class EsDao
         // Live and Test have different index names in the ES cluster.
         $this->setIndexName($mode);
 
-        $this->es = $app['es'];
+        $this->es = $this->app['es'];
 
         $params = [
             'hosts' => [
@@ -51,9 +51,9 @@ class EsDao
     {
         if (empty($mode) === true)
         {
-            if (isset($app['rzp.mode']) === true)
+            if (isset($this->app['rzp.mode']) === true)
             {
-                $mode = $app['rzp.mode'];
+                $mode = $this->app['rzp.mode'];
             }
             else
             {
@@ -129,15 +129,21 @@ class EsDao
     {
         $merchantId = $params['merchant_id'];
         $searchString = $params['notes'];
-        $count = $params['count'];
+        $count = (int) $params['count'];
 
+        // For pagination
+        $skip = 0;
+        if (isset($params['skip']) === true)
+        {
+            $skip = (int) $params['skip'];
+        }
 
-        // Defaults: from : 0
         $params = [
             'index' => $this->indexName,
             'type' => $typeName,
             'body' => [
                 'size' => $count,
+                'from' => $skip,
                 'query' => [
                     'filtered' => [
                         'query' => [
@@ -164,7 +170,7 @@ class EsDao
         {
             $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
         }
-
+        
         $entityIds = $this->es->searchNotes($params);
 
         return $entityIds;

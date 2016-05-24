@@ -123,7 +123,7 @@ trait RepositoryFetch
     protected function runEsFetch($params, $merchantId)
     {
         $esRepo = $this->getEsRepoClass();
-
+        
         return $esRepo->fetch($params, $merchantId);
     }
 

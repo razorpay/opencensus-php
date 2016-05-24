@@ -197,6 +197,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchEntitiesForReport($merchantId, $from, $to)
+    {
+        return $this->fetchBetweenTimestampWithRelations(
+                        $merchantId, $from, $to, ['card']);
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
