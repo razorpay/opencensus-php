@@ -44,7 +44,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
-        $content['merchantAlias'] = $input['merchant']['id'];
+        $content['merchantAlias'] = $input['merchant']['billing_label'];
 
         $request = $this->getStandardRequestArray($content);
 
