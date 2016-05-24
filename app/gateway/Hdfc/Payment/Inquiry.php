@@ -4,7 +4,6 @@ namespace Gateway\Hdfc\Payment;
 
 use EE\Exception;
 use Gateway\Base;
-use Gateway\Base\Action;
 use Gateway\Base\VerifyResult;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
@@ -209,24 +208,44 @@ trait Inquiry
             $this->inquiryRequest,
             $this->inquiryResponse);
 
-        if ((isset($this->inquiryResponse['data']['result'])) and
-            ($this->inquiryResponse['data']['result'] === 'SUCCESS'))
+        $data = & $this->inquiryResponse['data'];
+
+        if ((isset($data['result'])) and
+            ($data['result'] === Result::SUCCESS))
         {
-            $this->inquiryResponse['data']['result'] = Result::CAPTURED;
+            $payment = $verify->payment;
+
+            $action = $payment['action'];
+
+            if ($payment['action'] === Payment\Action::AUTHORIZE)
+            {
+                $result = Result::APPROVED;
+            }
+            else if ($payment['action'] === Payment\Action::PURCHASE)
+            {
+                $result = Result::CAPTURED;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unexpected action: ' . $payment['action']);
+            }
+
+            $data['result'] = $result;
         }
 
         $inquiryResponse = $this->inquiryResponse;
         $content = $this->inquiryResponse['data'];
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'payment_id' => $payment->getPaymentId(),
                 'xml' => $inquiryResponse['xml']
             ]);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $content);
 
         $verify->verifyResponse = $inquiryResponse;

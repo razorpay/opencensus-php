@@ -397,7 +397,7 @@ class Server extends Base\Mock\Server
         }
 
         $res = array(
-            'result'    => 'APPROVED',
+            'result'    => 'SUCCESS',
             'auth'      => $txn['auth'],
             'ref'       => $txn['ref'],
             'avr'       => $txn['avr'],
