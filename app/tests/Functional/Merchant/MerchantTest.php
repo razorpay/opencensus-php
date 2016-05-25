@@ -651,7 +651,7 @@ class MerchantTest extends TestCase
         }
         catch(\Exception $ex)
         {
-            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE', $ex->getCode());
+            $this->assertEquals('BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL', $ex->getCode());
         }
 
         $imageDetails = ['size' => 1, 'width' => '300', 'height' => '310'];

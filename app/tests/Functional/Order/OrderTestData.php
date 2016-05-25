@@ -126,5 +126,33 @@ return [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH
         ],
-    ]
+    ],
+
+    'testPreferencesForTPVMerchants' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'netbanking' => [
+                        'ALLA'   =>  'Allahabad Bank',
+                        'ANDB'   =>  'Andhra Bank',
+                        'CIUB'   =>  'City Union Bank',
+                        'CORP'   =>  'Corporation Bank',
+                        'IBKL'   =>  'IDBI Bank',
+                        'INDB'   =>  'IndusInd Bank',
+                        'KVBL'   =>  'Karur Vysya Bank',
+                        'LAVB_R' =>  'Lakshmi Vilas Bank - Retail Banking',
+                    ],
+                ],
+                'order' => [
+                    'bank'           => 'ANDB',
+                    'account_number' => 'XXXXXXXXXXXXXX40',
+                ],
+            ],
+        ],
+    ],
 ];

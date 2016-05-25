@@ -135,6 +135,11 @@ class PublicEntity extends UniqueIdEntity
         return $this->getPublicId();
     }
 
+    /**
+     * Get dashboard link for any entity
+     *
+     * @return string
+     */
     public function getDashboardEntityLink()
     {
         $id = $this->getId();
@@ -147,14 +152,42 @@ class PublicEntity extends UniqueIdEntity
         return $url;
     }
 
-    public function getDashboardEntityLinkForSlack()
+    /**
+     * Get slack formatted dashboard entity link
+     *
+     * @param string $text
+     * @return string
+     */
+    public function getDashboardEntityLinkForSlack($text = null)
     {
-        $id = $this->getId();
+        if ($text === null)
+        {
+            $text = $this->getId();
+        }
 
         $url = $this->getDashboardEntityLink();
 
         // In the format <link|display_text>
-        return '<'. $url . '|' . $id.'>';
+        return '<'. $url . '|' . $text.'>';
+    }
+
+    /**
+     * Get original attributes against updated attributes
+     *
+     * @return array|null
+     */
+    public function getOriginalAttributesAgainstDirty()
+    {
+        $dirtyAttributes = $this->getDirty();
+
+        if (empty($dirtyAttributes) === false)
+        {
+            $attributes = $this->getOriginal();
+
+            $originalAttributes = array_intersect_key($attributes, $dirtyAttributes);
+
+            return $originalAttributes;
+        }
     }
 
     public static function verifyIdAndStripSign(& $id)

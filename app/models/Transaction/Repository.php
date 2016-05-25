@@ -68,6 +68,8 @@ class Repository extends Base\Repository
                       ->orderByCreatedAt()
                       ->get();
 
+        $txns = $this->fetchAssociatedRelations($txns, 'source');
+
         return $txns;
     }
 

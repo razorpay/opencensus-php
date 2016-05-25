@@ -182,7 +182,7 @@ class Validator extends Base\Validator
                 Entity::DESCRIPTION);
         }
 
-        if (strlen($desc) > 1000)
+        if (strlen($desc) > 255)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,

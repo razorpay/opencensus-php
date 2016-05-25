@@ -22,14 +22,15 @@ class Logo
     {
         $logoImage = $input['logo'];
 
+        $extension = $logoImage->getClientOriginalExtension();
+
         $fileName = UniqueIdEntity::generateUniqueId()
                     .'.'
-                    .$logoImage->getClientOriginalExtension();
+                    .$extension;
 
         $destinationPath = storage_path('files/logos');
 
         $mimeType = $logoImage->getMimeType();
-        $extension = $logoImage->getClientOriginalExtension();
 
         $merchantValidator = new Merchant\Validator;
 

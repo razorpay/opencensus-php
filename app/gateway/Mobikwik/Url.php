@@ -6,7 +6,7 @@ class Url
 {
     const LIVE_DOMAIN 	= 'https://walletapi.mobikwik.com';
     // const TEST_DOMAIN   = 'https://mobikwik.com';
-    const TEST_DOMAIN   = 'https://test.mobikwik.com/mobikwik';
+    const TEST_DOMAIN   = 'https://test.mobikwik.com';
     const API_DOMAIN    = 'https://walletapi.mobikwik.com';
 
     const AUTHORIZE 	= '/wallet';
