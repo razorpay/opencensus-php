@@ -38,12 +38,11 @@ class Service extends Base\Service
     /**
      * Processes a wallet payment
      */
-    public function processWallet(array $input, $wallet)
+    public function processWallet(array $input)
     {
         // Just a hack to get around mobikwik normal flow
         $input['_']['source']   = 's2s';
         $input['method']        = 'wallet';
-        $input['wallet']        = $wallet;
 
         return $this->processor()->process($input);
     }

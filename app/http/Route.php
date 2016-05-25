@@ -21,7 +21,7 @@ final class Route
         'payment_create_jsonp'                  => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                   => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                   => ['post',     'payments/create/fees',                     'PaymentCreateController@postCreatePaymentFees'                     ],
-        'payment_create_wallet'                 => ['post',     'payments/create/wallet/{wallet}',          'PaymentCreateController@postCreateWalletPayment'                   ],
+        'payment_create_wallet'                 => ['post',     'payments/create/wallet',                   'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_callback_post'                 => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                  => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'        => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
