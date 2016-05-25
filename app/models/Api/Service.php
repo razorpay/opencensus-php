@@ -192,7 +192,7 @@ class Service extends Base\Service
         return $error;
     }
 
-    protected function generateTransactionReportAsExcel($data, $entity = "Transaction")
+    public function generateTransactionReportAsExcel($data, $entity = "Transaction")
     {
         $file = \Excel::create("{$entity}_report", function($excel) use ($data, $entity)
         {
