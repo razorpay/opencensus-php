@@ -48,6 +48,8 @@ class EsController extends BaseController
 
     protected function migrateNotes()
     {
+        $this->increaseAllowedSystemLimits();
+        
         // The migration is done in batches.
         while(true)
         {
@@ -172,5 +174,11 @@ class EsController extends BaseController
 
         // This is required to remove the null entries from the array.
         return array_filter($absentEsEntityIds);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(1800);
     }
 }
