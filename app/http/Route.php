@@ -461,7 +461,8 @@ final class Route
         );
 
     public static $slaveRoutes = [
-        'es_migrate_entity',
+        // TODO: Uncomment this when slave variables issue is fixed.
+        //'es_migrate_entity',
     ];
 
     protected static $jsonpRoutes = array(

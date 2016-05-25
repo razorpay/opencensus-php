@@ -62,7 +62,7 @@ class EsController extends BaseController
             // Stores these entities in ES
             $this->storeNotesInEs($entities);
 
-            if (count($entities) <= $this->take)
+            if (count($entities) < $this->take)
             {
                 break;
             }
@@ -80,7 +80,7 @@ class EsController extends BaseController
         // Gets the repository of the entity which is being migrated.
         $entityRepo = $this->getEntityRepo();
 
-        $entities = $entityRepo->fetchAllNotesFromUpdatedAt($this->skip, $this->created, $this->take);
+        $entities = $entityRepo->fetchAllNotesFromCreatedAt($this->skip, $this->created, $this->take);
 
         return $entities;
     }
