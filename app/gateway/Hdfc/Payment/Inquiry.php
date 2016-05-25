@@ -213,14 +213,12 @@ trait Inquiry
         if ((isset($responseData['result'])) and
             ($responseData['result'] === Result::SUCCESS))
         {
-            // TODO: Add a comment on what is `$payment['action']`
             $paymentAction = $payment['action'];
 
             if ($paymentAction === Action::AUTHORIZE)
             {
                 $result = Result::APPROVED;
             }
-            // TODO: Check if this should be `Action::CAPTURE`
             else if ($paymentAction === Action::PURCHASE)
             {
                 $result = Result::CAPTURED;
