@@ -97,6 +97,11 @@ class Logo
 
             // Creates the new image
             $tmp = imagecreatetruecolor($newWidth, $newHeight);
+
+            // Fills the background with white color
+            $white = imagecolorallocate($tmp, 255, 255, 255);
+            imagefill($tmp, 0, 0, $white);
+
             imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
             // Appends the size to the file name in the file path.
