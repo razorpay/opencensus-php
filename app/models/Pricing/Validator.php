@@ -169,13 +169,6 @@ class Validator extends Base\Validator
                 'Amount Range Rules require max end of ranges to be greater than'.
                 'min end of range');
         }
-
-        if (($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD) and
-            ($input[Entity::PAYMENT_METHOD_TYPE] !== 'debit'))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Amount Range Rules are only allowed for debit card method');
-        }
     }
 
     public function createPlanValidate($input)
