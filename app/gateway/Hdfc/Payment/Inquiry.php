@@ -6,7 +6,7 @@ use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\VerifyResult;
 use Gateway\Hdfc;
-use Gateway\Hdfc\Payment as GatewayPayment;
+use Gateway\Hdfc\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -216,12 +216,12 @@ trait Inquiry
             // TODO: Add a comment on what is `$payment['action']`
             $paymentAction = $payment['action'];
 
-            if ($paymentAction === GatewayPayment\Action::AUTHORIZE)
+            if ($paymentAction === Action::AUTHORIZE)
             {
                 $result = Result::APPROVED;
             }
-            // TODO: Check if this should be `GatewayPayment\Action::CAPTURE`
-            else if ($paymentAction === GatewayPayment\Action::PURCHASE)
+            // TODO: Check if this should be `Action::CAPTURE`
+            else if ($paymentAction === Action::PURCHASE)
             {
                 $result = Result::CAPTURED;
             }
@@ -256,7 +256,7 @@ trait Inquiry
     {
         $payment = $verify->payment;
 
-        $content['action'] = GatewayPayment\Action::INQUIRY;
+        $content['action'] = Action::INQUIRY;
         $content['transid'] = $payment['gateway_transaction_id'];
         $content['udf5'] = 'PaymentID';
 
