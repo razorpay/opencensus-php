@@ -106,13 +106,13 @@ class EsController extends BaseController
         // We do not migrate the entities which are already present in ES.
         $storeEntityIds = $this->getEntityIdsAbsentInEs($entityType, $entityIds);
 
-        $storeEntities = $entities->filterEntitiesFromEntityIds($storeEntityIds);
-
         // If all the entities are already present in ES, return the control.
-        if (empty($storeEntities) === true)
+        if (empty($storeEntityIds) === true)
         {
             return;
         }
+
+        $storeEntities = $entities->filterEntitiesFromEntityIds($storeEntityIds);
 
         try
         {
