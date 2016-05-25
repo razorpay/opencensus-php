@@ -33,7 +33,7 @@ window.skFocusListener = function(){
 }
 
 if (screen && screen.width > 480) {
-  $($.getScript('https://cdn.smooch.io/smooch.min.js', function(){
+  window.smoochScript = $.getScript('https://cdn.smooch.io/smooch.min.js', function(){
     var rzp_email = '';
     var rzp_phone = '';
     if (typeof Smooch === 'undefined') {
@@ -43,19 +43,17 @@ if (screen && screen.width > 480) {
     Smooch.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
 
     Smooch.on('ready', function(){
-      if(Smooch.user && Smooch.user.get('email')){
-        return;
-      }
-
       // Show the `email` & `phone` when there are no conversation
       Smooch.getConversation().catch(function(conversation) {
-        window.skIntro = $('.sk-intro').html('Please provide your email or phone number for further communication: <br>\
-              <div class="sk-input-wrap"><input value="'+rzp_email+'" name="email" placeholder="Email*" type="email" pattern="^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"></div>\
-              <div class="sk-input-wrap"><input value="'+rzp_phone+'" name="phone" placeholder="10 digit phone number (optional)" type="tel" pattern="[0-9]{10}" maxlength="10"></div>');
+        if (!window.smoochUserLoaded) {
+          window.skIntro = $('.sk-intro').html('Please provide your email or phone number for further communication: <br>\
+                <div class="sk-input-wrap"><input value="'+rzp_email+'" name="email" placeholder="Email*" type="email" pattern="^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"></div>\
+                <div class="sk-input-wrap"><input value="'+rzp_phone+'" name="phone" placeholder="10 digit phone number (optional)" type="tel" pattern="[0-9]{10}" maxlength="10"></div>');
 
-        $('#sk-footer input').on('focus', window.skFocusListener);
+          $('#sk-footer input').on('focus', window.skFocusListener);
+        }
       });
     })
-  }))
+  })
 }
 </script>
