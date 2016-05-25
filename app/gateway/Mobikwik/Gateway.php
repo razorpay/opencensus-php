@@ -291,6 +291,7 @@ class Gateway extends Base\Gateway
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
+        $content['merchantAlias'] = $input['merchant']['billing_label'];
 
         $request = $this->getStandardRequestArray($content);
 
