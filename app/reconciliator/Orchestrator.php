@@ -152,6 +152,7 @@ class Orchestrator
 
             if ($inExclude === true)
             {
+                // Not a critical alert, because this is expected.
                 $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
                                                     'message' => 'Skipping file because it is present 
                                                                     in the exclude list of the gateway.',
@@ -194,10 +195,11 @@ class Orchestrator
             catch (\Exception $ex)
             {
                 $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                    'message' => 'Skipping file because not able to convert file content to array.',
+                                                    'message' => 'Skipping file because not able to convert 
+                                                                  file content to array.',
                                                     'file_details' => $fileDetails,
                                                     'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
-                                                        ->getNamespaceName()], true
+                                                                  ->getNamespaceName()], true
                 );
 
                 $this->handleInvalidFile($file, $fileDetails);
@@ -317,6 +319,8 @@ class Orchestrator
                     // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
                     if (empty($extractedFileDetails) === true)
                     {
+                        // Exception instead of alert, to handle zip extraction exceptions also in the
+                        // same alert in the catch block. (Cleaner code).
                         throw new Exception\ReconciliationException(
                             'No files present in the zip file attachment.',
                             ['file_name' => $file->getClientOriginalName()]
@@ -334,8 +338,10 @@ class Orchestrator
                                                                       caused an exception -> ' . $ex->getMessage(),
                                                         'file_details' => $extractedFileDetails ?  $extractedFileDetails : null,
                                                         'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
-                                                                    ->getNamespaceName()], true
+                                                                    ->getNamespaceName(),
+                                                        'exception' => $ex->getTrace()], true
                     );
+                    
                     continue;
                 }
             }
@@ -367,6 +373,8 @@ class Orchestrator
 
         if (empty($fileType) === true)
         {
+            // Throwing exception instead of raising alert, because the parent function needs to
+            // perform some operations if this condition block executes to true.
             throw new Exception\ReconciliationException(
                 'Unsupported file type.', ['file_details' => $fileDetails, 'file_type' => $fileType]
             );

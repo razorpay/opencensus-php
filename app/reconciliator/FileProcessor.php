@@ -2,8 +2,8 @@
 
 namespace Reconciliator;
 
-use Doctrine\DBAL\Types\IntegerType;
 use EE\Exception;
+use Trace\TraceCode;
 use Models\Base\UniqueIdEntity;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -135,8 +135,10 @@ class FileProcessor
     {
         if (file_exists($filePath) === false)
         {
-            $this->messenger->raiseReconAlert(['message' => 'File not present, to delete locally.',
-                                               'file_path' => $filePath], true);
+            // Critical alert because this should ideally never happen.
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                                                'message' => 'File not present, to delete locally.',
+                                                'file_path' => $filePath], true);
             return;
         }
 
@@ -144,10 +146,10 @@ class FileProcessor
 
         if ($success === false)
         {
-            $this->messenger->raiseReconAlert(['message' => 'Unable to delete the file, locally.',
-                                               'file_path' => $filePath], true);
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                                                'message' => 'Unable to delete the file, locally.',
+                                                'file_path' => $filePath], true);
         }
-
     }
 
 

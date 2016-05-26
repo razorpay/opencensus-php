@@ -21,7 +21,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     const ROW_FEE         = 'msf';
 
     protected $messenger;
-    
+
 
     public function __construct()
     {
@@ -81,6 +81,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                                                 'row' => $row,
                                                 'gateway' => get_class()], true
             );
+
+            // It's as good as no card type present in the row.
+            return null;
         }
 
         return $cardType;

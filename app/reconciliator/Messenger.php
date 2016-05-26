@@ -20,26 +20,44 @@ class Messenger
     }
 
     /**
-     * Wrapper function to send all reconciliation alerts to slack channels.
+     * Wrapper function to send all reconciliation alerts to slack channels
+     * and trace in Splunk.
+     *
      * @param bool $critical Critical alerts are sent to different Slack channel.
+     * @param array $data
      */
     public function raiseReconAlert($data = [], $critical = false)
     {
         $this->notifySlack($data, $critical);
-        $this->traceReconAlert($data);
+        $this->traceReconAlert($data, $critical);
     }
 
 
-    public function traceReconAlert($data)
+    public function traceReconAlert($data, $critical)
     {
-        $traceCode = TraceCode::RECONCILIATION_ALERT;
+        // Default trace code if no trace code is present in data.
+        $traceCode = TraceCode::RECONCILIATION_INFO_ALERT;
+        if ($critical === true)
+        {
+            $traceCode = TraceCode::RECONCILIATION_CRITICAL_ALERT;
+        }
 
+        // Overrides the default trace code.
         if (isset($data['trace_code']) === true)
         {
             $traceCode = $data['trace_code'];
+            unset($data['trace_code']);
         }
 
-        $this->app['trace']->info($traceCode, $data);
+        // Log as error if critical, otherwise as info.
+        if ($critical === true)
+        {
+            $this->app['trace']->error($traceCode, $data);
+        }
+        else
+        {
+            $this->app['trace']->info($traceCode, $data);
+        }
     }
 
 
@@ -53,11 +71,6 @@ class Messenger
         $settings = $this->getSlackSettings($critical);
 
         $headline = 'Reconciliation alert';
-        if (isset($data['message']) === true)
-        {
-            $headline = $data['message'];
-            unset($data['message']);
-        }
 
         $this->slackPost($headline, $data, $settings);
     }
@@ -70,7 +83,7 @@ class Messenger
 
         if ($critical === true)
         {
-            $settings['channel'] = $this->app['config']->get('slack.channels.recon_info');
+            $settings['channel'] = $this->app['config']->get('slack.channels.recon_critical');
             $settings['color'] = 'danger';
         }
 

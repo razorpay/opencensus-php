@@ -7,6 +7,8 @@ use Models\Card\IIN;
 use Models\Transaction;
 use Models\Payment\Refund;
 
+use Trace\TraceCode;
+
 use Gateway\AxisMigs;
 
 use Reconciliator\Orchestrator;
@@ -77,9 +79,12 @@ class RefundReconciliate
             }
             catch (\Exception $ex)
             {
+                // Ideally, there shouldn't be any exceptions thrown. They should be handled
+                // in the respective reconciliation steps.
+
                 $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FAILURE,
-                                                    'message' => 'Unable to perform one of the 
-                                                    reconciliation actions -> ' . $ex->getMessage(),
+                                                    'message' => 'Unable to perform one of the reconciliation 
+                                                                  actions -> ' . $ex->getMessage(),
                                                     'row' => $row,
                                                     'extra_details' => $extraDetails,
                                                     'gateway' => get_called_class()], true

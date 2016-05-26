@@ -80,6 +80,9 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
                                                 'row' => $row,
                                                 'gateway' => get_class()], true
             );
+            
+            // It's as good as no card type present in the row.
+            return null;
         }
 
         return $cardType;

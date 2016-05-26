@@ -6,6 +6,7 @@ namespace Reconciliator\Base;
 use Reconciliator\FileProcessor;
 use Reconciliator\Orchestrator;
 use EE\Exception;
+use Trace\TraceCode;
 
 
 class Reconciliate
@@ -109,7 +110,7 @@ class Reconciliate
         $reconciliationType = $this->getTypeName($fileName);
 
         // Ideally, should never come here.
-        if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or 
+        if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or
             ($reconciliationType === null))
         {
             $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
@@ -118,7 +119,7 @@ class Reconciliate
                                                 'extra_details' => $extraDetails,
                                                 'gateway' => get_called_class()], true
             );
-            
+
             return null;
         }
 
