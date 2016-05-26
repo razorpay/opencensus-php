@@ -481,8 +481,8 @@ class MerchantController extends BaseController
     public function getPublicEntityReport($entity)
     {
         $input = Input::all();
-        
-        (new Models\Base\Report)->getReport($input, $entity);
+
+        return (new Models\Base\Report)->getReport($input, $entity);
     }
 
     public function getInvoiceReport()

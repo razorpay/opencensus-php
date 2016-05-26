@@ -71,12 +71,6 @@ class RefundReconciliate
                 // Validates that the payment status is not failed.
                 $this->validatePaymentStatus();
 
-                // Stores the gateway fees
-                $this->recordGatewayFee($rowDetails[BaseReconciliate::GATEWAY_FEE]);
-
-                // Stores the gateway service tax
-                $this->recordGatewayServiceTax($rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX]);
-
                 $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
 
                 $this->recordRrn();
@@ -202,92 +196,5 @@ class RefundReconciliate
     protected function recordRrn()
     {
         // TODO: Figure out what to do here.
-    }
-
-
-    protected function recordGatewayFee($reconGatewayFee)
-    {
-        if ($reconGatewayFee === null)
-        {
-            return;
-        }
-
-        $refundId = $this->refund->getId();
-
-        $transaction = $this->transactionRepo->findByEntityId($refundId);
-
-        if ($transaction === null)
-        {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                'message' => 'Transaction not present for the refund',
-                                                'payment_id' => $this->payment->getId(),
-                                                'refund_id' => $refundId,
-                                                'gateway' => get_called_class()], true
-        }
-
-        $currentGatewayFee = $transaction->getGatewayFee();
-
-        if ($currentGatewayFee === null)
-        {
-            $transaction->setGatewayFee($reconGatewayFee);
-        }
-        else
-        {
-            if ($currentGatewayFee !== $reconGatewayFee)
-            {
-                $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                    'message' => 'Gateway fee not same in db and recon file',
-                                                    'recon_service_tax' => $reconGatewayFee,
-                                                    'db_service_tax' => $currentGatewayFee,
-                                                    'payment_id' => $this->payment->getId(),
-                                                    'refund_id' => $refundId,
-                                                    'gateway' => get_called_class()], true
-                );
-            }
-        }
-    }
-
-
-    protected function recordGatewayServiceTax($reconServiceTax)
-    {
-        if ($reconServiceTax === null)
-        {
-            return;
-        }
-
-        $refundId = $this->refund->getId();
-
-        $transaction = $this->transactionRepo->findByEntityId($refundId);
-
-        if ($transaction === null)
-        {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                'message' => 'Transaction not present for the refund',
-                                                'payment_id' => $this->payment->getId(),
-                                                'refund_id' => $refundId,
-                                                'gateway' => get_called_class()], true
-            );
-        }
-
-        $currentGatewayServiceTax = $transaction->getGatewayServiceTax();
-
-        if ($currentGatewayServiceTax === null)
-        {
-            $transaction->setGatewayServiceTax($reconServiceTax);
-        }
-        else
-        {
-            if ($currentGatewayServiceTax !== $reconServiceTax)
-            {
-                $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                    'message' => 'Gateway service tax not same in db and recon file',
-                                                    'recon_service_tax' => $reconServiceTax,
-                                                    'db_service_tax' => $currentGatewayServiceTax,
-                                                    'payment_id' => $this->payment->getId(),
-                                                    'refund_id' => $refundId,
-                                                    'gateway' => get_called_class()], true
-                );
-            }
-        }
     }
 }
