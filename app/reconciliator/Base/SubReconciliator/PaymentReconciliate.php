@@ -6,6 +6,7 @@ namespace Reconciliator\Base\SubReconciliator;
 use Models\Payment;
 use Models\Card\IIN;
 use Models\Transaction;
+use Trace\TraceCode;
 
 use Gateway\AxisMigs;
 
@@ -27,10 +28,14 @@ class PaymentReconciliate
     protected $transactionRepo;
 
     protected $payment;
+    
+    protected $app;
 
-
+    
     public function __construct()
     {
+        $this->app = App::getFacadeRoot();
+        
         // These are being used by the parent classes.
         $this->paymentRepo     = new Payment\Repository;
         $this->iinRepo         = new IIN\Repository;
@@ -52,7 +57,7 @@ class PaymentReconciliate
      */
     public function startReconciliation($fileContents)
     {
-        //$extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
         foreach ($fileContents as $row)
@@ -79,7 +84,19 @@ class PaymentReconciliate
             }
             catch (\Exception $ex)
             {
-                // TODO: Raise a critical alert for not being able to perform one of the reconciliation actions.
+                // Ideally, there shouldn't be any exceptions thrown. They should be handled
+                // in the respective reconciliation steps.
+
+                $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FAILURE,
+                                                    'message' => 'Unable to perform one of the reconciliation 
+                                                                  actions -> ' . $ex->getMessage(),
+                                                    'row' => $row,
+                                                    'extra_details' => $extraDetails,
+                                                    'gateway' => get_called_class()], true
+                );
+
+                $this->app['trace']->traceException($ex);
+
                 continue;
             }
         }
@@ -103,7 +120,12 @@ class PaymentReconciliate
         }
         catch (\Exception $ex)
         {
-            // TODO: Raise an alert for not finding the payment in the db.
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
+                                                'message' => 'Payment not found in DB. -> ' . $ex->getMessage(),
+                                                'row' => $row,
+                                                'payment_id' => $paymentId,
+                                                'gateway' => get_called_class()], true
+            );
             return null;
         }
 
@@ -136,7 +158,11 @@ class PaymentReconciliate
 
         if ($paymentStatus === Payment\Status::FAILED)
         {
-            // TODO: Raise a critical alert for payment status being failed.
+            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
+                                                'message' => 'Payment status is failed.',
+                                                'payment_id' => $this->payment->getId(),
+                                                'gateway' => get_called_class()], true
+            );
         }
     }
 
@@ -161,7 +187,13 @@ class PaymentReconciliate
         {
             if ($iinCardType !== $reconCardType)
             {
-                // TODO: Raise a critical alert for mismatch of card types.
+                $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
+                                                    'message' => 'Card types in recon file and db do not match.',
+                                                    'recon_card_type' => $reconCardType,
+                                                    'iin_card_type' => $iinCardType,
+                                                    'payment_id' => $this->payment->getId(),
+                                                    'gateway' => get_called_class()], true
+                );
             }
         }
     }

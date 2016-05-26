@@ -30,10 +30,14 @@ class RefundReconciliate
 
     protected $payment;
     protected $refund;
+    
+    protected $app;
 
 
     public function __construct()
     {
+        $this->app = App::getFacadeRoot();
+        
         // These are being used by the parent classes.
         $this->paymentRepo     = new Payment\Repository;
         $this->iinRepo         = new IIN\Repository;
@@ -89,6 +93,9 @@ class RefundReconciliate
                                                     'extra_details' => $extraDetails,
                                                     'gateway' => get_called_class()], true
                 );
+                
+                $this->app['trace']->traceException($ex);
+                
                 continue;
             }
         }

@@ -114,7 +114,7 @@ class Reconciliate
             ($reconciliationType === null))
         {
             $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                                                'message' => 'Unable to figure out the reconciliation type.',
+                                                'message' => 'Unable to figure out the reconciliation type. Skipping this file.',
                                                 'reconciliation_type' => $reconciliationType,
                                                 'extra_details' => $extraDetails,
                                                 'gateway' => get_called_class()], true

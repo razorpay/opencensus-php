@@ -20,14 +20,14 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     const ROW_FEE         = 'commission';
 
     protected $messenger;
-    
-    
+
+
     public function __construct()
     {
         $this->messenger = new Messenger();
         parent::__construct();
     }
-    
+
 
     protected function getRefundId($row)
     {
@@ -80,7 +80,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
                                                 'row' => $row,
                                                 'gateway' => get_class()], true
             );
-            
+
             // It's as good as no card type present in the row.
             return null;
         }

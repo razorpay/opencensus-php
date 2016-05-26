@@ -99,7 +99,7 @@ return array(
     | Force sheet collection
     |--------------------------------------------------------------------------
     |
-    | For a sheet collection even when there is only 1 sheets.
+    | For a sheet collection even when there is only 1 sheet.
     | When set to false and only 1 sheet found, the parsed file will return
     | a row collection instead of a sheet collection.
     | When set to true, it will return a sheet collection instead.

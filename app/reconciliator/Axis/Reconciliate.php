@@ -3,11 +3,8 @@
 namespace Reconciliator\Axis;
 
 
-// Unused imports here could be used by parent classes.
 use Reconciliator\Base;
 use Reconciliator\Messenger;
-use Trace\TraceCode;
-use Reconciliator\Orchestrator;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -22,6 +19,7 @@ class Reconciliate extends Base\Reconciliate
         $this->messenger = new Messenger();
     }
 
+    
     protected function getTypeName($fileName)
     {
         if (strpos(self::REFUND, $fileName) !== false)

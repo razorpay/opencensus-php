@@ -55,6 +55,8 @@ class Orchestrator
 
     public function __construct()
     {
+        $this->app = App::getFacadeRoot();
+
         $this->messenger = new Messenger();
 
         $this->validator = new Validator;
@@ -149,13 +151,12 @@ class Orchestrator
         {
             // Checks if this particular file needs to be excluded for the gateway
             $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
-
+            
             if ($inExclude === true)
             {
                 // Not a critical alert, because this is expected.
                 $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                    'message' => 'Skipping file because it is present 
-                                                                    in the exclude list of the gateway.',
+                                                    'message' => 'Skipping file because it is present in the exclude list of the gateway.',
                                                     'file_details' => $fileDetails,
                                                     'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
                                                                         ->getNamespaceName()]
@@ -195,12 +196,12 @@ class Orchestrator
             catch (\Exception $ex)
             {
                 $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                    'message' => 'Skipping file because not able to convert 
-                                                                  file content to array.',
+                                                    'message' => 'Skipping file because not able to convert file content to array. -> ' . $ex->getMessage(),
                                                     'file_details' => $fileDetails,
                                                     'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
                                                                   ->getNamespaceName()], true
                 );
+                $this->app['trace']->traceException($ex);
 
                 $this->handleInvalidFile($file, $fileDetails);
 
@@ -210,6 +211,15 @@ class Orchestrator
 
             // Delete the file. We have all the data in $allFilesContents.
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+        }
+
+        if (empty($this->allFilesContents) === true)
+        {
+            throw new Exception\ReconciliationException(
+                'File contents are empty.', [
+                    'all_files_details' => $this->allFilesDetails,
+                    'all_files_contents' => $this->allFilesContents]
+            );
         }
 
         $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
@@ -334,14 +344,13 @@ class Orchestrator
                 catch (\Exception $ex)
                 {
                     $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                        'message' => 'Skipping file because unzip file 
-                                                                      caused an exception -> ' . $ex->getMessage(),
+                                                        'message' => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
                                                         'file_details' => $extractedFileDetails ?  $extractedFileDetails : null,
                                                         'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
                                                                     ->getNamespaceName(),
                                                         'exception' => $ex->getTrace()], true
                     );
-                    
+
                     continue;
                 }
             }
@@ -443,7 +452,7 @@ class Orchestrator
     protected function setExtraDetails(&$arrayContent, $fileDetails)
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
-        //$arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
+        $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
     }
 
 
