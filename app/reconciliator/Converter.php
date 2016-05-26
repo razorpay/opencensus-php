@@ -5,6 +5,7 @@ namespace Reconciliator;
 
 
 use Excel;
+use Config;
 
 use EE\Exception;
 
@@ -70,6 +71,8 @@ class Converter
     public function getAllExcelSheets($fileDetails, $sheetNames = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        Config::set('excel::import.force_sheets_collection', true);
 
         if (empty($sheetNames) === true)
         {

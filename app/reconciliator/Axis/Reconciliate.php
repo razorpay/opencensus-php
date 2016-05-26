@@ -10,7 +10,7 @@ class Reconciliate extends Base\Reconciliate
 {
     // TODO: Implement interface and use trait instead of base class (Base\Reconciliate).
     const SALE = 'sale';
-    const ACCEPTED_SHEET_NAMES = ['b', 'a', 'Refund', 'Sale'];
+    const ACCEPTED_SHEET_NAMES = ['Refund', 'Sale'];
 
     protected $messenger;
 
@@ -19,7 +19,7 @@ class Reconciliate extends Base\Reconciliate
         $this->messenger = new Messenger();
     }
 
-    
+
     protected function getTypeName($fileName)
     {
         if (strpos(self::REFUND, $fileName) !== false)

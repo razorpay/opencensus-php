@@ -4,6 +4,7 @@ namespace Reconciliator\Base\SubReconciliator;
 
 
 use Models\Payment;
+use Models\Card;
 use Models\Card\IIN;
 use Models\Transaction;
 use Trace\TraceCode;
@@ -28,14 +29,14 @@ class PaymentReconciliate
     protected $transactionRepo;
 
     protected $payment;
-    
+
     protected $app;
 
-    
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
-        
+
         // These are being used by the parent classes.
         $this->paymentRepo     = new Payment\Repository;
         $this->iinRepo         = new IIN\Repository;
@@ -178,7 +179,7 @@ class PaymentReconciliate
 
         $iinCardType = $paymentIin->getType();
 
-        if (empty($iinCardType) === true)
+        if ((empty($iinCardType) === true) or ($iinCardType === Card\Type::UNKNOWN))
         {
             $paymentIin->setType($reconCardType);
             $this->iinRepo->saveOrFail($paymentIin);
@@ -198,7 +199,7 @@ class PaymentReconciliate
         }
     }
 
-    
+
     protected function recordGatewayFee($reconGatewayFee)
     {
         if ($reconGatewayFee === null)
