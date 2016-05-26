@@ -88,6 +88,57 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchCustomerStatus($contact)
+    {
+        $data = array();
+
+        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+
+        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+
+        if ($customer !== null)
+        {
+            $data = (new Customer\Token\Core)->fetchCustomerStatus($customer, $merchant);
+        }
+        else
+        {
+            $data['saved'] = false;
+        }
+
+        return $data;
+    }
+
+    public function validateDeviceToken($deviceToken, $input)
+    {
+        $valid = false;
+
+        $contact = $input['contact'];
+
+        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+
+        if ($customer !== null)
+        {
+            $valid = (new Customer\App\Core)->validateDeviceToken($deviceToken, $customer, $this->merchant);
+        }
+
+        $result = array(
+            'valid' => $valid);
+
+
+        if ($valid === true)
+        {
+            $custAppInput = array(
+                App\Entity::CUSTOMER_ID => $customer->getId(),
+                App\Entity::MERCHANT_ID => $this->merchant->getId());
+
+            $app = (new App\Core)->create($custAppInput);
+
+            $result['app_id'] = $app->getPublicId();
+        }
+
+        return $result;
+    }
+
     public function updateSmsStatus($id, $input)
     {
         $data = (new Customer\Raven)->updateSmsStatus($id, $input);

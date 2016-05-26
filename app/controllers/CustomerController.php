@@ -86,7 +86,7 @@ class CustomerController extends BaseController
 
     public function fetchCustomerStatus($contact)
     {
-        $status = (new Customer\Token\Service)->fetchCustomerStatus($contact);
+        $status = (new Customer\Service)->fetchCustomerStatus($contact);
 
         return ApiResponse::json($status);
     }
@@ -112,6 +112,15 @@ class CustomerController extends BaseController
         $input = Input::all();
 
         $data = (new Customer\Service)->verifyOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function validateDeviceToken($deviceToken)
+    {
+        $input = Input::all();
+
+        $data = (new Customer\Service)->validateDeviceToken($deviceToken, $input);
 
         return ApiResponse::json($data);
     }

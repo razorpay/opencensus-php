@@ -76,6 +76,13 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testVerifyDeviceToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchSavedTokensStatusNotSaved()
     {
         $this->ba->publicAuth();

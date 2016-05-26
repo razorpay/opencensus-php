@@ -22,4 +22,19 @@ class Core extends Base\Core
 
         return $app;
     }
+
+    public function validateDeviceToken($deviceToken, $customer, $merchant)
+    {
+        $valid = false;
+
+        $apps = $this->repo->fetchAppsByDeviceToken($deviceToken, $customer, $merchant);
+
+        if ($apps !== null)
+        {
+            $valid = true;
+        }
+
+        return $valid;
+    }
+
 }

@@ -338,6 +338,21 @@ return [
             ],
     ],
 
+    'testVerifyDeviceToken'   => [
+        'request' => [
+                'url' => '/devices/1000custdevice/verify',
+                'method' => 'post',
+                'content' => [
+                    'contact' => 1234567890
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'valid' => true
+                ],
+            ],
+    ],
+
     'testDeleteAppToken' => [
         'request' => [
             'url' => '/apps/capp_1000000custapp/tokens/1000gcardtoken',

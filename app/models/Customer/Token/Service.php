@@ -80,30 +80,6 @@ class Service extends Base\Service
         return $tokens->toArrayPublic();
     }
 
-    public function fetchCustomerStatus($contact)
-    {
-        $saved = false;
-
-        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
-
-        if ($customer !== null)
-        {
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
-                Account::SHARED_ACCOUNT, $customer->getId());
-
-            if ($tokens !== null)
-            {
-                $saved = true;
-            }
-        }
-
-        $result = array(
-            'saved' =>  $saved
-        );
-
-        return $result;
-    }
-
     public function delete($id, $token, $merchantId = null)
     {
         Customer\Entity::verifyIdAndStripSign($id);
