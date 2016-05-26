@@ -86,7 +86,7 @@ class CustomerController extends BaseController
 
     public function fetchCustomerStatus($contact)
     {
-        $status = (new Customer\Service)->fetchCustomerStatus($contact);
+        $status = (new Customer\Service)->fetchCustomerStatus($contact, true);
 
         return ApiResponse::json($status);
     }

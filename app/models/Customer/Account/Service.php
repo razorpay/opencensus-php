@@ -88,7 +88,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function fetchCustomerStatus($contact)
+    public function fetchCustomerStatus($contact, $sendOtp = false)
     {
         $data = array();
 
@@ -99,6 +99,13 @@ class Service extends Base\Service
         if ($customer !== null)
         {
             $data = (new Customer\Token\Core)->fetchCustomerStatus($customer, $merchant);
+
+            if ((isset($data['saved'])) and
+                ($data['saved'] === true) and
+                ($sendOtp == true))
+            {
+                $this->sendOtp(array('contact' => $contact);
+            }
         }
         else
         {
