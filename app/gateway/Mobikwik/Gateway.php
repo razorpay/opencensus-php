@@ -28,13 +28,13 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $content = array(
-            'email'       => $input['payment']['email'],
-            'amount'      => $input['payment']['amount'] / 100,
-            'cell'        => $this->getFormattedContact($input['payment']['contact']),
-            'orderid'     => $input['payment']['id'],
-//            'merchantname'  => $input['terminal']['gateway_terminal_id'],
-            'mid'         => $input['terminal']['gateway_merchant_id'],
-            'redirecturl' => $input['callbackUrl'],
+            'email'         => $input['payment']['email'],
+            'amount'        => $input['payment']['amount'] / 100,
+            'cell'          => $this->getFormattedContact($input['payment']['contact']),
+            'orderid'       => $input['payment']['id'],
+            'merchantname'  => $input['merchant']['billing_label'],
+            'mid'           => $input['terminal']['gateway_merchant_id'],
+            'redirecturl'   => $input['callbackUrl'],
         );
 
         if ($this->mode === Mode::TEST)
@@ -284,13 +284,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'amount'    => $input['payment']['amount'] / 100,
             'cell'      => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => 'razorpay',
+            'merchantname' => $input['merchant']['billing_label'],
             'mid'       => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'   => MessageCode::OTP_GENERATE,
             'tokentype' => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
+        $content['merchantAlias'] = $input['merchant']['billing_label'];
 
         $request = $this->getStandardRequestArray($content);
 
@@ -325,7 +326,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => 'razorpay',
+            'merchantname'  => $input['merchant']['billing_label'],
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],

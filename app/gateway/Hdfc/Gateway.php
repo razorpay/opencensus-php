@@ -421,8 +421,15 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\RecoverableException $e)
         {
-            $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
-            $this->trace->traceException($e);
+            $this->trace->info(
+                TraceCode::GATEWAY_HDFC_CALLBACK_EMPTY,
+                [
+                    'gateway_input' => $input['gateway'],
+                    'payment_id' => $input['payment']['id']
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
