@@ -425,6 +425,47 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutRouteCustomerContact()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = array(
+            'url' => '/checkout',
+            'method' => 'get',
+            'content' => [
+                'contact' => '1234567890'
+            ],
+        );
+
+        $response = $this->makeRequest($request);
+
+        $headers = $response->headers->all();
+        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
+    public function testGetCheckoutRouteWithDeviceToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = array(
+            'url' => '/checkout',
+            'method' => 'get',
+            'content' => [
+                'contact' => '1234567890',
+                'device_token' => '1000custdevice'
+            ],
+        );
+
+        $response = $this->makeRequest($request);
+
+        $headers = $response->headers->all();
+        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
     public function testGetCheckoutRouteWithSavedGlobal()
     {
         $this->ba->publicAuth();

@@ -71,6 +71,30 @@ class Checkout
                 $data['customer'] = $custData;
             }
         }
+        elseif ((isset($input['device_token'])) and
+                (isset($input['contact'])))
+        {
+            $response = (new Customer\Service)->validateDeviceToken(
+                $input['device_token'],
+                $input);
+
+            $data['customer'] = array(
+                'contact'   => $input['contact'],
+                'valid'     => $response['valid']);
+
+            if ($response['valid'] === true)
+            {
+                $data['customer']['app_id'] = $response['app_id'];
+            }
+        }
+        elseif (isset($input['contact']))
+        {
+            $response = (new Customer\Service)->fetchCustomerStatus($input['contact']);
+
+            $data['customer'] = array(
+                'contact'   => $input['contact'],
+                'saved'     => $response['saved']);
+        }
 
         // If merchant is TPV enabled pass details for
         // current order as part of preferences

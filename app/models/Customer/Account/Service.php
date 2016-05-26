@@ -104,7 +104,7 @@ class Service extends Base\Service
                 ($data['saved'] === true) and
                 ($sendOtp == true))
             {
-                $this->sendOtp(array('contact' => $contact);
+                $this->sendOtp(array('contact' => $contact));
             }
         }
         else
