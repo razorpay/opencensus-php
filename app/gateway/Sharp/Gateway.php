@@ -138,6 +138,8 @@ class Gateway extends Base\Gateway
 
         if ($input['card']['number'] === '4111111111111111')
         {
+            $content['card_number'] = $this->encryptCardNumber($input['card']['number']);
+            $content['encrypt'] = '1';
             $method = 'get';
             $url = $url . '&' . http_build_query($content);
             $content = [];
@@ -154,6 +156,11 @@ class Gateway extends Base\Gateway
 
     protected function encryptCardNumber($number)
     {
-        $key =
+        return Crypt::encrypt($number);
+    }
+
+    protected function decryptCardNumber($encryptedCard)
+    {
+        return Crypt::decrypt($encryptedCard);
     }
 }
