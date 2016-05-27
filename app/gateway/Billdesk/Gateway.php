@@ -36,7 +36,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        if ($input['merchant']['id'] === '4izmfM9TFCAgFN')
+        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
+            ($input['merchant']['id'] === '2aTeFCKTYWwfrF'))
         {
             $response = $this->sendGatewayRequest($request);
             $crawler = new Crawler($response->body, $request['url']);
