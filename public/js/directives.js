@@ -269,14 +269,16 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
     restrict: 'A',
     link: function(scope, element, attrs) {
       var tour = $.tourbus(element, {
-        onLegStart: function(leg, bus) {
-          // highlight where required
-          if(leg.rawData.highlight) {
-            leg.$target.addClass('intro-tour-highlight');
-            $('.intro-tour-overlay').show();
+        onDepart: function(bus) {
+          var backDrop = $('.intro-tour-overlay');
+          if (!backDrop.length) {
+            bus.$container.append('<div class="intro-tour-overlay"></div>');
           }
 
-          // fade/slide in first leg
+          $('.intro-tour-overlay').show();
+        },
+
+        onLegStart: function(leg, bus) {
           if(leg.index === 0) {
             leg.$el
               .css({
@@ -290,19 +292,13 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
               }, 500, function() {
                 leg.show();
               });
-
             return false;
           }
         },
 
-        onLegEnd: function(leg) {
-          // remove highlight when leaving this leg
-          if(leg.rawData.highlight) {
-            leg.$target.removeClass('intro-tour-highlight');
-            $('.intro-tour-overlay').hide();
-          }
+        onStop: function(leg) {
+          $('.intro-tour-overlay').hide();
         }
-
       });
 
       tourbusService.start = function() {
