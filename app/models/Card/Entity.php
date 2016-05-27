@@ -281,6 +281,10 @@ class Entity extends Base\PublicEntity
         {
             $array[self::ISSUER] = $this->getIssuer();
         }
+        else
+        {
+            unset($array[self::ISSUER]);
+        }
     }
 
     public function getIin()
