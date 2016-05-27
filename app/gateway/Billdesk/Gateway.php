@@ -28,8 +28,6 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestContentArray($input);
 
-        $request = $this->getRequestArray($content);
-
         $payment = $this->createGatewayPaymentEntity($content);
 
         $request = $this->getRequestArrayForAuthorize($content, $input);
