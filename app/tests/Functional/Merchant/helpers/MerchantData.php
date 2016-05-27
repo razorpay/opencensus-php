@@ -726,6 +726,17 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithNetbankingDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testPutPaytmMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
