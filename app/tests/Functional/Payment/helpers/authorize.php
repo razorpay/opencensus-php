@@ -519,9 +519,10 @@ return [
 
     'testPaymentViaWalletS2SWoAuth' =>[
         'request' => [
-            'url' => '/payments/create/wallet/payumoney',
+            'url' => '/payments/create/wallet',
             'method' => 'POST',
             'content' => [
+                'wallet'    => 'payumoney',
                 'amount'    => 10000,
                 'currency'  => 'INR',
                 'contact'   => '9999999999',
@@ -541,9 +542,10 @@ return [
 
     'testPayumoneyPaymentViaWalletS2S' =>[
         'request' => [
-            'url' => '/payments/create/wallet/payumoney',
+            'url' => '/payments/create/wallet',
             'method' => 'POST',
             'content' => [
+                'wallet'        => 'payumoney',
                 'amount'        => 10000,
                 'currency'      => 'INR',
                 'contact'       => '9999999999',
@@ -566,9 +568,10 @@ return [
 
     'testMobikwikPaymentViaWalletS2S' =>[
         'request' => [
-            'url' => '/payments/create/wallet/mobikwik',
+            'url' => '/payments/create/wallet',
             'method' => 'POST',
             'content' => [
+                'wallet'    => 'mobikwik',
                 'amount'    => 10000,
                 'currency'  => 'INR',
                 'contact'   => '9999999999',

@@ -160,11 +160,11 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a wallet payment
      */
-    public function postCreateWalletPayment($wallet)
+    public function postCreateWalletPayment()
     {
         $input = Input::all();
 
-        $data = $this->payment->processWallet($input, $wallet);
+        $data = $this->payment->processWallet($input);
 
         if (isset($data['request']))
         {
