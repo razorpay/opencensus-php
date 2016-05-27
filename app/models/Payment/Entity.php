@@ -188,8 +188,10 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
+        self::AMOUNT_REFUNDED,
         self::FEE,
-        self::SERVICE_TAX);
+        self::SERVICE_TAX
+    );
 
 // --------------------- Generators --------------------------------------------
 
