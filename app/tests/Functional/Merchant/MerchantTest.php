@@ -405,6 +405,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutPreferencesWithNetbankingDisabled()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->disableNetbanking('10000000000000');
+
+        $content = $this->startTest();
+
+        $count = count($content['methods']['netbanking']);
+        $this->assertEquals(0, $count);
+    }
+
     public function testGetCheckoutRouteWithSavedLocal()
     {
         $this->ba->publicAuth();

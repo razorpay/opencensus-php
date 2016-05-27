@@ -101,6 +101,8 @@ class Entity extends Base\PublicEntity
         self::LAST4,
         self::NETWORK,
         self::INTERNATIONAL,
+        self::EMI,
+        self::ISSUER,
     );
 
     protected $appends = array(
@@ -272,9 +274,11 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEmiAttribute(array & $array)
     {
+        $array[self::ISSUER] = null;
+        $array[self::EMI] = $this->getEmi();
+
         if ($this->getEmi() === true)
         {
-            $array[self::EMI] = true;
             $array[self::ISSUER] = $this->getIssuer();
         }
     }

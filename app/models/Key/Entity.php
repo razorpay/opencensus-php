@@ -39,6 +39,9 @@ class Entity extends Base\PublicEntity
     protected $hidden = array(
         self::SECRET);
 
+    protected $defaults = array(
+        self::EXPIRED_AT => null);
+
     public function merchant()
     {
         return $this->belongsTo(

@@ -429,7 +429,7 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
