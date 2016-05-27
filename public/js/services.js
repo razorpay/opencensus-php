@@ -319,3 +319,11 @@ angular.module('app.services', [])
     5: ['Very High', 'bg-danger']
   }
 }])
+.factory('jqTourbusService', function() {
+  return {
+    start: $.noop,
+    next: $.noop,
+    prev: $.noop,
+    end: $.noop
+  };
+});

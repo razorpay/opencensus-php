@@ -22,6 +22,54 @@
     &copy; {{app.today | date:'yyyy'}} Copyright {{app.name}}
   </div>
   <!-- / footer -->
+
+  <!-- Tour Legs -->
+  <ol jq-tourbus class="tourbus-legs" id="merchant-demo">
+    <li data-highlight="true" data-scroll-to="0" data-orientation="centered" data-top="150" class="tour-welcome">
+      <div class="text-center">
+        <h3>Howdy!</h3>
+        <div>Welcome to Razorpay</div>
+      </div>
+
+      <div>
+        <div>Dashboard is your one stop for all your payments.</div>
+        <div>Using dashboard, here are the most important things you can carry out</div>
+
+        <ul class="list-unstyled">
+          <li>Complete Activation process</li>
+          <li>Check transaction history</li>
+          <li>Issue Refunds</li>
+          <li>Check Settlements</li>
+          <li>Generate Financial Reports</li>
+        </ul>
+      </div>
+
+      <div class="buttons">
+        <button class="btn btn-primary tourbus-next">Get Started</button>
+      </div>
+    </li>
+
+    <li data-el="#rzp-mode" data-highlight="true" data-orientation="bottom" data-align="center">
+      <p>This is your Merchant ID. You can communicate with us effectively with this Merchant ID</p>
+      <button class="btn btn-link tourbus-next">Next >></button>
+    </li>
+
+    <li data-el="#sidebar-features" data-highlight="true" data-orientation="right" data-align="center">
+      <p>You can access all transactional data and reports through this panel. You can also add your teammates to Razorpay Dashboard.</p>
+      <button class="btn btn-link tourbus-next">Next >></button>
+    </li>
+
+    <li data-el="#sidebar-settings" data-highlight="true" data-width="220" data-orientation="right" data-align="center">
+      <p>This panel helps you in getting activated and monitoring your account settings.</p>
+      <button class="btn btn-link tourbus-next">Next >></button>
+    </li>
+
+    <li data-el="#activationNav" data-highlight="true" data-orientation="right" data-align="center">
+      <p>Click here to proceed to Activation</p>
+      <a class="btn btn-link tourbus-next">Close</a>
+    </li>
+  <ol>
+  <!-- / Tour legs -->
   </div>
 </div>
 
@@ -43,11 +91,11 @@
   <div class="modal-body">
     <div>
       You can only use Razorpay in test mode until your account is activated. <br/>
-      Please fill and submit the 
-      <a ui-sref="app.activation" ng-click="ok()"><u>activation form</u></a>. 
+      Please fill and submit the
+      <a ui-sref="app.activation" ng-click="ok()"><u>activation form</u></a>.
     </div>
   </div>
-  <div class="modal-footer">                  
+  <div class="modal-footer">
       <button class="btn btn-primary" ng-click="ok()">OK</button>
   </div>
 </script>

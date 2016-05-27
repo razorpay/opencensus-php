@@ -97,7 +97,6 @@ app.controller('DashboardAggregationsCtrl', [
   'user',
   '$state',
   function ($scope, $http, dateFactory, $user, $state) {
-
     $user.identity(true).then(function(user) {
       if (!user.current) {
         $state.go('app.profile');

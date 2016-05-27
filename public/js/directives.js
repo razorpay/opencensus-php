@@ -264,4 +264,50 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
         });
       }
   }
+}]).directive('jqTourbus', ['jqTourbusService', function(tourbusService) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var tour = $.tourbus(element, {
+        onLegStart: function(leg, bus) {
+          // highlight where required
+          if(leg.rawData.highlight) {
+            leg.$target.addClass('intro-tour-highlight');
+            $('.intro-tour-overlay').show();
+          }
+
+          // fade/slide in first leg
+          if(leg.index === 0) {
+            leg.$el
+              .css({
+                visibility: 'visible',
+                opacity: 0,
+                top: leg.options.top / 2
+              })
+              .animate({
+                top: leg.options.top,
+                opacity: 1.0
+              }, 500, function() {
+                leg.show();
+              });
+
+            return false;
+          }
+        },
+
+        onLegEnd: function(leg) {
+          // remove highlight when leaving this leg
+          if(leg.rawData.highlight) {
+            leg.$target.removeClass('intro-tour-highlight');
+            $('.intro-tour-overlay').hide();
+          }
+        }
+
+      });
+
+      tourbusService.start = function() {
+        tour.depart();
+      }
+    }
+  };
 }]);

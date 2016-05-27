@@ -1,5 +1,5 @@
 <ul class="nav" ng-init="merchant = !!user.current">
-  <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+  <li id="sidebar-features" ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Features</span>
   </li>
   <li class="active" ng-show="merchant">
@@ -70,7 +70,7 @@
   </li>
   <li class="line dk"></li>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+  <li id="sidebar-settings" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Settings</span>
   </li>
   <li ng-show="merchant">

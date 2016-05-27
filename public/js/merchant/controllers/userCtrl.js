@@ -10,9 +10,15 @@ app.controller('UserCtrl', [
   '$keepalive',
   'modeFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost) {
+  'jqTourbusService',
+  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost, jqTourbusService) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
+    $scope.tour = jqTourbusService;
+
+    setTimeout(function() {
+      $scope.tour.start();
+    }, 3000);
 
     $scope.getPendingInvitations = function() {
       var request = $http.get('/settings/invitations');
