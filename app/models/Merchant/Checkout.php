@@ -39,7 +39,11 @@ class Checkout
         if ($methods !== null)
         {
             $methodsArray['card'] = $methods->isCardEnabled();
-            $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
+            $netbankingEnabled = $methods->isNetbankingEnabled();
+            if ($netbankingEnabled === true)
+            {
+                $methodsArray['netbanking'] = $methods->toArrayWithBankNames();
+            }
             $methodsArray['wallet'] = $methods->getEnabledWallets();
             $methodsArray['emi'] = $methods->isEmiEnabled();
         }
