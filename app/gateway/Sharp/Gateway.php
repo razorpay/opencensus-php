@@ -136,7 +136,8 @@ class Gateway extends Base\Gateway
 
         $method = 'post';
 
-        if ($input['card']['number'] === '4111111111111111')
+        if (($input['payment']['method'] === 'card') and
+            ($input['card']['number'] === '4111111111111111'))
         {
             $content['card_number'] = $this->encryptCardNumber($input['card']['number']);
             $content['encrypt'] = '1';
