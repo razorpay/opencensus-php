@@ -49,6 +49,10 @@ class Report extends Service
         'year'   =>  '2016'
     ];
 
+    protected $SBCessMonth;
+    protected $KKCessMonth;
+
+
     public function __construct()
     {
         parent::__construct();
@@ -104,23 +108,32 @@ class Report extends Service
 
         list($from, $to) = $this->getTimestamps($input);
 
-        if ($this->isComplexCessCase($input))
+        // If the invoice needs to be generated for November 2015 (SB Cess month), SB cess should not be
+        // applied for transactions between November 1st to November 15th. For transactions between
+        // November 15th to November 30th, SB cess should be applied.
+        // For any other month, SB cess should be either applied (from Nov 2015) or not (before Nov 2015).
+        if ($this->isComplexSBCessCase($input) === true)
         {
-            $before15Nov = (new Transaction\Repository)->fetchDataForInvoice(
+            // Gets the total fees and service tax of transactions of the merchants
+            // before 15th november and after 15th november.
+            $dataBefore15Nov = (new Transaction\Repository)->fetchDataForInvoice(
                 $merchantId,
                 $from,
                 self::SWACH_BHARAT_CUTOFF_TIMESTAMP);
 
-            $after15Nov  = (new Transaction\Repository)->fetchDataForInvoice(
+            $dataAfter15Nov  = (new Transaction\Repository)->fetchDataForInvoice(
                 $merchantId,
                 self::SWACH_BHARAT_CUTOFF_TIMESTAMP,
                 $to);
 
-            // Now we calculate taxes on each individually
-            $this->addTaxComponents($before15Nov, $input, false, false);
-            $this->addTaxComponents($after15Nov, $input, true, false);
+            // Now we calculate taxes on each individually.
+            // Since this block will be executed only if the input is November 2015,
+            // KK cess should NOT be calculated in this flow. (KK cess should be
+            // calculated for transactions from June 2016 only)
+            $this->addTaxComponents($dataBefore15Nov, false, false);
+            $this->addTaxComponents($dataAfter15Nov, true, false);
 
-            $data = $this->sumInvoiceData($before15Nov, $after15Nov);
+            $data = $this->sumInvoiceData($dataBefore15Nov, $dataAfter15Nov);
         }
         else
         {
@@ -130,7 +143,7 @@ class Report extends Service
 
             $kkCessApplied = $this->isCessApplicable($input, $this->KKCessMonth);
 
-            $this->addTaxComponents($data, $input, $sbCessApplied, $kkCessApplied);
+            $this->addTaxComponents($data, $sbCessApplied, $kkCessApplied);
         }
 
         return $data;
@@ -157,32 +170,33 @@ class Report extends Service
         ];
     }
 
-    protected function addTaxComponents(&$data, $input, $sbCessApplied, $kkCessApplied)
+    protected function addTaxComponents(&$data, $sbCessApplied, $kkCessApplied)
     {
         $taxes = [];
 
         $data[self::RAZORPAY_FEE] = $data[self::TOTAL_FEE] - $data[self::TAX];
 
-        $taxes[self::SERVICE_TAX] = $data[self::TAX];
+        // $data[self::TAX] is retrieved from the DB. It's the service tax amount, inclusive of
+        // the various cess amounts.
+        $totalTax = $data[self::TAX];
+
+        // Sets the default amounts for the cess-es, in case they are not applicable in the time period.
+        $taxes[self::SWACH_BHARAT_CESS] = 0;
+        $taxes[self::KRISHI_KALYAN_CESS] = 0;
 
         // This is all in Paise
         // so we can round to the nearest integer
         if ($sbCessApplied)
         {
             $taxes[self::SWACH_BHARAT_CESS] = round($data[self::RAZORPAY_FEE] * self::SWACH_BHARAT_CESS_RATE);
-
-            // Back calculate just the service tax
-            $taxes[self::SERVICE_TAX] = $taxes[self::SERVICE_TAX] - $taxes[self::SWACH_BHARAT_CESS];
         }
 
         if ($kkCessApplied == true)
         {
             $taxes[self::KRISHI_KALYAN_CESS] = round($data[self::RAZORPAY_FEE] * self::KRISHI_KALYAN_CESS_RATE);
-
-            // Back calculate just the service tax
-            $taxes[self::SERVICE_TAX] = $taxes[self::SERVICE_TAX] - $taxes[self::KRISHI_KALYAN_CESS];
         }
 
+        $taxes[self::SERVICE_TAX] = $totalTax - $taxes[self::SWACH_BHARAT_CESS] - $taxes[self::KRISHI_KALYAN_CESS];
         $taxes[self::SERVICE_TAX] = round($taxes[self::SERVICE_TAX]);
 
         $data[self::TAXES] = $taxes;
@@ -195,18 +209,19 @@ class Report extends Service
     protected function isCessApplicable($input, $cessMonth)
     {
         // This will revert to first of the month
-        $inputDate  = Carbon::createFromDate($input['year'], $input['month']);
+        $inputDate = Carbon::createFromDate($input['year'], $input['month']);
 
         // input date is greater than or equal to SBCessMonth
         return $inputDate->gte($cessMonth);
     }
 
-    protected function isComplexCessCase($input)
+    protected function isComplexSBCessCase($input)
     {
         // We are only comparing the year and month
         $inputDate  = Carbon::createFromDate(
             $input['year'],
-            $input['month']);
+            $input['month']
+        );
 
         return $inputDate->eq($this->SBCessMonth);
     }
@@ -215,6 +230,9 @@ class Report extends Service
     {
         $year = (int) $input['year'];
 
+        // If day is set, `from` and `to` are of that day start and end only.
+        // If day is not set, month should be set. `from` and `to` will be
+        // the first day and the last day of the month.
         if (isset($input['day']))
         {
             $day = (int) $input['day'];
@@ -247,6 +265,10 @@ class Report extends Service
                                   ->year($year)
                                   ->endOfMonth()
                                   ->timestamp;
+        }
+        else
+        {
+            $from = $to = null;
         }
 
         return [$from, $to];
