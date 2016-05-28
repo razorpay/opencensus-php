@@ -50,17 +50,17 @@ class Report extends Service
 
     public function getReport($input, $entity)
     {
-        if (in_array($entity, $this->allowed) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot get report for the given entity');
-        }
+        $this->checkAllowedEntity($entity);
 
         $this->increaseAllowedSystemLimits();
+
+        $begin = time();
 
         $merchantId = $this->merchant->getId();
 
         (new Validator)->validateInput('report', $input);
+
+        date_default_timezone_set('Asia/Kolkata');
 
         list($from, $to) = $this->getTimestamps($input);
 
@@ -68,7 +68,7 @@ class Report extends Service
 
         $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
 
-        date_default_timezone_set('Asia/Kolkata');
+        $timeTaken = time() - $begin;
 
         $this->trace->debug(
             TraceCode::MERCHANT_REPORT_GENERATION,
@@ -76,7 +76,8 @@ class Report extends Service
                 'entity'        => $entity,
                 'from'          => $from,
                 'to'            => $to,
-                'merchantId'    => $merchantId
+                'merchantId'    => $merchantId,
+                'time_taken'    => $timeTaken
             ]);
 
         return $entities->toArrayReport();
@@ -227,6 +228,15 @@ class Report extends Service
         }
 
         return [$from, $to];
+    }
+
+    protected function checkAllowedEntity($entity)
+    {
+        if (in_array($entity, $this->allowed) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot get report for the given entity');
+        }
     }
 
     protected function increaseAllowedSystemLimits()

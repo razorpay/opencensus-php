@@ -48,6 +48,8 @@ class EsController extends BaseController
 
     protected function migrateNotes()
     {
+        $this->increaseAllowedSystemLimits();
+        
         // The migration is done in batches.
         while(true)
         {
@@ -62,7 +64,7 @@ class EsController extends BaseController
             // Stores these entities in ES
             $this->storeNotesInEs($entities);
 
-            if (count($entities) <= $this->take)
+            if (count($entities) < $this->take)
             {
                 break;
             }
@@ -80,7 +82,7 @@ class EsController extends BaseController
         // Gets the repository of the entity which is being migrated.
         $entityRepo = $this->getEntityRepo();
 
-        $entities = $entityRepo->fetchAllNotesFromUpdatedAt($this->skip, $this->created, $this->take);
+        $entities = $entityRepo->fetchAllNotesFromCreatedAt($this->skip, $this->created, $this->take);
 
         return $entities;
     }
@@ -106,13 +108,13 @@ class EsController extends BaseController
         // We do not migrate the entities which are already present in ES.
         $storeEntityIds = $this->getEntityIdsAbsentInEs($entityType, $entityIds);
 
-        $storeEntities = $entities->filterEntitiesFromEntityIds($storeEntityIds);
-
         // If all the entities are already present in ES, return the control.
-        if (empty($storeEntities) === true)
+        if (empty($storeEntityIds) === true)
         {
             return;
         }
+
+        $storeEntities = $entities->filterEntitiesFromEntityIds($storeEntityIds);
 
         try
         {
@@ -172,5 +174,11 @@ class EsController extends BaseController
 
         // This is required to remove the null entries from the array.
         return array_filter($absentEsEntityIds);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(1800);
     }
 }

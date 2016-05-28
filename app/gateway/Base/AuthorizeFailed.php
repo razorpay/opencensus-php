@@ -40,6 +40,7 @@ trait AuthorizeFailed
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true))
         {
+            // This is gateway entity of the payment
             $payment = $verify->payment;
             $payment->fill($verify->verifyResponseContent);
             $payment->saveOrFail();

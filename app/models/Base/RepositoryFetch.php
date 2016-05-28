@@ -355,12 +355,13 @@ trait RepositoryFetch
         }
     }
 
-    public function fetchAllNotesFromUpdatedAt($skip, $updated, $count)
+    public function fetchAllNotesFromCreatedAt($skip, $createdAt, $count)
     {
         $repo = $this->repo;
 
+        // Using created_at and not updated_at because updated_at is not indexed.
         return $repo::select('id', 'notes', 'merchant_id', 'created_at')
-            ->where(PublicEntity::UPDATED_AT, '>=', $updated)
+            ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
             ->orderBy('id', 'desc')
             ->skip($skip)
             ->take($count)

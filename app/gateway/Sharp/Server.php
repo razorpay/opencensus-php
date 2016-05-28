@@ -8,6 +8,7 @@ use Gateway\Base;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
+use Crypt;
 
 class Server
 {
@@ -46,6 +47,14 @@ class Server
 
     protected function authorize($input)
     {
+        // If card number is passed via parameter, expect the encrypt parameter.
+        // Set by our gateway.
+        if (isset($input['encrypt']) === true)
+        {
+            $input['card_number'] = Crypt::decrypt($input['card_number']);
+            unset($input['encrypt']);
+        }
+
         if ($this->requireTwoStep($input) === false)
         {
             $input['success'] = 'S';

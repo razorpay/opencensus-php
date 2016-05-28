@@ -48,7 +48,8 @@ class Core
 
         }
 
-        $key->setMerchantId($merchant->getId());
+        $key->merchant()->associate($merchant);
+        $key->build();
 
         // Generate secret which will be returned to merchant
         $secret = $key->generateSecret();
