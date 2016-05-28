@@ -181,9 +181,7 @@ trait Inquiry
         $payment = $verify->payment;
         $content = $this->getPaymentVerifyRequestContentArray($verify);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, [$content]);
 
         $inquiryRequest = &$this->inquiryRequest;
         $inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
@@ -204,29 +202,7 @@ trait Inquiry
 
         $data = & $this->inquiryResponse['data'];
 
-        if ((isset($data['result'])) and
-            ($data['result'] === Result::SUCCESS))
-        {
-            $payment = $verify->payment;
-
-            $action = $payment['action'];
-
-            if ($payment['action'] === Payment\Action::AUTHORIZE)
-            {
-                $result = Result::APPROVED;
-            }
-            else if ($payment['action'] === Payment\Action::PURCHASE)
-            {
-                $result = Result::CAPTURED;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Unexpected action: ' . $payment['action']);
-            }
-
-            $data['result'] = $result;
-        }
+        $this->checkAndSetResponseResult($verify);
 
         $inquiryResponse = $this->inquiryResponse;
         $content = $this->inquiryResponse['data'];
@@ -262,5 +238,34 @@ trait Inquiry
         $content['trackid'] = $verify->input['payment']['id'];
 
         return $content;
+    }
+
+    protected function checkAndSetResponseResult($verify)
+    {
+        $data = & $this->inquiryResponse['data'];
+
+        if ((isset($data['result'])) and
+            ($data['result'] === Result::SUCCESS))
+        {
+            $payment = $verify->payment;
+
+            $action = $payment['action'];
+
+            if ($payment['action'] === Payment\Action::AUTHORIZE)
+            {
+                $result = Result::APPROVED;
+            }
+            else if ($payment['action'] === Payment\Action::PURCHASE)
+            {
+                $result = Result::CAPTURED;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unexpected action: ' . $payment['action']);
+            }
+
+            $data['result'] = $result;
+        }
     }
 }
