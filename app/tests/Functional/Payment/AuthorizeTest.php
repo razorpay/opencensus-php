@@ -238,7 +238,7 @@ class AuthorizeTest extends TestCase
     {
         $payment = $this->fixtures->create(
             'payment',
-            ['created_at' => time() - 60*100, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
+            ['created_at' => time() - 10 * 60, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $this->cancelPayment($payment->getPublicId());
 

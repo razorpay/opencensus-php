@@ -108,9 +108,9 @@ class Service extends Base\Service
 
     public function cancel($id, $input)
     {
-        $this->processor()->cancel($id, $input);
+        $status = $this->processor()->cancel($id, $input);
 
-        return ['success' => true];
+        return ['status' => $status];
     }
 
     public function forceAuthorizeFailed($id, $input)
