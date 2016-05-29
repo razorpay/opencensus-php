@@ -9,7 +9,7 @@
 		<div>
 			Name: {{{$name}}} <br/>
 			Email: {{{$email}}} <br/>
-@if($phone)
+@if(!empty($phone))
             Phone: {{{$phone}}} <br/>
 @endif
 			Message: <br/>
