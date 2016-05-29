@@ -199,8 +199,8 @@ class Report extends Service
         $taxes[self::SERVICE_TAX] = $totalTax - $taxes[self::SWACH_BHARAT_CESS] - $taxes[self::KRISHI_KALYAN_CESS];
         $taxes[self::SERVICE_TAX] = round($taxes[self::SERVICE_TAX]);
 
-        // array_filter is being used here to remove the cess keys if they are null or 0.
-        $data[self::TAXES] = array_filter($taxes);
+        // array_filter is being used here to remove the cess keys if they are null.
+        $data[self::TAXES] = array_filter($taxes, 'is_numeric');
     }
 
     /**
