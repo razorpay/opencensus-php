@@ -91,7 +91,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getCardAttribute();
     }
-    
+
     public function isNetbankingEnabled()
     {
         return $this->getNetbankingAttribute();
@@ -294,7 +294,7 @@ class Entity extends Base\PublicEntity
     {
         return (bool) $this->attributes[self::CARD];
     }
-    
+
     public function getNetbankingAttribute()
     {
         return (bool) $this->attributes[self::NETBANKING];

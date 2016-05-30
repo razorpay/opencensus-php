@@ -3,7 +3,6 @@
 namespace Models\Customer;
 
 use Models\Base;
-use Illuminate\Support\Str;
 use Models\Merchant\Account;
 use Models\Base\Traits\NotesTrait;
 
@@ -92,7 +91,8 @@ class Entity extends Base\PublicEntity
 
     public function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = Str::lower($email);
+        // Multi-byte function to handle unicode
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
     public function isLocal()

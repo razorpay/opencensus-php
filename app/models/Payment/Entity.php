@@ -8,7 +8,6 @@ use Models\Base;
 use Models\Order;
 use Models\Payment;
 use Models\Payment\Refund;
-use Illuminate\Support\Str;
 use Models\Base\Traits\NotesTrait;
 use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
@@ -399,7 +398,7 @@ class Entity extends Base\PublicEntity
 
     public function setEmailAttribute($email)
     {
-        $this->attributes[self::EMAIL] = Str::lower($email);
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
     public function incrementOtpAttempts()
