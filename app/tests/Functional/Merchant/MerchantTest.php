@@ -155,6 +155,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantEmptyEmail()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantConfig()
     {
         $this->createMerchant();
