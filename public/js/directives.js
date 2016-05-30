@@ -272,7 +272,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
         onDepart: function(bus) {
           var backDrop = $('.intro-tour-overlay');
           if (!backDrop.length) {
-            bus.$container.append('<div class="intro-tour-overlay"></div>');
+            $('#sidebar, #main-content').append('<div class="intro-tour-overlay"></div>');
           }
 
           $('.intro-tour-overlay').show();
@@ -289,6 +289,23 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
               .animate({
                 top: leg.options.top,
                 opacity: 1.0
+              }, 500, function() {
+                leg.show();
+              });
+            return false;
+          } else {
+            bus.legs.forEach(function(legEl) {
+              legEl.$target.removeClass('leg-target-active');
+            });
+            leg.$target.addClass('leg-target-active');
+
+            leg.$el
+              .css({
+                visibility: 'visible',
+                opacity: 0
+              })
+              .animate({
+                opacity: 1
               }, 500, function() {
                 leg.show();
               });

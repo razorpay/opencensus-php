@@ -79,11 +79,72 @@ a code {
 }
 
 .intro-tour-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.welcome-tour {
+  background: url('../../img/welcome-tour.png') no-repeat;
+  background-size: 640px;
+  margin: 15px;
+
+  .welcome-tour-header {
+    font-size: 18px;
+    margin-bottom: 30px;
+    position: relative;
+    top: 30px;
+
+    h3 {
+      font-size: 30px;
+    }
+  }
+
+  .welcome-tour-container {
+    padding: 15px 205px 15px 0;
+    line-height: 24px;
+    font-size: 15px;
+  }
+
+  .demo-desc {
+    margin: 25px 0;
+  }
+
+  .btn-primary {
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 20px;
+  }
+}
+
+.tourbus-leg {
+  border-radius: 4px;
+}
+
+.tourbus-leg-inner {
+  transition: opacity ease-in-out 0.03s;
+  transition: transform ease-in-out 0.1s;
+
+  .btn-link {
+    color: #1aace5;
+    font-weight: bold;
+
+    &:hover {
+      color: #22527b;
+      text-decoration: none;
+    }
+  }
+}
+
+#main-content .intro-tour-overlay {
+  left: 200px;
+}
+
+.leg-target-active {
+  position: relative;
+  z-index: 9999;
 }
