@@ -11,10 +11,16 @@ use Models\Merchant;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
+use Carbon\Carbon;
 
 class FeeCalculator
 {
     const SERVICE_TAX_PERCENT = 14.5;
+
+    const KRISHI_KALYAN_CESS = 0.5;
+
+    // timestamp w.r.t 1st June, 2016
+    const KKC_TIMESTAMP = 1464719400;
 
     /**
      * For which fees needs to be calculate.
@@ -46,7 +52,7 @@ class FeeCalculator
 
     protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
-        $serviceTaxPercentage = self::SERVICE_TAX_PERCENT;
+        $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
@@ -61,6 +67,20 @@ class FeeCalculator
         assert ($fee < $amount);
 
         return  array($fee, $serviceTax);
+    }
+
+    public static function getServiceTaxRate()
+    {
+        $serviceTax = self::SERVICE_TAX_PERCENT;
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($now >= self::KKC_TIMESTAMP)
+        {
+            $serviceTax += self::KRISHI_KALYAN_CESS;
+        }
+
+        return $serviceTax;
     }
 
     protected function getRelevantPricingRule($pricing)
@@ -84,7 +104,7 @@ class FeeCalculator
         }
         elseif ($method === Payment\Method::WALLET)
         {
-            $rule = $this->getRelevantPricingRuleForWallet($rules);  
+            $rule = $this->getRelevantPricingRuleForWallet($rules);
         }
         elseif ($method === Payment\Method::NETBANKING)
         {
@@ -128,7 +148,7 @@ class FeeCalculator
             [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null]
         );
 
-        $rules = $this->applyFiltersOnRules($rules, $filter);   
+        $rules = $this->applyFiltersOnRules($rules, $filter);
 
         $filter1 = array(
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
@@ -139,7 +159,7 @@ class FeeCalculator
         $amount = $payment->getAmount();
 
         $subventionType = $payment->merchant->getSubventionType();
-        
+
         $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 
         if ($rule === null)
@@ -163,14 +183,14 @@ class FeeCalculator
 
         // Current Implementation
         // * Filter based on wallet
-        
+
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
         $filter = array(
             [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
         );
 
-        $rules = $this->applyFiltersOnRules($rules, $filter);   
+        $rules = $this->applyFiltersOnRules($rules, $filter);
 
         return $this->validateAndGetOnePricingRule($rules);
     }

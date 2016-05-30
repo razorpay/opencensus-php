@@ -10,13 +10,12 @@ use Models\Pricing;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
+use Carbon\Carbon;
 
 class Fee
 {
     use SlackPoster;
     use AtomFeeTrait;
-
-    const SERVICE_TAX_PERCENT = 14.5;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
@@ -92,10 +91,11 @@ class Fee
         //         = ST_PERC * (totFee - servTax);
 
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
+        $serviceTax = FeeCalculator::getServiceTaxRate();
 
-        $numerator = self::SERVICE_TAX_PERCENT * $fee ;
+        $numerator = $serviceTax * $fee;
 
-        $denominator = 100 + self::SERVICE_TAX_PERCENT ;
+        $denominator = 100 + $serviceTax;
 
         return ceil($numerator / $denominator);
     }
