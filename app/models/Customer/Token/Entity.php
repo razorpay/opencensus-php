@@ -58,7 +58,11 @@ class Entity extends Base\PublicEntity
         self::CARD,
     );
 
-    protected $defaults = array();
+    protected $defaults = array(
+        self::WALLET    => null,
+        self::BANK      => null,
+        self::CARD_ID   => null,
+    );
 
     protected $publicSetters = array(
         self::ID,

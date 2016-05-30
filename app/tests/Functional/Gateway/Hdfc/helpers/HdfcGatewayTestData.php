@@ -56,7 +56,7 @@ return [
         // 'payment_id' => '3bUZ9YystH0Ib0',
         // 'refund_id' => '3bUZ9cW3h3AEy4',
         // 'gateway_transaction_id' => '777700659480931',
-        'action' => '2',
+        'action' => 2,
         'received' => true,
         'amount' => '500',
         'enroll_result' => null,
@@ -76,7 +76,7 @@ return [
     'testHdfcPaymentEntity' => [
         'refund_id' => null,
 //        'gateway_transaction_id' => '663191662573200',
-        'action' => '5',
+        'action' => 5,
         'received' => true,
         'amount' => '500',
         'enroll_result' => null,

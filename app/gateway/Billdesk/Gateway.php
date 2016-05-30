@@ -13,6 +13,7 @@ use Gateway\Billdesk;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
@@ -32,6 +33,26 @@ class Gateway extends Base\Gateway
         $request = $this->getRequestArrayForAuthorize($content, $input);
 
         $this->traceGatewayPaymentRequest($request, $input);
+
+        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
+            ($input['merchant']['id'] === '2aTeFCKTYWwfrF'))
+        {
+            $response = $this->sendGatewayRequest($request);
+            $crawler = new Crawler($response->body, $request['url']);
+            $form = $crawler->filter('form')->form();
+
+            $uri = $form->getUri();
+            $method = $form->getMethod();
+            $values = $form->getValues();
+
+            $request = array(
+                'url' => $uri,
+                'method' => strtolower($method),
+                'content' => $values,
+            );
+
+            return $request;
+        }
 
         return $request;
     }

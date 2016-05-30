@@ -155,6 +155,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantEmptyEmail()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantConfig()
     {
         $this->createMerchant();
@@ -403,6 +410,19 @@ class MerchantTest extends TestCase
 
         $headers = $response->headers->all();
         $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDisabled()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->disableNetbanking('10000000000000');
+
+        $content = $this->startTest();
+
+        $count = count($content['methods']['netbanking']);
+        $this->assertEquals(0, $count);
     }
 
     public function testGetCheckoutRouteWithSavedLocal()

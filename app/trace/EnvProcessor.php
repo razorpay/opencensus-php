@@ -15,7 +15,11 @@ class EnvProcessor
      */
     public function __invoke(array $record)
     {
-        $record['environment'] = App::environment();
+        // $env = App::environment();
+
+        $context = App::make('config')->get('app.context');
+
+        $record['environment'] = $context;
 
         return $record;
     }

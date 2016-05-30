@@ -31,6 +31,20 @@ class SharpGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
+    public function testPaymentWithGet()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4111111111111111';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+
     public function testPaymentFailed()
     {
         $this->failPaymentOnBankPage = true;
