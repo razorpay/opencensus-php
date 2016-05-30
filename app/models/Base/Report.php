@@ -180,27 +180,25 @@ class Report extends Service
         // the various cess amounts.
         $totalTax = $data[self::TAX];
 
-        // Sets the default amounts for the cess-es, in case they are not applicable in the time period.
-        $taxes[self::SWACH_BHARAT_CESS] = null;
-        $taxes[self::KRISHI_KALYAN_CESS] = null;
+        $swCess = $kkCess = 0;
 
         // This is all in Paise
         // so we can round to the nearest integer
-        if ($sbCessApplied)
+        if ($sbCessApplied === true)
         {
-            $taxes[self::SWACH_BHARAT_CESS] = round($data[self::RAZORPAY_FEE] * self::SWACH_BHARAT_CESS_RATE);
+            $swCess = $taxes[self::SWACH_BHARAT_CESS] =
+                round($data[self::RAZORPAY_FEE] * self::SWACH_BHARAT_CESS_RATE);
         }
 
-        if ($kkCessApplied == true)
+        if ($kkCessApplied === true)
         {
-            $taxes[self::KRISHI_KALYAN_CESS] = round($data[self::RAZORPAY_FEE] * self::KRISHI_KALYAN_CESS_RATE);
+            $kkCess = $taxes[self::KRISHI_KALYAN_CESS] =
+                round($data[self::RAZORPAY_FEE] * self::KRISHI_KALYAN_CESS_RATE);
         }
 
-        $taxes[self::SERVICE_TAX] = $totalTax - $taxes[self::SWACH_BHARAT_CESS] - $taxes[self::KRISHI_KALYAN_CESS];
-        $taxes[self::SERVICE_TAX] = round($taxes[self::SERVICE_TAX]);
+        $taxes[self::SERVICE_TAX] = round($totalTax - $swCess - $kkCess);
 
-        // array_filter is being used here to remove the cess keys if they are null.
-        $data[self::TAXES] = array_filter($taxes, 'is_numeric');
+        $data[self::TAXES] = $taxes;
     }
 
     /**
