@@ -17,13 +17,6 @@ class Fee
     use SlackPoster;
     use AtomFeeTrait;
 
-    const SERVICE_TAX_PERCENT = 14.5;
-
-    const KRISHI_KALYAN_CESS = 0.5;
-
-    const KKC_TIMESTAMP = 1464719400;
-
-
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
     public function __construct()
@@ -98,27 +91,13 @@ class Fee
         //         = ST_PERC * (totFee - servTax);
 
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
-        $serviceTax = $this->getServiceTaxRate();
+        $serviceTax = FeeCalculator::getServiceTaxRate();
 
         $numerator = $serviceTax * $fee;
 
         $denominator = 100 + $serviceTax;
 
         return ceil($numerator / $denominator);
-    }
-
-    protected function getServiceTaxRate()
-    {
-        $serviceTax = self::SERVICE_TAX_PERCENT;
-
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
-        if ($now >= self::KKC_TIMESTAMP)
-        {
-            $serviceTax += self::KRISHI_KALYAN_CESS;
-        }
-
-        return $serviceTax;
     }
 
     protected function getPricingPlanId($merchant)

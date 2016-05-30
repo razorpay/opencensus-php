@@ -19,6 +19,7 @@ class FeeCalculator
 
     const KRISHI_KALYAN_CESS = 0.5;
 
+    // timestamp w.r.t 1st June, 2016
     const KKC_TIMESTAMP = 1464719400;
 
     /**
@@ -51,7 +52,7 @@ class FeeCalculator
 
     protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
-        $serviceTaxPercentage = $this->getServiceTaxRate();
+        $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
@@ -68,7 +69,7 @@ class FeeCalculator
         return  array($fee, $serviceTax);
     }
 
-    protected function getServiceTaxRate()
+    public static function getServiceTaxRate()
     {
         $serviceTax = self::SERVICE_TAX_PERCENT;
 
