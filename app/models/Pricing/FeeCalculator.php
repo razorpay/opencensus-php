@@ -46,7 +46,7 @@ class FeeCalculator
 
     protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
-        $serviceTaxPercentage = self::SERVICE_TAX_PERCENT;
+        $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
@@ -61,6 +61,11 @@ class FeeCalculator
         assert ($fee < $amount);
 
         return  array($fee, $serviceTax);
+    }
+
+    public static function getServiceTaxRate()
+    {
+        return self::SERVICE_TAX_PERCENT;
     }
 
     protected function getRelevantPricingRule($pricing)

@@ -92,10 +92,11 @@ class Fee
         //         = ST_PERC * (totFee - servTax);
 
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
+        $serviceTax = FeeCalculator::getServiceTaxRate();
 
-        $numerator = self::SERVICE_TAX_PERCENT * $fee ;
+        $numerator = $serviceTax * $fee ;
 
-        $denominator = 100 + self::SERVICE_TAX_PERCENT ;
+        $denominator = 100 + $serviceTax ;
 
         return ceil($numerator / $denominator);
     }
