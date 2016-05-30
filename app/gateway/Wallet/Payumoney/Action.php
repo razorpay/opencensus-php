@@ -11,7 +11,6 @@ class Action extends Base\Action
     const CHECK_BALANCE     = 'check_balance';
     const OTP_SUBMIT        = 'otp_submit';
     const GET_BALANCE       = 'get_balance';
-    const CREATED           = 'created';
     const TOPUP_WALLET      = 'topup_wallet';
     const TOPUP_REDIRECT    = 'topup_redirect';
 }

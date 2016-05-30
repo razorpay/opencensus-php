@@ -175,6 +175,7 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupPayment()
     {
+        // Get Innsufficient balance response
         $response = $this->testInsufficientBalancePayment();
 
         $this->step = 'TOPUP';
@@ -183,13 +184,16 @@ class PayumoneyGatewayTest extends TestCase
 
         $topupRequest = $this->testData['topupData'];
 
+        // Generate relative URL for topup
         $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
         $url = 'http://localhost' . $url;
 
         $topupRequest['request']['url'] = $url;
 
+        // Send topup request
         $topupResponse = $this->runRequestResponseFlow($topupRequest);
 
+        // Make topup redirection request
         $topupRedirect = $this->makeRequest($topupResponse['request']);
 
         $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and

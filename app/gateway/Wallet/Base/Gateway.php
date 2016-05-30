@@ -81,9 +81,4 @@ class Gateway extends \Gateway\Base\Gateway
     {
         return new Repository();
     }
-
-    protected function getWallet()
-    {
-        return $this->wallet;
-    }
 }

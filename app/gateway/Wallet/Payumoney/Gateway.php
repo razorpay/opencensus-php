@@ -226,13 +226,9 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::TOPUP_WALLET);
 
-        $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
-                            $input['payment']['wallet'],
-                            $input['terminal']['id'],
-                            $input['customer']['id']);
+        $token = $this->getValidWalletToken($input);
 
-        if ($token === null or $token->expires_at <= time())
+        if ($token === null)
         {
             throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
@@ -325,21 +321,9 @@ class Gateway extends Base\Gateway
                 }
             }
 
-            $token = (new Customer\Token\Repository)->getByWalletTerminalAndCustomerId(
-                            $input['payment']['wallet'],
-                            $input['terminal']['id'],
-                            $input['customer']['id']);
+            $input['content'] = $content;
 
-            $tokenAttributes = $this->getTokenAttributes($input, $content);
-
-            if ($token === null)
-            {
-                $token = (new Customer\Token\Core)
-                            ->create($input['customer'], $tokenAttributes);
-            }
-
-            $token->fill($tokenAttributes);
-            $token->saveOrFail();
+            $token = $this->createOrUpdateToken($input);
 
             $payment = (new \Models\Payment\Repository)
                             ->findByIdAndMerchantId(
@@ -381,13 +365,9 @@ class Gateway extends Base\Gateway
         if (isset($content['status']) and
             $content['status'] === Status::TOPUP_SUCCESS)
         {
-            $token = (new Customer\Token\Repository)
-                        ->getByWalletTerminalAndCustomerId(
-                            $input['payment']['wallet'],
-                            $input['terminal']['id'],
-                            $input['customer']['id']);
+            $token = $this->getValidWalletToken($input);
 
-            if ($token !== null and $token->expires_at > time())
+            if ($token)
             {
                 $this->accessToken = $token->gateway_token;
                 return;
@@ -468,6 +448,20 @@ class Gateway extends Base\Gateway
         }
 
         return 0;
+    }
+
+    protected function getValidWalletToken($input)
+    {
+        $token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+        if ($token !== null and $token->expires_at > time())
+        {
+            return $token;
+        }
     }
 
     protected function getUserWalletLimitRequestArray($input)
@@ -666,6 +660,29 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function createOrUpdateToken($input)
+    {
+        $token = (new Customer\Token\Repository)->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+        $tokenAttributes = $this->getTokenAttributes($input);
+
+        if ($token === null)
+        {
+            $token = (new Customer\Token\Core)
+                        ->create($input['customer'], $tokenAttributes);
+        }
+        else
+        {
+            $token->fill($tokenAttributes);
+            $token->saveOrFail();
+        }
+
+        return $token;
+    }
+
     protected function getAuthHeader($terminal)
     {
         if ($this->mode === Mode::TEST)
@@ -817,15 +834,15 @@ class Gateway extends Base\Gateway
         return $contentToSave;
     }
 
-    protected function getTokenAttributes($input, $content)
+    protected function getTokenAttributes($input)
     {
         $attributes = array(
             Token\Entity::METHOD           => 'wallet',
             Token\Entity::WALLET           => $input['payment']['wallet'],
             Token\Entity::TERMINAL_ID      => $input['terminal']->id,
-            Token\Entity::GATEWAY_TOKEN    => $content['result']['body']['access_token'],
-            Token\Entity::GATEWAY_TOKEN2   => $content['result']['body']['refresh_token'],
-            Token\Entity::EXPIRES_AT       => time() + $content['result']['body']['expires_in'],
+            Token\Entity::GATEWAY_TOKEN    => $input['content']['result']['body']['access_token'],
+            Token\Entity::GATEWAY_TOKEN2   => $input['content']['result']['body']['refresh_token'],
+            Token\Entity::EXPIRES_AT       => time() + $input['content']['result']['body']['expires_in'],
         );
 
         return $attributes;
