@@ -7,6 +7,7 @@ use GuzzleHttp\Client as Guzzle;
 
 use Config;
 use Razorpay\Api\Entity as ApiEntity;
+use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Razorpay\Api\Errors\ServerError as ServerError;
 
@@ -227,7 +228,10 @@ class Merchant extends Entity
         $client = new Guzzle(['base_url' => Config::get('api.url')]);
 
         // Sets the options for the request. Auth should be part of this.
-        $options['auth'] = $this->getApiCredentials($input['merchant_id']);
+        $options = array(
+            'auth'      => $this->getApiCredentials($input['merchant_id']),
+            'headers'   => ApiRequest::getHeaders()
+        );
 
         // Creates a request instance
         $request = $client->createRequest("POST", self::CONFIG_LOGO_URL, $options);
