@@ -53,7 +53,7 @@ return [
                 'id'    => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'name'  => 'Tester 2',
-                'email' => 'liveAndTest@localhost.com',
+                'email' => 'liveandtest@localhost.com',
                 'activated' => false,
                 'activated_at' => null,
                 'methods' => [
@@ -278,6 +278,22 @@ return [
             'content' => [
                 'id' => '1X4hRFHFx4UiXt',
                 'email' => 'shake@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testEditMerchantUppercaseEmail' => [
+        'request' => [
+            'content' => [
+                'email' => 'UPPERCASE@Razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'uppercase@razorpay.com'
             ]
         ]
     ],

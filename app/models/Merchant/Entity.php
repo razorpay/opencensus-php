@@ -2,8 +2,9 @@
 
 namespace Models\Merchant;
 
-use Models\Base;
 use Config;
+use Models\Base;
+use Illuminate\Support\Str;
 use Models\Merchant\Account;
 use Models\Pricing\Service as PricingService;
 
@@ -452,6 +453,11 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::FEATURES] = $features;
         }
+    }
+
+    public function setEmailAttribute($email)
+    {
+        $this->attributes[self::EMAIL] = Str::lower($email);
     }
 
     public function setTransactionReportEmailAttribute($emails)
