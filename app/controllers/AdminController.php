@@ -233,23 +233,9 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
-    public function getSupportedBanks()
+    public function getSupportedNetworks()
     {
-        $data = (new Admin\Service)->fetchSupportedBanks();
-
-        return AppResponse::jsonResponse([], $data->toArray());
-    }
-
-    public function getSupportedCards()
-    {
-        $data = (new Admin\Service)->fetchSupportedCards();
-
-        return AppResponse::jsonResponse([], $data->toArray());
-    }
-
-    public function getSupportedWallets()
-    {
-        $data = (new Admin\Service)->fetchSupportedWallets();
+        $data = (new Admin\Service)->fetchSupportedNetworks();
 
         return AppResponse::jsonResponse([], $data->toArray());
     }
