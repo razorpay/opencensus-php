@@ -396,6 +396,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OTP_COUNT, $count);
     }
 
+    public function setEmailAttribute($email)
+    {
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;

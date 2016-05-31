@@ -2,8 +2,8 @@
 
 namespace Models\Merchant;
 
-use Models\Base;
 use Config;
+use Models\Base;
 use Models\Merchant\Account;
 use Models\Pricing\Service as PricingService;
 
@@ -454,19 +454,24 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setEmailAttribute($email)
+    {
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
+    }
+
     public function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)
         {
             //
             // This is only called for the factory instances
-            // of the merchant entity becuase laracasts testdummy
+            // of the merchant entity because laracasts testdummy
             // does not support array in factory values yet.
             //
             $emails = [$emails];
         }
 
-        $emails = array_unique(array_map('strtolower', array_map('trim', $emails)));
+        $emails = array_unique(array_map('mb_strtolower', array_map('trim', $emails)));
 
         $this->attributes[self::TRANSACTION_REPORT_EMAIL] = implode(',', $emails);
     }
