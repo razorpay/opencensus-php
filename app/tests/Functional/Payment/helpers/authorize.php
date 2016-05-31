@@ -64,6 +64,19 @@ return [
         ],
     ],
 
+    'testUppercaseEmail' => [
+        'request' => [
+            'content' => [
+                'email' => 'UPPERCASE@Razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testContactTooShort' => [
         'request' => [
             'content' => [

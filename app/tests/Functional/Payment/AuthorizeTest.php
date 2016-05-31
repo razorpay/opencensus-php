@@ -37,6 +37,15 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testUppercaseEmail()
+    {
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['email'], 'uppercase@razorpay.com');
+    }
+
     public function testContactTooShort()
     {
         $this->startTest();

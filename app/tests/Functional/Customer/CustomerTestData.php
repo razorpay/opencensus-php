@@ -42,6 +42,23 @@ return [
         ],
     ],
 
+    'testCreateCustomerUppercaseEmailOnly' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'UPPERCASE@Razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'uppercase@razorpay.com',
+            ],
+        ],
+    ],
+
     'testCreateCustomerContactOnly' => [
         'request' => [
             'url' => '/customers',

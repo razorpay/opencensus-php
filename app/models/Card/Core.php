@@ -100,6 +100,8 @@ class Core extends Base\Core
         // Get details for this iin from card repository
         $details = (new Card\Repository)->retrieveIinDetails($card->getIin());
 
+        $type = null;
+
         if ($details)
         {
             $iinNetwork = $details->getNetwork();
@@ -110,12 +112,11 @@ class Core extends Base\Core
                 $card->setNetwork($iinNetwork);
             }
 
-            $type = Card\Type::getType($details['type'], $network);
+            $type = $details['type'];
 
             $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
 
             $arr = array(
-                Entity::TYPE            => $type,
                 Entity::ISSUER          => $details['issuer'],
                 Entity::COUNTRY         => $details['country'],
                 Entity::INTERNATIONAL   => $details->isInternational(),
@@ -124,10 +125,9 @@ class Core extends Base\Core
 
             $card->fill($arr);
         }
-        else
-        {
-            $card->setType(Type::UNKNOWN);
-        }
+
+        $type = Card\Type::getType($type, $network);
+        $card->setType($type);
 
         $this->checkCvvLength($card, $input);
     }
