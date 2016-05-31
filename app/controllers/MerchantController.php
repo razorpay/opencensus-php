@@ -458,7 +458,7 @@ class MerchantController extends BaseController
         {
             $url = $urlMap[$context];
 
-            $key = $this->app['basicauth']->getKey();
+            $key = $this->app['basicauth']->getPublicKey();
             $lastKeyChar = substr($key, -1);
             $lastKeyCharBasedNew = (($lastKeyChar === 'B') or ($lastKeyChar === 'C'));
 
