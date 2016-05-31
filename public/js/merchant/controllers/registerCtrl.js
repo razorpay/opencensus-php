@@ -9,7 +9,8 @@ app.controller('RegisterCtrl', [
   '$analytics',
   '$location',
   '$window',
-  function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location, $window) {
+  '$cookies',
+  function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location, $window, $cookies) {
     $scope.data = {};
 
     if($location.search().invitation) {
@@ -59,6 +60,7 @@ app.controller('RegisterCtrl', [
       });
       request.success(function (data) {
         if (data.success) {
+          $cookies.show_rzp_welcome_guide = true;
           $analytics.eventTrack('signUp', {
             id: data.data.id,
             name: data.data.name,

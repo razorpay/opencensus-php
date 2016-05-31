@@ -131,13 +131,21 @@ a code {
 
   .btn-link {
     color: #1aace5;
-    font-weight: bold;
     padding-bottom: 0;
+
+    &:not(.tourbus-stop) {
+      font-weight: bold;
+    }
 
     &:hover {
       color: #22527b;
       text-decoration: none;
     }
+  }
+
+  .tourbus-stop {
+    padding-left: 0;
+    float: left;
   }
 }
 

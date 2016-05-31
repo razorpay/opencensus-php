@@ -50,29 +50,32 @@
         </div>
 
         <div class="buttons text-center">
-          <button class="btn btn-primary tourbus-next">Get Started</button>
+          <a class="btn btn-primary" ng-click="tour.next()">Get Started {{mode}}</a>
         </div>
       </div>
     </li>
 
     <li data-el="#merchant-id" data-highlight="true" data-orientation="bottom" data-align="center" data-width="440">
-      <div>This is your Merchant ID. You can communicate with us effectively with this Merchant ID</div>
+      <p>This is your Merchant ID. You can communicate with us effectively with this Merchant ID</p>
       <div class="text-right">
+        <button class="btn btn-link tourbus-stop">Skip Tour</button>
         <button class="btn btn-link tourbus-next">Next ></button>
       </div>
     </li>
 
     <li data-el="#sidebar-features" data-highlight="true" data-orientation="right" data-align="center" data-width="400">
-      <div>You can access all transactional data and reports through this panel. You can also add your teammates to Razorpay Dashboard.</div>
+      <p>You can access all transactional data and reports through this panel. You can also add your teammates to Razorpay Dashboard.</p>
       <div class="text-right">
+        <button class="btn btn-link tourbus-stop">Skip Tour</button>
         <button class="btn btn-link tourbus-prev">< Prev</button>
         <button class="btn btn-link tourbus-next">Next ></button>
       </div>
     </li>
 
     <li data-el="#sidebar-settings" data-highlight="true" data-width="400" data-orientation="right" data-align="center">
-      <div>This panel helps you in getting activated and monitoring your account settings.</div>
+      <p>This panel helps you in getting activated and monitoring your account settings.</p>
       <div class="text-right">
+        <button class="btn btn-link tourbus-stop">Skip Tour</button>
         <button class="btn btn-link tourbus-prev">< Prev</button>
         <button class="btn btn-link tourbus-next">Next ></button>
       </div>

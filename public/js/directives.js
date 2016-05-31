@@ -264,7 +264,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
         });
       }
   }
-}]).directive('jqTourbus', ['jqTourbusService', function(tourbusService) {
+}]).directive('jqTourbus', ['jqTourbusService', '$compile', function(tourbusService, $compile) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
@@ -319,7 +319,22 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
       });
 
       tourbusService.start = function() {
+        tour.repositionLegs();
         tour.depart();
+        $compile(angular.element('.tourbus-container'))(scope); // re-binds angular scope events for dynamic html
+      }
+
+      tourbusService.next = function() {
+        tour.repositionLegs();
+        tour.next();
+      }
+
+      tourbusService.prev = function() {
+        tour.prev();
+      }
+
+      tourbusService.stop = function() {
+        tour.stop();
       }
     }
   };
