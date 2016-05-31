@@ -10,7 +10,10 @@ class Core
     {
         $this->app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->trace = $this->app['trace'];
     }
