@@ -11,16 +11,10 @@ use Models\Merchant;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
-use Carbon\Carbon;
 
 class FeeCalculator
 {
-    const SERVICE_TAX_PERCENT = 14.5;
-
-    const KRISHI_KALYAN_CESS = 0.5;
-
-    // timestamp w.r.t 1st June, 2016
-    const KKC_TIMESTAMP = 1464719400;
+    const SERVICE_TAX_PERCENT = 15.0;
 
     /**
      * For which fees needs to be calculate.
@@ -71,16 +65,7 @@ class FeeCalculator
 
     public static function getServiceTaxRate()
     {
-        $serviceTax = self::SERVICE_TAX_PERCENT;
-
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
-        if ($now >= self::KKC_TIMESTAMP)
-        {
-            $serviceTax += self::KRISHI_KALYAN_CESS;
-        }
-
-        return $serviceTax;
+        return self::SERVICE_TAX_PERCENT;
     }
 
     protected function getRelevantPricingRule($pricing)

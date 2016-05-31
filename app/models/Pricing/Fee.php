@@ -10,7 +10,6 @@ use Models\Pricing;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
-use Carbon\Carbon;
 
 class Fee
 {
@@ -93,9 +92,9 @@ class Fee
         // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
         $serviceTax = FeeCalculator::getServiceTaxRate();
 
-        $numerator = $serviceTax * $fee;
+        $numerator = $serviceTax * $fee ;
 
-        $denominator = 100 + $serviceTax;
+        $denominator = 100 + $serviceTax ;
 
         return ceil($numerator / $denominator);
     }

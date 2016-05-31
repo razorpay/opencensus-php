@@ -91,7 +91,7 @@ class Repository extends Base\Repository
         return [
             'total_fee'         =>  $fee,
             // This is a combined tax column
-            // and includes more than just service_tax
+            // and includes more than just service_tax (sb cess, kk cess)
             'tax'               =>  $serviceTax
         ];
     }
