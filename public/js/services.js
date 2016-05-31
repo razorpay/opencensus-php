@@ -324,6 +324,6 @@ angular.module('app.services', [])
     start: $.noop,
     next: $.noop,
     prev: $.noop,
-    end: $.noop
+    stop: $.noop
   };
 });
