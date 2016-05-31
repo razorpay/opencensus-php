@@ -27,7 +27,10 @@ class Orchestrator
     /********************
      * Complex constants
      ********************/
-    // The gateway names should be the same name as the directories present under 'reconciliator'
+    
+    /**
+     * The gateway names should be the same name as the directories present under 'reconciliator'
+     */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC => ['prashanth@razorpay.com'],
         self::Axis => ['prashanth.yv@razorpay.com'],
@@ -37,6 +40,7 @@ class Orchestrator
     /*********************
      * Instance variables
      *********************/
+    
     protected $allFilesContents;
     protected $allFilesDetails;
     protected $emailDetails;
@@ -45,6 +49,7 @@ class Orchestrator
     /********************
      * Instance objects
      ********************/
+    
     protected $validator;
     protected $fileProcessor;
     protected $converter;
