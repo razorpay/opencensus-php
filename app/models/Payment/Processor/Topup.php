@@ -75,7 +75,21 @@ trait Topup
 
         $gatewayInput['payment']  = $payment->toArray();
 
-        $gatewayInput['customer'] = $payment->customer;
+        //
+        // Check for mobikwik wallet, ideally there is no need of if-block
+        // Mobikwik topup works without customer (for now)
+        //
+        if ($payment->customer)
+        {
+            $gatewayInput['customer'] = $payment->customer->toArray();
+
+            $gatewayInput['token']    = $this->retrieveToken($gatewayInput['payment']);
+
+            if ($gatewayInput['token'] === null)
+            {
+                throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            }
+        }
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

@@ -17,7 +17,7 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
-    const EXPIRES_AT            = 'expires_at';
+    const EXPIRED_AT            = 'expired_at';
 
     protected static $sign      = 'token';
 
@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
-        self::EXPIRES_AT,
+        self::EXPIRED_AT,
     );
 
     protected $visible = array(
@@ -51,7 +51,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
-        self::EXPIRES_AT,
+        self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
@@ -69,7 +69,7 @@ class Entity extends Base\PublicEntity
         self::BANK           => null,
         self::CARD_ID        => null,
         self::GATEWAY_TOKEN2 => null,
-        self::EXPIRES_AT     => null
+        self::EXPIRED_AT     => null
     );
 
     protected $publicSetters = array(
@@ -123,14 +123,14 @@ class Entity extends Base\PublicEntity
 
     public function isExpired()
     {
-        $expires_at = $this->getAttribute(self::EXPIRES_AT);
+        $expired_at = $this->getAttribute(self::EXPIRED_AT);
 
-        if ($expires_at === null)
+        if ($expired_at === null)
         {
             return false;
         }
 
-        return ($expires_at <= time());
+        return ($expired_at <= time());
     }
 
     public function setPublicCardAttribute(array & $array)

@@ -192,6 +192,7 @@ trait Authorize
         if ($payment->customer !== null)
         {
             $input['customer'] = $payment->customer->toArray();
+            $input['token']    = $this->retrieveToken($input['payment']);
         }
 
         if ($payment->card !== null)
@@ -201,7 +202,7 @@ trait Authorize
 
         try
         {
-            $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+            $data = $this->callGatewayCallback($payment, $input);
         }
         catch (Exception\BaseException $e)
         {
@@ -219,6 +220,60 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function callGatewayCallback($payment, $input)
+    {
+        // TODO: Refactor
+        if ((isset($input['gateway']['type'])) and
+            ($input['gateway']['type'] === 'otp'))
+        {
+            // TODO: Better name suggestions :(
+            $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
+
+            $this->postPaymentOtpCallbackProcessing($payment, $data);
+
+            $this->callGatewayFunction('checkBalance', $input);
+        }
+        else
+        {
+            $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+        }
+
+        $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+
+        return $data;
+    }
+
+    protected function postPaymentOtpCallbackProcessing($payment, $data)
+    {
+        $customer = $payment->customer;
+
+        if (isset($data['customerAttributes']) and $data['customerAttributes'] !== null)
+        {
+            $contact = $this->getFormattedContact($payment['contact']);
+
+            $customer = (new Customer\Repository)
+                                    ->findByContactForMerchant(
+                                        $contact, Merchant\Account::SHARED_ACCOUNT);
+
+            if ($customer === null)
+            {
+                $customer = (new Customer\Core)
+                                    ->createGlobalCustomer($data['customerAttributes']);
+            }
+        }
+
+        if ($customer !== null)
+        {
+            $payment->customer()->associate($customer);
+            $payment->saveOrFail();
+        }
+
+        if (isset($data['tokenAttributes']))
+        {
+            $this->createOrUpdateToken($payment, $data);
+        }
     }
 
     protected function processPaymentCallbackException($e)

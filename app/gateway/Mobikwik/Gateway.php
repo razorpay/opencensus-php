@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function callbackOtpSubmit($input)
+    public function callbackOtpSubmit(array $input)
     {
         $this->action($input, Action::OTP_SUBMIT);
 

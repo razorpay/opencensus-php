@@ -16,6 +16,7 @@ class Action
     const CAPTURE       = 'capture';
     const REFUND        = 'refund';
     const TOPUP         = 'topup';
+    const DEBIT         = 'debit';
     const VERIFY        = 'verify';
     const VERIFY_REFUND = 'verify_refund';
 

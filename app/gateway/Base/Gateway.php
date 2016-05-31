@@ -131,10 +131,31 @@ class Gateway
         $this->action = Action::AUTHORIZE;
     }
 
+    /**
+     * Handles gateway callback
+     *
+     * @param array $input
+     * @return array|null
+     */
     public function callback(array $input)
-    {//s($input['gateway']);
+    {
         $this->input = $input;
         $this->action = Action::CALLBACK;
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function debit(array $input)
+    {
+        ;
+    }
+
+    public function checkBalance(array $input)
+    {
+        ;
     }
 
     public function capture(array $input)

@@ -8,7 +8,7 @@ class Validator extends Base\Validator
 {
     protected static $authorizeRules   = array(
         'paymentId'             => 'required|string',
-        'accessToken'           => 'required|string'
+        'accessToken'           => 'required|string|in:8c31d80b-83ed-4f52-8377-71301790ccaa'
     );
 
     protected static $debitWalletRules = array(

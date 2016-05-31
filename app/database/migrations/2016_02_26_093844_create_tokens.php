@@ -53,7 +53,7 @@ class CreateTokens extends Migration {
             $table->string(Token::GATEWAY_TOKEN2, 50)
                   ->nullable();
 
-            $table->integer(Token::EXPIRES_AT)
+            $table->integer(Token::EXPIRED_AT)
                   ->nullable();
 
             $table->integer(Token::CREATED_AT);

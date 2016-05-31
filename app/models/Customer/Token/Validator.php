@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         Entity::WALLET          => 'required_only_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney',
         Entity::GATEWAY_TOKEN   => 'sometimes|string',
         Entity::GATEWAY_TOKEN2  => 'sometimes|string',
-        Entity::EXPIRES_AT      => 'sometimes|integer',
+        Entity::EXPIRED_AT      => 'sometimes|integer',
     );
 
     protected static $createValidators = array(
