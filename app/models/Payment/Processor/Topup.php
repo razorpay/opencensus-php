@@ -49,7 +49,12 @@ trait Topup
 
     protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
     {
-        if ($payment->customer === null)
+        //
+        // Slight hack for mobikwik as we are falling back on traditional redirection
+        // flow for mobikwik as we are not using their topup flow right now
+        //
+        if ($payment->getWallet() !== Wallet::MOBIKWIK and
+            $payment->customer === null)
         {
             throw new Exception\BaseException(
                 'Customer doesn\'t exist'

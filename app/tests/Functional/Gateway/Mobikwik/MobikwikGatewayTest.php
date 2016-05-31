@@ -191,6 +191,52 @@ class MobikwikGatewayTest extends TestCase
         return $response;
     }
 
+    public function testTopupPayment()
+    {
+        // Get Innsufficient balance response
+        $response = $this->testInsufficientBalancePayment();
+
+        $responseData = $this->response->original->data;
+
+        $topupRequest = $this->testData['topupData'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $topupResponse = $this->runRequestResponseFlow($topupRequest);
+
+        // Make topup redirection request
+        $topupRedirect = $this->makeRequest($topupResponse['request']);
+
+        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
+            ($topupRedirect->getStatusCode() === 302));
+
+        if ($ret === true)
+        {
+            $callback = array(
+                'url' => $topupRedirect->getTargetUrl(),
+                'method' => 'get',
+                'content' => []
+            );
+
+            $callbackResponse = $this->makeRequest($callback);
+        }
+        else
+        {
+            assert(false);
+        }
+
+        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->original->data);
+
+        $mobikwik = $this->getLastEntity('mobikwik', true);
+
+        $this->assertTestResponse($mobikwik, 'testPaymentMobikwikEntity');
+    }
+
     public function testVerifyPayment()
     {
         $this->payment = $this->doAuthAndCapturePayment($this->payment);

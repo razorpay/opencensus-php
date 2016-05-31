@@ -293,4 +293,21 @@ return [
             ]
         ]
     ],
+
+    'topupData'     => [
+        'request' => [
+            'content'   => [],
+            'method'    => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'first',
+                'request' => [
+                    'method'    => 'post',
+                    'content'   => []
+                ],
+                'version'   => 1
+            ]
+        ]
+    ]
 ];

@@ -136,7 +136,8 @@ class Core extends Base\Core
         foreach ($existingTokens as $token)
         {
             if (($token->getWallet()  === $newToken->getWallet()) and
-                ($token->getGatewayToken() === $newToken->getGatewayToken()))
+                ($token->terminal() === $newToken->terminal()) and
+                ($token->hasExpired()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
