@@ -143,12 +143,12 @@ class Checkout
 
             assert($customer !== null);
 
-            $savedTokens = (new Customer\Token\Service)->fetchMultiple($customer->getPublicId());
+            $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
             $custData =  array(
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens
+                'tokens'    => $savedTokens->toArrayPublic()
             );
         }
         catch (\Exception $e)

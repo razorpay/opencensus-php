@@ -88,6 +88,13 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    public function fetchTokensByCustomer($customer)
+    {
+        $tokens = $this->repo->getByCustomerId($customer->getId());
+
+        return $tokens;
+    }
+
     public function fetchCustomerStatus($customer, $merchant)
     {
         $saved = false;
