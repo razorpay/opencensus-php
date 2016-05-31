@@ -458,9 +458,14 @@ class MerchantController extends BaseController
         {
             $url = $urlMap[$context];
 
+            $key = $this->app['basicauth']->getKey();
+            $lastKeyChar = substr($key, -1);
+            $lastKeyCharBasedNew = (($lastKeyChar === 'B') or ($lastKeyChar === 'C'));
+
             if (((isset($input['new'])) and
                  ($input['new'] === '1')) or
-                ($this->app['rzp.mode'] === Mode::TEST))
+                ($this->app['rzp.mode'] === Mode::TEST) or
+                ($lastKeyCharBasedNew === true))
             {
                 $framejs = '/v1/checkout-frame-new.js';
                 $css = '/v1/css/checkout-new.css';
