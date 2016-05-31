@@ -194,27 +194,19 @@ class Service extends Base\Service
         return $this->processor()->callback($id, $hash, $input);
     }
 
-    public function getSupportedBanks()
+    public function getSupportedNetworks()
     {
         $bank_codes = Processor\Netbanking::getSupportedBanks('live');
 
         $bank_names_map = Bank\Name::getNames($bank_codes);
 
-        return $bank_names_map;
-    }
-
-    public function getSupportedCards()
-    {
         $cards = Card\Network::getSupportedNetworksNamesMap();
-        
-        return $cards;
-    }
 
-    public function getSupportedWallets()
-    {
         $wallets = Processor\Wallet::getWalletNetworkNamesMap();
-        
-        return $wallets;
+
+        $networks = array('Bank' => $bank_names_map, 'Card' => $cards, 'Wallet' => $wallets);
+
+        return $networks;
     }
 
     public function fetchMultiple(array $input)

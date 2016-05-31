@@ -171,9 +171,7 @@ final class Route
         'gateway_payment_callback_post'         => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel' => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
-        'payment_supported_banks'             => ['get',      'supported_banks',                          'PaymentController@getSupportedBanks'                              ],   
-        'payment_supported_cards'             => ['get',      'supported_cards',                          'PaymentController@getSupportedCards'                              ],
-        'payment_supported_wallets'           => ['get',      'supported_wallets',                          'PaymentController@getSupportedWallets'                              ],
+        'payment_supported_networks'             => ['get',     'supported_networks',                       'PaymentController@getSupportedNetworks'                              ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                  => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
         'dummy_route'                           => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
@@ -384,9 +382,7 @@ final class Route
         'refund_verify',
         'es_migrate_entity',
         'dummy_critical_error',
-        'payment_supported_banks',
-        'payment_supported_cards',
-        'payment_supported_wallets'
+        'payment_supported_networks'
     );
 
     public static $proxy = array(
