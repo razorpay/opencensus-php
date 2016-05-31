@@ -30,7 +30,7 @@ trait Topup
             throw $e;
         }
 
-        assert(false, 'Shouldn\'t reach here.');
+        assert(false, 'Should not reach here.');
     }
 
     protected function callGatewayTopup($payment, array $data)
@@ -44,7 +44,7 @@ trait Topup
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        assert(false, 'Shouldn\'t reach here.');
+        assert(false, 'Should not reach here.');
     }
 
     protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
@@ -53,12 +53,11 @@ trait Topup
         // Slight hack for mobikwik as we are falling back on traditional redirection
         // flow for mobikwik as we are not using their topup flow right now
         //
-        if ($payment->getWallet() !== Wallet::MOBIKWIK and
-            $payment->customer === null)
+        if (($payment->getWallet() !== Wallet::MOBIKWIK) and
+            ($payment->customer === null))
         {
             throw new Exception\BaseException(
-                'Customer doesn\'t exist'
-            );
+                'Customer doesn\'t exist');
         }
 
         $canTopup = $this->callGatewayFunction('canTopup', []);
@@ -66,11 +65,8 @@ trait Topup
         if ($canTopup === false)
         {
             throw new Exception\BaseException(
-                'Gateway doesn\'t support topup'
-            );
+                'Gateway doesn\'t support topup');
         }
-
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
         //
         // Call gateway input

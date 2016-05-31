@@ -179,12 +179,4 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
     }
-
-    public function getGlobalCustomer($contact)
-    {
-        $customer = $this->repo->findByContactForMerchant($contact,
-                            Merchant\Account::SHARED_ACCOUNT);
-
-        return $customer;
-    }
 }

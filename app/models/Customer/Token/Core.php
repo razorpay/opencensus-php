@@ -137,7 +137,7 @@ class Core extends Base\Core
         {
             if (($token->getWallet()  === $newToken->getWallet()) and
                 ($token->terminal() === $newToken->terminal()) and
-                ($token->hasExpired()))
+                ($token->isExpired()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);

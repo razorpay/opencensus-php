@@ -121,7 +121,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN);
     }
 
-    public function hasExpired()
+    public function isExpired()
     {
         $expires_at = $this->getAttribute(self::EXPIRES_AT);
 
