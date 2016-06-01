@@ -15,6 +15,7 @@ return array(
         'axis_genius',
         'axis_migs',
         'billdesk',
+        'cybersource',
         'hdfc',
         'kotak',
         'mobikwik',
@@ -41,6 +42,7 @@ return array(
     'mock_sbiepay'          => false,
     'mock_wallet_payzapp'   => $_ENV['PAYZAPP_MOCK'],
     'mock_wallet_payumoney' => $_ENV['PAYUMONEY_MOCK'],
+    'mock_cybersource'      => false,
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -79,6 +81,11 @@ return array(
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => $_ENV['BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'],
         'live_access_code_sec'  => $_ENV['BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'],
+    ),
+
+    'cybersource' => array(
+        'test_merchant_id'      => $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'],
+        'test_access_code'      => $_ENV['CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'],
     ),
 
     'kotak' => array(

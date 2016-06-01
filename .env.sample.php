@@ -63,6 +63,9 @@ return array(
     'BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'      => 'random',
     'BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'      => 'random',
 
+    'CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'              => 'random',
+    'CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'              => 'random',
+
     'HDFC_GATEWAY_TEST_TERMINAL_ID'                     => 'hdfc_id',
     'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'               => 'hdfc_password',
 
