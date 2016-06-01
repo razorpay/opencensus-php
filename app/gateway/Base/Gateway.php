@@ -115,6 +115,10 @@ class Gateway
         }
 
         $this->loadGatewayConfig();
+
+        $gateway = $this->gateway;
+
+        $this->repo = $this->app['repo']->$gateway;
     }
 
     public function authorize(array $input)
