@@ -216,7 +216,7 @@ class Gateway extends Base\Gateway
 
         $this->checkWalletTokenValidity($input);
 
-        $this->accessToken = $input['token']->gateway_token;
+        $this->accessToken = $input['token']->getGatewayToken();
 
         $request = $this->getTopupWalletRequestArray($input);
 
@@ -331,7 +331,7 @@ class Gateway extends Base\Gateway
         {
             if ($input['token'])
             {
-                $this->accessToken = $input['token']->gateway_token;
+                $this->accessToken = $input['token']->getGatewayToken();
                 return;
             }
         }
@@ -415,7 +415,7 @@ class Gateway extends Base\Gateway
 
     protected function checkWalletTokenValidity($input)
     {
-        if ($input['token']->expired_at <= time())
+        if ($input['token']->getExpiredAt() <= time())
         {
             throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }

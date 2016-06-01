@@ -121,16 +121,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN);
     }
 
+    public function getGatewayToken2()
+    {
+        return $this->getAttribute(self::GATEWAY_TOKEN2);
+    }
+
+    public function getExpiredAt()
+    {
+        return $this->getAttribute(self::EXPIRED_AT);
+    }
+
     public function isExpired()
     {
-        $expired_at = $this->getAttribute(self::EXPIRED_AT);
+        $expiredAt = $this->getExpiredAt();
 
-        if ($expired_at === null)
+        if ($expiredAt === null)
         {
             return false;
         }
 
-        return ($expired_at <= time());
+        return ($expiredAt <= time());
     }
 
     public function setPublicCardAttribute(array & $array)
