@@ -42,6 +42,7 @@ class Entity
     const HDFC              = 'hdfc';
     const AMEX              = 'amex';
     const PAYTM             = 'paytm';
+    const SHARP             = 'sharp';
     const WALLET            = 'wallet';
     const BILLDESK          = 'billdesk';
     const MOBIKWIK          = 'mobikwik';
@@ -50,6 +51,8 @@ class Entity
     const NETBANKING        = 'netbanking';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
+    const WALLET_PAYZAPP    = 'wallet_payzapp';
+    const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
     public static $core = array(
         self::IIN,
@@ -134,6 +137,7 @@ class Entity
         self::HDFC              => Gateway\Hdfc::class,
         self::ORDER             => Models\Order::class,
         self::PAYTM             => Gateway\Paytm::class,
+        self::SHARP             => Gateway\Sharp::class,
         self::REFUND            => Models\Payment\Refund::class,
         self::WALLET            => Gateway\Wallet\Base::class,
         self::BALANCE           => Models\Merchant\Balance::class,
@@ -147,9 +151,18 @@ class Entity
         self::AXIS_MIGS         => Gateway\AxisMigs::class,
         self::AXIS_GENIUS       => Gateway\AxisGenius::class,
         self::BANK_ACCOUNT      => Models\Merchant\BankAccount::class,
+        self::WALLET_PAYZAPP    => Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC   => Models\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK  => Gateway\Netbanking\Kotak::class,
+        self::WALLET_PAYUMONEY  => Gateway\Wallet\Payumoney::class,
+    );
+
+    protected static $repository = array(
+        self::WALLET_PAYUMONEY  => Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP    => Gateway\Wallet\Base::class,
+        self::NETBANKING_HDFC   => Gateway\Netbanking\Base::class,
+        self::NETBANKING_KOTAK  => Gateway\Netbanking\Base::class,
     );
 
     public static function getEntityNamespace($entity)
@@ -182,8 +195,15 @@ class Entity
 
         if (class_exists($class) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid repository: ' . $entity);
+            if (isset(self::$repository[$entity]))
+            {
+                $class = self::$repository[$entity] . '\Repository';
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Not a valid repository: ' . $entity);
+            }
         }
 
         return $class;
