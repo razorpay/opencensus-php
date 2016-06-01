@@ -460,7 +460,7 @@ class MerchantController extends BaseController
 
             $key = $this->app['basicauth']->getPublicKey();
             $lastKeyChar = substr($key, -1);
-            $lastKeyCharBasedNew = (($lastKeyChar === 'B') or ($lastKeyChar === 'C'));
+            $lastKeyCharBasedNew = (($lastKeyChar >= 'B') and ($lastKeyChar <= 'I'));
 
             if (((isset($input['new'])) and
                  ($input['new'] === '1')) or
