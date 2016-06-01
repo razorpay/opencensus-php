@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use EE\Exception;
 use Models\Payment;
+use Models\Customer;
 use Models\Merchant;
 use Trace\TraceCode;
 
@@ -49,17 +50,6 @@ trait Topup
 
     protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
     {
-        //
-        // Slight hack for mobikwik as we are falling back on traditional redirection
-        // flow for mobikwik as we are not using their topup flow right now
-        //
-        if (($payment->getWallet() !== Wallet::MOBIKWIK) and
-            ($payment->customer === null))
-        {
-            throw new Exception\BaseException(
-                'Customer doesn\'t exist');
-        }
-
         $canTopup = $this->callGatewayFunction('canTopup', []);
 
         if ($canTopup === false)
@@ -75,15 +65,27 @@ trait Topup
 
         $gatewayInput['payment']  = $payment->toArray();
 
+        $customer = $payment->customer;
+
         //
         // Check for mobikwik wallet, ideally there is no need of if-block
         // Mobikwik topup works without customer (for now)
         //
-        if ($payment->customer)
+        if ($payment->getWallet() !== Wallet::MOBIKWIK)
         {
-            $gatewayInput['customer'] = $payment->customer->toArray();
+            if ($customer === null)
+            {
+                $contact = $this->getFormattedContact($gatewayInput['payment']['contact']);
 
-            $gatewayInput['token']    = $this->retrieveToken($gatewayInput['payment']);
+                $customer = (new Customer\Repository)
+                                        ->findByContactForMerchant(
+                                            $contact, Merchant\Account::SHARED_ACCOUNT);
+
+            }
+
+            $gatewayInput['customer'] = $customer->toArray();
+
+            $gatewayInput['token']    = $this->retrieveToken($gatewayInput);
 
             if ($gatewayInput['token'] === null)
             {

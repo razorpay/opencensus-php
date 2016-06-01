@@ -289,12 +289,12 @@ class Gateway extends Base\Gateway
         {
             if (isset($input['customer']) === false)
             {
-                $data['customerAttributes'] = $this->getCustomerAttributes($input);
+                $data['customer'] = $this->getCustomerAttributes($input);
             }
 
             $input['content'] = $content;
 
-            $data['tokenAttributes'] = $this->getTokenAttributes($input);
+            $data['token'] = $this->getTokenAttributes($input);
 
             $this->accessToken = $content['result']['body']['access_token'];
 
@@ -327,7 +327,7 @@ class Gateway extends Base\Gateway
 
         // Not verifying hash as it's generated with different secret by payu
         if (isset($content['status']) and
-            $content['status'] === Status::TOPUP_SUCCESS)
+            ($content['status'] === Status::TOPUP_SUCCESS))
         {
             if ($input['token'])
             {

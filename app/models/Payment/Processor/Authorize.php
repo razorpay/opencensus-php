@@ -108,7 +108,7 @@ trait Authorize
         if ($payment->getGateway() !== Payment\Gateway::AXIS_MIGS)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Can force authroize only on axis migs gateway');
+                'Can force authorize only on axis migs gateway');
         }
 
         $this->repo->transaction(function() use ($payment, $input)
@@ -192,7 +192,24 @@ trait Authorize
         if ($payment->customer !== null)
         {
             $input['customer'] = $payment->customer->toArray();
-            $input['token']    = $this->retrieveToken($input['payment']);
+        }
+        else
+        {
+            $contact = $this->getFormattedContact($input['payment']['contact']);
+
+            $customer = (new Customer\Repository)
+                                    ->findByContactForMerchant(
+                                        $contact, Merchant\Account::SHARED_ACCOUNT);
+
+            if ($customer)
+            {
+                $input['customer'] = $customer->toArray();
+            }
+        }
+
+        if (isset($input['customer']))
+        {
+            $input['token'] = $this->retrieveToken($input);
         }
 
         if ($payment->card !== null)
@@ -249,7 +266,7 @@ trait Authorize
     {
         $customer = $payment->customer;
 
-        if (isset($data['customerAttributes']) and $data['customerAttributes'] !== null)
+        if (isset($data['customer']) and $data['customer'] !== null)
         {
             $contact = $this->getFormattedContact($payment['contact']);
 
@@ -260,19 +277,13 @@ trait Authorize
             if ($customer === null)
             {
                 $customer = (new Customer\Core)
-                                    ->createGlobalCustomer($data['customerAttributes']);
+                                    ->createGlobalCustomer($data['customer']);
             }
         }
 
-        if ($customer !== null)
+        if (isset($data['token']))
         {
-            $payment->customer()->associate($customer);
-            $payment->saveOrFail();
-        }
-
-        if (isset($data['tokenAttributes']))
-        {
-            $this->createOrUpdateToken($payment, $data);
+            $this->createOrUpdateToken($payment, $customer, $data);
         }
     }
 

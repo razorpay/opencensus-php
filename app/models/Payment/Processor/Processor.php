@@ -505,13 +505,13 @@ class Processor
             $traceData);
     }
 
-    protected function retrieveToken($payment)
+    protected function retrieveToken($input)
     {
         $this->token = (new Customer\Token\Repository)
                         ->getByWalletTerminalAndCustomerId(
-                            $payment['wallet'],
-                            $payment['terminal_id'],
-                            $payment['customer_id']);
+                            $input['payment']['wallet'],
+                            $input['payment']['terminal_id'],
+                            $input['customer']['id']);
 
         return $this->token;
     }
@@ -588,21 +588,21 @@ class Processor
         return $ba;
     }
 
-    protected function createOrUpdateToken($payment, $data)
+    protected function createOrUpdateToken($payment, $customer, $data)
     {
-        $customer = $payment->customer;
-        $payment  = $payment->toArray();
+        $data['payment'] = $payment->toArray();
+        $data['customer'] = $customer->toArray();
 
-        $token = $this->retrieveToken($payment);
+        $token = $this->retrieveToken($data);
 
         if ($token === null)
         {
             $token = (new Customer\Token\Core)
-                        ->create($customer, $data['tokenAttributes']);
+                        ->create($customer, $data['token']);
         }
         else
         {
-            $token->fill($data['tokenAttributes']);
+            $token->fill($data['token']);
             $token->saveOrFail();
         }
 
