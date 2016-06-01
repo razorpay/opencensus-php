@@ -239,8 +239,8 @@ class Report extends Service
             $month = (int) $input['month'];
 
             $date = Carbon::today('Asia/Kolkata')
-                          ->day($day)
                           ->month($month)
+                          ->day($day)
                           ->year($year)
                           ->startOfDay();
 
