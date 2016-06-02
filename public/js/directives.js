@@ -279,6 +279,11 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
         },
 
         onLegStart: function(leg, bus) {
+          if (!leg.scopeRebinded) {
+            $compile(angular.element(leg.el))(scope); // re-binds angular scope for dynamic html
+            leg.scopeRebinded = true;
+          }
+
           if(leg.index === 0) {
             leg.$el
               .css({
@@ -294,11 +299,7 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
               });
             return false;
           } else {
-            bus.legs.forEach(function(legEl) {
-              legEl.$target.removeClass('leg-target-active');
-            });
             leg.$target.addClass('leg-target-active');
-
             leg.$el
               .css({
                 visibility: 'visible',
@@ -313,7 +314,11 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
           }
         },
 
-        onStop: function(leg) {
+        onLegEnd: function(leg) {
+          leg.$target.removeClass('leg-target-active');
+        },
+
+        onStop: function(bus) {
           $('.intro-tour-overlay').hide();
         }
       });
@@ -321,7 +326,6 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
       tourbusService.start = function() {
         tour.repositionLegs();
         tour.depart();
-        $compile(angular.element('.tourbus-container'))(scope); // re-binds angular scope events for dynamic html
       }
 
       tourbusService.next = function() {

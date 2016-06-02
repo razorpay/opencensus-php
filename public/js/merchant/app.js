@@ -25,7 +25,8 @@ var app = angular.module('app', [
   '$stateParams',
   'user',
   'authorization',
-  function ($rootScope, $state, $stateParams, user, authorization) {
+  'jqTourbusService',
+  function ($rootScope, $state, $stateParams, user, authorization, jqTourbusService) {
     $rootScope.$on('$stateChangeStart', function (event, toState, toStateParams) {
       // track the state the user wants to go to; authorization service needs this
       $rootScope.toState = toState;
@@ -39,6 +40,8 @@ var app = angular.module('app', [
     $rootScope.$on('$stateChangeError', function (event) {
       $state.go('500');
     });
+
+    $rootScope.tour = jqTourbusService;
   }
 ]).config([
   '$stateProvider',

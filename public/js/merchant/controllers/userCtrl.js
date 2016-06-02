@@ -12,10 +12,9 @@ app.controller('UserCtrl', [
   'transformRequestAsFormPost',
   '$cookies',
   'jqTourbusService',
-  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost, $rootScope, $cookies, jqTourbusService) {
+  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost, $cookies, jqTourbusService) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
-    $scope.tour = jqTourbusService;
 
     $scope.getPendingInvitations = function() {
       var request = $http.get('/settings/invitations');
@@ -103,7 +102,7 @@ app.controller('UserCtrl', [
         if ($cookies.show_rzp_welcome_guide) {
           setTimeout(function() {
             jqTourbusService.start();
-          }, 1000);
+          }, 1500);
           delete $cookies.show_rzp_welcome_guide;
         }
 
