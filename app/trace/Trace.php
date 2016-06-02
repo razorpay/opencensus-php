@@ -19,7 +19,7 @@ class Trace extends TraceWriter
         {
             return parent::addRecord($level, $traceCode, $context);
         }
-        catch (\Exception $e)
+        catch (\Exception $exception)
         {
             $data = array(
                 'type' => get_class($exception),
