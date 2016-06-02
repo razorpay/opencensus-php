@@ -7,6 +7,7 @@ use Models\Payment;
 use Models\Customer;
 use Models\Merchant;
 use Trace\TraceCode;
+use EE\Error\ErrorCode;
 
 trait Topup
 {
@@ -83,7 +84,7 @@ trait Topup
 
             }
 
-            $gatewayInput['customer'] = $customer->toArray();
+            $gatewayInput['customer'] = $customer;
 
             $gatewayInput['token']    = $this->retrieveToken($gatewayInput);
 

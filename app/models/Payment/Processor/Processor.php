@@ -511,7 +511,7 @@ class Processor
                         ->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
                             $input['payment']['terminal_id'],
-                            $input['customer']['id']);
+                            $input['customer']->getId());
 
         return $this->token;
     }
@@ -588,17 +588,19 @@ class Processor
         return $ba;
     }
 
-    protected function createOrUpdateToken($payment, $customer, $data)
+    protected function createOrUpdateToken($input, $data)
     {
-        $data['payment'] = $payment->toArray();
-        $data['customer'] = $customer->toArray();
+        if (isset($input['customer']) === false)
+        {
+            return null;
+        }
 
-        $token = $this->retrieveToken($data);
+        $token = $this->retrieveToken($input);
 
         if ($token === null)
         {
             $token = (new Customer\Token\Core)
-                        ->create($customer, $data['token']);
+                        ->create($input['customer'], $data['token']);
         }
         else
         {

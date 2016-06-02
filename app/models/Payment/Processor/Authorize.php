@@ -189,9 +189,9 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
-        if ($payment->customer !== null)
+        if ($payment->customer)
         {
-            $input['customer'] = $payment->customer->toArray();
+            $input['customer'] = $payment->customer;
         }
         else
         {
@@ -203,7 +203,7 @@ trait Authorize
 
             if ($customer)
             {
-                $input['customer'] = $customer->toArray();
+                $input['customer'] = $customer;
             }
         }
 
@@ -248,7 +248,7 @@ trait Authorize
             // TODO: Better name suggestions :(
             $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
 
-            $this->postPaymentOtpCallbackProcessing($payment, $data);
+            $this->postPaymentOtpCallbackProcessing($input, $data);
 
             $this->callGatewayFunction('checkBalance', $input);
         }
@@ -262,13 +262,18 @@ trait Authorize
         return $data;
     }
 
-    protected function postPaymentOtpCallbackProcessing($payment, $data)
+    protected function postPaymentOtpCallbackProcessing($input, $data)
     {
-        $customer = $payment->customer;
+        $customer = null;
+
+        if (isset($input['customer']))
+        {
+            $customer = $input['customer'];
+        }
 
         if (isset($data['customer']) and $data['customer'] !== null)
         {
-            $contact = $this->getFormattedContact($payment['contact']);
+            $contact = $data['customer']['contact'];
 
             $customer = (new Customer\Repository)
                                     ->findByContactForMerchant(
@@ -279,11 +284,13 @@ trait Authorize
                 $customer = (new Customer\Core)
                                     ->createGlobalCustomer($data['customer']);
             }
+
+            $input['customer'] = $customer;
         }
 
         if (isset($data['token']))
         {
-            $this->createOrUpdateToken($payment, $customer, $data);
+            $this->createOrUpdateToken($input, $data);
         }
     }
 
