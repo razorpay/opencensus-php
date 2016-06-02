@@ -75,9 +75,13 @@ class RefundReconciliate extends Foundation\SubReconciliate
             try
             {
                 // Validates that the payment status is not failed.
-                $this->validatePaymentStatus();
+                $validate = $this->validatePaymentStatus();
 
-                $this->recordRrn();
+                if ($validate === true)
+                {
+                    // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
+                    $this->setReconciledAt($this->refund);
+                }
             }
             catch (\Exception $ex)
             {
@@ -144,11 +148,5 @@ class RefundReconciliate extends Foundation\SubReconciliate
         ];
 
         return $rowDetails;
-    }
-
-
-    protected function recordRrn()
-    {
-        // TODO: Figure out what to do here.
     }
 }

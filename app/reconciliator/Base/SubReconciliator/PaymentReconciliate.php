@@ -74,15 +74,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             try
             {
                 // Validates that the payment status is not failed.
-                $this->validatePaymentStatus();
+                $validate = $this->validatePaymentStatus();
 
-                // Stores the gateway fees
-                $this->recordGatewayFee($rowDetails[BaseReconciliate::GATEWAY_FEE]);
+                if ($validate === true)
+                {
+                    $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
 
-                // Stores the gateway service tax
-                $this->recordGatewayServiceTax($rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX]);
+                    if ($recordSuccess === true)
+                    {
+                        $this->setReconciledAt($this->payment);
+                    }
 
-                $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
+                    $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
+                }
             }
             catch (\Exception $ex)
             {
@@ -137,10 +141,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $cardType = $this->getCardType($row);
 
         // Gets the gateway service tax
-        $serviceTax = $this->getServiceTax($row);
+        $serviceTax = $this->getGatewayServiceTax($row);
 
         // Gets the gateway fees
-        $fee = $this->getFee($row);
+        $fee = $this->getGatewayFee($row);
 
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
@@ -187,11 +191,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
 
-    protected function recordGatewayFee($reconGatewayFee)
+    protected function recordGatewayFeeAndServiceTax($rowDetails)
     {
-        if ($reconGatewayFee === null)
+        $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
+        $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
+
+
+        if (($reconGatewayFee === null) or ($reconGatewayServiceTax === null))
         {
-            return;
+            return false;
         }
 
         $transaction = $this->payment->transaction;
@@ -199,52 +207,65 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         if ($transaction === null)
         {
             // TODO: raise an alert about transaction being absent for an entity id.
+            return false;
         }
 
         $currentGatewayFee = $transaction->getGatewayFee();
+        $currentGatewayServiceTax = $transaction->getServiceTax();
 
+        $recordGatewayFeeSuccess = $this->recordGatewayFee($transaction, $reconGatewayFee, $currentGatewayFee);
+
+        if ($recordGatewayFeeSuccess === true)
+        {
+            $recordGatewayServiceTaxSuccess = $this->recordGatewayServiceTax($transaction,
+                                                                             $reconGatewayServiceTax,
+                                                                             $currentGatewayServiceTax);
+
+            if ($recordGatewayServiceTaxSuccess === true)
+            {
+                $transaction->saveOrFail();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    protected function recordGatewayFee($transaction, $reconGatewayFee, $currentGatewayFee)
+    {
         if ($currentGatewayFee === 0)
         {
             $transaction->setGatewayFee($reconGatewayFee);
-            $transaction->saveOrFail();
+            return true;
         }
         else
         {
             if ($currentGatewayFee !== $reconGatewayFee)
             {
-                // TODO: raise an alert about stored service tax and recon service tax not being the same
+                // TODO: raise an alert about stored fee and recon fee not being the same
+                return false;
             }
+            return true;
         }
     }
 
 
-    protected function recordGatewayServiceTax($reconServiceTax)
+    protected function recordGatewayServiceTax($transaction, $reconGatewayServiceTax, $currentGatewayServiceTax)
     {
-        if ($reconServiceTax === null)
-        {
-            return;
-        }
-
-        $transaction = $this->payment->transaction;
-
-        if ($transaction === null)
-        {
-            // TODO: raise an alert about transaction being absent for an entity id.
-        }
-
-        $currentGatewayServiceTax = $transaction->getGatewayServiceTax();
-
         if ($currentGatewayServiceTax === 0)
         {
-            $transaction->setGatewayServiceTax($reconServiceTax);
-            $transaction->saveOrFail();
+            $transaction->setGatewayServiceTax($reconGatewayServiceTax);
+            return true;
         }
         else
         {
-            if ($currentGatewayServiceTax !== $reconServiceTax)
+            if ($currentGatewayServiceTax !== $reconGatewayServiceTax)
             {
                 // TODO: raise an alert about stored service tax and recon service tax not being the same
+                return false;
             }
+            return true;
         }
     }
 }

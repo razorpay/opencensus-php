@@ -10,11 +10,7 @@ class Validator
 
     // Can add more to this as and when we add converters to CSV from different file types.
     const ACCEPTED_EXTENSIONS_MAP = [
-        // TODO: Might need to add more mime types for the extensions.
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values'],
-        // TODO: Handle ridiculous text files.
-        // 'txt'   => ['text/plain'],
-        // 'text'  => ['text/plain'],
         // Don't know why but, getting application/zip as mimetype for xlsx files.
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],

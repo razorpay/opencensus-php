@@ -18,6 +18,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_TYPE   = 'debitcredit_type';
     const COLUMN_SERVICE_TAX = 'serv_tax';
     const COLUMN_SB_CESS     = 'sb_cess';
+    const COLUMN_KK_CESS     = 'kk_cess';
     const COLUMN_FEE         = 'msf';
 
     protected $messenger;
@@ -38,22 +39,34 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
 
-    protected function getServiceTax($row)
+    protected function getGatewayServiceTax($row)
     {
         // Convert service tax into paise
         $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
 
-        // Convert sb cess into paise
-        $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
+        if (empty($row[self::COLUMN_SB_CESS]) === false)
+        {
+            // Convert sb cess into paise
+            $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
 
-        // HDFC reconciliation files have service tax and sb cess separately
-        $serviceTax += $sbCess;
+            // HDFC reconciliation files have service tax and cess separately
+            $serviceTax += $sbCess;
+        }
+
+        if (empty($row[self::COLUMN_KK_CESS]) === false)
+        {
+            // Convert kk cess into paise
+            $kkCess = floatval($row[self::COLUMN_KK_CESS]) * 100;
+
+            // HDFC reconciliation files have service tax and cess separately
+            $serviceTax += $kkCess;
+        }
 
         return round($serviceTax);
     }
 
 
-    protected function getFee($row)
+    protected function getGatewayFee($row)
     {
         // Convert fee into paise
         $fee = floatval($row[self::COLUMN_FEE]) * 100;

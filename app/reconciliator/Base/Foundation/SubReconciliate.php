@@ -22,6 +22,18 @@ class SubReconciliate
                     'payment_id' => $this->payment->getId(),
                     'gateway'    => get_called_class()
                 ]);
+            
+            return false;
         }
+        
+        return true;
+    }
+
+    protected function setReconciledAt($entity)
+    {
+        $transaction = $entity->transaction;
+        $time = time();
+        $transaction->setReconciledAt($time);
+        $transaction->saveOrFail();
     }
 }

@@ -102,9 +102,10 @@ class Converter
         $columnHeaders = [];
         $data = [];
 
-        if (($handle = fopen($filePath, 'r')) !== FALSE)
+
+        if (($handle = fopen($filePath, 'r')) !== false)
         {
-            while (($row = fgetcsv($handle)) !== FALSE)
+            while (($row = fgetcsv($handle)) !== false)
             {
                 if (empty($columnHeaders) === true)
                 {
@@ -114,6 +115,8 @@ class Converter
                 {
                     if (count($columnHeaders) !== count($row))
                     {
+                        fclose($handle);
+
                         throw new Exception\ReconciliationException(
                             'The number of columns in the row does not match the column headers count.',
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
@@ -124,9 +127,10 @@ class Converter
                     $data[] = array_combine($columnHeaders, $row);
                 }
             }
-            // TODO: Handle this for when an exception is thrown.
+
             fclose($handle);
         }
+
 
         return $data;
     }

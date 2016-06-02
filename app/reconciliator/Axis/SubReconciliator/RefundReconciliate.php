@@ -28,7 +28,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getRefundId($row)
     {
         $refundId = $row[self::COLUMN_REFUND_ID];
-
+        
         return $refundId;
     }
 }
