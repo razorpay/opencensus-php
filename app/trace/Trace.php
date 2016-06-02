@@ -38,14 +38,9 @@ class Trace extends TraceWriter
                 'environment' => $environment
             );
 
-            $msg = '';
+            $msg = json_encode($data);
 
-            foreach ($data as $key => $value)
-            {
-                $msg .= "$key => $value" . PHP_EOL;
-            }
-
-            $subject = self::CHANNEL . $environment . ' - Critical error occurred';
+            $subject = self::CHANNEL . ' - ' . $environment . ' - Critical error occurred';
 
             // No point checking it's return value at this point because have
             // already experienced a critical failure upstream and this is
