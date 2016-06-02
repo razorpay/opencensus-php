@@ -136,11 +136,12 @@ class Gateway extends Base\Gateway
 
         $method = 'post';
 
+        $content['card_number'] = $this->encryptCardNumber($input['card']['number']);
+        $content['encrypt'] = '1';
+
         if (($input['payment']['method'] === 'card') and
             ($input['card']['number'] === '4111111111111111'))
         {
-            $content['card_number'] = $this->encryptCardNumber($input['card']['number']);
-            $content['encrypt'] = '1';
             $method = 'get';
             $url = $url . '&' . http_build_query($content);
             $content = [];
