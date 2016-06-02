@@ -3,9 +3,9 @@
 namespace Reconciliator\HDFC;
 
 
-use Reconciliator\Foundation;
+use Reconciliator\Base;
 
-class RefundReconciliate extends Foundation\SubReconciliate
+class RefundReconciliate extends Base\RefundReconciliate
 {
 
 }

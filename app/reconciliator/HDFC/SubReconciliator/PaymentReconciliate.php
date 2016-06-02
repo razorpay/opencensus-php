@@ -3,13 +3,13 @@
 namespace Reconciliator\HDFC;
 
 
-use Reconciliator\Base\SubReconciliator;
+use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 use Trace\TraceCode;
 
 
-class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\PaymentReconciliate
 {
     /*******************
      * Row Header Names

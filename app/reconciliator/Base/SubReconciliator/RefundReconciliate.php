@@ -13,7 +13,6 @@ use Trace\TraceCode;
 
 use Gateway\AxisMigs;
 use Reconciliator\Orchestrator;
-use Reconciliator\Base\Foundation;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 
@@ -140,7 +139,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        // Gets the card type details
         $cardType = $this->getCardType($row);
 
         // Gets the gateway service tax
@@ -149,7 +147,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         // Gets the gateway fees
         $fee = $this->getFee($row);
 
-        // Assign values to return
         $rowDetails = [
             BaseReconciliate::REFUND_ID           => $refundId,
             BaseReconciliate::CARD_TYPE           => $cardType,

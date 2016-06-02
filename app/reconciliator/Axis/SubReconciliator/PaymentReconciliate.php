@@ -3,9 +3,9 @@
 namespace Reconciliator\Axis;
 
 
-use Reconciliator\Base\SubReconciliator;
+use Reconciliator\Base;
 
-class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\PaymentReconciliate
 {
 
 }

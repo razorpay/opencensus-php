@@ -3,13 +3,13 @@
 namespace Reconciliator\Axis;
 
 
-use Reconciliator\Base\SubReconciliator;
+use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 use Trace\TraceCode;
 
 
-class RefundReconciliate extends SubReconciliator\RefundReconciliate
+class RefundReconciliate extends Base\RefundReconciliate
 {
     /*******************
      * Row Header Names

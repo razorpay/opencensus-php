@@ -16,7 +16,7 @@ use Reconciliator\Orchestrator;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 
-class PaymentReconciliate
+class PaymentReconciliate extends Foundation\SubReconciliate
 {
 
     /*******************
@@ -133,7 +133,6 @@ class PaymentReconciliate
             return null;
         }
 
-        // Gets the card type details
         $cardType = $this->getCardType($row);
 
         // Gets the gateway service tax
@@ -142,7 +141,6 @@ class PaymentReconciliate
         // Gets the gateway fees
         $fee = $this->getFee($row);
 
-        // Assign values to return
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
             BaseReconciliate::CARD_TYPE           => $cardType,
