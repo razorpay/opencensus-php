@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator\Axis\SubReconciliator;
+namespace Reconciliator\Axis;
 
 
 use Reconciliator\Base\SubReconciliator;

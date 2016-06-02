@@ -141,7 +141,6 @@ class Reconciliate
         $parentNamespace = $this->getParentNamespace();
 
         $subReconciliatorClassName = $parentNamespace . '\\'
-                                    . 'SubReconciliator' . '\\'
                                     . ucfirst($reconciliationType)
                                     . 'Reconciliate';
 

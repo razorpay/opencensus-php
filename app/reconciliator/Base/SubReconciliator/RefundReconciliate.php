@@ -1,24 +1,23 @@
 <?php
 
-namespace Reconciliator\Base\SubReconciliator;
+namespace Reconciliator\Base;
 
 use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
 use Models\Transaction;
 use Models\Payment\Refund;
-use App;
 
+use App;
 use Trace\TraceCode;
 
 use Gateway\AxisMigs;
-
 use Reconciliator\Orchestrator;
-
+use Reconciliator\Base\Foundation;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 
-class RefundReconciliate
+class RefundReconciliate extends Foundation\SubReconciliate
 {
     /*******************
      * Instance objects
@@ -79,8 +78,6 @@ class RefundReconciliate
                 // Validates that the payment status is not failed.
                 $this->validatePaymentStatus();
 
-                $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
-
                 $this->recordRrn();
             }
             catch (\Exception $ex)
@@ -89,7 +86,7 @@ class RefundReconciliate
                 // in the respective reconciliation steps.
 
                 $this->messenger->raiseReconAlert(
-                    [ 
+                    [
                         'trace_code'    => TraceCode::RECON_FAILURE,
                         'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                         'row'           => $row,
@@ -123,14 +120,14 @@ class RefundReconciliate
         catch (\Exception $ex)
         {
             $this->messenger->raiseReconAlert(
-                [ 
+                [
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Refund not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
                     'refund_id'  => $refundId,
                     'gateway'    => get_called_class()
                 ]);
-            
+
             return null;
         }
 
@@ -161,57 +158,6 @@ class RefundReconciliate
         ];
 
         return $rowDetails;
-    }
-
-
-    protected function validatePaymentStatus()
-    {
-        $paymentStatus = $this->payment->getStatus();
-
-        if ($paymentStatus === Payment\Status::FAILED)
-        {
-            $this->messenger->raiseReconAlert(
-                [ 
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Payment status is failed.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]);
-        }
-    }
-
-
-    protected function setCardTypeIfAbsent($reconCardType)
-    {
-        if (empty($reconCardType) === true)
-        {
-            return;
-        }
-
-        $paymentIin = $this->payment->card->iinRelation;
-
-        $iinCardType = $paymentIin->getType();
-
-        if ((empty($iinCardType) === true) or ($iinCardType === Card\Type::UNKNOWN))
-        {
-            $paymentIin->setType($reconCardType);
-            $this->iinRepo->saveOrFail($paymentIin);
-        }
-        else
-        {
-            if ($iinCardType !== $reconCardType)
-            {
-                $this->messenger->raiseReconAlert(
-                    [ 
-                        'trace_code'      => TraceCode::RECON_MISMATCH,
-                        'message'         => 'Card types in recon file and db do not match.',
-                        'recon_card_type' => $reconCardType,
-                        'iin_card_type'   => $iinCardType,
-                        'payment_id'      => $this->payment->getId(),
-                        'gateway'         => get_called_class()
-                    ]);
-            }
-        }
     }
 
 

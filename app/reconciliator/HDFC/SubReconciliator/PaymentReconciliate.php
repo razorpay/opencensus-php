@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator\HDFC\SubReconciliator;
+namespace Reconciliator\HDFC;
 
 
 use Reconciliator\Base\SubReconciliator;

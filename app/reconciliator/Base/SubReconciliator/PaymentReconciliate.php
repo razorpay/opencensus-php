@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator\Base\SubReconciliator;
+namespace Reconciliator\Base;
 
 
 use Models\Payment;
@@ -89,7 +89,7 @@ class PaymentReconciliate
                 // in the respective reconciliation steps.
 
                 $this->messenger->raiseReconAlert(
-                    [ 
+                    [
                         'trace_code'    => TraceCode::RECON_FAILURE,
                         'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                         'row'           => $row,
@@ -123,7 +123,7 @@ class PaymentReconciliate
         catch (\Exception $ex)
         {
             $this->messenger->raiseReconAlert(
-                [ 
+                [
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
@@ -154,25 +154,6 @@ class PaymentReconciliate
     }
 
 
-    protected function validatePaymentStatus()
-    {
-        $paymentStatus = $this->payment->getStatus();
-
-        //$this->getAttribute(self::STATUS) === Status::FAILED
-
-        if ($paymentStatus === Payment\Status::FAILED)
-        {
-            $this->messenger->raiseReconAlert(
-                [ 
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message' => 'Payment status is failed.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway' => get_called_class()
-                ]);
-        }
-    }
-
-
     protected function setCardTypeIfAbsent($reconCardType)
     {
         if (empty($reconCardType) === true)
@@ -194,7 +175,7 @@ class PaymentReconciliate
             if ($iinCardType !== $reconCardType)
             {
                 $this->messenger->raiseReconAlert(
-                    [ 
+                    [
                         'trace_code'      => TraceCode::RECON_MISMATCH,
                         'message'         => 'Card types in recon file and db do not match.',
                         'recon_card_type' => $reconCardType,
@@ -214,9 +195,7 @@ class PaymentReconciliate
             return;
         }
 
-        $paymentId = $this->payment->getId();
-
-        $transaction = $this->transactionRepo->findByEntityId($paymentId);
+        $transaction = $this->payment->transaction();
 
         if ($transaction === null)
         {
@@ -246,9 +225,7 @@ class PaymentReconciliate
             return;
         }
 
-        $paymentId = $this->payment->getId();
-
-        $transaction = $this->transactionRepo->findByEntityId($paymentId);
+        $transaction = $this->payment->transaction();
 
         if ($transaction === null)
         {
