@@ -74,6 +74,16 @@ class Report extends Service
 
         $begin = time();
 
+        $this->trace->debug(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'merchantId'    => $merchantId,
+                'time_started'  => $begin
+            ]);
+
         $merchantId = $this->merchant->getId();
 
         (new Validator)->validateInput('report', $input);
