@@ -116,8 +116,6 @@ class Gateway
 
         $this->loadGatewayConfig();
 
-        $gateway = $this->gateway;
-
         $this->repo = $this->getRepository();
     }
 
