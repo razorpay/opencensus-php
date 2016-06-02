@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Models\Base;
 use Models\Transaction;
 use Models\Settlement;
+use Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
