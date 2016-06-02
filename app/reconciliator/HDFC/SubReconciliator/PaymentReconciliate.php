@@ -33,26 +33,38 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getPaymentId($row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
-        $paymentId = str_replace("'", '', $paymentId);
-
+        $paymentId = trim(str_replace("'", '', $paymentId));
         return $paymentId;
     }
 
 
     protected function getServiceTax($row)
     {
-        // HDFC reconciliation files have service tax and sb cess fields separately
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) + floatval($row[self::COLUMN_SB_CESS]);
+        // Convert service tax into paise
+        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
 
-        return $serviceTax;
+        // Convert sb cess into paise
+        $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
+
+        // HDFC reconciliation files have service tax and sb cess separately
+        $serviceTax += $sbCess;
+
+        return round($serviceTax);
     }
 
 
     protected function getFee($row)
     {
-        $fee = $row[self::COLUMN_FEE];
+        // Convert fee into paise
+        $fee = floatval($row[self::COLUMN_FEE]) * 100;
 
-        return floatval($fee);
+        // Already in paise. Hence, no conversion needed
+        $serviceTax = $this->getServiceTax($row);
+
+        // HDFC reconciliation files have fee and service tax separately
+        $fee += $serviceTax;
+
+        return round($fee);
     }
 
 

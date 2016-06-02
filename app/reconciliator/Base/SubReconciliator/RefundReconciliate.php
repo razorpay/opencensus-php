@@ -139,19 +139,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        $cardType = $this->getCardType($row);
-
-        // Gets the gateway service tax
-        $serviceTax = $this->getServiceTax($row);
-
-        // Gets the gateway fees
-        $fee = $this->getFee($row);
-
         $rowDetails = [
-            BaseReconciliate::REFUND_ID           => $refundId,
-            BaseReconciliate::CARD_TYPE           => $cardType,
-            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE         => $fee,
+            BaseReconciliate::REFUND_ID => $refundId,
         ];
 
         return $rowDetails;

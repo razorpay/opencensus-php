@@ -7,12 +7,13 @@ use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
 use Models\Transaction;
-use Trace\TraceCode;
 
 use Gateway\AxisMigs;
 
-use Reconciliator\Orchestrator;
+use Trace\TraceCode;
+use App;
 
+use Reconciliator\Orchestrator;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 
@@ -193,7 +194,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $transaction = $this->payment->transaction();
+        $transaction = $this->payment->transaction;
 
         if ($transaction === null)
         {
@@ -202,9 +203,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $currentGatewayFee = $transaction->getGatewayFee();
 
-        if ($currentGatewayFee === null)
+        if ($currentGatewayFee === 0)
         {
             $transaction->setGatewayFee($reconGatewayFee);
+            $transaction->saveOrFail();
         }
         else
         {
@@ -223,7 +225,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $transaction = $this->payment->transaction();
+        $transaction = $this->payment->transaction;
 
         if ($transaction === null)
         {
@@ -232,9 +234,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $currentGatewayServiceTax = $transaction->getGatewayServiceTax();
 
-        if ($currentGatewayServiceTax === null)
+        if ($currentGatewayServiceTax === 0)
         {
             $transaction->setGatewayServiceTax($reconServiceTax);
+            $transaction->saveOrFail();
         }
         else
         {
