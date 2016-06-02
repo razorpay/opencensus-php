@@ -38,10 +38,10 @@ class Trace extends TraceWriter
                 'environment'   => $environment,
                 'level'         => $level,
                 'trace_message' => $message,
-                'trace'         => $context,
+                'context'       => $context
             );
 
-            $msg = json_encode($data);
+            $msg = json_encode($data, JSON_PRETTY_PRINT);
 
             $subject = self::CHANNEL . ' - ' . $environment . ' - Critical error occurred';
 
