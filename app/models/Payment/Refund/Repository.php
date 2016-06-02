@@ -86,7 +86,7 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
-    public function fetchRefundsForGatewayBetweenTimestamps($field, $value, $from, $to, $gateway)
+    public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
         $repo = $this->repo;
 
@@ -98,19 +98,19 @@ class Repository extends Base\Repository
 
         $refunds = $query->select($attrs)->join(
             $ptable,
-            function ($join) use ($from, $to, $field, $value, $gateway)
+            function ($join) use ($from, $to, $type, $gatewayCode, $gateway)
             {
                 $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
                 $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
 
                 $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-                $pfield = Payment\Entity::getAttributeWithTableName($field);
+                $ptype = Payment\Entity::getAttributeWithTableName($type);
                 $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
 
                 $join->on($rPaymentId, '=', $pid)
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
-                     ->where($pfield, '=', $value)
+                     ->where($ptype, '=', $gatewayCode)
                      ->where($pgateway, '=', $gateway);
             })
             ->with('payment')
@@ -118,15 +118,4 @@ class Repository extends Base\Repository
 
         return $refunds;
     }
-
-    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to, $gateway)
-    {
-        return $this->fetchRefundsForGatewayBetweenTimestamps(Payment\Entity::BANK, $bank, $from, $to, $gateway);
-    }
-
-    public function fetchRefundsForWalletBetweenTimestamps($wallet, $from, $to, $gateway)
-    {
-        return $this->fetchRefundsForGatewayBetweenTimestamps(Payment\Entity::WALLET, $wallet, $from, $to, $gateway);
-    }
-
 }

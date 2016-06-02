@@ -144,20 +144,11 @@ class PaymentController extends BaseController
         return ApiResponse::json($refunds);
     }
 
-    public function generateNetbankingRefunds()
+    public function generateRefunds()
     {
         $input = Input::all();
 
-        $refundExcel = (new Payment\Refund\Service)->getNetbankingRefundsFile($input);
-
-        return ApiResponse::json($refundExcel);
-    }
-
-    public function generateWalletRefunds($frequency = null)
-    {
-        $input = Input::all();
-
-        $refundExcel = (new Payment\Refund\Service)->getWalletRefundsFile($input, $frequency);
+        $refundExcel = (new Payment\Refund\Service)->getRefundsFile($input);
 
         return ApiResponse::json($refundExcel);
     }

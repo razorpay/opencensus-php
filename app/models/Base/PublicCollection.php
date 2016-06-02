@@ -65,10 +65,32 @@ class PublicCollection extends Collection
         return $publicIds;
     }
 
+    /**
+     * Get a dictionary keyed by given attribute
+     *
+     * @param  \ArrayAccess|array $items
+     * @return array
+     */
+    public function getDictionaryByAttribute($field = null, $items = null)
+    {
+        $items = is_null($items) ? $this->items : $items;
+
+        $dictionary = array();
+
+        foreach ($items as $value)
+        {
+            $key = is_null($field) ? $value->getKey() : $value->getAttribute($field);
+
+            $dictionary[$key] = $value;
+        }
+
+        return $dictionary;
+    }
+
     public function filterEntitiesFromEntityIds($entityIds)
     {
         $filteredEntities = $this->only($entityIds)->items;
-        
+
         // This is required to remove all null entries from the array
         return array_filter($filteredEntities);
     }

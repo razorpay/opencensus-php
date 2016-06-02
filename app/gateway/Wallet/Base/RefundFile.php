@@ -19,7 +19,7 @@ class RefundFile
         ;
     }
 
-    protected function sendPayumoneyRefundEmail()
+    protected function sendRefundEmail()
     {
         ;
     }

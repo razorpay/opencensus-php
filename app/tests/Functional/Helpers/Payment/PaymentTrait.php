@@ -776,10 +776,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url' => '/refunds/netbanking/excel',
+            'url' => '/refunds/excel',
             'method' => 'post',
             'content' => [
-                'bank'  => 'HDFC'
+                'method' => 'netbanking',
+                'bank'   => 'HDFC'
             ],
         );
 

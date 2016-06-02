@@ -25,12 +25,12 @@ class RefundFile extends Base\RefundFile
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
-        $this->sendPayumoneyRefundEmail();
+        $this->sendRefundEmail();
 
         return $urlExcel;
     }
 
-    protected function sendPayumoneyRefundEmail()
+    protected function sendRefundEmail()
     {
         $fullpath = $this->getExcelFullFilePath();
 

@@ -14,64 +14,60 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function getNetbankingRefundsFile(array $input = array())
+    public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
 
         $returnValue = [];
 
-        if (isset($input['bank']))
-        {
-            $gateway = Payment\Gateway::$netbankingToGatewayMap[$input['bank']];
+        $gatewayCode = null;
 
-            $returnValue[$gateway] = $this->generateNBRefundFileForBank($input['bank'], $from, $to, $gateway);
+        $method = $input['method'];
+
+        switch ($method)
+        {
+            case 'netbanking':
+                $gateways = Payment\Gateway::$netbankingToGatewayMap;
+                $type = Payment\Entity::BANK;
+
+                if (isset($input['bank']))
+                {
+                    $gatewayCode = $input['bank'];
+                }
+                break;
+
+            case 'wallet':
+                $gateways = Payment\Gateway::$walletToGatewayMap;
+                $type = Payment\Entity::WALLET;
+
+                if (isset($input['wallet']))
+                {
+                    $gatewayCode = $input['wallet'];
+                }
+                break;
+        }
+
+        if ($gatewayCode === null)
+        {
+            foreach ($gateways as $gatewayCode => $gateway)
+            {
+                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
+            }
         }
         else
         {
-            foreach (Payment\Gateway::$netbankingToGatewayMap as $bankCode => $bankGateway)
-            {
-                $returnValue[$bankGateway] = $this->generateNBRefundFileForBank($bankCode, $from, $to, $bankGateway);
-            }
+            $gateway = $gateways[$gatewayCode];
+
+            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
         }
 
         return $returnValue;
     }
 
-    public function getWalletRefundsFile(array $input = array(), $frequency = null)
+    protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
-        list($from, $to) = $this->getTimestamps($input);
-
-        $returnValue = [];
-
-        if (isset($input['wallet']))
-        {
-            $gateway = Payment\Gateway::$walletToGatewayMap[$input['wallet']];
-
-            $returnValue[$gateway] = $this->generateRefundFileForWallet($input['wallet'], $from, $to, $gateway);
-        }
-        else
-        {
-            foreach (Payment\Gateway::$walletToGatewayMap as $wallet => $walletGateway)
-            {
-                $returnValue[$walletGateway] = $this->generateRefundFileForWallet($wallet, $from, $to, $walletGateway);
-            }
-        }
-
-        return $returnValue;
-    }
-
-    protected function generateRefundFileForWallet($wallet, $from, $to, $gateway)
-    {
-        $refunds = (new Refund\Repository)->fetchRefundsForWalletBetweenTimestamps(
-                                                $wallet, $from, $to, $gateway);
-
-        return $this->generateRefundFile($refunds);
-    }
-
-    protected function generateNBRefundFileForBank($bankCode, $from, $to, $gateway)
-    {
-        $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-                                                $bankCode, $from, $to, $gateway);
+        $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+                                        $type, $gatewayCode, $from, $to, $gateway);
 
         return $this->generateRefundFile($refunds);
     }

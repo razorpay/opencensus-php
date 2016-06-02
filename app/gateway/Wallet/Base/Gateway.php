@@ -42,22 +42,6 @@ class Gateway extends Base\Gateway
         return new Wallet\Base\Entity;
     }
 
-    public function generateRefunds($input)
-    {
-        foreach ($input['data'] as & $row)
-        {
-            $payment = $this->getRepo()->findByPaymentIdAndAction(
-                                $row['payment']['id'], Base\Action::AUTHORIZE);
-
-            $row['gateway'] = $payment->toArray();
-        }
-
-        $ns = $this->getGatewayNamespace();
-        $class = $ns . '\\' . 'RefundFile';
-
-        return (new $class)->generate($input);
-    }
-
     protected function getMappedAttributes($attributes)
     {
         $attr = [];
