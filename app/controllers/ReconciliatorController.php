@@ -1,7 +1,6 @@
 <?php
 
-use Trace\TraceCode;
-use Http\Route;
+use Http\ApiResponse;
 use EE\Exception;
 
 class ReconciliatorController extends BaseController
@@ -19,8 +18,6 @@ class ReconciliatorController extends BaseController
 
         $statusCode = $this->orchestrator->baseEntry($input);
 
-        return $statusCode;
-        //return Response::make($contents, $statusCode);
-        //https://laravel.com/docs/4.2/responses
+        return ApiResponse::generateResponse([], $statusCode);
     }
 }

@@ -11,26 +11,26 @@ use ZipArchive;
 
 class FileProcessor
 {
-    const FILE_NAME = 'file_name';
-    const EXTENSION = 'extension';
-    const MIME_TYPE = 'mime_type';
-    const SIZE = 'size';
-    const FILE_PATH = 'file_path';
-    const DESTINATION_FOLDER = 'destination_folder';
-    const FILE_TYPE = 'file_type';
-    const FILE_DETAILS = 'file_details';
-    const SHEET_NAME = 'sheet_name';
+    const FILE_NAME               = 'file_name';
+    const EXTENSION               = 'extension';
+    const MIME_TYPE               = 'mime_type';
+    const SIZE                    = 'size';
+    const FILE_PATH               = 'file_path';
+    const DESTINATION_FOLDER      = 'destination_folder';
+    const FILE_TYPE               = 'file_type';
+    const FILE_DETAILS            = 'file_details';
+    const SHEET_NAME              = 'sheet_name';
 
-    const ZIP_EXTENSION = 'zip';
+    const ZIP_EXTENSION           = 'zip';
 
-    const STORAGE = 'storage';
-    const UPLOADED = 'uploaded';
+    const STORAGE                 = 'storage';
+    const UPLOADED                = 'uploaded';
 
-    const EXCEL = 'excel';
-    const CSV = 'csv';
+    const EXCEL                   = 'excel';
+    const CSV                     = 'csv';
 
     // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
-    const FILE_TYPES_MAPPINGS = [
+    const FILE_TYPES_MAPPINGS     = [
         self::EXCEL => ['xls', 'xlsx'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
@@ -136,9 +136,11 @@ class FileProcessor
         if (file_exists($filePath) === false)
         {
             // Critical alert because this should ideally never happen.
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
-                                                'message' => 'File not present, to delete locally.',
-                                                'file_path' => $filePath], true);
+            $this->messenger->raiseReconAlert(
+                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                  'message'    => 'File not present, to delete locally.',
+                  'file_path'  => $filePath
+                ]);
             return;
         }
 
@@ -146,9 +148,11 @@ class FileProcessor
 
         if ($success === false)
         {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
-                                                'message' => 'Unable to delete the file, locally.',
-                                                'file_path' => $filePath], true);
+            $this->messenger->raiseReconAlert(
+                [ 'trace_code' => TraceCode::RECON_FILE_DELETE_FAILURE,
+                  'message'    => 'Unable to delete the file, locally.',
+                  'file_path'  => $filePath
+                ]);
         }
     }
 

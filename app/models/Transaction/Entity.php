@@ -214,12 +214,12 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::API_FEE];
     }
 
-    public function getGatewayFeeAttribute()
+    protected function getGatewayFeeAttribute()
     {
         return (int) $this->attributes[self::GATEWAY_FEE];
     }
 
-    public function getGatewayServiceTaxAttribute()
+    protected function getGatewayServiceTaxAttribute()
     {
         return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
     }

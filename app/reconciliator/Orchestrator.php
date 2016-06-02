@@ -27,7 +27,7 @@ class Orchestrator
     /********************
      * Complex constants
      ********************/
-    
+
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
@@ -40,7 +40,7 @@ class Orchestrator
     /*********************
      * Instance variables
      *********************/
-    
+
     protected $allFilesContents;
     protected $allFilesDetails;
     protected $emailDetails;
@@ -49,7 +49,7 @@ class Orchestrator
     /********************
      * Instance objects
      ********************/
-    
+
     protected $validator;
     protected $fileProcessor;
     protected $converter;
@@ -90,7 +90,7 @@ class Orchestrator
         if (empty($this->allFilesDetails) === true)
         {
             throw new Exception\ReconciliationException(
-                'File details are empty.', ['all_files_details' => $this->allFilesDetails]
+                'File details are empty.'
             );
         }
 
@@ -156,16 +156,17 @@ class Orchestrator
         {
             // Checks if this particular file needs to be excluded for the gateway
             $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
-            
+
             if ($inExclude === true)
             {
-                // Not a critical alert, because this is expected.
-                $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                    'message' => 'Skipping file because it is present in the exclude list of the gateway.',
-                                                    'file_details' => $fileDetails,
-                                                    'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
-                                                                        ->getNamespaceName()]
-                );
+                $this->app['trace']->info(
+                    TraceCode::RECON_FILE_SKIP,
+                    [
+                        'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                        'message'      => 'Skipping file because it is present in the exclude list of the gateway.',
+                        'file_details' => $fileDetails,
+                        'gateway'      => get_class($this->gatewayReconciliator),
+                    ]);
 
                 $this->handleInvalidFile($file, $fileDetails);
 
@@ -178,12 +179,13 @@ class Orchestrator
 
             if ($validate === false)
             {
-                $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                    'message' => 'Skipping file because validations failed.',
-                                                    'file_details' => $fileDetails,
-                                                    'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
-                                                        ->getNamespaceName()], true
-                );
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                        'message'      => 'Skipping file because validations failed.',
+                        'file_details' => $fileDetails,
+                        'gateway'      => get_class($this->gatewayReconciliator),
+                    ]);
 
                 $this->handleInvalidFile($file, $fileDetails);
 
@@ -200,12 +202,13 @@ class Orchestrator
             }
             catch (\Exception $ex)
             {
-                $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                    'message' => 'Skipping file because not able to convert file content to array. -> ' . $ex->getMessage(),
-                                                    'file_details' => $fileDetails,
-                                                    'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
-                                                                  ->getNamespaceName()], true
-                );
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                        'message'      => 'Skipping file because not able to convert file content to array. -> ' . $ex->getMessage(),
+                        'file_details' => $fileDetails,
+                        'gateway'      => get_class($this->gatewayReconciliator),
+                    ]);
                 $this->app['trace']->traceException($ex);
 
                 $this->handleInvalidFile($file, $fileDetails);
@@ -221,9 +224,10 @@ class Orchestrator
         if (empty($this->allFilesContents) === true)
         {
             throw new Exception\ReconciliationException(
-                'File contents are empty.', [
+                'File contents are empty.',
+                [
                     'all_files_details' => $this->allFilesDetails,
-                    'all_files_contents' => $this->allFilesContents]
+                ]
             );
         }
 
@@ -280,7 +284,7 @@ class Orchestrator
         if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
         {
             throw new Exception\ReconciliationException(
-                'Invalid gateway param. It should be either HDFC/Axis/Kotak. (case sensitive)',
+                'Invalid gateway param. Allowed gateway params - ' . (array_keys(self::GATEWAY_SENDER_MAPPING)),
                 ['gateway' => $gateway]
             );
         }
@@ -348,13 +352,14 @@ class Orchestrator
                 }
                 catch (\Exception $ex)
                 {
-                    $this->messenger->raiseReconAlert(['trace_code' => TraceCode::RECON_FILE_SKIP,
-                                                        'message' => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
-                                                        'file_details' => $extractedFileDetails ?  $extractedFileDetails : null,
-                                                        'gateway' => (new \ReflectionClass($this->gatewayReconciliator))
-                                                                    ->getNamespaceName(),
-                                                        'exception' => $ex->getTrace()], true
-                    );
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                            'message'      => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
+                            'file_details' => !empty($extractedFileDetails) ?  $extractedFileDetails : null,
+                            'gateway'      => get_class($this->gatewayReconciliator),
+                            'exception'    => $ex->getTrace()
+                        ]);
 
                     continue;
                 }

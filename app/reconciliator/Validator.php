@@ -78,7 +78,7 @@ class Validator
             {
                 throw new Exception\ReconciliationException(
                     'The number of attachments found, does not match with the attachment-count input',
-                    ['attachments_found' => $foundAttachmentsCount, 'attachment-count' => $input['attachment-count']]
+                    ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
                 );
             }
         }

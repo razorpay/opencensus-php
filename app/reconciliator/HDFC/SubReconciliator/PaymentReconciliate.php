@@ -14,11 +14,11 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const ROW_PAYMENT_ID  = 'merchant_trackid';
-    const ROW_CARD_TYPE   = 'debitcredit_type';
-    const ROW_SERVICE_TAX = 'serv_tax';
-    const ROW_SB_CESS     = 'sb_cess';
-    const ROW_FEE         = 'msf';
+    const COLUMN_PAYMENT_ID  = 'merchant_trackid';
+    const COLUMN_CARD_TYPE   = 'debitcredit_type';
+    const COLUMN_SERVICE_TAX = 'serv_tax';
+    const COLUMN_SB_CESS     = 'sb_cess';
+    const COLUMN_FEE         = 'msf';
 
     protected $messenger;
 
@@ -32,7 +32,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $row[self::ROW_PAYMENT_ID];
+        $paymentId = $row[self::COLUMN_PAYMENT_ID];
         $paymentId = str_replace("'", '', $paymentId);
 
         return $paymentId;
@@ -42,7 +42,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     protected function getServiceTax($row)
     {
         // HDFC reconciliation files have service tax and sb cess fields separately
-        $serviceTax = floatval($row[self::ROW_SERVICE_TAX]) + floatval($row[self::ROW_SB_CESS]);
+        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) + floatval($row[self::COLUMN_SB_CESS]);
 
         return $serviceTax;
     }
@@ -50,7 +50,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getFee($row)
     {
-        $fee = $row[self::ROW_FEE];
+        $fee = $row[self::COLUMN_FEE];
 
         return floatval($fee);
     }
@@ -58,12 +58,12 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getCardType($row)
     {
-        if (isset($row[self::ROW_CARD_TYPE]) === false)
+        if (isset($row[self::COLUMN_CARD_TYPE]) === false)
         {
             return null;
         }
 
-        $cardType = strtolower($row[self::ROW_CARD_TYPE]);
+        $cardType = strtolower($row[self::COLUMN_CARD_TYPE]);
 
         if ($cardType === 'dc')
         {
@@ -75,12 +75,14 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         }
         else
         {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                                                'message' => 'Unable to figure out the card type.',
-                                                'recon_card_type' => $cardType,
-                                                'row' => $row,
-                                                'gateway' => get_class()], true
-            );
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card type.',
+                    'recon_card_type' => $cardType,
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
 
             // It's as good as no card type present in the row.
             return null;

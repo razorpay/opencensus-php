@@ -34,35 +34,6 @@ class Converter
 
 
     /**
-     * Not being used anywhere currently. Might use it later.
-     *
-     * @param $fileDetails
-     * @return array
-     * @throws Exception\ReconciliationException
-     */
-    public function convertFileContentToArray($fileDetails)
-    {
-        if ($fileDetails['file_type'] === FileProcessor::EXCEL)
-        {
-            $this->convertExcelToArray($fileDetails);
-        }
-        else if ($fileDetails['file_type'] === FileProcessor::CSV)
-        {
-            $this->dataArray = $this->convertCsvToArray($fileDetails);
-        }
-        else
-        {
-            throw new Exception\ReconciliationException(
-                'File is neither an Excel nor a CSV type.',
-                ['file_details' => $fileDetails]
-            );
-        }
-
-        return $this->dataArray;
-    }
-
-
-    /**
      * @param array $fileDetails The excel file details
      * @param array $sheetNames The sheets that need to be collected from the file.
      *                          If empty, collects all the sheets present in the excel file.

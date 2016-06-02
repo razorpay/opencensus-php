@@ -14,10 +14,10 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const ROW_REFUND_ID   = 'merchant_trans_ref';
-    const ROW_CARD_TYPE   = 'card_type';
-    const ROW_SERVICE_TAX = 'service_tax145';
-    const ROW_FEE         = 'commission';
+    const COLUMN_REFUND_ID   = 'merchant_trans_ref';
+    const COLUMN_CARD_TYPE   = 'card_type';
+    const COLUMN_SERVICE_TAX = 'service_tax145';
+    const COLUMN_FEE         = 'commission';
 
     protected $messenger;
 
@@ -31,7 +31,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getRefundId($row)
     {
-        $refundId = $row[self::ROW_REFUND_ID];
+        $refundId = $row[self::COLUMN_REFUND_ID];
 
         return $refundId;
     }
@@ -39,7 +39,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getServiceTax($row)
     {
-        $serviceTax = $row[self::ROW_SERVICE_TAX];
+        $serviceTax = $row[self::COLUMN_SERVICE_TAX];
 
         // TODO: Verify this with shk.
         return floatval($serviceTax);
@@ -48,7 +48,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getFee($row)
     {
-        $fee = $row[self::ROW_FEE];
+        $fee = $row[self::COLUMN_FEE];
 
         // TODO: Verify this with shk.
         return floatval($fee);
@@ -57,12 +57,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getCardType($row)
     {
-        if (isset($row[self::ROW_CARD_TYPE]) === false)
+        if (isset($row[self::COLUMN_CARD_TYPE]) === false)
         {
             return null;
         }
 
-        $cardType = strtolower($row[self::ROW_CARD_TYPE]);
+        $cardType = strtolower($row[self::COLUMN_CARD_TYPE]);
 
         if ($cardType === 'c')
         {
@@ -74,12 +74,14 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
         }
         else
         {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_PARSE_ERROR,
-                                                'message' => 'Unable to figure out the card type.',
-                                                'recon_card_type' => $cardType,
-                                                'row' => $row,
-                                                'gateway' => get_class()], true
-            );
+            $this->messenger->raiseReconAlert(
+                [ 
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card type.',
+                    'recon_card_type' => $cardType,
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
 
             // It's as good as no card type present in the row.
             return null;

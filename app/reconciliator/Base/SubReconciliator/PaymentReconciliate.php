@@ -88,13 +88,14 @@ class PaymentReconciliate
                 // Ideally, there shouldn't be any exceptions thrown. They should be handled
                 // in the respective reconciliation steps.
 
-                $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_FAILURE,
-                                                    'message' => 'Unable to perform one of the reconciliation 
-                                                                  actions -> ' . $ex->getMessage(),
-                                                    'row' => $row,
-                                                    'extra_details' => $extraDetails,
-                                                    'gateway' => get_called_class()], true
-                );
+                $this->messenger->raiseReconAlert(
+                    [ 
+                        'trace_code'    => TraceCode::RECON_FAILURE,
+                        'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
+                        'row'           => $row,
+                        'extra_details' => $extraDetails,
+                        'gateway'       => get_called_class()
+                    ]);
 
                 $this->app['trace']->traceException($ex);
 
@@ -121,12 +122,14 @@ class PaymentReconciliate
         }
         catch (\Exception $ex)
         {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                'message' => 'Payment not found in DB. -> ' . $ex->getMessage(),
-                                                'row' => $row,
-                                                'payment_id' => $paymentId,
-                                                'gateway' => get_called_class()], true
-            );
+            $this->messenger->raiseReconAlert(
+                [ 
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
+                    'row'        => $row,
+                    'payment_id' => $paymentId,
+                    'gateway'    => get_called_class()
+                ]);
             return null;
         }
 
@@ -159,11 +162,13 @@ class PaymentReconciliate
 
         if ($paymentStatus === Payment\Status::FAILED)
         {
-            $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                'message' => 'Payment status is failed.',
-                                                'payment_id' => $this->payment->getId(),
-                                                'gateway' => get_called_class()], true
-            );
+            $this->messenger->raiseReconAlert(
+                [ 
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message' => 'Payment status is failed.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway' => get_called_class()
+                ]);
         }
     }
 
@@ -188,13 +193,15 @@ class PaymentReconciliate
         {
             if ($iinCardType !== $reconCardType)
             {
-                $this->messenger->raiseReconAlert([ 'trace_code' => TraceCode::RECON_MISMATCH,
-                                                    'message' => 'Card types in recon file and db do not match.',
-                                                    'recon_card_type' => $reconCardType,
-                                                    'iin_card_type' => $iinCardType,
-                                                    'payment_id' => $this->payment->getId(),
-                                                    'gateway' => get_called_class()], true
-                );
+                $this->messenger->raiseReconAlert(
+                    [ 
+                        'trace_code'      => TraceCode::RECON_MISMATCH,
+                        'message'         => 'Card types in recon file and db do not match.',
+                        'recon_card_type' => $reconCardType,
+                        'iin_card_type'   => $iinCardType,
+                        'payment_id'      => $this->payment->getId(),
+                        'gateway'         => get_called_class()
+                    ]);
             }
         }
     }
