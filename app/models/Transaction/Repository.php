@@ -68,6 +68,10 @@ class Repository extends Base\Repository
                       ->orderByCreatedAt()
                       ->get();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
