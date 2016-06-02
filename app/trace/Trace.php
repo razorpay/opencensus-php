@@ -21,13 +21,21 @@ class Trace extends TraceWriter
         }
         catch (\Exception $exception)
         {
+            $environment = \App::make('config')->get('app.context');
+
+            if ($environment === null)
+            {
+                $environment = 'unknown';
+            }
+
             $data = array(
-                'type' => get_class($exception),
-                'message' => $exception->getMessage(),
-                'code' => $exception->getCode(),
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-                'trace' => $exception->getTraceAsString()
+                'type'        => get_class($exception),
+                'message'     => $exception->getMessage(),
+                'code'        => $exception->getCode(),
+                'file'        => $exception->getFile(),
+                'line'        => $exception->getLine(),
+                'trace'       => $exception->getTraceAsString(),
+                'environment' => $environment
             );
 
             $msg = '';
@@ -37,7 +45,7 @@ class Trace extends TraceWriter
                 $msg .= "$key => $value" . PHP_EOL;
             }
 
-            $subject = self::CHANNEL . ' - Critical error occurred';
+            $subject = self::CHANNEL . $environment . ' - Critical error occurred';
 
             // No point checking it's return value at this point because have
             // already experienced a critical failure upstream and this is
