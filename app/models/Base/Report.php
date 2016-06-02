@@ -74,16 +74,6 @@ class Report extends Service
 
         $begin = time();
 
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'merchantId'    => $merchantId,
-                'time_started'  => $begin
-            ]);
-
         $merchantId = $this->merchant->getId();
 
         (new Validator)->validateInput('report', $input);
@@ -93,6 +83,16 @@ class Report extends Service
         list($from, $to) = $this->getTimestamps($input);
 
         $repo = E::getEntityRepository($entity);
+
+        $this->trace->debug(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'merchantId'    => $merchantId,
+                'time_started'  => $begin
+            ]);
 
         $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
 
