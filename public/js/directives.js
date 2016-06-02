@@ -264,4 +264,82 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
         });
       }
   }
+}]).directive('jqTourbus', ['jqTourbusService', '$compile', function(tourbusService, $compile) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var tour = $.tourbus(element, {
+        onDepart: function(bus) {
+          var backDrop = $('.intro-tour-overlay');
+          if (!backDrop.length) {
+            $('#sidebar, #main-content').append('<div class="intro-tour-overlay"></div>');
+          }
+
+          $('.intro-tour-overlay').show();
+        },
+
+        onLegStart: function(leg, bus) {
+          if (!leg.scopeRebinded) {
+            $compile(angular.element(leg.el))(scope); // re-binds angular scope for dynamic html
+            leg.scopeRebinded = true;
+          }
+
+          if(leg.index === 0) {
+            leg.$el
+              .css({
+                visibility: 'visible',
+                opacity: 0,
+                top: leg.options.top / 2
+              })
+              .animate({
+                top: leg.options.top,
+                opacity: 1.0
+              }, 500, function() {
+                leg.show();
+              });
+            return false;
+          } else {
+            leg.$target.addClass('leg-target-active');
+            leg.$el
+              .css({
+                visibility: 'visible',
+                opacity: 0
+              })
+              .animate({
+                opacity: 1
+              }, 500, function() {
+                leg.show();
+              });
+            return false;
+          }
+        },
+
+        onLegEnd: function(leg) {
+          leg.$target.removeClass('leg-target-active');
+        },
+
+        onStop: function(bus) {
+          $('.intro-tour-overlay').hide();
+        }
+      });
+
+      tourbusService.start = function() {
+        tour.repositionLegs();
+        tour.depart();
+      }
+
+      tourbusService.next = function() {
+        tour.repositionLegs();
+        tour.next();
+      }
+
+      tourbusService.prev = function() {
+        tour.prev();
+      }
+
+      tourbusService.stop = function() {
+        tour.stop();
+      }
+    }
+  };
 }]);

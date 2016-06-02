@@ -1,110 +1,114 @@
-<ul class="nav" ng-init="merchant = !!user.current">
-  <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-    <span>Features</span>
-  </li>
-  <li class="active" ng-show="merchant">
-    <a id="dashboardNav" ui-sref="app.dashboard">
-      <i class="fa fa-area-chart text-info"></i>
-      <span>Dashboard</span>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="paymentsNav" ui-sref="app.payments.list">
-      <i class="fa fa-inr text-primary-lter"></i>
-      <span>Payments</span>
-    </a>
-  </li>
-  <li ng-show="merchant && user.tags.indexOf('Orders') != -1">
-    <a id="paymentsNav" ui-sref="app.orders.list">
-      <i class="fa fa-archive text-success-lter"></i>
-      <span>Orders</span>
-      <b class="badge bg-success dk pull-right ng-binding">beta</b>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="refundsNav" ui-sref="app.refunds.list">
-      <i class="fa fa-mail-reply icon text-warning-lter"></i>
-      <span>Refunds</span>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="settlementsNav" ui-sref="app.settlements.list">
-      <i class="fa  fa-check-square-o icon text-success"></i>
-      <span>Settlements</span>
-    </a>
-  </li>
-  <!--
-  <li>
-    <a id="transactionsNav" ui-sref="app.transactions.list">
-      <i class="fa fa-exchange icon text-info-lter"></i>
-      <span>Transaction</span>
-    </a>
-  </li> -->
-  <li ng-show="merchant">
-    <a id="addFundsNav" ui-sref="app.addfunds">
-      <i class="icon icon-wallet text-info-lter"></i>
-      <span>Add Funds</span>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="generateReportNav" ui-sref="app.generatereport">
-      <i class="fa fa-file-excel-o icon text-danger-lter"></i>
-      <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
-      <span>Reports</span>
-    </a>
-  </li>
-  <li ng-show="merchant && user.primaryOwner">
-    <a id="manageTeamNav" ui-sref="app.teammanagement">
-      <i class="fa fa-users icon text-info-lter"></i>
-      <b class="badge bg-success dk pull-right ng-binding">beta</b>
-      <span>Team</span>
+<div ng-init="merchant = !!user.current">
+  <ul class="nav" id="sidebar-features">
+    <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+      <span>Features</span>
+    </li>
+    <li class="active" ng-show="merchant">
+      <a id="dashboardNav" ui-sref="app.dashboard">
+        <i class="fa fa-area-chart text-info"></i>
+        <span>Dashboard</span>
       </a>
-  </li>
+    </li>
+    <li ng-show="merchant">
+      <a id="paymentsNav" ui-sref="app.payments.list">
+        <i class="fa fa-inr text-primary-lter"></i>
+        <span>Payments</span>
+      </a>
+    </li>
+    <li ng-show="merchant && user.tags.indexOf('Orders') != -1">
+      <a id="paymentsNav" ui-sref="app.orders.list">
+        <i class="fa fa-archive text-success-lter"></i>
+        <span>Orders</span>
+        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+      </a>
+    </li>
+    <li ng-show="merchant">
+      <a id="refundsNav" ui-sref="app.refunds.list">
+        <i class="fa fa-mail-reply icon text-warning-lter"></i>
+        <span>Refunds</span>
+      </a>
+    </li>
+    <li ng-show="merchant">
+      <a id="settlementsNav" ui-sref="app.settlements.list">
+        <i class="fa  fa-check-square-o icon text-success"></i>
+        <span>Settlements</span>
+      </a>
+    </li>
+    <!--
+    <li>
+      <a id="transactionsNav" ui-sref="app.transactions.list">
+        <i class="fa fa-exchange icon text-info-lter"></i>
+        <span>Transaction</span>
+      </a>
+    </li> -->
+    <li ng-show="merchant">
+      <a id="addFundsNav" ui-sref="app.addfunds">
+        <i class="icon icon-wallet text-info-lter"></i>
+        <span>Add Funds</span>
+      </a>
+    </li>
+    <li ng-show="merchant">
+      <a id="generateReportNav" ui-sref="app.generatereport">
+        <i class="fa fa-file-excel-o icon text-danger-lter"></i>
+        <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
+        <span>Reports</span>
+      </a>
+    </li>
+    <li ng-show="merchant && user.primaryOwner">
+      <a id="manageTeamNav" ui-sref="app.teammanagement">
+        <i class="fa fa-users icon text-info-lter"></i>
+        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+        <span>Team</span>
+        </a>
+    </li>
 
-  <li ng-show="merchant && user.tags.indexOf('Referral') != -1">
-    <a id="referredNav" ui-sref="app.referrals">
-      <i class="fa fa-gift icon text-danger-lter"></i>
-      <b class="badge bg-success dk pull-right ng-binding">beta</b>
-      <span>Referrals</span>
-    </a>
-  </li>
-  <li class="line dk"></li>
+    <li ng-show="merchant && user.tags.indexOf('Referral') != -1">
+      <a id="referredNav" ui-sref="app.referrals">
+        <i class="fa fa-gift icon text-danger-lter"></i>
+        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+        <span>Referrals</span>
+      </a>
+    </li>
+    <li class="line dk"></li>
+  </ul>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-    <span>Settings</span>
-  </li>
-  <li ng-show="merchant">
-    <a id="keysNav" ui-sref="app.keys">
-      <i class="icon-key icon text-success-lter"></i>
-      <span>Api Keys</span>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="activationNav" ui-sref="app.activation">
-      <i class="icon-question icon text-success-lter"></i>
-      <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
-      <span>Activation</span>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="webhookNav" ui-sref="app.webhooks">
-      <i class="icon-share icon text-success-lter"></i>
-      Webhook
-      <b class="badge bg-success dk pull-right ng-binding">beta</b>
-    </a>
-  </li>
-  <li>
-    <a id="profileNav" ui-sref="app.profile">
-      <i class="icon-user icon text-warning-lter"></i>
-      <span>Profile</span>
-    </a>
-  </li>
-  <li ng-show="merchant">
-    <a id="configNav" ui-sref="app.config">
-      <i class="icon-settings icon text-warning-lter"></i>
-      <span>Configuration</span>
-    </a>
-  </li>
+  <ul class="nav" id="sidebar-settings">
+    <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+      <span>Settings</span>
+    </li>
+    <li ng-show="merchant">
+      <a id="keysNav" ui-sref="app.keys">
+        <i class="icon-key icon text-success-lter"></i>
+        <span>Api Keys</span>
+      </a>
+    </li>
+    <li ng-show="merchant">
+      <a id="activationNav" ui-sref="app.activation">
+        <i class="icon-question icon text-success-lter"></i>
+        <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
+        <span>Activation</span>
+      </a>
+    </li>
+    <li ng-show="merchant">
+      <a id="webhookNav" ui-sref="app.webhooks">
+        <i class="icon-share icon text-success-lter"></i>
+        Webhook
+        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+      </a>
+    </li>
+    <li>
+      <a id="profileNav" ui-sref="app.profile">
+        <i class="icon-user icon text-warning-lter"></i>
+        <span>Profile</span>
+      </a>
+    </li>
+    <li ng-show="merchant">
+      <a id="configNav" ui-sref="app.config">
+        <i class="icon-settings icon text-warning-lter"></i>
+        <span>Configuration</span>
+      </a>
+    </li>
 
-  <li class="line dk"></li>
-</ul>
+    <li class="line dk"></li>
+  </ul>
+</div>

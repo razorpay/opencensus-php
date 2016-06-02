@@ -10,7 +10,9 @@ app.controller('UserCtrl', [
   '$keepalive',
   'modeFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost) {
+  '$cookies',
+  'jqTourbusService',
+  function ($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory, transformRequestAsFormPost, $cookies, jqTourbusService) {
     $scope.mode = modeFactory.getMode();
     $scope.invitations = [];
 
@@ -96,6 +98,13 @@ app.controller('UserCtrl', [
         $scope.merchantCount = Object.keys(data.merchants).length;
         $scope.loggedInUser = data.user;
         $scope.hasMerchant = false;
+
+        if ($cookies.show_rzp_welcome_guide) {
+          setTimeout(function() {
+            jqTourbusService.start();
+          }, 1500);
+          delete $cookies.show_rzp_welcome_guide;
+        }
 
         // Does the user have an associated merchant account
         for(var i in data.user.merchants) {

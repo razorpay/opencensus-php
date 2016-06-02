@@ -28,6 +28,10 @@
         <!-- nabar right -->
 
         <ul class="nav navbar-nav navbar-right">
+          <li id="merchant-id" ng-controller="UserCtrl" ng-show="user.current" tooltip="Merchant ID" tooltip-placement="bottom">
+            <a>{{user.id}}</a>
+          </li>
+
           <li class="dropdown" ng-controller="modeCtrl" ng-show="user.current">
             <a href class="dropdown-toggle" data-toggle="dropdown">
               {{mode() | titlecase}} Mode<b class="caret"></b>
