@@ -719,7 +719,10 @@ class Gateway extends Base\Gateway
     {
         $expiryMonth = $input['card']['expiry_month'];
 
-        if ($expiryMonth < 10) $expiryMonth = '0' . $expiryMonth;
+        if ($expiryMonth < 10)
+        {
+            $expiryMonth = '0' . $expiryMonth;
+        }
 
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 

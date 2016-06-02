@@ -6,7 +6,7 @@ use EE\Exception;
 
 class Map
 {
-    public static $map = array(
+    const MAP = array(
         PublicErrorCode::GATEWAY_ERROR      => Exception\GatewayErrorException::class,
         PublicErrorCode::BAD_REQUEST_ERROR  => Exception\BadRequestException::class,
         PublicErrorCode::SERVER_ERROR       => Exception\ServerErrorException::class);
@@ -15,9 +15,9 @@ class Map
     {
         $class = null;
 
-        if (in_array($publicCode, self::$map))
+        if (in_array($publicCode, array_keys(self::MAP)))
         {
-            $class = $map[$publicCode];
+            $class = self::MAP[$publicCode];
         }
 
         if ($internalCode === ErrorCode::BAD_REQUEST_VALIDATION_FAILURE)

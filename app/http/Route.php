@@ -21,7 +21,7 @@ final class Route
         'payment_create_jsonp'                  => ['get',      'payments/create/jsonp',                    'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                   => ['post',     'payments/create/ajax',                     'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                   => ['post',     'payments/create/fees',                     'PaymentCreateController@postCreatePaymentFees'                     ],
-        'payment_create_wallet'                 => ['post',     'payments/create/wallet/{wallet}',          'PaymentCreateController@postCreateWalletPayment'                   ],
+        'payment_create_wallet'                 => ['post',     'payments/create/wallet',                   'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_callback_post'                 => ['post',     'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                  => ['get',      'payments/{id}/callback/{hash}',            'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'        => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentCreateController@postCallback'                              ],
@@ -156,7 +156,8 @@ final class Route
         'mock_paytm_payment'                    => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                            ],
         'mock_mobikwik_payment'                 => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                 => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                         ],
-        'mock_sharp_payment'                    => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
+        'mock_sharp_payment_post'               => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
+        'mock_sharp_payment_get'                => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                     => ['post',     'gateway/mockamex/payment',                 'MockGatewayController@postAmexPayment'                             ],
         'mock_sharp_payment_submit'             => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'               => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                       ],
@@ -238,7 +239,8 @@ final class Route
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
         'mock_billdesk_payment',
-        'mock_sharp_payment',
+        'mock_sharp_payment_post',
+        'mock_sharp_payment_get',
         'mock_sharp_payment_submit',
         'mock_sbiepay_payment',
         'mock_wallet_payment',
@@ -463,7 +465,8 @@ final class Route
         );
 
     public static $slaveRoutes = [
-        'es_migrate_entity',
+        // TODO: Uncomment this when slave variables issue is fixed.
+        //'es_migrate_entity',
     ];
 
     protected static $jsonpRoutes = array(

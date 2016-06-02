@@ -188,8 +188,11 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
+        self::AMOUNT_AUTHORIZED,
+        self::AMOUNT_REFUNDED,
         self::FEE,
-        self::SERVICE_TAX);
+        self::SERVICE_TAX
+    );
 
 // --------------------- Generators --------------------------------------------
 
@@ -393,6 +396,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::OTP_COUNT, $count);
     }
 
+    public function setEmailAttribute($email)
+    {
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;
@@ -484,12 +492,26 @@ class Entity extends Base\PublicEntity
 
     public function getOtpAttemptsAttribute()
     {
-        return $this->attributes[self::OTP_ATTEMPTS];
+        $attempts = $this->attributes[self::OTP_ATTEMPTS];
+
+        if ($attempts !== null)
+        {
+            $attempts = (int) $attempts;
+        }
+
+        return $attempts;
     }
 
     public function getOtpCountAttribute()
     {
-        return $this->attributes[self::OTP_COUNT];
+        $count = $this->attributes[self::OTP_COUNT];
+
+        if ($count !== null)
+        {
+            $count = (int) $count;
+        }
+
+        return $count;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -855,9 +877,9 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        $data['id'] = $this->getPublicId();
+        $data[self::ID] = $this->getPublicId();
 
-        if ($this->getAttribute(self::METHOD) === Payment\Method::CARD)
+        if ($this->isMethodCardOrEmi())
         {
             $card = $this->card()->firstOrFail();
 
@@ -873,7 +895,13 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $data['notes'] = $this->getNotesJson();
+        $data[self::NOTES] = $this->getNotesJson();
+
+        if ($this->isMethodCardOrEmi())
+        {
+            $data['card_type'] = $this->card->getType();
+            $data['card_network'] = $this->card->getNetwork();
+        }
 
         return $data;
     }

@@ -79,6 +79,7 @@ $factory(Models\Key\Entity::class, [
     'id' => '1DP5mmOlF5G5ag',
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'secret' => 'eyJpdiI6InFjMFFDMkszYzRLeU5UZ2VnajhoMEE9PSIsInZhbHVlIjoiZzY3c0Zkd0VMQkE0cjU1T3hVQXZSSzBub1h4aHJkaThBRlwvZWJwMm5wdkE9IiwibWFjIjoiZmEyZWM5MzIyODBjMmU3N2RhMmQ2ZjA2ODA3OTk5ZjI0ZTY2ZTQ3ZGNiYzJjOTE4ODc5ZWNkYzY4MGQwYTZhZiJ9',
+    'expired_at' => null,
 ]);
 
 $factory(Models\Payment\Entity::class, [

@@ -232,17 +232,33 @@ class Processor
      * @param  string   $id      Id of payment to be captured
      * @param  array    $input
      *
-     * @return Payment\Entity   Payment\Entity object
+     * @return $status Payment\Status
      */
     public function cancel($id, $input)
     {
         return $this->repo->transaction(function() use ($id, $input)
         {
+            $status = null;
+
             $payment = $this->retrieve($id);
 
-            $payment = $this->repo->lockForUpdate($payment->getKey());
+            $createdAt = $payment->getCreatedAt();
 
-            (new Payment\Validator)->cancelValidate($payment);
+            $diff = time() - $createdAt;
+
+            if ($diff > 30 * 60)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment created long back and cannot be cancelled now');
+            }
+
+            if (($payment->isAuthorized()) or
+                ($payment->isCaptured()))
+            {
+                return Payment\Status::AUTHORIZED;
+            }
+
+            $payment = $this->repo->lockForUpdate($payment->getKey());
 
             return $this->cancelPayment($payment, $input);
         });
@@ -251,6 +267,8 @@ class Processor
     protected function cancelPayment($payment)
     {
         $errorCode = null;
+
+        (new Payment\Validator)->cancelValidate($payment);
 
         if ((isset($input['platform'])) and
             ($input['platform'] === 'android_sdk'))
@@ -266,7 +284,7 @@ class Processor
 
         $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
 
-        return [];
+        return Payment\Status::FAILED;
     }
 
     protected function trace($traceCode, $level = Trace::INFO)

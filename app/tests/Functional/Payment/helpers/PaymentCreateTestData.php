@@ -20,8 +20,8 @@ return [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED
         ],
-   ], 
-   
+   ],
+
    'testCreatePaymentInEs' => [
        'type' => 'payments',
        'body' => [
@@ -31,12 +31,27 @@ return [
                ],
            ],
            'upsert' => [
-               'merchant_id' => '10000000000000', 
+               'merchant_id' => '10000000000000',
                'notes' => [
                    'merchant_order_id' => 'random order id'
                ]
            ],
        ],
    ],
-    
+
+   'testPaymentCreateCallingCallbackRouteTwiceForError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
+        ],
+   ],
 ];

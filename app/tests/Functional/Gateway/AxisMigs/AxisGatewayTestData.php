@@ -34,14 +34,14 @@ return [
         'type' => 'payment',
         'merchant_id' => '10000000000000',
         'amount' => 50000,
-        'fee' => 1145,
+        'fee' => 1150,
         'debit' => 0,
-        'credit' => 48855,
+        'credit' => 48850,
         'currency' => 'INR',
-        'balance' => 1048855,
+        'balance' => 1048850,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048855,
+        'escrow_balance' => 1048850,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,
@@ -119,7 +119,7 @@ return [
         'admin' => true,
     ],
 
-    'testMaestroOnMigs' => [
+    'testMaestroOnMigsFailOnLive' => [
         'response' => [
             'content' => [
                 'error' => [

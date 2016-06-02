@@ -88,7 +88,7 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            [$input]);
+            $input);
 
         return $merchant;
     }
@@ -104,8 +104,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            ['old_email' => $merchant->getEmail()],
-            ['new_email' => $input['email']]);
+            [
+                'old_email' => $merchant->getEmail(),
+                'new_email' => $input['email']
+            ]);
 
         $merchant->edit($input, 'editEmail');
 
@@ -125,7 +127,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            [$input]);
+            $input);
 
         $merchant->edit($input, 'editConfig');
 

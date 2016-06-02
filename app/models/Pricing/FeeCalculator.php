@@ -14,7 +14,7 @@ use Trace\TraceCode;
 
 class FeeCalculator
 {
-    const SERVICE_TAX_PERCENT = 14.5;
+    const SERVICE_TAX_PERCENT = 15.0;
 
     /**
      * For which fees needs to be calculate.
@@ -46,7 +46,7 @@ class FeeCalculator
 
     protected function getFees($rule, $amount, $preCalculationOfFees = false)
     {
-        $serviceTaxPercentage = self::SERVICE_TAX_PERCENT;
+        $serviceTaxPercentage = self::getServiceTaxRate();
 
         list($percent, $fixed) = $rule->getRates();
 
@@ -63,6 +63,11 @@ class FeeCalculator
         return  array($fee, $serviceTax);
     }
 
+    public static function getServiceTaxRate()
+    {
+        return self::SERVICE_TAX_PERCENT;
+    }
+
     protected function getRelevantPricingRule($pricing)
     {
         $payment = $this->payment;
@@ -76,13 +81,19 @@ class FeeCalculator
             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
             ['count' => count($rules)]);
 
+        $this->traceAllRules($rules);
+
         if ($method === Payment\Method::CARD)
         {
             $rule = $this->getRelevantPricingRuleForCard($rules);
         }
         elseif ($method === Payment\Method::WALLET)
         {
-            $rule = $this->getRelevantPricingRuleForWallet($rules);  
+            $rule = $this->getRelevantPricingRuleForWallet($rules);
+        }
+        elseif ($method === Payment\Method::NETBANKING)
+        {
+            $rule = $this->getRelevantPricingRuleForNB($rules);
         }
         else
         {
@@ -101,6 +112,48 @@ class FeeCalculator
     protected function getRelevantPricingRuleForMethod($rules)
     {
         return $this->validateAndGetOnePricingRule($rules);
+
+    }
+
+    protected function getRelevantPricingRuleForNB($rules)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        $payment = $this->payment;
+
+        $bank = $payment->getBank();
+
+        // Current Implementation
+        // * Filter based on AmountRange
+        // * Choose based on Amount
+
+        $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        $filter1 = array(
+            [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter1);
+
+        $amount = $payment->getAmount();
+
+        $subventionType = $payment->merchant->getSubventionType();
+
+        $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException(
+                'Failed to find a valid pricing rule for the payment');
+        }
+
+        return $rule;
     }
 
     protected function getRelevantPricingRuleForWallet($rules)
@@ -113,18 +166,16 @@ class FeeCalculator
 
         $wallet = $payment->getWallet();
 
-        $this->traceAllRules($rules);
-
         // Current Implementation
         // * Filter based on wallet
-        
+
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
         $filter = array(
             [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
         );
 
-        $rules = $this->applyFiltersOnRules($rules, $filter);   
+        $rules = $this->applyFiltersOnRules($rules, $filter);
 
         return $this->validateAndGetOnePricingRule($rules);
     }
@@ -143,8 +194,6 @@ class FeeCalculator
         $international = $payment->isInternational();
 
         $network = Card\Network::getCode($payment->card->getNetwork());
-
-        $this->traceAllRules($rules);
 
         // Current Implementation
         // * Filter based on international

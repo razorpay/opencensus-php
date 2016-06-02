@@ -155,6 +155,20 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantUppercaseEmail()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantEmptyEmail()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantConfig()
     {
         $this->createMerchant();
@@ -405,6 +419,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutPreferencesWithNetbankingDisabled()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->disableNetbanking('10000000000000');
+
+        $content = $this->startTest();
+
+        $count = count($content['methods']['netbanking']);
+        $this->assertEquals(0, $count);
+    }
+
     public function testGetCheckoutRouteWithSavedLocal()
     {
         $this->ba->publicAuth();
@@ -547,10 +574,10 @@ class MerchantTest extends TestCase
     protected function createMerchant()
     {
         $merchant = array(
-                'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester 2',
-                'email' => 'liveAndTest@localhost.com'
-            );
+            'id'    => '1X4hRFHFx4UiXt',
+            'name'  => 'Tester 2',
+            'email' => 'liveandtest@localhost.com'
+        );
 
         $request = array(
             'content' => $merchant,

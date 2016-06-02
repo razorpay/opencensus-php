@@ -3,12 +3,14 @@
 namespace Gateway\Sharp;
 
 use Constants\Mode;
+use Crypt;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
+use Models\Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -17,8 +19,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
 
         $content = array(
             'action'        => 'authorize',
@@ -38,7 +38,7 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $request = $this->getRequestArray($content);
+        $request = $this->getRequestArray($content, $input);
 
         return $request;
     }
@@ -56,6 +56,14 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        if (($input['payment']['method'] === 'card') and
+            ($input['card']['iin'] === '501010') and
+            ($input['card']['last4'] === '1015'))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+        }
 
         if ((isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp'))
@@ -122,18 +130,38 @@ class Gateway extends Base\Gateway
         parent::setMode($mode);
     }
 
-    protected function getRequestArray($content)
+    protected function getRequestArray($content, $input)
     {
-        $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
+        $url = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
 
-        $url = $baseUrl;
+        $method = 'post';
+
+        if (($input['payment']['method'] === 'card') and
+            ($input['card']['number'] === '4111111111111111'))
+        {
+            $content['card_number'] = $this->encryptCardNumber($input['card']['number']);
+            $content['encrypt'] = '1';
+            $method = 'get';
+            $url = $url . '&' . http_build_query($content);
+            $content = [];
+        }
 
         $request = array(
             'url' => $url,
-            'method' => 'post',
+            'method' => $method,
             'content' => $content,
         );
 
         return $request;
+    }
+
+    protected function encryptCardNumber($number)
+    {
+        return Crypt::encrypt($number);
+    }
+
+    protected function decryptCardNumber($encryptedCard)
+    {
+        return Crypt::decrypt($encryptedCard);
     }
 }

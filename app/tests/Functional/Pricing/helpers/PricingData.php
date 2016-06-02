@@ -81,6 +81,33 @@ return [
         'request' => [
             'content' => [
                 'payment_method' => 'netbanking',
+                'percent_rate' => 1000,
+                'payment_network' => 'SIBL',
+                'amount_range_active' => true,
+                'amount_range_min' => 0,
+                'amount_range_max' => 100000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => 'SIBL',
+                'payment_issuer' => null,
+                'percent_rate' => 1000,
+                'amount_range_active' => true,
+                'amount_range_min' => 0,
+                'amount_range_max' => 100000,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanNBNoNetworkRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'netbanking',
                 'percent_rate' => 1000
             ],
             'method' => 'POST'
@@ -96,6 +123,7 @@ return [
             ],
         ],
     ],
+
 
     'testAddPricingPlanWalletRule' => [
         'request' => [
@@ -276,6 +304,108 @@ return [
                         'entity' => 'pricing',
                         'count' => 1,
                         'rules' => array(
+                            array(
+                                'plan_name' =>  'TestPlan1',
+                                'gateway' => NULL,
+                                'payment_method' =>  'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network' =>  'DICL',
+                                'payment_issuer' =>  'HDFC',
+                                'percent_rate' =>  1000,
+                                'international' => false,
+                                'fixed_rate' =>  0,
+                                'expired_at' => NULL
+                            )
+                        )
+                    ),
+                    array(
+                        'name' => 'testDefaultPlan',
+                        'entity' => 'pricing',
+                        'count' => 7,
+                        'rules' => array(
+                            array(),
+                        ),
+                    ),
+                )
+            ]
+        ]
+    ],
+
+    'testGetPricingPlansGrouping' => [
+        'request' => [
+            'url' => '/pricing/merchants',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count' => 3,
+                'entity' => 'collection',
+                'items' => array(
+                    array(
+                        'name' => 'TestPlan2',
+                        'entity' => 'pricing',
+                        'count' => 4,
+                        'rules' => array(
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'gateway' => NULL,
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network' => 'MC',
+                                'payment_issuer' => 'AXIS',
+                                'percent_rate' => 0,
+                                'fixed_rate' => 3000,
+                                'international' => false,
+                            ),
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'debit',
+                                'payment_network' => 'MAES',
+                                'payment_issuer' => 'PUNB',
+                                'percent_rate' => 250,
+                                'fixed_rate' => 0,
+                                'international' => false,
+                            ),
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'ICIC',
+                                'percent_rate' => 250,
+                                'fixed_rate' => 0,
+                                'international' => false,
+                            ),
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'SBIN',
+                                'percent_rate' => 275,
+                                'fixed_rate' => 0,
+                                'international' => false,
+                            ),
+                        )
+                    ),
+                    array(
+                        'name' => 'TestPlan1',
+                        'entity' => 'pricing',
+                        'count' => 2,
+                        'rules' => array(
+                            array(
+                                'plan_name' =>  'TestPlan1',
+                                'gateway' => NULL,
+                                'payment_method' =>  'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network' =>  'MAES',
+                                'payment_issuer' =>  'HDFC',
+                                'percent_rate' =>  1000,
+                                'international' => false,
+                                'fixed_rate' =>  0,
+                                'expired_at' => NULL
+                            ),
                             array(
                                 'plan_name' =>  'TestPlan1',
                                 'gateway' => NULL,

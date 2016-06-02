@@ -87,6 +87,24 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals($id, $payment['items'][0]['id']);
     }
 
+    public function testRetrievePaymentWithEmail()
+    {
+        $this->ba->proxyAuth();
+
+        $payments = $this->retrievePaymentsDefault();
+
+        //GIVEN
+        $email = $payments['items'][0]['email'];
+
+        $request = $this->request;
+        $request['content'] = array('email' => mb_strtoupper($email));
+
+        //WHEN
+        $payment = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($email, $payment['items'][0]['email']);
+    }
+
     public function testRetrievePaymentWithCardIIN()
     {
         $this->ba->appAuth();
