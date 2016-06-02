@@ -90,8 +90,9 @@ class Validator
      */
     public function validateFile($fileDetails)
     {
-        $extension = $fileDetails['extension'];
-        $mimeType = $fileDetails['mime_type'];
+        // Extensions are in uppercase sometimes.
+        $extension = strtolower($fileDetails['extension']);
+        $mimeType = strtolower($fileDetails['mime_type']);
         $fileSize = $fileDetails['size'];
 
         if (($this->validateExtensionMimeType($extension, $mimeType) === true) and

@@ -72,7 +72,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $fee = floatval($row[self::COLUMN_FEE]) * 100;
 
         // Already in paise. Hence, no conversion needed
-        $serviceTax = $this->getServiceTax($row);
+        $serviceTax = $this->getGatewayServiceTax($row);
 
         // HDFC reconciliation files have fee and service tax separately
         $fee += $serviceTax;
