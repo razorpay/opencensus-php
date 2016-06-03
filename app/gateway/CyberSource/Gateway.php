@@ -13,12 +13,15 @@ use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 use ExtendedClient;
+use Session;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'cybersource';
 
     protected $repo;
+
+    protected $enrollRequest;
 
     public function __construct()
     {
@@ -29,37 +32,229 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
+        \Session::push('card', $input['card']['number']);
+
         $status = $this->enroll($input);
         
-        return $this->decideAuthStepAfterEnroll('475');
+        return $this->decideAuthStepAfterEnroll($status);
     }
 
     public function callback(array $input)
     {
         parent::callback($input);
 
-        $network = $input['card']['network'];
-
-        //$this->validateCallbackGatewayFields($input, $network);
-
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findByGatewayTransactionIdOrFail(
-            $input['gateway']['MD']);
+        $status = $this->postAuthEnrolledRequest($input);
 
-        $paymentId = $this->model->getPaymentId();
-
-        if ($this->id !== $paymentId)
+        if($status === 100)
         {
-            throw new Exception\LogicException(
-                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
+            $this->postEnrollAuthorize($input);
         }
+        else
+        {
+            throw new Exception\InvalidArgumentException(
+                'Auth Validation failed, try another card or payment option. Reason code: '.$status);
+        }
+    }
 
-        $this->postAuthEnrolledRequest($input);
+    public function postAuthEnrolledRequest($input)
+    {
+        $request = $this->createAuthEnrolledRequestFields($input);
+
+        try {
+            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+
+            $reply = $soapClient->runTransaction($request);
+
+            $this->authValidateResponse = $reply;
+
+            return $reply->reasonCode;
+
+        } catch (SoapFault $exception) {
+            var_dump(get_class($exception));
+            var_dump($exception);
+        }
+    }
+
+    public function postEnrollAuthorize($input)
+    {
+        $request = $this->createAuthorizeRequestFields($input);
+
+        try {
+            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+
+            $reply = $soapClient->runTransaction($request);
+
+            $this->authorizeResponse = $reply;
+
+            if($reply->reasonCode === 100)
+            {
+                return true;
+            }
+            else
+            {
+                throw new Exception\InvalidArgumentException(
+                    'Authorization failed. Reason code: '.$reply->reasonCode);
+            }
+
+        } catch (SoapFault $exception) {
+            var_dump(get_class($exception));
+            var_dump($exception);
+        }
+    }
+
+    public function createAuthEnrolledRequestFields($input)
+    {
+        $request = new \stdClass();
+
+        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+
+        $request->merchantReferenceCode = $input['card']['merchant_id'];
+
+        $request->clientLibrary = "PHP";
+        $request->clientLibraryVersion = phpversion();
+        $request->clientEnvironment = php_uname();
+
+        $ccAuthService = new \stdClass();
+        $ccAuthService->run = "true";
+        $request->ccAuthService = $ccAuthService;
+
+        $payerAuthValidateService = new \stdClass();
+        $payerAuthValidateService->run = "true";
+        $payerAuthValidateService->signedPARes = $input['gateway']['PaRes'];
+        
+        $billTo = new \stdClass();
+        $billTo->firstName = $input['card']['name'];
+        $billTo->lastName = "a";
+        $billTo->street1 = "a" ;
+        $billTo->city = "a";
+        $billTo->state = "a";
+        $billTo->postalCode = "5";
+        $billTo->country = "India";
+        $billTo->email = $input['payment']['email'];
+        $request->billTo = $billTo;
+
+        $card = new \stdClass();
+        $cards = \Session::get('card');
+        $card->accountNumber = $cards[0];
+        $card->expirationMonth = $input['card']['expiry_month'];
+        $card->expirationYear = $input['card']['expiry_year'];
+        $request->card = $card;
+
+        $purchaseTotals = new \stdClass();
+        $purchaseTotals->currency = $input['payment']['currency'];
+        $request->purchaseTotals = $purchaseTotals;
+
+        $item0 = new \stdClass();
+        $item0->unitPrice = $input['payment']['amount'];
+        $item0->id = "1";
+
+        $request->item = array($item0);
+
+        return $request;
+    }
+
+    public function createAuthorizeRequestFields($input)
+    {
+        $request = new \stdClass();
+
+        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+
+        $request->merchantReferenceCode = $input['card']['merchant_id'];
+
+        $request->clientLibrary = "PHP";
+        $request->clientLibraryVersion = phpversion();
+        $request->clientEnvironment = php_uname();
+
+        $ccAuthService = new \stdClass();
+        $ccAuthService->run = "true";
+        $request->ccAuthService = $ccAuthService;
+
+        $billTo = new \stdClass();
+        $billTo->firstName = $input['card']['name'];
+        $billTo->lastName = "a";
+        $billTo->street1 = "a" ;
+        $billTo->city = "a";
+        $billTo->state = "a";
+        $billTo->postalCode = "5";
+        $billTo->country = "India";
+        $billTo->email = $input['payment']['email'];
+        $request->billTo = $billTo;
+
+        $card = new \stdClass();
+        $cards = \Session::get('card');
+        $card->accountNumber = $cards[0];
+        $card->expirationMonth = $input['card']['expiry_month'];
+        $card->expirationYear = $input['card']['expiry_year'];
+        $request->card = $card;
+
+        $purchaseTotals = new \stdClass();
+        $purchaseTotals->currency = $input['payment']['currency'];
+        $request->purchaseTotals = $purchaseTotals;
+
+        $item0 = new \stdClass();
+        $item0->unitPrice = $input['payment']['amount'];
+        $item0->id = "1";
+
+        $request->item = array($item0);
+
+        return $request;
     }
 
     public function capture(array $input)
     {
+        $request = new \stdClass();
+
+        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+
+        $request->merchantReferenceCode = $input['card']['merchant_id'];
+
+        $request->clientLibrary = "PHP";
+        $request->clientLibraryVersion = phpversion();
+        $request->clientEnvironment = php_uname();
+
+        $ccCaptureService = new \stdClass();
+        $ccCaptureService->run = "true";
+        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+                                            $input['payment']['id'], 'enrolled');
+        $ccCaptureService->requestID = $this->model->ref;
+        $request->ccCaptureService = $ccCaptureService;
+
+        $payerAuthEnrollService = new \stdClass();
+        $payerAuthEnrollService->run = "true";
+        $request->payerAuthEnrollService = $payerAuthEnrollService;
+
+        $card = new \stdClass();
+        $cards = \Session::get('card');
+        $card->accountNumber = $cards[0];
+        $card->expirationMonth = $input['card']['expiry_month'];
+        $card->expirationYear = $input['card']['expiry_year'];
+        $request->card = $card;
+        
+        $purchaseTotals = new \stdClass();
+        $purchaseTotals->currency = $input['payment']['currency'];
+        $request->purchaseTotals = $purchaseTotals;
+
+        $item0 = new \stdClass();
+        $item0->unitPrice = $input['payment']['amount'];
+        $item0->id = "1";
+
+        $request->item = array($item0);
+
+        try {
+            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+
+            $reply = $soapClient->runTransaction($request);
+
+            $this->enrollResponse = $reply;
+
+            return $reply->reasonCode;
+
+        } catch (SoapFault $exception) {
+            var_dump(get_class($exception));
+            var_dump($exception);
+        }
     }
 
     public function refund(array $input)
@@ -82,12 +277,17 @@ class Gateway extends Base\Gateway
 
         $request = $this->getEnrollRequestObject($input);
 
+        $this->enrollRequest = $request;
+
         try {
             $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
 
             $reply = $soapClient->runTransaction($request);
 
             $this->enrollResponse = $reply;
+            var_dump($reply->requestID);
+
+            $this->persistAfterEnroll();
 
             return $reply->reasonCode;
 
@@ -96,6 +296,53 @@ class Gateway extends Base\Gateway
             var_dump($exception);
         }
     }
+
+    protected function persistAfterEnroll()
+    {
+        if (($this->enrollResponse->reasonCode !== 475) && ($this->enrollResponse->reasonCode !== 100))
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_ENROLL_ERROR,
+                $this->enrollResponse);
+
+            $this->model = $this->repo->persistAfterEnrollError(
+                            $this->id,
+                            $this->enrollResponse,
+                            $this->enrollRequest);
+
+            $this->id = $this->model->id;
+        }
+        else
+        {
+            // $this->trace(
+            //     Trace::INFO,
+            //     TraceCode::GATEWAY_ENROLL_RESPONSE,
+            //     $this->enrollResponse);
+
+            $this->model = $this->repo->persistAfterEnroll($this->id,
+                    $this->enrollRequest,
+                    $this->enrollResponse);
+        }
+    }
+
+    // protected function trace($level, $message, array $context)
+    // {
+    //     if (isset($context['data']))
+    //     {
+    //         //
+    //         // If 'data' field is present, then make sure that
+    //         // no field defined in 'stripFieldsList' are present
+    //         // in data. If so, then unset them. This is to
+    //         // ensure extraneous or sensitive fields aren't traced.
+    //         //
+    //         $context['data'] = Hdfc\Utility::unsetFields(
+    //                             $context['data'],
+    //                             $this->stripFieldsList);
+    //     }
+
+    //     $this->trace->addRecord($level, $message, $context);
+    // }
 
     protected function setId($id)
     {
@@ -106,50 +353,50 @@ class Gateway extends Base\Gateway
     {
         $request = new \stdClass();
 
-            $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
 
-            $request->merchantReferenceCode = $input['card']['merchant_id'];
+        $request->merchantReferenceCode = $input['card']['merchant_id'];
 
-            $request->clientLibrary = "PHP";
-            $request->clientLibraryVersion = phpversion();
-            $request->clientEnvironment = php_uname();
+        $request->clientLibrary = "PHP";
+        $request->clientLibraryVersion = phpversion();
+        $request->clientEnvironment = php_uname();
 
-            $ccAuthService = new \stdClass();
-            $ccAuthService->run = "true";
-            $request->ccAuthService = $ccAuthService;
+        $ccAuthService = new \stdClass();
+        $ccAuthService->run = "true";
+        $request->ccAuthService = $ccAuthService;
 
-            $payerAuthEnrollService = new \stdClass();
-            $payerAuthEnrollService->run = "true";
-            $request->payerAuthEnrollService = $payerAuthEnrollService;
-            
-            $billTo = new \stdClass();
-            $billTo->firstName = $input['card']['name'];
-            $billTo->lastName = "a";
-            $billTo->street1 = "a" ;
-            $billTo->city = "a";
-            $billTo->state = "a";
-            $billTo->postalCode = "5";
-            $billTo->country = "India";
-            $billTo->email = $input['payment']['email'];
-            $request->billTo = $billTo;
+        $payerAuthEnrollService = new \stdClass();
+        $payerAuthEnrollService->run = "true";
+        $request->payerAuthEnrollService = $payerAuthEnrollService;
+        
+        $billTo = new \stdClass();
+        $billTo->firstName = $input['card']['name'];
+        $billTo->lastName = "a";
+        $billTo->street1 = "a" ;
+        $billTo->city = "a";
+        $billTo->state = "a";
+        $billTo->postalCode = "5";
+        $billTo->country = "India";
+        $billTo->email = $input['payment']['email'];
+        $request->billTo = $billTo;
 
-            $card = new \stdClass();
-            $card->accountNumber = $input['card']['number'];
-            $card->expirationMonth = $input['card']['expiry_month'];
-            $card->expirationYear = $input['card']['expiry_year'];
-            $request->card = $card;
+        $card = new \stdClass();
+        $card->accountNumber = $input['card']['number'];
+        $card->expirationMonth = $input['card']['expiry_month'];
+        $card->expirationYear = $input['card']['expiry_year'];
+        $request->card = $card;
 
-            $purchaseTotals = new \stdClass();
-            $purchaseTotals->currency = $input['payment']['currency'];
-            $request->purchaseTotals = $purchaseTotals;
+        $purchaseTotals = new \stdClass();
+        $purchaseTotals->currency = $input['payment']['currency'];
+        $request->purchaseTotals = $purchaseTotals;
 
-            $item0 = new \stdClass();
-            $item0->unitPrice = $input['payment']['amount'];
-            $item0->id = "1";
+        $item0 = new \stdClass();
+        $item0->unitPrice = $input['payment']['amount'];
+        $item0->id = "1";
 
-            $request->item = array($item0);
+        $request->item = array($item0);
 
-            return $request;
+        return $request;
     }
 
     protected function decideAuthStepAfterEnroll($enrollStatus)
@@ -160,10 +407,7 @@ class Gateway extends Base\Gateway
                 return $this->getFieldsForFormSubmitToBankACS();
 
             case Payment\Result::NOT_ENROLLED:
-                return $this->postAuthNotEnrolledRequestToBank();
-
-            case Payment\Result::INITIALIZED:
-                return $this->getFieldsForFormSubmitForRupay();
+                return;
 
             default:
                 throw new Exception\LogicException('Should not have reached here');

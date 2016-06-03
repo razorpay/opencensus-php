@@ -34,9 +34,9 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function persistAfterEnroll($request, $response)
+    public function persistAfterEnroll($id, $request, $response)
     {
-        $result = $response['enroll_result'];
+        $result = $response->reasonCode;
 
         if ($result === Payment\Result::ENROLLED)
         {
@@ -46,26 +46,23 @@ class Repository extends Base\Repository
         {
             $status = Payment\Status::NOT_ENROLLED;
         }
-        else if ($result === Payment\Result::INITIALIZED)
-        {
-            $status = Payment\Status::INITIALIZED;
-        }
 
         //
         // 'received' is marked as false because after this we will
         // initiate auth request. And 'received' is marked as true
         // only after that if we receive positive result.
         //
-
         $attributes = array(
             'received'                  => '0',
-            'payment_id'                => $request['trackid'],
-            'gateway_transaction_id'    => $response['paymentid'],
-            'action'                    => $request['action'],
-            'amount'                    => $request['amt'],
-            'enroll_result'             => $response['enroll_result'],
+            'payment_id'                => $id,
+            'gateway_transaction_id'    => '1',
+            'action'                    => '1',
+            'amount'                    => $request->item[0]->unitPrice,
+            'enroll_result'             => '1',
             'status'                    => $status,
-            'eci'                       => $response['eci']);
+            'eci'                       => '1',
+            'ref'                       => $response->requestID);
+        
 
         $repo = $this->repo;
 
@@ -77,11 +74,11 @@ class Repository extends Base\Repository
         $attributes = array(
             'received'              => '1',
             'payment_id'            => $id,
-            'action'                => $requestData['action'],
-            'amount'                => $requestData['amt'],
-            'error_code'            => $error['code'],
-            'error_text'            => $error['text'],
-            'enroll_result'         => $error['enroll_result'],
+            'action'                => '1',
+            'amount'                => $requestData->item[0]->unitPrice,
+            'error_code'            => $error->reasonCode,
+            'error_text'            => '1',
+            'enroll_result'         => '1',
             'status'                => Payment\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
