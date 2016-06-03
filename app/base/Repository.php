@@ -2,6 +2,7 @@
 
 namespace Base;
 
+use App;
 use Constants\Entity as E;
 use Constants\Table;
 use DB;
