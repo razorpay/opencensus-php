@@ -200,7 +200,7 @@ trait Authorize
         }
         catch (Exception\BaseException $e)
         {
-            $this->processPaymentException($e);
+            $this->processPaymentCallbackException($e);
         }
 
         $this->updateAndNotifyPaymentAuthorized($payment);
@@ -216,9 +216,22 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    protected function processPaymentException($e)
+    protected function processPaymentCallbackException($e)
     {
+        // Refresh and check that payment is in created state only
+        // This is because significant time has elapsed during
+        // gateway request and we need to refresh it to take into
+        // account race conditions.
+        $this->payment = $this->repo->lockForUpdate($this->payment->getKey());
+
         $payment = $this->payment;
+        $status = $payment->getStatus();
+
+        if ($status !== Status::CREATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        }
 
         $code = $e->getError()->getInternalErrorCode();
 
@@ -1017,7 +1030,7 @@ trait Authorize
 
             if ($payment->getStatus() === Status::AUTHORIZED)
             {
-               return;
+                return;
             }
 
             $payment->setAmountAuthorized();
