@@ -47,8 +47,6 @@ class TerminalPicker
         $this->repo = new Terminal\Repository;
 
         $this->app = \App::getFacadeRoot();
-
-        // $this->app['config']->set('database.default', $this->mode);
     }
 
     public function selectTerminal($payment, $mode)
@@ -59,7 +57,8 @@ class TerminalPicker
 
         $merchantTerminals = $this->getTerminals($payment->merchant);
 
-        $this->validateCount($merchantTerminals, $payment->merchant);
+        // Checks if the merchant has more terminals than the maximum allowed.
+        $this->validateCount($merchantTerminals);
 
         $terminals = $this->getTerminalsKeyedByGateway($merchantTerminals);
 
@@ -570,7 +569,7 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function validateCount($terminals, $merchant)
+    protected function validateCount($terminals)
     {
         $count = $terminals->count();
 
@@ -578,7 +577,7 @@ class TerminalPicker
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .
-                ' Merchant Id: ' . $merchant->getId());
+                ' Merchant Id: ' . $this->merchant->getId());
         }
     }
 
