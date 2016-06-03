@@ -6,8 +6,8 @@ use App;
 use Constants\Entity as E;
 use Constants\Table;
 use DB;
-use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
+use EE\Exception;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -174,9 +174,7 @@ class Repository extends \Razorpay\Spine\Repository
             // Shouldn't fail for any reason
             $this->trace->error(
                 TraceCode::ES_SAVE_FAILED,
-                [
-                    $entity,
-                ]
+                $entity->toArray()
             );
 
             $this->trace->traceException($ex);
