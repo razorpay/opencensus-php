@@ -37,6 +37,7 @@
     },
     "autoload": {
         "classmap": [
+            "app/base",
             "app/commands",
             "app/constants",
             "app/controllers",

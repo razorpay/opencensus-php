@@ -318,7 +318,7 @@ class Reconciler2
             $msg .= 'Failed settlement ids: ' . implode(',', $failures->getPublicIds());
         }
 
-        $data['subject'] = "Kotak Settlement files for $date";
+        $data['subject'] = "Re: Kotak Settlement files for $date";
         $data['date'] = $date;
         $data['body'] = $msg;
 

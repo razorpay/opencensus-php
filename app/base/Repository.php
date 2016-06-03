@@ -1,12 +1,13 @@
 <?php
 
-namespace Models\Base;
+namespace Base;
 
+use App;
 use Constants\Entity as E;
 use Constants\Table;
 use DB;
-use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
+use EE\Exception;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -108,19 +109,12 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $repo = E::getEntityRepository($type);
 
-            $typeEntities = (new $repo)->findMany($ids);
-
-            foreach ($typeEntities as $entity)
-            {
-                $objects[$entity->getId()] = $entity;
-            }
+            $objects[$type] = (new $repo)->findMany($ids);
         }
 
         foreach ($entities as $entity)
         {
-            $typeEntity = $objects[$entity->$idCol];
-
-            $entity->setRelation($relation, $typeEntity);
+            $entity->setRelation($relation, $objects[$entity->$typeCol]->find($entity->$idCol));
         }
 
         return $entities;
@@ -180,9 +174,7 @@ class Repository extends \Razorpay\Spine\Repository
             // Shouldn't fail for any reason
             $this->trace->error(
                 TraceCode::ES_SAVE_FAILED,
-                [
-                    $entity,
-                ]
+                $entity->toArray()
             );
 
             $this->trace->traceException($ex);

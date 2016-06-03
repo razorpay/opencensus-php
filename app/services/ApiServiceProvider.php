@@ -60,6 +60,11 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new EsClient($app);
         });
+
+        $this->app->bindShared('repo', function($app)
+        {
+            return new \Base\RepositoryManager($app);
+        });
     }
 
     /**
@@ -77,6 +82,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'webhook.inferno',
             'card.tokenex',
             'raven',
+            'repo',
             'es',
         );
     }
