@@ -195,7 +195,7 @@ class TerminalPicker
             return $terminal;
         }
 
-        return $this->getSharedTerminalForNetbanking($payment);
+        return $this->getSharedTerminalForNetbanking();
     }
 
     protected function pickWalletTerminal($terminals, $payment)
@@ -225,11 +225,11 @@ class TerminalPicker
 
         if (in_array($bank, $cardTerminalBanks))
         {
-            // for kotak, process as normal card transaction and mail for emi
+            // for Kotak, process as normal card transaction and mail for emi
             return $this->pickCardTerminal($terminals, $payment);
         }
 
-        return $this->getSharedTerminalForEmi($payment);
+        return $this->getSharedTerminalForEmi();
     }
 
     protected function getSharedTerminalForCard($payment)
@@ -297,8 +297,6 @@ class TerminalPicker
     {
         $this->getSharedTerminals();
 
-        $sharedTerminals = $this->sharedTerminals;
-
         $network = $payment->card->getNetworkCode();
 
         if ($payment->merchant->isInternational())
@@ -329,7 +327,7 @@ class TerminalPicker
         }
     }
 
-    protected function getSharedTerminalForNetbanking($payment)
+    protected function getSharedTerminalForNetbanking()
     {
         $bank = $this->payment->getBank();
 
@@ -431,7 +429,7 @@ class TerminalPicker
     {
         if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
         {
-            return;
+            return null;
         }
 
         $gateway = Gateway::$netbankingToGatewayMap[$bank];
@@ -474,7 +472,7 @@ class TerminalPicker
     {
         if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
         {
-            return;
+            return null;
         }
 
         $gateway = Gateway::$netbankingToGatewayMap[$bank];
@@ -491,7 +489,7 @@ class TerminalPicker
     {
         if (Gateway::isNetbankingBankDirectlySupported($bank) === false)
         {
-            return;
+            return null;
         }
 
         $gateway = Gateway::$netbankingToGatewayMap[$bank];
@@ -552,7 +550,7 @@ class TerminalPicker
         }
     }
 
-    protected function getSharedTerminalForEmi($payment)
+    protected function getSharedTerminalForEmi()
     {
         $bank = $this->payment->getBank();
 
