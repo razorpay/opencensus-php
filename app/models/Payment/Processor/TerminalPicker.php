@@ -58,7 +58,7 @@ class TerminalPicker
         $merchantTerminals = $this->getTerminals($payment->merchant);
 
         // Checks if the merchant has more terminals than the maximum allowed.
-        $this->validateCount($merchantTerminals);
+        $this->validateTerminalCount($merchantTerminals);
 
         $terminals = $this->getTerminalsKeyedByGateway($merchantTerminals);
 
@@ -567,7 +567,7 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function validateCount($terminals)
+    protected function validateTerminalCount($terminals)
     {
         $count = $terminals->count();
 

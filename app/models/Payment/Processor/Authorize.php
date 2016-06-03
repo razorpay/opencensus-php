@@ -270,7 +270,6 @@ trait Authorize
      */
     protected function prePaymentAuthorizeProcessing($payment, $input, array & $gatewayInput)
     {
-        // Verifies if the selected payment method is enabled for the merchant.
         $this->verifyPaymentMethodEnabled($payment, $input);
 
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
@@ -630,7 +629,6 @@ trait Authorize
 
         $this->eventPaymentAuthorized();
 
-        // Notifies via various systems like slack (internal) and mail (external).
         $this->notifyAuthorized($wasFailed);
     }
 

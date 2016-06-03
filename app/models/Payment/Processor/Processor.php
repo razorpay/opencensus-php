@@ -81,9 +81,6 @@ class Processor
 
     public function process($input)
     {
-        // If payment method is not set at all, set it to Card by default.
-        // If payment method is being passed in the input, but with no value,
-        // throw an exception.
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
@@ -398,7 +395,7 @@ class Processor
      * For a robust verification, we re-calculate the fees from the base
      * amount and verify that it's the same as received from checkout.
      *
-     * @param $payment
+     * @param Payment\Entity $payment
      * @param $input
      * @throws Exception\BadRequestValidationFailureException
      */

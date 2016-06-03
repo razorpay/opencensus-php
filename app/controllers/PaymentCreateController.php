@@ -127,7 +127,7 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a new payment on a JSONP Request
      *
-     * @returns JSON response
+     * @returns \Illuminate\Http\JsonResponse
      */
     public function getCreatePaymentJsonp()
     {
@@ -147,7 +147,7 @@ class PaymentCreateController extends BaseController
      * Creates a new payment with an AJAX Request
      * Sets the proper CORS headers
      *
-     * @returns JSON response
+     * @returns \Illuminate\Http\JsonResponse
      */
     public function postAJAX()
     {
