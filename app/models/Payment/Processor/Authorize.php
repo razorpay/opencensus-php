@@ -282,8 +282,6 @@ trait Authorize
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
-        // Fails the payment if card is international and merchant is not
-        // authorized for international.
         $this->validateInternationalAllowed($payment);
 
         //

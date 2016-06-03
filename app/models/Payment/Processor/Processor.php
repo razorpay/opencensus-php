@@ -354,7 +354,6 @@ class Processor
 
     protected function createPaymentEntity($input)
     {
-        // Un-sets the card details before tracing.
         $this->tracePaymentNewRequest($input);
 
         $payment = new Payment\Entity;
