@@ -67,4 +67,28 @@ class ValidationTest extends TestCase
         $this->assertInternalType('int', $card['expiry_month']);
         $this->assertEquals($card['expiry_month'], 1);
     }
+
+    public function testCardNetworkDetection()
+    {
+        $core = new Card\Core;
+
+        $map = array(
+            ['6073849700004947', '888', 'RuPay', 'debit'],
+            ['341111111111111', '8888', 'American Express', 'credit'],
+            ['5010000000000007', '888', 'Maestro', 'debit'],
+        );
+
+        foreach ($map as $values)
+        {
+            $this->input['number'] = $values[0];
+            $this->input['cvv'] = $values[1];
+
+            $this->card->build($this->input);
+            $core->fillNetworkDetails($this->card, $this->input);
+
+            $this->assertEquals($this->card->getNetwork(), $values[2]);
+            $this->assertEquals($this->card->getType(), $values[3]);
+        }
+
+    }
 }

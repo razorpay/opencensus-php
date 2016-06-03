@@ -8,5 +8,7 @@ class Common
 
     const CREATED_AT = 'created_at';
 
+    const EMAIL = 'email';
+
     const ID = 'id';
 }

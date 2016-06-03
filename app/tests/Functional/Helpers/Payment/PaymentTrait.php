@@ -354,7 +354,8 @@ trait PaymentTrait
         $this->ba->publicAuth();
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['success'], true);
+        $this->assertArrayHasKey('status', $content);
+        $this->assertEquals($content['status'], 'failed');
     }
 
     protected function addPaymentMetadata($id, $content)

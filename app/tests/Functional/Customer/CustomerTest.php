@@ -42,6 +42,15 @@ class CustomerTest extends TestCase
         $this->assertNotNull($customer);
     }
 
+    public function testCreateCustomerUppercaseEmailOnly()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+    }
+
     public function testCreateCustomerContactOnly()
     {
         $this->ba->privateAuth();

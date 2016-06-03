@@ -16,7 +16,8 @@ class Type
             return self::CREDIT;
         }
 
-        if ($network === Network::RUPAY)
+        if (($network === Network::RUPAY) or
+            ($network === Network::MAES))
         {
             return self::DEBIT;
         }

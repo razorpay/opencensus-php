@@ -294,6 +294,7 @@ class ApiResponse
     {
         $callbackRoutes = array(
             'payment_create',
+            'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
         );

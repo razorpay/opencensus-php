@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Models\Base;
 use Models\Transaction;
 use Models\Settlement;
+use Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -68,6 +69,10 @@ class Repository extends Base\Repository
                       ->orderByCreatedAt()
                       ->get();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
@@ -91,7 +96,7 @@ class Repository extends Base\Repository
         return [
             'total_fee'         =>  $fee,
             // This is a combined tax column
-            // and includes more than just service_tax
+            // and includes more than just service_tax (sb cess, kk cess)
             'tax'               =>  $serviceTax
         ];
     }

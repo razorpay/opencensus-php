@@ -208,29 +208,7 @@ trait Inquiry
             $this->inquiryRequest,
             $this->inquiryResponse);
 
-        $responseData = & $this->inquiryResponse['data'];
-
-        if ((isset($responseData['result'])) and
-            ($responseData['result'] === Result::SUCCESS))
-        {
-            $paymentAction = $payment['action'];
-
-            if ($paymentAction === Action::AUTHORIZE)
-            {
-                $result = Result::APPROVED;
-            }
-            else if ($paymentAction === Action::PURCHASE)
-            {
-                $result = Result::CAPTURED;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Unexpected action: ' . $paymentAction);
-            }
-
-            $responseData['result'] = $result;
-        }
+        $this->checkAndSetResponseResult($payment);
 
         $inquiryResponse = $this->inquiryResponse;
         $responseContent = $this->inquiryResponse['data'];
@@ -262,6 +240,35 @@ trait Inquiry
         $content['member'] = $verify->input['card']['name'];
         $content['trackid'] = $verify->input['payment']['id'];
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $content);
+
         return $content;
+    }
+
+    protected function checkAndSetResponseResult($payment)
+    {
+        $responseData = & $this->inquiryResponse['data'];
+
+        if ((isset($responseData['result'])) and
+            ($responseData['result'] === Result::SUCCESS))
+        {
+            $paymentAction = $payment['action'];
+
+            if ($paymentAction === Action::AUTHORIZE)
+            {
+                $result = Result::APPROVED;
+            }
+            else if ($paymentAction === Action::PURCHASE)
+            {
+                $result = Result::CAPTURED;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unexpected action: ' . $paymentAction);
+            }
+
+            $responseData['result'] = $result;
+        }
     }
 }

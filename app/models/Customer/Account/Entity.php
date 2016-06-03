@@ -3,8 +3,8 @@
 namespace Models\Customer;
 
 use Models\Base;
-use Models\Base\Traits\NotesTrait;
 use Models\Merchant\Account;
+use Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
@@ -87,6 +87,12 @@ class Entity extends Base\PublicEntity
     public function getActiveAttribute()
     {
         return (bool)$this->attributes[self::ACTIVE];
+    }
+
+    public function setEmailAttribute($email)
+    {
+        // Multi-byte function to handle unicode
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
     public function isLocal()

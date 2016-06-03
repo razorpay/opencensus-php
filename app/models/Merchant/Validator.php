@@ -47,7 +47,7 @@ class Validator extends Base\Validator
     );
 
     protected static $editEmailRules = array(
-        Entity::EMAIL                       => 'sometimes|email|unique:merchants'
+        Entity::EMAIL                       => 'required|email|unique:merchants'
     );
 
     protected static $editConfigRules = array(

@@ -108,9 +108,9 @@ class Service extends Base\Service
 
     public function cancel($id, $input)
     {
-        $this->processor()->cancel($id, $input);
+        $status = $this->processor()->cancel($id, $input);
 
-        return ['success' => true];
+        return ['status' => $status];
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -556,7 +556,6 @@ class Service extends Base\Service
 
     public function computeServiceTax()
     {
-        s(ini_get('max_execution_time'));
         $repo = new Payment\Repository;
         $payments = $repo->getNonTaxComputedPayments();
 
