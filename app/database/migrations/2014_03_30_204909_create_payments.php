@@ -80,6 +80,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::CUSTOMER_ID, 14)
                   ->nullable();
 
+            $table->string(Payment::GLOBAL_CUSTOMER_ID, 14)
+                  ->nullable();
+
             $table->string(Payment::APP_ID, 14)
                   ->nullable();
 

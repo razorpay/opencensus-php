@@ -590,11 +590,6 @@ class Processor
 
     protected function createOrUpdateToken($input, $data)
     {
-        if (isset($input['customer']) === false)
-        {
-            return null;
-        }
-
         $token = $this->retrieveToken($input);
 
         if ($token === null)

@@ -214,9 +214,14 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::TOPUP_WALLET);
 
-        $this->checkWalletTokenValidity($input);
+        $token = $this->getValidWalletToken($input);
 
-        $this->accessToken = $input['token']->getGatewayToken();
+        if ($token === null)
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $this->accessToken = $token->getGatewayToken();
 
         $request = $this->getTopupWalletRequestArray($input);
 
@@ -287,14 +292,7 @@ class Gateway extends Base\Gateway
 
         if (isset($content['result']['body']['access_token']))
         {
-            if (isset($input['customer']) === false)
-            {
-                $data['customer'] = $this->getCustomerAttributes($input);
-            }
-
-            $input['content'] = $content;
-
-            $data['token'] = $this->getTokenAttributes($input);
+            $data['token'] = $this->getTokenAttributes($content);
 
             $this->accessToken = $content['result']['body']['access_token'];
 
@@ -329,9 +327,11 @@ class Gateway extends Base\Gateway
         if (isset($content['status']) and
             ($content['status'] === Status::TOPUP_SUCCESS))
         {
-            if ($input['token'])
+            $token = $this->getValidWalletToken($input);
+
+            if ($token !== null)
             {
-                $this->accessToken = $input['token']->getGatewayToken();
+                $this->accessToken = $token->getGatewayToken();
                 return;
             }
         }
@@ -768,15 +768,17 @@ class Gateway extends Base\Gateway
         return $contentToSave;
     }
 
-    protected function getTokenAttributes($input)
+    protected function getTokenAttributes($content)
     {
+        $input = $this->input;
+
         $attributes = array(
             Token\Entity::METHOD           => 'wallet',
             Token\Entity::WALLET           => $input['payment']['wallet'],
-            Token\Entity::TERMINAL_ID      => $input['terminal']->id,
-            Token\Entity::GATEWAY_TOKEN    => $input['content']['result']['body']['access_token'],
-            Token\Entity::GATEWAY_TOKEN2   => $input['content']['result']['body']['refresh_token'],
-            Token\Entity::EXPIRED_AT       => time() + $input['content']['result']['body']['expires_in'],
+            Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
+            Token\Entity::GATEWAY_TOKEN    => $content['result']['body']['access_token'],
+            Token\Entity::GATEWAY_TOKEN2   => $content['result']['body']['refresh_token'],
+            Token\Entity::EXPIRED_AT       => time() + $content['result']['body']['expires_in'],
         );
 
         return $attributes;
@@ -802,6 +804,20 @@ class Gateway extends Base\Gateway
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
+    }
+
+    protected function getValidWalletToken($input)
+    {
+        $token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+        if ($token !== null and $token->getExpiredAt() > time())
+        {
+            return $token;
+        }
     }
 }
 

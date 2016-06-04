@@ -31,8 +31,6 @@ trait Topup
 
             throw $e;
         }
-
-        assert(false, 'Should not reach here.');
     }
 
     protected function callGatewayTopup($payment, array $data)
@@ -51,6 +49,17 @@ trait Topup
 
     protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
     {
+        //
+        // Slight hack for mobikwik as we are falling back on traditional redirection
+        // flow for mobikwik as we are not using their topup flow right now
+        //
+        if (($payment->getWallet() !== Wallet::MOBIKWIK) and
+            ($payment->globalCustomer === null))
+        {
+            throw new Exception\BaseException(
+                'Customer does not exist');
+        }
+
         $canTopup = $this->callGatewayFunction('canTopup', []);
 
         if ($canTopup === false)
@@ -66,33 +75,7 @@ trait Topup
 
         $gatewayInput['payment']  = $payment->toArray();
 
-        $customer = $payment->customer;
-
-        //
-        // Check for mobikwik wallet, ideally there is no need of if-block
-        // Mobikwik topup works without customer (for now)
-        //
-        if ($payment->getWallet() !== Wallet::MOBIKWIK)
-        {
-            if ($customer === null)
-            {
-                $contact = $this->getFormattedContact($gatewayInput['payment']['contact']);
-
-                $customer = (new Customer\Repository)
-                                        ->findByContactForMerchant(
-                                            $contact, Merchant\Account::SHARED_ACCOUNT);
-
-            }
-
-            $gatewayInput['customer'] = $customer;
-
-            $gatewayInput['token']    = $this->retrieveToken($gatewayInput);
-
-            if ($gatewayInput['token'] === null)
-            {
-                throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-            }
-        }
+        $gatewayInput['customer'] = $payment->globalCustomer;
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

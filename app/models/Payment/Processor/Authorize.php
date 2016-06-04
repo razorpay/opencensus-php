@@ -189,27 +189,9 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
-        if ($payment->customer)
+        if ($payment->globalCustomer !== null)
         {
-            $input['customer'] = $payment->customer;
-        }
-        else
-        {
-            $contact = $this->getFormattedContact($input['payment']['contact']);
-
-            $customer = (new Customer\Repository)
-                                    ->findByContactForMerchant(
-                                        $contact, Merchant\Account::SHARED_ACCOUNT);
-
-            if ($customer)
-            {
-                $input['customer'] = $customer;
-            }
-        }
-
-        if (isset($input['customer']))
-        {
-            $input['token'] = $this->retrieveToken($input);
+            $input['customer'] = $payment->globalCustomer;
         }
 
         if ($payment->card !== null)
@@ -264,16 +246,11 @@ trait Authorize
 
     protected function postPaymentOtpCallbackProcessing($input, $data)
     {
-        $customer = null;
+        $payment = $this->payment;
 
-        if (isset($input['customer']))
+        if (isset($input['customer']) === false)
         {
-            $customer = $input['customer'];
-        }
-
-        if (isset($data['customer']) and $data['customer'] !== null)
-        {
-            $contact = $data['customer']['contact'];
+            $contact = $this->getFormattedContact($input['payment']['contact']);
 
             $customer = (new Customer\Repository)
                                     ->findByContactForMerchant(
@@ -281,14 +258,22 @@ trait Authorize
 
             if ($customer === null)
             {
+                $customerAttributes = array(
+                    'contact' => $contact,
+                    'email'   => $input['payment']['email']
+                );
+
                 $customer = (new Customer\Core)
-                                    ->createGlobalCustomer($data['customer']);
+                                    ->createGlobalCustomer($customerAttributes);
             }
 
             $input['customer'] = $customer;
+
+            $payment->globalCustomer()->associate($customer);
+            $payment->saveOrFail();
         }
 
-        if (isset($data['token']))
+        if (isset($data['token']) === true)
         {
             $this->createOrUpdateToken($input, $data);
         }

@@ -38,7 +38,7 @@ class Core extends Base\Core
 
         if (isset($input[Token\Entity::TERMINAL_ID]))
         {
-            $terminal = (new Terminal\Repository)->findOrFailPublic($input[Token\Entity::TERMINAL_ID]);
+            $terminal = (new Terminal\Repository)->findOrFail($input[Token\Entity::TERMINAL_ID]);
 
             $token->terminal()->associate($terminal);
 
@@ -136,8 +136,7 @@ class Core extends Base\Core
         foreach ($existingTokens as $token)
         {
             if (($token->getWallet()  === $newToken->getWallet()) and
-                ($token->terminal() === $newToken->terminal()) and
-                ($token->isExpired()))
+                ($token->terminal() === $newToken->terminal()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);
