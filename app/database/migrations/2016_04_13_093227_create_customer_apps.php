@@ -49,7 +49,7 @@ class CreateCustomerApps extends Migration {
 
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->foreign(Payment::APP_ID)
+            $table->foreign(Payment::APP_TOKEN)
                   ->references(App::ID)
                   ->on(Table::CUSTOMER_APP)
                   ->on_delete('restrict');
@@ -65,7 +65,7 @@ class CreateCustomerApps extends Migration {
   	{
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::APP_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::APP_TOKEN.'_foreign');
         });
 
         Schema::table(Table::CUSTOMER_APP, function($table)

@@ -140,7 +140,7 @@ class Service extends Base\Service
 
             $app = (new App\Core)->create($custAppInput);
 
-            $result['app_id'] = $app->getPublicId();
+            $result['app_token'] = $app->getPublicId();
         }
 
         return $result;

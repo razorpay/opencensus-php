@@ -94,7 +94,7 @@ class Core extends Base\Core
                 Account::SHARED_ACCOUNT, $customer->getId());
 
             $response['success'] = 1;
-            $response['app_id'] = $app->getPublicId();
+            $response['app_token'] = $app->getPublicId();
             $response['device_token'] = $app->getDeviceToken();
 
             if (($tokens !== null) and ($tokens->count() > 0))
@@ -118,9 +118,9 @@ class Core extends Base\Core
         $customer = null;
         $customerApp = null;
 
-        if (empty($input[Payment\Entity::APP_ID]) === false)
+        if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
-            $appId = $input[Payment\Entity::APP_ID];
+            $appId = $input[Payment\Entity::APP_TOKEN];
 
             Customer\App\Entity::verifyIdAndStripSign($appId);
 

@@ -66,7 +66,7 @@ class Checkout
 
         //fetch customer data and saved cards data
         if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
-            (isset($input[Payment\Entity::APP_ID])))
+            (isset($input[Payment\Entity::APP_TOKEN])))
         {
             $custData = $this->fetchCustomerData($input, $merchant);
 
@@ -88,7 +88,7 @@ class Checkout
 
             if ($response['valid'] === true)
             {
-                $data['customer']['app_id'] = $response['app_id'];
+                $data['customer']['app_token'] = $response['app_token'];
             }
         }
         elseif (isset($input['contact']))

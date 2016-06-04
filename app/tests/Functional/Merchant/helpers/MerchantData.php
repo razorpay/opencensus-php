@@ -827,7 +827,7 @@ return [
             'url' => '/preferences',
             'method' => 'get',
             'content' => [
-                'app_id' => 'capp_1000000custapp'
+                'app_token' => 'capp_1000000custapp'
             ],
         ],
         'response' => [

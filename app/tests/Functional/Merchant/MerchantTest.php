@@ -462,7 +462,7 @@ class MerchantTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNotNull($response['customer']['app_id']);
+        $this->assertNotNull($response['customer']['app_token']);
     }
 
     public function testGetCheckoutRouteWithSavedGlobal()

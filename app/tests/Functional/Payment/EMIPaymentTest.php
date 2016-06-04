@@ -115,7 +115,7 @@ class EmiPaymentTest extends TestCase
         $this->payment['emi_duration'] = $emiDuration;
         $this->payment['card']['number'] = $card;
         $this->payment['save'] = $save;
-        $this->payment['app_id'] = $appId;
+        $this->payment['app_token'] = $appId;
         $this->payment['customer_id'] = $customerId;
 
         $this->doAuthAndCapturePayment($this->payment);

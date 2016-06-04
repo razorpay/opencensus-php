@@ -149,7 +149,7 @@ class CustomerTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        assert(empty($content['app_id']) === false);
+        assert(empty($content['app_token']) === false);
         assert(empty($content['device_token']) === false);
     }
 
@@ -183,7 +183,7 @@ class CustomerTest extends TestCase
         );
 
         $content = $this->makeRequestAndGetContent($request);
-        assert(empty($content['app_id']) === false);
+        assert(empty($content['app_token']) === false);
         $this->assertEquals($content['device_token'], '123');
     }
 
