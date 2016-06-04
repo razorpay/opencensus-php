@@ -83,6 +83,11 @@ class Core extends Base\Core
                 App\Entity::CUSTOMER_ID => $customer->getId(),
                 App\Entity::MERCHANT_ID => $input['context']);
 
+            if (isset($input[App\Entity::DEVICE_TOKEN]))
+            {
+                $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
+            }
+
             $app = (new App\Core)->create($custAppInput);
 
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
@@ -90,6 +95,7 @@ class Core extends Base\Core
 
             $response['success'] = 1;
             $response['app_id'] = $app->getPublicId();
+            $response['device_token'] = $app->getDeviceToken();
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {

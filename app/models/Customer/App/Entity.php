@@ -51,7 +51,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Customer\Entity');
     }
 
-    public function getDeviceId()
+    public function getDeviceToken()
     {
         return $this->getAttribute(self::DEVICE_TOKEN);
     }
@@ -63,8 +63,11 @@ class Entity extends Base\PublicEntity
 
     public function generateDeviceToken()
     {
-        $deviceToken = self::generateUniqueId();
+        if($this->getDeviceToken() === null)
+        {
+            $deviceToken = self::generateUniqueId();
 
-        $this->setAttribute(self::DEVICE_TOKEN, $deviceToken);
+            $this->setAttribute(self::DEVICE_TOKEN, $deviceToken);
+        }
     }
 }
