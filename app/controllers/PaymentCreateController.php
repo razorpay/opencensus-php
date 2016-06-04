@@ -226,9 +226,8 @@ class PaymentCreateController extends BaseController
     }
 
     /**
-     * This route is called by checkout or via server itself
-     * when the payment authorization is a 2 step process.
-     * This takes care of the second step of the process.
+     * It's hit when banks/networks redirect back to gateway
+     * on the callback url. Mostly gets hit after two-factor auth.
      *
      * @param $id
      * @param $hash
