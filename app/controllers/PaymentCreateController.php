@@ -1,7 +1,6 @@
 <?php
 
 use Http\ApiResponse;
-use EE\Exception\RecoverableException;
 use Models\Payment;
 use Models\Card;
 use Trace\TraceCode;
@@ -127,6 +126,8 @@ class PaymentCreateController extends BaseController
 
     /**
      * Creates a new payment on a JSONP Request
+     *
+     * @returns \Illuminate\Http\JsonResponse
      */
     public function getCreatePaymentJsonp()
     {
@@ -145,6 +146,8 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a new payment with an AJAX Request
      * Sets the proper CORS headers
+     *
+     * @returns \Illuminate\Http\JsonResponse
      */
     public function postAJAX()
     {
@@ -182,8 +185,13 @@ class PaymentCreateController extends BaseController
     }
 
     /**
-     * Creates a dummy payments and
-     * return corresponding fees and service_tax
+     * Creates a dummy payment and
+     * returns corresponding fees and service_tax
+     * Used where customer is the fee-bearer and the
+     * fee needs to be displayed to the user on the checkout.
+     *
+     * @return \Illuminate\View\View displaying the fees and
+     *                              submit button to proceed to payment
      */
     public function postCreatePaymentFees()
     {
@@ -217,6 +225,15 @@ class PaymentCreateController extends BaseController
         return ApiResponse::json($data);
     }
 
+    /**
+     * This route is called by checkout or via server itself
+     * when the payment authorization is a 2 step process.
+     * This takes care of the second step of the process.
+     *
+     * @param $id
+     * @param $hash
+     * @return mixed
+     */
     public function postCallback($id, $hash)
     {
         $input = Input::all();

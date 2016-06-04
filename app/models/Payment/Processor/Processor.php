@@ -92,10 +92,14 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        // Creates a payment entity in DB with the input values given.
+        // Also takes care of fee-bearer customer flow.
         $payment = $this->createPaymentEntity($input);
 
+        // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
+        // The first step in talking to the respective gateway.
         return $this->authorize($payment, $input);
     }
 
@@ -135,6 +139,7 @@ class Processor
             'amount'            => $input['amount'] + $fee
         );
 
+        // Converts all the amounts to rupees
         foreach ($data as $key => $value)
         {
             $data[$key] = $value / 100;
@@ -321,8 +326,9 @@ class Processor
      *                        action
      *
      * @return array or null
+     * @throws Exception\LogicException
      */
-    protected function callGatewayFunction($action, array $input)
+    protected function callGatewayFunction($action, array $gatewayData)
     {
         $terminal = $this->payment->terminal;
 
@@ -330,20 +336,20 @@ class Processor
         {
             throw new Exception\LogicException(
                 'Terminal should not be null here',
-                ['payment_id' => $payment->getId()]);
+                ['payment_id' => $this->payment->getId()]);
         }
 
         $gateway = $this->payment->getGateway();
 
-        $input['terminal'] = $terminal;
-        $input['merchant'] = $this->payment->merchant;
+        $gatewayData['terminal'] = $terminal;
+        $gatewayData['merchant'] = $this->payment->merchant;
 
         if ($gateway === Payment\Gateway::KOTAK)
         {
-            $input['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
+            $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
         }
 
-        return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
+        return Gateway::call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
     protected function createPaymentEntity($input)
@@ -356,7 +362,6 @@ class Processor
 
         $payment->build($input);
 
-        // Verify if the provided fee is within 5 p of our original fee
         if ($this->merchant->isFeeBearerCustomer())
         {
             $this->verifyProvidedFee($payment, $input);
@@ -382,40 +387,37 @@ class Processor
         return $payment;
     }
 
+    /**
+     * When customer is fee-bearer, the amount received from checkout is
+     * inclusive of fees. (Fees is not received from checkout when
+     * merchant is the fee bearer.
+     * For a robust verification, we re-calculate the fees from the base
+     * amount and verify that it's the same as received from checkout.
+     *
+     * @param Payment\Entity $payment
+     * @param $input
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function verifyProvidedFee($payment, $input)
     {
-        // Get to original state and get back fee and tax
-        // modifying input to be from old state
+        // Set the amount back to the base amount (without our fee and tax).
         $input['amount'] = $payment->getAmount() - $payment->getFee();
 
+        // Re-calculates fees on the amount, using a dummy payment creation flow.
+        // Also sets re-calculated fee and amount value (in paise) in $input.
         $feesArray = $this->processAndReturnFees($input);
 
+        // The difference between the fees received from checkout and
+        // and the fees re-calculated again. Ideally, this should be 0.
         $feeDifference = $input['fee'] - $payment->getFee();
 
-        // $serviceTax = (new Pricing\Fee)->calculateServiceTaxFromFees($payment->getFee());
-
-        // $serviceTaxDifference = $feesArray['serviceTax'] - $serviceTax;
-
-        if ($this->getModValue($feeDifference) > 5)
-            // or ($this->getModValue($serviceTaxDifference) > 5))
+        if (abs($feeDifference) > 5)
         {
             throw new Exception\BadRequestValidationFailureException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
         }
-
     }
 
-    protected function getModValue($val)
-    {
-        if ($val > 0)
-        {
-            return $val;
-        }
-        else
-        {
-            return (-1 * $val);
-        }
-    }
 
     protected function fetchOrderFromInput($input)
     {
@@ -458,7 +460,7 @@ class Processor
 
         $amount = $payment->getAmount();
 
-        // If the merchant is a tdr client, use the adjusted amount to
+        // If the merchant is a customer-fee-bearer client, use the adjusted amount to
         // match order amount.
         if ($this->merchant->isFeeBearerCustomer())
         {

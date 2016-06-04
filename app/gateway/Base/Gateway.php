@@ -88,6 +88,13 @@ class Gateway
     protected $testing;
 
     /**
+     * Gateway's config present in app/config/gateway.php
+     *
+     * @var array
+     */
+    protected $config;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
