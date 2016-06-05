@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
+    const GATEWAY_ZIP_PASSWORD          = 'gateway_zip_password';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -47,7 +48,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
-        self::GATEWAY_TERMINAL_PASSWORD);
+        self::GATEWAY_TERMINAL_PASSWORD,
+        self::GATEWAY_ZIP_PASSWORD,
+    );
 
     protected $public = array(
         self::ID,
@@ -65,13 +68,16 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT);
+        self::DELETED_AT
+    );
 
     protected $table = 'terminals';
 
     protected $hidden = array(
         self::GATEWAY_TERMINAL_PASSWORD,
-        self::GATEWAY_SECURE_SECRET);
+        self::GATEWAY_SECURE_SECRET,
+        self::GATEWAY_ZIP_PASSWORD,
+    );
 
     protected $generateIdOnCreate = true;
 
@@ -92,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD => null,
         self::GATEWAY_ACCESS_CODE       => null,
         self::GATEWAY_SECURE_SECRET     => null,
+        self::GATEWAY_ZIP_PASSWORD      => null,
         self::SHARED                    => false,
         self::EMI                       => false,
         self::EMI_DURATION              => null,
@@ -178,6 +185,16 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
     }
 
+    protected function setGatewayZipPasswordAttribute($zipPassword)
+    {
+        if ($zipPassword === null)
+        {
+            $zipPassword = '';
+        }
+
+        $this->attributes[self::GATEWAY_ZIP_PASSWORD] = Crypt::encrypt($zipPassword);
+    }
+
     protected function getGatewayTerminalPasswordAttribute()
     {
         $pwd = $this->attributes[self::GATEWAY_TERMINAL_PASSWORD];
@@ -193,9 +210,23 @@ class Entity extends Base\PublicEntity
         $secret = $this->attributes[self::GATEWAY_SECURE_SECRET];
 
         if ($secret === null)
-            return $secret;
+        {
+            return $secret;  
+        }
 
         return Crypt::decrypt($secret);
+    }
+    
+    protected function getGatewayZipPassword()
+    {
+        $zipPassword = $this->attributes[self::GATEWAY_ZIP_PASSWORD];
+        
+        if ($zipPassword === null)
+        {
+            return $zipPassword;
+        }
+        
+        return Crypt::decrypt($zipPassword);
     }
 
     public function getGatewayTerminalId()

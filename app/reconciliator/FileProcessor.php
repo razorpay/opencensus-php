@@ -180,17 +180,16 @@ class FileProcessor
      * Unzips the file to a folder which is created in the same folder in which the zip file is present.
      *
      * @param array $fileDetails
+     * @param string $password Password to unlock the zip file.
      * @return string The folder path of the extracted file
      * @throws Exception\ReconciliationException
      */
-    public function unzipFile($fileDetails)
+    public function unzipFile($fileDetails, $password = null)
     {
         $filePath = $fileDetails[self::FILE_PATH];
         $extension = $fileDetails[self::EXTENSION];
 
-        // TODO: Handle password protected zip files.
-
-        // TODO: Review security issues.
+        // TODO: Review zip files security.
 
         // Since there can be multiple zip files which will need to get extracted,
         // will be storing each zip file's extracted files in a separate directory.
@@ -208,7 +207,7 @@ class FileProcessor
         }
 
         // Extracts the zip file to the given path.
-        $this->extractZipFile($filePath, $extractToPath);
+        $this->extractZipFile($filePath, $extractToPath, $password);
 
         return $extractToPath;
     }
@@ -222,7 +221,7 @@ class FileProcessor
      * @param string $password Optional Password for the zip file, if present
      * @throws Exception\ReconciliationException
      */
-    protected function extractZipFile($filePath, $extractToPath, $password = null)
+    protected function extractZipFile($filePath, $extractToPath, $password)
     {
         $zip = new ZipArchive;
         $zipped = $zip->open($filePath);
@@ -235,8 +234,6 @@ class FileProcessor
             );
         }
 
-        // TODO: Remove this and handle properly.
-        $password = 'T69801';
         // Use the password to extract if present.
         if (empty($password) === false)
         {

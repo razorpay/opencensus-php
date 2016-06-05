@@ -36,17 +36,26 @@ class CreateTerminals extends Migration
 
             $table->string(Terminal::GATEWAY);
 
-            $table->string(Terminal::GATEWAY_MERCHANT_ID)->nullable();
+            $table->string(Terminal::GATEWAY_MERCHANT_ID)
+                  ->nullable();
 
-            $table->string(Terminal::GATEWAY_MERCHANT_ID2)->nullable();
+            $table->string(Terminal::GATEWAY_MERCHANT_ID2)
+                  ->nullable();
 
-            $table->string(Terminal::GATEWAY_TERMINAL_ID)->nullable();
+            $table->string(Terminal::GATEWAY_TERMINAL_ID)
+                  ->nullable();
 
-            $table->text(Terminal::GATEWAY_TERMINAL_PASSWORD)->nullable();
+            $table->text(Terminal::GATEWAY_TERMINAL_PASSWORD)
+                  ->nullable();
 
-            $table->string(Terminal::GATEWAY_ACCESS_CODE)->nullable();
+            $table->string(Terminal::GATEWAY_ACCESS_CODE)
+                  ->nullable();
 
-            $table->string(Terminal::GATEWAY_SECURE_SECRET)->nullable();
+            $table->string(Terminal::GATEWAY_SECURE_SECRET)
+                  ->nullable();
+            
+            $table->string(Terminal::GATEWAY_ZIP_PASSWORD)
+                  ->nullable();
 
             $table->boolean(Terminal::CARD)
                   ->default(0);
@@ -59,7 +68,7 @@ class CreateTerminals extends Migration
 
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
-                  
+
             $table->boolean(Terminal::SHARED)
                   ->default(0);
 

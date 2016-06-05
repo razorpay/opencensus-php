@@ -88,6 +88,19 @@ class Reconciliate
 
 
     /**
+     * This should be implemented in the child class if the gateway sends zip files
+     * which are password protected.
+     * 
+     * @param array $fileDetails
+     * @return null
+     */
+    public function getZipPassword($fileDetails)
+    {
+        return null;
+    }
+
+
+    /**
      * Gets the reconciliation type by either the sheet name in case of excel files
      * or by the file name in case of csv files.
      *

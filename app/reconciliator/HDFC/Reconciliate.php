@@ -5,6 +5,7 @@ namespace Reconciliator\HDFC;
 
 use Reconciliator\Base;
 use Reconciliator\Messenger;
+use App;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -14,14 +15,14 @@ class Reconciliate extends Base\Reconciliate
     {
         $this->messenger = new Messenger();
     }
-    
+
     protected function getTypeName($fileName)
     {
         // TODO: Figure out how to get the reconciliation type for HDFC.
         return self::PAYMENT;
     }
 
-    
+
     public function inExcludeList($fileDetails)
     {
         if (strpos($fileDetails['file_name'], 'detailed') !== false)
@@ -30,5 +31,16 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return false;
+    }
+
+    public function getZipPassword($fileDetails)
+    {
+        $terminalId = explode('-', $fileDetails['file_name'])[0];
+
+        $terminalRepo = App::getFacadeRoot()['repo']->terminal;
+
+        $zipPassword = $terminalRepo->getById($terminalId)->getZipPassword();
+
+        return $zipPassword;
     }
 }
