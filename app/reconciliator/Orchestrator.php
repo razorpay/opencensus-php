@@ -20,9 +20,10 @@ class Orchestrator
      * Bank constants
      ******************/
     const HDFC  = 'HDFC';
-    const Axis  = 'Axis';
-    const Kotak = 'Kotak';
-    const BillDesk = 'BillDesk';
+    const AXIS  = 'Axis';
+    const KOTAK = 'Kotak';
+    const BILLDESK = 'BillDesk';
+    const ADMIN = 'admin';
 
 
     /********************
@@ -34,8 +35,9 @@ class Orchestrator
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC => ['prashanth@razorpay.com'],
-        self::Axis => ['prashanth.yv@razorpay.com'],
-        self::BillDesk => ['prashanth@razorpay.com'],
+        self::AXIS => ['prashanth.yv@razorpay.com'],
+        self::BILLDESK => ['prashanth@razorpay.com'],
+        self::ADMIN => ['prashanth.yv@razorpay.com'],
     ];
 
 
@@ -311,6 +313,11 @@ class Orchestrator
                 'Email ID not present in Sender-Gateway mapping.',
                 ['email_id' => $fromEmailId]
             );
+        }
+
+        if ($gateway === self::ADMIN)
+        {
+            $gateway = $this->emailDetails['subject'];
         }
 
         $this->setGatewayReconciliatorClass($gateway);
