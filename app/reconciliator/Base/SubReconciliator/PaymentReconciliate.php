@@ -24,7 +24,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Instance objects
      *******************/
 
-    protected $gatewayRepo;
     protected $paymentRepo;
     protected $iinRepo;
     protected $transactionRepo;
@@ -38,12 +37,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+        $repo = $this->app['repo'];
 
-        // These are being used by the parent classes.
-        $this->paymentRepo     = new Payment\Repository;
-        $this->iinRepo         = new IIN\Repository;
-        $this->gatewayRepo     = new AxisMigs\Repository;
-        $this->transactionRepo = new Transaction\Repository;
+        $this->paymentRepo     = $repo->payment;
+        $this->iinRepo         = $repo->iin;
+        $this->transactionRepo = $repo->transaction;
     }
 
 
