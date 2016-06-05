@@ -49,7 +49,7 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
-        $this->increaseMemoryAndTimeLimit();
+        $this->increaseAllowedSystemLimits();
 
         $this->checkTime();
 
@@ -527,7 +527,7 @@ class Settler
         }
     }
 
-    protected function increaseMemoryAndTimeLimit()
+    protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
         set_time_limit(300);

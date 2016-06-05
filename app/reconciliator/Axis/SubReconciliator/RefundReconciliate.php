@@ -12,7 +12,8 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID   = 'merchant_trans_ref';
+    const COLUMN_PAYMENT_ID = 'merchant_trans_ref';
+    const RRN = 'rrn_no';
 
     protected $messenger;
 
@@ -26,7 +27,11 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundId($row)
     {
-        $refundId = $row[self::COLUMN_REFUND_ID];
+        $rrn = $row[self::RRN];
+
+        $axisMigsRepo = $this->app['repo']->axis_migs;
+
+        $refundId = $axisMigsRepo->findByRrn($rrn)->getRefundId();
         
         return $refundId;
     }

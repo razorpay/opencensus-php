@@ -34,8 +34,8 @@ class Orchestrator
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC => ['prashanth@razorpay.com'],
-        self::Axis => ['prashanth@razorpay.com'],
-        self::BillDesk => ['prashanth.yv@razorpay.com'],
+        self::Axis => ['prashanth.yv@razorpay.com'],
+        self::BillDesk => ['prashanth@razorpay.com'],
     ];
 
 
@@ -62,6 +62,8 @@ class Orchestrator
 
     public function __construct()
     {
+        $this->increaseAllowedSystemLimits();
+
         $this->app = App::getFacadeRoot();
 
         $this->messenger = new Messenger();
@@ -491,7 +493,8 @@ class Orchestrator
         {
             if($unzippedFile->isFile() === true)
             {
-                $allExtractedFilesDetails[] = $this->fileProcessor->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+                $allExtractedFilesDetails[] = $this->fileProcessor
+                                                   ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
             }
         }
 
@@ -515,5 +518,11 @@ class Orchestrator
             }
         }
         return null;
+    }
+
+
+    protected function increaseAllowedSystemLimits()
+    {
+        set_time_limit(3600);
     }
 }

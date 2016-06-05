@@ -25,6 +25,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundId($row)
     {
+        // TODO: This is actually the payment ID.
+        // Check with Shk on how to match the refund ID in api with
+        // Billdesk's refund ID. (Show the billdesk refund recon file)
         $refundId = $row[self::COLUMN_REFUND_ID];
 
         return $refundId;
