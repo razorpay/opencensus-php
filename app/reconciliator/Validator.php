@@ -6,13 +6,13 @@ use EE\Exception;
 
 class Validator
 {
-    const SUBJECT_FILTER = [];
-
     // Can add more to this as and when we add converters to CSV from different file types.
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values'],
-        // Don't know why but, getting application/zip as mimetype for xlsx files.
-        'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip'],
+        'txt'   => ['text/plain'],
+        // Don't know why but, getting application/zip and application/octet-stream as mimetype for xlsx files.
+        'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/zip', 'application/octet-stream'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];

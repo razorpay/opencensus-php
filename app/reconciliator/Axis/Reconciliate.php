@@ -8,7 +8,6 @@ use Reconciliator\Messenger;
 
 class Reconciliate extends Base\Reconciliate
 {
-    // TODO: Implement interface and use trait instead of base class (Base\Reconciliate).
     const SALE = 'sale';
     const ACCEPTED_SHEET_NAMES = ['Refund', 'Sale'];
 
@@ -22,11 +21,11 @@ class Reconciliate extends Base\Reconciliate
 
     protected function getTypeName($fileName)
     {
-        if (strpos(self::REFUND, $fileName) !== false)
+        if (strpos(self::REFUND, strtolower($fileName)) !== false)
         {
             $typeName = self::REFUND;
         }
-        else if (strpos(self::SALE, $fileName) !== false)
+        else if (strpos(self::SALE, strtolower($fileName)) !== false)
         {
             $typeName = self::PAYMENT;
         }

@@ -30,6 +30,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $transactionRepo;
 
     protected $payment;
+    protected $paymentTransaction;
 
     protected $app;
 
@@ -73,6 +74,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             try
             {
+                $reconciled = $this->checkIfAlreadyReconciled($this->payment);
+
+                if (($reconciled === true) or ($reconciled === null))
+                {
+                    continue;
+                }
+
                 // Validates that the payment status is not failed.
                 $validate = $this->validatePaymentStatus();
 
@@ -112,7 +120,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
-        // Gets payment ID
         $paymentId = $this->getPaymentId($row);
 
         // If payment id is not present, return. No point of evaluating the row.
@@ -124,13 +131,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         try
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
+            $this->paymentTransaction = $this->payment->transaction;
         }
         catch (\Exception $ex)
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
+                    'message'    => 'Payment or Payment Transaction not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
                     'payment_id' => $paymentId,
                     'gateway'    => get_called_class()
@@ -140,10 +148,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $cardType = $this->getCardType($row);
 
-        // Gets the gateway service tax
         $serviceTax = $this->getGatewayServiceTax($row);
 
-        // Gets the gateway fees
         $fee = $this->getGatewayFee($row);
 
         $rowDetails = [
@@ -202,28 +208,25 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return false;
         }
 
-        $transaction = $this->payment->transaction;
-
-        if ($transaction === null)
+        if ($this->paymentTransaction === null)
         {
             // TODO: raise an alert about transaction being absent for an entity id.
             return false;
         }
 
-        $currentGatewayFee = $transaction->getGatewayFee();
-        $currentGatewayServiceTax = $transaction->getServiceTax();
+        $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
+        $currentGatewayServiceTax = $this->paymentTransaction->getServiceTax();
 
-        $recordGatewayFeeSuccess = $this->recordGatewayFee($transaction, $reconGatewayFee, $currentGatewayFee);
+        $recordGatewayFeeSuccess = $this->recordGatewayFee($reconGatewayFee, $currentGatewayFee);
 
         if ($recordGatewayFeeSuccess === true)
         {
-            $recordGatewayServiceTaxSuccess = $this->recordGatewayServiceTax($transaction,
-                                                                             $reconGatewayServiceTax,
+            $recordGatewayServiceTaxSuccess = $this->recordGatewayServiceTax($reconGatewayServiceTax,
                                                                              $currentGatewayServiceTax);
 
             if ($recordGatewayServiceTaxSuccess === true)
             {
-                $transaction->saveOrFail();
+                $this->paymentTransaction->saveOrFail();
                 return true;
             }
         }
@@ -232,11 +235,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
 
-    protected function recordGatewayFee($transaction, $reconGatewayFee, $currentGatewayFee)
+    protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)
     {
         if ($currentGatewayFee === 0)
         {
-            $transaction->setGatewayFee($reconGatewayFee);
+            $this->paymentTransaction->setGatewayFee($reconGatewayFee);
             return true;
         }
         else
@@ -251,11 +254,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
 
-    protected function recordGatewayServiceTax($transaction, $reconGatewayServiceTax, $currentGatewayServiceTax)
+    protected function recordGatewayServiceTax($reconGatewayServiceTax, $currentGatewayServiceTax)
     {
         if ($currentGatewayServiceTax === 0)
         {
-            $transaction->setGatewayServiceTax($reconGatewayServiceTax);
+            $this->paymentTransaction->setGatewayServiceTax($reconGatewayServiceTax);
             return true;
         }
         else

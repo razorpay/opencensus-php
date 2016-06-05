@@ -108,13 +108,13 @@ class Reconciliate
         // The method is present in child class since different gateways have
         // different sheet names/file names for reconciliation types.
         $reconciliationType = $this->getTypeName($fileName);
-
+        
         // Ideally, should never come here.
         if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or
             ($reconciliationType === null))
         {
             $this->messenger->raiseReconAlert(
-                [ 
+                [
                     'trace_code' => TraceCode::RECON_PARSE_ERROR,
                     'message' => 'Unable to figure out the reconciliation type. Skipping this file.',
                     'reconciliation_type' => $reconciliationType,

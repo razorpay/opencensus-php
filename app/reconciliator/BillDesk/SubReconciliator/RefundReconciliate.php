@@ -1,7 +1,6 @@
 <?php
 
-namespace Reconciliator\Axis;
-
+namespace Reconciliator\BillDesk;
 
 use Reconciliator\Base;
 use Reconciliator\Messenger;
@@ -12,7 +11,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID   = 'merchant_trans_ref';
+    const COLUMN_REFUND_ID = 'Ref. 1';
 
     protected $messenger;
 
@@ -27,7 +26,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getRefundId($row)
     {
         $refundId = $row[self::COLUMN_REFUND_ID];
-        
+
         return $refundId;
     }
 }

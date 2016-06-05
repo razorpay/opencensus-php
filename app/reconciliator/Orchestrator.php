@@ -22,6 +22,7 @@ class Orchestrator
     const HDFC  = 'HDFC';
     const Axis  = 'Axis';
     const Kotak = 'Kotak';
+    const BillDesk = 'BillDesk';
 
 
     /********************
@@ -33,7 +34,8 @@ class Orchestrator
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC => ['prashanth@razorpay.com'],
-        self::Axis => ['prashanth.yv@razorpay.com'],
+        self::Axis => ['prashanth@razorpay.com'],
+        self::BillDesk => ['prashanth.yv@razorpay.com'],
     ];
 
 
@@ -348,7 +350,7 @@ class Orchestrator
 
                     // Using array merge since $extractedFileDetails contains an
                     // array of file details of different files in the zip file.
-                    array_merge($allFilesDetails, $extractedFileDetails);
+                    $allFilesDetails = array_merge($allFilesDetails, $extractedFileDetails);
                 }
                 catch (\Exception $ex)
                 {

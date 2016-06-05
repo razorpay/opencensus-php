@@ -74,6 +74,13 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             try
             {
+                $reconciled = $this->checkIfAlreadyReconciled($this->refund);
+
+                if (($reconciled === true) or ($reconciled === null))
+                {
+                    continue;
+                }
+
                 // Validates that the payment status is not failed.
                 $validate = $this->validatePaymentStatus();
 
