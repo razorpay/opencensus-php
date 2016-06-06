@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
         $request = $this->createAuthEnrolledRequestFields($input);
 
         try {
-            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+            $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
@@ -82,7 +82,7 @@ class Gateway extends Base\Gateway
         $request = $this->createAuthorizeRequestFields($input);
 
         try {
-            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+            $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
@@ -199,13 +199,19 @@ class Gateway extends Base\Gateway
         $this->captureRequest = $request;
 
         try {
-            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+            $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
             $this->captureResponse = $reply;
             
             $this->persistAfterCapture();
+
+            if($reply->reasonCode != Payment\Result::CAPTURED)
+            {
+                throw new Exception("Capture failed! Reason code: ".$reply->reasonCode, 1);
+                
+            }
 
             return $reply->reasonCode;
 
@@ -238,7 +244,7 @@ class Gateway extends Base\Gateway
         $request = $this->setItemDetail($request, $input);
 
         try {
-            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+            $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
@@ -252,6 +258,19 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function getSoapClientObject()
+    {
+        $url = $_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'];
+        if($this->mode === 'live')
+        {
+            $url = $_ENV['CYBERSOUREC_GATEWAY_LIVE_WSDL_URL'];
+        }
+
+        $soapClient = new ExtendedClient($url, array());
+
+        return $soapClient;
+    } 
+
     public function verify(array $input)
     {
         $this->input = $input;
@@ -261,7 +280,7 @@ class Gateway extends Base\Gateway
 
         $request->type = 'transaction';
         $request->subtype = 'transactionDetail';
-        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request->merchantID = $this->getMerchantID();
         $request->requestID = '4649570076396291201016';
 
         try {
@@ -290,7 +309,7 @@ class Gateway extends Base\Gateway
         $this->enrollRequest = $request;
 
         try {
-            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+            $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
@@ -361,6 +380,7 @@ class Gateway extends Base\Gateway
             $this->model = $this->repo->persistAfterCapture($this->id,
                     $this->captureRequest,
                     $this->captureResponse);
+
         }
     }
 
@@ -376,11 +396,23 @@ class Gateway extends Base\Gateway
 
     public function setMerchantDetailInRequest($request, $input)
     {
-        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request->merchantID = $this->getMerchantID();
 
         $request->merchantReferenceCode = $input['card']['merchant_id'];
 
         return $request;
+    }
+
+    public function getMerchantID()
+    {
+        $mid = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+
+        if($this->mode === 'live')
+        {
+            $mid = $_ENV['CYBERSOURCE_GATEWAY_LIVE_MERCHANT_ID'];
+        }
+
+        return $mid;
     }
 
     public function setDebugDetail($request)
