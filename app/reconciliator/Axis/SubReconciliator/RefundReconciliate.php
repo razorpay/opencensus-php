@@ -32,7 +32,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         $axisMigsRepo = $this->app['repo']->axis_migs;
 
         $refundId = $axisMigsRepo->findByRrn($rrn)->getRefundId();
-        
+
         return $refundId;
     }
 }

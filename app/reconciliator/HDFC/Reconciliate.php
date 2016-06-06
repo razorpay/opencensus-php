@@ -16,10 +16,9 @@ class Reconciliate extends Base\Reconciliate
         $this->messenger = new Messenger();
     }
 
-    protected function getTypeName($fileName)
+    protected function getTypeName()
     {
-        // TODO: Figure out how to get the reconciliation type for HDFC.
-        return self::PAYMENT;
+        return self::COMBINED;
     }
 
 

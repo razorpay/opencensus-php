@@ -63,55 +63,61 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         foreach ($fileContents as $row)
         {
-            $rowDetails = $this->getRowDetailsStructured($row);
+            $this->runReconciliate($row, $extraDetails);
+        }
+    }
 
-            if (empty($rowDetails) === true)
+
+    public function runReconciliate($row, $extraDetails)
+    {
+        $rowDetails = $this->getRowDetailsStructured($row);
+
+        if (empty($rowDetails) === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $reconciled = $this->checkIfAlreadyReconciled($this->payment);
+
+            if (($reconciled === true) or ($reconciled === null))
             {
-                continue;
+                return;
             }
 
-            try
-            {
-                $reconciled = $this->checkIfAlreadyReconciled($this->payment);
+            // Validates that the payment status is not failed.
+            $validate = $this->validatePaymentStatus();
 
-                if (($reconciled === true) or ($reconciled === null))
+            if ($validate === true)
+            {
+                $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
+
+                if ($recordSuccess === true)
                 {
-                    continue;
+                    $this->setReconciledAt($this->payment);
                 }
 
-                // Validates that the payment status is not failed.
-                $validate = $this->validatePaymentStatus();
-
-                if ($validate === true)
-                {
-                    $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
-
-                    if ($recordSuccess === true)
-                    {
-                        $this->setReconciledAt($this->payment);
-                    }
-
-                    $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
-                }
+                $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
             }
-            catch (\Exception $ex)
-            {
-                // Ideally, there shouldn't be any exceptions thrown. They should be handled
-                // in the respective reconciliation steps.
+        }
+        catch (\Exception $ex)
+        {
+            // Ideally, there shouldn't be any exceptions thrown. They should be handled
+            // in the respective reconciliation steps.
 
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'    => TraceCode::RECON_FAILURE,
-                        'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
-                        'row'           => $row,
-                        'extra_details' => $extraDetails,
-                        'gateway'       => get_called_class()
-                    ]);
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_FAILURE,
+                    'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
+                    'row'           => $row,
+                    'extra_details' => $extraDetails,
+                    'gateway'       => get_called_class()
+                ]);
 
-                $this->app['trace']->traceException($ex);
+            $this->app['trace']->traceException($ex);
 
-                continue;
-            }
+            return;
         }
     }
 

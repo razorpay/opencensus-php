@@ -34,10 +34,10 @@ class Orchestrator
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth@razorpay.com'],
-        self::AXIS => ['prashanth.yv@razorpay.com'],
+        self::HDFC => ['prashanth.yv@razorpay.com'],
+        self::AXIS => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
-        self::ADMIN => ['prashanth.yv@razorpay.com'],
+        self::ADMIN => ['prashanth@razorpay.com'],
     ];
 
 
@@ -493,7 +493,7 @@ class Orchestrator
         $zippedFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
 
         $zipPassword = $this->gatewayReconciliator->getZipPassword($zippedFileDetails);
-        
+
         // unzipFile unzips the file and stores it in a location.
         $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $zipPassword);
 

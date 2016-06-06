@@ -59,49 +59,55 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         foreach ($fileContents as $row)
         {
-            $rowDetails = $this->getRowDetailsStructured($row);
+            $this->runReconciliate($row, $extraDetails);
+        }
+    }
 
-            if (empty($rowDetails) === true)
+
+    public function runReconciliate($row, $extraDetails)
+    {
+        $rowDetails = $this->getRowDetailsStructured($row);
+
+        if (empty($rowDetails) === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $reconciled = $this->checkIfAlreadyReconciled($this->refund);
+
+            if (($reconciled === true) or ($reconciled === null))
             {
-                continue;
+                return;
             }
 
-            try
+            // Validates that the payment status is not failed.
+            $validate = $this->validatePaymentStatus();
+
+            if ($validate === true)
             {
-                $reconciled = $this->checkIfAlreadyReconciled($this->refund);
-
-                if (($reconciled === true) or ($reconciled === null))
-                {
-                    continue;
-                }
-
-                // Validates that the payment status is not failed.
-                $validate = $this->validatePaymentStatus();
-
-                if ($validate === true)
-                {
-                    // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
-                    $this->setReconciledAt($this->refund);
-                }
+                // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
+                $this->setReconciledAt($this->refund);
             }
-            catch (\Exception $ex)
-            {
-                // Ideally, there shouldn't be any exceptions thrown. They should be handled
-                // in the respective reconciliation steps.
+        }
+        catch (\Exception $ex)
+        {
+            // Ideally, there shouldn't be any exceptions thrown. They should be handled
+            // in the respective reconciliation steps.
 
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'    => TraceCode::RECON_FAILURE,
-                        'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
-                        'row'           => $row,
-                        'extra_details' => $extraDetails,
-                        'gateway'       => get_called_class()
-                    ]);
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_FAILURE,
+                    'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
+                    'row'           => $row,
+                    'extra_details' => $extraDetails,
+                    'gateway'       => get_called_class()
+                ]);
 
-                $this->app['trace']->traceException($ex);
+            $this->app['trace']->traceException($ex);
 
-                continue;
-            }
+            return;
         }
     }
 
@@ -110,7 +116,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     {
         // Gets refund ID
         $refundId = $this->getRefundId($row);
-
+        
         // If refund id is not present, return. No point of evaluating the row.
         if (empty($refundId) === true)
         {

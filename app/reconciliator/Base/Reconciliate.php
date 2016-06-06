@@ -18,8 +18,9 @@ class Reconciliate
     const NODAL   = 'nodal';
     const PAYMENT = 'payment';
     const REFUND  = 'refund';
+    const COMBINED = 'combined';
 
-    const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND];
+    const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
 
     /*************************
      * Internal Header Names
@@ -90,7 +91,7 @@ class Reconciliate
     /**
      * This should be implemented in the child class if the gateway sends zip files
      * which are password protected.
-     * 
+     *
      * @param array $fileDetails
      * @return null
      */
@@ -121,7 +122,7 @@ class Reconciliate
         // The method is present in child class since different gateways have
         // different sheet names/file names for reconciliation types.
         $reconciliationType = $this->getTypeName($fileName);
-        
+
         // Ideally, should never come here.
         if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or
             ($reconciliationType === null))
