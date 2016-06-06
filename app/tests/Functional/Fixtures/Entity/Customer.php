@@ -7,7 +7,7 @@ class Customer extends Base
     public function setUp()
     {
         $this->fixtures->create('customer:customers');
-        $this->fixtures->create('customer:customer_apps');
+        $this->fixtures->create('customer:app_tokens');
         $this->fixtures->create('customer:tokens');
     }
 
@@ -88,13 +88,13 @@ class Customer extends Base
         return $customers;
     }
 
-    public function createCustomerApps()
+    public function createAppTokens()
     {
         $apps = array();
 
         foreach ($this->customerApps as $attributes)
         {
-            $apps[] = $this->fixtures->create('customer_app', $attributes);
+            $apps[] = $this->fixtures->create('app_token', $attributes);
         }
 
         return $apps;

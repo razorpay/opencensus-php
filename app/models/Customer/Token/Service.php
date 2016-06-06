@@ -55,7 +55,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+        $token = $this->tokensRepo->getByTokenAndCustomerId($customer->getId(), $token);
 
         return $token->toArrayPublic();
     }

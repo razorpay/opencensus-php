@@ -17,7 +17,7 @@ class CreateCustomerApps extends Migration {
   	 */
   	public function up()
   	{
-        Schema::create(Table::CUSTOMER_APP, function(Blueprint $table)
+        Schema::create(Table::APP_TOKEN, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -51,7 +51,7 @@ class CreateCustomerApps extends Migration {
         {
             $table->foreign(Payment::APP_TOKEN)
                   ->references(App::ID)
-                  ->on(Table::CUSTOMER_APP)
+                  ->on(Table::APP_TOKEN)
                   ->on_delete('restrict');
         });
 	 }
@@ -68,13 +68,13 @@ class CreateCustomerApps extends Migration {
             $table->dropForeign(Table::PAYMENT.'_'.Payment::APP_TOKEN.'_foreign');
         });
 
-        Schema::table(Table::CUSTOMER_APP, function($table)
+        Schema::table(Table::APP_TOKEN, function($table)
         {
-            $table->dropForeign(Table::CUSTOMER_APP.'_'.App::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::APP_TOKEN.'_'.App::CUSTOMER_ID.'_foreign');
 
-            $table->dropForeign(Table::CUSTOMER_APP.'_'.App::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::APP_TOKEN.'_'.App::MERCHANT_ID.'_foreign');
         });
 
-    		Schema::drop(Table::CUSTOMER_APP);
+    		Schema::drop(Table::APP_TOKEN);
   	}
 }

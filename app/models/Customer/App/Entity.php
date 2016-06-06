@@ -12,9 +12,9 @@ class Entity extends Base\PublicEntity
 
     protected static $sign      = 'capp';
 
-    protected $entity           = 'customer_app';
+    protected $entity           = 'app_token';
 
-    protected $table            = \Constants\Table::CUSTOMER_APP;
+    protected $table            = \Constants\Table::APP_TOKEN;
 
     protected $generateIdOnCreate = true;
 

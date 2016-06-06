@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const CUSTOMER_ID           = 'customer_id';
+    const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
     const EMAIL                 = 'email';
