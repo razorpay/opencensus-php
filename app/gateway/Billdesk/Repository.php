@@ -15,5 +15,7 @@ class Repository extends Base\Repository
         'received'                      => 'sometimes|in:0,1',
         'AuthStatus' 					=> 'sometimes|max:5',
         'RefStatus' 	 				=> 'sometimes|max:5',
+        'RefundId'                      => 'sometimes|string',
+        'BankReferenceNo'               => 'sometimes|string',
     );
 }
