@@ -171,7 +171,7 @@ final class Route
         'gateway_payment_callback_post'         => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel' => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
-        'payment_supported_networks'             => ['get',     'supported_networks',                       'PaymentController@getSupportedNetworks'                              ],
+        'payment_supported_networks'            => ['get',     'supported_networks',                       'PaymentController@getSupportedNetworks'                              ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                  => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
         'dummy_route'                           => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
@@ -249,7 +249,7 @@ final class Route
         'app_delete_token',
         'otp_post',
         'otp_verify',
-        'otp_callback'
+        'otp_callback',
     );
 
     public static $publicCallback = array(

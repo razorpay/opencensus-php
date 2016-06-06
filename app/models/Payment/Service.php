@@ -196,15 +196,15 @@ class Service extends Base\Service
 
     public function getSupportedNetworks()
     {
-        $bank_codes = Processor\Netbanking::getSupportedBanks('live');
+        $bankCodes = Processor\Netbanking::getSupportedBanks('live');
 
-        $bank_names_map = Bank\Name::getNames($bank_codes);
+        $bankNamesMap = Bank\Name::getNames($bankCodes);
 
         $cards = Card\Network::getSupportedNetworksNamesMap();
 
         $wallets = Processor\Wallet::getWalletNetworkNamesMap();
 
-        $networks = array('Bank' => $bank_names_map, 'Card' => $cards, 'Wallet' => $wallets);
+        $networks = array('bank' => $bankNamesMap, 'card' => $cards, 'wallet' => $wallets);
 
         return $networks;
     }

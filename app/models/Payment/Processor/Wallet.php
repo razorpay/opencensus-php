@@ -10,9 +10,9 @@ class Wallet
     const PAYUMONEY = 'payumoney';
 
     public static $fullName = array(
-        self::PAYTM    => 'Paytm',
-        self::PAYZAPP    => 'Payzapp',
-        self::MOBIKWIK    => 'Mobikwik',
+        self::PAYTM         => 'Paytm',
+        self::PAYZAPP       => 'Payzapp',
+        self::MOBIKWIK      => 'Mobikwik',
         self::PAYUMONEY     => 'Payumoney');
 
     public static function exists($wallet)
