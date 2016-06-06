@@ -86,10 +86,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             $this->trace->info(
                 TraceCode::ES_SAVE_REQUEST,
-                [
-                    $data,
-                ]
-            );
+                $data);
 
             // Creating a new EsDao object because,
             // in the queue flow, the mode needs to be passed

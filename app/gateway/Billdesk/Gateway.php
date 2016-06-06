@@ -297,7 +297,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
+            $content);
 
         $content = $this->postRequest($content);
 
