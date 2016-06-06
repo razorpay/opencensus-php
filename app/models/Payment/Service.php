@@ -12,8 +12,6 @@ use Models\Merchant;
 use Models\Payment;
 use Models\Card;
 use Models\Transaction;
-use Models\Payment\Processor;
-use Models\Bank;
 
 use Trace\Trace;
 use Trace\TraceCode;
@@ -191,21 +189,6 @@ class Service extends Base\Service
     public function callback($id, $hash, array $input)
     {
         return $this->processor()->callback($id, $hash, $input);
-    }
-
-    public function getSupportedNetworks()
-    {
-        $bankCodes = Processor\Netbanking::getSupportedBanks('live');
-
-        $bankNamesMap = Bank\Name::getNames($bankCodes);
-
-        $cards = Card\Network::getSupportedNetworksNamesMap();
-
-        $wallets = Processor\Wallet::getWalletNetworkNamesMap();
-
-        $networks = array('bank' => $bankNamesMap, 'card' => $cards, 'wallet' => $wallets);
-
-        return $networks;
     }
 
     public function fetchMultiple(array $input)

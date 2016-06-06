@@ -260,12 +260,4 @@ class PaymentController extends BaseController
 
         return ApiResponse::json($data);
     }
-
-    public function getSupportedNetworks()
-    {
-        $data = (new Payment\Service)->getSupportedNetworks();
-
-        return ApiResponse::json($data);
-    }
-
 }

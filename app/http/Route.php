@@ -115,6 +115,7 @@ final class Route
         'pricing_get_plans'                     => ['get',      'pricing',                                  'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'            => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                         ],
         'pricing_get_gateway_plans'             => ['get',      'pricing/gateways',                         'PricingController@getGatewayPricingPlans'                          ],
+        'pricing_supported_networks'            => ['get',      'pricing/networks',                         'PricingController@getSupportedNetworks'                            ],
         'pricing_get_plan'                      => ['get',      'pricing/{id}',                             'PricingController@getPricingPlan'                                  ],
         'pricing_get_plan_rule'                 => ['get',      'pricing/{planId}/rule/{ruleId}',           'PricingController@getPricingPlanRule'                              ],
         'pricing_add_plan_rule'                 => ['post',     'pricing/{id}/rule',                        'PricingController@postAddPricingPlanRule'                          ],
@@ -125,7 +126,7 @@ final class Route
         'setl_fetch_by_id'                      => ['get',      'settlements/{id}',                         'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                   => ['get',      'settlements',                              'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'               => ['get',      'settlements/{id}/transactions',            'SettlementController@getSettlementTransactions'                    ],
-        'setl_edit'                             => ['put',      'settlements/{id}',                         'SettlementController@putEditSettlement'                           ],
+        'setl_edit'                             => ['put',      'settlements/{id}',                         'SettlementController@putEditSettlement'                            ],
         'setl_fixer'                            => ['get',      'settlements/fixer',                        'SettlementController@getSettlementFixer'                           ],
         'hdfc_mpr_reconcile'                    => ['post',     'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'                      ],
         'hdfc_mpr_generate'                     => ['post',     'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'                       ],
@@ -172,7 +173,6 @@ final class Route
         'gateway_payment_callback_post'         => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel' => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
-        'payment_supported_networks'            => ['get',     'supported_networks',                       'PaymentController@getSupportedNetworks'                              ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                  => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
         'dummy_route'                           => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
@@ -327,6 +327,7 @@ final class Route
         'pricing_get_plans',
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
+        'pricing_supported_networks',
         'pricing_add_plan_rule',
         'pricing_get_plan',
         'pricing_get_plan_rule',
@@ -384,7 +385,6 @@ final class Route
         'refund_verify',
         'es_migrate_entity',
         'dummy_critical_error',
-        'payment_supported_networks'
     );
 
     public static $proxy = array(
