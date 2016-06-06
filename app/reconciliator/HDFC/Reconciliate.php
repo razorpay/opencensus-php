@@ -4,18 +4,10 @@ namespace Reconciliator\HDFC;
 
 
 use Reconciliator\Base;
-use Reconciliator\Messenger;
 use App;
 
 class Reconciliate extends Base\Reconciliate
 {
-    protected $messenger;
-
-    public function __construct()
-    {
-        $this->messenger = new Messenger();
-    }
-
     protected function getTypeName()
     {
         return self::COMBINED;

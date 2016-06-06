@@ -19,16 +19,12 @@ class Orchestrator
     /******************
      * Bank constants
      ******************/
+
     const HDFC  = 'HDFC';
     const AXIS  = 'Axis';
     const KOTAK = 'Kotak';
     const BILLDESK = 'BillDesk';
     const ADMIN = 'admin';
-
-
-    /********************
-     * Complex constants
-     ********************/
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -37,6 +33,8 @@ class Orchestrator
         self::HDFC => ['prashanth.yv@razorpay.com'],
         self::AXIS => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
+        // Used when someone from the team needs to send the
+        // reconciliation file via mail for reconciliation.
         self::ADMIN => ['prashanth@razorpay.com'],
     ];
 
@@ -69,14 +67,23 @@ class Orchestrator
         $this->app = App::getFacadeRoot();
 
         $this->messenger = new Messenger();
-
         $this->validator = new Validator;
         $this->fileProcessor = new FileProcessor;
         $this->converter = new Converter;
     }
 
 
-    public function baseEntry($input)
+    /**
+     * Determines whether the reconciliation request is manual or
+     * via MailGun and gets the files details accordingly.
+     *
+     * @param array $input The input received from the route.
+     * @return int Status code. Currently, always returns a 200.
+     *             Will raise alerts in case of issues.
+     * @throws Exception\ReconciliationException Raised when there are no
+     *                                           files to reconcile.
+     */
+    public function baseEntry(array $input)
     {
         // Checks if it's manual call or mailgun call
         if ((isset($input['manual']) === true) and ($input['manual'] === true))
@@ -100,36 +107,46 @@ class Orchestrator
             );
         }
 
-        // Starts the orchestration.
         $this->orchestrate();
 
         return 200;
     }
 
 
-    protected function manualEntry($input)
+    /**
+     * Validations and getting file details are handled by this function
+     * when reconciliation route is hit via REST Client/dashboard.
+     *
+     * @param array $input The input received from the route.
+     * @return array Details of all the files received from the input.
+     */
+    protected function manualEntry(array $input)
     {
         // Validates the input received.
         // All the attachment files names should start with 'attachment-'
         // Also, adds attachment-count to input, if not present already.
         $this->validator->validateAttachments($input);
 
-        // Gets the input details.
         $inputDetails = $this->getManualInputDetails($input);
 
         // Figures out the gateway and
-        // sets the gateway reconciliator object for the orchestrator,
-        // using the input details.
+        // sets the gateway reconciliator object for the orchestrator
         $this->setGatewayForManual($inputDetails);
 
-        // Gets all the file details.
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
         return $allFilesDetails;
     }
 
 
-    protected function mailGunEntry($input)
+    /**
+     * Getting all files details is handled by this function when the
+     * reconciliation route is hit by MailGun.
+     *
+     * @param array $input The input received from the route.
+     * @return array Details of all the files received from the input.
+     */
+    protected function mailGunEntry(array $input)
     {
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
@@ -139,7 +156,6 @@ class Orchestrator
         // using the input details.
         $this->setGatewayFromEmailId();
 
-        // Gets all the file details.
         $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
 
         return $allFilesDetails;
@@ -202,7 +218,7 @@ class Orchestrator
             try
             {
                 // Converts to in-memory array and stores it in instance variable.
-                // TODO: Might want to move this into Gateway implementation since
+                // Might have to move this into Gateway implementation since
                 // conversion to array might be different for different gateways.
                 $this->getFileContentInArrayAndSet($fileDetails);
             }
@@ -241,17 +257,25 @@ class Orchestrator
     }
 
 
-    protected function handleInvalidFile($file, $fileDetails)
+    protected function handleInvalidFile($file, array $fileDetails)
     {
-        // Delete it locally.
         $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
 
-        // Remove the file from allFiles variable.
+        // Remove the file from allFiles variable, since this file is now, not part of reconciliation.
         unset($this->allFilesDetails[$file]);
     }
 
 
-    protected function getManualInputDetails($input)
+    /**
+     * Gets the required details from the input, structured.
+     * This includes the gateway for which the reconciliation
+     * needs to be done and the number of attachments. This is an
+     * optional parameter.
+     *
+     * @param array $input
+     * @return array Structured input details
+     */
+    protected function getManualInputDetails(array $input)
     {
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
@@ -281,7 +305,15 @@ class Orchestrator
     }
 
 
-    protected function setGatewayForManual($inputDetails)
+    /**
+     * Uses the gateway input sent in the route, to set the gateway
+     * reconciliator object for the class. The gateway should be
+     * present in the GATEWAY_SENDER_MAPPING list.
+     *
+     * @param array $inputDetails
+     * @throws Exception\ReconciliationException
+     */
+    protected function setGatewayForManual(array $inputDetails)
     {
         // In manual, the input params should contain what gateway is it.
         $gateway = $inputDetails[self::GATEWAY];
@@ -300,6 +332,14 @@ class Orchestrator
     }
 
 
+    /**
+     * Uses the 'from' email ID to figure out the gateway.
+     * If 'from' email ID is of one of the whitelisted admins,
+     * it uses the 'subject' to figure out the gateway.
+     * It also sets the gateway reconciliator object for the class.
+     *
+     * @throws Exception\ReconciliationException
+     */
     protected function setGatewayFromEmailId()
     {
         $fromEmailId = $this->emailDetails['from'];
@@ -395,7 +435,7 @@ class Orchestrator
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        // All file types are segrated into either CSV or Excel.
+        // All file types are segregated into either CSV or Excel.
         $fileType = self::getKeyFromSubArrayMatch($fileDetails[FileProcessor::EXTENSION],
                                                     FileProcessor::FILE_TYPES_MAPPINGS);
 
@@ -440,7 +480,7 @@ class Orchestrator
      *
      * @param $fileDetails
      */
-    protected function handleSettingExcelContent($fileDetails)
+    protected function handleSettingExcelContent(array $fileDetails)
     {
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
@@ -517,7 +557,7 @@ class Orchestrator
      *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
      * @return int|string|null
      */
-    public static function getKeyFromSubArrayMatch($needle, $haystack)
+    public static function getKeyFromSubArrayMatch($needle, array $haystack)
     {
         foreach($haystack as $key => $subArray)
         {
@@ -530,6 +570,10 @@ class Orchestrator
     }
 
 
+    /**
+     * The reconciliation can run for a long time.
+     * Hence, changing the system's execution time limit to 1 hour.
+     */
     protected function increaseAllowedSystemLimits()
     {
         set_time_limit(3600);

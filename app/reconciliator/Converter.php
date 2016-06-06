@@ -58,36 +58,6 @@ class Converter
     }
 
 
-    /**
-     * Not being used anywhere currently. Might use it later.
-     *
-     * @param $fileDetails
-     * @return array
-     */
-    public function getValidSheetNames($fileDetails)
-    {
-        $filePath = $fileDetails[FileProcessor::FILE_PATH];
-
-        $validSheetNames = [];
-
-        Excel::load($filePath, function($reader) use (&$validSheetNames)
-        {
-            $sheetNames = $reader->getSheetNames();
-
-            foreach ($sheetNames as $sheetName)
-            {
-                // Discards all the sheets with names starting with "sheet"
-                if (substr(strtolower($sheetName), 0, 5) !== "sheet")
-                {
-                    $validSheetNames[] = $sheetName;
-                }
-            }
-        });
-
-        return $validSheetNames;
-    }
-
-
     public function convertExcelSheetToArray($sheet)
     {
         $rows = $sheet->toArray();
@@ -101,7 +71,6 @@ class Converter
 
         $columnHeaders = [];
         $data = [];
-
 
         if (($handle = fopen($filePath, 'r')) !== false)
         {
@@ -127,75 +96,10 @@ class Converter
                     $data[] = array_combine($columnHeaders, $row);
                 }
             }
-
             fclose($handle);
         }
 
 
         return $data;
-    }
-
-
-    /**
-     * Not being used anywhere currently. Might use it later.
-     *
-     * @param $rows
-     * @param $newColumnHeaders
-     * @throws Exception\ReconciliationException
-     */
-    protected function replaceExcelRowsWithNewHeaders(&$rows, $newColumnHeaders)
-    {
-        foreach ($rows as $rowIndex=>$rowData)
-        {
-            if (count($newColumnHeaders) !== count(array_keys($rowData)))
-            {
-                throw new Exception\ReconciliationException(
-                    'The number of columns in the row does not match the column headers count.',
-                    ['column_headers' => $newColumnHeaders, 'row' => $rowData]
-                );
-            }
-
-            // Combines the columnHeaders(keys) with the rowData(values).
-            $rows[$rowIndex] = array_combine($newColumnHeaders, array_values($rowData));
-        }
-    }
-
-
-    /**
-     * Not being used anywhere currently. Might use it later.
-     *
-     * @param $columnHeaders
-     * @return array
-     */
-    protected function modifyColumnHeaders($columnHeaders)
-    {
-        //$columnHeaders = array_keys($rows[0]);
-        //$modifiedColumnHeaders = [];
-
-        // Gets the column headers without any delimiters, abbreviations.
-        foreach ($columnHeaders as &$header)
-        {
-            // Replaces one of more spaces with underscores.
-            $modifiedHeader = preg_replace('/\s+/', '_', $header);
-            // Replaces multiple underscores with one underscore.
-            $modifiedHeader = preg_replace('/_+/', '_', $modifiedHeader);
-            // Removes dots.
-            $modifiedHeader = preg_replace('/\./', '', $modifiedHeader);
-            // Converts the string to lowercase.
-            $modifiedHeader = strtolower($modifiedHeader);
-
-            $headerArray = explode('_', $modifiedHeader);
-
-            foreach($headerArray as &$substr)
-            {
-                if (array_key_exists($substr, self::MAPPINGS))
-                {
-                    $substr = self::MAPPINGS[$substr];
-                }
-            }
-            $header = implode('',$headerArray);
-        }
-
-        return $columnHeaders;
     }
 }

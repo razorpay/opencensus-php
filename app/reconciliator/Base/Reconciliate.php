@@ -5,6 +5,8 @@ namespace Reconciliator\Base;
 
 use Reconciliator\FileProcessor;
 use Reconciliator\Orchestrator;
+use Reconciliator\Messenger;
+
 use EE\Exception;
 use Trace\TraceCode;
 
@@ -41,6 +43,13 @@ class Reconciliate
      * Instance objects
      *********************/
     protected $subReconciliator;
+
+    protected $messenger;
+
+    public function __construct()
+    {
+        $this->messenger = new Messenger();
+    }
 
 
     /**
@@ -112,12 +121,14 @@ class Reconciliate
     {
         if (isset($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
         {
-            $fileName = strtolower($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]);
+            $fileName = $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
         }
         else
         {
-            $fileName = strtolower($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME]);
+            $fileName = $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
         }
+
+        $fileName = strtolower($fileName);
 
         // The method is present in child class since different gateways have
         // different sheet names/file names for reconciliation types.

@@ -6,7 +6,6 @@ use EE\Exception;
 
 class Validator
 {
-    // Can add more to this as and when we add converters to CSV from different file types.
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values'],
         'txt'   => ['text/plain'],
@@ -20,8 +19,8 @@ class Validator
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
-    // Max allowed file size - 2M.
-    const MAX_FILE_SIZE = 2*1024*1024;
+    // Max allowed file size - 2M (2*1024*1024).
+    const MAX_FILE_SIZE = 2097152;
 
 
     public function filterEmails($emailDetails)
@@ -88,7 +87,7 @@ class Validator
      * @param $fileDetails
      * @return bool true if validation in successful, otherwise, false.
      */
-    public function validateFile($fileDetails)
+    public function validateFile(array $fileDetails)
     {
         // Extensions are in uppercase sometimes.
         $extension = strtolower($fileDetails['extension']);

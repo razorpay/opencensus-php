@@ -4,20 +4,11 @@ namespace Reconciliator\BillDesk;
 
 
 use Reconciliator\Base;
-use Reconciliator\Messenger;
 
 
 class Reconciliate extends Base\Reconciliate
 {
     const SUCCESS = 'success';
-
-    protected $messenger;
-
-    public function __construct()
-    {
-        $this->messenger = new Messenger();
-    }
-
 
     protected function getTypeName($fileName)
     {

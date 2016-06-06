@@ -40,7 +40,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        // Convert service tax into paise
+        // Convert service tax into basic unit of currency. (ex: paise)
         $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
 
         return round($serviceTax);
@@ -49,10 +49,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayFee($row)
     {
-        // Convert fee into paise
+        // Convert fee into basic unit of currency. (ex: paise)
         $fee = floatval($row[self::COLUMN_FEE]) * 100;
 
-        // Already in paise. Hence, no conversion needed
+        // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
 
         // Axis reconciliation files have fee and service tax separately

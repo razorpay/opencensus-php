@@ -13,6 +13,7 @@ use Trace\TraceCode;
 
 use Gateway\AxisMigs;
 use Reconciliator\Orchestrator;
+use Reconciliator\Messenger;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 
@@ -29,6 +30,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected $refund;
 
     protected $app;
+    protected $messenger;
 
 
     public function __construct()
@@ -38,6 +40,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $this->refundRepo      = $repo->refund;
         $this->transactionRepo = $repo->transaction;
+
+        $this->messenger = new Messenger();
     }
 
 
@@ -116,7 +120,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     {
         // Gets refund ID
         $refundId = $this->getRefundId($row);
-        
+
         // If refund id is not present, return. No point of evaluating the row.
         if (empty($refundId) === true)
         {

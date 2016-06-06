@@ -12,6 +12,6 @@ return array(
         'low'            => '#transactions',
         'high'           => '#transactions_high',
         'risky'          => '#transactions_risky',
-        'recon_critical' => '#reconciliation',
+        'reconciliation' => '#reconciliation',
     ]
 );

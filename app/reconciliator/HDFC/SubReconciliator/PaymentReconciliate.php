@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         if (empty($row[self::COLUMN_SB_CESS]) === false)
         {
-            // Convert sb cess into paise
+            // Convert sb cess into basic unit of currency. (ex: paise)
             $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
 
             // HDFC reconciliation files have service tax and cess separately
@@ -55,7 +55,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         if (empty($row[self::COLUMN_KK_CESS]) === false)
         {
-            // Convert kk cess into paise
+            // Convert kk cess into basic unit of currency. (ex: paise)
             $kkCess = floatval($row[self::COLUMN_KK_CESS]) * 100;
 
             // HDFC reconciliation files have service tax and cess separately
@@ -68,10 +68,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayFee($row)
     {
-        // Convert fee into paise
+        // Convert fee into basic unit of currency (ex: paise)
         $fee = floatval($row[self::COLUMN_FEE]) * 100;
 
-        // Already in paise. Hence, no conversion needed
+        // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
 
         // HDFC reconciliation files have fee and service tax separately
