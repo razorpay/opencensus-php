@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
-    const GATEWAY_ZIP_PASSWORD          = 'gateway_zip_password';
+    const GATEWAY_RECON_PASSWORD        = 'gateway_RECON_password';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_TERMINAL_PASSWORD,
-        self::GATEWAY_ZIP_PASSWORD,
+        self::GATEWAY_RECON_PASSWORD,
     );
 
     protected $public = array(
@@ -76,7 +76,7 @@ class Entity extends Base\PublicEntity
     protected $hidden = array(
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,
-        self::GATEWAY_ZIP_PASSWORD,
+        self::GATEWAY_RECON_PASSWORD,
     );
 
     protected $generateIdOnCreate = true;
@@ -98,7 +98,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD => null,
         self::GATEWAY_ACCESS_CODE       => null,
         self::GATEWAY_SECURE_SECRET     => null,
-        self::GATEWAY_ZIP_PASSWORD      => null,
+        self::GATEWAY_RECON_PASSWORD    => null,
         self::SHARED                    => false,
         self::EMI                       => false,
         self::EMI_DURATION              => null,
@@ -185,14 +185,14 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
     }
 
-    protected function setGatewayZipPasswordAttribute($zipPassword)
+    protected function setGatewayReconPasswordAttribute($reconPassword)
     {
-        if ($zipPassword === null)
+        if ($reconPassword === null)
         {
-            $zipPassword = '';
+            $reconPassword = '';
         }
 
-        $this->attributes[self::GATEWAY_ZIP_PASSWORD] = Crypt::encrypt($zipPassword);
+        $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword);
     }
 
     protected function getGatewayTerminalPasswordAttribute()
@@ -217,16 +217,16 @@ class Entity extends Base\PublicEntity
         return Crypt::decrypt($secret);
     }
     
-    protected function getGatewayZipPassword()
+    protected function getGatewayReconPassword()
     {
-        $zipPassword = $this->attributes[self::GATEWAY_ZIP_PASSWORD];
+        $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
         
-        if ($zipPassword === null)
+        if ($reconPassword === null)
         {
-            return $zipPassword;
+            return $reconPassword;
         }
         
-        return Crypt::decrypt($zipPassword);
+        return Crypt::decrypt($reconPassword);
     }
 
     public function getGatewayTerminalId()

@@ -15,7 +15,14 @@ class RefundReconciliate extends Base\RefundReconciliate
     const RRN = 'rrn_no';
 
 
-    protected function getRefundId($row)
+    /**
+     * Axis reconciliation files only send us the rrn which is mapped
+     * to api's refund id in axis migs gateway db.
+     * 
+     * @param array $row
+     * @return string Refund ID
+     */
+    protected function getRefundId(array $row)
     {
         $rrn = $row[self::RRN];
 

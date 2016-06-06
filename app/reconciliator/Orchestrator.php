@@ -532,7 +532,7 @@ class Orchestrator
         // Gets the actual zip file's details first.
         $zippedFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
 
-        $zipPassword = $this->gatewayReconciliator->getZipPassword($zippedFileDetails);
+        $zipPassword = $this->gatewayReconciliator->getReconPassword($zippedFileDetails);
 
         // unzipFile unzips the file and stores it in a location.
         $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $zipPassword);

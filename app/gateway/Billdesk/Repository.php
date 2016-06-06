@@ -16,4 +16,12 @@ class Repository extends Base\Repository
         'AuthStatus' 					=> 'sometimes|max:5',
         'RefStatus' 	 				=> 'sometimes|max:5',
     );
+    
+    protected function findByGatewayRefundId($gatewayRefundId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('refundId', '=', $gatewayRefundId)
+            ->firstOrFail();
+    }
 }

@@ -103,4 +103,9 @@ class Entity extends Base\Entity
 
         return RefundStatus::$statusMap[$code];
     }
+    
+    public function getRefundId()
+    {
+        return $this->attributes['refund_id'];
+    }
 }

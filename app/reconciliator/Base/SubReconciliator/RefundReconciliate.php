@@ -46,13 +46,10 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
 
     /**
-     * This is the start of the actual reconciliation.
+     * This is the start of the actual reconciliation for refunds.
      * Reconciliation is done for each row in the file content.
      * Validates payment status.
-     * Records gateway fees.
-     * Records gateway service tax.
-     * Sets card type (debit/credit).
-     * Records rrn.
+     * Sets the reconciled_at.
      *
      * @param array $fileContents
      */
@@ -118,7 +115,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
-        // Gets refund ID
         $refundId = $this->getRefundId($row);
 
         // If refund id is not present, return. No point of evaluating the row.

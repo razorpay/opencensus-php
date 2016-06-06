@@ -11,7 +11,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID = 'Ref. 1';
+    const COLUMN_REFUND_ID = 'Refund ID';
 
     protected $messenger;
 
@@ -22,13 +22,20 @@ class RefundReconciliate extends Base\RefundReconciliate
         parent::__construct();
     }
 
-
+    /**
+     * BillDesk reconciliation files only send us the gateway refund ID,
+     * which is mapped to api's refund id in BillDesk gateway db.
+     *
+     * @param array $row
+     * @return string Refund ID
+     */
     protected function getRefundId($row)
     {
-        // TODO: This is actually the payment ID.
-        // Check with Shk on how to match the refund ID in api with
-        // Billdesk's refund ID. (Show the billdesk refund recon file)
-        $refundId = $row[self::COLUMN_REFUND_ID];
+        $gatewayRefundId = $row[self::COLUMN_REFUND_ID];
+
+        $billDeskRepo = $this->app['repo']->billdesk;
+
+        $refundId = $billDeskRepo->findByGatewayRefundId($gatewayRefundId)->getRefundId();
 
         return $refundId;
     }

@@ -18,6 +18,16 @@ class CombinedReconciliate extends Foundation\SubReconciliate
     }
 
 
+    /**
+     * This is the start of reconciliation for a combined report.
+     * Ones which have both payments and refunds in the same file.
+     * Here, we get the reconciliation type for each row, instead of for
+     * each file as being done in payment and refund reconciliations.
+     * We run the respective reconciliation function for payments and refunds
+     * from the gateway's sub reconciliator classes itself.
+     *
+     * @param array $fileContents
+     */
     public function startReconciliation($fileContents)
     {
         $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];

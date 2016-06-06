@@ -54,21 +54,24 @@ class Reconciliate
 
     /**
      * This is the start of the reconciliation. This is executed from the orchestrator.
-     * For each file, it figures out which type of reconciliation is it (nodal, payment, refund)
+     * For each file, it figures out which type of reconciliation is it (nodal, payment, refund, combined)
      * and calls the startReconciliation of the respective reconciliation type.
      *
-     * @param $allFilesContents
+     * @param array $allFilesContents
      */
-    public function startReconciliation($allFilesContents)
+    public function startReconciliation(array $allFilesContents)
     {
         foreach ($allFilesContents as $fileContents)
         {
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
-            // If unable to get the reconciliation type.
+
+            // If unable to get the reconciliation type, just continue on to the next file.
+            // An alert is raised in the function getReconciliationType in case of this.
             if ($reconciliationType === null)
             {
                 continue;
             }
+            
             $this->setSubReconciliator($reconciliationType);
             $this->subReconciliator->startReconciliation($fileContents);
         }
@@ -104,7 +107,7 @@ class Reconciliate
      * @param array $fileDetails
      * @return null
      */
-    public function getZipPassword($fileDetails)
+    public function getReconPassword($fileDetails)
     {
         return null;
     }
@@ -163,8 +166,10 @@ class Reconciliate
 
     protected function getSubReconciliatorClassName($reconciliationType)
     {
+        // Parent namespace should be something like - Reconciliator/Axis
         $parentNamespace = $this->getParentNamespace();
-
+        
+        // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
         $subReconciliatorClassName = $parentNamespace . '\\'
                                     . ucfirst($reconciliationType)
                                     . 'Reconciliate';
@@ -175,6 +180,7 @@ class Reconciliate
 
     protected function getParentNamespace()
     {
+        // Gets the namespace from the called class, by removing the last part of the FQCN.
         return join('\\', explode('\\', get_called_class(), -1));
     }
 }

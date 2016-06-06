@@ -4,7 +4,6 @@ namespace Reconciliator\HDFC;
 
 
 use Reconciliator\Base;
-use Reconciliator\Messenger;
 
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -13,16 +12,6 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_REFUND_ID = 'merchant_trackid';
-
-    protected $messenger;
-
-
-    public function __construct()
-    {
-        $this->messenger = new Messenger();
-        parent::__construct();
-    }
-
 
     protected function getRefundId($row)
     {
