@@ -108,13 +108,9 @@ class Gateway extends Base\Gateway
     {
         $request = new \stdClass();
 
-        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request = $this->setMerchantDetailInRequest($request, $input);
 
-        $request->merchantReferenceCode = $input['card']['merchant_id'];
-
-        $request->clientLibrary = "PHP";
-        $request->clientLibraryVersion = phpversion();
-        $request->clientEnvironment = php_uname();
+        $request = $this->setDebugDetail($request);
 
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
@@ -124,16 +120,7 @@ class Gateway extends Base\Gateway
         $payerAuthValidateService->run = "true";
         $payerAuthValidateService->signedPARes = $input['gateway']['PaRes'];
         
-        $billTo = new \stdClass();
-        $billTo->firstName = $input['card']['name'];
-        $billTo->lastName = "a";
-        $billTo->street1 = "a" ;
-        $billTo->city = "a";
-        $billTo->state = "a";
-        $billTo->postalCode = "5";
-        $billTo->country = "India";
-        $billTo->email = $input['payment']['email'];
-        $request->billTo = $billTo;
+        $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
         $cards = \Session::get('card');
@@ -142,15 +129,9 @@ class Gateway extends Base\Gateway
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
 
-        $purchaseTotals = new \stdClass();
-        $purchaseTotals->currency = $input['payment']['currency'];
-        $request->purchaseTotals = $purchaseTotals;
+        $request = $this->setPurchaseDetail($request, $input);
 
-        $item0 = new \stdClass();
-        $item0->unitPrice = $input['payment']['amount'];
-        $item0->id = "1";
-
-        $request->item = array($item0);
+        $request = $this->setItemDetail($request, $input);
 
         return $request;
     }
@@ -159,28 +140,15 @@ class Gateway extends Base\Gateway
     {
         $request = new \stdClass();
 
-        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request = $this->setMerchantDetailInRequest($request, $input);
 
-        $request->merchantReferenceCode = $input['card']['merchant_id'];
-
-        $request->clientLibrary = "PHP";
-        $request->clientLibraryVersion = phpversion();
-        $request->clientEnvironment = php_uname();
+        $request = $this->setDebugDetail($request);
 
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
         $request->ccAuthService = $ccAuthService;
 
-        $billTo = new \stdClass();
-        $billTo->firstName = $input['card']['name'];
-        $billTo->lastName = "a";
-        $billTo->street1 = "a" ;
-        $billTo->city = "a";
-        $billTo->state = "a";
-        $billTo->postalCode = "5";
-        $billTo->country = "India";
-        $billTo->email = $input['payment']['email'];
-        $request->billTo = $billTo;
+        $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
         $cards = \Session::get('card');
@@ -189,41 +157,33 @@ class Gateway extends Base\Gateway
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
 
-        $purchaseTotals = new \stdClass();
-        $purchaseTotals->currency = $input['payment']['currency'];
-        $request->purchaseTotals = $purchaseTotals;
+        $request = $this->setPurchaseDetail($request, $input);
 
-        $item0 = new \stdClass();
-        $item0->unitPrice = $input['payment']['amount'];
-        $item0->id = "1";
-
-        $request->item = array($item0);
+        $request = $this->setItemDetail($request, $input);
 
         return $request;
     }
 
     public function capture(array $input)
     {
+        $this->setId($input['payment']['id']);
+
         $request = new \stdClass();
 
-        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request = $this->setMerchantDetailInRequest($request, $input);
 
-        $request->merchantReferenceCode = $input['card']['merchant_id'];
-
-        $request->clientLibrary = "PHP";
-        $request->clientLibraryVersion = phpversion();
-        $request->clientEnvironment = php_uname();
-
+        $request = $this->setDebugDetail($request);
+        
         $ccCaptureService = new \stdClass();
         $ccCaptureService->run = "true";
         $this->model = $this->repo->retrieveByPaymentIdAndStatus(
                                             $input['payment']['id'], 'enrolled');
-        $ccCaptureService->requestID = $this->model->ref;
+        $ccCaptureService->authRequestID = $this->model->ref;
         $request->ccCaptureService = $ccCaptureService;
 
-        $payerAuthEnrollService = new \stdClass();
-        $payerAuthEnrollService->run = "true";
-        $request->payerAuthEnrollService = $payerAuthEnrollService;
+        // $payerAuthEnrollService = new \stdClass();
+        // $payerAuthEnrollService->run = "true";
+        // $request->payerAuthEnrollService = $payerAuthEnrollService;
 
         $card = new \stdClass();
         $cards = \Session::get('card');
@@ -232,22 +192,20 @@ class Gateway extends Base\Gateway
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
         
-        $purchaseTotals = new \stdClass();
-        $purchaseTotals->currency = $input['payment']['currency'];
-        $request->purchaseTotals = $purchaseTotals;
+        $request = $this->setPurchaseDetail($request, $input);
 
-        $item0 = new \stdClass();
-        $item0->unitPrice = $input['payment']['amount'];
-        $item0->id = "1";
+        $request = $this->setItemDetail($request, $input);
 
-        $request->item = array($item0);
+        $this->captureRequest = $request;
 
         try {
             $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
 
             $reply = $soapClient->runTransaction($request);
 
-            $this->enrollResponse = $reply;
+            $this->captureResponse = $reply;
+            
+            $this->persistAfterCapture();
 
             return $reply->reasonCode;
 
@@ -261,12 +219,64 @@ class Gateway extends Base\Gateway
     {
         $this->input = $input;
         $this->action = Action::REFUND;
+
+        $request = new \stdClass();
+
+        $request = $this->setMerchantDetailInRequest($request, $input);
+
+        $request = $this->setDebugDetail($request);
+
+        $ccCreditService = new stdClass();
+        $ccCreditService->run = "true";
+        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+                                            $input['payment']['id'], 'captured');
+        $ccCreditService->captureRequestID = $this->model->capture_ref;
+        $request->ccCreditService = $ccCreditService;
+
+        $request = $this->setPurchaseDetail($request, $input);
+
+        $request = $this->setItemDetail($request, $input);
+
+        try {
+            $soapClient = new ExtendedClient($_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'], array());
+
+            $reply = $soapClient->runTransaction($request);
+
+            $this->refundResponse = $reply;
+
+            return $reply->reasonCode;
+
+        } catch (SoapFault $exception) {
+            var_dump(get_class($exception));
+            var_dump($exception);
+        }
     }
 
     public function verify(array $input)
     {
         $this->input = $input;
         $this->action = Action::VERIFY;
+
+        $request = new \stdClass();
+
+        $request->type = 'transaction';
+        $request->subtype = 'transactionDetail';
+        $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $request->requestID = '4649570076396291201016';
+
+        try {
+            $soapClient = new ExtendedClient('https://ebctest.cybersource.com/ebctest/Query', array());
+
+            $reply = $soapClient->runTransaction($request);
+
+            var_dump($reply);die;
+
+            return $reply->reasonCode;
+
+        } catch (SoapFault $exception) {
+            var_dump(get_class($exception));
+            var_dump($exception);
+        }
     }
 
     public function enroll($input)
@@ -285,7 +295,6 @@ class Gateway extends Base\Gateway
             $reply = $soapClient->runTransaction($request);
 
             $this->enrollResponse = $reply;
-            var_dump($reply->requestID);
 
             $this->persistAfterEnroll();
 
@@ -304,7 +313,7 @@ class Gateway extends Base\Gateway
             $this->trace(
                 Trace::ERROR,
                 TraceCode::GATEWAY_ENROLL_ERROR,
-                $this->enrollResponse);
+                (array) $this->enrollResponse);
 
             $this->model = $this->repo->persistAfterEnrollError(
                             $this->id,
@@ -315,10 +324,10 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            // $this->trace(
-            //     Trace::INFO,
-            //     TraceCode::GATEWAY_ENROLL_RESPONSE,
-            //     $this->enrollResponse);
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_ENROLL_RESPONSE,
+                (array) $this->enrollResponse);
 
             $this->model = $this->repo->persistAfterEnroll($this->id,
                     $this->enrollRequest,
@@ -326,49 +335,65 @@ class Gateway extends Base\Gateway
         }
     }
 
-    // protected function trace($level, $message, array $context)
-    // {
-    //     if (isset($context['data']))
-    //     {
-    //         //
-    //         // If 'data' field is present, then make sure that
-    //         // no field defined in 'stripFieldsList' are present
-    //         // in data. If so, then unset them. This is to
-    //         // ensure extraneous or sensitive fields aren't traced.
-    //         //
-    //         $context['data'] = Hdfc\Utility::unsetFields(
-    //                             $context['data'],
-    //                             $this->stripFieldsList);
-    //     }
+    protected function persistAfterCapture()
+    {
+        if ($this->captureResponse->reasonCode !== 100)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_CAPTURE_ERROR,
+                (array) $this->captureResponse);
 
-    //     $this->trace->addRecord($level, $message, $context);
-    // }
+            $this->model = $this->repo->persistAfterCaptureError(
+                            $this->id,
+                            $this->captureResponse,
+                            $this->captureRequest);
+
+            $this->id = $this->model->id;
+        }
+        else
+        {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_CAPTURE_RESPONSE,
+                (array) $this->captureResponse);
+
+            $this->model = $this->repo->persistAfterCapture($this->id,
+                    $this->captureRequest,
+                    $this->captureResponse);
+        }
+    }
+
+    protected function trace($level, $message, array $context)
+    {
+        $this->trace->addRecord($level, $message, $context);
+    }
 
     protected function setId($id)
     {
         $this->id = $id;
     }
 
-    public function getEnrollRequestObject($input)
+    public function setMerchantDetailInRequest($request, $input)
     {
-        $request = new \stdClass();
-
         $request->merchantID = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
 
         $request->merchantReferenceCode = $input['card']['merchant_id'];
 
+        return $request;
+    }
+
+    public function setDebugDetail($request)
+    {
         $request->clientLibrary = "PHP";
         $request->clientLibraryVersion = phpversion();
         $request->clientEnvironment = php_uname();
 
-        $ccAuthService = new \stdClass();
-        $ccAuthService->run = "true";
-        $request->ccAuthService = $ccAuthService;
+        return $request;
+    }
 
-        $payerAuthEnrollService = new \stdClass();
-        $payerAuthEnrollService->run = "true";
-        $request->payerAuthEnrollService = $payerAuthEnrollService;
-        
+    public function setBillingInfo($request, $input)
+    {
         $billTo = new \stdClass();
         $billTo->firstName = $input['card']['name'];
         $billTo->lastName = "a";
@@ -380,22 +405,56 @@ class Gateway extends Base\Gateway
         $billTo->email = $input['payment']['email'];
         $request->billTo = $billTo;
 
+        return $request;
+    }
+
+    public function setPurchaseDetail($request, $input)
+    {
+        $purchaseTotals = new \stdClass();
+        $purchaseTotals->currency = $input['payment']['currency'];
+        $request->purchaseTotals = $purchaseTotals;
+
+        return $request;
+    }
+
+    public function setItemDetail($request, $input)
+    {
+        $item0 = new \stdClass();
+        $item0->unitPrice = $input['payment']['amount'];
+        $item0->id = "1";  
+        $request->item = array($item0);
+
+        return $request;
+    }
+
+    public function getEnrollRequestObject($input)
+    {
+        $request = new \stdClass();
+
+        $request = $this->setMerchantDetailInRequest($request, $input);
+
+        $request = $this->setDebugDetail($request);
+
+        $ccAuthService = new \stdClass();
+        $ccAuthService->run = "true";
+        $request->ccAuthService = $ccAuthService;
+
+        $payerAuthEnrollService = new \stdClass();
+        $payerAuthEnrollService->run = "true";
+        $request->payerAuthEnrollService = $payerAuthEnrollService;
+
+        $request = $this->setBillingInfo($request, $input);
+        
         $card = new \stdClass();
         $card->accountNumber = $input['card']['number'];
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
 
-        $purchaseTotals = new \stdClass();
-        $purchaseTotals->currency = $input['payment']['currency'];
-        $request->purchaseTotals = $purchaseTotals;
+        $request = $this->setPurchaseDetail($request, $input);
 
-        $item0 = new \stdClass();
-        $item0->unitPrice = $input['payment']['amount'];
-        $item0->id = "1";
-
-        $request->item = array($item0);
-
+        $request = $this->setItemDetail($request, $input);
+        
         return $request;
     }
 

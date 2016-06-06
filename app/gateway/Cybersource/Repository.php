@@ -84,6 +84,48 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::createOrFail($attributes);
+
+    }
+
+    public function persistAfterCapture($id, $request, $response)
+    {
+        $result = $response->reasonCode;
+
+        if ($result === Payment\Result::CAPTURED)
+        {
+            $status = Payment\Status::CAPTURED;
+        }
+        else
+        {
+            throw new Exception\LogicException('Should not rech here.');
+        }
+
+        $repo = $this->repo;
+
+        $model = $repo::find($id);
+
+        $model->capture_ref = $response->requestID;
+
+        $model->status = $status;
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterCaptureError($id, $error, $requestData)
+    {
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->status = Payment\Status::CAPTURE_FAILED;
+
+        $model->error_code = $error->reasonCode;
+
+        $this->saveOrFail($model);
+
+        return $model;
     }
 
     public function persistAfterAuthNotEnrolled($model, $data)

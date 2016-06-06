@@ -14,10 +14,11 @@ final class Result
 
     const NOT_ENROLLED  = 100;
 
+    const CAPTURED      = 100;
+
     /**
      * Result codes received in response for payment
      */
-    const CAPTURED          = 'CAPTURED';
     const APPROVED          = 'APPROVED';
     const SUCCESS           = 'SUCCESS';
     const NOT_CAPTURED      = 'NOT CAPTURED';
