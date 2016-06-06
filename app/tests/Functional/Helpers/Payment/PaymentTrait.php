@@ -610,6 +610,19 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetchInvoice(array $input)
+    {
+        $request = [
+            'url'       => '/reports/invoice',
+            'method'    => 'GET',
+            'content'   => $input
+        ];
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;
