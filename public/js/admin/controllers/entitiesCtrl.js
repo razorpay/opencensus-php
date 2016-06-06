@@ -141,7 +141,10 @@ app.controller('EntitiesCtrl', [
         ],
         received: booleanList,
         payment_id: ['Payment Id'],
-        'TxnReferenceNo': ['Txn Reference No']
+        TxnReferenceNo: ['Txn Reference No'],
+        RefundId: ['Billdesk Refund Id'],
+        BankReferenceNo: ['Bank Reference No'],
+        RefStatus: ['Refund Status']
       },
       card: {
         merchant_id: ['Merchant Id'],
