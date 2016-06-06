@@ -110,7 +110,7 @@ trait Authorize
         if ($payment->getGateway() !== Payment\Gateway::AXIS_MIGS)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Can force authroize only on axis migs gateway');
+                'Can force authorize only on axis migs gateway');
         }
 
         $this->repo->transaction(function() use ($payment, $input)
@@ -191,6 +191,11 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        if ($payment->globalCustomer !== null)
+        {
+            $input['customer'] = $payment->globalCustomer;
+        }
+
         if ($payment->card !== null)
         {
             $input['card'] = $payment->card->toArray();
@@ -198,7 +203,7 @@ trait Authorize
 
         try
         {
-            $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+            $data = $this->callGatewayCallback($payment, $input);
         }
         catch (Exception\BaseException $e)
         {
@@ -216,6 +221,64 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function callGatewayCallback($payment, $input)
+    {
+        // TODO: Refactor
+        if ((isset($input['gateway']['type'])) and
+            ($input['gateway']['type'] === 'otp'))
+        {
+            // TODO: Better name suggestions :(
+            $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
+
+            $this->postPaymentOtpCallbackProcessing($input, $data);
+
+            $this->callGatewayFunction('checkBalance', $input);
+        }
+        else
+        {
+            $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+        }
+
+        $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+
+        return $data;
+    }
+
+    protected function postPaymentOtpCallbackProcessing($input, $data)
+    {
+        $payment = $this->payment;
+
+        if (isset($input['customer']) === false)
+        {
+            $contact = $this->getFormattedContact($input['payment']['contact']);
+
+            $customer = (new Customer\Repository)
+                                    ->findByContactForMerchant(
+                                        $contact, Merchant\Account::SHARED_ACCOUNT);
+
+            if ($customer === null)
+            {
+                $customerAttributes = array(
+                    'contact' => $contact,
+                    'email'   => $input['payment']['email']
+                );
+
+                $customer = (new Customer\Core)
+                                    ->createGlobalCustomer($customerAttributes);
+            }
+
+            $input['customer'] = $customer;
+
+            $payment->globalCustomer()->associate($customer);
+            $payment->saveOrFail();
+        }
+
+        if (isset($data['token']) === true)
+        {
+            $this->createOrUpdateToken($input, $data);
+        }
     }
 
     protected function processPaymentCallbackException($e)

@@ -218,6 +218,30 @@ class PaymentCreateController extends BaseController
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
 
+    /**
+     * Resend OTP for a payment
+     */
+    public function postOtpResend($id)
+    {
+        $input = Input::all();
+
+        $payment = $this->payment->otpResend($id, $input);
+
+        return ApiResponse::json($payment);
+    }
+
+    /*
+     * Topup Wallet for a payment
+     */
+    public function postTopupAjax($id)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->topup($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();

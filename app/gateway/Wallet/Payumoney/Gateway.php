@@ -4,6 +4,8 @@ namespace Gateway\Wallet\Payumoney;
 
 use View;
 use Constants\Mode;
+use Models\Customer;
+use Models\Merchant;
 use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
@@ -13,6 +15,7 @@ use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
+use Models\Customer\Token;
 use Gateway\Base\VerifyResult;
 use Gateway\Base\AuthorizeFailed;
 use Gateway\Wallet\Payumoney\Action;
@@ -27,6 +30,8 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     protected $canRunOtpFlow = true;
+
+    protected $topup = true;
 
     protected $map = array(
         'email'         => 'email',
@@ -49,15 +54,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
-        {
-            $this->callbackOtpSubmit($input);
-
-            return $this->debit($input);
-        }
-
-        assert(false, 'Shouldn\'t reach here');
+        return $this->callbackTopupFlow($input);
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -213,9 +210,41 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function topup($input)
+    {
+        $this->action($input, Action::TOPUP_WALLET);
+
+        $token = $this->getValidWalletToken($input);
+
+        if ($token === null)
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        $this->accessToken = $token->getGatewayToken();
+
+        $request = $this->getTopupWalletRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::PAYMENT_TOPUP_RESPONSE, $content);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return $this->getTopupWalletRedirectRequestArray($content);
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $content['status'],
+            $content['message']);
+    }
+
     public function checkExistingUser($input)
     {
-
+        ;
     }
 
     public function otpGenerate($input)
@@ -249,7 +278,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function callbackOtpSubmit($input)
+    public function callbackOtpSubmit(array $input)
     {
         $this->action($input, Action::OTP_SUBMIT);
 
@@ -263,6 +292,8 @@ class Gateway extends Base\Gateway
 
         if (isset($content['result']['body']['access_token']))
         {
+            $data['token'] = $this->getTokenAttributes($content);
+
             $this->accessToken = $content['result']['body']['access_token'];
 
             $content['result']['body']['access_token'] = '';
@@ -270,8 +301,6 @@ class Gateway extends Base\Gateway
         }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
-
-        $code = $content['status'];
 
         if (($content['status'] !== Status::SUCCESS) or
             (isset($content['result']['body']['access_token']) === false))
@@ -284,13 +313,38 @@ class Gateway extends Base\Gateway
                 $content['status'],
                 $content['message']);
         }
+
+        return $data;
     }
 
-    protected function debit($input)
+    public function callbackTopupFlow($input)
     {
-        $this->checkBalance($input);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_TOPUP_CALLBACK, $input['gateway']);
 
-        $this->action($input, Action::AUTHORIZE);
+        $content = $input['gateway'];
+
+        // Not verifying hash as it's generated with different secret by payu
+        if (isset($content['status']) and
+            ($content['status'] === Status::TOPUP_SUCCESS))
+        {
+            $token = $this->getValidWalletToken($input);
+
+            if ($token !== null)
+            {
+                $this->accessToken = $token->getGatewayToken();
+                return;
+            }
+        }
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $content['status'],
+            $content['error_Message']);
+    }
+
+    public function debit(array $input)
+    {
+        $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
 
@@ -319,17 +373,22 @@ class Gateway extends Base\Gateway
             'received' => true
         );
 
+        //  Changing action to AUTHORIZE to keep the action consistent
+        $this->action = Action::AUTHORIZE;
+
         $this->createGatewayPaymentEntity($contentToSave);
+
+        $this->action = Action::DEBIT_WALLET;
     }
 
-    protected function checkBalance($input)
+    public function checkBalance(array $input)
     {
         $userBalance = $this->getUserWalletLimit($input);
 
         if ($input['payment']['amount'] > $userBalance)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
     }
 
@@ -352,6 +411,14 @@ class Gateway extends Base\Gateway
         }
 
         return 0;
+    }
+
+    protected function checkWalletTokenValidity($input)
+    {
+        if ($input['token']->getExpiredAt() <= time())
+        {
+            throw new Exception\BaseException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     protected function getUserWalletLimitRequestArray($input)
@@ -410,7 +477,7 @@ class Gateway extends Base\Gateway
             'merchantTransactionId' => $input['payment']['id'],
         );
 
-        $content['hash'] = $this->getHashForUseWallet($content);
+        $content['hash'] = $this->getHashForDebitWallet($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -502,6 +569,54 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getTopupWalletRequestArray($input)
+    {
+        $content = [];
+
+        $content = array(
+            'key'           => $this->getMerchantId($input['terminal']),
+            'txnDetails'    => json_encode(array(
+                'email' => $input['payment']['email'],
+                'surl'  => $input['callbackUrl'],
+                'furl'  => $input['callbackUrl'],
+            )),
+            'totalAmount'   => $input['payment']['amount'] / 100,
+            'client_id'     => $this->getClientId($input['terminal']),
+        );
+
+        if (isset($input['gateway']['amount']))
+        {
+            $content['totalAmount'] = $input['gateway']['amount'] / 100;
+        }
+
+        $content['hash'] = $this->getHashForTopupWallet($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::PAYMENT_TOPUP_REQUEST, $request);
+
+        $request['headers'] = array(
+            'Accept'        => 'application/json',
+            'Authorization' => 'Bearer ' . $this->accessToken
+        );
+
+        return $request;
+    }
+
+    protected function getTopupWalletRedirectRequestArray($input)
+    {
+        $this->action($input, Action::TOPUP_REDIRECT);
+
+        $content = array(
+            'paymentId'     => $input['result'],
+            'accessToken'   => $this->accessToken
+        );
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
+
     protected function getAuthHeader($terminal)
     {
         if ($this->mode === Mode::TEST)
@@ -579,7 +694,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getHashForUseWallet($content)
+    protected function getHashForDebitWallet($content)
     {
         $fieldsInOrder = array(
             'key',
@@ -589,6 +704,21 @@ class Gateway extends Base\Gateway
         );
 
         $content['productInfo'] = '';
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getHashForTopupWallet($content)
+    {
+        $fieldsInOrder = array(
+            'key',
+            'totalAmount',
+            'dummy',
+        );
+
+        $content['dummy'] = '';
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -638,6 +768,34 @@ class Gateway extends Base\Gateway
         return $contentToSave;
     }
 
+    protected function getTokenAttributes($content)
+    {
+        $input = $this->input;
+
+        $attributes = array(
+            Token\Entity::METHOD           => 'wallet',
+            Token\Entity::WALLET           => $input['payment']['wallet'],
+            Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
+            Token\Entity::GATEWAY_TOKEN    => $content['result']['body']['access_token'],
+            Token\Entity::GATEWAY_TOKEN2   => $content['result']['body']['refresh_token'],
+            Token\Entity::EXPIRED_AT       => time() + $content['result']['body']['expires_in'],
+        );
+
+        return $attributes;
+    }
+
+    protected function getCustomerAttributes($input)
+    {
+        $contact = $this->getFormattedContact($input['payment']['contact']);
+
+        $attributes = array(
+            'contact'   => $contact,
+            'email'     => $input['payment']['email']
+        );
+
+        return $attributes;
+    }
+
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
@@ -646,6 +804,20 @@ class Gateway extends Base\Gateway
     protected function getFormattedContact($contact)
     {
         return substr($contact, -10);
+    }
+
+    protected function getValidWalletToken($input)
+    {
+        $token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['terminal']['id'],
+                            $input['customer']['id']);
+
+        if ($token !== null and $token->getExpiredAt() > time())
+        {
+            return $token;
+        }
     }
 }
 

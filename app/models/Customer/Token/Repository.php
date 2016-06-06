@@ -35,6 +35,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Token\Entity::WALLET, '=', $wallet)
+                    ->where(Token\Entity::TERMINAL_ID, '=', $terminal)
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customer)
+                    ->first();
+    }
+
     public function getByMethodAndCustomerId($method, $customerId)
     {
         return $this->newQuery()
