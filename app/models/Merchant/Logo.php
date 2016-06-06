@@ -95,14 +95,28 @@ class Logo
             $newWidth = $dimension[0];
             $newHeight = $dimension[1];
 
-            // Creates the new image
-            $tmp = imagecreatetruecolor($newWidth, $newHeight);
-            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            $extension = $imageDetails['extension'];
 
             // Appends the size to the file name in the file path.
             $filePath = $this->getLogoFilePath($baseFilePath, $size);
 
-            imagejpeg($tmp, $filePath, 100);
+            // Creates the new image
+            $tmp = imagecreatetruecolor($newWidth, $newHeight);
+
+            // Keeps the background transparent
+            imagealphablending($tmp, false );
+            imagesavealpha($tmp, true );
+
+            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+            if (($extension === self::JPG_EXTENSION) or ($extension === self::JPEG_EXTENSION))
+            {
+                imagejpeg($tmp, $filePath, 100);
+            }
+            else
+            {
+                imagepng($tmp, $filePath);
+            }
         }
 
         // Delete the temporary files created.

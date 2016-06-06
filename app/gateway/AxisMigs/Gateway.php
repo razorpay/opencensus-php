@@ -257,69 +257,89 @@ class Gateway extends Base\Gateway
 
         if ($content['vpc_DRExists'] !== 'Y')
         {
-            // Could be the case where the transaction didn't even hit migs
-            if (($payment['received'] === false) and
-                (($payment['vpc_TxnResponseCode'] === null) or
-                 ($payment['vpc_TxnResponseCode'] !== '0')))
-            {
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
-            else
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
+            $this->verifyPaymentNonExistentCase($verify, $payment);
         }
         else
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            if ($content['vpc_TxnResponseCode'] === '0')
-            {
-                $verify->gatewaySuccess = true;
-
-                if (($payment['vpc_TxnResponseCode'] !== '0') or
-                    ($input['payment']['status'] === 'failed') or
-                    ($input['payment']['status'] === 'created'))
-                {
-                    $verify->apiSuccess = false;
-                    $status = VerifyResult::STATUS_MISMATCH;
-                }
-                else
-                {
-                    $verify->apiSuccess = true;
-                }
-            }
-            else
-            {
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-
-                //
-                // If payment is not marked as success then it shouldn't be success
-                // on migs end as well.
-                //
-
-                if (($payment['vpc_TxnResponseCode'] === '0') or
-                    (($input['payment']['status'] !== 'failed') and
-                     ($input['payment']['status'] !== 'created')))
-                {
-                    // It's marked as success, in this case, if it's totally refunded,
-                    // then that means billdesk refunded the payment on it's own end
-                    // and we don't need to worry.
-
-                    $verify->gatewaySuccess = true;
-                    $status = VerifyResult::STATUS_MISMATCH;
-                }
-            }
+            $this->verifyPaymentReconcileWithGatewayResponse($content, $verify, $status);
         }
 
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
+        $this->verifyPaymentBackfillDataIfRequired($content, $payment);
+
+        return $status;
+    }
+
+    protected function verifyPaymentNonExistentCase($verify, $payment)
+    {
+        // Could be the case where the transaction didn't even hit migs
+        if (($payment['received'] === false) and
+            (($payment['vpc_TxnResponseCode'] === null) or
+             ($payment['vpc_TxnResponseCode'] !== '0')))
+        {
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify, & $status)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        if ($content['vpc_TxnResponseCode'] === '0')
+        {
+            $verify->gatewaySuccess = true;
+
+            if (($payment['vpc_TxnResponseCode'] !== '0') or
+                ($input['payment']['status'] === 'failed') or
+                ($input['payment']['status'] === 'created'))
+            {
+                $verify->apiSuccess = false;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+            else
+            {
+                $verify->apiSuccess = true;
+            }
+        }
+        else
+        {
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+
+            //
+            // If payment is not marked as success then it shouldn't be success
+            // on migs end as well.
+            //
+
+            if (($payment['vpc_TxnResponseCode'] === '0') or
+                (($input['payment']['status'] !== 'failed') and
+                 ($input['payment']['status'] !== 'created')))
+            {
+                // It's marked as success, in this case, if it's totally refunded,
+                // then that means billdesk refunded the payment on it's own end
+                // and we don't need to worry.
+
+                $verify->gatewaySuccess = true;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+        }
+    }
+
+    protected function verifyPaymentBackfillDataIfRequired($content, $payment)
+    {
         if ($payment['received'] === false)
         {
             unset($content['vpc_Command']);
@@ -347,8 +367,6 @@ class Gateway extends Base\Gateway
 
             $payment->saveOrFail();
         }
-
-        return $status;
     }
 
     protected function postAmaTransactionRequestAndGetContent(array & $content, $input)
@@ -719,7 +737,10 @@ class Gateway extends Base\Gateway
     {
         $expiryMonth = $input['card']['expiry_month'];
 
-        if ($expiryMonth < 10) $expiryMonth = '0' . $expiryMonth;
+        if ($expiryMonth < 10)
+        {
+            $expiryMonth = '0' . $expiryMonth;
+        }
 
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 

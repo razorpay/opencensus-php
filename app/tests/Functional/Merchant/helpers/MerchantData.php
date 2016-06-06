@@ -53,7 +53,7 @@ return [
                 'id'    => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'name'  => 'Tester 2',
-                'email' => 'liveAndTest@localhost.com',
+                'email' => 'liveandtest@localhost.com',
                 'activated' => false,
                 'activated_at' => null,
                 'methods' => [
@@ -280,6 +280,45 @@ return [
                 'email' => 'shake@razorpay.com'
             ]
         ]
+    ],
+
+    'testEditMerchantUppercaseEmail' => [
+        'request' => [
+            'content' => [
+                'email' => 'UPPERCASE@Razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'uppercase@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testEditMerchantEmptyEmail' => [
+        'request' => [
+            'content' => [
+                'email' => '',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testEditMerchantConfig' => [
@@ -722,6 +761,17 @@ return [
                 'wallet' => [
                     'paytm' => true,
                 ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],

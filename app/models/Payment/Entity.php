@@ -188,8 +188,11 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = array(
         self::AMOUNT,
+        self::AMOUNT_AUTHORIZED,
+        self::AMOUNT_REFUNDED,
         self::FEE,
-        self::SERVICE_TAX);
+        self::SERVICE_TAX
+    );
 
 // --------------------- Generators --------------------------------------------
 
@@ -391,6 +394,11 @@ class Entity extends Base\PublicEntity
     public function setOtpCount($count)
     {
         $this->setAttribute(self::OTP_COUNT, $count);
+    }
+
+    public function setEmailAttribute($email)
+    {
+        $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
     public function incrementOtpAttempts()

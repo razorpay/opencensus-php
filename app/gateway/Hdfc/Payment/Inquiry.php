@@ -184,82 +184,55 @@ trait Inquiry
 
     protected function sendPaymentVerifyRequest($verify)
     {
+        // Gets the payment entity that has to be verified
         $payment = $verify->payment;
-        $content = $this->getPaymentVerifyRequestContentArray($verify);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
+        // Gets the request array for verify from gateway
+        $requestContent = $this->getPaymentVerifyRequestContentArray($verify);
 
-        $inquiryRequest = &$this->inquiryRequest;
-        $inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
+        // Sets the gateway URL for the inquiry (verifying payment status)
+        $this->inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
 
-        $data = &$this->inquiryRequest['data'];
-        $data = [];
-        $data = $content;
+        // Sets the request body for the inquiry (verifying payment status)
+        $this->inquiryRequest['data'] = $requestContent;
 
+        // TO NOTE: This is just initializing RESPONSE from the inquiry.
         $this->inquiryResponse['data'] = [];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $inquiryRequest);
+            $this->inquiryRequest);
 
+        // This sets the response received from the inquiry
         $this->runRequestResponseFlow(
             $this->inquiryRequest,
             $this->inquiryResponse);
 
-        $data = & $this->inquiryResponse['data'];
-
-        if ((isset($data['result'])) and
-            ($data['result'] === Result::SUCCESS))
-        {
-            $payment = $verify->payment;
-
-            $action = $payment['action'];
-
-            if ($payment['action'] === Payment\Action::AUTHORIZE)
-            {
-                $result = Result::APPROVED;
-            }
-            else if ($payment['action'] === Payment\Action::PURCHASE)
-            {
-                $result = Result::CAPTURED;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Unexpected action: ' . $payment['action']);
-            }
-
-            $data['result'] = $result;
-        }
+        $this->checkAndSetResponseResult($payment);
 
         $inquiryResponse = $this->inquiryResponse;
-        $content = $this->inquiryResponse['data'];
+        $responseContent = $this->inquiryResponse['data'];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'payment_id' => $payment->getPaymentId(),
-                'xml' => $inquiryResponse['xml']
+                'xml' => $inquiryResponse['xml'],
+                'response_content' => $responseContent
             ]);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $content);
 
         $verify->verifyResponse = $inquiryResponse;
         $verify->verifyResponseBody = $inquiryResponse['xml'];
-        $verify->verifyResponseContent = $content;
+        $verify->verifyResponseContent = $responseContent;
 
-        return $content;
+        return $responseContent;
     }
 
     protected function getPaymentVerifyRequestContentArray($verify)
     {
         $payment = $verify->payment;
 
-        $content['action'] = Payment\Action::INQUIRY;
+        $content['action'] = Action::INQUIRY;
         $content['transid'] = $payment['gateway_transaction_id'];
         $content['udf5'] = 'PaymentID';
 
@@ -267,6 +240,35 @@ trait Inquiry
         $content['member'] = $verify->input['card']['name'];
         $content['trackid'] = $verify->input['payment']['id'];
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $content);
+
         return $content;
+    }
+
+    protected function checkAndSetResponseResult($payment)
+    {
+        $responseData = & $this->inquiryResponse['data'];
+
+        if ((isset($responseData['result'])) and
+            ($responseData['result'] === Result::SUCCESS))
+        {
+            $paymentAction = $payment['action'];
+
+            if ($paymentAction === Action::AUTHORIZE)
+            {
+                $result = Result::APPROVED;
+            }
+            else if ($paymentAction === Action::PURCHASE)
+            {
+                $result = Result::CAPTURED;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unexpected action: ' . $paymentAction);
+            }
+
+            $responseData['result'] = $result;
+        }
     }
 }

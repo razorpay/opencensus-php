@@ -51,7 +51,7 @@ class CreateBilldesk extends Migration {
             $table->string('ErrorReason')->nullable();
             $table->string('ProcessStatus')->nullable();
 
-            $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->string('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
@@ -63,6 +63,10 @@ class CreateBilldesk extends Migration {
                   ->on_delete('restrict');
 
             $table->index('received');
+            $table->index('AuthStatus');
+            $table->index('TxnReferenceNo');
+            $table->index('RefundId');
+            $table->index('BankReferenceNo');
         });
     }
 

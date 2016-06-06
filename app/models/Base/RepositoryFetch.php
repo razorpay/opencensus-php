@@ -123,7 +123,7 @@ trait RepositoryFetch
     protected function runEsFetch($params, $merchantId)
     {
         $esRepo = $this->getEsRepoClass();
-        
+
         return $esRepo->fetch($params, $merchantId);
     }
 
@@ -306,6 +306,18 @@ trait RepositoryFetch
         $query = $query->where($createdAt, '<=', $params['to']);
     }
 
+    protected function addQueryParamEmail($query, $params)
+    {
+        $repo = $this->repo;
+
+        $attribute = $repo::getAttributeWithTableName(Common::EMAIL);
+
+        // Email should be case insensitive
+        $email = mb_strtolower($params['email']);
+
+        $query = $query->where($attribute, '=', $email);
+    }
+
     protected function addQueryOrder($query)
     {
         $query->orderBy(Common::ID, 'desc');
@@ -355,12 +367,13 @@ trait RepositoryFetch
         }
     }
 
-    public function fetchAllNotesFromUpdatedAt($skip, $updated, $count)
+    public function fetchAllNotesFromCreatedAt($skip, $createdAt, $count)
     {
         $repo = $this->repo;
 
+        // Using created_at and not updated_at because updated_at is not indexed.
         return $repo::select('id', 'notes', 'merchant_id', 'created_at')
-            ->where(PublicEntity::UPDATED_AT, '>=', $updated)
+            ->where(PublicEntity::CREATED_AT, '>=', $createdAt)
             ->orderBy('id', 'desc')
             ->skip($skip)
             ->take($count)

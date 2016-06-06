@@ -11,5 +11,11 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
-        'TxnReferenceNo'                => 'sometimes|');
+        'TxnReferenceNo'                => 'sometimes|max:50',
+        'received'                      => 'sometimes|in:0,1',
+        'AuthStatus' 					=> 'sometimes|max:5',
+        'RefStatus' 	 				=> 'sometimes|max:5',
+        'RefundId'                      => 'sometimes|string',
+        'BankReferenceNo'               => 'sometimes|string',
+    );
 }

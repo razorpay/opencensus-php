@@ -13,6 +13,7 @@ use Gateway\Billdesk;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
@@ -32,6 +33,26 @@ class Gateway extends Base\Gateway
         $request = $this->getRequestArrayForAuthorize($content, $input);
 
         $this->traceGatewayPaymentRequest($request, $input);
+
+        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
+            ($input['merchant']['id'] === '2aTeFCKTYWwfrF'))
+        {
+            $response = $this->sendGatewayRequest($request);
+            $crawler = new Crawler($response->body, $request['url']);
+            $form = $crawler->filter('form')->form();
+
+            $uri = $form->getUri();
+            $method = $form->getMethod();
+            $values = $form->getValues();
+
+            $request = array(
+                'url' => $uri,
+                'method' => strtolower($method),
+                'content' => $values,
+            );
+
+            return $request;
+        }
 
         return $request;
     }
@@ -150,88 +171,19 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
-        $amountRefunded = (int) ($content['RefAmount'] * 100);
-
         $status = VerifyResult::STATUS_MATCH;
 
         if ($content['QueryStatus'] !== QueryStatus::Y)
         {
-            // Could be the case where the transaction didn't even hit billdesk
-            if (($payment['received'] === false) and
-                (($payment['AuthStatus'] === null) or
-                 ($payment['AuthStatus'] === AuthStatus::NA)))
-            {
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
+            $this->verifyPaymentNonExistentCase($content, $verify, $payment);
         }
         else if ($content['AuthStatus'] === AuthStatus::SUCCESS)
         {
-            $verify->gatewaySuccess = true;
-
-            if (($payment['AuthStatus'] !== AuthStatus::SUCCESS) or
-                ($input['payment']['status'] === 'failed') or
-                ($input['payment']['status'] === 'created'))
-            {
-                $refAmount = (int) $content['RefAmount'] * 100;
-
-                if (($content['RefStatus'] === RefundStatus::CANCELLED) and
-                    ($refAmount === $input['payment']['amount']))
-                {
-                    //
-                    // This is the case where payment actually succeeded
-                    // when billdesk reconciled on the next day and those payments
-                    // are automatically cancelled by billdesk as well,
-                    // meaning it's been automatically refunded.
-                    //
-
-                    $verify->gatewaySuccess = false;
-                    $verify->apiSuccess = false;
-                    $status = VerifyResult::STATUS_MATCH;
-                }
-                else
-                {
-                    $verify->apiSuccess = false;
-                    $status = VerifyResult::STATUS_MISMATCH;
-                }
-            }
-            else
-            {
-                $verify->apiSuccess = false;
-
-                // Check that refund amount matches.
-                if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
-                {
-                    $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
-                }
-            }
+            $this->verifyPaymentReconcileWithGatewaySuccessResponse($content, $verify, $status);
         }
         else
         {
-            $verify->apiSuccess = false;
-            $verify->gatewaySuccess = false;
-
-            //
-            // If payment is not marked as success then it shouldn't be success
-            // on billdesk end as well.
-            //
-
-            if ($content['AuthStatus'] === AuthStatus::SUCCESS)
-            {
-                // It's marked as success, in this case, if it's totally refunded,
-                // then that means billdesk refunded the payment on it's own end
-                // and we don't need to worry.
-
-                if ($amountRefunded === $verify->input['payment']['amount'])
-                {
-                    $status = VerifyResult::STATUS_MATCH;
-                }
-                else
-                {
-                    $verify->gatewaySuccess = true;
-                    $status = VerifyResult::STATUS_MISMATCH;
-                }
-            }
+            $this->verifyPaymentReconcileWithGatewayFailureResponse($content, $verify, $status);
         }
 
         $verify->status = $status;
@@ -253,13 +205,99 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    protected function verifyPaymentNonExistentCase($content, $verify, $payment)
+    {
+        // Could be the case where the transaction didn't even hit billdesk
+        if (($payment['received'] === false) and
+            (($payment['AuthStatus'] === null) or
+             ($payment['AuthStatus'] === AuthStatus::NA)))
+        {
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewaySuccessResponse($content, $verify, & $status)
+    {
+        $verify->gatewaySuccess = true;
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        if (($payment['AuthStatus'] !== AuthStatus::SUCCESS) or
+            ($input['payment']['status'] === 'failed') or
+            ($input['payment']['status'] === 'created'))
+        {
+            $refAmount = (int) $content['RefAmount'] * 100;
+
+            if (($content['RefStatus'] === RefundStatus::CANCELLED) and
+                ($refAmount === $input['payment']['amount']))
+            {
+                //
+                // This is the case where payment actually succeeded
+                // when billdesk reconciled on the next day and those payments
+                // are automatically cancelled by billdesk as well,
+                // meaning it's been automatically refunded.
+                //
+
+                $verify->gatewaySuccess = false;
+                $verify->apiSuccess = false;
+                $status = VerifyResult::STATUS_MATCH;
+            }
+            else
+            {
+                $verify->apiSuccess = false;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+        }
+        else
+        {
+            $verify->apiSuccess = false;
+
+            $amountRefunded = (int) ($content['RefAmount'] * 100);
+
+            // Check that refund amount matches.
+            if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
+            {
+                $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
+            }
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewayFailureResponse($content, $verify, & $status)
+    {
+        $verify->apiSuccess = false;
+        $verify->gatewaySuccess = false;
+
+        //
+        // If payment is not marked as success then it shouldn't be success
+        // on billdesk end as well.
+        //
+
+        if ($content['AuthStatus'] === AuthStatus::SUCCESS)
+        {
+            // It's marked as success, in this case, if it's totally refunded,
+            // then that means billdesk refunded the payment on it's own end
+            // and we don't need to worry.
+
+            if ($amountRefunded === $verify->input['payment']['amount'])
+            {
+                $status = VerifyResult::STATUS_MATCH;
+            }
+            else
+            {
+                $verify->gatewaySuccess = true;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+        }
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $content = $this->getPaymentVerifyRequestContentArray($verify);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
+            $content);
 
         $content = $this->postRequest($content);
 

@@ -88,6 +88,13 @@ class Gateway
     protected $testing;
 
     /**
+     * Gateway's config present in app/config/gateway.php
+     *
+     * @var array
+     */
+    protected $config;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -115,6 +122,8 @@ class Gateway
         }
 
         $this->loadGatewayConfig();
+
+        $this->repo = $this->getRepository();
     }
 
     public function authorize(array $input)
@@ -546,5 +555,12 @@ class Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    protected function getRepository()
+    {
+        $gateway = $this->gateway;
+
+        return $this->app['repo']->$gateway;
     }
 }
