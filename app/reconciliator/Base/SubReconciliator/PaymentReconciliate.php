@@ -214,7 +214,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($this->paymentTransaction === null)
         {
-            // TODO: raise an alert about transaction being absent for an entity id.
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_FAILURE,
+                    'message'       => 'Transaction not present for the given payment ID.',
+                    'row_details'   => $rowDetails,
+                    'gateway'       => get_called_class()
+                ]);
+
             return false;
         }
 
@@ -250,7 +257,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             if ($currentGatewayFee !== $reconGatewayFee)
             {
-                // TODO: raise an alert about stored fee and recon fee not being the same
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'        => TraceCode::RECON_FAILURE,
+                        'message'           => 'Gateway fee in the recon file does not match with the one stored in API.',
+                        'recon_gateway_fee' => $reconGatewayFee,
+                        'api_gateway_fee'   => $currentGatewayFee,
+                        'gateway'           => get_called_class(),
+                    ]);
+
                 return false;
             }
             return true;
@@ -269,7 +284,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             if ($currentGatewayServiceTax !== $reconGatewayServiceTax)
             {
-                // TODO: raise an alert about stored service tax and recon service tax not being the same
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'        => TraceCode::RECON_FAILURE,
+                        'message'           => 'Gateway service tax in the recon file does not match with the one stored in API.',
+                        'recon_gateway_fee' => $reconGatewayServiceTax,
+                        'api_gateway_fee'   => $currentGatewayServiceTax,
+                        'gateway'           => get_called_class(),
+                    ]);
+
                 return false;
             }
             return true;

@@ -5,10 +5,19 @@ namespace Reconciliator\Base;
 use Trace\TraceCode;
 
 use Reconciliator\Orchestrator;
+use Reconciliator\Messenger;
 
 
 class CombinedReconciliate extends Foundation\SubReconciliate
 {
+    protected $messenger;
+
+    public function __construct()
+    {
+        $this->messenger = new Messenger();
+    }
+
+
     public function startReconciliation($fileContents)
     {
         $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
@@ -20,8 +29,15 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
             if ($entityType === null)
             {
-                // TODO: Raise an alert about not being able to figure out the row's
-                // reconciliation type.
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_PARSE_ERROR,
+                        'message'       => 'Did not get the reconciliation type for the row in combined reconciliation.',
+                        'row_details'   => $row,
+                        'extra_details' => $extraDetails,
+                        'gateway'       => get_called_class()
+                    ]);
+
                 continue;
             }
 
