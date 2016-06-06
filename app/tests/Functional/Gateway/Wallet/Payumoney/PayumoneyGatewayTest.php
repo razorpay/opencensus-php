@@ -164,7 +164,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $response = $this->runRequestResponseFlow($data, function() use ($payment) {
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             return $this->doAuthPayment($payment);
         });
 
