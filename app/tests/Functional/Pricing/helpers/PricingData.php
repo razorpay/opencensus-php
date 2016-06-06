@@ -734,6 +734,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
+
+    'testGetPricingNetworks' => [
+        'request' => [
+            'url'       => '/pricing/networks',
+            'method'    => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testAddAmountRangePricingPlanRule' => [
         'request' => [
             'content' => [
@@ -765,6 +777,7 @@ return [
             ],
         ],
     ],
+
     'testAddAmountRangePricingPlanRuleOverlap' => [
         'request' => [
             'content' => [

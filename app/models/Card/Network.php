@@ -150,4 +150,10 @@ class Network
 
         return $codes[$fullName];
     }
+
+    public static function getSupportedNetworksNamesMap()
+    {
+        $supported = array_diff(self::$networks, self::$unsupportedNetworks);
+        return array_intersect_key(self::$fullName, array_flip($supported));
+    }
 }

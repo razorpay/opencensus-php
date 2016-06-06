@@ -83,6 +83,22 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testGetPricingNetworks()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['bank']);
+        $this->assertNotNull($response['card']);
+        $this->assertNotNull($response['wallet']);
+
+        $this->assertNotEquals(count($response['bank']), 0);
+        $this->assertNotEquals(count($response['card']), 0);
+        $this->assertNotEquals(count($response['wallet']), 0);
+
+    }
+
     public function testGetPricingPlans()
     {
         $this->createPricingPlan();
@@ -101,7 +117,7 @@ class PricingTest extends TestCase
         $this->createPricingPlan2();
 
         $this->addPricingPlanRule($content['id']);
-        
+
         $this->ba->appAuth('rzp_test');
         $this->startTest();
 
@@ -313,7 +329,7 @@ class PricingTest extends TestCase
                 'amount_range_min' => null,
                 'amount_range_max' => null,
         );
-        
+
         $request = array(
             'method' => 'POST',
             'url' => '/pricing/'.$id.'/rule',
