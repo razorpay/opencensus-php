@@ -24,6 +24,6 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where('refundId', '=', $gatewayRefundId)
-            ->firstOrFail();
+                    ->firstOrFail();
     }
 }

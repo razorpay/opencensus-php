@@ -24,7 +24,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
      *******************/
 
     protected $refundRepo;
-    protected $transactionRepo;
 
     protected $payment;
     protected $refund;
@@ -39,7 +38,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $repo = $this->app['repo'];
 
         $this->refundRepo      = $repo->refund;
-        $this->transactionRepo = $repo->transaction;
 
         $this->messenger = new Messenger();
     }

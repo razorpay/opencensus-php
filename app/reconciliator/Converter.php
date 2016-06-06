@@ -78,7 +78,7 @@ class Converter
             {
                 if (empty($columnHeaders) === true)
                 {
-                    $columnHeaders = $row;
+                    $columnHeaders = array_map('trim', $row);
                 }
                 else
                 {

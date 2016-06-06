@@ -7,7 +7,7 @@ use EE\Exception;
 class Validator
 {
     const ACCEPTED_EXTENSIONS_MAP = [
-        'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values'],
+        'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
         'txt'   => ['text/plain'],
         // Don't know why but, getting application/zip and application/octet-stream as mimetype for xlsx files.
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

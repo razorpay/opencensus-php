@@ -67,4 +67,5 @@ class Entity extends Base\Entity
     {
         return (int) $this->attributes['amount'];
     }
+    
 }

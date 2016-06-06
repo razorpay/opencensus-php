@@ -3,7 +3,6 @@
 namespace Reconciliator\BillDesk;
 
 use Reconciliator\Base;
-use Reconciliator\Messenger;
 
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -12,15 +11,6 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_REFUND_ID = 'Refund ID';
-
-    protected $messenger;
-
-
-    public function __construct()
-    {
-        $this->messenger = new Messenger();
-        parent::__construct();
-    }
 
     /**
      * BillDesk reconciliation files only send us the gateway refund ID,
