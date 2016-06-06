@@ -152,7 +152,7 @@ class Entity
         self::AXIS_GENIUS       => Gateway\AxisGenius::class,
         self::BANK_ACCOUNT      => Models\Merchant\BankAccount::class,
         self::WALLET_PAYZAPP    => Gateway\Wallet\Payzapp::class,
-        self::NETBANKING_HDFC   => Models\Netbanking\Hdfc::class,
+        self::NETBANKING_HDFC   => Gateway\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK  => Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY  => Gateway\Wallet\Payumoney::class,
