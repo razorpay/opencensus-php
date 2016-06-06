@@ -135,8 +135,9 @@ class Service extends Base\Service
         if ($valid === true)
         {
             $custAppInput = array(
-                App\Entity::CUSTOMER_ID => $customer->getId(),
-                App\Entity::MERCHANT_ID => $this->merchant->getId());
+                App\Entity::CUSTOMER_ID     => $customer->getId(),
+                App\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                App\Entity::DEVICE_TOKEN    => $deviceToken);
 
             $app = (new App\Core)->create($custAppInput);
 
