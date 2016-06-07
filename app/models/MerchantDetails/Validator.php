@@ -4,9 +4,12 @@ namespace Models\MerchantDetails;
 
 use Models\Base;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Razorpay\IFSC\IFSC;
 
 class Validator extends Base\Validator
 {
+    const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code';
+
     protected static $step1Rules = array(
         'contact_name'              => 'required|alpha_space|max:255',
         'contact_email'             => 'required|email|max:255',
@@ -18,6 +21,23 @@ class Validator extends Base\Validator
     protected static $editEmailRules = [
         'transaction_report_email'  => 'sometimes'
     ];
+
+    protected static $step4Validators = [
+        'ifsc_code'
+    ];
+
+    protected function validateIfscCode(array $input)
+    {
+        if (isset($input['bank_branch_ifsc']))
+        {
+            $ifsc = $input['bank_branch_ifsc'];
+
+            if (!IFSC::validate($ifsc))
+            {
+                $this->addError('bank_branch_ifsc', self::INVALID_IFSC_CODE_MESSAGE);
+            }
+        }
+    }
 
     protected static $step2Rules = array(
         'business_type'                 => 'required|numeric|digits_between:1,10',
