@@ -55,8 +55,8 @@ class MerchantMailer extends Mailer
     {
         $this->subject = "New activation form submitted for {$this->data['merchant_details']['business_name']}";
 
-        $this->to = 'Razorpay Sales Team';
-        $this->email = $this->getEmailFor('sales');;
+        $this->to = 'Razorpay Activations Team';
+        $this->email = $this->getEmailFor('activations');
         $this->view = 'emails.admin_notify';
 
         return $this;

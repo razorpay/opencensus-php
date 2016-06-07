@@ -15,7 +15,9 @@ return array(
 
         'contact' => 'contact@razorpay.com',
 
-        'sales' => 'salesteam@razorpay.com'
+        'sales' => 'salesteam@razorpay.com',
+
+        'activations' => 'activationsteam@razorpay.com'
     ),
 
     'sorting_hat'   =>  [
