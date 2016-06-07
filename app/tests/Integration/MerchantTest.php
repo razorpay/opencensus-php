@@ -323,7 +323,8 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('bank_account_number'), 'RZP123443')   // Fill slug, alphanumeric
             ->type(l::IdOrName('bank_account_name'), 'Tester')   // Fill slug
             ->type(l::IdOrName('bank_account_type'), 'savings')   // Fill slug
-            ->type(l::IdOrName('bank_branch_ifsc'), 'KKBK0000261')   // Fill slug
+            // Fill invalid IFSC Code first
+            ->type(l::IdOrName('bank_branch_ifsc'), 'KKBK0000999')
             ->type(l::IdOrName('bank_beneficiary_address1'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address2'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address3'), 'abc123443')
@@ -331,9 +332,12 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('bank_beneficiary_state'), 'RJ')
             ->type(l::IdOrName('bank_beneficiary_pin'), '123443')
             ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-save'))
+            ->waitForPresent('form[name="step4"] > fieldset > .alerts > .alert-danger')
+            ->type(l::IdOrName('bank_branch_ifsc'), 'KKBK0000261')
+            ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-save'))
             ->waitForPresent('form[name="step4"] > fieldset > .alerts > .alert-success');
 
-        $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step4\"] > fieldset > .alerts > .alert-danger')));
+        $this->assertFalse($this->browser->isElementPresent(l::css('form[name=step4] > fieldset > .alerts > .alert-danger')));
 
         // Upload documents and save
         // S3 API is mocked in selenium/init.php to avoid requests to AWS

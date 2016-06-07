@@ -24,7 +24,8 @@
         "drewm/mailchimp-api": "^2.1",
         "nesbot/carbon": "1.*",
         "sunra/php-simple-html-dom-parser": "v1.5.0",
-        "nitmedia/wkhtml2pdf": "^2.0"
+        "nitmedia/wkhtml2pdf": "^2.0",
+        "razorpay/ifsc": "^0.1.1"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
