@@ -1812,7 +1812,7 @@ class Service extends Base\Service
     {
         $this->setApiCredentials(null, 'live');
 
-        $data = $this->api->payment->fetchNetworksPublic();
+        $data = $this->api->pricing->fetchNetworksPublic();
 
         return $data;
     }

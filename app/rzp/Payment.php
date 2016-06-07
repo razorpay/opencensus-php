@@ -42,12 +42,4 @@ class Payment extends \Razorpay\Api\Payment
     {
         return 'RZP\Payment';
     }
-
-    public function fetchNetworksPublic()
-    {
-        $relativeUrl = 'supported_networks';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
 }

@@ -62,4 +62,11 @@ class Pricing extends Entity
         $className = lcfirst($className);
         return $className.'/';
     }
+
+    public function fetchNetworksPublic()
+    {
+        $relativeUrl = 'pricing/networks';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }

@@ -73,17 +73,17 @@ app.controller('PricingsCtrl', [
           var card_networks = [];
           var bank_networks = [];
           var wallet_networks = [];
-          angular.forEach(networks.Card, function (value, key) {
+          angular.forEach(networks.card, function (value, key) {
             card_networks.push({id:key, name:value});
           });
           $scope.cardNetworks = card_networks;
 
-          angular.forEach(networks.Bank, function (value, key) {
+          angular.forEach(networks.bank, function (value, key) {
             bank_networks.push({id:key, name:value});
           });
           $scope.bankNetworks = bank_networks;
 
-          angular.forEach(networks.Wallet, function (value, key) {
+          angular.forEach(networks.wallet, function (value, key) {
             wallet_networks.push({id:key, name:value});
           });
           $scope.walletNetworks = wallet_networks;
