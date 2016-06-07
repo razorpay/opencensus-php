@@ -38,8 +38,6 @@ trait OtpResend
     {
         $this->verifyPaymentMethodEnabled($payment, $input);
 
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
-
         //
         // Call gateway input
         //

@@ -171,6 +171,73 @@ class MobikwikGatewayTest extends TestCase
         $this->assertSame($payment['otp_count'], 2);
     }
 
+    public function testInsufficientBalancePayment()
+    {
+        $this->type = 'otp';
+        $this->step = 'TOPUP';
+
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+        $this->type = null;
+
+        return $response;
+    }
+
+    public function testTopupPayment()
+    {
+        // Get Innsufficient balance response
+        $response = $this->testInsufficientBalancePayment();
+
+        $responseData = $this->response->original->data;
+
+        $topupRequest = $this->testData['topupData'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $topupResponse = $this->runRequestResponseFlow($topupRequest);
+
+        // Make topup redirection request
+        $topupRedirect = $this->makeRequest($topupResponse['request']);
+
+        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
+            ($topupRedirect->getStatusCode() === 302));
+
+        if ($ret === true)
+        {
+            $callback = array(
+                'url' => $topupRedirect->getTargetUrl(),
+                'method' => 'get',
+                'content' => []
+            );
+
+            $callbackResponse = $this->makeRequest($callback);
+        }
+        else
+        {
+            assert(false);
+        }
+
+        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->original->data);
+
+        $mobikwik = $this->getLastEntity('mobikwik', true);
+
+        $this->assertTestResponse($mobikwik, 'testPaymentMobikwikEntity');
+    }
+
     public function testVerifyPayment()
     {
         $this->payment = $this->doAuthAndCapturePayment($this->payment);

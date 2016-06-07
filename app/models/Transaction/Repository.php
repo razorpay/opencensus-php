@@ -81,16 +81,20 @@ class Repository extends Base\Repository
     public function fetchDataForInvoice($merchantId, $from, $to)
     {
         $fee = $this->newQuery()
-                    ->merchantId($merchantId)
+                    ->where('transactions.merchant_id', $merchantId)
                     ->where('type', 'payment')
+                    ->join('payments', 'transactions.entity_id', '=', 'payments.id')
+                    ->whereNotNull('payments.captured_at')
                     ->betweenTime($from, $to)
-                    ->sum('fee');
+                    ->sum('transactions.fee');
 
         $serviceTax = $this->newQuery()
-                           ->merchantId($merchantId)
+                           ->where('transactions.merchant_id', $merchantId)
                            ->where('type', 'payment')
+                           ->join('payments', 'transactions.entity_id', '=', 'payments.id')
+                           ->whereNotNull('payments.captured_at')
                            ->betweenTime($from, $to)
-                           ->sum('service_tax');
+                           ->sum('transactions.service_tax');
 
         // Total fee includes our cut + service tax
         return [

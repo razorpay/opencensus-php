@@ -5,7 +5,10 @@ namespace Models\Pricing;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
+use Models\Bank;
+use Models\Card;
 use Models\Pricing;
+use Models\Payment\Processor;
 use Trace\TraceCode;
 
 class Service extends Base\Service
@@ -115,4 +118,23 @@ class Service extends Base\Service
     {
         ;
     }
+
+    public function getSupportedNetworks()
+    {
+        $bankCodes = Processor\Netbanking::getSupportedBanks('live');
+
+        $bankNamesMap = Bank\Name::getNames($bankCodes);
+
+        $cards = Card\Network::getSupportedNetworksNamesMap();
+
+        $wallets = Processor\Wallet::getWalletNetworkNamesMap();
+
+        $networks = array(
+            'bank' => $bankNamesMap,
+            'card' => $cards,
+            'wallet' => $wallets);
+
+        return $networks;
+    }
+
 }

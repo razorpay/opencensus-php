@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const CUSTOMER_ID           = 'customer_id';
+    const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
     const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
@@ -106,7 +107,9 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::EMI_PLAN_ID,
         self::CUSTOMER_ID,
+        self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
+        self::APP_ID,
         self::TOKEN,
         self::EMAIL,
         self::CONTACT,
@@ -947,6 +950,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo('Models\Customer\Entity');
+    }
+
+    public function globalCustomer()
+    {
+        return $this->belongsTo('Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
     }
 
     public function app()

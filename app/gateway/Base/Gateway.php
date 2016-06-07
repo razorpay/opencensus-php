@@ -49,6 +49,12 @@ class Gateway
     protected $action;
 
     /**
+     * Whether the gateway supports topup payments
+     * @var boolean
+     */
+    protected $topup = false;
+
+    /**
      * Whether the gateway supports authorizing payments.
      * @var boolean
      */
@@ -88,6 +94,13 @@ class Gateway
     protected $testing;
 
     /**
+     * Gateway's config present in app/config/gateway.php
+     *
+     * @var array
+     */
+    protected $config;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -115,6 +128,8 @@ class Gateway
         }
 
         $this->loadGatewayConfig();
+
+        $this->repo = $this->getRepository();
     }
 
     public function authorize(array $input)
@@ -123,10 +138,31 @@ class Gateway
         $this->action = Action::AUTHORIZE;
     }
 
+    /**
+     * Handles gateway callback
+     *
+     * @param array $input
+     * @return array|null
+     */
     public function callback(array $input)
-    {//s($input['gateway']);
+    {
         $this->input = $input;
         $this->action = Action::CALLBACK;
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function debit(array $input)
+    {
+        ;
+    }
+
+    public function checkBalance(array $input)
+    {
+        ;
     }
 
     public function capture(array $input)
@@ -167,6 +203,11 @@ class Gateway
     public function canRunOtpFlow(array $input = [])
     {
         return $this->canRunOtpFlow;
+    }
+
+    public function canTopup()
+    {
+        return $this->topup;
     }
 
     public function setTerminal($terminal)
@@ -546,5 +587,12 @@ class Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    protected function getRepository()
+    {
+        $gateway = $this->gateway;
+
+        return $this->app['repo']->$gateway;
     }
 }

@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
 
     protected $canRunOtpFlow = true;
 
+    protected $topup = true;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -221,6 +223,11 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function topup($input)
+    {
+        return $this->authorize($input);
+    }
+
     public function checkExistingUser($input)
     {
         $this->action($input, Action::CHECK_USER);
@@ -291,7 +298,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function callbackOtpSubmit($input)
+    public function callbackOtpSubmit(array $input)
     {
         $this->action($input, Action::OTP_SUBMIT);
 

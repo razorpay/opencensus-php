@@ -155,6 +155,75 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertSame($payment['otp_count'], 2);
     }
 
+    public function testInsufficientBalancePayment()
+    {
+        $this->step = 'TOPUP';
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+        $payment['amount'] = 100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+
+        return $response;
+    }
+
+    public function testTopupPayment()
+    {
+        // Get Innsufficient balance response
+        $response = $this->testInsufficientBalancePayment();
+
+        $this->step = 'TOPUP';
+
+        $responseData = $this->response->original->data;
+
+        $topupRequest = $this->testData['topupData'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $topupResponse = $this->runRequestResponseFlow($topupRequest);
+
+        // Make topup redirection request
+        $topupRedirect = $this->makeRequest($topupResponse['request']);
+
+        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
+            ($topupRedirect->getStatusCode() === 302));
+
+        if ($ret === true)
+        {
+            $callback = array(
+                'url' => $topupRedirect->getTargetUrl(),
+                'method' => 'get',
+                'content' => []
+            );
+
+            $callbackResponse = $this->makeRequest($callback);
+        }
+        else
+        {
+            assert(false);
+        }
+
+        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->original->data);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, __FUNCTION__);
+
+        $this->step = null;
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
@@ -226,6 +295,7 @@ class PayumoneyGatewayTest extends TestCase
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
+        $this->response     = $response;
         $this->otpSubmitUrl = $url;
 
         if ($mock)
