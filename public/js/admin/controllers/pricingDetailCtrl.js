@@ -1,0 +1,38 @@
+"use strict";
+/**
+ * PricingDetailCtrl
+ */
+app.controller('PricingDetailCtrl', [
+  '$scope',
+  '$stateParams',
+  '$http',
+  'alertsFactory',
+  function ($scope, $stateParams, $http, alertsFactory) {
+    //Intialise alerts and scope functions
+    $scope.alerts = alertsFactory.getHandler();
+    $scope.pricing_plan_id = $stateParams.id;
+
+    $scope.details = {};
+
+    $scope.fetchPlanDetails = function() {
+      var request = $http({
+        method: 'get',
+        url: '/admin/pricing/' + $scope.pricing_plan_id
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.details = data.data;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.fetchPlanDetails();
+}]);
