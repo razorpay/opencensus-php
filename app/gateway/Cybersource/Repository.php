@@ -95,7 +95,7 @@ class Repository extends Base\Repository
 
         $repo = $this->repo;
 
-        $model = $repo::find($id);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
 
         $model->capture_ref = $response->requestID;
 
@@ -113,6 +113,47 @@ class Repository extends Base\Repository
         $model = $repo::where('payment_id', '=', $id)->firstOrFail();
 
         $model->status = Payment\Status::CAPTURE_FAILED;
+
+        $model->error_code = $error->reasonCode;
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterAuthorize($id, $request, $response)
+    {
+        $result = $response->reasonCode;
+
+        if ($result === Payment\Result::AUTHORIZED)
+        {
+            $status = Payment\Status::AUTHORIZED;
+        }
+        else
+        {
+            throw new Exception\LogicException('Should not rech here.');
+        }
+
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->ref = $response->requestID;
+
+        $model->status = $status;
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterAuthorizeError($id, $error, $requestData)
+    {
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->status = Payment\Status::AUTHORIZE_FAILED;
 
         $model->error_code = $error->reasonCode;
 

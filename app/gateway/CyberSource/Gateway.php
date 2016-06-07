@@ -42,6 +42,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+        sd($input);
 
         $this->id = $input['payment']['id'];
 
@@ -81,6 +82,8 @@ class Gateway extends Base\Gateway
     {
         $request = $this->createAuthorizeRequestFields($input);
 
+        $this->authorizeRequest = $request;
+
         try {
             $soapClient = $this->getSoapClientObject();
 
@@ -90,10 +93,29 @@ class Gateway extends Base\Gateway
 
             if($reply->reasonCode === 100)
             {
-                return true;
+                $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_CAPTURE_RESPONSE,
+                (array) $this->authorizeResponse);
+
+                $this->model = $this->repo->persistAfterAuthorize($this->id,
+                    $this->authorizeRequest,
+                    $this->authorizeResponse);
             }
             else
             {
+                $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_CAPTURE_ERROR,
+                (array) $this->authorizeResponse);
+
+                $this->model = $this->repo->persistAfterAuthorizeError(
+                            $this->id,
+                            $this->authorizeResponse,
+                            $this->authorizeRequest);
+
+                $this->id = $this->model->id;
+
                 throw new Exception\InvalidArgumentException(
                     'Authorization failed. Reason code: '.$reply->reasonCode);
             }
@@ -177,13 +199,9 @@ class Gateway extends Base\Gateway
         $ccCaptureService = new \stdClass();
         $ccCaptureService->run = "true";
         $this->model = $this->repo->retrieveByPaymentIdAndStatus(
-                                            $input['payment']['id'], 'enrolled');
+                                            $input['payment']['id'], 'authorized');
         $ccCaptureService->authRequestID = $this->model->ref;
         $request->ccCaptureService = $ccCaptureService;
-
-        // $payerAuthEnrollService = new \stdClass();
-        // $payerAuthEnrollService->run = "true";
-        // $request->payerAuthEnrollService = $payerAuthEnrollService;
 
         $card = new \stdClass();
         $cards = \Session::get('card');
@@ -209,10 +227,10 @@ class Gateway extends Base\Gateway
 
             if($reply->reasonCode != Payment\Result::CAPTURED)
             {
-                throw new Exception("Capture failed! Reason code: ".$reply->reasonCode, 1);
+                throw new Exception\LogicException("Capture failed! Reason code: ".$reply->reasonCode, 1);
                 
             }
-
+            
             return $reply->reasonCode;
 
         } catch (SoapFault $exception) {
@@ -287,8 +305,6 @@ class Gateway extends Base\Gateway
             $soapClient = new ExtendedClient('https://ebctest.cybersource.com/ebctest/Query', array());
 
             $reply = $soapClient->runTransaction($request);
-
-            var_dump($reply);die;
 
             return $reply->reasonCode;
 
@@ -398,7 +414,7 @@ class Gateway extends Base\Gateway
     {
         $request->merchantID = $this->getMerchantID();
 
-        $request->merchantReferenceCode = $input['card']['merchant_id'];
+        $request->merchantReferenceCode = $this->merchantReferenceCode();
 
         return $request;
     }
@@ -410,6 +426,18 @@ class Gateway extends Base\Gateway
         if($this->mode === 'live')
         {
             $mid = $_ENV['CYBERSOURCE_GATEWAY_LIVE_MERCHANT_ID'];
+        }
+
+        return $mid;
+    }
+
+    public function merchantReferenceCode()
+    {
+        $mid = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_REFERENCE_CODE'];
+
+        if($this->mode === 'live')
+        {
+            $mid = $_ENV['CYBERSOURCE_GATEWAY_LIVE_MERCHANT_REFERENCE_CODE'];
         }
 
         return $mid;

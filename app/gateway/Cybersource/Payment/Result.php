@@ -16,6 +16,8 @@ final class Result
 
     const CAPTURED      = 100;
 
+    const AUTHORIZED    = 100;
+
     /**
      * Result codes received in response for payment
      */
