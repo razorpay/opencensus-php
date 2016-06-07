@@ -31,13 +31,15 @@ class EntityReportTest extends TestCase
 
     public function testInvoice()
     {
+        // We need to setup a terminal for the netbanking payment
+        $this->fixtures->create('terminal:all_shared_terminals');
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
         // We need an auth-refunded payment and make sure
         // that it doesn't appear in the invoice
 
-        $payment = $this->defaultAuthPayment();
+        $payment = $this->defaultAuthPayment($this->getDefaultNetbankingPaymentArray());
         $input['force'] = '1';
         $this->refundAuthorizedPayment($payment['id'], $input);
 
