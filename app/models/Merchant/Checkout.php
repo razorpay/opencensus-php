@@ -26,9 +26,17 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        if (isset($_COOKIE['app_token']))
+        if (isset($_COOKIE['session_id']))
         {
-            $input['app_token'] = $_COOKIE['app_token'];
+            $sessionId = $_COOKIE['session_id'];
+
+            session_start();
+            session_id($session_id);
+
+            $input['app_token'] = $_SESSION['app_token'];
+            $input['device_token'] = $_SESSION['device_token'];
+
+            s($input);
         }
 
         $methodsArray = array(

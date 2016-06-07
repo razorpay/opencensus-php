@@ -97,9 +97,15 @@ class Core extends Base\Core
             $response['app_token'] = $app->getPublicId();
             $response['device_token'] = $app->getDeviceToken();
 
-            //set the cookie for app_token and device_token
-            setcookie('app_token', $app->getPublicId());
-            setcookie('device_token', $app->getDeviceToken());
+            //create new session and set cookie
+            session_start();
+
+            $_SESSION['app_token'] = $app->getPublicId();
+            $_SESSION['device_token'] = $app->getDeviceToken();
+
+            setcookie('session_id', session_id());
+
+            session_write_close();
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {
