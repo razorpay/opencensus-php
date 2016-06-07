@@ -70,8 +70,12 @@ class Service extends Base\Service
             $details = [
                 'merchant_id'    => $merchant->id,
                 'contact_email'  => $merchant->email,
-                'contact_mobile' => $data['contact_mobile']
             ];
+
+            if (isset($data['contact_mobile']))
+            {
+                $details['contact_mobile'] = $data['contact_mobile'];
+            }
 
             MerchantDetails\Entity::createOrFail($details);
         }
