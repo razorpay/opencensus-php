@@ -19,6 +19,7 @@ use EE\Error;
 use EE\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
+use Session;
 
 class Checkout
 {
@@ -26,17 +27,18 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        if (isset($_COOKIE['session_id']))
+        // check if appToken or device token is present in session
+        $appToken = Session::get('app_token');
+        $deviceToken = Session::get('device_token');
+
+        if (isset($input['app_token']) === false)
         {
-            $sessionId = $_COOKIE['session_id'];
+            $input['app_token'] = $appToken;
+        }
 
-            session_start();
-            session_id($session_id);
-
-            $input['app_token'] = $_SESSION['app_token'];
-            $input['device_token'] = $_SESSION['device_token'];
-
-            s($input);
+        if (isset($input['device_token']) === false)
+        {
+            $input['device_token'] = $deviceToken;
         }
 
         $methodsArray = array(

@@ -10,6 +10,7 @@ use Models\Merchant;
 use Models\Merchant\Account;
 use Models\Payment;
 use Trace\TraceCode;
+use Session;
 
 class Core extends Base\Core
 {
@@ -97,15 +98,9 @@ class Core extends Base\Core
             $response['app_token'] = $app->getPublicId();
             $response['device_token'] = $app->getDeviceToken();
 
-            //create new session and set cookie
-            session_start();
 
-            $_SESSION['app_token'] = $app->getPublicId();
-            $_SESSION['device_token'] = $app->getDeviceToken();
-
-            setcookie('session_id', session_id());
-
-            session_write_close();
+            Session::put('app_token', $app->getPublicId());
+            Session::put('device_token', $app->getDeviceToken());
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {
