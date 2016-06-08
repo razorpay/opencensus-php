@@ -62,4 +62,12 @@ class PricingController extends BaseController
     {
         ;
     }
+
+    public function getSupportedNetworks()
+    {
+        $data = (new Pricing\Service)->getSupportedNetworks();
+
+        return ApiResponse::json($data);
+    }
+
 }

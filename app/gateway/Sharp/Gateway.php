@@ -65,16 +65,10 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
         }
 
-        if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
-        {
-            return $this->callbackOtpSubmit($input);
-        }
-
         $this->verifyPaymentCreateResponse($input);
     }
 
-    protected function callbackOtpSubmit($input)
+    public function callbackOtpSubmit(array $input)
     {
         ;
     }

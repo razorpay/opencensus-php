@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 class ResponseCodeMap
 {
     public static $codes = array(
+        2010006 => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_CREDENTIALS,
         2010009 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_MOBILE,
         2010013 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_EMAIL,
         2010015 => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_CONTACT_PAYUMONEY,

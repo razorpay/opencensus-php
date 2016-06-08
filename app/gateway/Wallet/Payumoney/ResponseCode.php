@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 class ResponseCode
 {
     public static $codes = array(
+        2010006 => 'Invalid Credentials on PayUmoney',
         2010009 => 'Invalid Mobile Number',
         2010013 => 'Invalid Email Id',
         2010015 => 'Please contact care@payumoney.com using your registered email ID',

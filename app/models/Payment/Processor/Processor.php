@@ -19,6 +19,7 @@ use Models\Pricing;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
+use Models\Customer;
 
 class Processor
 {
@@ -28,6 +29,7 @@ class Processor
     use Refund;
     use Verify;
     use OtpResend;
+    use Topup;
 
     protected $merchant;
 
@@ -505,6 +507,17 @@ class Processor
             $traceData);
     }
 
+    protected function retrieveToken($input)
+    {
+        $this->token = (new Customer\Token\Repository)
+                        ->getByWalletTerminalAndCustomerId(
+                            $input['payment']['wallet'],
+                            $input['payment']['terminal_id'],
+                            $input['customer']->getId());
+
+        return $this->token;
+    }
+
     protected function retrieve($id)
     {
         $this->payment = $this->core->retrieveByIdAndMerchantId(
@@ -575,5 +588,28 @@ class Processor
         $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
+    }
+
+    protected function createOrUpdateToken($input, $data)
+    {
+        $token = $this->retrieveToken($input);
+
+        if ($token === null)
+        {
+            $token = (new Customer\Token\Core)
+                        ->create($input['customer'], $data['token']);
+        }
+        else
+        {
+            $token->fill($data['token']);
+            $token->saveOrFail();
+        }
+
+        return $token;
+    }
+
+    protected function getFormattedContact($contact)
+    {
+        return substr($contact, -10);
     }
 }

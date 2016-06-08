@@ -355,7 +355,8 @@ class ApiResponse
             'payment_cancel',
             'payment_create_ajax',
             'payment_otp_submit',
-            'payment_otp_resend');
+            'payment_otp_resend',
+            'payment_topup_ajax');
 
         if (in_array($route, $routes))
         {

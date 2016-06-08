@@ -41,18 +41,6 @@ class PaymentController extends BaseController
     }
 
     /**
-     * Resend OTP
-     */
-    public function postOtpResend($id)
-    {
-        $input = Input::all();
-
-        $payment = $this->payment->otpResend($id, $input);
-
-        return ApiResponse::json($payment);
-    }
-
-    /**
      * Refund a payment.
      */
     public function postRefund($id)

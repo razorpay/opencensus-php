@@ -33,6 +33,15 @@ class Core extends Base\Core
         return $customer;
     }
 
+    public function createGlobalCustomer($input)
+    {
+        assert(isset($input[Customer\Entity::CONTACT]));
+
+        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+
+        return $this->create($input, $merchant);
+    }
+
     public function edit($customer, $input)
     {
         $customer->edit($input);

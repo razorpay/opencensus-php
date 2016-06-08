@@ -64,6 +64,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function tokens()
+    {
+        return $this->hasMany('Models\Customer\Token\Entity');
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
