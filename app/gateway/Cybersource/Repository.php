@@ -40,20 +40,12 @@ class Repository extends Base\Repository
             $status = Payment\Status::NOT_ENROLLED;
         }
 
-        //
-        // 'received' is marked as false because after this we will
-        // initiate auth request. And 'received' is marked as true
-        // only after that if we receive positive result.
-        //
         $attributes = array(
-            'received'                  => '0',
             'payment_id'                => $id,
             'gateway_transaction_id'    => '1',
             'action'                    => '1',
             'amount'                    => $request->item[0]->unitPrice,
-            'enroll_result'             => '1',
             'status'                    => $status,
-            'eci'                       => '1',
             'ref'                       => $response->requestID);
         
 
@@ -65,13 +57,11 @@ class Repository extends Base\Repository
     public function persistAfterEnrollError($id, array $error, $requestData)
     {
         $attributes = array(
-            'received'              => '1',
             'payment_id'            => $id,
             'action'                => '1',
             'amount'                => $requestData->item[0]->unitPrice,
             'error_code'            => $error->reasonCode,
             'error_text'            => '1',
-            'enroll_result'         => '1',
             'status'                => Payment\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
@@ -162,6 +152,61 @@ class Repository extends Base\Repository
         return $model;
     }
 
+    public function persistAfterValidate($id, $request, $response, $cardType)
+    {
+        $result = $response->reasonCode;
+
+        if ($result === Payment\Result::VALIDATED)
+        {
+            $status = Payment\Status::VALIDATED;
+        }
+        else
+        {
+            throw new Exception\LogicException('Should not rech here.');
+        }
+
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->eci_raw = $response->payerAuthValidateReply->eciRaw;
+
+        $model->commerce_indicator = $response->payerAuthValidateReply->commerceIndicator;
+
+        $model->xid = $response->payerAuthValidateReply->xid;
+
+        $model->pares_status = $response->payerAuthValidateReply->paresStatus;
+
+        if($cardType === 'Visa')
+        {
+            $model->cavv = $response->payerAuthValidateReply->cavv;
+        }
+
+        // if($cardType === 'Mastercard')
+        // {
+        //     $model->
+        // }
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterValidateError($id, $error, $requestData, $cardType)
+    {
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->status = Payment\Status::VALIDATE_FAILED;
+
+        $model->error_code = $error->reasonCode;
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         $status = Payment\Status::AUTHORIZED;
@@ -172,7 +217,6 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'received'      => '1',
             'payment_id'    => $data['trackid'],
             'status'        => $status,
             'amount'        => $data['amt'],
@@ -200,7 +244,6 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'received'      => '1',
             'payment_id'    => $data['trackid'],
             'status'        => $status,
             'result'        => $data['result'],
@@ -217,7 +260,6 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
-            'received'      => '1',
             'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
@@ -230,7 +272,6 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
-            'received'      => '1',
             'status'        => Payment\Status::AUTH_ENROLL_FAILED,
             'error_code'    => $error['code'],
             'error_text'    => $error['text']);
@@ -264,7 +305,6 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'received'                  => '1',
             'payment_id'                => $paymentId,
             'refund_id'                 => $refundId,
             'gateway_transaction_id'    => $responseData['tranid'],
@@ -311,7 +351,6 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'received'                  => '1',
             'payment_id'                => $paymentId,
             'refund_id'                 => $refundId,
             'gateway_transaction_id'    => $requestdata['transid'],

@@ -42,11 +42,12 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-        sd($input);
 
         $this->id = $input['payment']['id'];
 
         $status = $this->postAuthEnrolledRequest($input);
+
+        $this->persistAfterValidate($input['card']['network']);
 
         if($status === 100)
         {
@@ -59,9 +60,43 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function persistAfterValidate($cardType)
+    {
+        if ($this->validateResponse->reasonCode !== 100)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_VALIDATE_ERROR,
+                (array) $this->validateResponse);
+
+            $this->model = $this->repo->persistAfterValidateError(
+                            $this->id,
+                            $this->validateResponse,
+                            $this->validateRequest, 
+                            $cardType);
+
+            $this->id = $this->model->id;
+        }
+        else
+        {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_VALIDATE_RESPONSE,
+                (array) $this->validateResponse);
+
+            $this->model = $this->repo->persistAfterValidate($this->id,
+                    $this->validateRequest,
+                    $this->validateResponse,
+                    $cardType);
+
+        }
+    }
+
     public function postAuthEnrolledRequest($input)
     {
         $request = $this->createAuthEnrolledRequestFields($input);
+
+        $this->validateRequest = $request;
 
         try {
             $soapClient = $this->getSoapClientObject();
@@ -69,6 +104,8 @@ class Gateway extends Base\Gateway
             $reply = $soapClient->runTransaction($request);
 
             $this->authValidateResponse = $reply;
+
+            $this->validateResponse = $reply;
 
             return $reply->reasonCode;
 
@@ -95,7 +132,7 @@ class Gateway extends Base\Gateway
             {
                 $this->trace(
                 Trace::INFO,
-                TraceCode::GATEWAY_CAPTURE_RESPONSE,
+                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
                 (array) $this->authorizeResponse);
 
                 $this->model = $this->repo->persistAfterAuthorize($this->id,
@@ -106,7 +143,7 @@ class Gateway extends Base\Gateway
             {
                 $this->trace(
                 Trace::ERROR,
-                TraceCode::GATEWAY_CAPTURE_ERROR,
+                TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $this->authorizeResponse);
 
                 $this->model = $this->repo->persistAfterAuthorizeError(
@@ -134,13 +171,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->setDebugDetail($request);
 
-        $ccAuthService = new \stdClass();
-        $ccAuthService->run = "true";
-        $request->ccAuthService = $ccAuthService;
-
         $payerAuthValidateService = new \stdClass();
         $payerAuthValidateService->run = "true";
         $payerAuthValidateService->signedPARes = $input['gateway']['PaRes'];
+        $request->payerAuthValidateService = $payerAuthValidateService;
         
         $request = $this->setBillingInfo($request, $input);
 
@@ -168,6 +202,22 @@ class Gateway extends Base\Gateway
 
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
+
+        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+                                            $input['payment']['id'], 'enrolled');
+
+        $ccAuthService->paresStatus = $this->model->pares_status;
+        $ccAuthService->xid = $this->model->xid;
+        $ccAuthService->commerceIndicator = $this->model->commerce_indicator;
+        $ccAuthService->eciRaw = $this->model->eci_raw;
+        if($input['card']['network'] === 'Visa')
+        {
+            $ccAuthService->cavv = $this->model->cavv;
+        }
+        // if($input['card']['network'] === 'Mastercard')
+        // {
+
+        // }
         $request->ccAuthService = $ccAuthService;
 
         $request = $this->setBillingInfo($request, $input);
@@ -230,7 +280,7 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException("Capture failed! Reason code: ".$reply->reasonCode, 1);
                 
             }
-            
+
             return $reply->reasonCode;
 
         } catch (SoapFault $exception) {
@@ -526,7 +576,7 @@ class Gateway extends Base\Gateway
                 return $this->getFieldsForFormSubmitToBankACS();
 
             case Payment\Result::NOT_ENROLLED:
-                return;
+                throw new Exception\LogicException('Card should be enrolled');
 
             default:
                 throw new Exception\LogicException('Should not have reached here');

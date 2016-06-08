@@ -20,6 +20,8 @@ class Status
     const AUTH_NOT_ENROLL_FAILED    = 'auth_not_enroll_failed';
     const AUTHORIZED                = 'authorized';
     const AUTHORIZE_FAILED          = 'authorize_failed';
+    const VALIDATED                 = 'validated';
+    const VALIDATE_FAILED           = 'validate_failed';
     const CAPTURED                  = 'captured';
     const CAPTURE_FAILED            = 'capture_failed';
     const REFUND_FAILED             = 'refund_failed';

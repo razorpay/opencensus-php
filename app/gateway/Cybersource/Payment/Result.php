@@ -18,6 +18,8 @@ final class Result
 
     const AUTHORIZED    = 100;
 
+    const VALIDATED     = 100;
+
     /**
      * Result codes received in response for payment
      */
