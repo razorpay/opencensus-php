@@ -32,7 +32,7 @@ class Tokenex
                 ]
             );
 
-            throw;
+            throw $e;
         }
     }
 
@@ -55,7 +55,7 @@ class Tokenex
                 ]
             );
 
-            throw;
+            throw $e;
         }
     }
 }
