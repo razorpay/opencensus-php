@@ -96,4 +96,25 @@ class CustomerTokenTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testLogoutFromApp()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogoutFromDevice()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogoutFromAllDevices()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
 }

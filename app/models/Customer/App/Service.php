@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\Customer\App;
 
@@ -14,5 +14,16 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->repo = new App\Repository;
+    }
+
+    public function deleteAppTokens($appToken, $input)
+    {
+        App\Entity::verifyIdAndStripSign($appToken);
+
+        $app = $this->repo->findOrFail($appToken);
+
+        $data = (new App\Core)->deleteCustomerTokens($app->customer, $input);
+
+        return $data;
     }
 }

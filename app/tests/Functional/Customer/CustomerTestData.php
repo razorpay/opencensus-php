@@ -382,4 +382,49 @@ return [
             ],
         ],
     ],
+
+    'testLogoutFromApp' => [
+        'request' => [
+            'url' => '/apps/capp_1000000custapp/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'app',
+                'app_token' => 'capp_1000000custapp',
+                'device_token' => '1000custdevice'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testLogoutFromDevice' => [
+        'request' => [
+            'url' => '/apps/capp_1000000custapp/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'device',
+                'device_token' => '1000custdevice'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testLogoutFromAllDevices' => [
+        'request' => [
+            'url' => '/apps/capp_1000000custapp/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'all'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
 ];

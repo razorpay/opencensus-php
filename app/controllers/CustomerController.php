@@ -98,6 +98,15 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function logoutCustomer($appToken)
+    {
+        $input = Input::all();
+
+        $data = (new Customer\App\Service)->deleteAppTokens($appToken, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postOtp()
     {
         $input = Input::all();

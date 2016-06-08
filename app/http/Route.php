@@ -210,7 +210,7 @@ final class Route
         'device_token_verify'                   => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'app_delete_token'                      => ['delete',   'apps/{appToken}/tokens/{token}',           'CustomerController@deleteTokenForApp'                              ],
         'app_fetch_tokens'                      => ['get',      'apps/{appToken}/tokens',                   'CustomerController@fetchTokensByAppToken'                          ],
-        'global_customer_logout'                => ['delete',   'customer/logout',                          'CustomerController@logoutCustomer'                                 ],
+        'global_customer_logout'                => ['delete',   'apps/{appToken}/logout',                   'CustomerController@logoutCustomer'                                 ],
         'delete_device_token'                   => ['delete',   'devices/{deviceToken}',                    'CustomerController@deleteDeviceToken'                              ],
         'otp_post'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],

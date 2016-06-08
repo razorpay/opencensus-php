@@ -13,6 +13,17 @@ class Repository extends Base\Repository
 
     protected $entity = 'CustomerApps';
 
+    protected $entityFetchParamRules = array(
+        App\Entity::ID            => 'sometimes|string|size:14',
+        App\Entity::CUSTOMER_ID   => 'sometimes|string|size:14',
+        App\Entity::DEVICE_TOKEN  => 'sometimes|string|size:14',
+    );
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
+    }
+
     public function fetchAppsByDeviceToken($deviceToken, $customer, $merchant)
     {
         $repo = $this->repo;
