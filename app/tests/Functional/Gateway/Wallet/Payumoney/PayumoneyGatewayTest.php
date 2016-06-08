@@ -222,6 +222,27 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, __FUNCTION__);
 
         $this->step = null;
+
+        return $callbackResponse->original->data;
+    }
+
+    public function testAlreadyProcessedTopupPayment()
+    {
+        $responseData = $this->testTopupPayment();
+
+        $this->ba->publicAuth();
+        $this->step = 'TOPUP';
+
+        $topupRequest = $this->testData['topupDataAlreadyProcessed'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $this->runRequestResponseFlow($topupRequest);
     }
 
     public function testVerifyPayment()
