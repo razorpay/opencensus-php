@@ -96,6 +96,15 @@ class PaymentValidationTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment);
     }
 
+    public function testNotesArrayNotDictionary()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = ['100304034'];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+    }
+
     public function testContactWithDashAndBracket()
     {
         $payment = $this->getDefaultPaymentArray();
