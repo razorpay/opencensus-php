@@ -152,6 +152,10 @@ class TraceCode
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
 
+    /**
+     * Trace code for critical info
+     */
+    const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
