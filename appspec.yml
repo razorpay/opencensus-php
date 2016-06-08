@@ -6,3 +6,11 @@ hooks:
     - location: scripts/install.sh
       timeout: 300
       runas: ubuntu
+  ApplicationStop:
+    - location: scripts/lifecycle/deregister_from_elb.sh
+      timeout: 300
+      runas: ubuntu
+  ApplicationStart:
+    - location: scripts/lifecycle/register_with_elb.sh
+      timeout: 300
+      runas: ubuntu
