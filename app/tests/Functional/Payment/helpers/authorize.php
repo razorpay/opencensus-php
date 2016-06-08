@@ -502,6 +502,20 @@ return [
         ],
     ],
 
+    'testNotesAsArray' => [
+        'request' => [
+            'content' => [
+                'notes' => ['0' => 'test string', 'temp' => 'string 2']
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testTimeoutOldPayment' => [
         'request' => [
             'content' => [],

@@ -3,6 +3,7 @@
 namespace Models\Base;
 
 use EE\Exception;
+use Trace\TraceCode;
 use EE\Error\ErrorCode;
 use Symfony\Component\Translation\TranslatorInterface;
 
@@ -48,6 +49,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     protected function validateNotesKeyValue(array $notes)
     {
         $code = null;
+        $notify = false;
 
         foreach ($notes as $key => $note)
         {
@@ -63,9 +65,23 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             {
                 $code = ErrorCode::BAD_REQUEST_NOTES_KEY_TOO_LARGE;
             }
+            else if (is_numeric($key))
+            {
+                $notify = true;
+            }
 
             if ($code !== null)
                 break;
+        }
+
+        // Collecting data for notes with integer keys
+        if ($notify === true)
+        {
+            $app = \App::getFacadeRoot();
+
+            $app['trace']->info(
+               TraceCode::PAYMENT_NOTES_INVALID,
+               $notes);
         }
 
         return $code;
