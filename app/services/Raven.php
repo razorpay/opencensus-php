@@ -63,7 +63,7 @@ class Raven
     {
         $response = null;
 
-        if($this->mode === Mode::TEST)
+        if ($this->mode === Mode::TEST)
         {
             $response['success'] = true;
         }

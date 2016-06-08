@@ -70,6 +70,8 @@ class Service extends Base\Service
 
         $input['source'] = 'api';
 
+        $input['params']['merchant_name'] = $this->merchant->getBillingLabelElseName();
+
         $data = (new Customer\Raven)->sendOtp($input);
 
         return $data;
