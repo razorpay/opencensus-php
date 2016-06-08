@@ -226,7 +226,7 @@ class PayumoneyGatewayTest extends TestCase
         return $callbackResponse->original->data;
     }
 
-    public function testAlreadyProcessedTopupPayment()
+    public function testTopupAlreadyProcessedPayment()
     {
         $responseData = $this->testTopupPayment();
 
@@ -237,6 +237,56 @@ class PayumoneyGatewayTest extends TestCase
 
         // Generate relative URL for topup
         $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $this->runRequestResponseFlow($topupRequest);
+    }
+
+    public function testTopupCapturePayment()
+    {
+        $responseData = $this->testTopupPayment();
+
+        $capturePayment = $this->capturePayment($responseData['razorpay_payment_id'], 100000);
+
+        $this->ba->publicAuth();
+        $this->step = 'TOPUP';
+
+        $topupRequest = $this->testData['topupDataAlreadyProcessed'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $this->runRequestResponseFlow($topupRequest);
+    }
+
+    public function testTopupFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'method'        => 'wallet',
+                            'wallet'        => 'payumoney',
+                            'gateway'       => 'wallet_payumoney',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->getId()
+                        ]);
+
+        $paymentId = $payment->getPublicId();
+
+        $topupRequest = $this->testData['topupDataAlreadyProcessed'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $paymentId], false);
         $url = 'http://localhost' . $url;
 
         $topupRequest['request']['url'] = $url;
