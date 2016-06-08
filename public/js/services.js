@@ -310,7 +310,39 @@ angular.module('app.services', [])
     return (statusKeys.indexOf(key) > -1);
   };
 }])
-.factory('riskMap', [function() {
+// Force will pick up from the row.entity field
+// rather than the key
+.factory('getState', [function() {
+  return function (type, force) {
+    switch (type) {
+      case 'merchant_id':
+      case 'merchant':
+        return 'app.merchants.detail({id: value})';
+
+      case 'pricing_plan_id':
+      case 'plan_id':
+        return 'app.pricingdetail({id: value})';
+
+      case 'pricing_rule_id':
+        return 'app.entitiesdetail({id:value, mode:mode, type: "pricing"})';
+
+      case 'payment_id':
+      case 'payment':
+        return 'app.payments({id:value, mode:mode})';
+
+      default:
+        if (force === true) {
+          return 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
+        }
+        if (type.substr(-3) === '_id') {
+          return 'app.entitiesdetail({id:value, mode:mode, type: key})';
+        } else {
+          return '.';
+        }
+      }
+    };
+  }
+]).factory('riskMap', [function() {
   return {
     1: ['Very Low', 'bg-success'],
     2: ['Low', 'bg-success'],
