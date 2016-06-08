@@ -372,14 +372,20 @@ class Service extends Base\Service
     {
         $timestamp = time() - 9 * 60;
 
+        // Timeout old payment while retaining the error, if set
+        $timedOutPayments = (new Payment\Repository)->timeoutOldPaymentsRetainingError($timestamp);
+
+        // Timeout all the pending payments, changing the error to timeout
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+
+        $totalCount = $count + $timedOutPayments;
 
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
-            ['count' => $count,
+            ['count' => $totalCount,
              'timestamp' => time()]);
 
-        return ['count' => $count];
+        return ['count' => $totalCount];
     }
 
     public function autoCaptureOldAuthorizedPayments()

@@ -105,6 +105,19 @@ class Repository extends Base\Repository
         return $repo::lockForUpdate()->findOrFail($id);
     }
 
+    public function timeoutOldPaymentsRetainingError($timestamp)
+    {
+        $repo = $this->repo;
+
+        return $repo::status(Payment\Status::CREATED)
+                    ->whereNotNull(Payment\Entity::ERROR_CODE)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->update(
+                        array(
+                            Payment\Entity::STATUS => Payment\Status::FAILED)
+                        );
+    }
+
     public function timeoutOldPayments($timestamp)
     {
         $repo = $this->repo;

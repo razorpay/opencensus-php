@@ -77,6 +77,10 @@ class PayumoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_OTP_INCORRECT');
+
         $this->step = null;
 
         $data = $this->testData['otpRetryRequest'];
