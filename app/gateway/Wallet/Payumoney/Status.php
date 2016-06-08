@@ -8,4 +8,5 @@ class Status
     const FAILURE = 1;
 
     const VERIFY_SUCCESS = 'success';
+    const TOPUP_SUCCESS  = 'success';
 }

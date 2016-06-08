@@ -6,7 +6,12 @@ use Models\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $authorizeRules = array(
+    protected static $authorizeRules   = array(
+        'paymentId'             => 'required|string',
+        'accessToken'           => 'required|string|in:8c31d80b-83ed-4f52-8377-71301790ccaa'
+    );
+
+    protected static $debitWalletRules = array(
         'key'                   => 'required|string',
         'totalAmount'           => 'required|numeric',
         'client_id'             => 'required|string',
@@ -26,14 +31,14 @@ class Validator extends Base\Validator
         'merchantTransactionId' => 'required|string'
     );
 
-    protected static $generateotpRules = array(
+    protected static $otpGenerateRules = array(
         'email'                 => 'required|email',
         'mobile'                => 'required|regex:"^[789]\d{9}$"',
         'client_id'             => 'required|string',
         'hash'                  => 'required|regex:"^[a-f0-9]+$"'
     );
 
-    protected static $otpsubmitRules = array(
+    protected static $otpSubmitRules = array(
         'email'                 => 'required|email',
         'mobile'                => 'required|string|regex:"^[789]\d{9}$"',
         'client_id'             => 'required|string',
@@ -43,6 +48,14 @@ class Validator extends Base\Validator
 
     protected static $getBalanceRules = array(
         'email'                 => 'required|email',
+        'client_id'             => 'required|string',
+        'hash'                  => 'required|string|regex:"^[a-f0-9]+$"'
+    );
+
+    protected static $topupWalletRules = array(
+        'key'                   => 'required|string',
+        'totalAmount'           => 'required|numeric',
+        'txnDetails'            => 'required|array',
         'client_id'             => 'required|string',
         'hash'                  => 'required|string|regex:"^[a-f0-9]+$"'
     );

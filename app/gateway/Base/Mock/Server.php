@@ -2,6 +2,7 @@
 
 namespace Gateway\Base\Mock;
 
+use App;
 use Constants\Mode;
 use EE\Exception;
 use Request;
@@ -22,6 +23,8 @@ class Server
     public function __construct()
     {
         $this->request = Request::getFacadeRoot();
+
+        $this->app     = App::getFacadeRoot();
     }
 
     protected function authorize($input)

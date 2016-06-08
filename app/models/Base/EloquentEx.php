@@ -82,7 +82,8 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function scopeBetweenTime($query, $from, $to)
     {
-        $query->whereBetween(Common::CREATED_AT, [$from, $to]);
+        $createdAtColumn = static::getAttributeWithTableName(Common::CREATED_AT);
+        $query->whereBetween($createdAtColumn, [$from, $to]);
     }
 
     public function scopeMerchantId($query, $merchantId)

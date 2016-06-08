@@ -2,19 +2,102 @@
 
 namespace Gateway\Wallet\Payumoney\Mock;
 
-use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use Http\Route;
 use Gateway\Base;
+use EE\Exception;
+use Carbon\Carbon;
+use Models\Payment;
+use EE\Error\ErrorCode;
 use Gateway\Base\Action;
 use Gateway\Wallet\Payumoney;
-use Models\Card;
 
 class Server extends Base\Mock\Server
 {
     protected $accessToken = '8c31d80b-83ed-4f52-8377-71301790ccaa';
 
     protected $authHeader = 'Bearer 8c31d80b-83ed-4f52-8377-71301790ccaa';
+
+    public function authorize($input)
+    {
+        parent::authorize($input);
+
+        $this->validateActionInput($input);
+
+        $args = func_get_args();
+
+        $paymentId = $args[1];
+
+        $content = array(
+            'mihpayid'              => '403993715514441547',
+            'mode'                  => 'test',
+            'status'                => 'success',
+            'unmappedstatus'        => 'captured',
+            'key'                   => 'Hlbv4P',
+            'txnid'                 => 'pmwallet1110628236',
+            'amount'                => '1000.0',
+            'addedon'               => date('Y-m-d H:i:s'),
+            'productinfo'           => 'productInfo',
+            'firstname'             => 'vivek',
+            'lastname'              => '',
+            'address1'              => '',
+            'address2'              => '',
+            'city'                  => '',
+            'state'                 => '',
+            'country'               => '',
+            'zipcode'               => '',
+            'email'                 => 'vivek@gmail.com',
+            'phone'                 => '8199080070',
+            'udf1'                  => '',
+            'udf2'                  => '',
+            'udf3'                  => '',
+            'udf4'                  => '',
+            'udf5'                  => '',
+            'udf6'                  => '',
+            'udf7'                  => '',
+            'udf8'                  => '',
+            'udf9'                  => '',
+            'udf10'                 => '',
+            'hash'                  => '2451471f3b2e8cf5fbebf255b0034cd433274ab1fba20bebcb34c7d36d060d82d37327eae07c7eff7141d470f00aeb142987ac5746087de01a2d692a953da0e7',
+            'field1'                => '613361387628',
+            'field2'                => '999999',
+            'field3'                => '1152205592161331',
+            'field4'                => '2270245592161330',
+            'field5'                => '',
+            'field6'                => '',
+            'field7'                => '',
+            'field8'                => '',
+            'field9'                => 'SUCCESS',
+            'PG_TYPE'               => 'HDFCPG',
+            'encryptedPaymentId'    => $input['paymentId'],
+            'bank_ref_num'          => '1152205592161331',
+            'bankcode'              => 'CC',
+            'error'                 => 'E000',
+            'error_Message'         => 'No Error',
+            'cardToken'             => '32a29ce86dff3609ba8696db46a5647542027988',
+            'name_on_card'          => 'payu',
+            'cardnum'               => '512345XXXXXX2346',
+            'cardhash'              => 'This field is no longer supported in postback params.',
+            'card_merchant_param'   => '7fc8c60f4d8013bfdbefe054690e',
+            'amount_split'          => '{\'PAYU\': \'1000.0\'}',
+            'payuMoneyId'           => '1110628236',
+            'discount'              => '0.00',
+            'net_amount_debit'      => '1000'
+        );
+
+        $payment = (new Payment\Repository)->find($paymentId);
+
+        $secret = $this->app->config->get('app.key');
+
+        $publicId = $payment->getPublicId();
+
+        $hash = hash_hmac('sha1', $publicId, $secret);
+
+        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
+
+        $url .= '?' . http_build_query($content);
+
+        return \Redirect::to($url);
+    }
 
     public function verify($input)
     {
@@ -62,7 +145,7 @@ class Server extends Base\Mock\Server
 
     public function otpGenerate($input)
     {
-        $this->validateActionInput($input, 'generateotp');
+        $this->validateActionInput($input, 'otpGenerate');
 
         $mobile = $input['mobile'];
 
@@ -101,7 +184,7 @@ class Server extends Base\Mock\Server
 
     public function otpSubmit($input)
     {
-        $this->validateActionInput($input, 'otpsubmit');
+        $this->validateActionInput($input, 'otpSubmit');
 
         $response = array(
             'status' => 0,
@@ -133,6 +216,7 @@ class Server extends Base\Mock\Server
             )
         );
 
+        // OTP 123456 is for expired verification code.
         if ($input['otp'] === '123456')
         {
             $response = array(
@@ -145,6 +229,7 @@ class Server extends Base\Mock\Server
             );
         }
 
+        // OTP 121212 is for incorrect verification code
         if ($input['otp'] === '121212')
         {
             $response = array(
@@ -160,11 +245,33 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    public function authorize($input)
+    public function topupWallet($input)
     {
-        parent::authorize($input);
+        if (isset($input['txnDetails']))
+        {
+            $input['txnDetails'] = json_decode($input['txnDetails'], true);
+        }
 
-        $this->validateActionInput($input, 'authorize');
+        $this->validateActionInput($input, 'topupWallet');
+
+        $this->topupRequest = $input;
+
+        $response = array(
+            'status' => 0,
+            'message' => 'Payment added successfully',
+            'errorCode' => null,
+            'guid' => null,
+            'result' => '0B663A7D4700F95709A3F5761254B406',
+            'userVaultDTO' => null,
+            'mode' => 'test'
+        );
+
+        return $this->makeResponse($response);
+    }
+
+    public function debitWallet($input)
+    {
+        $this->validateActionInput($input, 'debitWallet');
 
         if (!isset($this->mockRequest['headers']['Authorization']))
         {

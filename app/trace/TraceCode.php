@@ -19,6 +19,9 @@ class TraceCode
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE             = 'PAYMENT_VERIFY_REFUND_FAILURE';
+    const PAYMENT_TOPUP_REQUEST                     = 'PAYMENT_TOPUP_REQUEST';
+    const PAYMENT_TOPUP_RESPONSE                    = 'PAYMENT_TOPUP_RESPONSE';
+    const PAYMENT_TOPUP_FAILURE                     = 'PAYMENT_TOPUP_FAILURE';
     const PAYMENT_CAPTURE_REQUEST                   = 'PAYMENT_CAPTURE_REQUEST';
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
@@ -75,6 +78,7 @@ class TraceCode
     const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
+    const GATEWAY_PAYMENT_TOPUP_CALLBACK            = 'GATEWAY_PAYMENT_TOPUP_CALLBACK';
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
     const GATEWAY_PAYMENT_RESPONSE                  = 'GATEWAY_PAYMENT_RESPONSE';
@@ -148,6 +152,10 @@ class TraceCode
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
 
+    /**
+     * Trace code for critical info
+     */
+    const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

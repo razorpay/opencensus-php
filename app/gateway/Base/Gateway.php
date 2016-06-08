@@ -49,6 +49,12 @@ class Gateway
     protected $action;
 
     /**
+     * Whether the gateway supports topup payments
+     * @var boolean
+     */
+    protected $topup = false;
+
+    /**
      * Whether the gateway supports authorizing payments.
      * @var boolean
      */
@@ -132,10 +138,31 @@ class Gateway
         $this->action = Action::AUTHORIZE;
     }
 
+    /**
+     * Handles gateway callback
+     *
+     * @param array $input
+     * @return array|null
+     */
     public function callback(array $input)
-    {//s($input['gateway']);
+    {
         $this->input = $input;
         $this->action = Action::CALLBACK;
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function debit(array $input)
+    {
+        ;
+    }
+
+    public function checkBalance(array $input)
+    {
+        ;
     }
 
     public function capture(array $input)
@@ -176,6 +203,11 @@ class Gateway
     public function canRunOtpFlow(array $input = [])
     {
         return $this->canRunOtpFlow;
+    }
+
+    public function canTopup()
+    {
+        return $this->topup;
     }
 
     public function setTerminal($terminal)

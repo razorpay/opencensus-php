@@ -25,11 +25,9 @@ class Service extends Base\Service
 
     public function createGlobalCustomer($input)
     {
-        assert(isset($input[Customer\Entity::CONTACT]));
+        $customer = (new Customer\Core)->createGlobalCustomer($input);
 
-        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
-
-        return $this->createCustomer($input, $merchant);
+        return $customer->toArrayPublic();
     }
 
     public function edit($id, $input)

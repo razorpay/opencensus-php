@@ -30,6 +30,10 @@ trait PaymentMobikwikTrait
                         case 'RETRY':
                             $content['otp'] = '121212';
                             break;
+
+                        case 'TOPUP':
+                            $content['otp'] = '131313';
+                            break;
                     }
                 }
 
