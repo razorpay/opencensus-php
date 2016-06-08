@@ -304,7 +304,7 @@ return [
         ],
     ],
 
-    'testGetCustomerTokensByAppId' => [
+    'testGetCustomerTokensByAppToken' => [
         'request' => [
             'url' => '/apps/capp_1000000custapp/tokens',
             'method' => 'get',

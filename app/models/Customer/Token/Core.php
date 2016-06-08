@@ -74,9 +74,9 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function fetchTokensByAppId($merchantId, $appId)
+    public function fetchTokensByAppToken($merchantId, $appToken)
     {
-        $appEntity = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $merchantId);
+        $appEntity = (new Customer\App\Repository)->findByIdAndMerchantId($appToken, $merchantId);
 
         $tokens = $this->fetchTokensByCustomerId(Account::SHARED_ACCOUNT, $appEntity->customer->getId());
 

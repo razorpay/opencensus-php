@@ -77,9 +77,9 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function fetchTokensByAppId($appId)
+    public function fetchTokensByAppToken($appToken)
     {
-        $tokens = (new Customer\Token\Service)->fetchTokensByAppId($appId);
+        $tokens = (new Customer\Token\Service)->fetchTokensByAppToken($appToken);
 
         return ApiResponse::json($tokens);
     }
@@ -91,9 +91,9 @@ class CustomerController extends BaseController
         return ApiResponse::json($status);
     }
 
-    public function deleteAppToken($appId, $token)
+    public function deleteTokenForApp($appToken, $token)
     {
-        $data = (new Customer\Token\Service)->deleteAppToken($appId, $token);
+        $data = (new Customer\Token\Service)->deleteTokenForApp($appToken, $token);
 
         return ApiResponse::json($data);
     }

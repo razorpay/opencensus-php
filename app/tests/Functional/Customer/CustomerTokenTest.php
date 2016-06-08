@@ -62,7 +62,7 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetCustomerTokensByAppId()
+    public function testGetCustomerTokensByAppToken()
     {
         $this->ba->publicAuth();
 

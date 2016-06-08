@@ -71,11 +71,11 @@ class Service extends Base\Service
         return $tokens->toArrayPublic();
     }
 
-    public function fetchTokensByAppId($appId)
+    public function fetchTokensByAppToken($appToken)
     {
-        Customer\App\Entity::verifyIdAndStripSign($appId);
+        Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-        $tokens = (new Customer\Token\Core)->fetchTokensByAppId($this->merchant->getKey(), $appId);
+        $tokens = (new Customer\Token\Core)->fetchTokensByAppToken($this->merchant->getKey(), $appToken);
 
         return $tokens->toArrayPublic();
     }
@@ -109,11 +109,11 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
-    public function deleteAppToken($appId, $token)
+    public function deleteTokenForApp($appToken, $token)
     {
-        Customer\App\Entity::verifyIdAndStripSign($appId);
+        Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-        $app = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $this->merchant->getId());
+        $app = (new Customer\App\Repository)->findByIdAndMerchantId($appToken, $this->merchant->getId());
 
         $customerId = $app->customer->getPublicId();
 

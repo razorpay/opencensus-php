@@ -134,12 +134,12 @@ class Core extends Base\Core
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
-            $appId = $input[Payment\Entity::APP_TOKEN];
+            $appToken = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\App\Entity::verifyIdAndStripSign($appId);
+            Customer\App\Entity::verifyIdAndStripSign($appToken);
 
             $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
-                $appId,
+                $appToken,
                 $merchant->getId());
 
             assert($customerApp !== null);

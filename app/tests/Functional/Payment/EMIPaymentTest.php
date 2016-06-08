@@ -108,14 +108,14 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
-    protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appId = null, $customerId =  null)
+    protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
         $this->payment['emi_duration'] = $emiDuration;
         $this->payment['card']['number'] = $card;
         $this->payment['save'] = $save;
-        $this->payment['app_token'] = $appId;
+        $this->payment['app_token'] = $appToken;
         $this->payment['customer_id'] = $customerId;
 
         $this->doAuthAndCapturePayment($this->payment);
