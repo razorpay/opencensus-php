@@ -54,7 +54,7 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterEnrollError($id, array $error, $requestData)
+    public function persistAfterEnrollError($id, $error, $requestData)
     {
         $attributes = array(
             'payment_id'            => $id,
@@ -138,6 +138,47 @@ class Repository extends Base\Repository
     }
 
     public function persistAfterAuthorizeError($id, $error, $requestData)
+    {
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->status = Payment\Status::AUTHORIZE_FAILED;
+
+        $model->error_code = $error->reasonCode;
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterNotEnrolledAuthorize($id, $request, $response)
+    {
+        $result = $response->reasonCode;
+
+        if ($result === Payment\Result::AUTHORIZED)
+        {
+            $status = Payment\Status::AUTHORIZED;
+        }
+        else
+        {
+            throw new Exception\LogicException('Should not rech here.');
+        }
+
+        $repo = $this->repo;
+
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
+
+        $model->ref = $response->requestID;
+
+        $model->status = $status;
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterNotEnrolledAuthorizeError($id, $error, $requestData)
     {
         $repo = $this->repo;
 
