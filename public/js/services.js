@@ -334,11 +334,12 @@ angular.module('app.services', [])
         if (force === true) {
           return 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
         }
+
         if (type.substr(-3) === '_id') {
           return 'app.entitiesdetail({id:value, mode:mode, type: key})';
-        } else {
-          return '.';
         }
+
+        return '.';
       }
     };
   }
