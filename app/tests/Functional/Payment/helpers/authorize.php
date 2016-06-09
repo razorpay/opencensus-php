@@ -530,6 +530,20 @@ return [
         ],
     ],
 
+    'testTimeoutOldPaymentWithErrorRetention' => [
+        'request' => [
+            'content' => [],
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'error_code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+            ],
+        ],
+    ],
+
     'testFailTimeoutOldPayments' => [
         'request' => [
             'content' => [],

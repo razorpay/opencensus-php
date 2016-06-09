@@ -329,6 +329,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
+    public function setInternalErrorCode($internalErrorCode)
+    {
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());

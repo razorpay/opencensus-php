@@ -320,6 +320,17 @@ class Processor
         $this->tracePaymentFailed($error, $traceCode);
     }
 
+    protected function setPaymentError($error)
+    {
+        $internalCode = $error->getInternalErrorCode();
+
+        $payment = $this->payment;
+
+        $payment->setInternalErrorCode($internalCode);
+
+        $payment->saveOrFail();
+    }
+
     /**
      * Responsible for calling the gateway function
      *

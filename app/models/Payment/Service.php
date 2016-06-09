@@ -4,6 +4,7 @@ namespace Models\Payment;
 
 use Carbon\Carbon;
 use EE\Exception;
+use EE\Error;
 
 use Mail;
 
@@ -372,7 +373,33 @@ class Service extends Base\Service
     {
         $timestamp = time() - 9 * 60;
 
+        // Timeout all the pending payments, changing the error to timeout
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+
+        // Timeout old payment while retaining the error, if set
+        $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
+
+        foreach ($payments as $payment)
+        {
+            $error = new Error\Error($payment->getInternalErrorCode());
+
+            $code = $error->getPublicErrorCode();
+
+            $desc = $error->getDescription();
+
+            $internalCode = $error->getInternalErrorCode();
+
+            $payment->setStatus(Payment\Status::FAILED);
+
+            $payment->setError($code, $desc, $internalCode);
+
+            $saved = $payment->save();
+
+            if ($saved === true)
+            {
+                ++$count;
+            }
+        }
 
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
