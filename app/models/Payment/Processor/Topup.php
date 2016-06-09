@@ -49,6 +49,23 @@ trait Topup
 
     protected function prePaymentTopupProcessing($payment, $input, array & $gatewayInput)
     {
+        $gateway = $payment->getGateway();
+
+        if (Payment\Gateway::canGatewayTopup($gateway) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_CANNOT_TOPUP);
+        }
+
+        if ($payment->isCreated() === false)
+        {
+            // If it failed recently, then return the failure directly.
+            $this->checkForRecentFailedPayment($payment);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+        }
+
         //
         // Slight hack for mobikwik as we are falling back on traditional redirection
         // flow for mobikwik as we are not using their topup flow right now
@@ -56,16 +73,8 @@ trait Topup
         if (($payment->getWallet() !== Wallet::MOBIKWIK) and
             ($payment->globalCustomer === null))
         {
-            throw new Exception\BaseException(
-                'Customer does not exist');
-        }
-
-        $canTopup = $this->callGatewayFunction('canTopup', []);
-
-        if ($canTopup === false)
-        {
-            throw new Exception\BaseException(
-                'Gateway doesn\'t support topup');
+            throw new Exception\LogicException(
+                'Customer does not exist', $input);
         }
 
         //

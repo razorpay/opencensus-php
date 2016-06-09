@@ -335,6 +335,19 @@ class AuthorizeTest extends TestCase
         $this->assertArrayHasKey('url', $content['request']);
     }
 
+    public function testPaymentTopupViaInvalidGateway()
+    {
+        $payment = $this->fixtures->create(
+            'payment',
+            ['created_at' => time() - 10 * 60, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->topupPayment($payment->getPublicId());
+        });
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

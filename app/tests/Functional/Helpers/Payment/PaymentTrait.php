@@ -303,6 +303,21 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function topupPayment($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/topup/ajax',
+            'content' => array()
+        );
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function getFeesForPayment($payment)
     {
         $request = array(

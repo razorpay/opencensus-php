@@ -627,5 +627,21 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testPaymentTopupViaInvalidGateway' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_GATEWAY_CANNOT_TOPUP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_CANNOT_TOPUP,
+        ],
     ]
 ];
