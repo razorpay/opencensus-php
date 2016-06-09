@@ -28,17 +28,17 @@ class Checkout
     public function getPreferences($merchant, $mode, $input)
     {
         // check if appToken or device token is present in session
-        $appToken = Session::get('app_token');
-        $deviceToken = Session::get('device_token');
+        $appToken = Session::get(Payment\Entity::APP_TOKEN);
+        $deviceToken = Session::get(Payment\Entity::DEVICE_TOKEN);
 
-        if (isset($input['app_token']) === false)
+        if (isset($input[Payment\Entity::APP_TOKEN]) === false)
         {
-            $input['app_token'] = $appToken;
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
 
-        if (isset($input['device_token']) === false)
+        if (isset($input[Payment\Entity::DEVICE_TOKEN]) === false)
         {
-            $input['device_token'] = $deviceToken;
+            $input[Payment\Entity::DEVICE_TOKEN] = $deviceToken;
         }
 
         $methodsArray = array(
@@ -81,7 +81,7 @@ class Checkout
 
         //fetch customer data and saved cards data
         if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
-            (isset($input[Payment\Entity::APP_TOKEN])))
+            (isset($input[Payment\Entity:Payment\Entity::APP_TOKEN)))
         {
             $custData = $this->fetchCustomerData($input, $merchant);
 
@@ -90,11 +90,11 @@ class Checkout
                 $data['customer'] = $custData;
             }
         }
-        elseif ((isset($input['device_token'])) and
+        elseif ((isset($input[Payment\Entity::DEVICE_TOKEN])) and
                 (isset($input['contact'])))
         {
             $response = (new Customer\Service)->validateDeviceToken(
-                $input['device_token'],
+                $input[Payment\Entity::DEVICE_TOKEN],
                 $input);
 
             $data['customer'] = array(
@@ -103,7 +103,7 @@ class Checkout
 
             if ($response['valid'] === true)
             {
-                $data['customer']['app_token'] = $response['app_token'];
+                $data['customer'][Payment\Entity::APP_TOKEN] = $response[Payment\Entity::APP_TOKEN];
             }
         }
         elseif (isset($input['contact']))
@@ -165,6 +165,15 @@ class Checkout
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic()
             );
+
+            if ($customer->isLocal() === true)
+            {
+                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            }
+            else
+            {
+                $custData[Payment\Entity::APP_TOKEN] = $customerApp->getPublicId();
+            }
         }
         catch (\Exception $e)
         {
