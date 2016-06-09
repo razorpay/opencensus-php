@@ -91,6 +91,11 @@ class MobikwikGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_OTP_INCORRECT');
+        $this->assertEquals($payment['error_code'], null);
+
         $this->step = null;
 
         $data = $this->testData['otpRetryRequest'];

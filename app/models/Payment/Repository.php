@@ -90,6 +90,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchCreatedPaymentsWithInternalError($timestamp)
+    {
+        $repo = $this->repo;
+
+        return $repo::status(Payment\Status::CREATED)
+                    ->whereNotNull(Payment\Entity::INTERNAL_ERROR_CODE)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->get();
+    }
+
     public function countPaymentsForPricingRuleId($pricingRuleId)
     {
         $repo = $this->repo;
@@ -110,6 +120,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::status(Payment\Status::CREATED)
+                    ->whereNull(Payment\Entity::INTERNAL_ERROR_CODE)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->update(
                         array(

@@ -69,7 +69,7 @@ if(!window.CheckoutBridge){
     try{opener.onComplete(data)&&close()}catch(e){onerror(e.message)}
     opener.postMessage(data,'*')
   }
-  if(/\(iP.+(Cr|Fx)iOS/.test(navigator.userAgent))
+  if(/(\(iP.+(Cr|Fx)iOS|Trident|MSIE )/.test(navigator.userAgent))
     setTimeout(close, 1000);
 }
 

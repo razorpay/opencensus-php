@@ -64,7 +64,6 @@ class EsDao
         $this->indexName = $this->config->get('database.es_index')[$mode];
     }
 
-
     // If a document with entity ID is already present, only the notes key is updated.
     // Otherwise, creates a new document.
     // Currently storing only notes and merchant id of the entity.
@@ -72,7 +71,9 @@ class EsDao
     {
         $entityId = $entityData['entity_id'];
         $merchantId = $entityData['merchant_id'];
-        $notes = $entityData['notes'];
+        // Converting to object because sequential arrays cannot be stored in the ES schema designed.
+        // Hence, using an object instead to get proper key-values.
+        $notes = (object) $entityData['notes'];
         $created = time();
 
         // Using payment ID as the doc ID.
@@ -170,7 +171,7 @@ class EsDao
         {
             $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
         }
-        
+
         $entityIds = $this->es->searchNotes($params);
 
         return $entityIds;

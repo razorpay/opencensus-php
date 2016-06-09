@@ -100,7 +100,7 @@ class PaymentCreateTest extends TestCase
                ->with(
                    Mockery::on(function ($data) use ($testData)
                    {
-                       $this->assertArraySelectiveEquals($testData, $data);
+                       $this->assertArraySelectiveEquals($testData, json_decode(json_encode($data), true));
                        return true;
                    })
                );

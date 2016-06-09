@@ -223,6 +223,7 @@ class ErrorCode
 
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                            = 'BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
+    const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                          = 'BAD_REQUEST_GATEWAY_CANNOT_TOPUP';
 
     const BAD_REQUEST_KEY_EXPIRED                                                   = 'BAD_REQUEST_KEY_EXPIRED';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                             = 'BAD_REQUEST_KEY_EXPIRING_SOON';

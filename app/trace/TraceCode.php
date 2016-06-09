@@ -161,6 +161,10 @@ class TraceCode
     const RECONCILIATION_INFO_ALERT                 = 'RECONCILIATION_INFO_ALERT';
     const RECONCILIATION_CRITICAL_ALERT             = 'RECONCILIATION_CRITICAL_ALERT';
 
+    /**
+     * Trace code for critical info
+     */
+    const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',

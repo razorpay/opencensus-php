@@ -69,6 +69,8 @@ class Entity extends Base\PublicEntity
 
     protected $table            = \Constants\Table::PAYMENT;
 
+    protected $metadata         = array();
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = array(
@@ -329,6 +331,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
+    public function setInternalErrorCode($internalErrorCode)
+    {
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());
@@ -401,6 +408,11 @@ class Entity extends Base\PublicEntity
     public function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
+    }
+
+    public function setMetadata($metadata)
+    {
+        $this->metadata = $metadata;
     }
 
     public function incrementOtpAttempts()
@@ -514,6 +526,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $count;
+    }
+
+    public function getMetadata()
+    {
+        return $this->metadata;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
