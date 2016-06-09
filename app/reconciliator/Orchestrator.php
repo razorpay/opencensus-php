@@ -537,7 +537,7 @@ class Orchestrator
         // Iterates through each zip file and gets the file details for them.
         foreach (new DirectoryIterator($unzippedFolderPath) as $unzippedFile)
         {
-            if($unzippedFile->isFile() === true)
+            if ($unzippedFile->isFile() === true)
             {
                 $allExtractedFilesDetails[] = $this->fileProcessor
                                                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);

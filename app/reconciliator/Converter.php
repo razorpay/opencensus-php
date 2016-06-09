@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Reconciliator;
 
 use Excel;

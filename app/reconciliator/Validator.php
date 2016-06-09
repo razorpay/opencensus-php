@@ -35,7 +35,7 @@ class Validator
         }
     }
 
-    public function validateAttachments(&$input)
+    public function validateAttachments(& $input)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.

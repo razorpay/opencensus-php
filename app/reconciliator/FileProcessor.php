@@ -35,20 +35,20 @@ class FileProcessor
         self::CSV   => ['txt', 'csv', 'text']
     ];
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
-    
+
     /********************
      * Instance objects
      ********************/
     protected $validator;
     protected $messenger;
-    
+
     public function __construct()
     {
         $this->validator = new Validator;
         $this->messenger = new Messenger();
     }
-    
-    public function getFileDetails($file, $type=self::UPLOADED)
+
+    public function getFileDetails($file, $type = self::UPLOADED)
     {
         assert(in_array($type, [self::STORAGE, self::UPLOADED]), "Wrong file type [Uploaded/Storage]");
 
@@ -86,7 +86,7 @@ class FileProcessor
 
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
-    
+
     /**
      * This methods is used to get the file details of files which are already present on the storage.
      * getUploadedFileDetails() cannot be used because the file object class is different here.
@@ -105,7 +105,7 @@ class FileProcessor
 
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
-    
+
     /**
      * @param string $fileName String name of the file to be stored
      * @param string $extension String extension of the file
@@ -128,7 +128,7 @@ class FileProcessor
 
         return $fileDetails;
     }
-    
+
     public function deleteFileLocally($filePath)
     {
         if (file_exists($filePath) === false)
@@ -171,7 +171,7 @@ class FileProcessor
 
         return $extension;
     }
-    
+
     /**
      * Unzips the file to a folder which is created in the same folder in which the zip file is present.
      *
@@ -207,7 +207,7 @@ class FileProcessor
 
         return $extractToPath;
     }
-    
+
     /**
      * Extracts the given zip file to a given extract location. Throws an exception if unable to extract.
      *
@@ -251,7 +251,7 @@ class FileProcessor
             );
         }
     }
-    
+
     public function getFolderFromFilePath($filePath)
     {
         return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
