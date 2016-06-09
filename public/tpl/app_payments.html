@@ -10,7 +10,7 @@
     <div class="panel-heading">
       List of all payments
     </div>
-    <div class="panel-body form-inline">
+    <div class="panel-body">
       <div class="row wrapper">
         <div class="text-center m-t" ng-show="alerts.getAlerts().length > 0">
           <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -38,6 +38,13 @@
             name="notes" ng-enter="regenerate();"
           >
         </div>
+
+        <div class="col-xs-1">
+          Count:
+          <input type="number" class="form-control inline w-xxs"
+            ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()"
+          >
+        </div>
         <!--
         Hiding this for now
         <div class="col-sm-2">
@@ -52,7 +59,17 @@
             placeholder="Amount" name="amount" ng-enter="regenerate()"
           >
         </div> -->
-        <div class="col-sm-6 pull-right">
+
+        <div class="col-sm-2 col-sm-push-3">
+          <div class="input-group pull-right">
+            <input type="text" class="input-sm form-control" placeholder="Search Payment Id" ng-model="entity.id">
+            <span class="input-group-btn">
+              <button class="btn btn-sm btn-default" type="button" ng-click="search()" >Go!</button>
+              <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
+            </span>
+          </div>
+        </div>
+        <!-- <div class="col-sm-6 pull-right">
           <div class="input-group pull-right">
             <input type="text" class="form-control input-sm inline" placeholder="Search Payment Id" ng-model="entity.id">
             <span class="input-group-btn">
@@ -61,6 +78,7 @@
             </span>
           </div>
         </div>
+         -->
       </div>
     </div>
     <div class="table-responsive">

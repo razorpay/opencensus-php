@@ -14,7 +14,11 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
-      <div class="col-sm-9 m-b-xs">
+      <div class="col-xs-1 col-sm-pull-8">
+        Count:
+        <input type="number" class="form-control inline w-xxs"
+          ng-model="query.count" placeholder="20" name="count" ng-enter="regenerate()"
+        >
       </div>
       <div class="col-sm-3">
         <div class="input-group">
