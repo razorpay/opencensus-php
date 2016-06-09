@@ -3,12 +3,10 @@
 
 namespace Reconciliator;
 
-
 use Excel;
 use Config;
 
 use EE\Exception;
-
 
 class Converter
 {
@@ -31,7 +29,6 @@ class Converter
     ];
 
     protected $dataArray;
-
 
     /**
      * @param array $fileDetails The excel file details
@@ -57,13 +54,11 @@ class Converter
         return $sheets;
     }
 
-
     public function convertExcelSheetToArray($sheet)
     {
         $rows = $sheet->toArray();
         return $rows;
     }
-
 
     public function convertCsvToArray($fileDetails)
     {
@@ -98,7 +93,6 @@ class Converter
             }
             fclose($handle);
         }
-
 
         return $data;
     }

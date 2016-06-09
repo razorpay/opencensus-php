@@ -2,17 +2,14 @@
 
 namespace Reconciliator\Axis;
 
-
 use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 
 use Trace\TraceCode;
 
-
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-
     /*******************
      * Row Header Names
      *******************/
@@ -23,20 +20,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected $messenger;
 
-
     public function __construct()
     {
         $this->messenger = new Messenger();
         parent::__construct();
     }
 
-
     protected function getPaymentId($row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
         return $paymentId;
     }
-
 
     protected function getGatewayServiceTax($row)
     {
@@ -45,7 +39,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return round($serviceTax);
     }
-
 
     protected function getGatewayFee($row)
     {
@@ -60,7 +53,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return round($fee);
     }
-
 
     protected function getCardType($row)
     {
@@ -96,5 +88,4 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return $cardType;
     }
-
 }

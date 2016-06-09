@@ -2,9 +2,7 @@
 
 namespace Reconciliator\BillDesk;
 
-
 use Reconciliator\Base;
-
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -38,12 +36,11 @@ class Reconciliate extends Base\Reconciliate
         return $typeName;
     }
 
-
     /**
      * Some gateways send files which should not be used as part of the
      * reconciliation process. This decides whether a given file should
      * be part of the reconciliation or not.
-     * 
+     *
      * @param array $fileDetails
      * @return bool Whether the given file is present in the gateway's
      *              exclude list or not.

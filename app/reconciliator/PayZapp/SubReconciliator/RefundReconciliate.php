@@ -2,9 +2,7 @@
 
 namespace Reconciliator\PayZapp;
 
-
 use Reconciliator\Base;
-
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -20,7 +18,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         $payzappRepo = $this->app['repo']->wallet_payzapp;
 
         $refundId = $payzappRepo->findByGatewayRefundId($gatewayRefundId)->getRefundId();
-        
+
         return $refundId;
     }
 }

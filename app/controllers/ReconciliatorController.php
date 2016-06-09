@@ -12,11 +12,11 @@ class ReconciliatorController extends BaseController
         $this->orchestrator = new Reconciliator\Orchestrator();
     }
 
-    public function receiveWebhook()
+    public function postReconciliation()
     {
         $input = Input::all();
 
-        $statusCode = $this->orchestrator->baseEntry($input);
+        $statusCode = $this->orchestrator->initiateReconciliationProcess($input);
 
         return ApiResponse::generateResponse([], $statusCode);
     }

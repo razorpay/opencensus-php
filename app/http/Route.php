@@ -175,7 +175,7 @@ final class Route
         'gateway_payment_callback_post'         => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'        => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel' => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
-        'reconciliator_webhook'                 => ['post',     'reconciliator/webhook',                    'ReconciliatorController@receiveWebhook'                            ],
+        'reconciliate'                          => ['post',     'reconciliate',                             'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                 => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                  => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
         'dummy_route'                           => ['post',     'dummy/route',                              'PaymentController@postDummyRoute'                                  ],
@@ -428,7 +428,7 @@ final class Route
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
-        'reconciliator_webhook',
+        'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
     );

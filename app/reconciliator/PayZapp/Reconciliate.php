@@ -4,7 +4,6 @@ namespace Reconciliator\PayZapp;
 
 use Reconciliator\Base;
 
-
 class Reconciliate extends Base\Reconciliate
 {
     /**
@@ -22,8 +21,7 @@ class Reconciliate extends Base\Reconciliate
     {
         return self::COMBINED;
     }
-
-
+    
     public function inExcludeList($fileDetails)
     {
         if (strpos($fileDetails['file_name'], 'summary') !== false)

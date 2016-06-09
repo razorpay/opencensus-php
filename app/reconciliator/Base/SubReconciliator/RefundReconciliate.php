@@ -16,7 +16,6 @@ use Reconciliator\Orchestrator;
 use Reconciliator\Messenger;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-
 class RefundReconciliate extends Foundation\SubReconciliate
 {
     /*******************
@@ -31,7 +30,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected $app;
     protected $messenger;
 
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -41,7 +39,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $this->messenger = new Messenger();
     }
-
 
     /**
      * This is the start of the actual reconciliation for refunds.
@@ -61,7 +58,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->runReconciliate($row, $extraDetails);
         }
     }
-
 
     public function runReconciliate($row, $extraDetails)
     {
@@ -109,8 +105,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return;
         }
     }
-
-
+    
     protected function getRowDetailsStructured($row)
     {
         $refundId = $this->getRefundId($row);

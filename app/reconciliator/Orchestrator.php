@@ -12,6 +12,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Orchestrator
 {
     const GATEWAY = 'gateway';
+    /**
+     * This contains file details, sheet details and email details,
+     * whenever applicable. It does not contain the actual content.
+     * It's all meta data.
+     */
     const EXTRA_DETAILS = 'extra_details';
     const EMAIL_DETAILS = 'email_details';
     const ATTACHMENT_COUNT = 'attachment_count';
@@ -49,7 +54,6 @@ class Orchestrator
     protected $allFilesDetails;
     protected $emailDetails;
 
-
     /********************
      * Instance objects
      ********************/
@@ -60,7 +64,6 @@ class Orchestrator
     protected $gatewayReconciliator;
     protected $app;
     protected $messenger;
-
 
     public function __construct()
     {
@@ -74,7 +77,6 @@ class Orchestrator
         $this->converter = new Converter;
     }
 
-
     /**
      * Determines whether the reconciliation request is manual or
      * via MailGun and gets the files details accordingly.
@@ -85,7 +87,7 @@ class Orchestrator
      * @throws Exception\ReconciliationException Raised when there are no
      *                                           files to reconcile.
      */
-    public function baseEntry(array $input)
+    public function initiateReconciliationProcess(array $input)
     {
         // Checks if it's manual call or mailgun call
         if ((isset($input['manual']) === true) and ($input['manual'] === true))
@@ -114,7 +116,6 @@ class Orchestrator
         return 200;
     }
 
-
     /**
      * Validations and getting file details are handled by this function
      * when reconciliation route is hit via REST Client/dashboard.
@@ -140,7 +141,6 @@ class Orchestrator
         return $allFilesDetails;
     }
 
-
     /**
      * Getting all files details is handled by this function when the
      * reconciliation route is hit by MailGun.
@@ -163,7 +163,6 @@ class Orchestrator
         return $allFilesDetails;
     }
 
-
     /**
      * Validates each file.
      * Gets the content of each file and stores it in an array.
@@ -178,42 +177,11 @@ class Orchestrator
         // Run validations and conversions on each file
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
-            // Checks if this particular file needs to be excluded for the gateway
-            $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
+            $skipFile = $this->checkFileSkip($fileDetails);
 
-            if ($inExclude === true)
+            if ($skipFile === true)
             {
-                $this->app['trace']->info(
-                    TraceCode::RECON_FILE_SKIP,
-                    [
-                        'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                        'message'      => 'Skipping file because it is present in the exclude list of the gateway.',
-                        'file_details' => $fileDetails,
-                        'gateway'      => get_class($this->gatewayReconciliator),
-                    ]);
-
                 $this->handleInvalidFile($file, $fileDetails);
-
-                // Don't get the content of the file.
-                continue;
-            }
-
-            // Validates the file type, size, etc..
-            $validate = $this->validator->validateFile($fileDetails);
-
-            if ($validate === false)
-            {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                        'message'      => 'Skipping file because validations failed.',
-                        'file_details' => $fileDetails,
-                        'gateway'      => get_class($this->gatewayReconciliator),
-                    ]);
-
-                $this->handleInvalidFile($file, $fileDetails);
-
-                // Don't get the content of the file.
                 continue;
             }
 
@@ -258,6 +226,43 @@ class Orchestrator
         $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
+    protected function checkFileSkip($fileDetails)
+    {
+        // Checks if this particular file needs to be excluded for the gateway
+        $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
+
+        if ($inExclude === true)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_FILE_SKIP,
+                [
+                    'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                    'message'      => 'Skipping file because it is present in the exclude list of the gateway.',
+                    'file_details' => $fileDetails,
+                    'gateway'      => get_class($this->gatewayReconciliator),
+                ]);
+
+            return true;
+        }
+
+        // Validates the file type, size, etc..
+        $validate = $this->validator->validateFile($fileDetails);
+
+        if ($validate === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                    'message'      => 'Skipping file because validations failed.',
+                    'file_details' => $fileDetails,
+                    'gateway'      => get_class($this->gatewayReconciliator),
+                ]);
+
+            return true;
+        }
+
+        return false;
+    }
 
     protected function handleInvalidFile($file, array $fileDetails)
     {
@@ -266,7 +271,6 @@ class Orchestrator
         // Remove the file from allFiles variable, since this file is now, not part of reconciliation.
         unset($this->allFilesDetails[$file]);
     }
-
 
     /**
      * Gets the required details from the input, structured.
@@ -287,7 +291,6 @@ class Orchestrator
         return $inputDetails;
     }
 
-
     protected function getEmailDetails($input)
     {
         $emailDetails = [
@@ -306,7 +309,6 @@ class Orchestrator
         return $emailDetails;
     }
 
-
     /**
      * Uses the gateway input sent in the route, to set the gateway
      * reconciliator object for the class. The gateway should be
@@ -324,15 +326,14 @@ class Orchestrator
         if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
         {
             throw new Exception\ReconciliationException(
-                'Invalid gateway param. Allowed gateway params - ' . (array_keys(self::GATEWAY_SENDER_MAPPING)),
+                'Invalid gateway param. Not in the allowed list of gateway params.',
                 ['gateway' => $gateway]
             );
         }
 
         // Sets the gateway reconciliator object for the orchestrator.
-        $this->setGatewayReconciliatorClass($gateway);
+        $this->setGatewayReconciliatorObject($gateway);
     }
-
 
     /**
      * Uses the 'from' email ID to figure out the gateway.
@@ -362,9 +363,8 @@ class Orchestrator
             $gateway = $this->emailDetails['subject'];
         }
 
-        $this->setGatewayReconciliatorClass($gateway);
+        $this->setGatewayReconciliatorObject($gateway);
     }
-
 
     protected function getFileDetailsFromInput($inputDetails, $input)
     {
@@ -385,7 +385,8 @@ class Orchestrator
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
                 try
-                {    // Gets all files details present in the zip file.
+                {
+                    // Gets all files details present in the zip file.
                     $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
 
                     // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
@@ -428,7 +429,6 @@ class Orchestrator
         return $allFilesDetails;
     }
 
-
     /**
      * Converts the data in file (excel/csv) and sets to in-memory array.
      *
@@ -469,13 +469,11 @@ class Orchestrator
         }
     }
 
-
-    protected function setGatewayReconciliatorClass($gateway)
+    protected function setGatewayReconciliatorObject($gateway)
     {
         $gatewayReconciliatorClassName = 'Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
-
 
     /**
      * Converts and sets the excel content in an array.
@@ -501,7 +499,6 @@ class Orchestrator
         }
     }
 
-
     protected function handleSettingCsvContent($fileDetails)
     {
         $csvArray = $this->converter->convertCsvToArray($fileDetails);
@@ -511,13 +508,11 @@ class Orchestrator
         $this->allFilesContents[] = $csvArray;
     }
 
-
     protected function setExtraDetails(&$arrayContent, $fileDetails)
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
         $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
     }
-
 
     /**
      * Unzips the zip file. Iterates through each extracted file and collects
@@ -552,7 +547,6 @@ class Orchestrator
         return $allExtractedFilesDetails;
     }
 
-
     /**
      * @param $needle
      * @param array $haystack An associative array with array values.
@@ -570,7 +564,6 @@ class Orchestrator
         }
         return null;
     }
-
 
     /**
      * The reconciliation can run for a long time.

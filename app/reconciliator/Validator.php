@@ -22,7 +22,6 @@ class Validator
     // Max allowed file size - 2M (2*1024*1024).
     const MAX_FILE_SIZE = 2097152;
 
-
     public function filterEmails($emailDetails)
     {
         $from = $emailDetails['from'];
@@ -36,17 +35,20 @@ class Validator
         }
     }
 
-
     public function validateAttachments(&$input)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
         // Excludes 'attachment-count'.
-        $foundAttachments = array_filter($input, function($key)
-        {
-            return (strpos($key, 'attachment-') === 0) and
-                    (strpos($key, 'attachment-count') === false);
-        }, ARRAY_FILTER_USE_KEY);
+        $foundAttachments = array_filter(
+            $input,
+            function($key)
+            {
+                return (strpos($key, 'attachment-') === 0) and
+                       (strpos($key, 'attachment-count') === false);
+            },
+            ARRAY_FILTER_USE_KEY
+        );
 
         $foundAttachmentsCount = count($foundAttachments);
 
@@ -79,7 +81,6 @@ class Validator
         }
     }
 
-
     /**
      * Validates if the file size is within the limits and
      * validates if extension and mime type combination is as expected.
@@ -105,7 +106,6 @@ class Validator
         }
     }
 
-
     public function validateExtensionMimeType($extension, $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
@@ -118,7 +118,6 @@ class Validator
 
         return true;
     }
-
 
     public function validateFileSize($fileSize)
     {

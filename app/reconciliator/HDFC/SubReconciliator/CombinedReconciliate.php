@@ -2,10 +2,8 @@
 
 namespace Reconciliator\HDFC;
 
-
 use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
-
 
 class CombinedReconciliate  extends Base\CombinedReconciliate
 {

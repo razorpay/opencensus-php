@@ -7,7 +7,6 @@ use Trace\TraceCode;
 use Reconciliator\Orchestrator;
 use Reconciliator\Messenger;
 
-
 class CombinedReconciliate extends Foundation\SubReconciliate
 {
     protected $messenger;
@@ -16,7 +15,6 @@ class CombinedReconciliate extends Foundation\SubReconciliate
     {
         $this->messenger = new Messenger();
     }
-
 
     /**
      * This is the start of reconciliation for a combined report.
@@ -58,7 +56,6 @@ class CombinedReconciliate extends Foundation\SubReconciliate
         }
     }
 
-
     protected function getSubReconciliatorClassName($reconciliationType)
     {
         $parentNamespace = $this->getParentNamespace();
@@ -69,7 +66,6 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
         return $subReconciliatorClassName;
     }
-
 
     protected function getParentNamespace()
     {

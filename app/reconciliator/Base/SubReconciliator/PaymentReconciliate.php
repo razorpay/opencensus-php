@@ -2,7 +2,6 @@
 
 namespace Reconciliator\Base;
 
-
 use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
@@ -16,10 +15,8 @@ use App;
 use Reconciliator\Orchestrator;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
-
     /*******************
      * Instance objects
      *******************/
@@ -33,7 +30,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $app;
 
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -43,7 +39,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->iinRepo         = $repo->iin;
         $this->transactionRepo = $repo->transaction;
     }
-
 
     /**
      * This is the start of the actual reconciliation.
@@ -66,7 +61,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->runReconciliate($row, $extraDetails);
         }
     }
-
 
     public function runReconciliate($row, $extraDetails)
     {
@@ -121,7 +115,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-
     protected function getRowDetailsStructured($row)
     {
         $paymentId = $this->getPaymentId($row);
@@ -166,7 +159,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $rowDetails;
     }
 
-
     protected function setCardTypeIfAbsent($reconCardType)
     {
         if (empty($reconCardType) === true)
@@ -199,7 +191,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             }
         }
     }
-
 
     protected function recordGatewayFeeAndServiceTax($rowDetails)
     {
@@ -245,7 +236,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return false;
     }
 
-
     protected function recordGatewayFee($reconGatewayFee, $currentGatewayFee)
     {
         if ($currentGatewayFee === 0)
@@ -271,7 +261,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return true;
         }
     }
-
 
     protected function recordGatewayServiceTax($reconGatewayServiceTax, $currentGatewayServiceTax)
     {

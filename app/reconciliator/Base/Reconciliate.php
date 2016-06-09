@@ -2,7 +2,6 @@
 
 namespace Reconciliator\Base;
 
-
 use Reconciliator\FileProcessor;
 use Reconciliator\Orchestrator;
 use Reconciliator\Messenger;
@@ -10,10 +9,8 @@ use Reconciliator\Messenger;
 use EE\Exception;
 use Trace\TraceCode;
 
-
 class Reconciliate
 {
-
     /***********************
      * Reconciliation Types
      ***********************/
@@ -51,7 +48,6 @@ class Reconciliate
         $this->messenger = new Messenger();
     }
 
-
     /**
      * This is the start of the reconciliation. This is executed from the orchestrator.
      * For each file, it figures out which type of reconciliation is it (nodal, payment, refund, combined)
@@ -71,12 +67,11 @@ class Reconciliate
             {
                 continue;
             }
-            
+
             $this->setSubReconciliator($reconciliationType);
             $this->subReconciliator->startReconciliation($fileContents);
         }
     }
-
 
     /**
      * This should be implemented in the child class if the gateway needs to
@@ -88,7 +83,6 @@ class Reconciliate
         return null;
     }
 
-
     /**
      * This should be implemented in the child class if the gateway requires certain
      * files to be excluded from doing the reconciliation.
@@ -98,7 +92,6 @@ class Reconciliate
     {
         return false;
     }
-
 
     /**
      * This should be implemented in the child class if the gateway sends zip files
@@ -111,7 +104,6 @@ class Reconciliate
     {
         return null;
     }
-
 
     /**
      * Gets the reconciliation type by either the sheet name in case of excel files
@@ -156,19 +148,17 @@ class Reconciliate
         return $reconciliationType;
     }
 
-
     protected function setSubReconciliator($reconciliationType)
     {
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
         $this->subReconciliator = new $subReconciliatorClassName;
     }
 
-
     protected function getSubReconciliatorClassName($reconciliationType)
     {
         // Parent namespace should be something like - Reconciliator/Axis
         $parentNamespace = $this->getParentNamespace();
-        
+
         // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
         $subReconciliatorClassName = $parentNamespace . '\\'
                                     . ucfirst($reconciliationType)
@@ -176,7 +166,6 @@ class Reconciliate
 
         return $subReconciliatorClassName;
     }
-
 
     protected function getParentNamespace()
     {

@@ -2,12 +2,10 @@
 
 namespace Reconciliator\HDFC;
 
-
 use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 use Trace\TraceCode;
-
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -23,13 +21,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected $messenger;
 
-
     public function __construct()
     {
         $this->messenger = new Messenger();
         parent::__construct();
     }
-
 
     protected function getPaymentId($row)
     {
@@ -37,7 +33,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $paymentId = trim(str_replace("'", '', $paymentId));
         return $paymentId;
     }
-
 
     protected function getGatewayServiceTax($row)
     {
@@ -65,7 +60,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return round($serviceTax);
     }
 
-
     protected function getGatewayFee($row)
     {
         // Convert fee into basic unit of currency (ex: paise)
@@ -79,7 +73,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return round($fee);
     }
-
 
     protected function getCardType($row)
     {

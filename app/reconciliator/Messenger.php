@@ -2,11 +2,9 @@
 
 namespace Reconciliator;
 
-
 use App;
 use Trace\TraceCode;
 use Services\SlackPoster;
-
 
 class Messenger
 {
@@ -31,7 +29,6 @@ class Messenger
         $this->traceReconAlert($data);
     }
 
-
     public function traceReconAlert($data)
     {
         // Default trace code if no trace code is present in data.
@@ -48,7 +45,6 @@ class Messenger
         $this->app['trace']->error($traceCode, $data);
     }
 
-
     public function notifySlack($data)
     {
         if (empty($data) === true)
@@ -62,8 +58,7 @@ class Messenger
 
         $this->slackPost($headline, $data, $settings);
     }
-
-
+    
     public function getSlackSettings()
     {
         $settings['channel'] = $this->app['config']->get('slack.channels.reconciliation');

@@ -2,10 +2,8 @@
 
 namespace Reconciliator\Base\Foundation;
 
-
 use Models\Payment;
 use Trace\TraceCode;
-
 
 class SubReconciliate
 {
@@ -29,7 +27,6 @@ class SubReconciliate
         return true;
     }
 
-
     protected function setReconciledAt($entity)
     {
         $transaction = $entity->transaction;
@@ -37,7 +34,6 @@ class SubReconciliate
         $transaction->setReconciledAt($time);
         $transaction->saveOrFail();
     }
-
 
     protected function checkIfAlreadyReconciled($entity)
     {
