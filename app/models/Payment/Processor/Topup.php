@@ -54,7 +54,7 @@ trait Topup
         if (Payment\Gateway::canGatewayTopup($gateway) === false)
         {
             throw new Exception\BadRequestException(
-                BAD_REQUEST_GATEWAY_CANNOT_TOPUP);
+                ErrorCode::BAD_REQUEST_GATEWAY_CANNOT_TOPUP);
         }
 
         if ($payment->isCreated() === false)
