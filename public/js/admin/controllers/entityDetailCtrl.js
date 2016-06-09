@@ -118,8 +118,8 @@ app.controller('EntityDetailCtrl', [
         }).error(function () {
           alert('There was an error while deleting the IIN');
         });
-      }
-      ,edit: function (iin) {
+      },
+      edit: function (iin) {
         var iinId = iin.iin;
 
         iin = {
@@ -250,6 +250,7 @@ app.controller('EntityDetailCtrl', [
           'terminal',
           'token',
           'transaction',
+          'wallet',
           'webhook'
         ];
         // It needs to be suffixed with _id
@@ -288,7 +289,6 @@ app.controller('EntityDetailCtrl', [
       card: current.card,
       gateway: current.gateway
     };
-    console.debug($scope.terminal);
     $scope.ok = function (terminal) {
       $modalInstance.close(terminal);
     };

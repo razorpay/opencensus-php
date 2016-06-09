@@ -1,8 +1,10 @@
 {
   "browser": true,
+  "devel": true,
   "esnext": true,
   "globals": {
     "app": true,
+    "moment": true,
     "angular": true,
     "$": true,
     "jQuery": true,
