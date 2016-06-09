@@ -69,6 +69,8 @@ class Entity extends Base\PublicEntity
 
     protected $table            = \Constants\Table::PAYMENT;
 
+    protected $metadata         = array();
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = array(
@@ -408,6 +410,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
+    public function setMetadata($metadata)
+    {
+        $this->metadata = $metadata;
+    }
+
     public function incrementOtpAttempts()
     {
         $attempts = $this->getOtpAttemptsAttribute() + 1;
@@ -519,6 +526,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $count;
+    }
+
+    public function getMetadata()
+    {
+        return $this->metadata;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------

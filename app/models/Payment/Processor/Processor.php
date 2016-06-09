@@ -382,6 +382,14 @@ class Processor
 
         $this->setOrderDetails($payment, $input);
 
+        $metadata = isset($input['_']) ? $input['_'] : null;
+
+        $payment->setMetadata($metadata);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_METADATA,
+            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+
         $this->payment = $payment;
 
         return $payment;
