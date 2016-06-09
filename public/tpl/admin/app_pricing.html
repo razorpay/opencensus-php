@@ -52,7 +52,7 @@
   </div>
   <div class="panel panel-default" id="show-plan-panel" ng-if="show_plan.id">
     <div class="panel-heading">
-      Plan Id: {{show_plan.id}} <br/>
+      Plan Id: <a target="_blank" ui-sref="app.pricingdetail({id:show_plan.id})">{{show_plan.id}}</a><br/>
       Plan Name: {{show_plan.name}}
     </div>
     <div class="table-responsive">

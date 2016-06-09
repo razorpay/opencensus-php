@@ -91,6 +91,9 @@ var app = angular.module('app', [
     }).state('app.pricing', {
       url: '/pricing',
       templateUrl: 'tpl/admin/app_pricing.html'
+    }).state('app.pricingdetail', {
+      url: '/pricing/:id',
+      templateUrl: 'tpl/admin/app_pricing_detail.html'
     }).state('app.entities', {
       url: '/entities/:mode/:type',
       templateUrl: 'tpl/admin/app_entities.html',

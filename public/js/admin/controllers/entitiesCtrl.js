@@ -9,7 +9,8 @@ app.controller('EntitiesCtrl', [
   '$stateParams',
   'admin',
   'statusClass',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin, getStatusClass) {
+  'getState',
+  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin, getStatusClass, getState) {
     $scope.getStatusClass = getStatusClass;
     $scope.entity_type = $stateParams.type || 'payment';
     $scope.mode = $stateParams.mode;
@@ -433,25 +434,7 @@ app.controller('EntitiesCtrl', [
       clear('skip');
       $scope.generateTable();
     };
-    $scope.getState = function (type, force) {
-      switch (type) {
-      case 'merchant_id':
-      case 'merchant':
-        return 'app.merchants.detail({id: value})';
-      case 'payment_id':
-      case 'payment':
-        return 'app.payments({id:value, mode:mode})';
-      default:
-        if (force === true) {
-          return 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
-        }
-        if (type.substr(-3) === '_id') {
-          return 'app.entitiesdetail({id:value, mode:mode, type: key})';
-        } else {
-          return '-';
-        }
-      }
-    };
+    $scope.getState = getState;
     function generateQueryParams(count, skip, entity, filters, from, to) {
       var query = {
         count: count,
