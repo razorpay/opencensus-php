@@ -4,7 +4,6 @@ namespace Reconciliator\BillDesk;
 
 use Reconciliator\Base;
 
-
 class RefundReconciliate extends Base\RefundReconciliate
 {
     /*******************

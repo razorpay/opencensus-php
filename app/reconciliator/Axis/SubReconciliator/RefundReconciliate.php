@@ -2,9 +2,7 @@
 
 namespace Reconciliator\Axis;
 
-
 use Reconciliator\Base;
-
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -13,8 +11,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      *******************/
     const COLUMN_PAYMENT_ID = 'merchant_trans_ref';
     const RRN = 'rrn_no';
-
-
+    
     /**
      * Axis reconciliation files only send us the rrn which is mapped
      * to api's refund id in axis migs gateway db.

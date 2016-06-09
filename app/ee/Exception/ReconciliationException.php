@@ -2,10 +2,8 @@
 
 namespace EE\Exception;
 
-
 use EE\Error\Error;
 use EE\Error\ErrorCode;
-
 
 class ReconciliationException extends RecoverableException
 {

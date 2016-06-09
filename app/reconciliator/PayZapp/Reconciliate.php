@@ -17,7 +17,7 @@ class Reconciliate extends Base\Reconciliate
      * @param string $fileName
      * @return null|string
      */
-    protected function getTypeName()
+    protected function getTypeName($fileName)
     {
         return self::COMBINED;
     }

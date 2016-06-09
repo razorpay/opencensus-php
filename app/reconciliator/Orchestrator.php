@@ -377,7 +377,8 @@ class Orchestrator
             // Validations should take care of this.
             $file = $input['attachment-'.$attachmentNumber];
 
-            // This step is mainly to figure out whether the file is of zip type.
+            // This step is mainly to figure out whether the file is of zip type,
+            // since we need to execute a different set of flow ONLY for zip files.
             $fileType = $this->fileProcessor->getTypeOfFile($file);
 
             // If it's a zip file, get all the details of all the files present in it.

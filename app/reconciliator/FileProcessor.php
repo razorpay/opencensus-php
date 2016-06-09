@@ -23,7 +23,17 @@ class FileProcessor
 
     const ZIP_EXTENSION           = 'zip';
 
+    /**
+     * This is used when trying to get the file details of files
+     * which are present on disk already.
+     */
     const STORAGE                 = 'storage';
+    /**
+     * This is used when trying to get the file details of files
+     * which are being sent over the network. The file type of
+     * these files would be UploadedFile.
+     *
+     */
     const UPLOADED                = 'uploaded';
 
     const EXCEL                   = 'excel';
