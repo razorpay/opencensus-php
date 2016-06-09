@@ -37,16 +37,19 @@ class Validator
     }
 
 
-    public function validateAttachments(&$input)
+    public function validateAttachments(& $input)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
         // Excludes 'attachment-count'.
-        $foundAttachments = array_filter($input, function($key)
-        {
-            return (strpos($key, 'attachment-') === 0) and
-                    (strpos($key, 'attachment-count') === false);
-        }, ARRAY_FILTER_USE_KEY);
+        $foundAttachments = array_filter(
+            $input,
+            function ($key)
+            {
+                return ((strpos($key, 'attachment-') === 0) and
+                        (strpos($key, 'attachment-count') === false));
+            },
+            ARRAY_FILTER_USE_KEY);
 
         $foundAttachmentsCount = count($foundAttachments);
 
