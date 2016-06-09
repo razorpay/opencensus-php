@@ -4,6 +4,7 @@ namespace Trace;
 
 use App;
 use Http\Route;
+use Razorpay\Api\Request as ApiRequest;
 use Request;
 
 /**
@@ -22,9 +23,9 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->context = App::make('config')->get('app.context');
 
-        $serverData = $this->getServerData();
+        $data = $this->getServerData() + $this->getUserData();
 
-        parent::__construct($serverData);
+        parent::__construct($data);
     }
 
     /**
@@ -55,9 +56,17 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'server_ip' => $this->request->server('SERVER_ADDR'),
             'context'   => $this->context);
 
-        //$this->unsetUrlForSensitiveUrls($serverData);
-
         return $serverData;
+    }
+
+    protected function getUserData()
+    {
+        $headers = ApiRequest::getHeaders();
+
+        return array_filter($headers, function($key)
+        {
+            return (substr($key, 0, 2) === "X-");
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     protected function unsetUrlForSensitiveUrls(& $serverData)

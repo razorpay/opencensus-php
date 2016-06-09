@@ -311,7 +311,7 @@ class Service extends Base\Service
 
     public function fetch($merchant_id)
     {
-        $merchant = Merchant\Entity::findOrFail($merchant_id);
+        $merchant = Merchant\Entity::findOrSoftFail($merchant_id);
 
         $merchant['tags'] = $merchant->tags;
 

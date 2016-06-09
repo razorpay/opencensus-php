@@ -1,6 +1,7 @@
 <?php
 
 namespace Models\Base;
+use Illuminate\Database\Eloquent;
 
 class Entity extends \Razorpay\Spine\Entity
 {
@@ -26,6 +27,25 @@ class Entity extends \Razorpay\Spine\Entity
         $this->fill($input);
 
         return array();
+    }
+
+    /**
+     * Does a soft-fail, which is where we want
+     * to throw a 404 error instead of blanket failing
+     * @param  string $id
+     * @param  array  $columns
+     * @return Entity
+     */
+    public static function findOrSoftFail($id, $columns = ['*'])
+    {
+        $result = self::find($id, $columns);
+
+        if (!is_null($result))
+        {
+            return $result;
+        }
+
+        throw (new Eloquent\ModelNotFoundException);
     }
 
     public function edit(array $input = array(), $operation = 'edit')

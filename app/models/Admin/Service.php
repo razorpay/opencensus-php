@@ -342,7 +342,7 @@ class Service extends Base\Service
 
     public function fetchMerchantDetails($id)
     {
-        $merchant = Merchant\Entity::findorfail($id);
+        $merchant = Merchant\Entity::findOrSoftFail($id);
 
         if ($merchant->confirm_token !== null)
         {
