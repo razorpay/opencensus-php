@@ -32,14 +32,16 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
+        \Session::forget('card');
+        \Session::forget('cvv');
         \Session::push('card', $input['card']['number']);
         \Session::push('cvv', $input['card']['cvv']);
 
         $reply = $this->enroll($input);
 
-        $eci = property_exists($reply->payerAuthEnrollReply, 'eci') ? $reply->payerAuthEnrollReply->eci : "";
         
-        return $this->decideAuthStepAfterEnroll($reply, $eci, $input);
+        
+        return $this->decideAuthStepAfterEnroll($reply, $input);
     }
 
     public function callback(array $input)
@@ -136,9 +138,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function postNotEnrolledAuthorize($input, $eci)
+    public function postNotEnrolledAuthorize($input, $enrollResponse)
     {
-        $request = $this->createNotEnrolledAuthorizeRequestFields($input, $eci);
+        $request = $this->createNotEnrolledAuthorizeRequestFields($input, $enrollResponse);
 
         try {
             $soapClient = $this->getSoapClientObject();
@@ -279,8 +281,8 @@ class Gateway extends Base\Gateway
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $cards = \Session::get('card');
-        $cvv = \Session::get('cvv');
+        $cards = \Session::pull('card');
+        $cvv = \Session::pull('cvv');
         $card->accountNumber = $cards[0];
         $card->cvNumber = $cvv[0];
         $card->expirationMonth = $input['card']['expiry_month'];
@@ -294,8 +296,9 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function createNotEnrolledAuthorizeRequestFields($input, $eci)
+    public function createNotEnrolledAuthorizeRequestFields($input, $enrollResponse)
     {
+
         $request = new \stdClass();
 
         $request = $this->setMerchantDetailInRequest($request, $input);
@@ -304,14 +307,18 @@ class Gateway extends Base\Gateway
 
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
-
-        // $this->model = $this->repo->retrieveByPaymentIdAndStatus(
-        //                                     $input['payment']['id'], 'enrolled');
-
-        // $ccAuthService->paresStatus = $this->model->pares_status;
-        // $ccAuthService->xid = $this->model->xid;
-        // $ccAuthService->commerceIndicator = $this->model->commerce_indicator;
-        $ccAuthService->eciRaw = $eci;
+        if($input['card']['network'] === 'Visa')
+        {
+            $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
+        }
+        if($input['card']['network'] === 'MasterCard')
+        {
+            $ucaf = new \stdClass();
+            $ucaf->collectionIndicator = $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator;
+            $ccAuthService->ucaf = $ucaf;
+        }
+        $ccAuthService->commerceIndicator = $enrollResponse->payerAuthEnrollReply->commerceIndicator;
+        $ccAuthService->veresEnrolled = $enrollResponse->payerAuthEnrollReply->veresEnrolled;
         $ccAuthService->reconciliationID = $this->merchantReferenceCode();
         
         $request->ccAuthService = $ccAuthService;
@@ -319,8 +326,8 @@ class Gateway extends Base\Gateway
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $cards = \Session::get('card');
-        $cvv = \Session::get('cvv');
+        $cards = \Session::pull('card');
+        $cvv = \Session::pull('cvv');
         $card->accountNumber = $cards[0];
         $card->cvNumber = $cvv[0];
         $card->expirationMonth = $input['card']['expiry_month'];
@@ -377,8 +384,6 @@ class Gateway extends Base\Gateway
         $request->ccCaptureService = $ccCaptureService;
 
         $card = new \stdClass();
-        $cards = \Session::get('card');
-        $card->accountNumber = $cards[0];
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -433,10 +438,10 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject()
     {
-        $url = $_ENV['CYBERSOUREC_GATEWAY_TEST_WSDL_URL'];
+        $url = $_ENV['CYBERSOURCE_GATEWAY_TEST_WSDL_URL'];
         if($this->mode === 'live')
         {
-            $url = $_ENV['CYBERSOUREC_GATEWAY_LIVE_WSDL_URL'];
+            $url = $_ENV['CYBERSOURCE_GATEWAY_LIVE_WSDL_URL'];
         }
 
         $soapClient = new ExtendedClient($url, array());
@@ -650,11 +655,11 @@ class Gateway extends Base\Gateway
         $request = $this->setPurchaseDetail($request, $input);
 
         $request = $this->setItemDetail($request, $input);
-        
+
         return $request;
     }
 
-    protected function decideAuthStepAfterEnroll($enrollResponse, $eci, $input)
+    protected function decideAuthStepAfterEnroll($enrollResponse, $input)
     {
         switch ($enrollResponse->reasonCode)
         {
@@ -663,13 +668,18 @@ class Gateway extends Base\Gateway
 
             case Payment\Result::NOT_ENROLLED:
                 {
-                    if(($eci === "07") OR ($eci === "00")) 
+                    $eci = property_exists($enrollResponse->payerAuthEnrollReply, 'eci') ? $enrollResponse->payerAuthEnrollReply->eci : "";
+                    $ucaf = property_exists($enrollResponse->payerAuthEnrollReply, 'ucafCollectionIndicator') ? $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator : "";
+                    if(($input['card']['network'] === 'Visa') AND ($eci === "07")) 
                     {
                         throw new Exception\LogicException('Card cannot be processed, please try another card or payment method.');
-                    } else
+                    } 
+                    if(($input['card']['network'] === 'MasterCard') AND ($ucaf === "0"))
                     {
-                        return $this->postNotEnrolledAuthorize($input, $eci);
-                    }
+                        throw new Exception\LogicException('Card cannot be processed, please try another card or payment method.');
+                    } 
+                    
+                    return $this->postNotEnrolledAuthorize($input, $enrollResponse);
                 }
 
             default:
