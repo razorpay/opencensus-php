@@ -5,6 +5,7 @@ namespace Models\Merchant;
 use Constants\Mode;
 use Models\Base;
 use Models\Customer;
+use Models\Customer\App;
 use Models\Customer\Token;
 use Models\Merchant;
 use Models\Card;
@@ -29,16 +30,16 @@ class Checkout
     {
         // check if appToken or device token is present in session
         $appToken = Session::get(Payment\Entity::APP_TOKEN);
-        $deviceToken = Session::get(Payment\Entity::DEVICE_TOKEN);
+        $deviceToken = Session::get(App\Entity::DEVICE_TOKEN);
 
         if (isset($input[Payment\Entity::APP_TOKEN]) === false)
         {
             $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
 
-        if (isset($input[Payment\Entity::DEVICE_TOKEN]) === false)
+        if (isset($input[App\Entity::DEVICE_TOKEN]) === false)
         {
-            $input[Payment\Entity::DEVICE_TOKEN] = $deviceToken;
+            $input[App\Entity::DEVICE_TOKEN] = $deviceToken;
         }
 
         $methodsArray = array(
@@ -81,7 +82,7 @@ class Checkout
 
         //fetch customer data and saved cards data
         if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
-            (isset($input[Payment\Entity:Payment\Entity::APP_TOKEN)))
+            (isset($input[Payment\Entity::APP_TOKEN])))
         {
             $custData = $this->fetchCustomerData($input, $merchant);
 
@@ -90,11 +91,11 @@ class Checkout
                 $data['customer'] = $custData;
             }
         }
-        elseif ((isset($input[Payment\Entity::DEVICE_TOKEN])) and
+        elseif ((isset($input[App\Entity::DEVICE_TOKEN])) and
                 (isset($input['contact'])))
         {
             $response = (new Customer\Service)->validateDeviceToken(
-                $input[Payment\Entity::DEVICE_TOKEN],
+                $input[App\Entity::DEVICE_TOKEN],
                 $input);
 
             $data['customer'] = array(
