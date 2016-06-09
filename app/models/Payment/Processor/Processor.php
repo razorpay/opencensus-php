@@ -322,15 +322,11 @@ class Processor
 
     protected function setPaymentError($error)
     {
-        $code = $error->getPublicErrorCode();
-
-        $desc = $error->getDescription();
-
         $internalCode = $error->getInternalErrorCode();
 
         $payment = $this->payment;
 
-        $payment->setError($code, $desc, $internalCode);
+        $payment->setInternalErrorCode($internalCode);
 
         $payment->saveOrFail();
     }

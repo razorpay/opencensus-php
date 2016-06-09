@@ -538,7 +538,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'failed',
-                'error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                'error_code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
             ],
         ],

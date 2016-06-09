@@ -237,9 +237,8 @@ class AuthorizeTest extends TestCase
     public function testTimeoutOldPaymentWithErrorRetention()
     {
         $payment = $this->fixtures->create('payment:status_created', [
-            'created_at'        => time() - 60*100,
-            'error_code'        => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
-            'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+            'created_at'          => time() - 60*100,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT
         ]);
 
         $content = $this->timeoutOldPayment();
