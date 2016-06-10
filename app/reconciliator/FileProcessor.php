@@ -135,7 +135,7 @@ class FileProcessor
             self::DESTINATION_FOLDER => $sourceFolderPath,
             self::FILE_PATH          => $filePath,
         ];
-
+        
         return $fileDetails;
     }
 

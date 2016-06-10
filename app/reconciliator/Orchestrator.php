@@ -181,7 +181,7 @@ class Orchestrator
 
             if ($skipFile === true)
             {
-                $this->handleInvalidFile($file, $fileDetails);
+                $this->handleFileSkip($file, $fileDetails);
                 continue;
             }
 
@@ -203,7 +203,7 @@ class Orchestrator
                     ]);
                 $this->app['trace']->traceException($ex);
 
-                $this->handleInvalidFile($file, $fileDetails);
+                $this->handleFileSkip($file, $fileDetails);
 
                 // Don't get the content of the file.
                 continue;
@@ -264,7 +264,7 @@ class Orchestrator
         return false;
     }
 
-    protected function handleInvalidFile($file, array $fileDetails)
+    protected function handleFileSkip($file, array $fileDetails)
     {
         $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
 
@@ -509,7 +509,7 @@ class Orchestrator
         $this->allFilesContents[] = $csvArray;
     }
 
-    protected function setExtraDetails(&$arrayContent, $fileDetails)
+    protected function setExtraDetails(& $arrayContent, $fileDetails)
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
         $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
@@ -535,8 +535,10 @@ class Orchestrator
         // unzipFile unzips the file and stores it in a location.
         $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $zipPassword);
 
+        $unzippedFiles = new DirectoryIterator($unzippedFolderPath);
+
         // Iterates through each zip file and gets the file details for them.
-        foreach (new DirectoryIterator($unzippedFolderPath) as $unzippedFile)
+        foreach ($unzippedFiles as $unzippedFile)
         {
             if ($unzippedFile->isFile() === true)
             {
@@ -556,7 +558,7 @@ class Orchestrator
      */
     public static function getKeyFromSubArrayMatch($needle, array $haystack)
     {
-        foreach($haystack as $key => $subArray)
+        foreach ($haystack as $key => $subArray)
         {
             if (in_array($needle, $subArray) === true)
             {
