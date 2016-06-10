@@ -31,7 +31,7 @@ return array(
         'operations'    =>  '#operations_log',
         'activations'   =>  '#activations_log',
         'creevey'       =>  '#operations_log',
-
+        'risk'          =>  '#risk',
 
         // This is used by the /v query command on slack
         'command_token' =>  'By9i0lp0y0T4mvgUn0Ljj1Rt',
