@@ -289,7 +289,7 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('business_doe'), '1990-11-01')
             ->type(l::IdOrName('company_cin'), 'cin123455')
             ->type(l::IdOrName('company_pan'), 'pan12345')
-            ->type(l::IdOrName('company_pan_name'), 'pan name')
+            ->type(l::IdOrName('company_pan_name'), 'TEST COMPANY (OPC)')
             ->type(l::IdOrName('business_model'), 'my model')
             ->select(l::IdOrName('transaction_volume'), '1 to 10 lakh')
             ->type(l::IdOrName('transaction_value'), '120')
