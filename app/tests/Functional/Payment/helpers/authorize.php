@@ -581,29 +581,6 @@ return [
         ]
     ],
 
-    'testWalletS2SPaymentWoFeature' =>[
-        'request' => [
-            'url' => '/payments/create/wallet',
-            'method' => 'POST',
-            'content' => [
-                'wallet'    => 'payumoney',
-                'amount'    => 10000,
-                'currency'  => 'INR',
-                'contact'   => '9999999999',
-                'email'     => 'a@b.com'
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ]
-    ],
-
     'testPayumoneyPaymentViaWalletS2S' =>[
         'request' => [
             'url' => '/payments/create/wallet',

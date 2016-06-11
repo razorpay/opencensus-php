@@ -489,7 +489,6 @@ final class Route
         'customer_delete'       =>  'tokens',
         'customer_delete_token' =>  'tokens',
         'customer_fetch_tokens' =>  'tokens',
-        'payment_create_wallet' =>  's2sWallet'
     );
 
     protected static $router;
