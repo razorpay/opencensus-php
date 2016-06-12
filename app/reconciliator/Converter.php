@@ -66,10 +66,19 @@ class Converter
         $columnHeaders = [];
         $data = [];
 
-        if (($handle = fopen($filePath, 'r')) !== false)
+        $handle = fopen($filePath, 'r');
+
+        if ($handle === false)
+        {
+            throw new Exception\RuntimeException(
+                'Unable to open file . ' . $filePath);
+        }
+
+        try
         {
             while (($row = fgetcsv($handle)) !== false)
             {
+                // If headers are empty, get headers from the first row.
                 if (empty($columnHeaders) === true)
                 {
                     $columnHeaders = array_map('trim', $row);
@@ -78,8 +87,6 @@ class Converter
                 {
                     if (count($columnHeaders) !== count($row))
                     {
-                        fclose($handle);
-
                         throw new Exception\ReconciliationException(
                             'The number of columns in the row does not match the column headers count.',
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
@@ -90,6 +97,9 @@ class Converter
                     $data[] = array_combine($columnHeaders, $row);
                 }
             }
+        }
+        finally
+        {
             fclose($handle);
         }
 

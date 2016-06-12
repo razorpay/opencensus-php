@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Orchestrator
 {
     const GATEWAY = 'gateway';
+
     /**
      * This contains file details, sheet details and email details,
      * whenever applicable. It does not contain the actual content.
@@ -154,8 +155,8 @@ class Orchestrator
         $this->emailDetails = $this->getEmailDetails($input);
         $this->validator->filterEmails($this->emailDetails);
 
-        // Figures out the gateway and sets the gateway reconciliator object for the orchestrator,
-        // using the input details.
+        // Figures out the gateway and sets the gateway reconciliator object for
+        // the orchestrator, using the input details.
         $this->setGatewayFromEmailId();
 
         $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
@@ -439,8 +440,8 @@ class Orchestrator
     protected function getFileContentInArrayAndSet($fileDetails)
     {
         // All file types are segregated into either CSV or Excel.
-        $fileType = self::getKeyFromSubArrayMatch($fileDetails[FileProcessor::EXTENSION],
-                                                    FileProcessor::FILE_TYPES_MAPPINGS);
+        $fileType = self::getKeyFromSubArrayMatch(
+            $fileDetails[FileProcessor::EXTENSION], FileProcessor::FILE_TYPES_MAPPINGS);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
 
