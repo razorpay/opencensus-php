@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
-    const GATEWAY_RECON_PASSWORD        = 'gateway_RECON_password';
+    const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -189,7 +189,8 @@ class Entity extends Base\PublicEntity
     {
         if ($reconPassword === null)
         {
-            $reconPassword = '';
+            // Default value is set to null anyway.
+            return;
         }
 
         $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword);
@@ -211,21 +212,21 @@ class Entity extends Base\PublicEntity
 
         if ($secret === null)
         {
-            return $secret;  
+            return $secret;
         }
 
         return Crypt::decrypt($secret);
     }
-    
+
     protected function getGatewayReconPassword()
     {
         $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
-        
+
         if ($reconPassword === null)
         {
             return $reconPassword;
         }
-        
+
         return Crypt::decrypt($reconPassword);
     }
 

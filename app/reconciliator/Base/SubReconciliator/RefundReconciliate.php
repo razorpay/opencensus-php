@@ -72,7 +72,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
-            if (($reconciled === true) or ($reconciled === null))
+            if ($reconciled === true)
             {
                 return;
             }
@@ -105,7 +105,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return;
         }
     }
-    
+
     protected function getRowDetailsStructured($row)
     {
         $refundId = $this->getRefundId($row);

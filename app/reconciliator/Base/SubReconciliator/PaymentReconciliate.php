@@ -75,7 +75,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
-            if (($reconciled === true) or ($reconciled === null))
+            if ($reconciled === true)
             {
                 return;
             }

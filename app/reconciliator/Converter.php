@@ -76,16 +76,19 @@ class Converter
 
         try
         {
+            $columnHeadersCount = 0;
+
             while (($row = fgetcsv($handle)) !== false)
             {
                 // If headers are empty, get headers from the first row.
                 if (empty($columnHeaders) === true)
                 {
                     $columnHeaders = array_map('trim', $row);
+                    $columnHeadersCount = count($columnHeaders);
                 }
                 else
                 {
-                    if (count($columnHeaders) !== count($row))
+                    if ($columnHeadersCount !== count($row))
                     {
                         throw new Exception\ReconciliationException(
                             'The number of columns in the row does not match the column headers count.',
