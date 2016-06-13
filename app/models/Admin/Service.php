@@ -1056,13 +1056,12 @@ class Service extends Base\Service
 
     public function archiveMerchant($id)
     {
-        $error = array();
+        $error = [];
+        $merchant = Merchant\Entity::findOrSoftFail($id);
 
-        $merchant = Merchant\Entity::findorfail($id);
-
-        if($merchant->archived_at !== null)
+        if ($merchant->archived_at !== null)
         {
-            return array("Merchant already archived.");
+            $error = ["Merchant already archived."];
         }
 
         $this->setApiCredentials();
@@ -1072,19 +1071,24 @@ class Service extends Base\Service
             $data = $this->api->merchant->fetch($id);
             if ($data->live === true)
             {
-                return array("Live merchants can not be archived.");
+                $error = ["Live merchants can not be archived."];
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getMessage());
+            $error =[$e->getMessage()];
         }
+        finally
+        {
+            if (empty($error))
+            {
+                $this->logActionToSlack($merchant, Actions::ARCHIVED);
+                $merchant->archive();
+            }
 
-        $this->logActionToSlack($merchant, Actions::ARCHIVED);
-        $merchant->archived_at = time();
-        $merchant->save();
-
-        return array();
+            // Return empty array in case of success
+            return $error;
+        }
     }
 
     public function unarchiveMerchant($id)
