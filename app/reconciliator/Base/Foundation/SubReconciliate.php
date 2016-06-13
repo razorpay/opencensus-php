@@ -27,7 +27,7 @@ class SubReconciliate
         return true;
     }
 
-    protected function setReconciledAt($entity)
+    protected function persistReconciledAt($entity)
     {
         $transaction = $entity->transaction;
         $time = time();

@@ -74,15 +74,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return round($fee);
     }
 
-    protected function getCardType($row)
+    protected function getCardDetails($row)
     {
         if (isset($row[self::COLUMN_CARD_TYPE]) === false)
         {
             return null;
         }
 
-        $cardType = strtolower($row[self::COLUMN_CARD_TYPE]);
+        $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
 
+        $cardType = $this->getCardType($columnCardType, $row);
+        $cardLocale = $this->getCardLocale($columnCardType, $row);
+
+        return [
+            BaseReconciliate::CARD_TYPE   => $cardType,
+            BaseReconciliate::CARD_LOCALE => $cardLocale
+        ];
+    }
+
+    protected function getCardType($cardType, $row)
+    {
         if ($cardType === 'dc')
         {
             $cardType = BaseReconciliate::CREDIT;
@@ -103,6 +114,34 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 ]);
 
             // It's as good as no card type present in the row.
+            return null;
+        }
+
+        return $cardType;
+    }
+
+    protected function getCardLocale($cardType, $row)
+    {
+        if ($cardType[0] === 'd')
+        {
+            $cardType = BaseReconciliate::DOMESTIC;
+        }
+        else if ($cardType[0] === 'f')
+        {
+            $cardType = BaseReconciliate::INTERNATIONAL;
+        }
+        else
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card locale (domestic/international).',
+                    'recon_card_type' => $cardType,
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            // It's as good as no card locale present in the row.
             return null;
         }
 

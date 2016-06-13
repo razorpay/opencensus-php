@@ -30,6 +30,7 @@ class Reconciliate
     const PAYMENT_ID          = 'payment_id';
     const REFUND_ID           = 'refund_id';
     const CARD_TYPE           = 'card_type';
+    const CARD_LOCALE         = 'card_locale';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
     const GATEWAY_FEE         = 'gateway_fee';
 
@@ -37,8 +38,10 @@ class Reconciliate
      * Card types
      *************************/
 
-    const CREDIT = 'credit';
-    const DEBIT = 'debit';
+    const CREDIT        = 'credit';
+    const DEBIT         = 'debit';
+    const DOMESTIC      = 'domestic';
+    const INTERNATIONAL = 'international';
 
     /*********************
      * Instance objects

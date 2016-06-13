@@ -54,7 +54,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return round($fee);
     }
 
-    protected function getCardType($row)
+    protected function getCardDetails($row)
     {
         if (isset($row[self::COLUMN_CARD_TYPE]) === false)
         {
@@ -86,6 +86,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        return $cardType;
+        return [
+            BaseReconciliate::CARD_TYPE => $cardType,
+        ];
     }
 }

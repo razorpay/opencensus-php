@@ -10,6 +10,7 @@ use Models\Transaction;
 
 use Gateway\AxisMigs;
 
+use Tests\Functional\Fixtures\Entity\Base;
 use Trace\TraceCode;
 use App;
 
@@ -24,6 +25,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $paymentRepo;
     protected $iinRepo;
+    protected $cardRepo;
     protected $transactionRepo;
 
     protected $payment;
@@ -39,6 +41,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->paymentRepo     = $repo->payment;
         $this->iinRepo         = $repo->iin;
         $this->transactionRepo = $repo->transaction;
+        $this->cardRepo        = $repo->card;
     }
 
     /**
@@ -114,13 +117,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function persistReconciliationData($rowDetails)
     {
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
-        var_dump($a);
+
         if ($recordSuccess === true)
         {
-            $this->setReconciledAt($this->payment);
+            $this->persistReconciledAt($this->payment);
         }
 
-        $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
+        $this->persistCardDetailsIfAbsent($rowDetails);
     }
 
     protected function getRowDetailsStructured($row)
@@ -151,7 +154,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        $cardType = $this->getCardType($row);
+        $cardDetails = $this->getCardDetails($row);
 
         $serviceTax = $this->getGatewayServiceTax($row);
 
@@ -159,21 +162,43 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
-            BaseReconciliate::CARD_TYPE           => $cardType,
             BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
             BaseReconciliate::GATEWAY_FEE         => $fee,
         ];
 
+        $this->setCardDetailsInRowDetails($cardDetails, $rowDetails);
+
         return $rowDetails;
     }
 
-    protected function setCardTypeIfAbsent($reconCardType)
+    protected function setCardDetailsInRowDetails($cardDetails, & $rowDetails)
     {
-        if (empty($reconCardType) === true)
+        if (empty($cardDetails[BaseReconciliate::CARD_TYPE]) === false)
         {
-            return;
+            $rowDetails[BaseReconciliate::CARD_TYPE] = $cardDetails[BaseReconciliate::CARD_TYPE];
         }
 
+        if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)
+        {
+            $rowDetails[BaseReconciliate::CARD_LOCALE] = $cardDetails[BaseReconciliate::CARD_LOCALE];
+        }
+    }
+
+    protected function persistCardDetailsIfAbsent($rowDetails)
+    {
+        if (empty($rowDetails[BaseReconciliate::CARD_TYPE]) === false)
+        {
+            $this->persistCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
+        }
+
+        if (empty($rowDetails[BaseReconciliate::CARD_LOCALE]) === false)
+        {
+            $this->persistCardLocaleIfAbsent($rowDetails[BaseReconciliate::CARD_LOCALE]);
+        }
+    }
+
+    protected function persistCardTypeIfAbsent($reconCardType)
+    {
         $paymentIin = $this->payment->card->iinRelation;
 
         $iinCardType = $paymentIin->getType();
@@ -195,6 +220,43 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'iin_card_type'   => $iinCardType,
                         'payment_id'      => $this->payment->getId(),
                         'gateway'         => get_called_class()
+                    ]);
+            }
+        }
+    }
+
+    protected function persistCardLocaleIfAbsent($reconCardLocale)
+    {
+        if ($reconCardLocale === BaseReconciliate::INTERNATIONAL)
+        {
+            $reconInternational = true;
+        }
+        else
+        {
+            $reconInternational = false;
+        }
+
+        $paymentCard = $this->payment->card;
+
+        $isCardInternational = $paymentCard->isInternational();
+
+        if (empty($isCardInternational) === true)
+        {
+            $paymentCard->setInternational($reconInternational);
+            $this->cardRepo->saveOrFail($paymentCard);
+        }
+        else
+        {
+            if ($isCardInternational !== $reconInternational)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'              => TraceCode::RECON_MISMATCH,
+                        'message'                 => 'Card locales in recon file and db do not match.',
+                        'recon_card_locale'       => $reconCardLocale,
+                        'is_stored_international' => $isCardInternational,
+                        'payment_id'              => $this->payment->getId(),
+                        'gateway'                 => get_called_class()
                     ]);
             }
         }

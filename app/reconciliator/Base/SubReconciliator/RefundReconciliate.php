@@ -110,7 +110,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function persistReconciliationData()
     {
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
-        $this->setReconciledAt($this->refund);
+        $this->persistReconciledAt($this->refund);
     }
 
     protected function getRowDetailsStructured($row)
