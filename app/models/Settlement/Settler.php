@@ -51,6 +51,8 @@ class Settler
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
+        $this->preSettlementProcessing();
+
         $this->input = $input;
 
         if ($this->checkForHolidays())
@@ -65,6 +67,8 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
+        $this->preSettlementProcessing();
+
         $this->input = $input;
 
         if ($this->checkForHolidays())
