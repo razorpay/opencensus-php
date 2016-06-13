@@ -491,6 +491,7 @@ app.controller('EntitiesCtrl', [
         if (data.success) {
           $scope.headings = data.data.headings;
           $scope.entity.items = data.data.items;
+
           $scope.entity.count = parseInt(data.data.count);
           $scope.entity.countStart = $scope.entity.skip + 1;
           if (data.data.count === 0)
@@ -498,7 +499,7 @@ app.controller('EntitiesCtrl', [
           else
             $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count - 1;
           $scope.allowPrev = $scope.entity.countStart != 1;
-          $scope.allowNext = $scope.entity.count >= 10;
+          $scope.allowNext = $scope.entity.count >= $scope.count;
         } else {
           if (data.errors) {
             angular.forEach(data.errors, function (value) {
