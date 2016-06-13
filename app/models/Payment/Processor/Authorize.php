@@ -42,7 +42,6 @@ trait Authorize
         {
             return $this->runOtpPaymentFlow($gatewayInput, $payment);
         }
-
         $request = $this->callGatewayAuthorize($gatewayInput);
 
         //
@@ -247,6 +246,12 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+        if(($payment->gateway === 'cybersource') and ($payment->method === 'card'))
+        {
+            $payment->card->vault_token = Card\Tokenex::getVaultToken($input['card']['number']);
+            (new Card\Repository)->saveOrFail($payment->card);
+        }
 
         $this->repo->saveOrFail($payment);
 
@@ -736,8 +741,7 @@ trait Authorize
     }
 
     protected function callGatewayAuthorize(array $data)
-    {
-        try
+    {        try
         {
             $callbackData = $this->callGatewayFunction(
                                             Payment\Action::AUTHORIZE,

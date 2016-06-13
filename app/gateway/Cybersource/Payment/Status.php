@@ -12,7 +12,6 @@ class Status
      * So, store either ENROLLED or NOT_ENROLLED or ENROLL_FAILED
      */
 
-    const INITIALIZED               = 'initialized';
     const ENROLLED                  = 'enrolled';
     const NOT_ENROLLED              = 'not_enrolled';
     const ENROLL_FAILED             = 'enroll_failed';
@@ -26,9 +25,4 @@ class Status
     const CAPTURE_FAILED            = 'capture_failed';
     const REFUND_FAILED             = 'refund_failed';
     const REFUNDED                  = 'refunded';
-
-    public static function getSuccessStatusArray()
-    {
-        return [self::AUTHORIZED, self::CAPTURED];
-    }
 }

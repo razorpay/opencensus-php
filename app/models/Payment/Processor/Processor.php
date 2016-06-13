@@ -342,6 +342,7 @@ class Processor
         {
             $input['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
         }
+        $gateway='cybersource';
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 

@@ -43,7 +43,6 @@ class Repository extends Base\Repository
         $attributes = array(
             'payment_id'                => $id,
             'gateway_transaction_id'    => '1',
-            'action'                    => '1',
             'amount'                    => $request->item[0]->unitPrice,
             'status'                    => $status,
             'ref'                       => $response->requestID);
@@ -58,7 +57,6 @@ class Repository extends Base\Repository
     {
         $attributes = array(
             'payment_id'            => $id,
-            'action'                => '1',
             'amount'                => $requestData->item[0]->unitPrice,
             'error_code'            => $error->reasonCode,
             'error_text'            => '1',
@@ -223,10 +221,11 @@ class Repository extends Base\Repository
             $model->cavv = $response->payerAuthValidateReply->cavv;
         }
 
-        // if($cardType === 'Mastercard')
-        // {
-        //     $model->
-        // }
+        if($cardType === 'Mastercard')
+        {
+            $model->auth_data = $response->payerAuthValidateReply->ucafAuthenticationData;
+            $model->collection_indicator = $response->payerAuthValidateReply->ucafCollectionIndicator;
+        }
 
         $this->saveOrFail($model);
 

@@ -13,7 +13,7 @@ use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 use ExtendedClient;
-use Session;
+use Models\Card;
 
 class Gateway extends Base\Gateway
 {
@@ -32,20 +32,15 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        \Session::forget('card');
-        \Session::forget('cvv');
-        \Session::push('card', $input['card']['number']);
-        \Session::push('cvv', $input['card']['cvv']);
-
         $reply = $this->enroll($input);
 
-        
-        
         return $this->decideAuthStepAfterEnroll($reply, $input);
     }
 
     public function callback(array $input)
     {
+        $model = $this->repo->retrieveByPaymentIdAndStatus(
+                                            $input['payment']['id'], 'enrolled');
         parent::callback($input);
 
         $this->id = $input['payment']['id'];
@@ -58,7 +53,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            throw new Exception\InvalidArgumentException(
+            throw new Exception\BadRequestException(
                 'Auth Validation failed, try another card or payment option. Reason code: '.$status);
         }
     }
@@ -72,7 +67,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_VALIDATE_ERROR,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterValidateError(
+            $this->repo->persistAfterValidateError(
                 $input['payment']['id'],
                 $response,
                 $request, 
@@ -85,7 +80,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_VALIDATE_RESPONSE,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterValidate(
+            $this->repo->persistAfterValidate(
                 $input['payment']['id'],
                 $request,
                 $response,
@@ -97,44 +92,49 @@ class Gateway extends Base\Gateway
     public function postAuthEnrolledRequest($input)
     {
         $request = $this->createAuthEnrolledRequestFields($input);
+        sd($request);
 
-        try {
+        try 
+        {
             $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
             $this->persistAfterValidate($input, $reply, $request);
+            sd($reply);
 
             return $reply->reasonCode;
 
-        } catch (SoapFault $exception) {
-            var_dump(get_class($exception));
-            var_dump($exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Validation request failed.', null, $exception);
         }
     }
 
     public function postEnrollAuthorize($input)
     {
         $request = $this->createAuthorizeRequestFields($input);
+        sd($request);
 
-        try {
+        try 
+        {
             $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
-
             
             $this->persistAfterAuthorize($input, $reply, $request);
+            sd($reply);
 
             if($reply->reasonCode !== 100)
             {
-                throw new Exception\InvalidArgumentException(
+                throw new Exception\BadRequestException(
                     'Authorization failed. Reason code: '.$reply->reasonCode);
             }
-        } catch (SoapFault $exception) {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_AUTHORIZE_ERROR,
-                (array) $exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Authorization failed.', null, $exception);
         }
     }
 
@@ -142,7 +142,8 @@ class Gateway extends Base\Gateway
     {
         $request = $this->createNotEnrolledAuthorizeRequestFields($input, $enrollResponse);
 
-        try {
+        try 
+        {
             $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
@@ -151,14 +152,13 @@ class Gateway extends Base\Gateway
 
             if($reply->reasonCode !== 100)
             {
-                throw new Exception\InvalidArgumentException(
+                throw new Exception\BadRequestException(
                     'Authorization failed. Reason code: '.$reply->reasonCode);
             }
-        } catch (SoapFault $exception) {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_AUTHORIZE_ERROR,
-                (array) $exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Authorization failed.', null, $exception);
         }
     }
 
@@ -171,7 +171,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterNotEnrolledAuthorizeError(
+            $this->repo->persistAfterNotEnrolledAuthorizeError(
                 $input['payment']['id'],
                 $response,
                 $request);
@@ -183,7 +183,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterNotEnrolledAuthorize(
+            $this->repo->persistAfterNotEnrolledAuthorize(
                 $input['payment']['id'],
                 $request,
                 $response);
@@ -200,7 +200,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterAuthorizeError(
+            $this->repo->persistAfterAuthorizeError(
                 $input['payment']['id'],
                 $response,
                 $request);
@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterAuthorize(
+            $this->repo->persistAfterAuthorize(
                 $input['payment']['id'],
                 $request,
                 $response);
@@ -236,8 +236,7 @@ class Gateway extends Base\Gateway
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $cards = \Session::get('card');
-        $card->accountNumber = $cards[0];
+        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -260,31 +259,32 @@ class Gateway extends Base\Gateway
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
 
-        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+        $model = $this->repo->retrieveByPaymentIdAndStatus(
                                             $input['payment']['id'], 'enrolled');
 
-        $ccAuthService->paresStatus = $this->model->pares_status;
-        $ccAuthService->xid = $this->model->xid;
-        $ccAuthService->commerceIndicator = $this->model->commerce_indicator;
-        $ccAuthService->eciRaw = $this->model->eci_raw;
+        $ccAuthService->paresStatus = $model->pares_status;
+        $ccAuthService->xid = $model->xid;
+        $ccAuthService->commerceIndicator = $model->commerce_indicator;
+        $ccAuthService->eciRaw = $model->eci_raw;
         $ccAuthService->reconciliationID = $this->merchantReferenceCode();
         if($input['card']['network'] === 'Visa')
         {
-            $ccAuthService->cavv = $this->model->cavv;
+            $ccAuthService->cavv = $model->cavv;
         }
-        // if($input['card']['network'] === 'Mastercard')
-        // {
+        if($input['card']['network'] === 'Mastercard')
+        {
+            $ucaf = new \stdClass();
+            $ucaf->authenticationData = $model->auth_data;
+            $ucaf->collectionIndicator = $model->collection_indicator;
 
-        // }
+            $ccAuthService->ucaf = $ucaf;
+        }
         $request->ccAuthService = $ccAuthService;
 
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $cards = \Session::pull('card');
-        $cvv = \Session::pull('cvv');
-        $card->accountNumber = $cards[0];
-        $card->cvNumber = $cvv[0];
+        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -309,7 +309,7 @@ class Gateway extends Base\Gateway
         $ccAuthService->run = "true";
         if($input['card']['network'] === 'Visa')
         {
-            $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
+            //$ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
         }
         if($input['card']['network'] === 'MasterCard')
         {
@@ -326,10 +326,7 @@ class Gateway extends Base\Gateway
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $cards = \Session::pull('card');
-        $cvv = \Session::pull('cvv');
-        $card->accountNumber = $cards[0];
-        $card->cvNumber = $cvv[0];
+        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -345,7 +342,8 @@ class Gateway extends Base\Gateway
     {
         $request = $this->createCaptureRequestFields($input);
 
-        try {
+        try 
+        {
             $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
@@ -354,17 +352,16 @@ class Gateway extends Base\Gateway
 
             if($reply->reasonCode != Payment\Result::CAPTURED)
             {
-                throw new Exception\LogicException("Capture failed! Reason code: ".$reply->reasonCode, 1);
+                throw new Exception\BadRequestException("Capture failed! Reason code: ".$reply->reasonCode, 1);
                 
             }
 
             return $reply->reasonCode;
 
-        } catch (SoapFault $exception) {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_CAPTURE_ERROR,
-                (array) $exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Capture request failed.', null, $exception);
         }
     }
 
@@ -378,9 +375,9 @@ class Gateway extends Base\Gateway
         
         $ccCaptureService = new \stdClass();
         $ccCaptureService->run = "true";
-        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+        $model = $this->repo->retrieveByPaymentIdAndStatus(
                                             $input['payment']['id'], 'authorized');
-        $ccCaptureService->authRequestID = $this->model->ref;
+        $ccCaptureService->authRequestID = $model->ref;
         $request->ccCaptureService = $ccCaptureService;
 
         $card = new \stdClass();
@@ -399,18 +396,18 @@ class Gateway extends Base\Gateway
     {
         $request = $this->createRefundRequestFields($input);
 
-        try {
+        try 
+        {
             $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
 
             return $reply->reasonCode;
 
-        } catch (SoapFault $exception) {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_REFUND_ERROR,
-                (array) $exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Refund request failed.', null, $exception);
         }
     }
 
@@ -424,9 +421,9 @@ class Gateway extends Base\Gateway
 
         $ccCreditService = new \stdClass();
         $ccCreditService->run = "true";
-        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+        $model = $this->repo->retrieveByPaymentIdAndStatus(
                                             $input['payment']['id'], 'captured');
-        $ccCreditService->captureRequestID = $this->model->capture_ref;
+        $ccCreditService->captureRequestID = $model->capture_ref;
         $request->ccCreditService = $ccCreditService;
 
         $request = $this->setPurchaseDetail($request, $input);
@@ -441,7 +438,7 @@ class Gateway extends Base\Gateway
         $url = $_ENV['CYBERSOURCE_GATEWAY_TEST_WSDL_URL'];
         if($this->mode === 'live')
         {
-            $url = $_ENV['CYBERSOURCE_GATEWAY_LIVE_WSDL_URL'];
+            $url = Payment\Url::WSDL_LIVE;
         }
 
         $soapClient = new ExtendedClient($url, array());
@@ -458,16 +455,18 @@ class Gateway extends Base\Gateway
         $request->merchantID = $this->getMerchantID();
         $request->requestID = '4649570076396291201016';
 
-        try {
+        try 
+        {
             $soapClient = new ExtendedClient('https://ebctest.cybersource.com/ebctest/Query', array());
 
             $reply = $soapClient->runTransaction($request);
 
             return $reply->reasonCode;
 
-        } catch (SoapFault $exception) {
-            var_dump(get_class($exception));
-            var_dump($exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Verify request failed.', null, $exception);
         }
     }
 
@@ -477,7 +476,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getEnrollRequestObject($input);
 
-        try {
+        try 
+        {
             $soapClient = $this->getSoapClientObject();
 
             $reply = $soapClient->runTransaction($request);
@@ -486,11 +486,10 @@ class Gateway extends Base\Gateway
 
             return $reply;
 
-        } catch (SoapFault $exception) {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_ENROLL_ERROR,
-                (array) $exception);
+        } catch (SoapFault $exception) 
+        {
+            throw new Exception\RuntimeException(
+                'Enroll failed.', null, $exception);
         }
     }
 
@@ -503,7 +502,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_ENROLL_ERROR,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterEnrollError(
+            $this->repo->persistAfterEnrollError(
                 $input['payment']['id'],
                 $response,
                 $request);
@@ -515,7 +514,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_ENROLL_RESPONSE,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterEnroll(
+            $this->repo->persistAfterEnroll(
                 $input['payment']['id'],
                 $request,
                 $response);
@@ -531,7 +530,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_CAPTURE_ERROR,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterCaptureError(
+            $this->repo->persistAfterCaptureError(
                 $input['payment']['id'],
                 $response,
                 $request);
@@ -544,7 +543,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_CAPTURE_RESPONSE,
                 (array) $response);
 
-            $this->model = $this->repo->persistAfterCapture(
+            $this->repo->persistAfterCapture(
                 $input['payment']['id'],
                 $request,
                 $response);
@@ -568,7 +567,7 @@ class Gateway extends Base\Gateway
 
     public function getMerchantID()
     {
-        $mid = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'];
+        $mid = $this->config['test_merchant_id'];
 
         if($this->mode === 'live')
         {
@@ -580,7 +579,7 @@ class Gateway extends Base\Gateway
 
     public function merchantReferenceCode()
     {
-        $mid = $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_REFERENCE_CODE'];
+        $mid = $this->config['test_ref_code'];
 
         if($this->mode === 'live')
         {
@@ -670,13 +669,13 @@ class Gateway extends Base\Gateway
                 {
                     $eci = property_exists($enrollResponse->payerAuthEnrollReply, 'eci') ? $enrollResponse->payerAuthEnrollReply->eci : "";
                     $ucaf = property_exists($enrollResponse->payerAuthEnrollReply, 'ucafCollectionIndicator') ? $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator : "";
-                    if(($input['card']['network'] === 'Visa') AND ($eci === "07")) 
+                    if(($input['card']['network'] === 'Visa') AND ($eci === "7")) 
                     {
-                        throw new Exception\LogicException('Card cannot be processed, please try another card or payment method.');
+                        throw new Exception\BadRequestException('Card cannot be processed, please try another card or payment method.');
                     } 
-                    if(($input['card']['network'] === 'MasterCard') AND ($ucaf === "0"))
+                    if(($input['card']['network'] === 'MasterCard') AND (($ucaf === "00") OR ($ucaf === "7")))
                     {
-                        throw new Exception\LogicException('Card cannot be processed, please try another card or payment method.');
+                        throw new Exception\BadRequestException('Card cannot be processed, please try another card or payment method.');
                     } 
                     
                     return $this->postNotEnrolledAuthorize($input, $enrollResponse);
