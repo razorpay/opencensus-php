@@ -2,6 +2,7 @@
 
 namespace Reconciliator\Base;
 
+use EE\Exception\BadRequestException;
 use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
@@ -85,14 +86,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             if ($validate === true)
             {
-                $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
-
-                if ($recordSuccess === true)
-                {
-                    $this->setReconciledAt($this->payment);
-                }
-
-                $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
+                $this->persistReconciliationData($rowDetails);
             }
         }
         catch (\Exception $ex)
@@ -111,8 +105,22 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             $this->app['trace']->traceException($ex);
 
-            return;
+            throw $ex;
+
+            //return;
         }
+    }
+
+    protected function persistReconciliationData($rowDetails)
+    {
+        $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
+        var_dump($a);
+        if ($recordSuccess === true)
+        {
+            $this->setReconciledAt($this->payment);
+        }
+
+        $this->setCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
     }
 
     protected function getRowDetailsStructured($row)
@@ -197,7 +205,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $reconGatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
         $reconGatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
-
         if (($reconGatewayFee === null) or ($reconGatewayServiceTax === null))
         {
             return false;
@@ -258,6 +265,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
                 return false;
             }
+
             return true;
         }
     }

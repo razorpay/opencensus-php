@@ -22,6 +22,10 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
         {
             return BaseReconciliate::PAYMENT;
         }
+        else if (empty($row[self::COLUMN_ENTITY_TYPE]) === true)
+        {
+            return self::NA;
+        }
         else
         {
             return null;

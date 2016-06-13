@@ -82,8 +82,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             if ($validate === true)
             {
-                // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
-                $this->setReconciledAt($this->refund);
+                $this->persistReconciliationData();
             }
         }
         catch (\Exception $ex)
@@ -102,8 +101,16 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             $this->app['trace']->traceException($ex);
 
-            return;
+            throw $ex;
+            
+            //return;
         }
+    }
+    
+    protected function persistReconciliationData()
+    {
+        // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
+        $this->setReconciledAt($this->refund);
     }
 
     protected function getRowDetailsStructured($row)

@@ -32,7 +32,6 @@ class FileProcessor
      * This is used when trying to get the file details of files
      * which are being sent over the network. The file type of
      * these files would be UploadedFile.
-     *
      */
     const UPLOADED                = 'uploaded';
 
@@ -44,6 +43,7 @@ class FileProcessor
         self::EXCEL => ['xls', 'xlsx'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
+    
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
@@ -66,14 +66,9 @@ class FileProcessor
         {
             return $this->getUploadedFileDetails($file);
         }
-        else if ($type === self::STORAGE)
-        {
-            return $this->getStorageFileDetails($file);
-        }
         else
         {
-            // TODO: Throw an error.
-            return null;
+            return $this->getStorageFileDetails($file);
         }
     }
 

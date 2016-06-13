@@ -100,10 +100,8 @@ class Validator
         {
             return true;
         }
-        else
-        {
-            return false;
-        }
+        
+        return false;
     }
 
     public function validateExtensionMimeType($extension, $mimeType)

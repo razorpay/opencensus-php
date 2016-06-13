@@ -9,6 +9,8 @@ use Reconciliator\Messenger;
 
 class CombinedReconciliate extends Foundation\SubReconciliate
 {
+    const NA = 'not_applicable';
+
     protected $messenger;
 
     public function __construct()
@@ -34,6 +36,13 @@ class CombinedReconciliate extends Foundation\SubReconciliate
         foreach ($fileContents as $row)
         {
             $entityType = $this->getReconciliationTypeForRow($row);
+
+            if ($entityType === self::NA)
+            {
+                // This row probably doesn't have a payment and hence is not applicable for
+                // reconciliation.
+                continue;
+            }
 
             if ($entityType === null)
             {

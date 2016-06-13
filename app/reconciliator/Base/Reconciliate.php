@@ -8,12 +8,14 @@ use Reconciliator\Messenger;
 
 use EE\Exception;
 use Trace\TraceCode;
+use DB;
 
 class Reconciliate
 {
     /***********************
      * Reconciliation Types
      ***********************/
+
     const NODAL   = 'nodal';
     const PAYMENT = 'payment';
     const REFUND  = 'refund';
@@ -24,6 +26,7 @@ class Reconciliate
     /*************************
      * Internal Header Names
      *************************/
+
     const PAYMENT_ID          = 'payment_id';
     const REFUND_ID           = 'refund_id';
     const CARD_TYPE           = 'card_type';
@@ -33,14 +36,15 @@ class Reconciliate
     /*************************
      * Card types
      *************************/
+
     const CREDIT = 'credit';
     const DEBIT = 'debit';
 
     /*********************
      * Instance objects
      *********************/
-    protected $subReconciliator;
 
+    protected $subReconciliator;
     protected $messenger;
 
     public function __construct()
@@ -69,7 +73,11 @@ class Reconciliate
             }
 
             $this->setSubReconciliator($reconciliationType);
-            $this->subReconciliator->startReconciliation($fileContents);
+
+            DB::transaction(function() use ($fileContents)
+            {
+                $this->subReconciliator->startReconciliation($fileContents);
+            });
         }
     }
 

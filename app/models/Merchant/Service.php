@@ -376,7 +376,8 @@ class Service extends Base\Service
 
         $count = 0;
 
-        try {
+        try 
+        {
             foreach ($bankAccounts as $bankAcc)
             {
                 $bankAcc->generateIdFromCreatedAt();

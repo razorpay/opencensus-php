@@ -37,10 +37,10 @@ class Orchestrator
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth@razorpay.com'],
+        self::HDFC => ['prashanth.yv@razorpay.com'],
         self::AXIS => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
-        self::PAYZAPP  => ['prashanth.yv@razorpay.com'],
+        self::PAYZAPP  => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN => ['prashanth@razorpay.com'],
@@ -566,6 +566,7 @@ class Orchestrator
                 return $key;
             }
         }
+
         return null;
     }
 
