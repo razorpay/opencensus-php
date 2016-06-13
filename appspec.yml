@@ -3,6 +3,7 @@ os: linux
 
 hooks:
   BeforeInstall:
+    - location: scripts/validate_env.php
     - location: scripts/install.sh
       timeout: 300
       runas: ubuntu
