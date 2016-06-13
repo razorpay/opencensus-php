@@ -56,9 +56,14 @@ trait Logger
     protected function getChannel($action)
     {
         switch ($action) {
-            case 'activated':
+            case Actions::ACTIVATED:
                 return \Config::get('razorpay.slack.activations');
                 break;
+
+            case Actions::FUNDS_HELD:
+            case Actions::FUNDS_RELEASED:
+            case Actions::RISK_RATING_CHANGED:
+                return \Config::get('razorpay.slack.risk');
 
             default:
                 return \Config::get('razorpay.slack.operations');

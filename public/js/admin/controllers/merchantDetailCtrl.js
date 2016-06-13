@@ -365,7 +365,32 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    /**
+     * Sends the final edit merchant ajax call
+     * @param  Object merchant
+     */
     $scope.editMerchant = function (merchant) {
+
+      var dropUnchangedFields = function(merchant) {
+        for (var i in merchant) {
+          var val = $scope.merchant.details[i];
+          if (Array === val.constructor) {
+            val = val.join(',');
+          }
+          // Since merchant[i] is what is being sent in the form
+          // it will always be a string, we ensure above that
+          // any arrays are converted to string before we match them
+          //
+          // This is primarily to compare the transaction_report_email field
+          if (merchant[i] === val) {
+            delete merchant[i];
+          }
+        }
+      };
+
+      dropUnchangedFields(merchant);
+
       var request = $http({
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/edit',
