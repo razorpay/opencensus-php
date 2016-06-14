@@ -51,6 +51,8 @@ class Settler
 
     public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
+        $this->increaseAllowedSystemLimits();
+
         $this->preSettlementProcessing();
 
         $this->input = $input;
@@ -62,7 +64,7 @@ class Settler
 
         $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
 
-        return $this->processSettlements($txns);
+        return $this->processSettlements($input, $channel, $txns);
     }
 
     public function settle($input = array(), $channel = null)
@@ -83,7 +85,7 @@ class Settler
 
     protected function preSettlementProcessing()
     {
-        $this->increaseMemoryAndTimeLimit();
+        $this->increaseAllowedSystemLimits();
 
         $this->checkTime();
     }
@@ -582,7 +584,7 @@ class Settler
         }
     }
 
-    protected function increaseMemoryAndTimeLimit()
+    protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
         set_time_limit(300);

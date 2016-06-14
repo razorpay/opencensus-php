@@ -29,4 +29,12 @@ class Repository extends Base\Repository
         return $repo::where('payment_id' , '=', $paymentId)
                     ->first();
     }
+
+    public function findByGatewayRefundId($gatewayRefundId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_refund_id', '=', $gatewayRefundId)
+                    ->firstOrFail();
+    }
 }

@@ -18,4 +18,12 @@ class Repository extends Base\Repository
         'RefundId'                      => 'sometimes|string',
         'BankReferenceNo'               => 'sometimes|string',
     );
+    
+    protected function findByGatewayRefundId($gatewayRefundId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('refundId', '=', $gatewayRefundId)
+                    ->firstOrFail();
+    }
 }

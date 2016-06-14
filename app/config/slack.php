@@ -9,8 +9,9 @@ return array(
     'mock' => $_ENV['SLACK_MOCK'],
 
     'channels'  =>  [
-        'low'   =>  '#transactions',
-        'high'  =>  '#transactions_high',
-        'risky' =>  '#transactions_risky'
+        'low'            => '#transactions',
+        'high'           => '#transactions_high',
+        'risky'          => '#transactions_risky',
+        'reconciliation' => '#reconciliation',
     ]
 );
