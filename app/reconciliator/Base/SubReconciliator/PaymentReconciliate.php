@@ -140,13 +140,27 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
+
+            if ($this->paymentTransaction === null)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_MISMATCH,
+                        'message'    => 'Payment Transaction not found in DB.',
+                        'row'        => $row,
+                        'payment_id' => $paymentId,
+                        'gateway'    => get_called_class()
+                    ]);
+
+                return null;
+            }
         }
         catch (\Exception $ex)
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Payment or Payment Transaction not found in DB. -> ' . $ex->getMessage(),
+                    'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
                     'payment_id' => $paymentId,
                     'gateway'    => get_called_class()
