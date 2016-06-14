@@ -25,6 +25,7 @@ class Gateway
     const NETBANKING_KOTAK  = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
+    const CYBERSOURCE       = 'cybersource';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,

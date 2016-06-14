@@ -221,7 +221,7 @@ class Repository extends Base\Repository
             $model->cavv = $response->payerAuthValidateReply->cavv;
         }
 
-        if($cardType === 'Mastercard')
+        if($cardType === 'MasterCard')
         {
             $model->auth_data = $response->payerAuthValidateReply->ucafAuthenticationData;
             $model->collection_indicator = $response->payerAuthValidateReply->ucafCollectionIndicator;

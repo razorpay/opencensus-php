@@ -92,7 +92,6 @@ class Gateway extends Base\Gateway
     public function postAuthEnrolledRequest($input)
     {
         $request = $this->createAuthEnrolledRequestFields($input);
-        sd($request);
 
         try 
         {
@@ -101,7 +100,6 @@ class Gateway extends Base\Gateway
             $reply = $soapClient->runTransaction($request);
 
             $this->persistAfterValidate($input, $reply, $request);
-            sd($reply);
 
             return $reply->reasonCode;
 
@@ -115,7 +113,6 @@ class Gateway extends Base\Gateway
     public function postEnrollAuthorize($input)
     {
         $request = $this->createAuthorizeRequestFields($input);
-        sd($request);
 
         try 
         {
@@ -124,7 +121,6 @@ class Gateway extends Base\Gateway
             $reply = $soapClient->runTransaction($request);
             
             $this->persistAfterAuthorize($input, $reply, $request);
-            sd($reply);
 
             if($reply->reasonCode !== 100)
             {
@@ -271,13 +267,13 @@ class Gateway extends Base\Gateway
         {
             $ccAuthService->cavv = $model->cavv;
         }
-        if($input['card']['network'] === 'Mastercard')
+        if($input['card']['network'] === 'MasterCard')
         {
             $ucaf = new \stdClass();
             $ucaf->authenticationData = $model->auth_data;
             $ucaf->collectionIndicator = $model->collection_indicator;
 
-            $ccAuthService->ucaf = $ucaf;
+            $request->ucaf = $ucaf;
         }
         $request->ccAuthService = $ccAuthService;
 
