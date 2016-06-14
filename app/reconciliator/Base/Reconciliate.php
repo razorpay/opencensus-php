@@ -16,9 +16,9 @@ class Reconciliate
      * Reconciliation Types
      ***********************/
 
-    const NODAL   = 'nodal';
-    const PAYMENT = 'payment';
-    const REFUND  = 'refund';
+    const NODAL    = 'nodal';
+    const PAYMENT  = 'payment';
+    const REFUND   = 'refund';
     const COMBINED = 'combined';
 
     const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
@@ -87,7 +87,6 @@ class Reconciliate
     /**
      * This should be implemented in the child class if the gateway needs to
      * look at only certain sheets present in the excel file and not all of them.
-     *
      */
     public function getSheetNames()
     {
@@ -97,7 +96,6 @@ class Reconciliate
     /**
      * This should be implemented in the child class if the gateway requires certain
      * files to be excluded from doing the reconciliation.
-     *
      */
     public function inExcludeList($fileDetails)
     {

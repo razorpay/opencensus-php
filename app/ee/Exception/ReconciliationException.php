@@ -15,7 +15,6 @@ class ReconciliationException extends RecoverableException
 
         $this->data = $data;
 
-        // TODO: Use both data and description
         $message = json_encode(['error_data' => $data, 'error_description' => $errorDesc]);
 
         parent::__construct($message, $code);

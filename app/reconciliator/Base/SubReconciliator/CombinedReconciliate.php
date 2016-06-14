@@ -59,9 +59,9 @@ class CombinedReconciliate extends Foundation\SubReconciliate
             }
 
             $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
-            $subReconciliatorClass = new $subReconciliatorClassName;
+            $subReconciliatorObject = new $subReconciliatorClassName;
 
-            $subReconciliatorClass->runReconciliate($row, $extraDetails);
+            $subReconciliatorObject->runReconciliate($row, $extraDetails);
         }
     }
 
@@ -76,6 +76,15 @@ class CombinedReconciliate extends Foundation\SubReconciliate
         return $subReconciliatorClassName;
     }
 
+
+    /**
+     * This function needs to be present in this class only
+     * because get_called_class will be different, if present in
+     * some other class.
+     * TODO: create getParentNamespace method which takes get_called_class as an argument.
+     *
+     * @return string
+     */
     protected function getParentNamespace()
     {
         return join('\\', explode('\\', get_called_class(), -1));

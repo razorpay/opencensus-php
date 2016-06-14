@@ -37,13 +37,13 @@ class Orchestrator
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC => ['prashanth.yv@razorpay.com'],
+        self::HDFC => ['prashanth@razorpay.com'],
         self::AXIS => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
         self::PAYZAPP  => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN => ['prashanth@razorpay.com'],
+        self::ADMIN => ['prashanth.yv@razorpay.com'],
     ];
 
 
@@ -202,6 +202,7 @@ class Orchestrator
                         'file_details' => $fileDetails,
                         'gateway'      => get_class($this->gatewayReconciliator),
                     ]);
+
                 $this->app['trace']->traceException($ex);
 
                 $this->handleFileSkip($file, $fileDetails);
@@ -362,6 +363,8 @@ class Orchestrator
         if ($gateway === self::ADMIN)
         {
             $gateway = $this->emailDetails['subject'];
+            assert(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
+                    "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
         }
 
         $this->setGatewayReconciliatorObject($gateway);

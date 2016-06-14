@@ -2,7 +2,6 @@
 
 namespace Reconciliator\Base;
 
-use EE\Exception\BadRequestException;
 use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
@@ -10,7 +9,6 @@ use Models\Transaction;
 
 use Gateway\AxisMigs;
 
-use Tests\Functional\Fixtures\Entity\Base;
 use Trace\TraceCode;
 use App;
 
@@ -50,8 +48,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Validates payment status.
      * Records gateway fees.
      * Records gateway service tax.
-     * Sets card type (debit/credit).
-     * Records rrn.
+     * Sets card details (debit/credit, international).
      *
      * @param array $fileContents
      */
@@ -151,6 +148,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'payment_id' => $paymentId,
                     'gateway'    => get_called_class()
                 ]);
+            
             return null;
         }
 
