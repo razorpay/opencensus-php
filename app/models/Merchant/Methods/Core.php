@@ -36,15 +36,25 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    public function checkPricing($merchant, $methods = null)
+    public function validatePricingPlanForMethods($merchant, $plan, $methods = null)
     {
+        if($merchant === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Merchant not provided or not available');
+        }
+
         if ($methods === null)
         {
             $methods = $this->getPaymentMethods($merchant);
         }
-
-        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
-
+    
+        if ($plan === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Plan not set for Merchant:' . $merchant);
+        } 
+        /* Pricing, Merchant and methods are available at this point */
         $methodsToCheck = array(
             Payment\Method::CARD,
             Payment\Method::NETBANKING,
@@ -57,7 +67,7 @@ class Core extends Base\Core
                 ($plan->hasMethod($method) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Pricing not present for method: ' . $method);
+                    'Method ['.$method. '] not present for pricing');
             }
         }
 
@@ -69,11 +79,25 @@ class Core extends Base\Core
         }
 
         if (($merchant->isInternational()) and
-            ($plan->hasInternationalPricing() === false))
+            (($plan->hasInternationalPricing() === false)||
+             ($plan->hasInternationalPricing() === null))
+        )
         {
                 throw new Exception\BadRequestValidationFailureException(
                     'International payment enabled, but pricing not present.');
+        }  
+    }
+
+    public function checkPricing($merchant, $methods = null)
+    {
+        if ($methods === null)
+        {
+            $methods = $this->getPaymentMethods($merchant);
         }
+
+        $plan = (new Pricing\Repository)->getMerchantPricingPlan($merchant);
+
+        $this->validatePricingPlanForMethods($merchant, $plan, $methods);        
     }
 
     public function getMethods($merchant)

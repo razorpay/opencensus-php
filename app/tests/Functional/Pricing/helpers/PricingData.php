@@ -433,7 +433,7 @@ return [
         ]
     ],
 
-    'testMerchantAssignPricingPlan' => [
+    /*'testMerchantAssignPricingPlan' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -454,6 +454,66 @@ return [
                     ),
                 ),
             ],
+        ]
+    ],*/
+    'testMerchantAssignPricingPlanDefault' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'TestPlan1',
+                'entity' => 'pricing',
+                'count' => 1,
+                'rules' => array(
+                    array(
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'percent_rate' => 1000,
+                        'international' => false,
+                    ),
+                ),
+            ],
+        ]    
+    ],
+
+    'testMerchantAssignPricingPlanWithInternational' =>[
+        'request' => [
+            'url' => '/merchants/10000000000000/pricing',
+            'method' => 'POST'
+        ],
+                'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+    'testMerchantAssignPricingPlanMerchantDefault' =>[
+        'request' => [
+            'url' => '/merchants/10000000000000/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
