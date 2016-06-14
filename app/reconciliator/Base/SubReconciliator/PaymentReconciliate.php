@@ -2,6 +2,9 @@
 
 namespace Reconciliator\Base;
 
+use EE\Error\ErrorCode;
+use EE\Exception\BadRequestException;
+use EE\Exception\ReconciliationException;
 use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
@@ -131,6 +134,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         if (empty($paymentId) === true)
         {
             return null;
+
+            
         }
 
         try
@@ -148,8 +153,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'payment_id' => $paymentId,
                     'gateway'    => get_called_class()
                 ]);
-            
-            return null;
+
+            throw $ex;
+
+            //return null;
         }
 
         $cardDetails = $this->getCardDetails($row);
@@ -219,6 +226,16 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'payment_id'      => $this->payment->getId(),
                         'gateway'         => get_called_class()
                     ]);
+
+                throw new ReconciliationException(
+                    'Card types in recon file and db do not match.',
+                    [
+                        'recon_card_type' => $reconCardType,
+                        'iin_card_type'   => $iinCardType,
+                    ]
+                );
+
+                //return;
             }
         }
     }
@@ -256,6 +273,17 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'payment_id'              => $this->payment->getId(),
                         'gateway'                 => get_called_class()
                     ]);
+
+                throw new ReconciliationException(
+                    'Card locales in recon file and db do not match.',
+                    [
+                        'recon_card_locale'         => $reconCardLocale,
+                        'is_stored_international'   => $isCardInternational,
+                    ]
+                );
+
+                //return;
+
             }
         }
     }
@@ -280,11 +308,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'gateway'       => get_called_class()
                 ]);
 
-            return false;
+            throw new ReconciliationException(
+                'Transaction not present for the given payment ID.',
+                [
+                    'row_details' => $rowDetails,
+                    'gateway'     => get_called_class(),
+                ]
+            );
+
+            //return false;
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
-        $currentGatewayServiceTax = $this->paymentTransaction->getServiceTax();
+        $currentGatewayServiceTax = $this->paymentTransaction->getGatewayServiceTax();
 
         $recordGatewayFeeSuccess = $this->recordGatewayFee($reconGatewayFee, $currentGatewayFee);
 
@@ -323,7 +359,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'gateway'           => get_called_class(),
                     ]);
 
-                return false;
+                throw new ReconciliationException(
+                    'Gateway fee in the recon file does not match with the one stored in API.',
+                    [
+                        'recon_gateway_fee' => $reconGatewayFee,
+                        'api_gateway_fee'   => $currentGatewayFee,
+                    ]
+                );
+
+                //return false;
             }
 
             return true;
@@ -345,12 +389,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     [
                         'trace_code'        => TraceCode::RECON_FAILURE,
                         'message'           => 'Gateway service tax in the recon file does not match with the one stored in API.',
-                        'recon_gateway_fee' => $reconGatewayServiceTax,
-                        'api_gateway_fee'   => $currentGatewayServiceTax,
+                        'recon_gateway_service_tax' => $reconGatewayServiceTax,
+                        'api_gateway_service_tax'   => $currentGatewayServiceTax,
                         'gateway'           => get_called_class(),
                     ]);
 
-                return false;
+                throw new ReconciliationException(
+                    'Gateway service tax in the recon file does not match with the one stored in API.',
+                    [
+                        'recon_gateway_service_tax' => $reconGatewayServiceTax,
+                        'api_gateway_service_tax'   => $currentGatewayServiceTax,
+                    ]
+                );
+
+                //return false;
             }
             return true;
         }

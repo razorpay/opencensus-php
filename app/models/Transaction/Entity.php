@@ -196,6 +196,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ENTITY_ID);
     }
+    
+    public function getGatewayFee()
+    {
+        return $this->getAttribute(self::GATEWAY_FEE);
+    }
+    
+    public function getGatewayServiceTax()
+    {
+        return $this->getAttribute(self::GATEWAY_SERVICE_TAX);
+    }
 
 /* ----------------------------- Accessors -----------------------------------*/
 
