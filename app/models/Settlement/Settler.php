@@ -64,7 +64,7 @@ class Settler
 
         $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
 
-        return $this->processSettlements($txns);
+        return $this->processSettlements($input, $channel, $txns);
     }
 
     public function settle($input = array(), $channel = null)
