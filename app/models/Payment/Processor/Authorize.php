@@ -306,6 +306,10 @@ trait Authorize
                 $e->getError(),
                 TraceCode::PAYMENT_AUTH_FAILURE);
         }
+        else
+        {
+            $this->setPaymentError($e->getError());
+        }
 
         switch ($code)
         {
@@ -1118,6 +1122,8 @@ trait Authorize
             {
                 return;
             }
+
+            $payment->setErrorNull();
 
             $payment->setAmountAuthorized();
 

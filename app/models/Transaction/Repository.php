@@ -24,11 +24,9 @@ class Repository extends Base\Repository
 
     public function fetchTxnsExpectedToSettle($timestamp)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
+        return $this->newQuery()
+                    ->where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
-//                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
@@ -37,13 +35,22 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactions($timestamp)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
+        return $this->newQuery()
+                    ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
-//                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
+                    ->orderBy(Transaction\Entity::ID)
+                    ->get();
+    }
+
+    public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
+    {
+        return $this->newQuery()
+                    ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Transaction\Entity::SETTLED, '=', 0)
+                    ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->merchantId($merchant->getId())
                     ->orderBy(Transaction\Entity::ID)
                     ->get();
     }

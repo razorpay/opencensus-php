@@ -530,6 +530,20 @@ return [
         ],
     ],
 
+    'testTimeoutOldPaymentWithErrorRetention' => [
+        'request' => [
+            'content' => [],
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'error_code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+            ],
+        ],
+    ],
+
     'testFailTimeoutOldPayments' => [
         'request' => [
             'content' => [],
@@ -564,6 +578,29 @@ return [
                 ],
             ],
             'status_code' => 401,
+        ]
+    ],
+
+    'testWalletS2SPaymentWoFeature' =>[
+        'request' => [
+            'url' => '/payments/create/wallet',
+            'method' => 'POST',
+            'content' => [
+                'wallet'    => 'payumoney',
+                'amount'    => 10000,
+                'currency'  => 'INR',
+                'contact'   => '9999999999',
+                'email'     => 'a@b.com'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
         ]
     ],
 
@@ -613,5 +650,21 @@ return [
             ],
             'status_code' => 200,
         ]
+    ],
+
+    'testPaymentTopupViaInvalidGateway' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_GATEWAY_CANNOT_TOPUP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_CANNOT_TOPUP,
+        ],
     ]
 ];
