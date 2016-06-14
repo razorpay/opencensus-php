@@ -9,7 +9,8 @@ app.controller('EntitiesCtrl', [
   '$stateParams',
   'admin',
   'statusClass',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin, getStatusClass) {
+  'getState',
+  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin, getStatusClass, getState) {
     $scope.getStatusClass = getStatusClass;
     $scope.entity_type = $stateParams.type || 'payment';
     $scope.mode = $stateParams.mode;
@@ -433,25 +434,7 @@ app.controller('EntitiesCtrl', [
       clear('skip');
       $scope.generateTable();
     };
-    $scope.getState = function (type, force) {
-      switch (type) {
-      case 'merchant_id':
-      case 'merchant':
-        return 'app.merchants.detail({id: value})';
-      case 'payment_id':
-      case 'payment':
-        return 'app.payments({id:value, mode:mode})';
-      default:
-        if (force === true) {
-          return 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
-        }
-        if (type.substr(-3) === '_id') {
-          return 'app.entitiesdetail({id:value, mode:mode, type: key})';
-        } else {
-          return '-';
-        }
-      }
-    };
+    $scope.getState = getState;
     function generateQueryParams(count, skip, entity, filters, from, to) {
       var query = {
         count: count,
@@ -508,6 +491,7 @@ app.controller('EntitiesCtrl', [
         if (data.success) {
           $scope.headings = data.data.headings;
           $scope.entity.items = data.data.items;
+
           $scope.entity.count = parseInt(data.data.count);
           $scope.entity.countStart = $scope.entity.skip + 1;
           if (data.data.count === 0)
@@ -515,7 +499,7 @@ app.controller('EntitiesCtrl', [
           else
             $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count - 1;
           $scope.allowPrev = $scope.entity.countStart != 1;
-          $scope.allowNext = $scope.entity.count >= 10;
+          $scope.allowNext = $scope.entity.count >= $scope.count;
         } else {
           if (data.errors) {
             angular.forEach(data.errors, function (value) {

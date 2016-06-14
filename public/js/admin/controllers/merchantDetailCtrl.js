@@ -365,7 +365,46 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    /**
+     * Sends the final edit merchant ajax call
+     * @param  Object merchant
+     */
     $scope.editMerchant = function (merchant) {
+
+      var dropUnchangedFields = function(merchant) {
+        for (var i in merchant) {
+          var val = $scope.merchant.details[i];
+          if (val && Array === val.constructor) {
+            val = val.join(',');
+          }
+
+          // Since `merchant` is the update mechanism
+          // it will always have 0/1 which will be matched against
+          // so $scope.merchant.details.international = true/false
+          // while merchant.international = 0/1
+          //
+          // We need to fix the discrepancy to match them properly
+          if (val === true) {
+            val = 1;
+          }
+
+          if (val === false) {
+            val = 0;
+          }
+          // Since merchant[i] is what is being sent in the form
+          // it will always be a string, we ensure above that
+          // any arrays are converted to string before we match them
+          //
+          // This is primarily to compare the transaction_report_email field
+          if (merchant[i] === val) {
+            delete merchant[i];
+          }
+        }
+      };
+
+      dropUnchangedFields(merchant);
+
       var request = $http({
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/edit',
@@ -613,7 +652,9 @@ app.controller('MerchantDetailCtrl', [
         controller: 'editMerchantModalCtrl',
         resolve: {
           current: function () {
-            return $scope.merchant.details;
+            // Return a copy of current merchant details
+            // instead of returning a reference
+            return jQuery.extend({}, $scope.merchant.details);
           }
         }
       });
@@ -951,14 +992,19 @@ app.controller('MerchantDetailCtrl', [
     $scope.riskMap = riskMap;
 
     // If these fields were not present in the API db, we copy them to the form from dashboard database
-    if (!current.international)
+    if (!current.international) {
       current.international = current.merchant_details.business_international;
-    if (!current.website)
+    }
+    if (!current.website) {
       current.website = current.merchant_details.business_website;
-    if (!current.billing_label)
+    }
+    if (!current.billing_label) {
       current.billing_label = current.merchant_details.business_dba;
-    if (!current.transaction_report_email)
+    }
+    if (!current.transaction_report_email) {
       current.transaction_report_email = current.merchant_details.transaction_report_email;
+    }
+
     $scope.current = current;
     $scope.ok = function (merchant) {
       $modalInstance.close(merchant);

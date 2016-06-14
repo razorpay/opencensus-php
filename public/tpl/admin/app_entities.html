@@ -100,7 +100,7 @@
                 <code>{{value}}</code>
               </a>
               <!-- References to other entities -->
-              <a target="_blank" ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
+              <a target="_blank" ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='.'">
                 <code>{{value}}</code>
               </a>
 
@@ -109,7 +109,7 @@
                 {{value}}
               </span>
               <!-- Just entity fields -->
-              <span ng-show="key!=='id' && key!=='status' && getState(key)==='-'">
+              <span ng-show="key!=='id' && key!=='status' && getState(key)==='.'">
                 {{value}}
               </span>
             </td>

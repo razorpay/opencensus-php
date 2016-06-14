@@ -1,3 +1,5 @@
+"use strict";
+
 //Single Entity Details controller
 app.controller('EntityDetailCtrl', [
   '$scope',
@@ -7,7 +9,8 @@ app.controller('EntityDetailCtrl', [
   '$modal',
   'statusClass',
   'isStatusKey',
-  function ($scope, $http, $stateParams, alertsFactory, $modal, statusClass, isStatusKey) {
+  'getState',
+  function ($scope, $http, $stateParams, alertsFactory, $modal, statusClass, isStatusKey, getState) {
     //Intialise alerts and scope functions
     $scope.getStatusClass = statusClass;
     $scope.isStatusKey = isStatusKey;
@@ -26,28 +29,15 @@ app.controller('EntityDetailCtrl', [
         if (data.success) {
           $scope.entity = data.data;
         } else {
-          angular.forEach(data.errors, function (error, key) {
+          angular.forEach(data.errors, function (error) {
             $scope.alerts.addAlert('danger', error);
           });
         }
-      }).error(function (er) {
+      }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
     }
-    // Type is same as returned by getType
-    $scope.getState = function (type) {
-      switch (type) {
-      case 'merchant':
-        return 'app.merchants.detail({id: value})';
-      case 'payment':
-        return 'app.payments({id:value, mode:mode})';
-      case 'id':
-        return 'app.entitiesdetail({id:value, mode:mode, type: getEntity(key)})';
-      default:
-        // This needs to be a non-empty string
-        return '-';
-      }
-    };
+    $scope.getState = getState;
     $scope.displayValue = function (value, type) {
       // Set timezone to IST
       moment().zone(5.5);
@@ -128,8 +118,8 @@ app.controller('EntityDetailCtrl', [
         }).error(function () {
           alert('There was an error while deleting the IIN');
         });
-      }
-      ,edit: function (iin) {
+      },
+      edit: function (iin) {
         var iinId = iin.iin;
 
         iin = {
@@ -260,6 +250,7 @@ app.controller('EntityDetailCtrl', [
           'terminal',
           'token',
           'transaction',
+          'wallet',
           'webhook'
         ];
         // It needs to be suffixed with _id
@@ -298,7 +289,6 @@ app.controller('EntityDetailCtrl', [
       card: current.card,
       gateway: current.gateway
     };
-    console.debug($scope.terminal);
     $scope.ok = function (terminal) {
       $modalInstance.close(terminal);
     };

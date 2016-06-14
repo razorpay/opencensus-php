@@ -16,6 +16,8 @@
 * `grunt`
 * `grunt watch`
 
+- Open <http://dashboard.razorpay.dev> and login as `test@razorpay.com/123456`.
+
 ## Setup instructions for testing
 
 * copy over `.env.sample.php` to `.env.testing.php` and add db name & password

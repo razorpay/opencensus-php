@@ -342,7 +342,7 @@ class Service extends Base\Service
 
     public function fetchMerchantDetails($id)
     {
-        $merchant = Merchant\Entity::findorfail($id);
+        $merchant = Merchant\Entity::findOrSoftFail($id);
 
         if ($merchant->confirm_token !== null)
         {
@@ -416,6 +416,8 @@ class Service extends Base\Service
                     );
             }
 
+            $this->logMerchantEdits($id, $input);
+
             $data = $this->api
                         ->merchant
                         ->fetch($id)
@@ -436,6 +438,33 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    /**
+     * Logs a merchant being edited properly
+     * @param  string $id Merchant Id
+     * @param  array $input Input array
+     */
+    protected function logMerchantEdits($id, $input)
+    {
+        if (isset($input['hold_funds']))
+        {
+            if ($input['hold_funds'] == 1)
+            {
+                $this->logActionToSlack($id, Actions::FUNDS_HELD);
+            }
+            elseif ($input['hold_funds'] == 0)
+            {
+                $this->logActionToSlack($id, Actions::FUNDS_RELEASED);
+            }
+        }
+
+        if (isset($input['risk_rating']))
+        {
+            // This is always sent currently for every edit.
+            unset($input['transaction_report_email']);
+            $this->logActionToSlack($id, Actions::RISK_RATING_CHANGED, $input);
+        }
+    }
+
     public function postEditMerchantEmail($id, $input)
     {
         $data = $error = [];
@@ -447,7 +476,7 @@ class Service extends Base\Service
 
             // Only when it is changed we update on the dashboard side as well
             list($e,) = (new Merchant\Service)->changeEmail($id, $input);
-            $this->logActionToSlack($id, 'email edited', $input);
+            $this->logActionToSlack($id, Actions::EMAIL_EDITED, $input);
             $error = $e;
         }
 
@@ -501,7 +530,7 @@ class Service extends Base\Service
             $merchant_details->fill($merchantDetails);
             $merchant_details->save();
 
-            $this->logActionToSlack($id, 'bank details edited', $input);
+            $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
 
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -537,7 +566,7 @@ class Service extends Base\Service
             try
             {
                 $data = $this->api->merchant->fetch($id)->setBanks($input)->toArray();
-                $this->logActionToSlack($id, 'bank list edited');
+                $this->logActionToSlack($id, Actions::BANK_LIST_EDITED);
             }
             catch (\Razorpay\Api\Errors\BadRequestError $e)
             {
@@ -562,7 +591,7 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->adjustment->create($input)->toArray();
-            $this->logActionToSlack($id, 'adjustment added', $logData);
+            $this->logActionToSlack($id, Actions::ADJUSTMENT_ADDED, $logData);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -760,7 +789,7 @@ class Service extends Base\Service
         $merchant_details->locked = 1;
         $merchant_details->save();
 
-        $this->logActionToSlack($id, 'form locked');
+        $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
         return $error;
     }
@@ -780,7 +809,7 @@ class Service extends Base\Service
         $merchant_details->locked = 0;
         $merchant_details->save();
 
-        $this->logActionToSlack($id, 'form unlocked');
+        $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 
         return $error;
     }
@@ -870,7 +899,7 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
-            $this->logActionToSlack($id, 'pricing plan set', $originalInput);
+            $this->logActionToSlack($id, Actions::PRICING_PLAN_SET, $originalInput);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -962,7 +991,7 @@ class Service extends Base\Service
             }
 
             $this->api->merchant->fetch($id)->activate();
-            $this->logActionToSlack($merchant, 'activated');
+            $this->logActionToSlack($merchant, Actions::ACTIVATED);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -993,7 +1022,7 @@ class Service extends Base\Service
 
         $file = HdfcTidExcel::generateExcel($data);
 
-        $this->logActionToSlack($id, 'HDFC Excel generated');
+        $this->logActionToSlack($id, Actions::HDFC_EXCEL);
 
         return [[], $file];
     }
@@ -1015,7 +1044,7 @@ class Service extends Base\Service
         try
         {
             $this->api->merchant->fetch($id)->enable();
-            $this->logActionToSlack($merchant, 'live transactions enabled');
+            $this->logActionToSlack($merchant, Actions::LIVE_ENABLED);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1051,7 +1080,7 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
-        $this->logActionToSlack($merchant, 'archived');
+        $this->logActionToSlack($merchant, Actions::ARCHIVED);
         $merchant->archived_at = time();
         $merchant->save();
 
@@ -1069,7 +1098,7 @@ class Service extends Base\Service
             return array("Merchant not archived.");
         }
 
-        $this->logActionToSlack($merchant, 'unarchived');
+        $this->logActionToSlack($merchant, Actions::UNARCHIVED);
 
         $merchant->archived_at = null;
         $merchant->save();
@@ -1093,7 +1122,7 @@ class Service extends Base\Service
         try
         {
             $this->api->merchant->fetch($id)->disable();
-            $this->logActionToSlack($merchant, 'live transactions disabled');
+            $this->logActionToSlack($merchant, Actions::LIVE_DISABLED);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1538,7 +1567,7 @@ class Service extends Base\Service
         {
             $response = $this->api->merchant->
                 fetch($merchantId)->editCredits($input);
-            $this->logActionToSlack($merchantId, 'edited free credits', $input);
+            $this->logActionToSlack($merchantId, Actions::FREE_CREDITS_EDIT, $input);
 
             return [null, $response->toArray()];
         }
@@ -1595,7 +1624,7 @@ class Service extends Base\Service
             $merchant = Merchant\Entity::findOrFail($merchantId);
             $merchant->retag(explode(',', $input['tags']));
             $merchant['tags'] = $merchant->tags;
-            $this->logActionToSlack($merchant, 'tagged', ['tags' => $input['tags']]);
+            $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
 
             return [null, $merchant->toArray()];
         }
@@ -1655,7 +1684,7 @@ class Service extends Base\Service
     {
         (new Merchant\Service)->confirmMerchantById($merchantId);
 
-        $this->logActionToSlack($merchantId, 'account confirmed');
+        $this->logActionToSlack($merchantId, Actions::CONFIRMED);
 
         return [null, 'Merchant Confirmed'];
     }

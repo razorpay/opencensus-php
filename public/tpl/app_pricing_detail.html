@@ -1,0 +1,60 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Pricing Plan
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="PricingDetailCtrl">
+    <div class="panel-heading">
+      {{details.id}} ({{details.name}})
+    </div>
+    <div class="table-responsive">
+      <table class="pricing-table table table-striped b-t b-light" ui-jq="footable">
+        <thead>
+          <tr>
+            <th data-toggle="true">id</th>
+            <th>Gateway</th>
+            <th>Payment Method</th>
+            <th>Payment Method Type</th>
+            <th>Payment Network</th>
+            <th>Payment Issuer</th>
+            <th>International</th>
+            <th>Ranged</th>
+            <th>Range Min</th>
+            <th>Range Max</th>
+            <th>Percent Rate</th>
+            <th>Fixed Rate</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+            <th>Expired At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="rule in details.rules">
+            <td><code>{{rule.id}}</code></td>
+            <td>{{rule.gateway}}</td>
+            <td>{{rule.payment_method}}</td>
+            <td>{{rule.payment_method_type}}</td>
+            <td>{{rule.payment_network}}</td>
+            <td>{{rule.payment_issuer}}</td>
+            <td><i class="fa" ng-class="{'fa-check text-success': rule.international==true, 'fa-times text-danger':rule.international == false}"></i></td>
+            <td><i class="fa" ng-class="{'fa-check text-success': rule.amount_range_active==true, 'fa-times text-danger':rule.amount_range_active == false}"></i></td>
+            <td>{{rule.amount_range_min}}</td>
+            <td>{{rule.amount_range_max}}</td>
+            <td>{{rule.percent_rate/100}}</td>
+            <td>{{rule.fixed_rate}}</td>
+            <td>{{webhook.created_at*1000 | date:'medium'}}</td>
+            <td>{{webhook.updated_at*1000 | date:'medium'}}</td>
+            <td>{{webhook.expired_at*1000 | date:'medium'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+    </footer>
+  </div>
+</div>

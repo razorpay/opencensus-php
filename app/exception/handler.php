@@ -7,6 +7,7 @@ use Config;
 use Trace;
 use Redirect;
 use Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -15,6 +16,14 @@ class Handler
     const PHP7_500_ERROR     = 'Internal Server Error.';
     const SERVER_ERROR       = 'Internal Server Error';
     const METHOD_NOT_ALLOWED = 'Method not allowed';
+    const ENTITY_NOT_FOUND   = 'Not Found';
+
+    const RESPONSE_404 = [
+        'success' => false,
+        'errors' => [
+            self::ENTITY_NOT_FOUND
+        ]
+    ];
 
     protected $app;
 
@@ -31,19 +40,10 @@ class Handler
 
     public function registerExceptionHandlers()
     {
+
         $this->app->error(function(\Exception $e, $code)
         {
             return $this->genericExceptionHandler($e, $code);
-        });
-
-        $this->app->error(function(MethodNotAllowedHttpException $e)
-        {
-            return Response::json(array('success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]));
-        });
-
-        $this->app->error(function(NotFoundHttpException $e)
-        {
-            return Redirect::to('/#/404');
         });
 
         if (PHP_MAJOR_VERSION >=7)
@@ -53,6 +53,21 @@ class Handler
                 return $this->PHP7ExceptionHandler($e, $code);
             });
         }
+
+        $this->app->error(function(NotFoundHttpException $e)
+        {
+            return Redirect::to('/#/404');
+        });
+
+        $this->app->error(function(MethodNotAllowedHttpException $e)
+        {
+            return Response::json(array('success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]));
+        });
+
+        $this->app->error(function(ModelNotFoundException $e)
+        {
+            return Response::json(self::RESPONSE_404, 404);
+        });
     }
 
     public function PHP7ExceptionHandler(\Throwable $e, $code)
@@ -67,6 +82,7 @@ class Handler
             $data['details'] = $this->getExceptionDetails($e);
         }
 
+        $this->traceException($e);
         return Response::json($data);
     }
 
@@ -93,7 +109,7 @@ class Handler
         }
     }
 
-    protected function traceException(\Exception $exception)
+    protected function traceException($exception)
     {
         $traceData = $this->getExceptionDetails($exception);
 
@@ -102,7 +118,7 @@ class Handler
            $traceData);
     }
 
-    protected function getExceptionDetails(\Exception $exception)
+    protected function getExceptionDetails($exception)
     {
         $previousException = $exception->getPrevious();
 

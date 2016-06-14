@@ -325,13 +325,13 @@
           Pricing Plan
         </div>
           <div collapse="isPricingCollapsed" class="panel-body">
-            <a href class="list-group-item">
+            <a ui-sref="app.pricingdetail({id:merchant.pricing_plan.id})" class="list-group-item">
               <span class="pull-right">{{merchant.pricing_plan.id}}</span>
               Plan Id
             </a>
             <div class="list-group-item">
               <span class="pull-right">
-                <a ui-sref="app.pricing.detail({id:merchant.pricing_plan.id})"
+                <a ui-sref="app.pricingdetail({id:merchant.pricing_plan.id})"
                     ng-show="merchant.pricing.length != 0">{{merchant.pricing_plan.name}} (Click to see/edit plan)</a>
               </span>
               Plan Name

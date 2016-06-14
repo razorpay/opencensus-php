@@ -36,13 +36,14 @@ app.controller('EntityListCtrl', [
 
     $scope.next = function () {
       clear('id');
-      $scope.entity.skip += 10;
+      $scope.entity.skip += $scope.query.count;
       generateTable();
     };
 
     $scope.prev = function () {
       clear('id');
-      $scope.entity.skip = Math.max($scope.entity.skip - 10, 0);
+      // Prevents double click issues so we don't go negative
+      $scope.entity.skip = Math.max($scope.entity.skip - $scope.query.count, 0);
       generateTable();
     };
 
@@ -97,6 +98,10 @@ app.controller('EntityListCtrl', [
         delete q.amount;
       }
 
+      if (q.notes === '') {
+        delete q.notes;
+      }
+
       // Figure out the proper URL to hit if we are fetching just a single
       // entity or a collection
       if ($scope.entity.id === '') {
@@ -113,13 +118,18 @@ app.controller('EntityListCtrl', [
         if (data.success) {
           $scope.entity.items = data.data.items;
           $scope.entity.count = data.data.count;
+
           $scope.entity.countStart = $scope.entity.skip + 1;
-          if (data.data.count == 0)
+
+          if (data.data.count == 0) {
             $scope.entity.countEnd = $scope.entity.countStart;
-          else
+          }
+          else {
             $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count - 1;
+          }
+
           $scope.allowPrev = $scope.entity.countStart != 1;
-          $scope.allowNext = $scope.entity.count >= 10;
+          $scope.allowNext = $scope.entity.count >= $scope.query.count;
         } else {
           angular.forEach(data.errors, function (value, key) {
             $scope.alerts.addAlert('danger', value);
