@@ -74,8 +74,6 @@ class Service extends Base\Service
 
     public function modifyTerminal($mid, $tid, $input)
     {
-        $merchant = $this->repo->findOrFailPublic($mid);
-
         $terminalRepo = new Terminal\Repository;
 
         $terminal = $terminalRepo->getByIdAndMerchantId($mid, $tid);

@@ -24,6 +24,14 @@ class Repository extends Base\Repository
         return $repo::where('vpc_MerchTxnRef', '=', $merchantTxnRef)
                     ->firstOrFail();
     }
+    
+    public function findByRrn($rrn)
+    {
+        $repo = $this->repo;
+        
+        return $repo::where('vpc_ReceiptNo', '=', $rrn)
+                    ->firstOrFail();
+    }
 
     public function findByMerchantTxnRefAndCommand($merchantTxnRef, $command)
     {
