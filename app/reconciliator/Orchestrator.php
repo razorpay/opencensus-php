@@ -90,8 +90,13 @@ class Orchestrator
      */
     public function initiateReconciliationProcess(array $input)
     {
+        $this->app['trace']->info(
+            TraceCode::RECONCILIATION_REQUEST,
+            $input
+        );
+
         // Checks if it's manual call or mailgun call
-        if ((isset($input['manual']) === true) and ($input['manual'] === true))
+        if ((isset($input['manual']) === true) and ($input['manual'] === "1"))
         {
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.

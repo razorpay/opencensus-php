@@ -160,6 +160,7 @@ class TraceCode
     const RECON_FILE_DELETE_FAILURE                 = 'RECON_FILE_DELETE_FAILURE';
     const RECONCILIATION_INFO_ALERT                 = 'RECONCILIATION_INFO_ALERT';
     const RECONCILIATION_CRITICAL_ALERT             = 'RECONCILIATION_CRITICAL_ALERT';
+    const RECONCILIATION_REQUEST                    = 'RECONCILIATION_REQUEST';
 
     /**
      * Trace code for critical info
@@ -213,6 +214,7 @@ class TraceCode
         self::RECON_FILE_DELETE_FAILURE             => 'Deleting local file during reconciliation',
         self::RECONCILIATION_INFO_ALERT             => 'Info alert raised for reconciliation',
         self::RECONCILIATION_CRITICAL_ALERT         => 'Critical alert raised for reconciliation',
+        self::RECONCILIATION_REQUEST                => 'Request made for reconciliation',
     );
 
     /**

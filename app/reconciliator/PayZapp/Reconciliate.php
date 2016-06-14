@@ -21,8 +21,8 @@ class Reconciliate extends Base\Reconciliate
     {
         return self::COMBINED;
     }
-    
-    public function inExcludeList($fileDetails)
+
+    public function inExcludeList(array $fileDetails)
     {
         if (strpos($fileDetails['file_name'], 'summary') !== false)
         {
