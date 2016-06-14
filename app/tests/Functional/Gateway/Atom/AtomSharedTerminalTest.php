@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\AtomGateway;
+namespace Tests\Functional\Gateway\Atom;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;

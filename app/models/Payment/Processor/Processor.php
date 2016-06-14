@@ -320,6 +320,17 @@ class Processor
         $this->tracePaymentFailed($error, $traceCode);
     }
 
+    protected function setPaymentError($error)
+    {
+        $internalCode = $error->getInternalErrorCode();
+
+        $payment = $this->payment;
+
+        $payment->setInternalErrorCode($internalCode);
+
+        $payment->saveOrFail();
+    }
+
     /**
      * Responsible for calling the gateway function
      *
@@ -370,6 +381,14 @@ class Processor
         }
 
         $this->setOrderDetails($payment, $input);
+
+        $metadata = isset($input['_']) ? $input['_'] : null;
+
+        $payment->setMetadata($metadata);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_METADATA,
+            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
 
         $this->payment = $payment;
 
