@@ -4,6 +4,7 @@ namespace Reconciliator\Base\Foundation;
 
 use Models\Payment;
 use Trace\TraceCode;
+use App;
 
 class SubReconciliate
 {
@@ -37,6 +38,11 @@ class SubReconciliate
 
     protected function checkIfAlreadyReconciled($entity)
     {
+        App::getFacadeRoot()['trace']->info(
+            TraceCode::RECONCILIATION_RECONCILED_CHECK,
+            [$entity->getId()]
+        );
+
         return $entity->transaction->isReconciled();
     }
 }

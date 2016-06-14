@@ -134,8 +134,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         if (empty($paymentId) === true)
         {
             return null;
-
-            
         }
 
         try
