@@ -2,8 +2,6 @@
 
 namespace Reconciliator\Base;
 
-use EE\Error\ErrorCode;
-use EE\Exception\BadRequestException;
 use EE\Exception\ReconciliationException;
 use Models\Payment;
 use Models\Card;
@@ -128,6 +126,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
+        $this->app['trace']->info(
+            TraceCode::RECONCILIATION_FILE_ROW,
+            $row
+        );
+
         $paymentId = $this->getPaymentId($row);
 
         // If payment id is not present, return. No point of evaluating the row.

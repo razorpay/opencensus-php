@@ -162,6 +162,7 @@ class TraceCode
     const RECONCILIATION_CRITICAL_ALERT             = 'RECONCILIATION_CRITICAL_ALERT';
     const RECONCILIATION_REQUEST                    = 'RECONCILIATION_REQUEST';
     const RECONCILIATION_RECONCILED_CHECK           = 'RECONCILIATION_RECONCILED_CHECK';
+    const RECONCILIATION_FILE_ROW                   = 'RECONCILIATION_FILE_ROW';
 
     /**
      * Trace code for critical info
@@ -216,7 +217,8 @@ class TraceCode
         self::RECONCILIATION_INFO_ALERT             => 'Info alert raised for reconciliation',
         self::RECONCILIATION_CRITICAL_ALERT         => 'Critical alert raised for reconciliation',
         self::RECONCILIATION_REQUEST                => 'Request made for reconciliation',
-        self::RECONCILIATION_RECONCILED_CHECK       => 'Check for entity already being reconciled'
+        self::RECONCILIATION_RECONCILED_CHECK       => 'Check for entity already being reconciled',
+        self::RECONCILIATION_FILE_ROW               => 'Row in the reconciliation file that is being reconciled',
     );
 
     /**
