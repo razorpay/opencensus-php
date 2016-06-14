@@ -413,8 +413,7 @@ class Entity extends Base\PublicEntity
                                 .'_'
                                 .$size
                                 .substr($logoUrl, $extension_pos);
-
-
+        
         return $logoUrlBasedOnSize;
     }
 

@@ -9,27 +9,28 @@ use Models\Settlement;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const ENTITY_ID         = 'entity_id';
-    const TYPE              = 'type';
-    const MERCHANT_ID       = 'merchant_id';
-    const AMOUNT            = 'amount';
-    const DEBIT             = 'debit';
-    const CREDIT            = 'credit';
-    const CURRENCY          = 'currency';
-    const FEE               = 'fee';
-    const SERVICE_TAX       = 'service_tax';
-    const PRICING_RULE_ID   = 'pricing_rule_id';
-    const BALANCE           = 'balance';
-    const GATEWAY_FEE       = 'gateway_fee';
-    const API_FEE           = 'api_fee';
-    const GRATIS            = 'gratis';
-    const ESCROW_BALANCE    = 'escrow_balance';
-    const RECONCILED_AT     = 'reconciled_at';
-    const CHANNEL           = 'channel';
-    const SETTLED           = 'settled';
-    const SETTLED_AT        = 'settled_at';
-    const SETTLEMENT_ID     = 'settlement_id';
+    const ID                  = 'id';
+    const ENTITY_ID           = 'entity_id';
+    const TYPE                = 'type';
+    const MERCHANT_ID         = 'merchant_id';
+    const AMOUNT              = 'amount';
+    const DEBIT               = 'debit';
+    const CREDIT              = 'credit';
+    const CURRENCY            = 'currency';
+    const FEE                 = 'fee';
+    const SERVICE_TAX         = 'service_tax';
+    const PRICING_RULE_ID     = 'pricing_rule_id';
+    const BALANCE             = 'balance';
+    const GATEWAY_FEE         = 'gateway_fee';
+    const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
+    const API_FEE             = 'api_fee';
+    const GRATIS              = 'gratis';
+    const ESCROW_BALANCE      = 'escrow_balance';
+    const RECONCILED_AT       = 'reconciled_at';
+    const CHANNEL             = 'channel';
+    const SETTLED             = 'settled';
+    const SETTLED_AT          = 'settled_at';
+    const SETTLEMENT_ID       = 'settlement_id';
 
     const PAYMENT_ID        = 'payment_id';
 
@@ -50,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::GATEWAY_SERVICE_TAX,
         self::SERVICE_TAX,
         self::GRATIS,
         self::BALANCE,
@@ -195,6 +197,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getGatewayFee()
+    {
+        return $this->getAttribute(self::GATEWAY_FEE);
+    }
+
+    public function getGatewayServiceTax()
+    {
+        return $this->getAttribute(self::GATEWAY_SERVICE_TAX);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     public function getAmountAttribute()
@@ -212,9 +224,14 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::API_FEE];
     }
 
-    public function getGatewayFeeAttribute()
+    protected function getGatewayFeeAttribute()
     {
         return (int) $this->attributes[self::GATEWAY_FEE];
+    }
+
+    protected function getGatewayServiceTaxAttribute()
+    {
+        return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
     }
 
     public function getDebitAttribute()
@@ -271,11 +288,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
-    public function getGatewayFee()
-    {
-        return (int) $this->getAttribute(self::GATEWAY_FEE);
-    }
-
     public function getApiFee()
     {
         return $this->getAttribute(self::API_FEE);
@@ -299,6 +311,16 @@ class Entity extends Base\PublicEntity
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
+    public function setGatewayFee($gatewayFee)
+    {
+        $this->setAttribute(self::GATEWAY_FEE, $gatewayFee);
+    }
+
+    public function setGatewayServiceTax($gatewayServiceTax)
+    {
+        $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
     }
 
     public function setEscrowBalance($balance)

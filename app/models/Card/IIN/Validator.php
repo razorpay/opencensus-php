@@ -84,7 +84,7 @@ class Validator extends Base\Validator
 
     protected function validateType($input)
     {
-        if(!isset($input[Entity::TYPE]))
+        if (!isset($input[Entity::TYPE]))
         {
             return;
         }

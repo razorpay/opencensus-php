@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
     const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
+    const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -47,7 +48,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACCESS_CODE,
         self::GATEWAY_SECURE_SECRET,
-        self::GATEWAY_TERMINAL_PASSWORD);
+        self::GATEWAY_TERMINAL_PASSWORD,
+        self::GATEWAY_RECON_PASSWORD,
+    );
 
     protected $public = array(
         self::ID,
@@ -65,13 +68,16 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT);
+        self::DELETED_AT
+    );
 
     protected $table = 'terminals';
 
     protected $hidden = array(
         self::GATEWAY_TERMINAL_PASSWORD,
-        self::GATEWAY_SECURE_SECRET);
+        self::GATEWAY_SECURE_SECRET,
+        self::GATEWAY_RECON_PASSWORD,
+    );
 
     protected $generateIdOnCreate = true;
 
@@ -92,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD => null,
         self::GATEWAY_ACCESS_CODE       => null,
         self::GATEWAY_SECURE_SECRET     => null,
+        self::GATEWAY_RECON_PASSWORD    => null,
         self::SHARED                    => false,
         self::EMI                       => false,
         self::EMI_DURATION              => null,
@@ -178,6 +185,17 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
     }
 
+    protected function setGatewayReconPasswordAttribute($reconPassword)
+    {
+        if ($reconPassword === null)
+        {
+            // Default value is set to null anyway.
+            return;
+        }
+
+        $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword);
+    }
+
     protected function getGatewayTerminalPasswordAttribute()
     {
         $pwd = $this->attributes[self::GATEWAY_TERMINAL_PASSWORD];
@@ -193,9 +211,23 @@ class Entity extends Base\PublicEntity
         $secret = $this->attributes[self::GATEWAY_SECURE_SECRET];
 
         if ($secret === null)
+        {
             return $secret;
+        }
 
         return Crypt::decrypt($secret);
+    }
+
+    protected function getGatewayReconPassword()
+    {
+        $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
+
+        if ($reconPassword === null)
+        {
+            return $reconPassword;
+        }
+
+        return Crypt::decrypt($reconPassword);
     }
 
     public function getGatewayTerminalId()

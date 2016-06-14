@@ -79,6 +79,7 @@ final class Result
     const DENIED_BY_RISK    = 'DENIED BY RISK';
     const HOST_TIMEOUT      = 'HOST TIMEOUT';
     const AUTH_ERROR        = 'AUTH ERROR';
+    const CANCELED          = 'CANCELED';
 
     public static function getResultCode($result)
     {
