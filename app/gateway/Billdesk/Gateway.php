@@ -34,25 +34,13 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
-            ($input['merchant']['id'] === '2aTeFCKTYWwfrF'))
-        {
-            $response = $this->sendGatewayRequest($request);
-            $crawler = new Crawler($response->body, $request['url']);
-            $form = $crawler->filter('form')->form();
+        // Ideally, we could have returned the request array from
+        // here only.
+        //
+        // However, we prevent one network call on client side by
+        // doing it on the server side here.
 
-            $uri = $form->getUri();
-            $method = $form->getMethod();
-            $values = $form->getValues();
-
-            $request = array(
-                'url' => $uri,
-                'method' => strtolower($method),
-                'content' => $values,
-            );
-
-            return $request;
-        }
+        $request = $this->makeRequestAndGetFormData($request);
 
         return $request;
     }
@@ -373,6 +361,32 @@ class Gateway extends Base\Gateway
         }
 
         return $content;
+    }
+
+    protected function makeRequestAndGetFormData($request)
+    {
+        $response = $this->sendGatewayRequestForBilldeskAuthorize($request);
+
+        $crawler = new Crawler($response->body, $request['url']);
+        $form = $crawler->filter('form')->form();
+        $method = $form->getMethod();
+
+        $request = array(
+            'url' => $form->getUri(),
+            'method' => strtolower($method),
+            'content' => $form->getValues(),
+        );
+
+        return $request;
+    }
+
+    /**
+     * This function only purpose is so that it can be overridden
+     * during testing.
+     */
+    protected function sendGatewayRequestForBilldeskAuthorize($request)
+    {
+        return $this->sendGatewayRequest($request);
     }
 
     protected function postRequest($content)

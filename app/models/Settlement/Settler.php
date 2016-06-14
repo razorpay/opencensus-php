@@ -29,6 +29,8 @@ class Settler
 
     protected $input;
 
+    const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
+
     /**
      * Used for testing purposes. Default should
      * be null.
@@ -47,21 +49,49 @@ class Settler
         $this->initRepos();
     }
 
-    public function settle($input = array(), $channel = null)
+    public function settleForParticularMerchant($input, $merchant, $channel = null)
     {
         $this->increaseAllowedSystemLimits();
 
-        $this->checkTime();
+        $this->preSettlementProcessing();
 
         $this->input = $input;
 
         if ($this->checkForHolidays())
         {
-            return ['message' => 'Today is a holiday! Happy holidays :)'];
+            return self::HOLIDAY_MESSAGE;
+        }
+
+        $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
+
+        return $this->processSettlements($txns);
+    }
+
+    public function settle($input = array(), $channel = null)
+    {
+        $this->preSettlementProcessing();
+
+        $this->input = $input;
+
+        if ($this->checkForHolidays())
+        {
+            return self::HOLIDAY_MESSAGE;
         }
 
         $txns = $this->fetchTransactionsToSettle($input);
 
+        return $this->processSettlements($input, $channel, $txns);
+    }
+
+    protected function preSettlementProcessing()
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $this->checkTime();
+    }
+
+    protected function processSettlements($input, $channel, $txns)
+    {
         $channels = $this->getArrayedChannels($channel);
 
         $data = [];
@@ -393,6 +423,33 @@ class Settler
         }
 
         $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
+
+        foreach ($txns as $txn)
+        {
+            if ($txn->isTypePayment())
+            {
+                $payment = $txn->source;
+            }
+            else if ($txn->getType() === Transaction\Type::REFUND)
+            {
+                $payment = $txn->source->payment;
+            }
+        }
+
+        return $txns;
+    }
+
+    protected function fetchMerchantTransactionsToSettle($input, $merchant)
+    {
+        $ts = time();
+
+        if (($this->mode === Mode::TEST) and
+            (empty($input['testSettleTimeStamp']) === false))
+        {
+            $ts = $input['testSettleTimeStamp'];
+        }
+
+        $txns = $this->txnRepo->fetchUnsettledTransactionsForMerchant($ts, $merchant);
 
         foreach ($txns as $txn)
         {

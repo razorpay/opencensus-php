@@ -46,7 +46,7 @@ else
     var fee_bearer  = <?= json_encode($preferences['fee_bearer']) ?>;
     var preferences = <?= json_encode($preferences) ?>;
   </script>
-  <script src="<?= $framejs ?>"></script>
+  <script crossorigin src="<?= $framejs ?>"></script>
 
 <?php
 }

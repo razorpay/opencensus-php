@@ -162,9 +162,9 @@ class Gateway extends Base\Gateway
 
         $this->setDomainType();
 
-        $content = $this->getRefundRequestContent($input);
+        $request = $this->getRefundRequestContent($input);
 
-        $response = $this->postRequest($content)['content'];
+        $response = $this->postRequest($request)['content'];
 
         $content =  [];
 
@@ -179,7 +179,7 @@ class Gateway extends Base\Gateway
         {
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
-                [$content, $content]);
+                [$request, $content]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
