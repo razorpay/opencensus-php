@@ -278,6 +278,12 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * This function must throw an exception in
+     * case the payment didn't succeed
+     * @param  array  $input [description]
+     * @return [type]        [description]
+     */
     public function callbackOtpSubmit(array $input)
     {
         $this->action($input, Action::OTP_SUBMIT);
