@@ -330,6 +330,9 @@ angular.module('app.services', [])
       case 'payment':
         return 'app.payments({id:value, mode:mode})';
 
+      case 'iin':
+        return 'app.entitiesdetail({id:value, mode:mode, type: "iin"})';
+
       default:
         if (force === true) {
           return 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
