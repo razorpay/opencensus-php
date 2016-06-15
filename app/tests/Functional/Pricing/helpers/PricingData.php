@@ -433,29 +433,6 @@ return [
         ]
     ],
 
-    /*'testMerchantAssignPricingPlan' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/pricing',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'name' => 'TestPlan1',
-                'entity' => 'pricing',
-                'count' => 1,
-                'rules' => array(
-                    array(
-                        'payment_method' => 'card',
-                        'payment_method_type' => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000,
-                        'international' => false,
-                    ),
-                ),
-            ],
-        ]
-    ],*/
     'testMerchantAssignPricingPlanDefault' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',

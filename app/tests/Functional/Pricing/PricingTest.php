@@ -182,14 +182,6 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
     
-    /*public function testMerchantAssignPricingPlan()
-    {
-        $id = $this->createPricingPlan()['id'];
-        $testData['request']['content']['pricing_plan_id'] = $id;
-        $merchant = $this->fixtures->merchant;
-        $this->startTest($testData);
-        
-    }*/
 
     public function testMerchantAssignAndGetPricingPlan()
     {
