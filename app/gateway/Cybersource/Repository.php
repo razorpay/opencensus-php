@@ -18,15 +18,6 @@ class Repository extends Base\Repository
         'gateway_transaction_id'        => 'sometimes|numeric|digits:16',
         'ref'                           => 'sometimes|numeric|digits:12');
 
-    public function findByPaymentIdToVerify($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $id)
-                    ->whereIn('action', [Action::AUTHORIZE, Action::PURCHASE])
-                    ->first();
-    }
-
     public function persistAfterEnroll($id, $request, $response)
     {
         $result = $response->reasonCode;
@@ -83,13 +74,11 @@ class Repository extends Base\Repository
 
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->capture_ref = $response->requestID;
-
-        $model->status = $status;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'capture_ref' => $response->requestID,
+                        'status' => $status
+                    ]);
 
         return $model;
     }
@@ -98,13 +87,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->status = Payment\Status::CAPTURE_FAILED;
-
-        $model->error_code = $error->reasonCode;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'status' => Payment\Status::CAPTURE_FAILED,
+                        'error_code' => $error->reasonCode
+                    ]);
 
         return $model;
     }
@@ -124,13 +111,11 @@ class Repository extends Base\Repository
 
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->ref = $response->requestID;
-
-        $model->status = $status;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'ref' => $response->requestID,
+                        'status' => $status
+                    ]);
 
         return $model;
     }
@@ -139,13 +124,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->status = Payment\Status::AUTHORIZE_FAILED;
-
-        $model->error_code = $error->reasonCode;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'status' => Payment\Status::AUTHORIZE_FAILED,
+                        'error_code' => $error->reasonCode
+                    ]);
 
         return $model;
     }
@@ -165,13 +148,11 @@ class Repository extends Base\Repository
 
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->ref = $response->requestID;
-
-        $model->status = $status;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'ref' => $response->requestID,
+                        'status' => $status
+                    ]);
 
         return $model;
     }
@@ -180,13 +161,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->status = Payment\Status::AUTHORIZE_FAILED;
-
-        $model->error_code = $error->reasonCode;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'status' => Payment\Status::AUTHORIZE_FAILED,
+                        'error_code' => $error->reasonCode
+                    ]);
 
         return $model;
     }
@@ -236,13 +215,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $model = $repo::where('payment_id', '=', $id)->firstOrFail();
-
-        $model->status = Payment\Status::VALIDATE_FAILED;
-
-        $model->error_code = $error->reasonCode;
-
-        $this->saveOrFail($model);
+        $model = $repo::where('payment_id', '=', $id)->firstOrFail()
+                    ->update([
+                        'status' => Payment\Status::VALIDATE_FAILED,
+                        'error_code' => $error->reasonCode
+                    ]);
 
         return $model;
     }
@@ -321,111 +298,11 @@ class Repository extends Base\Repository
         $this->saveOrFail($model);
     }
 
-    public function persistAfterSupportPayment(
-        $requestData,
-        $responseData,
-        $paymentId,
-        $refundId = null)
-    {
-        $status = '';
-        $action = $requestData['action'];
-
-        switch($action)
-        {
-            case Payment\Action::REFUND:
-                $status = Payment\Status::REFUNDED;
-                break;
-
-            case Payment\Action::CAPTURE:
-                $status = Payment\Status::CAPTURED;
-                break;
-
-            default:
-                throw new Exception\LogicException('Should not rech here. action: ' . $action);
-        }
-
-        $attributes = array(
-            'payment_id'                => $paymentId,
-            'refund_id'                 => $refundId,
-            'gateway_transaction_id'    => $responseData['tranid'],
-            'amount'                    => $responseData['amt'],
-            'action'                    => $requestData['action'],
-            'status'                    => $status,
-            'result'                    => $responseData['result'],
-            'ref'                       => $responseData['ref'],
-            'auth'                      => $responseData['auth'],
-            'avr'                       => $responseData['avr'],
-            'postdate'                  => $responseData['postdate']);
-
-        return $this->createOrFail($attributes);
-    }
-
-    public function persistAfterSupportPaymentError(
-        $requestdata,
-        array $error,
-        $type,
-        $paymentId,
-        $refundId = null)
-    {
-        $action = '';
-        $status = '';
-
-        switch ($type)
-        {
-            case 'refund':
-                $action = Payment\Action::REFUND;
-                $status = Payment\Status::REFUND_FAILED;
-                break;
-
-            case 'capture':
-                $action = Payment\Action::CAPTURE;
-                $status = Payment\Status::CAPTURE_FAILED;
-                break;
-        }
-
-        $result = null;
-
-        if (isset($error['result']))
-        {
-            $result = $error['result'];
-        }
-
-        $attributes = array(
-            'payment_id'                => $paymentId,
-            'refund_id'                 => $refundId,
-            'gateway_transaction_id'    => $requestdata['transid'],
-            'amount'                    => $requestdata['amt'],
-            'error_code'                => $error['code'],
-            'error_text'                => $result,
-            'action'                    => $action,
-            'status'                    => $status);
-
-        return $this->createOrFail($attributes);
-    }
-
     public function retrieve($id)
     {
         $repo = $this->repo;
 
         return $repo::where('payment_id', '=', $id)->firstOrFail();
-    }
-
-    public function retrieveCapturedOrAcceptedCaptureError($id)
-    {
-        $repo = $this->repo;
-
-        $payment = $repo::where('payment_id', '=', $id)
-                  ->where('status', '=', Payment\Status::CAPTURED)
-                  ->first();
-
-        if ($payment !== null)
-        {
-            return $payment;
-        }
-
-        return $repo::where('payment_id', '=', $id)
-                    ->where('error_code', '=', ErrorCode::GW00176)
-                    ->firstOrFail();
     }
 
     public function retrieveByPaymentIdAndStatus($id, $status)
@@ -435,79 +312,5 @@ class Repository extends Base\Repository
         return $repo::where('payment_id', '=', $id)
                   ->where('status', '=', $status)
                   ->firstOrFail();
-    }
-
-    public function retrieveMultiplePayments(array $ids)
-    {
-        $repo = $this->repo;
-
-        return $repo::whereIn('payment_id', $ids)->get();
-    }
-
-    public function retrieveCapturedPayments(array $ids)
-    {
-        $repo = $this->repo;
-
-        return $repo::whereIn('payment_id', $ids)
-                    ->where('status', '=', Payment\Status::CAPTURED)
-                    ->get();
-    }
-
-    public function retrieveRefunds(array $ids)
-    {
-        $repo = $this->repo;
-
-        return $repo::whereIn('refund_id', $ids)
-                    ->where('status', '=', Payment\Status::REFUNDED)
-                    ->get();
-    }
-
-    public function fetchBetweenTimestamps($from, $to)
-    {
-        $repo = $this->repo;
-
-        return $repo::whereBetween('created_at', $from, $to);
-    }
-
-    public function findByGatewayTransactionIdOrFail($gatewayTxnId)
-    {
-        $repo = $this->repo;
-
-        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)->firstOrFail();
-    }
-
-    public function findByGatewayTransactionIdAndStatus($gatewayTxnId, $status)
-    {
-        $repo = $this->repo;
-
-        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
-                    ->where('status', '=', $status)
-                    ->first();
-    }
-
-    public function findByGatewayTransactionIdAndErrorCode($gatewayTxnId, $error)
-    {
-        $repo = $this->repo;
-
-        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
-                    ->where('error_code', '=', $error)
-                    ->first();
-    }
-
-    public function findByPaymentId($id)
-    {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $id)
-                    ->get();
-    }
-
-    public function findByPaymentIdAndStatus($id, $status)
-    {
-        $repo = $this->repo;
-
-        return $repo::where('payment_id', '=', $id)
-                    ->where('status', '=', $status)
-                    ->get();
     }
 }
