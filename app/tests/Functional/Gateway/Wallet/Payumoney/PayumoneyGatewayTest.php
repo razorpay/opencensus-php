@@ -394,9 +394,41 @@ class PayumoneyGatewayTest extends TestCase
         $data = $this->generateRefundsExcelForPayumoneyWallet();
 
         $this->assertEquals($data['wallet_payumoney']['count'], 3);
+        $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
     }
 
-    protected function generateRefundsExcelForPayumoneyWallet()
+    public function testRefundExcelFileForAParticularMonth()
+    {
+        $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForPayumoneyWallet(true);
+
+        $this->assertEquals($data['wallet_payumoney']['count'], 3);
+        $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+    }
+
+    protected function generateRefundsExcelForPayumoneyWallet($date = false)
     {
         $this->ba->appAuth();
 
@@ -409,6 +441,11 @@ class PayumoneyGatewayTest extends TestCase
                 'frequency' => 'monthly'
             ],
         );
+
+        if ($date)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m');
+        }
 
         return $this->makeRequestAndGetContent($request);
     }
