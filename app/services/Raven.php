@@ -118,7 +118,7 @@ class Raven
     {
         $this->trace->info(TraceCode::RAVEN_RESPONSE, $response);
 
-        if (isset($response[self::SMS_ID]) === false)
+        if (isset($response['error']))
         {
             throw new Exception\RuntimeException('RAVEN_ERROR: ' . $response['internal_error_code']);
         }
