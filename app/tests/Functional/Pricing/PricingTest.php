@@ -128,32 +128,33 @@ class PricingTest extends TestCase
     public function testMerchantAssignPricingPlanDefault()
     {
         $id = $this->createPricingPlan()['id'];
+        $methods = $this->getEntityById("methods","10000000000000",true);
         $testData['request']['content']['pricing_plan_id'] = $id;
 
-        /* The default pricing plan has only card enabled. In 
+        /* The default pricing plan has only card enabled. In
            case, the merchant has any other method enabled,
            disable it to pass the validation test. Else,
-           the validation test might not succeed. 
-        */ 
+           the validation test might not succeed.
+        */
 
         $this->disableMerchantMethods();
-        $this->startTest($testData);   
+        $this->startTest($testData);
     }
 
     public function testMerchantAssignPricingPlanWithInternational()
     {
-        
+
         $id = $this->createPricingPlan()['id'];
-        
+
         /* Test with the default pricing plan with netbanking
            enabled. Disable existing methods except card
-           and only test for international. Default pricing does not 
+           and only test for international. Default pricing does not
            have international */
 
         $this->disableMerchantMethods();
         $this->fixtures->merchant->enableInternational();
         $testData['request']['content']['pricing_plan_id'] = $id;
-        $this->startTest($testData);   
+        $this->startTest($testData);
     }
 
     public function testMerchantAssignPricingPlanMerchantDefault()
@@ -167,7 +168,13 @@ class PricingTest extends TestCase
         $testData['request']['content']['pricing_plan_id'] = $id;
         $this->startTest($testData);
     }
-    
+
+    public function testMerchantWithAmexEnabled()
+    {
+        $this->disableMerchantMethods();
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+    }
+
 
     public function testMerchantAssignAndGetPricingPlan()
     {
@@ -317,19 +324,11 @@ class PricingTest extends TestCase
 
     protected function disableMerchantMethods()
     {
-        $methods = $this->getEntityById("methods","10000000000000",true);
-        $methods_to_disable = array(
-                                    "netbanking" => "disableNetbanking",
-                                    "paytm" => "disablePaytm",
-                                    "mobikwik" => "disableMobikwik",
-                                    "emi" => "disableEmi"
-                                    );
-        foreach($methods_to_disable as $method => $func){
-            if($methods[$method] == true){
-                $this->fixtures->merchant->{$func}();
-            }
-        }
-
+        /* Disable all methods and only enable card.
+           The default pricing plan has only card enabled
+        */
+        $this->fixtures->merchant->disableAllMethods();
+        $this->fixtures->merchant->enableCard();
     }
 
     protected function assignPricingPlanToMerchant()
@@ -392,92 +391,7 @@ class PricingTest extends TestCase
         return $content;
     }
 
-    protected function addPricingPlanRuleNB($id)
-    {
-        $rule = array(
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-        );
-        
-        $planData = array(
-            'plan_name' => 'TestPlan2',
-            'payment_method' => 'card',
-            'payment_method_type' => 'credit',
-            'payment_network' => 'DICL',
-            'payment_issuer' => 'SBIN',
-            'percent_rate' => '275',
-            );
 
-        $pricingData =
-            array(
-                array(
-                    'payment_method' => 'card',
-                    'payment_method_type' => 'credit',
-                    'payment_network' => 'DICL',
-                    'payment_issuer' => 'ICIC',
-                    'percent_rate' => 250,),
-                array(
-                    'payment_method' => 'card',
-                    'payment_method_type' => 'debit',
-                    'payment_network' => 'MAES',
-                    'payment_issuer' => 'PUNB',
-                    'percent_rate' => 250,),
-                array(
-                    'payment_method' => 'card',
-                    'payment_method_type' => 'credit',
-                    'payment_network' => 'MC',
-                    'payment_issuer' => 'AXIS',
-                    'fixed_rate' => 3000,),
-                array(
-                    'payment_method' => 'netbanking',
-                    'payment_method_type' => 'netbanking',
-                    'percent_rate' => 1000,
-                    'payment_network' => 'SIBL',
-                    /*'amount_range_active' => true,
-                    'amount_range_min' => 0,
-                    'amount_range_max' => 100000 */
-                    )
-                );
-
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $planData);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('id', $content);
-        $pricingPlanId = $content['id'];
-
-        foreach ($pricingData as $data)
-        {
-            $request = array(
-                'method' => 'POST',
-                'url' => '/pricing/'.$pricingPlanId.'/rule',
-                'content' => $data);
-
-            $content = $this->makeRequestAndGetContent($request);
-
-            $this->assertArraySelectiveEquals($data, $content);
-        }
-
-        $request = array(
-            'method' => 'GET',
-            'url' => '/pricing/'.$pricingPlanId);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        return $content;
-
-
-    }
     protected function createPricingPlan2()
     {
         $planData = array(

@@ -454,7 +454,7 @@ return [
                     ),
                 ),
             ],
-        ]    
+        ]
     ],
 
     'testMerchantAssignPricingPlanWithInternational' =>[
@@ -475,6 +475,26 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testMerchantWithAmexEnabled' =>[
+        'request' => [
+            'url' => '/merchants/10000000000000/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testMerchantAssignPricingPlanMerchantDefault' =>[
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
