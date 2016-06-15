@@ -177,6 +177,11 @@ class PricingTest extends TestCase
 
     public function testMerchantAssignPricingPlanMerchantDefault()
     {
+        /* This test case is for handling errors where
+           a specific method is not enabled for pricing
+           but is enabled for the merchant. e.g. merchant has
+           netbanking enabled but the pricing does not have it.
+           */
         $id = $this->createPricingPlan()['id'];
         $testData['request']['content']['pricing_plan_id'] = $id;
         $this->startTest($testData);
@@ -332,6 +337,22 @@ class PricingTest extends TestCase
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
+        /* refer testMerchantAssignPricingPlanDefault below
+           for disabling some merchant methods
+         */
+        $merchant = $this->fixtures->merchant;
+        $methods = $this->getEntityById("methods","10000000000000",true);
+        $methods_to_disable = array(
+                                    "netbanking" => "disableNetbanking",
+                                    "paytm" => "disablePaytm",
+                                    "mobikwik" => "disableMobikwik",
+                                    "emi" => "disableEmi"
+                                    );
+        foreach($methods_to_disable as $method => $func){
+            if($methods[$method] == true){
+                $merchant->{$func}();
+            }
+        }
 
         $request = array(
             'url' => '/merchants/10000000000000/pricing',
