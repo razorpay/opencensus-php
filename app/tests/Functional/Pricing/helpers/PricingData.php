@@ -462,7 +462,7 @@ return [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
         ],
-                'response' => [
+        'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,

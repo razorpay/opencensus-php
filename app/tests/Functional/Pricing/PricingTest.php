@@ -127,50 +127,31 @@ class PricingTest extends TestCase
 
     public function testMerchantAssignPricingPlanDefault()
     {
+        $id = $this->createPricingPlan()['id'];
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
         /* The default pricing plan has only card enabled. In 
            case, the merchant has any other method enabled,
            disable it to pass the validation test. Else,
            the validation test might not succeed. 
         */ 
-        $id = $this->createPricingPlan()['id'];
-        $testData['request']['content']['pricing_plan_id'] = $id;
-        $merchant = $this->fixtures->merchant;
-        $methods = $this->getEntityById("methods","10000000000000",true);
-        $methods_to_disable = array(
-                                    "netbanking" => "disableNetbanking",
-                                    "paytm" => "disablePaytm",
-                                    "mobikwik" => "disableMobikwik",
-                                    "emi" => "disableEmi"
-                                    );
-        foreach($methods_to_disable as $method => $func){
-            if($methods[$method] == true){
-                $merchant->{$func}();
-            }
-        }
+
+        $this->disableMerchantMethods();
         $this->startTest($testData);   
     }
 
     public function testMerchantAssignPricingPlanWithInternational()
     {
+        
+        $id = $this->createPricingPlan()['id'];
+        
         /* Test with the default pricing plan with netbanking
            enabled. Disable existing methods except card
            and only test for international. Default pricing does not 
            have international */
-        $id = $this->createPricingPlan()['id'];
-        $merchant = $this->fixtures->merchant;
-        $merchant->enableInternational();
-        $methods = $this->getEntityById("methods","10000000000000",true);
-        $methods_to_disable = array(
-                                    "netbanking" => "disableNetbanking",
-                                    "paytm" => "disablePaytm",
-                                    "mobikwik" => "disableMobikwik",
-                                    "emi" => "disableEmi"
-                                    );
-        foreach($methods_to_disable as $method => $func){
-            if($methods[$method] == true){
-                $merchant->{$func}();
-            }
-        }
+
+        $this->disableMerchantMethods();
+        $this->fixtures->merchant->enableInternational();
         $testData['request']['content']['pricing_plan_id'] = $id;
         $this->startTest($testData);   
     }
@@ -334,13 +315,8 @@ class PricingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function assignPricingPlanToMerchant()
+    protected function disableMerchantMethods()
     {
-        $id = $this->createPricingPlan()['id'];
-        /* refer testMerchantAssignPricingPlanDefault below
-           for disabling some merchant methods
-         */
-        $merchant = $this->fixtures->merchant;
         $methods = $this->getEntityById("methods","10000000000000",true);
         $methods_to_disable = array(
                                     "netbanking" => "disableNetbanking",
@@ -350,10 +326,16 @@ class PricingTest extends TestCase
                                     );
         foreach($methods_to_disable as $method => $func){
             if($methods[$method] == true){
-                $merchant->{$func}();
+                $this->fixtures->merchant->{$func}();
             }
         }
 
+    }
+
+    protected function assignPricingPlanToMerchant()
+    {
+        $id = $this->createPricingPlan()['id'];
+        $this->disableMerchantMethods();
         $request = array(
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST',
