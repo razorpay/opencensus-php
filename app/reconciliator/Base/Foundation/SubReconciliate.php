@@ -38,11 +38,6 @@ class SubReconciliate
 
     protected function checkIfAlreadyReconciled($entity)
     {
-        App::getFacadeRoot()['trace']->info(
-            TraceCode::RECONCILIATION_RECONCILED_CHECK,
-            [$entity->getId()]
-        );
-
         return $entity->transaction->isReconciled();
     }
 }
