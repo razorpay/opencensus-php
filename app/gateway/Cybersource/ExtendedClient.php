@@ -6,13 +6,13 @@ define('TRANSACTION_KEY', 'bGD1hiHgIIWXP6ywu7vxOUDJB0BB8qoT3vvcAe2h5rdZNR21LPtx0
 class ExtendedClient extends SoapClient 
 {
 
-    function __construct($wsdl, $options = null) 
+    public function __construct($wsdl, $options = null) 
     {
         parent::__construct($wsdl, $options);
     }
 
 // This section inserts the UsernameToken information in the outgoing SOAP message.
-    function __doRequest($request, $location, $action, $version, $one_way = 0) 
+    public function __doRequest($request, $location, $action, $version, $one_way = 0) 
     {
         $user = MERCHANT_ID;
         $password = TRANSACTION_KEY;

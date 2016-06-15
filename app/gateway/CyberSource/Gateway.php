@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function persistAfterValidate($input, $response, $request)
+    protected function persistAfterValidate($input, $response, $request)
     {
         if ($response->reasonCode !== 100)
         {
@@ -158,7 +158,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function persistAfterNotEnrolledAuthorize($input, $response, $request)
+    protected function persistAfterNotEnrolledAuthorize($input, $response, $request)
     {
         if ($response->reasonCode !== 100)
         {
@@ -187,7 +187,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function persistAfterAuthorize($input, $response, $request)
+    protected function persistAfterAuthorize($input, $response, $request)
     {
         if ($response->reasonCode !== 100)
         {
@@ -431,10 +431,10 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject()
     {
-        $url = $_ENV['CYBERSOURCE_GATEWAY_TEST_WSDL_URL'];
-        if($this->mode === 'live')
+        $url = Payment\Url::WSDL_LIVE;
+        if($this->mode === Mode::TEST)
         {
-            $url = Payment\Url::WSDL_LIVE;
+            $url = $_ENV['CYBERSOURCE_GATEWAY_TEST_WSDL_URL'];
         }
 
         $soapClient = new ExtendedClient($url, array());
@@ -448,7 +448,7 @@ class Gateway extends Base\Gateway
 
         $request->type = 'transaction';
         $request->subtype = 'transactionDetail';
-        $request->merchantID = $this->getMerchantID();
+        $request->merchantID = $this->getMerchantID($input['terminal']);
         $request->requestID = '4649570076396291201016';
 
         try 
@@ -554,20 +554,20 @@ class Gateway extends Base\Gateway
     
     public function setMerchantDetailInRequest($request, $input)
     {
-        $request->merchantID = $this->getMerchantID();
+        $request->merchantID = $this->getMerchantID($input['terminal']);
 
         $request->merchantReferenceCode = $this->merchantReferenceCode();
 
         return $request;
     }
 
-    public function getMerchantID()
+    public function getMerchantID($terminal)
     {
-        $mid = $this->config['test_merchant_id'];
+        $mid = $terminal['gateway_merchant_id'];
 
-        if($this->mode === 'live')
+        if($this->mode === Mode::TEST)
         {
-            $mid = $_ENV['CYBERSOURCE_GATEWAY_LIVE_MERCHANT_ID'];
+            $mid = $this->config['test_merchant_id'];
         }
 
         return $mid;
@@ -575,11 +575,11 @@ class Gateway extends Base\Gateway
 
     public function merchantReferenceCode()
     {
-        $mid = $this->config['test_ref_code'];
+        $mid = $terminal['gateway_terminal_id'];
 
-        if($this->mode === 'live')
+        if($this->mode === Mode::TEST)
         {
-            $mid = $_ENV['CYBERSOURCE_GATEWAY_LIVE_MERCHANT_REFERENCE_CODE'];
+            $mid = $this->config['test_ref_code'];
         }
 
         return $mid;
