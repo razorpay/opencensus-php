@@ -109,6 +109,13 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
+    public function deleteMerchantLogo()
+    {
+        $this->merchant->setLogoUrlAttribute(null); // set to empty url. This should set it to null
+        (new Merchant\Repository)->saveOrFail($this->merchant);
+        return $this->merchant->toArrayConfig();
+    }
+
     protected function uploadLogoIfFound(&$input)
     {
         // if($input->hasFile('logo') and $input['logo']->isValid())
@@ -376,7 +383,7 @@ class Service extends Base\Service
 
         $count = 0;
 
-        try 
+        try
         {
             foreach ($bankAccounts as $bankAcc)
             {

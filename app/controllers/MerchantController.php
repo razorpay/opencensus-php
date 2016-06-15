@@ -78,6 +78,12 @@ class MerchantController extends BaseController
         }
     }
 
+    public function deleteMerchantConfigLogo()
+    {
+        $data = (new Merchant\Service)->deleteMerchantLogo();
+        return ApiResponse::json($data);
+    }
+
     // This is on Internal Auth
     public function getMerchant($id)
     {
