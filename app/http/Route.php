@@ -212,7 +212,7 @@ final class Route
         'app_fetch_tokens'                      => ['get',      'apps/{appId}/tokens',                      'CustomerController@fetchTokensByAppId'                             ],
         'otp_post'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
-        'otp_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
+        'sms_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                     => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
     );
 
@@ -255,8 +255,7 @@ final class Route
         'app_fetch_tokens',
         'app_delete_token',
         'otp_post',
-        'otp_verify',
-        'otp_callback',
+        'otp_verify'
     );
 
     public static $publicCallback = array(
@@ -431,6 +430,7 @@ final class Route
         'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
+        'sms_callback'
     );
 
     public static $internalApps = array(
