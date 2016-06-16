@@ -62,6 +62,7 @@ class Service extends Base\Service
             'order'             => Models\Order::class,
             'customer'          => Models\Customer::class,
             'token'             => Models\Customer\Token::class,
+            'cybersource'       => Gateway\Cybersource::class,
         );
 
         if (array_key_exists($entity, $map))

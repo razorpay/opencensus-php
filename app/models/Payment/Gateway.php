@@ -48,6 +48,7 @@ class Gateway
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE       => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -98,6 +99,7 @@ class Gateway
     public static $authAndCapture = array(
         self::HDFC,
         self::AMEX,
+        self::CYBERSOURCE,
     );
 
     /**
@@ -108,7 +110,7 @@ class Gateway
      * @var array
      */
     public static $cardNetworkMap = array(
-        self::HDFC => array(
+        self::HDFC   => array(
             Network::MC,
             Network::VISA,
             Network::MAES,
@@ -129,6 +131,9 @@ class Gateway
         self::AMEX => array(
             Network::AMEX),
         self::PAYTM => array(
+            Network::MC,
+            Network::VISA),
+        self::CYBERSOURCE => array(
             Network::MC,
             Network::VISA),
     );
@@ -164,7 +169,8 @@ class Gateway
     public static $internationalCardGateways = array(
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
-        Gateway::AMEX);
+        Gateway::AMEX,
+        Gateway::CYBERSOURCE);
 
     /**
      * Card gateways which support domestic payments in live mode.
@@ -174,7 +180,8 @@ class Gateway
     public static $domesticCardGateways = array(
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
-        Gateway::AMEX);
+        Gateway::AMEX,
+        Gateway::CYBERSOURCE);
 
     /**
      * Card gateways which support domestic payments in test mode.

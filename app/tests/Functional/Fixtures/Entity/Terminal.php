@@ -18,6 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        //$this->createSharedCybersourceTerminal();
     }
 
     public function createAtomTerminal(array $attributes = array())
@@ -147,6 +148,27 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'payumoney_terminal',
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => '293823',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::CYBERSOURCE_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'cybersource',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'cybersource',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
         );
 

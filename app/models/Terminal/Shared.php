@@ -22,6 +22,7 @@ class Shared
     const PAYUMONEY_RAZORPAY_TERMINAL       = '100PayumnyTmnl';
     const SBIEPAY_RAZORPAY_TERMINAL         = '10000SbiEpayTl';
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
+    const CYBERSOURCE_RAZORPAY_TERMINAL     = '1000CybrsTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -38,6 +39,7 @@ class Shared
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::SHARP_RAZORPAY_TERMINAL,
         self::SBIEPAY_RAZORPAY_TERMINAL,
+        self::CYBERSOURCE_RAZORPAY_TERMINAL,
     );
 
     protected static $map = array(
@@ -46,6 +48,7 @@ class Shared
         self::AXIS_GENIUS_RAZORPAY_TERMINAL => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL   => Gateway::AXIS_MIGS,
         self::BILLDESK_RAZORPAY_TERMINAL    => Gateway::BILLDESK,
+        self::CYBERSOURCE_RAZORPAY_TERMINAL => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL        => Gateway::HDFC,
         self::KOTAK_RAZORPAY_TERMINAL       => Gateway::KOTAK,
         self::MOBIKWIK_RAZORPAY_TERMINAL    => Gateway::MOBIKWIK,

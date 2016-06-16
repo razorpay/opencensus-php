@@ -95,9 +95,7 @@ class Gateway extends Base\Gateway
 
         try 
         {
-            $soapClient = $this->getSoapClientObject();
-
-            $reply = $soapClient->runTransaction($request);
+            $reply = $this->sendGatewayRequest($request);
 
             $this->persistAfterValidate($input, $reply, $request);
 
@@ -116,9 +114,7 @@ class Gateway extends Base\Gateway
 
         try 
         {
-            $soapClient = $this->getSoapClientObject();
-
-            $reply = $soapClient->runTransaction($request);
+            $reply = $this->sendGatewayRequest($request);
             
             $this->persistAfterAuthorize($input, $reply, $request);
 
@@ -140,9 +136,7 @@ class Gateway extends Base\Gateway
 
         try 
         {
-            $soapClient = $this->getSoapClientObject();
-
-            $reply = $soapClient->runTransaction($request);
+            $reply = $this->sendGatewayRequest($request);
 
             $this->persistAfterNotEnrolledAuthorize($input, $reply, $request);
 
@@ -262,7 +256,7 @@ class Gateway extends Base\Gateway
         $ccAuthService->xid = $model->xid;
         $ccAuthService->commerceIndicator = $model->commerce_indicator;
         $ccAuthService->eciRaw = $model->eci_raw;
-        $ccAuthService->reconciliationID = $this->merchantReferenceCode();
+        $ccAuthService->reconciliationID = $this->getMerchantReferenceCode($input['terminal']);
         if($input['card']['network'] === 'Visa')
         {
             $ccAuthService->cavv = $model->cavv;
@@ -315,14 +309,14 @@ class Gateway extends Base\Gateway
         }
         $ccAuthService->commerceIndicator = $enrollResponse->payerAuthEnrollReply->commerceIndicator;
         $ccAuthService->veresEnrolled = $enrollResponse->payerAuthEnrollReply->veresEnrolled;
-        $ccAuthService->reconciliationID = $this->merchantReferenceCode();
+        $ccAuthService->reconciliationID = $this->getMerchantReferenceCode($input['terminal']);
         
         $request->ccAuthService = $ccAuthService;
 
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        $card->accountNumber = $input['card']['number'];
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -340,9 +334,7 @@ class Gateway extends Base\Gateway
 
         try 
         {
-            $soapClient = $this->getSoapClientObject();
-
-            $reply = $soapClient->runTransaction($request);
+            $reply = $this->sendGatewayRequest($request);
 
             $this->persistAfterCapture($input, $reply, $request);
 
@@ -394,9 +386,7 @@ class Gateway extends Base\Gateway
 
         try 
         {
-            $soapClient = $this->getSoapClientObject();
-
-            $reply = $soapClient->runTransaction($request);
+            $reply = $this->sendGatewayRequest($request);
 
             return $reply->reasonCode;
 
@@ -431,7 +421,7 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject()
     {
-        $url = Payment\Url::WSDL_LIVE;
+        $url = Payment\Url::WSDL_URL;
         if($this->mode === Mode::TEST)
         {
             $url = $_ENV['CYBERSOURCE_GATEWAY_TEST_WSDL_URL'];
@@ -474,9 +464,7 @@ class Gateway extends Base\Gateway
 
         try 
         {
-            $soapClient = $this->getSoapClientObject();
-
-            $reply = $soapClient->runTransaction($request);
+            $reply = $this->sendGatewayRequest($request);
 
             $this->persistAfterEnroll($input, $reply, $request);
 
@@ -556,7 +544,7 @@ class Gateway extends Base\Gateway
     {
         $request->merchantID = $this->getMerchantID($input['terminal']);
 
-        $request->merchantReferenceCode = $this->merchantReferenceCode();
+        $request->merchantReferenceCode = $this->getMerchantReferenceCode($input['terminal']);
 
         return $request;
     }
@@ -573,7 +561,7 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
-    public function merchantReferenceCode()
+    public function getMerchantReferenceCode($terminal)
     {
         $mid = $terminal['gateway_terminal_id'];
 
@@ -693,6 +681,15 @@ class Gateway extends Base\Gateway
         $request['method'] = 'post';
 
         return $request;
+    }
+
+    public function sendGatewayRequest($request)
+    {
+        $soapClient = $this->getSoapClientObject();
+
+        $reply = $soapClient->runTransaction($request);
+
+        return $reply;
     }
 
 }

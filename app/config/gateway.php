@@ -42,7 +42,7 @@ return array(
     'mock_sbiepay'          => false,
     'mock_wallet_payzapp'   => $_ENV['PAYZAPP_MOCK'],
     'mock_wallet_payumoney' => $_ENV['PAYUMONEY_MOCK'],
-    'mock_cybersource'      => false,
+    'mock_cybersource'      => $_ENV['CYBERSOURCE_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -86,7 +86,8 @@ return array(
     'cybersource' => array(
         'test_merchant_id'      => $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'],
         'test_access_code'      => $_ENV['CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'],
-        'test_ref_code'         => 'rzp',
+        'test_ref_code'         => $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_REFERENCE_CODE'],
+        'mock_server'           => false,
     ),
 
     'kotak' => array(
