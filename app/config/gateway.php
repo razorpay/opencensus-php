@@ -25,6 +25,7 @@ return array(
         'sbiepay',
         'wallet_payzapp',
         'wallet_payumoney',
+        'wallet_olamoney',
     ),
 
     'mock_amex'             => $_ENV['AMEX_MOCK'],
@@ -41,6 +42,7 @@ return array(
     'mock_sbiepay'          => false,
     'mock_wallet_payzapp'   => $_ENV['PAYZAPP_MOCK'],
     'mock_wallet_payumoney' => $_ENV['PAYUMONEY_MOCK'],
+    'mock_wallet_olamoney'  => $_ENV['OLAMONEY_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -115,6 +117,11 @@ return array(
         'test_merchant_id'      => $_ENV['PAYUMONEY_WALLET_TEST_MERCHANT_ID'],
         'test_access_code'      => $_ENV['PAYUMONEY_WALLET_TEST_CLIENT_ID'],
         'test_auth_header'      => $_ENV['PAYUMONEY_WALLET_TEST_AUTH_HEADER'],
+    ),
+
+    'wallet_olamoney'  =>array(
+        'test_access_token'     => $_ENV['OLAMONEY_WALLET_TEST_MERCHANT_ID'],
+        'test_salt'             => $_ENV['OLAMONEY_WALLET_TEST_HASH_SECRET'],
     ),
 
     'netbanking_hdfc' => array(

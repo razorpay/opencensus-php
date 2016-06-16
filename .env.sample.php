@@ -71,6 +71,9 @@ return array(
     'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'                 => 'random_hash_secret',
     'MOBIKWIK_GATEWAY_TEST_MERCHANT_ID'                 => 'RANDOM2',
 
+    'OLAMONEY_WALLET_TEST_MERCHANT_ID'                  => 'access_token',
+    'OLAMONEY_WALLET_TEST_HASH_SECRET'                  => 'salt',
+
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                    => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                    => 'randomsecret',
 
