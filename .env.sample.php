@@ -107,6 +107,7 @@ return array(
     'HDFC_MOCK'                                         => true,
     'KOTAK_MOCK'                                        => true,
     'MOBIKWIK_MOCK'                                     => true,
+    'OLAMONEY_MOCK'                                     => true,
     'PAYTM_MOCK'                                        => true,
     'PAYZAPP_MOCK'                                      => true,
     'PAYUMONEY_MOCK'                                    => true,

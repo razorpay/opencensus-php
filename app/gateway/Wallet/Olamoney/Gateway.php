@@ -1,6 +1,9 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney;
+namespace Gateway\Wallet\Olamoney;
+
+use Gateway\Wallet\Base;
+use Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
@@ -24,12 +27,11 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate($input)
     {
-
+        $this->getOtpArray($input);
     }
 
     protected function getOtpArray($input)
     {
-        sd($input);
         return [
             "command"         =>    "capture",
             "accessToken"     =>    "string",
@@ -63,5 +65,13 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['live_salt'];
+    }
+
+    /**
+     * Mock this method because gateway doesn't support it
+     */
+    public function checkExistingUser($input)
+    {
+        ;
     }
 }

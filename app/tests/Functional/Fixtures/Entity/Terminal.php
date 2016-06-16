@@ -153,6 +153,28 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedOlamoneyTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_olamoney',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'olamoney_merchant',
+            'gateway_merchant_id2'      => 'olamoney_auth_code',
+            'gateway_terminal_id'       => 'olamoney_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'random_access_code',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBilldeskTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;

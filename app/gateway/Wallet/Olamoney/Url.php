@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney;
+namespace Gateway\Wallet\Olamoney;
 
 class Url
 {

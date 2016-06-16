@@ -18,6 +18,7 @@ class Gateway
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
     const MOBIKWIK          = 'mobikwik';
+    const OLAMONEY          = 'olamoney';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';
@@ -84,8 +85,8 @@ class Gateway
 
         Method::WALLET => array(
             self::MOBIKWIK,
-            self::OLAMONEY,
             self::PAYTM,
+            self::WALLET_OLAMONEY,
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
         ),
@@ -142,7 +143,7 @@ class Gateway
     );
 
     public static $walletToGatewayMap = array(
-        Wallet::OLAMONEY    => Gateway::OLAMONEY,
+        Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,

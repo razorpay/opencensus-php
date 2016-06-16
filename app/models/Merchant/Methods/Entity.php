@@ -136,6 +136,11 @@ class Entity extends Base\PublicEntity
         return $this->getPayzappAttribute();
     }
 
+    public function isOlamoneyEnabled()
+    {
+        return $this->getOlamoneyAttribute();
+    }
+
     public function isPayumoneyEnabled()
     {
         return $this->getPayumoneyAttribute();
@@ -304,6 +309,11 @@ class Entity extends Base\PublicEntity
     public function getMobikwikAttribute()
     {
         return (bool) $this->attributes[self::MOBIKWIK];
+    }
+
+    public function getOlamoneyAttribute()
+    {
+        return (bool) $this->attributes[self::OLAMONEY];
     }
 
     public function getPayzappAttribute()

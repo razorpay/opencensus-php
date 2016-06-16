@@ -16,7 +16,7 @@ return [
         'currency'          => 'INR',
         'description'       => 'random description',
         'bank'              => null,
-        'wallet'            => 'payumoney',
+        'wallet'            => 'olamoney',
         'error_code'        => null,
         'error_description' => null,
         'email'             => 'a@b.com',
@@ -30,5 +30,18 @@ return [
         'verified'          => null,
         'entity'            => 'payment',
         'otp_attempts'      => null
-    ]
+    ],
+
+    'testPaymentWalletEntity' => [
+        'action'                => 'authorize',
+        'amount'                => 50000,
+        'wallet'                => 'olamoney',
+        'received'              => true,
+        'email'                 => 'a@b.com',
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'status_code'           => '0',
+        'refund_id'             => null,
+        'entity'                => 'wallet',
+    ],
 ];
