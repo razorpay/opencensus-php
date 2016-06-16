@@ -187,6 +187,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   =>  Account::DEMO_ACCOUNT,
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'paytm'         => '1',
+                    'olamoney'      => '1',
                     'mobikwik'      => '1',
                     'payzapp'       => '1',
                     'payumoney'     => '1',
@@ -202,6 +203,7 @@ class DatabaseSeeder extends Seeder
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'paytm'         => '1',
                     'mobikwik'      => '1',
+                    'olamoney'      => '1',
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'card'          => '1',
@@ -752,7 +754,41 @@ class DatabaseSeeder extends Seeder
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_payumoney_terminal_pass'),
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
-                )
-            );
+            )
+        );
+    }
+
+    protected function createOlamoneyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '2byKhdVKZ9iDew',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_OLAMONEY,
+                'card'                      => '0',
+                'gateway_merchant_id'       => 'test_merchant_olamoney',
+                'gateway_terminal_id'       => 'test_terminal_olamoney',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_olamoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_OLAMONEY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'demo_merchant_olamoney',
+                'gateway_terminal_id'       => 'demo_terminal_olamoney',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_olamoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
     }
 }

@@ -23,12 +23,14 @@ class Gateway
     const SHARP             = 'sharp';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
+    const WALLET_OLAMONEY   = 'wallet_olamoney';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
-        Wallet::PAYUMONEY
+        Wallet::PAYUMONEY,
+        Wallet::OLAMONEY,
     );
 
     const TOPUP_GATEWAYS = array(
@@ -82,6 +84,7 @@ class Gateway
 
         Method::WALLET => array(
             self::MOBIKWIK,
+            self::OLAMONEY,
             self::PAYTM,
             self::WALLET_PAYZAPP,
             self::WALLET_PAYUMONEY,
@@ -139,6 +142,7 @@ class Gateway
     );
 
     public static $walletToGatewayMap = array(
+        Wallet::OLAMONEY    => Gateway::OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
         Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,

@@ -54,6 +54,7 @@ class Entity
     const NETBANKING        = 'netbanking';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
+    const WALLET_OLAMONEY   = 'wallet_olamoney';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
@@ -162,9 +163,11 @@ class Entity
         self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK  => Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY  => Gateway\Wallet\Payumoney::class,
+        self::WALLET_OLAMONEY   => Gateway\Wallet\Olamoney::class,
     );
 
     protected static $repository = array(
+        self::WALLET_OLAMONEY   => Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY  => Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP    => Gateway\Wallet\Base::class,
         self::NETBANKING_HDFC   => Gateway\Netbanking\Base::class,

@@ -27,8 +27,9 @@ class Gateway extends Base\Gateway
 
     }
 
-    protected function getOtpArray()
+    protected function getOtpArray($input)
     {
+        sd($input);
         return [
             "command"         =>    "capture",
             "accessToken"     =>    "string",
@@ -42,5 +43,25 @@ class Gateway extends Base\Gateway
             "currency"        =>    "INR",
             "otp"             =>    "string"
         ];
+    }
+
+    protected function getAccessToken()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_access_token'];
+        }
+
+        return $this->config['live_access_token'];
+    }
+
+    protected function getSalt()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_salt'];
+        }
+
+        return $this->config['live_salt'];
     }
 }

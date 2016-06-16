@@ -12,8 +12,9 @@ class Entity extends Base\PublicEntity
     const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
     const BANKS             = 'banks';
-    const PAYTM             = 'paytm';
     const MOBIKWIK          = 'mobikwik';
+    const OLAMONEY          = 'olamoney';
+    const PAYTM             = 'paytm';
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const EMI               = 'emi';
