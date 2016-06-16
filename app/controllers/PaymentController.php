@@ -144,6 +144,18 @@ class PaymentController extends BaseController
         return ApiResponse::json($refunds);
     }
 
+    public function generateNetbankingRefunds()
+    {
+        $input = Input::all();
+        // Just a hack, will be shifted to the /refunds/excel route
+        // once properly deployed
+        $input['method'] = 'netbanking';
+
+        $refundExcel = (new Payment\Refund\Service)->getRefundsFile($input);
+
+        return ApiResponse::json($refundExcel);
+    }
+
     public function generateRefunds()
     {
         $input = Input::all();
