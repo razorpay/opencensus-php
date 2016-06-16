@@ -138,6 +138,7 @@ final class Route
         'setl_return_generate'                  => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'                 ],
         'setl_return'                           => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'               => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',                 ],
+        'setl_combined_report'                  => ['get',      'settlements/report/combined',              'SettlementController@getSettlementCombinedReport'                  ],
         'daily_setl_calc_previous_fees'         => ['post',     'dailysettlements/fees/previous',           'SettlementController@postDailySettlementCalculatePreviousFees'     ],
         'daily_setl_fetch_by_id'                => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'                           ],
         'daily_setl_fetch_multiple'             => ['get',      'dailysettlements',                         'SettlementController@getDailySettlements'                          ],
@@ -212,7 +213,7 @@ final class Route
         'app_fetch_tokens'                      => ['get',      'apps/{appId}/tokens',                      'CustomerController@fetchTokensByAppId'                             ],
         'otp_post'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],
         'otp_verify'                            => ['post',     'otp/verify',                               'CustomerController@verifyOtp'                                      ],
-        'otp_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
+        'sms_callback'                          => ['post',     'sms/{id}/callback',                        'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                     => ['post',     'es/migrate/{entityName}',                  'EsController@migrateEntity'                                        ],
     );
 
@@ -255,8 +256,7 @@ final class Route
         'app_fetch_tokens',
         'app_delete_token',
         'otp_post',
-        'otp_verify',
-        'otp_callback',
+        'otp_verify'
     );
 
     public static $publicCallback = array(
@@ -286,6 +286,7 @@ final class Route
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
+        'setl_combined_report',
     );
 
     public static $internal = array(
@@ -431,6 +432,7 @@ final class Route
         'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
+        'sms_callback'
     );
 
     public static $internalApps = array(
@@ -491,7 +493,8 @@ final class Route
         'customer_delete'       =>  'tokens',
         'customer_delete_token' =>  'tokens',
         'customer_fetch_tokens' =>  'tokens',
-        'payment_create_wallet' =>  's2swallet'
+        'payment_create_wallet' =>  's2swallet',
+        'setl_combined_report'  =>  'setl_report',
     );
 
     protected static $router;

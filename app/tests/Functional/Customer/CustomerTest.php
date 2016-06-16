@@ -166,16 +166,6 @@ class CustomerTest extends TestCase
                             "success" => true,
                         );
 
-                        switch ($route)
-                        {
-                            case 'sms/send-otp':
-                                $response['message'] = 'message queued.';
-                                break;
-
-                            case 'sms/verify-otp':
-                                break;
-                        }
-
                         return $response;
                     });
 

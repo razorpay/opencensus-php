@@ -11,7 +11,8 @@ class Features
         'webhooks',
         'aggregator',
         'tokens',
-        's2swallet'
+        's2swallet',
+        'setl_report',
     );
 
     public static function validateFeatures($input)
