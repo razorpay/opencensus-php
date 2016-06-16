@@ -52,7 +52,7 @@ class Core extends Base\Core
                 ($plan->hasMethod($method) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Method ['.$method. '] not present for pricing');
+                    'Pricing not present for method: ' . $method);
             }
         }
 

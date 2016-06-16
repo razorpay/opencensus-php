@@ -128,16 +128,14 @@ class PricingTest extends TestCase
     public function testMerchantAssignPricingPlanDefault()
     {
         $id = $this->createPricingPlan()['id'];
-        $methods = $this->getEntityById("methods","10000000000000",true);
         $testData['request']['content']['pricing_plan_id'] = $id;
 
-        /* The default pricing plan has only card enabled. In
-           case, the merchant has any other method enabled,
-           disable it to pass the validation test. Else,
-           the validation test might not succeed.
-        */
+        // The default pricing plan has only card enabled. In
+        //   case, the merchant has any other method enabled,
+        //   disable it to pass the validation test. Else,
+        //   the validation test might not succeed.
 
-        $this->disableMerchantMethods();
+        $this->setDefaultMerchantMethods();
         $this->startTest($testData);
     }
 
@@ -146,12 +144,12 @@ class PricingTest extends TestCase
 
         $id = $this->createPricingPlan()['id'];
 
-        /* Test with the default pricing plan with netbanking
-           enabled. Disable existing methods except card
-           and only test for international. Default pricing does not
-           have international */
+        // Test with the default pricing plan with netbanking
+        //   enabled. Disable existing methods except card
+        //   and only test for international. Default pricing does not
+        //   have international
 
-        $this->disableMerchantMethods();
+        $this->setDefaultMerchantMethods();
         $this->fixtures->merchant->enableInternational();
         $testData['request']['content']['pricing_plan_id'] = $id;
         $this->startTest($testData);
@@ -159,11 +157,11 @@ class PricingTest extends TestCase
 
     public function testMerchantAssignPricingPlanMerchantDefault()
     {
-        /* This test case is for handling errors where
-           a specific method is not enabled for pricing
-           but is enabled for the merchant. e.g. merchant has
-           netbanking enabled but the pricing does not have it.
-           */
+        // This test case is for handling errors where
+        //   a specific method is not enabled for pricing
+        //   but is enabled for the merchant. e.g. merchant has
+        //   netbanking enabled but the pricing does not have it.
+
         $id = $this->createPricingPlan()['id'];
         $testData['request']['content']['pricing_plan_id'] = $id;
         $this->startTest($testData);
@@ -171,8 +169,11 @@ class PricingTest extends TestCase
 
     public function testMerchantWithAmexEnabled()
     {
-        $this->disableMerchantMethods();
+        $id = $this->createPricingPlan()['id'];
+        $this->setDefaultMerchantMethods();
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+        $testData['request']['content']['pricing_plan_id'] = $id;
+        $this->startTest($testData);
     }
 
 
@@ -322,11 +323,11 @@ class PricingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function disableMerchantMethods()
+    protected function setDefaultMerchantMethods()
     {
-        /* Disable all methods and only enable card.
-           The default pricing plan has only card enabled
-        */
+        // Disable all methods and only enable card.
+        // The default pricing plan has only card enabled
+
         $this->fixtures->merchant->disableAllMethods();
         $this->fixtures->merchant->enableCard();
     }
@@ -334,7 +335,7 @@ class PricingTest extends TestCase
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
-        $this->disableMerchantMethods();
+        $this->setDefaultMerchantMethods();
         $request = array(
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST',
