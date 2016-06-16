@@ -136,6 +136,7 @@ class PricingTest extends TestCase
         //   the validation test might not succeed.
 
         $this->setDefaultMerchantMethods();
+
         $this->startTest($testData);
     }
 
@@ -150,8 +151,11 @@ class PricingTest extends TestCase
         //   have international
 
         $this->setDefaultMerchantMethods();
+
         $this->fixtures->merchant->enableInternational();
+
         $testData['request']['content']['pricing_plan_id'] = $id;
+
         $this->startTest($testData);
     }
 
@@ -163,16 +167,22 @@ class PricingTest extends TestCase
         //   netbanking enabled but the pricing does not have it.
 
         $id = $this->createPricingPlan()['id'];
+
         $testData['request']['content']['pricing_plan_id'] = $id;
+
         $this->startTest($testData);
     }
 
     public function testMerchantWithAmexEnabled()
     {
         $id = $this->createPricingPlan()['id'];
+
         $this->setDefaultMerchantMethods();
+
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
         $testData['request']['content']['pricing_plan_id'] = $id;
+
         $this->startTest($testData);
     }
 
@@ -329,13 +339,16 @@ class PricingTest extends TestCase
         // The default pricing plan has only card enabled
 
         $this->fixtures->merchant->disableAllMethods();
+
         $this->fixtures->merchant->enableCard();
     }
 
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
+
         $this->setDefaultMerchantMethods();
+
         $request = array(
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST',

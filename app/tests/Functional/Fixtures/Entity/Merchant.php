@@ -248,10 +248,12 @@ class Merchant extends Base
     public function disableAllMethods($id = '10000000000000')
     {
         $methodNames = MerchantMethodEntity::getAllMethodNames();
+
         foreach($methodNames as $method)
         {
             $this->disableMethod($id, $method);
         }
+
         $this->disableInternational();
     }
 }
