@@ -8,12 +8,15 @@ class Wallet
     const PAYZAPP   = 'payzapp';
     const MOBIKWIK  = 'mobikwik';
     const PAYUMONEY = 'payumoney';
+    const OLAMONEY  = 'olamoney';
 
     public static $fullName = array(
-        self::PAYTM         => 'Paytm',
-        self::PAYZAPP       => 'Payzapp',
         self::MOBIKWIK      => 'Mobikwik',
-        self::PAYUMONEY     => 'Payumoney');
+        self::OLAMONEY      => 'Olamoney',
+        self::PAYTM         => 'Paytm',
+        self::PAYUMONEY     => 'Payumoney',
+        self::PAYZAPP       => 'Payzapp',
+    );
 
     public static function exists($wallet)
     {
