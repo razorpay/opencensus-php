@@ -248,6 +248,15 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::LOGO_URL] = $logoUrl ? $logoUrl : null;
     }
 
+    //TODO: Call to a default setLogoUrl returns an undefined method
+    // This method is added here to avoid this problem. Why the magic method
+    // does not work needs to be investigated and this method to be removed
+    // accordingly
+    public function setLogoUrl($logoUrl)
+    {
+        $this->setLogoUrlAttribute($logoUrl);
+    }
+
     public function getBillingLabelElseName()
     {
         $label = $this->getBillingLabel();
@@ -413,7 +422,7 @@ class Entity extends Base\PublicEntity
                                 .'_'
                                 .$size
                                 .substr($logoUrl, $extension_pos);
-        
+
         return $logoUrlBasedOnSize;
     }
 
