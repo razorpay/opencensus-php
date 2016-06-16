@@ -138,6 +138,7 @@ final class Route
         'setl_return_generate'                  => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'                 ],
         'setl_return'                           => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'                         ],
         'setl_calc_previous_fees'               => ['post',     'settlements/fees/previous',                'SettlementController@postSettlementCalculateFees',                 ],
+        'setl_combined_report'                  => ['get',      'settlements/report/combined',              'SettlementController@getSettlementCombinedReport'                  ],
         'daily_setl_calc_previous_fees'         => ['post',     'dailysettlements/fees/previous',           'SettlementController@postDailySettlementCalculatePreviousFees'     ],
         'daily_setl_fetch_by_id'                => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'                           ],
         'daily_setl_fetch_multiple'             => ['get',      'dailysettlements',                         'SettlementController@getDailySettlements'                          ],
@@ -285,6 +286,7 @@ final class Route
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
+        'setl_combined_report',
     );
 
     public static $internal = array(
@@ -491,7 +493,8 @@ final class Route
         'customer_delete'       =>  'tokens',
         'customer_delete_token' =>  'tokens',
         'customer_fetch_tokens' =>  'tokens',
-        'payment_create_wallet' =>  's2swallet'
+        'payment_create_wallet' =>  's2swallet',
+        'setl_combined_report'  =>  'setl_report',
     );
 
     protected static $router;
