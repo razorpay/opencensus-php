@@ -80,8 +80,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_OTP_INCORRECT');
-        $this->assertEquals($payment['error_code'], null);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_OTP_INCORRECT', $payment['internal_error_code']);
+        $this->assertEquals(null, $payment['error_code']);
 
         $this->step = null;
 
@@ -393,12 +393,15 @@ class PayumoneyGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForPayumoneyWallet();
 
-        $this->assertEquals($data['wallet_payumoney']['count'], 3);
+        $this->assertEquals(4, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
     }
 
     public function testRefundExcelFileForAParticularMonth()
     {
+        $knownDate = Carbon::create(2016, 5, 21);
+        Carbon::setTestNow($knownDate);
+
         $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $payment = $this->doAuthAndCapturePayment($defaultPayment);
@@ -416,7 +419,10 @@ class PayumoneyGatewayTest extends TestCase
         foreach ($refunds['items'] as $refund)
         {
             $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+            $this->fixtures->edit('refund', $refund['id'], [
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt
+            ]);
         }
 
         $payment = $this->doAuthAndCapturePayment($defaultPayment);
@@ -424,8 +430,10 @@ class PayumoneyGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForPayumoneyWallet(true);
 
-        $this->assertEquals($data['wallet_payumoney']['count'], 3);
+        $this->assertEquals(3, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        Carbon::setTestNow();
     }
 
     protected function generateRefundsExcelForPayumoneyWallet($date = false)
@@ -444,7 +452,7 @@ class PayumoneyGatewayTest extends TestCase
 
         if ($date)
         {
-            $request['content']['on'] = Carbon::now()->format('Y-m');
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
         }
 
         return $this->makeRequestAndGetContent($request);

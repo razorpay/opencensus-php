@@ -117,15 +117,26 @@ class Service extends Base\Service
             $frequency = $input['frequency'];
         }
 
-        if (isset($input['on']))
+        if ($frequency === 'monthly')
         {
-            if ($frequency === 'monthly')
+            if (isset($input['on']))
             {
-                $from = Carbon::createFromFormat('Y-m', $input['on'], 'Asia/Kolkata')->startOfMonth();
+                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
 
-                $fromTimeStamp = $from->timestamp;
+                $from = $dt->startOfMonth()->timestamp;
+                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
             }
             else
+            {
+                $dt = Carbon::yesterday('Asia/Kolkata');
+
+                $from = $dt->startOfMonth()->timestamp;
+                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+            }
+        }
+        else
+        {
+            if (isset($input['on']))
             {
                 $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
 
@@ -136,21 +147,15 @@ class Service extends Base\Service
                 $from = $fromTimeStamp;
             }
         }
-        else if(isset($input['frequency']) and $input['frequency'] === 'monthly')
-        {
-            $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        }
-        else
-        {
-            if (isset($input['from']))
-            {
-                $from = $input['from'];
-            }
 
-            if (isset($input['to']))
-            {
-                $to = $input['to'];
-            }
+        if (isset($input['from']))
+        {
+            $from = $input['from'];
+        }
+
+        if (isset($input['to']))
+        {
+            $to = $input['to'];
         }
 
         return array($from, $to);
