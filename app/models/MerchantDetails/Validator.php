@@ -149,7 +149,8 @@ class Validator extends Base\Validator
         'business_proof'                => 'Business Registration Proof',
         'business_operation_proof'      => 'Business Operation Proof',
         'business_pan_proof'            => 'Business PAN Proof',
-        'address_proof'                 => 'Business Address Proof',
+        // The field is now labelled as "Bank Account Statement with Address"
+        'address_proof'                 => 'Bank Account Statement',
         'promoter_proof'                => 'Authorised Signatory Proof',
         'promoter_pan_proof'            => 'Authorised Signatory PAN Proof',
         'promoter_address_proof'        => 'Authorised Signatory Address Proof'
