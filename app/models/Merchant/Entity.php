@@ -250,7 +250,7 @@ class Entity extends Base\PublicEntity
 
     public function setLogoUrl($logoUrl)
     {
-        $this->setLogoUrlAttribute($logoUrl);
+        $this->setAttribute(self::LOGO_URL, $logoUrl);
     }
 
     public function getBillingLabelElseName()
