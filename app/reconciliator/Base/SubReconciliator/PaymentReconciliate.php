@@ -217,9 +217,31 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
+
+    /**
+     * This function should be called only if the payment
+     * is sure to have a corresponding entity for card.
+     *
+     * @param String $reconCardType
+     * @throws ReconciliationException
+     */
     protected function persistCardTypeIfAbsent($reconCardType)
     {
         $paymentIin = $this->payment->card->iinRelation;
+
+        if ($paymentIin === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECONCILIATION_INFO_ALERT,
+                    'message'         => 'IIN absent for the card.',
+                    'card_id'         => $this->payment->card->getId(),
+                    'payment_id'      => $this->payment->getId(),
+                    'gateway'         => get_called_class()
+                ]);
+
+            return;
+        }
 
         $iinCardType = $paymentIin->getType();
 

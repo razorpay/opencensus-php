@@ -318,11 +318,11 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-    public function createSharedHdfcTerminal()
+    public function createSharedHdfcTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::HDFC_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'hdfc',
@@ -331,6 +331,8 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'account hdfc',
             'gateway_terminal_password' => 'razorpay_password',
         );
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

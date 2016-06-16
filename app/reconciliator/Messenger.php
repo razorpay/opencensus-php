@@ -32,7 +32,6 @@ class Messenger
     public function traceReconAlert($data)
     {
         // Default trace code if no trace code is present in data.
-
         $traceCode = TraceCode::RECONCILIATION_CRITICAL_ALERT;
 
         // Overrides the default trace code.

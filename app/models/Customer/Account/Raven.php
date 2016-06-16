@@ -24,11 +24,12 @@ class Raven
 
         $response = $this->raven->sendOtp($input);
 
-        $result = array(
-            'success' => $response['success']
-        );
+        if (isset($response['sms_id']))
+        {
+            return ['success' => true];
+        }
 
-        return $result;
+        return ['success' => false];
     }
 
     public function verifyOtp($input)
@@ -38,11 +39,7 @@ class Raven
 
         $response = $this->raven->verifyOtp($input);
 
-        $result = array(
-            'success' => $response['success']
-        );
-
-        return $result;
+        return $response;
     }
 
     public function updateSmsStatus($id, $input)
