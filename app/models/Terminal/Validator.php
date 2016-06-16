@@ -27,6 +27,11 @@ class Validator extends Base\Validator
         Entity::SHARED                      => 'sometimes|boolean',
     );
 
+    protected static $editTerminalGateways = array(
+        Payment\Gateway::HDFC,
+        Payment\Gateway::AXIS_MIGS,
+    );
+
     protected static $createValidators = array(
         Entity::GATEWAY, Entity::EMI);
 
@@ -37,6 +42,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
+        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num|size:15',
     );
 
     protected static $billdeskTerminalRules = array(
@@ -74,6 +80,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    );
+
+    protected static $hdfcEditTerminalRules = array(
+        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num|size:15',
     );
 
     protected static $walletPayzappTerminalRules = array(
@@ -179,9 +189,10 @@ class Validator extends Base\Validator
 
     public function usedTerminalValidator($terminal, $input)
     {
-        if ($terminal->getGateway() === Payment\Gateway::AXIS_MIGS)
+        if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
-            $this->validateInput('axis_migs_edit_terminal', $input);
+            $gateway = $terminal->getGateway();
+            $this->validateInput($gateway.'_edit_terminal', $input);
         }
         else
         {
