@@ -244,7 +244,7 @@ class Merchant extends Base
         return $this->edit($id, ['category' => 9990]);
     }
 
-    public function setLogoUrl($id = '10000000000000',$url_path)
+    public function setLogoUrl($url_path, $id = '10000000000000')
     {
         return $this->edit($id,['logo_url' => $url_path]);
     }
