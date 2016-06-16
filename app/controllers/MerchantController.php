@@ -81,6 +81,7 @@ class MerchantController extends BaseController
     public function deleteMerchantConfigLogo()
     {
         $data = (new Merchant\Service)->deleteMerchantLogo();
+
         return ApiResponse::json($data);
     }
 

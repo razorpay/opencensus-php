@@ -112,7 +112,9 @@ class Service extends Base\Service
     public function deleteMerchantLogo()
     {
         $this->merchant->setLogoUrl(null);
+
         $this->repo->saveOrFail($this->merchant);
+
         return $this->merchant->toArrayConfig();
     }
 
