@@ -741,7 +741,8 @@ trait Authorize
     }
 
     protected function callGatewayAuthorize(array $data)
-    {        try
+    {   
+        try
         {
             $callbackData = $this->callGatewayFunction(
                                             Payment\Action::AUTHORIZE,
