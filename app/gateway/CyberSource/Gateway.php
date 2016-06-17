@@ -40,8 +40,8 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $model = $this->repo->retrieveByPaymentIdAndStatus(
-                                            $input['payment']['id'], 'enrolled');
+        $model = $this->repo->retrieveByPaymentId(
+                                            $input['payment']['id']);
         parent::callback($input);
 
         $this->id = $input['payment']['id'];
@@ -68,8 +68,11 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_VALIDATE_ERROR,
                 (array) $response);
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentIdAndStatus('payment_id', '=', $input['payment']['id'], 'enrolled')
+                
+            $model->update([
                     'status' => Payment\Status::VALIDATE_FAILED,
                     'error_code' => $response->reasonCode
                 ]);
@@ -90,9 +93,9 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $repo = $this->repo;
+            $repo = $this->getRepo();
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail();
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'enrolled');
 
             $model->eci_raw = $response->payerAuthValidateReply->eciRaw;
 
@@ -193,8 +196,11 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentIdAndStatus('payment_id', '=', $input['payment']['id'], 'not_enrolled')
+                
+            $model->update([
                     'status' => Payment\Status::AUTHORIZE_FAILED,
                     'error_code' => $response->reasonCode
                 ]);
@@ -215,8 +221,10 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'not_enrolled');
+            $model->update([
                     'ref' => $response->requestID,
                     'status' => $status
                 ]);
@@ -232,8 +240,11 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentId('payment_id', '=', $input['payment']['id']);
+
+            $model->update([
                     'status' => Payment\Status::AUTHORIZE_FAILED,
                     'error_code' => $response->reasonCode
                 ]);
@@ -254,8 +265,11 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentId($input['payment']['id']);
+
+            $model->update([
                     'ref' => $response->requestID,
                     'status' => $status
                 ]);
@@ -278,7 +292,7 @@ class Gateway extends Base\Gateway
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        $card->accountNumber = '4000000000000002';//Card\Tokenex::getCardNumber($input['card']['vault_token']);
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -301,8 +315,9 @@ class Gateway extends Base\Gateway
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
 
-        $model = $this->repo->retrieveByPaymentIdAndStatus(
-                                            $input['payment']['id'], 'enrolled');
+        $repo = $this->getRepo();
+        $model = $repo->retrieveByPaymentId(
+                                            $input['payment']['id']);
 
         $ccAuthService->paresStatus = $model->pares_status;
         $ccAuthService->xid = $model->xid;
@@ -351,7 +366,7 @@ class Gateway extends Base\Gateway
         $ccAuthService->run = "true";
         if ($input['card']['network'] === 'Visa')
         {
-            //$ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
+            $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
         }
         if ($input['card']['network'] === 'MasterCard')
         {
@@ -421,7 +436,9 @@ class Gateway extends Base\Gateway
         
         $ccCaptureService = new \stdClass();
         $ccCaptureService->run = "true";
-        $model = $this->repo->retrieveByPaymentIdAndStatus(
+
+        $repo = $this->getRepo();
+        $model = $repo->retrieveByPaymentIdAndStatus(
                                             $input['payment']['id'], 'authorized');
         $ccCaptureService->authRequestID = $model->ref;
         $request->ccCaptureService = $ccCaptureService;
@@ -572,7 +589,7 @@ class Gateway extends Base\Gateway
             {
                 $status = Payment\Status::ENROLLED;
             }
-            else if ($result === Payment\Result::NOT_ENROLLED)
+            else if ($response->reasonCode === Payment\Result::NOT_ENROLLED)
             {
                 $status = Payment\Status::NOT_ENROLLED;
             }
@@ -596,8 +613,11 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_CAPTURE_ERROR,
                 (array) $response);
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'authorized');
+
+            $model->update([
                     'status' => Payment\Status::CAPTURE_FAILED,
                     'error_code' => $response->reasonCode
                 ]);
@@ -618,8 +638,11 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $this->repo->where('payment_id', '=', $input['payment']['id'])->firstOrFail()
-                ->update([
+            $repo = $this->getRepo();
+
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'authorized');
+
+            $model->update([
                     'capture_ref' => $response->requestID,
                     'status' => $status
                 ]);
@@ -755,7 +778,7 @@ class Gateway extends Base\Gateway
                     {
                         throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                     } 
-                    
+
                     return $this->postNotEnrolledAuthorize($input, $enrollResponse);
                 }
 

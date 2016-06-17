@@ -18,7 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
-        //$this->createSharedCybersourceTerminal();
+        $this->createSharedCybersourceTerminal();
     }
 
     public function createAtomTerminal(array $attributes = array())

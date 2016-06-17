@@ -26,4 +26,12 @@ class Repository extends Base\Repository
                   ->where('status', '=', $status)
                   ->firstOrFail();
     }
+
+    public function retrieveByPaymentId($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                  ->firstOrFail();
+    }
 }

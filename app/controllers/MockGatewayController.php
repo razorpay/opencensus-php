@@ -28,6 +28,17 @@ class MockGatewayController extends BaseController
         return View::make('gateway.3dsecure')->with('data', $data);
     }
 
+    public function postAcs($gateway)
+    {
+        $input = Input::all();
+
+        $server = $this->gateway->server($gateway);
+
+        $data = $server->acs($input);
+
+        return View::make('gateway.acs')->with('data', $data);
+    }
+
     public function enroll()
     {
         return $this->mockHdfcGatewayServer->enroll();

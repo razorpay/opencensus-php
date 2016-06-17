@@ -21,7 +21,7 @@ class Gateway extends Cybersource\Gateway
         return parent::callback($input);
     }
 
-    public function sendGatewayRequest($request)
+    public function postGatewayRequest($request, $input)
     {
         $response = (new Server())->getGatewayResponse($request);
  
