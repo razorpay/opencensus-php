@@ -185,8 +185,8 @@ class Admin extends Entity
     protected function moveAndGetFilePath($file)
     {
         $destinationPath = storage_path('files/reconciliation');
-        $fileName = $file->getFilename() . '.' . $file->getClientOriginalExtension();
-
+        //$fileName = $file->getClientOriginalName() . '.' . $file->getClientOriginalExtension();
+        $fileName = $file->getClientOriginalName();
         $file->move($destinationPath, $fileName);
 
         $filePath = $destinationPath . '/' . $fileName;
