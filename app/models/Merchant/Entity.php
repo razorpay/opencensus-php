@@ -248,6 +248,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::LOGO_URL] = $logoUrl ? $logoUrl : null;
     }
 
+    public function setLogoUrl($logoUrl)
+    {
+        $this->setAttribute(self::LOGO_URL, $logoUrl);
+    }
+
     public function getBillingLabelElseName()
     {
         $label = $this->getBillingLabel();
@@ -413,7 +418,7 @@ class Entity extends Base\PublicEntity
                                 .'_'
                                 .$size
                                 .substr($logoUrl, $extension_pos);
-        
+
         return $logoUrlBasedOnSize;
     }
 
