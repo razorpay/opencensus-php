@@ -218,7 +218,7 @@ class Entity extends Base\PublicEntity
         return Crypt::decrypt($secret);
     }
 
-    protected function getGatewayReconPassword()
+    public function getGatewayReconPassword()
     {
         $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
 

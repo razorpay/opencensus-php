@@ -10,7 +10,7 @@ use Trace\TraceCode;
 
 class Raven
 {
-    const SUCCESS       = 'success';
+    const SMS_ID = 'sms_id';
 
     protected $baseUrl;
 
@@ -110,9 +110,11 @@ class Raven
 
         $response = $this->sendRavenRequest($request);
 
-        $this->checkErrors(json_decode($response->body, true));
+        $decodedResponse = json_decode($response->body, true);
 
-        return json_decode($response->body, true);
+        $this->checkErrors($decodedResponse);
+
+        return $decodedResponse;
     }
 
     protected function sendRavenRequest($request)
@@ -137,22 +139,11 @@ class Raven
 
     protected function checkErrors($response)
     {
-        $success = false;
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $response);
 
-        if (isset($response[self::SUCCESS]))
+        if (isset($response['error']))
         {
-            $success = $response[self::SUCCESS];
-        }
-
-        $this->trace->info(
-            TraceCode::RAVEN_REQUEST,
-            [
-                'response' => $response
-            ]);
-
-        if($success === false)
-        {
-            throw new Exception\RuntimeException('raven request failed');
+            throw new Exception\RuntimeException('RAVEN_ERROR: ' . $response['internal_error_code']);
         }
     }
 }

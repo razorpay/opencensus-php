@@ -10,6 +10,7 @@ use Models\Payment\Refund;
 
 use App;
 use Trace\TraceCode;
+use EE\Exception\ReconciliationException;
 
 use Gateway\AxisMigs;
 use Reconciliator\Orchestrator;
@@ -102,11 +103,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->app['trace']->traceException($ex);
 
             throw $ex;
-            
+
             //return;
         }
     }
-    
+
     protected function persistReconciliationData()
     {
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
@@ -115,6 +116,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
+        $this->app['trace']->info(
+            TraceCode::RECONCILIATION_FILE_ROW,
+            $row
+        );
+        
         $refundId = $this->getRefundId($row);
 
         // If refund id is not present, return. No point of evaluating the row.
@@ -138,7 +144,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'gateway'    => get_called_class()
                 ]);
 
-            return null;
+            throw $ex;
+
+            //return null;
         }
 
         // Sets the corresponding payment for the refund.
@@ -147,7 +155,23 @@ class RefundReconciliate extends Foundation\SubReconciliate
         // If payment is not present, return. There's something wrong with this transaction.
         if (empty($this->payment) === true)
         {
-            return null;
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message'    => 'Corresponding payment for the refund not found in DB.',
+                    'row'        => $row,
+                    'refund_id'  => $refundId,
+                    'gateway'    => get_called_class()
+                ]);
+            
+            throw new ReconciliationException(
+                'Corresponding payment for the refund not found in the DB.',
+                [
+                    'refund_id' => $refundId,
+                ]
+            );
+
+            //return null;
         }
 
         $rowDetails = [

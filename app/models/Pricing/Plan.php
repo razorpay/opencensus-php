@@ -207,5 +207,6 @@ class Plan extends PublicCollection
                 return true;
             }
         }
+        return false;
     }
 }

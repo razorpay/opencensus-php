@@ -3,6 +3,7 @@
 namespace Reconciliator\Base;
 
 use Trace\TraceCode;
+use EE\Exception\ReconciliationException;
 
 use Reconciliator\Orchestrator;
 use Reconciliator\Messenger;
@@ -27,8 +28,9 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      * from the gateway's sub reconciliator classes itself.
      *
      * @param array $fileContents
+     * @throws ReconciliationException
      */
-    public function startReconciliation($fileContents)
+    public function startReconciliation(array $fileContents)
     {
         $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
@@ -55,7 +57,14 @@ class CombinedReconciliate extends Foundation\SubReconciliate
                         'gateway'       => get_called_class()
                     ]);
 
-                continue;
+                throw new ReconciliationException(
+                    'Did not get the reconciliation type for the row in combined reconciliation.',
+                    [
+                        'row' => $row,
+                    ]
+                );
+
+                //continue;
             }
 
             $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);

@@ -96,8 +96,11 @@ class Reconciliate
     /**
      * This should be implemented in the child class if the gateway requires certain
      * files to be excluded from doing the reconciliation.
+     *
+     * @param array $fileDetails
+     * @return bool
      */
-    public function inExcludeList($fileDetails)
+    public function inExcludeList(array $fileDetails)
     {
         return false;
     }

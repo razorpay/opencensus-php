@@ -4,6 +4,7 @@ namespace Reconciliator\Base\Foundation;
 
 use Models\Payment;
 use Trace\TraceCode;
+use App;
 
 class SubReconciliate
 {
