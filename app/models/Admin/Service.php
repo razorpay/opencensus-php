@@ -1799,19 +1799,8 @@ class Service extends Base\Service
             $error = ['Internal Server Error. Contact support for help.'];
         }
 
-        return [$error, $data];
-
-
-
-        // $input = \Input::all();
-        //
-        // $path = 'reconciliate';
-        // $input['method'] = 'POST';
-        // $input['auth'] = 'admin';
-        //
-        // $request = new RawApirRequest($input, $path);
-        //
-        // return $request->send();
+       return [$error, $data];
     }
+
 }
 
