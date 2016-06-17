@@ -232,7 +232,7 @@ class AdminTest extends TestCase
         $this->browser
             ->click(l::linkContaining('Edit Merchant'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length > 0", 20000)
-            ->select(l::IdOrName('international'), 'Yes')
+            ->select(l::IdOrName('international'), 'No')
             ->type(l::IdOrName('category'), '1234')
             ->type(l::IdOrName('website'), 'http://razorpay.com')
             ->type(l::IdOrName('billing_label'), 'razorpay')
