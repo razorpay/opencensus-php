@@ -249,11 +249,16 @@ class Merchant extends Base
     {
         $methodNames = MerchantMethodEntity::getAllMethodNames();
 
-        foreach($methodNames as $method)
+        foreach ($methodNames as $method)
         {
             $this->disableMethod($id, $method);
         }
 
         $this->disableInternational();
+    }
+
+    public function setLogoUrl($url_path, $id = '10000000000000')
+    {
+        return $this->edit($id,['logo_url' => $url_path]);
     }
 }

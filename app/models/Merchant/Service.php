@@ -109,6 +109,15 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
+    public function deleteMerchantLogo()
+    {
+        $this->merchant->setLogoUrl(null);
+
+        $this->repo->saveOrFail($this->merchant);
+
+        return $this->merchant->toArrayConfig();
+    }
+
     protected function uploadLogoIfFound(&$input)
     {
         // if($input->hasFile('logo') and $input['logo']->isValid())

@@ -27,6 +27,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchByPaymentIdsAndAction($paymentIds, $action)
+    {
+        return $this->newQuery()
+                    ->whereIn('payment_id', $paymentIds)
+                    ->where('action', '=', $action)
+                    ->get();
+    }
+
     public function findByTraceIdAndAction($paymentId, $action)
     {
         return $this->newQuery()

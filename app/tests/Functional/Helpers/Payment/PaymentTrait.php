@@ -779,7 +779,7 @@ trait PaymentTrait
             'url' => '/refunds/netbanking/excel',
             'method' => 'post',
             'content' => [
-                'bank'  => 'HDFC'
+                'bank'   => 'HDFC'
             ],
         );
 

@@ -14,34 +14,66 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function getNetbankingRefundsFile(array $input = array())
+    public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
 
         $returnValue = [];
 
-        if (isset($input['bank']))
-        {
-            $gateway = Payment\Gateway::$netbankingToGatewayMap[$input['bank']];
+        $gatewayCode = null;
 
-            $returnValue[$gateway] = $this->generateNBRefundFileForBank($input['bank'], $from, $to, $gateway);
+        $method = $input['method'];
+
+        switch ($method)
+        {
+            case 'netbanking':
+                $gateways = Payment\Gateway::$netbankingToGatewayMap;
+                $type = Payment\Entity::BANK;
+
+                if (isset($input['bank']))
+                {
+                    $gatewayCode = $input['bank'];
+                }
+                break;
+
+            case 'wallet':
+                $gateways = Payment\Gateway::$walletToGatewayMap;
+                $type = Payment\Entity::WALLET;
+
+                if (isset($input['wallet']))
+                {
+                    $gatewayCode = $input['wallet'];
+                }
+                break;
+        }
+
+        if ($gatewayCode === null)
+        {
+            foreach ($gateways as $gatewayCode => $gateway)
+            {
+                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
+            }
         }
         else
         {
-            foreach (Payment\Gateway::$netbankingToGatewayMap as $bankCode => $bankGateway)
-            {
-                $returnValue[$bankGateway] = $this->generateNBRefundFileForBank($bankCode, $from, $to, $bankGateway);
-            }
+            $gateway = $gateways[$gatewayCode];
+
+            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
         }
 
         return $returnValue;
     }
 
-    protected function generateNBRefundFileForBank($bankCode, $from, $to, $gateway)
+    protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
-        $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-                                                $bankCode, $from, $to, $gateway);
+        $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+                                        $type, $gatewayCode, $from, $to, $gateway);
 
+        return $this->generateRefundFile($refunds);
+    }
+
+    protected function generateRefundFile($refunds)
+    {
         $count = $refunds->count();
 
         if ($count === 0)
@@ -78,28 +110,52 @@ class Service extends Base\Service
     {
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+        $frequency = 'daily';
 
-        if (isset($input['on']))
+        if(isset($input['frequency']))
         {
-            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+            $frequency = $input['frequency'];
+        }
 
-            $fromTimeStamp = $from->timestamp;
+        if ($frequency === 'monthly')
+        {
+            if (isset($input['on']))
+            {
+                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
 
-            $to = $from->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->timestamp;
+                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+            }
+            else
+            {
+                $dt = Carbon::yesterday('Asia/Kolkata');
 
-            $from = $fromTimeStamp;
+                $from = $dt->startOfMonth()->timestamp;
+                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+            }
         }
         else
         {
-            if (isset($input['from']))
+            if (isset($input['on']))
             {
-                $from = $input['from'];
-            }
+                $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
 
-            if (isset($input['to']))
-            {
-                $to = $input['to'];
+                $fromTimeStamp = $from->timestamp;
+
+                $to = $from->addDay()->timestamp - 1;
+
+                $from = $fromTimeStamp;
             }
+        }
+
+        if (isset($input['from']))
+        {
+            $from = $input['from'];
+        }
+
+        if (isset($input['to']))
+        {
+            $to = $input['to'];
         }
 
         return array($from, $to);
@@ -117,7 +173,7 @@ class Service extends Base\Service
     public function fetchMultiple($input)
     {
         $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
-        
+
         return $refunds->toArrayPublic();
     }
 

@@ -628,6 +628,30 @@ class MerchantTest extends TestCase
         $this->assertContains('/logos/', $response['logo_url']);
     }
 
+    public function testDeleteLogoUrl()
+    {
+        // Check: Need to ensure logo exists. So create it first and then delete it
+        // set dummy logo url for a default merchant
+
+        $defaultMerchantId = '10000000000000';
+
+        $defaultImgPath = 'a.png';
+
+        $merchant = $this->fixtures->merchant->setLogoUrl($defaultImgPath);
+
+        $this->assertEquals($defaultImgPath, $merchant->logo_url);
+
+        $testData = $this->testData['testDeleteLogoUrl'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($defaultMerchantId, $response['id']);
+
+        $this->assertEquals(null, $response['logo_url']);
+    }
+
     public function testValidateImage()
     {
         $merchantValidator = new Merchant\Validator();

@@ -2,9 +2,10 @@
 
 namespace Gateway\Wallet\Base;
 
+use Gateway\Base;
 use Gateway\Wallet;
 
-class Gateway extends \Gateway\Base\Gateway
+class Gateway extends Base\Gateway
 {
     protected function createGatewayPaymentEntity($attributes)
     {
