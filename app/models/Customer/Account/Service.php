@@ -88,7 +88,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function fetchCustomerStatus($contact, $sendOtp = false)
+    public function fetchGlobalCustomerStatus($contact, $sendOtp = false)
     {
         $data = array();
 

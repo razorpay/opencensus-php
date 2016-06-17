@@ -78,14 +78,15 @@ class Core extends Base\Core
     {
         $appEntity = (new Customer\App\Repository)->findByIdAndMerchantId($appToken, $merchantId);
 
-        $tokens = $this->fetchTokensByCustomerId(Account::SHARED_ACCOUNT, $appEntity->customer->getId());
+        $tokens = $this->fetchTokensByCustomer($appEntity->customer);
 
         return $tokens;
     }
 
-    public function fetchTokensByCustomerId($merchantId, $customerId)
+    public function fetchTokensByCustomerAndMerchant($customer, $merchant)
     {
-        $customer = $this->custRepo->findByIdAndMerchantId($customerId, $merchantId);
+        $customer = $this->custRepo->findByIdAndMerchantId(
+            $customer->getId(), $merchant->getId());
 
         $tokens = $this->repo->getByCustomerId($customerId);
 
@@ -103,9 +104,8 @@ class Core extends Base\Core
     {
         $saved = false;
 
-        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
-            $merchant->getId(),
-            $customer->getId());
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerAndMerchant(
+            $customer, $merchant);
 
         if ($tokens !== null)
         {

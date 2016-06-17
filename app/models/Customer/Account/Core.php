@@ -63,6 +63,43 @@ class Core extends Base\Core
         $response = array();
         $data = null;
 
+        $this->verifyOtpIsSuccessOrFail($input);
+
+        // Get global customer from db or create one.
+        $customer = $this->getOrCreateGlobalCustomer($input[Customer\Entity::CONTACT]);
+
+        $custAppInput = array(
+            App\Entity::CUSTOMER_ID => $customer->getId(),
+            App\Entity::MERCHANT_ID => $input['context']);
+
+        if (isset($input[App\Entity::DEVICE_TOKEN]))
+        {
+            $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
+        }
+
+        $app = (new App\Core)->create($custAppInput);
+
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerAndMerchant(
+            $customer, $merchant);
+
+        $response['success'] = 1;
+        $response['app_token'] = $app->getPublicId();
+        $response['device_token'] = $app->getDeviceToken();
+
+
+        Session::put('app_token', $app->getPublicId());
+        Session::put('device_token', $app->getDeviceToken());
+
+        if (($tokens !== null) and ($tokens->count() > 0))
+        {
+            $response['tokens'] = $tokens->toArrayPublic();
+        }
+
+        return $response;
+    }
+
+    protected function verifyOtpIsSuccessOrFail($input)
+    {
         try
         {
             $data = (new Customer\Raven)->verifyOtp($input);
@@ -70,59 +107,37 @@ class Core extends Base\Core
         catch (\Exception $e)
         {
             $data['success'] = false;
+
+            $this->trace->traceException($e);
         }
 
-
-        if ((isset($data['success'])) and ($data['success'] === true))
-        {
-            $customer = $this->repo->findByContactForMerchant(
-                $input[Customer\Entity::CONTACT],
-                Account::SHARED_ACCOUNT);
-
-            if ($customer === null)
-            {
-                $custCreateInput = array(
-                    Customer\Entity::CONTACT        =>   $input[Customer\Entity::CONTACT]);
-
-                $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
-
-                $customer = $this->create($custCreateInput, $merchant);
-            }
-
-            $custAppInput = array(
-                App\Entity::CUSTOMER_ID => $customer->getId(),
-                App\Entity::MERCHANT_ID => $input['context']);
-
-            if (isset($input[App\Entity::DEVICE_TOKEN]))
-            {
-                $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
-            }
-
-            $app = (new App\Core)->create($custAppInput);
-
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
-                Account::SHARED_ACCOUNT, $customer->getId());
-
-            $response['success'] = 1;
-            $response['app_token'] = $app->getPublicId();
-            $response['device_token'] = $app->getDeviceToken();
-
-
-            Session::put('app_token', $app->getPublicId());
-            Session::put('device_token', $app->getDeviceToken());
-
-            if (($tokens !== null) and ($tokens->count() > 0))
-            {
-                $response['tokens'] = $tokens->toArrayPublic();
-            }
-        }
-        else
+        if ($data['success'] === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_OTP);
         }
+    }
 
-        return $response;
+    /**
+     * Gets global customer from db or create one.
+     * @param  string $contact customer's phone number
+     * @return Customer\Entity $contact
+     */
+    protected function getOrCreateGlobalCustomer($contact)
+    {
+        $customer = $this->repo->findByContactForMerchant(
+            $contact,
+            Account::SHARED_ACCOUNT);
+
+        // Create global customer if it does not exist.
+        if ($customer === null)
+        {
+            $custCreateInput = [Customer\Entity::CONTACT => $contact];
+
+            $customer = $this->createGlobalCustomer($custCreateInput);
+        }
+
+        return $customer;
     }
 
     public function getCustomerAndApp($input, $merchant)
