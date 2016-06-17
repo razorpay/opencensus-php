@@ -16,14 +16,14 @@ class Validator extends Base\Validator
     );
 
     protected static $apiCallRules = [
-        'auth'      =>      'required|in:proxy,admin',
-        'mode'      =>      'required|in:test,live',
-        'merchant_id'=>     'sometimes|max:20',
-        'content_type'=>    'sometimes',
-        'body'      =>      'sometimes',
-        'method'    =>      'required|in:GET,POST,PUT,DELETE,PATCH',
-        'file'      =>      'sometimes',
-        'file_name' =>      'sometimes|max:100|required_with:file',
+        'auth'          =>  'required|in:proxy,admin',
+        'mode'          =>  'required|in:test,live',
+        'merchant_id'   =>  'sometimes|max:20',
+        'content_type'  =>  'sometimes',
+        'body'          =>  'sometimes',
+        'method'        =>  'required|in:GET,POST,PUT,DELETE,PATCH',
+        'file'          =>  'sometimes',
+        'file_name'     =>  'sometimes|max:100|required_with:file',
     ];
 
     protected static $addTagsRules = [

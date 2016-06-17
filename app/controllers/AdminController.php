@@ -702,4 +702,13 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error, $bankAccount);
     }
+
+    public function postReconciliate($mode)
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->makeReconciliateRequest($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

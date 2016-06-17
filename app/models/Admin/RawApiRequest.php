@@ -30,8 +30,8 @@ class RawApiRequest
 
     /**
      * Construct a RawApiRequest instance
-     * @param $auth type of auth (proxy|admin)
-     * @param $path relative path of the request
+     * @param array $auth of auth (proxy|admin)
+     * @param string $path relative path of the request
      */
     function __construct($input, $path)
     {
@@ -62,16 +62,16 @@ class RawApiRequest
         switch ($input['auth'])
         {
             case 'proxy':
-                $this->setApiCredentials($input['merchant_id'], $input['mode']);
+                $this->setApiCredentials($input['mode'], $input['merchant_id']);
                 break;
 
             case 'admin':
-                $this->setApiCredentials('', $input['mode']);
+                $this->setApiCredentials($input['mode']);
                 break;
         }
     }
 
-    protected function setApiCredentials($merchantId, $mode)
+    protected function setApiCredentials($mode, $merchantId='')
     {
         $id = 'rzp_'.$mode;
 

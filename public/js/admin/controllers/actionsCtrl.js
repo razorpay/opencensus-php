@@ -184,6 +184,40 @@ app.controller('ActionsCtrl', [
 
     };
 
+    $scope.reconUpload = function (data) {
+
+      var url = data.url;
+      data = data.form;
+
+      var req = $http.post(url, data, {
+        transformRequest: angular.identity,
+
+        // We set this to undefined to let angular auto-detect this
+        // And convert to a multipart file upload
+        headers: {
+          'Content-Type': undefined
+        }
+      });
+
+      req.success(function (data) {
+        if (data.success) {
+          $scope.alerts.resetAlerts();
+          $scope.response = data;
+          $scope.alerts.addAlert('success', 'Reconciliation Response successful', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          $scope.response = null;
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.resetAlerts();
+        $scope.alerts.addAlert('danger', 'The API request failed on the dashboard side.', true);
+      });
+
+    };
+
     $scope.verifyPayment = function (payment_id) {
       var request = $http({
         method: 'get',
@@ -239,6 +273,15 @@ app.controller('ActionsCtrl', [
         $scope.apiRequest(data, '/settlements/reconcile')
       }, $.noop);
     };
+
+    $scope.openReconUpload = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'uploadRecon.html',
+        controller: 'ReconUploadCtrl'
+      });
+      modalInstance.result.then($scope.reconUpload, $.noop);
+    };
+
     $scope.openApiRequest = function () {
       var modalInstance = $modal.open({
         templateUrl: 'makeApiCallModalContent.html',
@@ -508,6 +551,52 @@ app.controller('ActionsCtrl', [
       // And the URL separately because extracting and deleting
       // items from formdata is not supported most browsers
       // including chrome
+      $modalInstance.close({
+        form: fd,
+        url: url
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('ReconUploadCtrl', [
+  '$scope',
+  '$modalInstance',
+  function ($scope, $modalInstance) {
+
+    $scope.counter = Array;
+
+    $scope.files = [];
+
+    $scope.ok = function (mode, input) {
+
+      var url = '/admin/' + mode + '/reconciliate';
+
+      var data ={
+        manual: 1,
+        'attachment-count': input.files.length,
+        gateway: input.gateway
+      };
+
+      for (var i in input.files)
+      {
+        if (input.files[i]) {
+          // attachment-X starts from 1
+          // following mailgun conventions
+          var num = parseInt(i) + 1;
+          data['attachment-' + (num)] = input.files[i];
+        }
+      }
+
+      var fd = new FormData();
+
+      for (var field in data) {
+        var value = data[field];
+        fd.append(field, value);
+      }
+
       $modalInstance.close({
         form: fd,
         url: url

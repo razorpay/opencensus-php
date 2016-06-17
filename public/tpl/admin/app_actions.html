@@ -21,7 +21,10 @@
           Initiate Settlement
         </a>
         <a href class="list-group-item" ng-click="openSetlUpload()">
-          Upload Settlement Reconciliation
+          Upload Settlement Reconciliation (UTR)
+        </a>
+        <a href class="list-group-item" ng-click="openReconUpload()">
+          Upload Reconciliation File (Payment/Refund)
         </a>
         <a href class="list-group-item" ng-click="openAddIIN()">
           Add IIN Rule
@@ -482,6 +485,57 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(url, data)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="uploadRecon.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Upload Reconciliation File</h3>
+  </div>
+  <div class="modal-body terminal-modal" ng-init="mode='live';data={gateway:'HDFC',files:[]};c=1">
+    <form class="form-horizontal" id="frm-recon-upload">
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="test">TEST</option>
+            <option value="live">LIVE</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">File Count</label>
+        <div class="col-lg-10" >
+          <input class="form-control m-b" name="mode" ng-model="c" type="number" min="1" max="10">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Gateway</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="data.gateway">
+            <option value="HDFC">HDFC</option>
+            <option value="BillDesk">BillDesk</option>
+            <option value="Axis">Axis</option>
+            <option value="PayZapp">PayZapp</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- File uploads-->
+      <div class="form-group" ng-repeat="i in counter(c) track by $index">
+        <label for="body" class="col-lg-3">Attach File {{$index}}</label>
+        <div class="col-lg-12 col-sm-12">
+          <input file-model="data.files[$index]" class="form-control" name="{{attachment-$index}}" type="file">
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(mode, data)">OK</button>
   </div>
 </script>
 

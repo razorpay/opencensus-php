@@ -226,6 +226,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
+
+        Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
     });
 
     Route::group(array('before' => 'auth.superadmin'), function()
