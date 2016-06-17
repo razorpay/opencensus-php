@@ -86,7 +86,7 @@ return array(
     'cybersource' => array(
         'test_merchant_id'      => $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'],
         'test_access_code'      => $_ENV['CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'],
-        'test_ref_code'         => $_ENV['CYBERSOURCE_GATEWAY_TEST_MERCHANT_REFERENCE_CODE'],
+        'test_ref_code'         => 'razorpay',
         'mock_server'           => false,
     ),
 

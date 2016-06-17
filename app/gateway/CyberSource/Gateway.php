@@ -63,14 +63,13 @@ class Gateway extends Base\Gateway
     {
         if ($response->reasonCode !== 100)
         {
-            $this->trace(
-                Trace::ERROR,
+            $this->trace->error(
                 TraceCode::GATEWAY_VALIDATE_ERROR,
                 (array) $response);
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus('payment_id', '=', $input['payment']['id'], 'enrolled')
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'enrolled');
                 
             $model->update([
                     'status' => Payment\Status::VALIDATE_FAILED,
@@ -79,8 +78,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace(
-                Trace::INFO,
+            $this->trace->info(
                 TraceCode::GATEWAY_VALIDATE_RESPONSE,
                 (array) $response);
 
@@ -105,12 +103,12 @@ class Gateway extends Base\Gateway
 
             $model->pares_status = $response->payerAuthValidateReply->paresStatus;
 
-            if ($input['card']['network'] === 'Visa')
+            if ($input['card']['network'] === Card\Network::$fullName['VISA'])
             {
                 $model->cavv = $response->payerAuthValidateReply->cavv;
             }
 
-            if ($input['card']['network'] === 'MasterCard')
+            if ($input['card']['network'] === Card\Network::$fullName['MC'])
             {
                 $model->auth_data = $response->payerAuthValidateReply->ucafAuthenticationData;
                 $model->collection_indicator = $response->payerAuthValidateReply->ucafCollectionIndicator;
@@ -191,14 +189,13 @@ class Gateway extends Base\Gateway
     {
         if ($response->reasonCode !== 100)
         {
-            $this->trace(
-                Trace::ERROR,
+            $this->trace->error(
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus('payment_id', '=', $input['payment']['id'], 'not_enrolled')
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'not_enrolled');
                 
             $model->update([
                     'status' => Payment\Status::AUTHORIZE_FAILED,
@@ -207,8 +204,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace(
-                Trace::INFO,
+            $this->trace->info(
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
                 (array) $response);
 
@@ -235,14 +231,13 @@ class Gateway extends Base\Gateway
     {
         if ($response->reasonCode !== 100)
         {
-            $this->trace(
-                Trace::ERROR,
+            $this->trace->error(
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentId('payment_id', '=', $input['payment']['id']);
+            $model = $repo->retrieveByPaymentId($input['payment']['id']);
 
             $model->update([
                     'status' => Payment\Status::AUTHORIZE_FAILED,
@@ -251,8 +246,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace(
-                Trace::INFO,
+            $this->trace->info(
                 TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
                 (array) $response);
 
@@ -324,11 +318,11 @@ class Gateway extends Base\Gateway
         $ccAuthService->commerceIndicator = $model->commerce_indicator;
         $ccAuthService->eciRaw = $model->eci_raw;
         $ccAuthService->reconciliationID = $this->getMerchantReferenceCode($input['terminal']);
-        if ($input['card']['network'] === 'Visa')
+        if ($input['card']['network'] === Card\Network::$fullName['VISA'])
         {
             $ccAuthService->cavv = $model->cavv;
         }
-        if ($input['card']['network'] === 'MasterCard')
+        if ($input['card']['network'] === Card\Network::$fullName['MC'])
         {
             $ucaf = new \stdClass();
             $ucaf->authenticationData = $model->auth_data;
@@ -364,11 +358,11 @@ class Gateway extends Base\Gateway
 
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
-        if ($input['card']['network'] === 'Visa')
+        if ($input['card']['network'] === Card\Network::$fullName['VISA'])
         {
             $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
         }
-        if ($input['card']['network'] === 'MasterCard')
+        if ($input['card']['network'] === Card\Network::$fullName['MC'])
         {
             $ucaf = new \stdClass();
             $ucaf->collectionIndicator = $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator;
@@ -399,8 +393,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->createCaptureRequestFields($input);
 
-        $this->trace(
-                Trace::INFO,
+        $this->trace->info(
                 TraceCode::GATEWAY_CAPTURE_REQUEST,
                 (array) $request);
 
@@ -497,10 +490,11 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject($input)
     {
-        $url = Payment\Url::WSDL_URL;
+        $url = $this->getUrl('TARGET');
+
         if ($this->mode === Mode::TEST)
         {
-            $url = $_ENV['CYBERSOURCE_GATEWAY_TEST_WSDL_URL'];
+            $url = Payment\Url::TEST_DOMAIN.Payment\Url::TARGET;
         }
 
         $auth = array('username' => $input['terminal']['gateway_terminal_id'], 'password' => $input['terminal']['gateway_terminal_password']);
@@ -536,12 +530,9 @@ class Gateway extends Base\Gateway
 
     public function enroll($input)
     {
-        $this->callbackUrl = $input['callbackUrl'];
-
         $request = $this->getEnrollRequestObject($input);
 
-        $this->trace(
-                Trace::ERROR,
+        $this->trace->error(
                 TraceCode::GATEWAY_ENROLL_REQUEST,
                 (array) $request);
 
@@ -565,8 +556,7 @@ class Gateway extends Base\Gateway
     {
         if (($response->reasonCode !== 475) && ($response->reasonCode !== 100))
         {
-            $this->trace(
-                Trace::ERROR,
+            $this->trace->error(
                 TraceCode::GATEWAY_ENROLL_ERROR,
                 (array) $response);
 
@@ -576,12 +566,11 @@ class Gateway extends Base\Gateway
             'error_code'            => $response->reasonCode,
             'status'                => Payment\Status::ENROLL_FAILED);
 
-            $this->getRepo()->createOrFail($attributes);
+            $model = $this->getRepo()->createOrFail($attributes);
         }
         else
         {
-            $this->trace(
-                Trace::INFO,
+            $this->trace->info(
                 TraceCode::GATEWAY_ENROLL_RESPONSE,
                 (array) $response);
 
@@ -600,7 +589,7 @@ class Gateway extends Base\Gateway
                 'status'                    => $status,
                 'ref'                       => $response->requestID);
 
-            $this->getRepo()->createOrFail($attributes);
+            $model = $this->getRepo()->createOrFail($attributes);
         }
     }
 
@@ -608,8 +597,7 @@ class Gateway extends Base\Gateway
     {
         if ($response->reasonCode !== 100)
         {
-            $this->trace(
-                Trace::ERROR,
+            $this->trace->error(
                 TraceCode::GATEWAY_CAPTURE_ERROR,
                 (array) $response);
 
@@ -624,8 +612,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace(
-                Trace::INFO,
+            $this->trace->info(
                 TraceCode::GATEWAY_CAPTURE_RESPONSE,
                 (array) $response);
 
@@ -649,12 +636,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function trace($level, $message, array $context)
-    {
-        $this->trace->addRecord($level, $message, $context);
-    }
-
-    
     public function setMerchantDetailInRequest($request, $input)
     {
         $request->merchantID = $this->getMerchantID($input['terminal']);
@@ -770,11 +751,11 @@ class Gateway extends Base\Gateway
                             $enrollResponse->payerAuthEnrollReply->eci : "";
                     $ucaf = property_exists($enrollResponse->payerAuthEnrollReply, 'ucafCollectionIndicator') ? 
                             $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator : "";
-                    if (($input['card']['network'] === 'Visa') AND ($eci === "7")) 
+                    if (($input['card']['network'] === Card\Network::$fullName['VISA']) AND ($eci === "7")) 
                     {
                         throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                     } 
-                    if (($input['card']['network'] === 'MasterCard') AND (($ucaf === "00") OR ($ucaf === "7")))
+                    if (($input['card']['network'] === Card\Network::$fullName['MC']) AND (($ucaf === "00") OR ($ucaf === "7")))
                     {
                         throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                     } 
@@ -789,7 +770,7 @@ class Gateway extends Base\Gateway
 
     protected function getFieldsForFormSubmitToBankACS($enrollResponse, $input)
     {
-        $content['TermUrl'] = $this->callbackUrl;
+        $content['TermUrl'] = $input['callbackUrl'];
         $content['MD'] = $input['payment']['id'];
         $content['PaReq'] = $enrollResponse->payerAuthEnrollReply->paReq;
 

@@ -691,7 +691,7 @@ trait PaymentTrait
             'amount'          =>  '50000',
             'currency'        =>  'INR',
             'card' => array(
-                'number'            => '4000000000000002',
+                'number'            => '4012001038443335',
                 'name'              => 'Harshil',
                 'expiry_month'      => '12',
                 'expiry_year'       => '2017',
@@ -1278,7 +1278,7 @@ trait PaymentTrait
                                 '4280951000002433' => '1a2b3c4b4e',
                                 '4111460212312338' => '1a2b3c4b6e',
                                 '4000400000000004' => '1a2b3c4b7e',
-                                '4000000000000002' => '1a2b3c4d8e',
+                                '4012001038443335' => '1a2b3c4d8e',
                                 '555555555555558'  => '1a2b3c4d9e',
                             );
 
