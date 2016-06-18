@@ -175,10 +175,7 @@ class Repository extends \Razorpay\Spine\Repository
             // Shouldn't fail for any reason
             $this->trace->error(
                 TraceCode::ES_SAVE_FAILED,
-                [
-                    $entity,
-                ]
-            );
+                $entity->toArray());
 
             $this->trace->traceException($ex);
         }
