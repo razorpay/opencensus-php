@@ -3,20 +3,11 @@
 namespace Models\Merchant;
 
 use Constants\Mode;
-use Models\Base;
 use Models\Customer;
 use Models\Customer\App;
-use Models\Customer\Token;
-use Models\Merchant;
-use Models\Card;
-use Models\Key;
 use Models\Payment;
-use Models\Pricing;
-use Models\Terminal;
 use Models\Order;
-use Models\Merchant\Webhook;
 use EE\Exception;
-use EE\Error;
 use EE\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -28,32 +19,11 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        // check if appToken or device token is present in session
-        $appToken = Session::get(Payment\Entity::APP_TOKEN);
-        $deviceToken = Session::get(App\Entity::DEVICE_TOKEN);
+        $this->checkAndFillTokensInputFromSession($input);
 
-        if (isset($input[Payment\Entity::APP_TOKEN]) === false)
-        {
-            $input[Payment\Entity::APP_TOKEN] = $appToken;
-        }
+        $data = $this->getMerchantPreferencesData($merchant, $input);
 
-        if (isset($input[App\Entity::DEVICE_TOKEN]) === false)
-        {
-            $input[App\Entity::DEVICE_TOKEN] = $deviceToken;
-        }
-
-        $methods = $this->getMethods($merchant, $input);
-
-        $data['methods'] = $methods;
-        $data['options']['theme']['color'] = $merchant->getBrandColor();
-        $data['options']['image'] = $merchant->getLogoUrl(self::CHECKOUT_LOGO_SIZE);
-        $data['fee_bearer'] = false;
-        $data['version'] = 1;
-
-        if ($merchant->isFeeBearerCustomer())
-        {
-            $data['fee_bearer'] = true;
-        }
+        $data['methods'] = $this->getMethods($merchant, $input);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -113,6 +83,23 @@ class Checkout
         }
 
         return $custData;
+    }
+
+    protected function checkAndFillTokensInputFromSession(array & $input)
+    {
+        // check if appToken or device token is present in session
+        $appToken = Session::get(Payment\Entity::APP_TOKEN);
+        $deviceToken = Session::get(App\Entity::DEVICE_TOKEN);
+
+        if (isset($input[Payment\Entity::APP_TOKEN]) === false)
+        {
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
+        }
+
+        if (isset($input[App\Entity::DEVICE_TOKEN]) === false)
+        {
+            $input[App\Entity::DEVICE_TOKEN] = $deviceToken;
+        }
     }
 
     protected function getMethods($merchant, $input)
@@ -195,5 +182,21 @@ class Checkout
                 'contact'   => $input['contact'],
                 'saved'     => $response['saved']);
         }
+    }
+
+    protected function getMerchantPreferencesData($merchant, $methods)
+    {
+        $data['methods'] = $methods;
+        $data['options']['theme']['color'] = $merchant->getBrandColor();
+        $data['options']['image'] = $merchant->getLogoUrl(self::CHECKOUT_LOGO_SIZE);
+        $data['fee_bearer'] = false;
+        $data['version'] = 1;
+
+        if ($merchant->isFeeBearerCustomer())
+        {
+            $data['fee_bearer'] = true;
+        }
+
+        return $data;
     }
 }
