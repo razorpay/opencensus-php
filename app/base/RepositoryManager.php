@@ -2,10 +2,8 @@
 
 namespace Base;
 
-use Config;
 use Constants\Entity;
 use EE\Exception;
-use Gateway\Base\Mock;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
