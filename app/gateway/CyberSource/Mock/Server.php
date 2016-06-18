@@ -2,7 +2,6 @@
  
  namespace Gateway\Cybersource\Mock;
  
- 
  use EE\Exception;
  use Gateway\Base;
  use Models\Card;
@@ -116,7 +115,6 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
-
  
     public function getEnrollResponse($request)
     {
@@ -167,8 +165,7 @@ class Server extends Base\Mock\Server
     public function acs($input)
     {
         return array('PaRes' => "eNpVUttygjAQfc9XMP0AkiAw",
-        'MD' => $input['MD'],
-        'TermUrl' => $input['TermUrl']);
+                     'MD' => $input['MD'],
+                     'TermUrl' => $input['TermUrl']);
     }
- 
 }

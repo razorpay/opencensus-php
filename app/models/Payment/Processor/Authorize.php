@@ -247,7 +247,7 @@ trait Authorize
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
-        if(($payment->gateway === 'cybersource') and ($payment->method === 'card'))
+        if (($payment->isGateway('cybersource') === true) and ($payment->isMethod('card') === true))
         {
             $payment->card->vault_token = Card\Tokenex::getVaultToken($input['card']['number']);
             (new Card\Repository)->saveOrFail($payment->card);
@@ -460,7 +460,7 @@ trait Authorize
     protected function savePaymentMethod($customer, $payment, $input, array & $gatewayInput)
     {
         $saveMethodInput = array(
-            'method'      => $payment->getMethod(),
+            'method' => $payment->getMethod(),
         );
 
         if ($payment->isMethodCardOrEmi())
@@ -642,10 +642,10 @@ trait Authorize
     protected function getReturnDataForSignedPayment($payment)
     {
         $data = array(
-            'razorpay_payment_id'   => $payment->getPublicId(),
-            'amount'                => $payment->getAmount(),
-            'currency'              => $payment->getCurrency(),
-            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+            'razorpay_payment_id' => $payment->getPublicId(),
+            'amount'              => $payment->getAmount(),
+            'currency'            => $payment->getCurrency(),
+            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
         );
 
         $sortedData = $data;
@@ -741,7 +741,7 @@ trait Authorize
     }
 
     protected function callGatewayAuthorize(array $data)
-    {   
+    {
         try
         {
             $callbackData = $this->callGatewayFunction(

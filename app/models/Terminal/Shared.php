@@ -23,6 +23,7 @@ class Shared
     const SBIEPAY_RAZORPAY_TERMINAL         = '10000SbiEpayTl';
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_RAZORPAY_TERMINAL     = '1000CybrsTrmnl';
+    const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -40,6 +41,7 @@ class Shared
         self::SHARP_RAZORPAY_TERMINAL,
         self::SBIEPAY_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_RAZORPAY_TERMINAL,
+        self::CYBERSOURCE_AXIS_TERMINAL,
     );
 
     protected static $map = array(

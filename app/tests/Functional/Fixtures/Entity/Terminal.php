@@ -19,6 +19,7 @@ class Terminal extends Base
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
         $this->createSharedCybersourceTerminal();
+        $this->createSharedCybersourceAxisTerminal();
     }
 
     public function createAtomTerminal(array $attributes = array())
@@ -162,7 +163,28 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'cybersource',
-            'card'                      => 0,
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'cybersource',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceAxisTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'cybersource',

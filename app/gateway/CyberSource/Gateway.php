@@ -24,13 +24,6 @@ class Gateway extends Base\Gateway
 
     protected $enrollRequest;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository();
-    }
-
     public function authorize(array $input)
     {
         $reply = $this->enroll($input);
@@ -40,7 +33,9 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $model = $this->repo->retrieveByPaymentId(
+        $repo = $this->getRepo();
+
+        $model = $repo->retrieveByPaymentId(
                                             $input['payment']['id']);
         parent::callback($input);
 
@@ -103,12 +98,13 @@ class Gateway extends Base\Gateway
 
             $model->pares_status = $response->payerAuthValidateReply->paresStatus;
 
-            if ($input['card']['network'] === Card\Network::$fullName['VISA'])
+            $network = $input['card']['network'];
+            if ($network === Card\Network::getFullName('VISA'))
             {
                 $model->cavv = $response->payerAuthValidateReply->cavv;
             }
 
-            if ($input['card']['network'] === Card\Network::$fullName['MC'])
+            if ($network === Card\Network::getFullName('MC'))
             {
                 $model->auth_data = $response->payerAuthValidateReply->ucafAuthenticationData;
                 $model->collection_indicator = $response->payerAuthValidateReply->ucafCollectionIndicator;
@@ -119,7 +115,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function postAuthEnrolledRequest($input)
+    protected function postAuthEnrolledRequest($input)
     {
         $request = $this->createAuthEnrolledRequestFields($input);
 
@@ -139,7 +135,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function postEnrollAuthorize($input)
+    protected function postEnrollAuthorize($input)
     {
         $request = $this->createAuthorizeRequestFields($input);
 
@@ -318,11 +314,12 @@ class Gateway extends Base\Gateway
         $ccAuthService->commerceIndicator = $model->commerce_indicator;
         $ccAuthService->eciRaw = $model->eci_raw;
         $ccAuthService->reconciliationID = $this->getMerchantReferenceCode($input['terminal']);
-        if ($input['card']['network'] === Card\Network::$fullName['VISA'])
+        $network = $input['card']['network'];
+        if ($network === Card\Network::getFullName('VISA'))
         {
             $ccAuthService->cavv = $model->cavv;
         }
-        if ($input['card']['network'] === Card\Network::$fullName['MC'])
+        if ($network === Card\Network::getFullName('MC'))
         {
             $ucaf = new \stdClass();
             $ucaf->authenticationData = $model->auth_data;
@@ -358,11 +355,13 @@ class Gateway extends Base\Gateway
 
         $ccAuthService = new \stdClass();
         $ccAuthService->run = "true";
-        if ($input['card']['network'] === Card\Network::$fullName['VISA'])
+
+        $network = $input['card']['network'];
+        if ($network === Card\Network::getFullName('VISA'))
         {
             $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
         }
-        if ($input['card']['network'] === Card\Network::$fullName['MC'])
+        if ($network === Card\Network::getFullName('MC'))
         {
             $ucaf = new \stdClass();
             $ucaf->collectionIndicator = $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator;
@@ -476,7 +475,8 @@ class Gateway extends Base\Gateway
 
         $ccCreditService = new \stdClass();
         $ccCreditService->run = "true";
-        $model = $this->repo->retrieveByPaymentIdAndStatus(
+        $repo = $this->getRepo();
+        $model = $repo->retrieveByPaymentIdAndStatus(
                                             $input['payment']['id'], 'captured');
         $ccCreditService->captureRequestID = $model->capture_ref;
         $request->ccCreditService = $ccCreditService;
@@ -554,7 +554,7 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterEnroll($input, $response, $request)
     {
-        if (($response->reasonCode !== 475) && ($response->reasonCode !== 100))
+        if (($response->reasonCode !== 475) and ($response->reasonCode !== 100))
         {
             $this->trace->error(
                 TraceCode::GATEWAY_ENROLL_ERROR,
@@ -751,11 +751,13 @@ class Gateway extends Base\Gateway
                             $enrollResponse->payerAuthEnrollReply->eci : "";
                     $ucaf = property_exists($enrollResponse->payerAuthEnrollReply, 'ucafCollectionIndicator') ? 
                             $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator : "";
-                    if (($input['card']['network'] === Card\Network::$fullName['VISA']) AND ($eci === "7")) 
+
+                    $network = $input['card']['network'];
+                    if (($network === Card\Network::getFullName('VISA')) AND ($eci === "7")) 
                     {
                         throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                     } 
-                    if (($input['card']['network'] === Card\Network::$fullName['MC']) AND (($ucaf === "00") OR ($ucaf === "7")))
+                    if (($network === Card\Network::getFullName('MC')) AND (($ucaf === "00") OR ($ucaf === "7")))
                     {
                         throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                     } 

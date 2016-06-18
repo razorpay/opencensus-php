@@ -21,21 +21,20 @@ class ExtendedClient extends SoapClient
         $password = $this->password;
 
         $soapHeader = "<SOAP-ENV:Header xmlns:SOAP-ENV=\"http://schemas.xmlsoap.".
-                        "org/soap/envelope/\" xmlns:wsse=\"http://docs.oasis-open".
-                        ".org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.".
-                        "xsd\"><wsse:Security SOAP-ENV:mustUnderstand=\"1\"><wsse".
-                        ":UsernameToken><wsse:Username>$user</wsse:Username><wsse".
-                        ":Password Type=\"http://docs.oasis-open.org/wss/2004/01/".
-                        "oasis-200401-wss-username-token-profile-1.0#PasswordText".
-                        "\">$password</wsse:Password></wsse:UsernameToken></wsse:".
-                        "Security></SOAP-ENV:Header>";
+                      "org/soap/envelope/\" xmlns:wsse=\"http://docs.oasis-open".
+                      ".org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.".
+                      "xsd\"><wsse:Security SOAP-ENV:mustUnderstand=\"1\"><wsse".
+                      ":UsernameToken><wsse:Username>$user</wsse:Username><wsse".
+                      ":Password Type=\"http://docs.oasis-open.org/wss/2004/01/".
+                      "oasis-200401-wss-username-token-profile-1.0#PasswordText".
+                      "\">$password</wsse:Password></wsse:UsernameToken></wsse:".
+                      "Security></SOAP-ENV:Header>";
 
         $requestDOM = new DOMDocument('1.0');
         $soapHeaderDOM = new DOMDocument('1.0');
 
         try 
         {
-
             $requestDOM->loadXML($request);
   	        $soapHeaderDOM->loadXML($soapHeader);
 
@@ -51,7 +50,6 @@ class ExtendedClient extends SoapClient
         catch (DOMException $e) 
         {
             throw new Exception("Error Processing Request", 1);
-           
         }
 
         return parent::__doRequest($request, $location, $action, $version);

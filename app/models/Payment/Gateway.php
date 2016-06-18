@@ -110,7 +110,7 @@ class Gateway
      * @var array
      */
     public static $cardNetworkMap = array(
-        self::HDFC   => array(
+        self::HDFC => array(
             Network::MC,
             Network::VISA,
             Network::MAES,

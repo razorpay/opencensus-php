@@ -36,7 +36,7 @@ class MockGatewayController extends BaseController
 
         $data = $server->acs($input);
 
-        return View::make('gateway.acs')->with('data', $data);
+        return View::make('gateway.3dsecure')->with('data', $data);
     }
 
     public function enroll()

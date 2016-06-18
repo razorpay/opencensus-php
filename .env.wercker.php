@@ -60,6 +60,9 @@ return array(
     'BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'  => getenv('BILLDESK_GATEWAY_TEST_ACCESS_CODE'),
     'BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'  => getenv('BILLDESK_GATEWAY_TEST_HASH_SECRET'),
 
+    'CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'          => getenv('CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'),
+    'CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'          => getenv('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
+
     'HDFC_GATEWAY_TEST_TERMINAL_ID'                 => getenv('HDFC_GATEWAY_TEST_TERMINAL_ID'),
     'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'           => getenv('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
 
@@ -109,6 +112,7 @@ return array(
     'SBIEPAY_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
     'NETBANKING_KOTAK_MOCK'                         => true,
+    'CYBERSOURCE_MOCK'                              => true,
 
     'MOCK_GATEWAY_SECRET'                           => 'wercker_random_password',
 
