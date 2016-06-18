@@ -626,6 +626,7 @@ class MerchantTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertContains('/logos/', $response['logo_url']);
+        $this->assertStringStartsWith('http', $response['logo_url']);
     }
 
     public function testDeleteLogoUrl()
