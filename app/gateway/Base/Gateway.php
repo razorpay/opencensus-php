@@ -428,9 +428,7 @@ class Gateway
 
     protected function getRepo()
     {
-        $class = $this->getGatewayNamespace() . '\Repository';
-
-        return new $class;
+        return $this->getRepository();
     }
 
     protected function getStringToHash($content, $glue = '')
