@@ -640,7 +640,7 @@ class MerchantTest extends TestCase
 
         $merchant = $this->fixtures->merchant->setLogoUrl($defaultImgPath);
 
-        $this->assertEquals($defaultImgPath, $merchant->logo_url);
+        $this->assertContains($defaultImgPath, $merchant->logo_url);
 
         $testData = $this->testData['testDeleteLogoUrl'];
 
