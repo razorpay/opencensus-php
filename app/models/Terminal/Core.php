@@ -11,8 +11,6 @@ use Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    protected $repo = null;
-
     public function create($input, $merchant)
     {
         $input['merchant_id'] = $merchant->getKey();
@@ -57,9 +55,7 @@ class Core extends Base\Core
         $params = array(
             Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
 
-        $this->repo = new Terminal\Repository();
-
-        $existingTerminals = $this->repo->fetch($params);
+        $existingTerminals = $this->repo->terminal->fetch($params);
 
         //
         // Checks that existing terminals don't
@@ -76,7 +72,7 @@ class Core extends Base\Core
         $params = array(
             Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
 
-        $existingTerminals = $this->repo->fetch($params);
+        $existingTerminals = $this->repo->terminal->fetch($params);
 
         if ($existingTerminals->count() === 1)
         {

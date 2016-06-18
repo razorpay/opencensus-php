@@ -17,7 +17,7 @@ class Core
 
         $this->trace = $this->app['trace'];
 
-        $this->core = $this->app['repo'];
+        $this->repo = $this->app['repo'];
     }
 
     public function getEntityClass()

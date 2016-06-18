@@ -98,7 +98,7 @@ class Core extends Base\Core
         $card->setNetwork($networkName);
 
         // Get details for this iin from card repository
-        $details = (new Card\Repository)->retrieveIinDetails($card->getIin());
+        $details = $this->repo->card->retrieveIinDetails($card->getIin());
 
         $type = null;
 
