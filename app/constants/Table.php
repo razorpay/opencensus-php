@@ -36,4 +36,7 @@ class Table
     const BILLDESK          = 'billdesk';
     const MOBIKWIK          = 'mobikwik';
     const NETBANKING        = 'netbanking';
+
+    // Sessions table
+    const SESSION           = 'sessions';
 }
