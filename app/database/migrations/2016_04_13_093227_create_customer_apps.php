@@ -75,6 +75,6 @@ class CreateCustomerApps extends Migration {
             $table->dropForeign(Table::APP_TOKEN.'_'.App::MERCHANT_ID.'_foreign');
         });
 
-    		Schema::drop(Table::APP_TOKEN);
+		Schema::drop(Table::APP_TOKEN);
   	}
 }

@@ -14,11 +14,6 @@ use Session;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function create($input, $merchant)
     {
         $customer = (new Customer\Entity)->build($input);
@@ -49,9 +44,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($customer);
 
-        $this->trace->info(
-            TraceCode::CUSTOMER_EDIT,
-            [$input]);
+        $this->trace->info(TraceCode::CUSTOMER_EDIT, $input);
 
         return $customer;
     }
@@ -86,9 +79,8 @@ class Core extends Base\Core
         $response['app_token'] = $app->getPublicId();
         $response['device_token'] = $app->getDeviceToken();
 
-
-        Session::put('app_token', $app->getPublicId());
-        Session::put('device_token', $app->getDeviceToken());
+        $this->app['session']->put('app_token', $app->getPublicId());
+        $this->app['session']->put('device_token', $app->getDeviceToken());
 
         if (($tokens !== null) and ($tokens->count() > 0))
         {
