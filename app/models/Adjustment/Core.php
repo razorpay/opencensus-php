@@ -11,9 +11,7 @@ class Core extends Base\Core
 {
     public function createAdjustment($input, $merchant)
     {
-        $adjRepo = new Adjustment\Repository;
-
-        return $adjRepo->transaction(function() use ($input, $merchant)
+     return $this->repo->transaction(function() use ($input, $merchant)
             {
                 return $this->createAdjInTransaction($input, $merchant);
             });
@@ -41,13 +39,12 @@ class Core extends Base\Core
 
         $adj->merchant()->associate($merchant);
 
-        $adjRepo = new Adjustment\Repository;
-        $adjRepo->saveOrFail($adj);
+        $this->repo->saveOrFail($adj);
 
         $txn = (new Transaction\Core)->createFromAdjustment($adj, $updateEscrow);
 
-        (new Transaction\Repository)->saveOrFail($txn);
-        $adjRepo->saveOrFail($adj);
+        $this->repo->saveOrFail($txn);
+        $this->repo->saveOrFail($adj);
 
         return $adj;
     }

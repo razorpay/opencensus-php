@@ -37,7 +37,7 @@ class Service extends Base\Service
     {
         Settlement\Entity::verifyIdAndStripSign($id);
 
-        $setl = (new Settlement\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $setl->toArrayPublic();
     }
@@ -46,9 +46,7 @@ class Service extends Base\Service
     {
         Settlement\Entity::verifyIdAndStripSign($id);
 
-        $repo = new Settlement\Repository;
-
-        $setl = $repo->findOrFailPublic($id);
+        $setl = $this->repo->settlement->findOrFailPublic($id);
 
         if ((isset($input['status'])) and
             ($input['status'] === Status::FAILED))
@@ -60,7 +58,7 @@ class Service extends Base\Service
             }
 
             $setl->setStatus(Settlement\Status::FAILED);
-            $repo->saveOrFail($setl);
+            $this->repo->saveOrFail($setl);
         }
 
         return $setl->toArrayPublic();
@@ -68,7 +66,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $settlements = (new Settlement\Repository)->fetch($input, $this->merchant->getKey());
+        $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey());
 
         return $settlements->toArrayPublic();
     }
@@ -77,9 +75,9 @@ class Service extends Base\Service
     {
         Settlement\Entity::verifyIdAndStripSign($id);
 
-        $setl = (new Settlement\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
 
-        $txns = (new Transaction\Repository)->fetchBySettlementId($id);
+        $txns = $this->repo->transaction->fetchBySettlementId($id);
 
         return $txns->toArrayPublic();
     }
@@ -114,8 +112,7 @@ class Service extends Base\Service
 
     public function calculatePrevousSettlementFees()
     {
-        $repo = new Settlement\Repository;
-        $settlements = $repo->getSettlementWithFeesAsNullOrZero();
+        $settlements = $this->repo->settlement->getSettlementWithFeesAsNullOrZero();
 
         $totalFees = 0;
         $totalCount = 0;
@@ -133,7 +130,7 @@ class Service extends Base\Service
 
             $setl->setFees($fees);
 
-            $repo->saveOrFail($setl);
+            $this->repo->saveOrFail($setl);
 
             $totalFees += $fees;
             $totalCount += $setl->count();
@@ -144,13 +141,12 @@ class Service extends Base\Service
 
     public function calculatePrevousSettlementServiceTax()
     {
-        $repo = new Repository;
-        $settlements = $repo->getSettlementWithServiceTaxNullOrZero();
+        $settlements = $this->repo->settlement->getSettlementWithServiceTaxNullOrZero();
 
         $totalServiceTax = 0;
         $totalCount = 0;
 
-        $repo->beginTransaction();
+        $this->repo->beginTransaction();
 
         try
         {
@@ -166,7 +162,7 @@ class Service extends Base\Service
 
                 $setl->setServiceTax($tax);
 
-                $repo->saveOrFail($setl);
+                $this->repo->saveOrFail($setl);
 
                 $totalServiceTax += $tax;
                 $totalCount ++;
