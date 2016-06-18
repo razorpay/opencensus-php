@@ -2,7 +2,7 @@
 
 namespace Gateway\Base;
 
-use Models\Base;
+use Base;
 
 class Repository extends Base\Repository
 {
