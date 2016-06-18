@@ -142,7 +142,7 @@ class Checkout
         return $methodsArray;
     }
 
-    protected function checkAndAddOrderForTpv($merchant, $inpu, & $data)
+    protected function checkAndAddOrderForTpv($merchant, $input, & $data)
     {
         // If merchant is TPV enabled pass details for
         // current order as part of preferences
