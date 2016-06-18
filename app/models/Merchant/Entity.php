@@ -366,7 +366,12 @@ class Entity extends Base\PublicEntity
         return '#' . $storedBrandColor;
     }
 
-    public function getLogoUrl($size = self::ORIGINAL_SIZE)
+    public function getLogoUrl()
+    {
+        return $this->getAttribute(self::LOGO_URL);
+    }
+
+    public function getLogoUrlAttribute($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->attributes[self::LOGO_URL];
 

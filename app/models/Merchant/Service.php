@@ -124,10 +124,9 @@ class Service extends Base\Service
         if (isset($input['logo']))
         {
             // Store the logos in AWS
-            (new Merchant\Logo)->setUpMerchantLogo($input);
+            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
 
-            // Set complete URL
-            $input['logo_url'] = $this->merchant->getLogoUrl(Checkout::CHECKOUT_LOGO_SIZE);
+            $input['logo_url'] = $logoUrl;
             unset($input['logo']);
         }
     }
