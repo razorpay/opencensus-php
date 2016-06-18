@@ -189,7 +189,7 @@ class Checkout
         }
         else if (isset($input['contact']))
         {
-            $response = (new Customer\Service)->fetchCustomerStatus($input['contact']);
+            $response = (new Customer\Service)->fetchGlobalCustomerStatus($input['contact']);
 
             $data['customer'] = array(
                 'contact'   => $input['contact'],

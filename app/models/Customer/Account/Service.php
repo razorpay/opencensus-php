@@ -9,15 +9,6 @@ use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
-    protected $repo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Customer\Repository;
-    }
-
     public function create($input)
     {
         return $this->createCustomer($input, $this->merchant);
@@ -34,7 +25,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         $customer = (new Customer\Core)->edit($customer, $input);
 
@@ -45,7 +36,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $customer->toArrayPublic();
     }
@@ -54,9 +45,9 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $customer = $this->repo->deleteOrFail($customer);
+        $customer = $this->repo->customer->deleteOrFail($customer);
 
         if ($customer === null)
             return [];
@@ -94,7 +85,7 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
 
-        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+        $customer = $this->repo->customer->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
 
         if ($customer !== null)
         {
@@ -121,7 +112,7 @@ class Service extends Base\Service
 
         $contact = $input['contact'];
 
-        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+        $customer = $this->repo->customer->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
 
         if ($customer !== null)
         {

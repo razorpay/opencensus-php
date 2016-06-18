@@ -210,7 +210,7 @@ final class Route
         'customer_fetch_token'                  => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
         'customer_fetch_tokens'                 => ['get',      'customers/{id}/tokens',                    'CustomerController@fetchTokens'                                    ],
         'customer_delete_token'                 => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
-        'customer_get_saved_status'             => ['get',      'customer/status/{contact}',                'CustomerController@fetchCustomerStatus'                            ],
+        'customer_get_saved_status'             => ['get',      'customer/status/{contact}',                'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                => ['delete',   'apps/{appToken}/logout',                   'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                      => ['delete',   'apps/{appToken}/tokens/{token}',           'CustomerController@deleteTokenForApp'                              ],
         'app_fetch_tokens'                      => ['get',      'apps/{appToken}/tokens',                   'CustomerController@fetchTokensByAppToken'                          ],

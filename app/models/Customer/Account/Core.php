@@ -17,8 +17,6 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
-
-        $this->repo = new Customer\Repository;
     }
 
     public function create($input, $merchant)
@@ -38,7 +36,7 @@ class Core extends Base\Core
     {
         assert(isset($input[Customer\Entity::CONTACT]));
 
-        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+        $merchant = $this->repo->merchant->findOrFail(Account::SHARED_ACCOUNT);
 
         return $this->create($input, $merchant);
     }
@@ -78,6 +76,8 @@ class Core extends Base\Core
         }
 
         $app = (new App\Core)->create($custAppInput);
+
+        $merchant = $this->repo->merchant->findOrFail(Account::SHARED_ACCOUNT);
 
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomerAndMerchant(
             $customer, $merchant);
@@ -125,7 +125,7 @@ class Core extends Base\Core
      */
     protected function getOrCreateGlobalCustomer($contact)
     {
-        $customer = $this->repo->findByContactForMerchant(
+        $customer = $this->repo->customer->findByContactForMerchant(
             $contact,
             Account::SHARED_ACCOUNT);
 
@@ -174,7 +174,7 @@ class Core extends Base\Core
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->findByIdAndMerchantId($customerId, $merchantId);
+            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
         }
 
         return array($customer, $customerApp);
@@ -186,13 +186,13 @@ class Core extends Base\Core
 
         if ($customer->merchant->isShared() === true)
         {
-            $customers = $this->repo->findByContactForMerchant(
+            $customers = $this->repo->customer->findByContactForMerchant(
                 $customer->getContact(),
                 $customer->merchant->getId());
         }
         else
         {
-            $customers = $this->repo->findByContactEmailForMerchant(
+            $customers = $this->repo->customer->findByContactEmailForMerchant(
                 $customer->getContact(),
                 $customer->getEmail(),
                 $customer->merchant->getId());

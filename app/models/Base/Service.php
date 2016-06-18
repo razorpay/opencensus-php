@@ -46,6 +46,8 @@ class Service
         $this->merchant = $this->app['basicauth']->getMerchant();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
 	}
 
     public static function getNewInstance()

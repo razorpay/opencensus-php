@@ -14,17 +14,6 @@ use Models\Merchant\Account;
 
 class Core extends Base\Core
 {
-    protected $custRepo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Token\Repository;
-
-        $this->custRepo = new Customer\Repository;
-    }
-
     public function create($customer, $input)
     {
         $token = new Token\Entity;
@@ -51,7 +40,7 @@ class Core extends Base\Core
         $token->build($input);
         $this->validateExistingToken($token);
 
-        $this->repo->saveOrFail($token);
+        $this->repo->token->saveOrFail($token);
 
         return $token;
     }
@@ -85,17 +74,17 @@ class Core extends Base\Core
 
     public function fetchTokensByCustomerAndMerchant($customer, $merchant)
     {
-        $customer = $this->custRepo->findByIdAndMerchantId(
+        $customer = $this->repo->customer->findByIdAndMerchantId(
             $customer->getId(), $merchant->getId());
 
-        $tokens = $this->repo->getByCustomerId($customerId);
+        $tokens = $this->repo->token->getByCustomerId($customer->getId());
 
         return $tokens;
     }
 
     public function fetchTokensByCustomer($customer)
     {
-        $tokens = $this->repo->getByCustomerId($customer->getId());
+        $tokens = $this->repo->token->getByCustomerId($customer->getId());
 
         return $tokens;
     }
@@ -122,7 +111,7 @@ class Core extends Base\Core
             Token\Entity::METHOD      => $token->getMethod(),
             Token\Entity::CUSTOMER_ID => $token->customer->getId());
 
-        $existingTokens = $this->repo->getByMethodAndCustomerId(
+        $existingTokens = $this->repo->token->getByMethodAndCustomerId(
                                 $token->getMethod(), $token->customer->getId());
 
         $func = 'validateExistingToken'.$token->getMethod();

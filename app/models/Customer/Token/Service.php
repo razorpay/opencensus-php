@@ -10,18 +10,6 @@ use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
-    protected $repo;
-    protected $tokensRepo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Customer\Repository;
-
-        $this->tokensRepo = new Token\Repository;
-    }
-
     /**
      * Note that this is on internal auth and not private auth
      */
@@ -29,7 +17,7 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findOrFailPublic($id);
+        $customer = $this->repo->customer->findOrFailPublic($id);
 
         $token = (new Token\Core)->create($customer, $input);
 
@@ -40,9 +28,9 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+        $token = $this->repo->token->getByTokenAndCustomerId($id, $token);
 
         $token = (new Token\Core)->edit($token, $input);
 
@@ -53,9 +41,9 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($customer->getId(), $token);
+        $token = $this->repo->token->getByTokenAndCustomerId($customer->getId(), $token);
 
         return $token->toArrayPublic();
     }
@@ -64,9 +52,9 @@ class Service extends Base\Service
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $tokens = $this->tokensRepo->getByCustomerId($id);
+        $tokens = $this->repo->token->getByCustomerId($id);
 
         return $tokens->toArrayPublic();
     }
@@ -89,9 +77,9 @@ class Service extends Base\Service
             $merchantId = $this->merchant->getId();
         }
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $merchantId);
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $merchantId);
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+        $token = $this->repo->token->getByTokenAndCustomerId($id, $token);
 
         if ($token === null)
         {
@@ -99,7 +87,7 @@ class Service extends Base\Service
                 'Token not found');
         }
 
-        $token = $this->tokensRepo->deleteOrFail($token);
+        $token = $this->repo->token->deleteOrFail($token);
 
         if ($token === null)
         {

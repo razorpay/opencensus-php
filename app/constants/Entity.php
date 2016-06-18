@@ -19,6 +19,7 @@ class Entity
     const KEY               = 'key';
     const CARD              = 'card';
     const ORDER             = 'order';
+    const TOKEN             = 'token';
     const REFUND            = 'refund';
     const BALANCE           = 'balance';
     const METHODS           = 'methods';
@@ -28,6 +29,7 @@ class Entity
     const EMI_PLAN          = 'emi_plan';
     const MERCHANT          = 'merchant';
     const TERMINAL          = 'terminal';
+    const CUSTOMER          = 'customer';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlement';
     const TRANSACTION       = 'transaction';
@@ -138,6 +140,7 @@ class Entity
         self::ORDER             => Models\Order::class,
         self::PAYTM             => Gateway\Paytm::class,
         self::SHARP             => Gateway\Sharp::class,
+        self::TOKEN             => Models\Customer\Token::class,
         self::REFUND            => Models\Payment\Refund::class,
         self::WALLET            => Gateway\Wallet\Base::class,
         self::BALANCE           => Models\Merchant\Balance::class,
@@ -145,6 +148,7 @@ class Entity
         self::PRICING           => Models\Pricing::class,
         self::WEBHOOK           => Models\Merchant\Webhook::class,
         self::BILLDESK          => Gateway\Billdesk::class,
+        self::CUSTOMER          => Models\Customer::class,
         self::EMI_PLAN          => Models\Emi::class,
         self::MOBIKWIK          => Gateway\Mobikwik::class,
         self::NETBANKING        => Gateway\Netbanking\Base::class,
