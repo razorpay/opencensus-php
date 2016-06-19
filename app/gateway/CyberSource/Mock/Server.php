@@ -131,7 +131,7 @@ class Server extends Base\Mock\Server
             $response->requestID = 'f32n23ke';
             
             $params = array('gateway' => 'cybersource');
-            $response->payerAuthEnrollReply->acsURL = 'http://localhost'.\URL::route('mockgateway_acs', $params, false);;
+            $response->payerAuthEnrollReply->acsURL = 'http://localhost'.\URL::route('mockcybersource_acs', $params, false);
             $response->payerAuthEnrollReply->paReq = 'eNpVUttygjAQfc9XMP0AkiAw';
             $response->payerAuthEnrollReply->xid = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
             $response->payerAuthEnrollReply->veresEnrolled = 'Y';

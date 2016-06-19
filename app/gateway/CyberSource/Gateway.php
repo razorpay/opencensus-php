@@ -64,12 +64,12 @@ class Gateway extends Base\Gateway
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'enrolled');
-                
-            $model->update([
-                    'status' => Payment\Status::VALIDATE_FAILED,
-                    'error_code' => $response->reasonCode
-                ]);
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Payment\Status::ENROLLED);
+
+            $attributes = array('status' => Payment\Status::VALIDATE_FAILED,
+                                'error_code' => $response->reasonCode);
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
         else
         {
@@ -88,30 +88,27 @@ class Gateway extends Base\Gateway
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'enrolled');
-
-            $model->eci_raw = $response->payerAuthValidateReply->eciRaw;
-
-            $model->commerce_indicator = $response->payerAuthValidateReply->commerceIndicator;
-
-            $model->xid = $response->payerAuthValidateReply->xid;
-
-            $model->pares_status = $response->payerAuthValidateReply->paresStatus;
-
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Payment\Status::ENROLLED);
+            $attributes = array('status' => $status,
+                                'eci_raw' => $response->payerAuthValidateReply->eciRaw,
+                                'commerce_indicator' => $response->payerAuthValidateReply->commerceIndicator,
+                                'xid' => $response->payerAuthValidateReply->xid,
+                                'pares_status' => $response->payerAuthValidateReply->paresStatus);
+            
             $network = $input['card']['network'];
             if ($network === Card\Network::getFullName('VISA'))
             {
-                $model->cavv = $response->payerAuthValidateReply->cavv;
+                $attributes['cavv'] = $response->payerAuthValidateReply->cavv;
             }
 
             if ($network === Card\Network::getFullName('MC'))
             {
-                $model->auth_data = $response->payerAuthValidateReply->ucafAuthenticationData;
-                $model->collection_indicator = $response->payerAuthValidateReply->ucafCollectionIndicator;
+                $attributes['auth_data'] = $response->payerAuthValidateReply->ucafAuthenticationData;
+                $attributes['collection_indicator'] = $response->payerAuthValidateReply->ucafCollectionIndicator;
             }
 
-            $repo->saveOrFail($model);
-
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
     }
 
@@ -191,12 +188,13 @@ class Gateway extends Base\Gateway
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'not_enrolled');
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Payment\Status::NOT_ENROLLED);
                 
-            $model->update([
-                    'status' => Payment\Status::AUTHORIZE_FAILED,
-                    'error_code' => $response->reasonCode
-                ]);
+            $attributes = array('status' => Payment\Status::AUTHORIZE_FAILED,
+                                'error_code' => $response->reasonCode);
+
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
         else
         {
@@ -215,11 +213,11 @@ class Gateway extends Base\Gateway
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'not_enrolled');
-            $model->update([
-                    'ref' => $response->requestID,
-                    'status' => $status
-                ]);
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Payment\Status::NOT_ENROLLED);
+            $attributes = array('ref' => $response->requestID,
+                                'status' => $status);
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
     }
 
@@ -235,10 +233,10 @@ class Gateway extends Base\Gateway
 
             $model = $repo->retrieveByPaymentId($input['payment']['id']);
 
-            $model->update([
-                    'status' => Payment\Status::AUTHORIZE_FAILED,
-                    'error_code' => $response->reasonCode
-                ]);
+            $attributes = array('status' => Payment\Status::AUTHORIZE_FAILED,
+                                'error_code' => $response->reasonCode);
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
         else
         {
@@ -259,10 +257,10 @@ class Gateway extends Base\Gateway
 
             $model = $repo->retrieveByPaymentId($input['payment']['id']);
 
-            $model->update([
-                    'ref' => $response->requestID,
-                    'status' => $status
-                ]);
+            $attributes = array('ref' => $response->requestID,
+                                'status' => $status);
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
     }
 
@@ -431,7 +429,7 @@ class Gateway extends Base\Gateway
 
         $repo = $this->getRepo();
         $model = $repo->retrieveByPaymentIdAndStatus(
-                                            $input['payment']['id'], 'authorized');
+                                            $input['payment']['id'], Payment\Status::AUTHORIZED);
         $ccCaptureService->authRequestID = $model->ref;
         $request->ccCaptureService = $ccCaptureService;
 
@@ -477,7 +475,7 @@ class Gateway extends Base\Gateway
         $ccCreditService->run = "true";
         $repo = $this->getRepo();
         $model = $repo->retrieveByPaymentIdAndStatus(
-                                            $input['payment']['id'], 'captured');
+                                            $input['payment']['id'], Payment\Status::CAPTURED);
         $ccCreditService->captureRequestID = $model->capture_ref;
         $request->ccCreditService = $ccCreditService;
 
@@ -490,18 +488,24 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject($input)
     {
-        $url = $this->getUrl('TARGET');
+        $url = $this->getWsdlFile();
 
         if ($this->mode === Mode::TEST)
         {
-            $url = Payment\Url::TEST_DOMAIN.Payment\Url::TARGET;
+            $url = Url::TEST_DOMAIN.Url::TARGET;
         }
 
-        $auth = array('username' => $input['terminal']['gateway_terminal_id'], 'password' => $input['terminal']['gateway_terminal_password']);
+        $auth = array('username' => $input['terminal']['gateway_terminal_id'],
+                'password' => $input['terminal']['gateway_terminal_password']);
         $soapClient = new ExtendedClient($url, array(), $auth);
 
         return $soapClient;
     } 
+
+    public function getWsdlFile()
+    {
+        return dirname(__FILE__) .'/cybs.wsdl.xml';
+    }
 
     public function verify(array $input)
     {
@@ -603,12 +607,12 @@ class Gateway extends Base\Gateway
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'authorized');
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Payment\Status::AUTHORIZED);
 
-            $model->update([
-                    'status' => Payment\Status::CAPTURE_FAILED,
-                    'error_code' => $response->reasonCode
-                ]);
+            $attributes = array('status' => Payment\Status::CAPTURE_FAILED,
+                                'error_code' => $response->reasonCode);
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
         else
         {
@@ -627,12 +631,12 @@ class Gateway extends Base\Gateway
 
             $repo = $this->getRepo();
 
-            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], 'authorized');
+            $model = $repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Payment\Status::AUTHORIZED);
 
-            $model->update([
-                    'capture_ref' => $response->requestID,
-                    'status' => $status
-                ]);
+            $attributes = array('capture_ref' => $response->requestID,
+                                'status' => $status);
+            $model->fill($attributes);
+            $model->saveOrFail();
         }
     }
 

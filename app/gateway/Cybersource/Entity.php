@@ -23,14 +23,18 @@ class Entity extends Base\Entity
 
     protected $fillable = array(
         'payment_id',
-        'received',
         'amount',
         'status',
-        'eci',
-        'auth',
+        'eci_raw',
+        'cavv',
         'ref',
         'capture_ref',
         'error_code',
+        'commerce_indicator',
+        'xid',
+        'pares_status',
+        'auth_data',
+        'collection_indicator',
     );
 
     protected $table = 'cybersource';
