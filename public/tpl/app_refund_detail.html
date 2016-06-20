@@ -26,9 +26,16 @@
           <span class="pull-right">{{entity.currency}}</span>
           Currency
         </a>
+
         <a href class="list-group-item">
           <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
           Created At
+        </a>
+      </div>
+      <div class="panel-body">
+        <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
+          <span class="pull-right">{{key}}</span>
+          {{label}}
         </a>
       </div>
     </div>
