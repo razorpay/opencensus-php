@@ -176,7 +176,6 @@ class Verify
     {
         $merchant = $payment->merchant;
 
-
         //
         // Exception is thrown when the there's a mismatch
         // between payment status and status returned by gateway.
