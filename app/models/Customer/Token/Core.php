@@ -63,25 +63,6 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function fetchTokensByAppToken($merchantId, $appToken)
-    {
-        $appEntity = (new Customer\App\Repository)->findByIdAndMerchantId($appToken, $merchantId);
-
-        $tokens = $this->fetchTokensByCustomer($appEntity->customer);
-
-        return $tokens;
-    }
-
-    public function fetchTokensByCustomerAndMerchant($customer, $merchant)
-    {
-        $customer = $this->repo->customer->findByIdAndMerchantId(
-            $customer->getId(), $merchant->getId());
-
-        $tokens = $this->repo->token->getByCustomerId($customer->getId());
-
-        return $tokens;
-    }
-
     public function fetchTokensByCustomer($customer)
     {
         $tokens = $this->repo->token->getByCustomerId($customer->getId());

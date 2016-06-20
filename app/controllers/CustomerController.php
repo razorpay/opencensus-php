@@ -58,7 +58,7 @@ class CustomerController extends BaseController
 
     public function deleteToken($id, $token)
     {
-        $data = (new Customer\Token\Service)->delete($id, $token);
+        $data = (new Customer\Token\Service)->deleteTokenForLocalCustomer($id, $token);
 
         return ApiResponse::json($data);
     }
@@ -77,9 +77,9 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function fetchTokensByAppToken($appToken)
+    public function fetchTokensForGlobalCustomer($appToken)
     {
-        $tokens = (new Customer\Token\Service)->fetchTokensByAppToken($appToken);
+        $tokens = (new Customer\Token\Service)->fetchTokensForGlobalCustomer($appToken);
 
         return ApiResponse::json($tokens);
     }

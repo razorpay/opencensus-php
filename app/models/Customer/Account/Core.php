@@ -78,10 +78,8 @@ class Core extends Base\Core
 
         $app = (new App\Core)->create($custAppInput);
 
-        $merchant = $this->repo->merchant->findOrFail(Account::SHARED_ACCOUNT);
-
-        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerAndMerchant(
-            $customer, $merchant);
+        $merchant = $this->repo->merchant->getSharedAccount();
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
         $response['success'] = 1;
         $response['app_token'] = $app->getPublicId();

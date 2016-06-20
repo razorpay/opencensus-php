@@ -490,7 +490,7 @@ trait Authorize
 
         // Token should definitely exist in database.
         $token = (new Token\Repository)->getByTokenAndCustomerId(
-                                            $customer->getId(), $tokenInput);
+                                            $tokenInput, $customer->getId());
 
         assert ($token !== null);
 

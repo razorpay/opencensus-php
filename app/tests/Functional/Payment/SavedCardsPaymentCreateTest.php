@@ -38,6 +38,7 @@ class SavedCardPaymentCreateTest extends TestCase
         $content = $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals($payment['token'], '10000cardtoken');
         $this->assertEquals($payment['customer_id'], '100000customer');
     }
