@@ -394,6 +394,7 @@ final class Route
         'refund_verify',
         'es_migrate_entity',
         'dummy_critical_error',
+        'reconciliate',
     );
 
     public static $proxy = array(
@@ -433,7 +434,6 @@ final class Route
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
-        'reconciliate',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
         'sms_callback'
@@ -470,6 +470,7 @@ final class Route
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile',
+                'reconciliate',
             ),
 
             'hosted' => array(

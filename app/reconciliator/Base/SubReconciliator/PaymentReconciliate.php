@@ -142,6 +142,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($verifyResponse === Verify::AUTHORIZED)
         {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECONCILIATION_INFO_ALERT,
+                    'message'    => 'Verify returned authorized.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+            
             // Set the payment transaction for the row.
             $this->paymentTransaction = $this->payment->transaction;
 
