@@ -329,7 +329,7 @@ return [
 
     'testFetchSavedTokensStatusSaved'   => [
         'request' => [
-                'url' => '/customer/status/1234567890',
+                'url' => '/customers/status/1234567890',
                 'method' => 'get',
                 'content' => [
                 ],
@@ -343,7 +343,7 @@ return [
 
     'testFetchSavedTokensStatusNotSaved'   => [
         'request' => [
-                'url' => '/customer/status/1234567899',
+                'url' => '/customers/status/1234567899',
                 'method' => 'get',
                 'content' => [
                 ],

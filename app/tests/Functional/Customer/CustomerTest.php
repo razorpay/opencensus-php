@@ -6,6 +6,7 @@ use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
+use Models\Merchant\Features;
 
 class CustomerTest extends TestCase
 {
@@ -17,7 +18,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures("tokens");
+        $this->fixtures->merchant->editFeatures("tokens,cardsaving");
     }
 
     public function testCreateCustomer()

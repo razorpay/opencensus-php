@@ -471,9 +471,13 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
+        $this->fixtures->merchant->editFeatures('cardsaving');
+
         $response = $this->startTest();
 
         $this->assertNotNull($response['customer']['tokens']);
+
+        $this->assertEquals($response['options']['remember_customer'], true);
     }
 
     public function testGetCheckoutRouteWithWrongKey()

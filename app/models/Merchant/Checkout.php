@@ -5,6 +5,7 @@ namespace Models\Merchant;
 use Constants\Mode;
 use Models\Customer;
 use Models\Customer\App;
+use Models\Merchant;
 use Models\Payment;
 use Models\Order;
 use EE\Exception;
@@ -189,6 +190,7 @@ class Checkout
         $data['methods'] = $methods;
         $data['options']['theme']['color'] = $merchant->getBrandColor();
         $data['options']['image'] = $merchant->getLogoUrl(self::CHECKOUT_LOGO_SIZE);
+        $data['options']['remember_customer'] = $merchant->isFeatureEnabled(Features::CARD_SAVING);
         $data['fee_bearer'] = false;
         $data['version'] = 1;
 

@@ -210,7 +210,7 @@ final class Route
         'customer_fetch_token'                  => ['get',      'customers/{id}/tokens/{token}',            'CustomerController@fetchToken'                                     ],
         'customer_fetch_tokens'                 => ['get',      'customers/{id}/tokens',                    'CustomerController@fetchTokens'                                    ],
         'customer_delete_token'                 => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
-        'customer_get_saved_status'             => ['get',      'customer/status/{contact}',                'CustomerController@fetchGlobalCustomerStatus'                      ],
+        'customer_get_saved_status'             => ['get',      'customers/status/{contact}',               'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                => ['delete',   'apps/{appToken}/logout',                   'CustomerController@logoutCustomer'                                 ],
         'app_delete_token'                      => ['delete',   'apps/{appToken}/tokens/{token}',           'CustomerController@deleteTokenForApp'                              ],
         'app_fetch_tokens'                      => ['get',      'apps/{appToken}/tokens',                   'CustomerController@fetchTokensByAppToken'                          ],
@@ -494,16 +494,23 @@ final class Route
     );
 
     public static $routeNameToFeatureMap = array(
-        'dummy_feature'         =>  'dummy',
-        'submerchant_create'    =>  'aggregator',
-        'customer_create'       =>  'tokens',
-        'customer_update'       =>  'tokens',
-        'customer_get'          =>  'tokens',
-        'customer_delete'       =>  'tokens',
-        'customer_delete_token' =>  'tokens',
-        'customer_fetch_tokens' =>  'tokens',
-        'payment_create_wallet' =>  's2swallet',
-        'setl_combined_report'  =>  'setl_report',
+        'dummy_feature'             => 'dummy',
+        'submerchant_create'        => 'aggregator',
+        'customer_create'           => 'tokens',
+        'customer_update'           => 'tokens',
+        'customer_get'              => 'tokens',
+        'customer_delete'           => 'tokens',
+        'customer_delete_token'     => 'tokens',
+        'customer_fetch_tokens'     => 'tokens',
+        'payment_create_wallet'     => 's2swallet',
+        'setl_combined_report'      => 'setl_report',
+        'customer_get_saved_status' => 'cardsaving',
+        'customer_logout_global'    => 'cardsaving',
+        'app_delete_token'          => 'cardsaving',
+        'app_fetch_tokens'          => 'cardsaving',
+        'device_verify_token'       => 'cardsaving',
+        'otp_post'                  => 'cardsaving',
+        'otp_verify'                => 'cardsaving',
     );
 
     protected static $router;
