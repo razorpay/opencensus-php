@@ -137,8 +137,25 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $paymentService = new Payment\Service();
 
-        // Try to make it authorized
-        $verifyResponse = $paymentService->verifyPayment($this->payment);
+        try
+        {
+            // Try to make it authorized
+            $verifyResponse = $paymentService->verifyPayment($this->payment);
+        }
+        catch(\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Verification/Authorization threw an exception. -> ' . $ex->getMessage(),
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            $this->app['trace']->traceException($ex);
+
+            return false;
+        }
 
         if ($verifyResponse === Verify::AUTHORIZED)
         {
@@ -149,7 +166,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'payment_id' => $this->payment->getId(),
                     'gateway'    => get_called_class()
                 ]);
-            
+
             // Set the payment transaction for the row.
             $this->paymentTransaction = $this->payment->transaction;
 
