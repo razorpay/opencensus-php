@@ -172,7 +172,7 @@ class Verify
         return $results;
     }
 
-    protected function verifyPayment($payment)
+    public function verifyPayment($payment)
     {
         $merchant = $payment->merchant;
 
