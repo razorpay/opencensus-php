@@ -11,6 +11,7 @@ use Models\Transaction;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
+use App;
 
 class Verify
 {
@@ -30,10 +31,12 @@ class Verify
 
     public function __construct($mode, $trace)
     {
+        $app = App::getFacadeRoot();
+
         $this->mode = $mode;
         $this->trace = $trace;
         $this->core = new Payment\Core;
-        $this->paymentRepo = $this->app['repo']->payment;
+        $this->paymentRepo = $app['repo']->payment;
     }
 
     public function verifyPaymentsWithFilter($filter)
