@@ -148,7 +148,6 @@ class Service extends Base\Service
 
     /**
      * Validates if device token is valid device token for a contact
-     *
      * @param  deviceToken to be validated
      * @param  input params
      * @return issues a new app_token if device_token is valid

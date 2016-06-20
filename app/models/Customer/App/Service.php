@@ -16,13 +16,13 @@ class Service extends Base\Service
         $this->repo = new App\Repository;
     }
 
-    public function deleteAppTokens($appToken, $input)
+    public function deleteAppTokensForGlobalCustomer($appToken, $input)
     {
         App\Entity::verifyIdAndStripSign($appToken);
 
         $app = $this->repo->findOrFail($appToken);
 
-        $data = (new App\Core)->deleteCustomerTokens($app->customer, $input);
+        $data = (new App\Core)->deleteAppTokensForGlobalCustomer($app->customer, $input);
 
         return $data;
     }
