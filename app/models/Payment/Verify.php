@@ -16,19 +16,24 @@ class Verify
 {
     use SlackPoster;
 
-    const MIN_TIME_BEFORE_VERIFY = 120; // 1 minute
+    const MIN_TIME_BEFORE_VERIFY = 120; // 2 minutes
 
     const SUCCESS       = 'success';
     const ERROR         = 'error';
     const AUTHORIZED    = 'authorized';
     const TIMEOUT       = 'timeout';
 
+    protected $trace;
+    protected $mode;
+    protected $core;
+    protected $paymentRepo;
+
     public function __construct($mode, $trace)
     {
         $this->mode = $mode;
         $this->trace = $trace;
         $this->core = new Payment\Core;
-        $this->repo = new Payment\Repository;
+        $this->paymentRepo = $this->app['repo']->payment;
     }
 
     public function verifyPaymentsWithFilter($filter)
@@ -57,7 +62,7 @@ class Verify
 
     public function verifyPaymentsWithFailedVerifyResult()
     {
-        $payments = $this->repo->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
+        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::FAILED);
 
         $payments->shuffle();
 
@@ -66,7 +71,7 @@ class Verify
 
     public function verifyPaymentsWithErrorVerifyResult()
     {
-        $payments = $this->repo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
+        $payments = $this->paymentRepo->get50PaymentsWithVerifyResult(VerifyResult::ERROR);
 
         $payments->shuffle();
 
@@ -77,7 +82,7 @@ class Verify
     {
         $ts = time() - (int) (2.5 * 60);
 
-        $payments = $this->repo->getPaymentsWithCreatedStatusForVerification($ts);
+        $payments = $this->paymentRepo->getPaymentsWithCreatedStatusForVerification($ts);
 
         return $this->verifyMultiplePayments($payments, 'created');
     }
@@ -93,7 +98,8 @@ class Verify
 
     public function verifyMultiplePayments($payments, $filter)
     {
-        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
+        $timedOut = $verified = $failed = $authorized = $error = 0;
+
         $time = time();
 
         $timeDiff = 0;
@@ -167,6 +173,13 @@ class Verify
     {
         $merchant = $payment->merchant;
 
+
+        //
+        // Exception is thrown when the there's a mismatch
+        // between payment status and status returned by gateway.
+        // Most cases, this would mean that the payment is in failed
+        // state and gateway returned back status authorized.
+        //
         try
         {
             $res = $this->processor($merchant)->verify($payment);
@@ -178,8 +191,8 @@ class Verify
             // Attempt to authorize payments whose verification failed
             $this->processor($merchant)->authorizeFailedPayment($payment);
 
-            return self::AUTHORIZED;
             // Now Just continue
+            return self::AUTHORIZED;
         }
         catch (Exception\GatewayTimeoutException $e)
         {
