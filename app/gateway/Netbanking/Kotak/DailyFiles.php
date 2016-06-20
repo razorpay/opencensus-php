@@ -3,11 +3,9 @@
 namespace Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use Models\Refund;
 use Models\Payment;
 use Models\Gateway;
 use Models\Bank\IFSC;
-// use Gateway\Netbanking\Base\Gateway;
 
 class DailyFiles
 {
@@ -24,16 +22,18 @@ class DailyFiles
     {
         list($from, $to) = $this->getTimestamps($input);
 
-        // $refundFile = $this->getRefundsData($from, $to);
+        list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to);
 
-        $claimsFile = $this->getClaimsData($from, $to);
+        list($claimsAmount, $claimsFile) = $this->getClaimsData($from, $to);
 
         $amount = [];
-        $amount['claims'] = '';
-        $amount['refunds'] = '';
-        $amount['total'] = '';
+        $amount['claims'] = $claimsAmount;
+        $amount['refunds'] = $refundAmount;
+        $amount['total'] = $claimsAmount - $refundAmount;
 
         $this->sendMail($amount, $claimsFile, $refundsFile);
+
+        return [$refundsFile, $claimsFile];
     }
 
     protected function getRefundsData($from, $to)
@@ -42,14 +42,14 @@ class DailyFiles
 
         $gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
 
-        $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-                                                $bankCode, $from, $to, $gateway);
+        $refunds = (new Payment\Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+                                    Payment\Entity::BANK, $bankCode, $from, $to, $gateway);
 
         $count = $refunds->count();
 
         if ($count === 0)
         {
-            return ['count' => $count];
+            return [0, ''];
         }
 
         $data = [];
@@ -72,9 +72,7 @@ class DailyFiles
 
         $action = 'generateRefunds';
 
-        $file = Gateway::call($gateway, $action, $input, $this->mode);
-
-        return ['file' => $file, 'count' => $count];
+        return Gateway::call($gateway, $action, $input, $this->mode);
     }
 
     protected function getClaimsData($from, $to)
@@ -88,10 +86,17 @@ class DailyFiles
         $claims = (new Payment\Repository)->
                         fetchPaymentsWithStatus($from, $to, $gateway, $status);
 
+        if ($claims->count() === 0)
+        {
+            return [0, ''];
+        }
+
         $data = [];
 
         foreach ($claims as $claim)
         {
+            $col = [];
+
             $col['payment'] = $claim;
             $col['terminal'] = $claim->terminal->toArray();
 
@@ -104,11 +109,7 @@ class DailyFiles
 
         $action = 'generateClaims';
 
-        $file = Gateway::call($gateway, $action, $input, $this->mode);
-
-        sd($claims);
-
-
+        return Gateway::call($gateway, $action, $input, $this->mode);
     }
 
 
@@ -157,7 +158,8 @@ class DailyFiles
 
         $this->mail->queue('emails.admin.kotak_refunds', $data, function($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            //settlements@razorpay.com
+            $emails = ['giridar123@gmail.com'];
 
             $message->from('settlement@razorpay.com', 'Kotak Netbanking Refunds');
 
@@ -165,9 +167,15 @@ class DailyFiles
 
             $message->to($emails);
 
-            $message->attach($data['claimsFile']);
+            if (empty($data['claimsFile']) === false)
+            {
+                $message->attach($data['claimsFile']);
+            }
 
-            $message->attach($data['refundsFile']);
+            if (empty($data['refundsFile']) === false)
+            {
+                $message->attach($data['refundsFile']);
+            }
         });
     }
 

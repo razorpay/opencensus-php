@@ -27,7 +27,7 @@ class RefundFile extends Base\RefundFile
 
         $fileFullPath = $this->getFullFilePath($name);
 
-        return $filePath;
+        return [$totalAmount, $fileFullPath];
     }
 
     protected function getTextData($data, $prependLine = '')
