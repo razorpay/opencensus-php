@@ -5,9 +5,9 @@ namespace Gateway\Netbanking\Kotak;
 use Carbon\Carbon;
 use Gateway\Netbanking\Base;
 
-class RefundFile extends Base\RefundFile
+class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Kotak_Netbanking_Refunds';
+    protected static $fileToWriteName = 'Kotak_Netbanking_Claims';
 
     protected static $headers = [
         'S.No',
@@ -19,7 +19,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        list($txt, $totalAmount) = $this->getRefundData($input);
+        list($txt, $totalAmount) = $this->getClaimsData($input);
 
         $name = $this->getFileToWriteName();
 
@@ -27,7 +27,7 @@ class RefundFile extends Base\RefundFile
 
         $fileFullPath = $this->getFullFilePath($name);
 
-        return $filePath;
+        return [$totalAmount, $fileFullPath, $filePath];
     }
 
     protected function getTextData($data, $prependLine = '')
@@ -41,7 +41,7 @@ class RefundFile extends Base\RefundFile
         return $txt;
     }
 
-    protected function getRefundData($input)
+    protected function getClaimsData($input)
     {
         // S.No in this file begins with 1
         $i = 1;
@@ -59,22 +59,18 @@ class RefundFile extends Base\RefundFile
                 $row['gateway']['merchant_code'],
                 $date,
                 $row['gateway']['int_payment_id'],
-                $row['refund']['amount'] / 100,
+                $row['payment']['amount'] / 100,
                 $row['gateway']['bank_payment_id'],
             );
 
-            $totalAmount = $totalAmount + $row['refund']['amount'] / 100;
+            $totalAmount = $totalAmount + ($row['payment']['amount'] / 100);
         }
 
         $name = $this->getFileToWriteName();
 
         $i--;
 
-        // First Line in the file is expected to be of the format
-        // Format : FileName|ItemsCount|TotalAmount(Rs.)|CHECKSUM
-        $initialLine = $name.'|'.$i.'|'.$totalAmount.'|CHECKSUM'."\r\n";
-
-        $txt = $this->getTextData($data, $initialLine);
+        $txt = $this->getTextData($data);
 
         return [$txt, $totalAmount];
     }
