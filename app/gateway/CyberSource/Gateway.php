@@ -96,17 +96,23 @@ class Gateway extends Base\Gateway
                                 'pares_status' => $response->payerAuthValidateReply->paresStatus);
             
             $network = $input['card']['network'];
-            if ($network === Card\Network::getFullName('VISA'))
-            {
-                $attributes['cavv'] = $response->payerAuthValidateReply->cavv;
-            }
 
-            if ($network === Card\Network::getFullName('MC'))
+            switch ($network)
             {
-                $attributes['auth_data'] = $response->payerAuthValidateReply->ucafAuthenticationData;
-                $attributes['collection_indicator'] = $response->payerAuthValidateReply->ucafCollectionIndicator;
-            }
+                case Card\Network::getFullName('VISA'):
+                    $attributes['cavv'] = $response->payerAuthValidateReply->cavv;
+                    break;
 
+                case Card\Network::getFullName('MC'):
+                    $attributes['auth_data'] = $response->payerAuthValidateReply->ucafAuthenticationData;
+                    $attributes['collection_indicator'] = $response->payerAuthValidateReply->ucafCollectionIndicator;
+                    break;
+                
+                default:
+                    throw new Exception\LogicException('Should not rech here.');
+                    break;
+            }
+            
             $model->fill($attributes);
             $model->saveOrFail();
         }
@@ -280,7 +286,7 @@ class Gateway extends Base\Gateway
         $request = $this->setBillingInfo($request, $input);
 
         $card = new \stdClass();
-        $card->accountNumber = '4000000000000002';//Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
         $card->expirationMonth = $input['card']['expiry_month'];
         $card->expirationYear = $input['card']['expiry_year'];
         $request->card = $card;
@@ -313,18 +319,26 @@ class Gateway extends Base\Gateway
         $ccAuthService->eciRaw = $model->eci_raw;
         $ccAuthService->reconciliationID = $this->getMerchantReferenceCode($input['terminal']);
         $network = $input['card']['network'];
-        if ($network === Card\Network::getFullName('VISA'))
-        {
-            $ccAuthService->cavv = $model->cavv;
-        }
-        if ($network === Card\Network::getFullName('MC'))
-        {
-            $ucaf = new \stdClass();
-            $ucaf->authenticationData = $model->auth_data;
-            $ucaf->collectionIndicator = $model->collection_indicator;
 
-            $request->ucaf = $ucaf;
+        switch ($network)
+        {
+            case Card\Network::getFullName('VISA'):
+                $ccAuthService->cavv = $model->cavv;
+                break;
+
+            case Card\Network::getFullName('MC'):
+                $ucaf = new \stdClass();
+                $ucaf->authenticationData = $model->auth_data;
+                $ucaf->collectionIndicator = $model->collection_indicator;
+
+                $request->ucaf = $ucaf;
+                break;
+            
+            default:
+                throw new Exception\LogicException('Should not rech here.');
+                break;
         }
+
         $request->ccAuthService = $ccAuthService;
 
         $request = $this->setBillingInfo($request, $input);
@@ -355,16 +369,24 @@ class Gateway extends Base\Gateway
         $ccAuthService->run = "true";
 
         $network = $input['card']['network'];
-        if ($network === Card\Network::getFullName('VISA'))
+
+        switch ($network)
         {
-            $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
+            case Card\Network::getFullName('VISA'):
+                $ccAuthService->eci = $enrollResponse->payerAuthEnrollReply->eci;
+                break;
+
+            case Card\Network::getFullName('MC'):
+                $ucaf = new \stdClass();
+                $ucaf->collectionIndicator = $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator;
+                $ccAuthService->ucaf = $ucaf;
+                break;
+            
+            default:
+                throw new Exception\LogicException('Should not rech here.');
+                break;
         }
-        if ($network === Card\Network::getFullName('MC'))
-        {
-            $ucaf = new \stdClass();
-            $ucaf->collectionIndicator = $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator;
-            $ccAuthService->ucaf = $ucaf;
-        }
+        
         $ccAuthService->commerceIndicator = $enrollResponse->payerAuthEnrollReply->commerceIndicator;
         $ccAuthService->veresEnrolled = $enrollResponse->payerAuthEnrollReply->veresEnrolled;
         $ccAuthService->reconciliationID = $this->getMerchantReferenceCode($input['terminal']);
