@@ -158,6 +158,7 @@ class TraceCode
     const RECON_MISMATCH                            = 'RECON_MISMATCH';
     const RECON_PARSE_ERROR                         = 'RECON_PARSE_ERROR';
     const RECON_FAILURE                             = 'RECON_FAILURE';
+    const RECON_FAILED_VERIFY                       = 'RECON_FAILED_VERIFY';
     const RECON_FILE_DELETE_FAILURE                 = 'RECON_FILE_DELETE_FAILURE';
     const RECONCILIATION_INFO_ALERT                 = 'RECONCILIATION_INFO_ALERT';
     const RECONCILIATION_CRITICAL_ALERT             = 'RECONCILIATION_CRITICAL_ALERT';
@@ -214,6 +215,7 @@ class TraceCode
         self::RECON_MISMATCH                        => 'Mismatch between the data present in DB and recon file',
         self::RECON_PARSE_ERROR                     => 'Not able to parse some content of the recon file',
         self::RECON_FAILURE                         => 'Reconciliation could not happen',
+        self::RECON_FAILED_VERIFY                   => 'Payment verify and authorize was unsuccessful',
         self::RECON_FILE_DELETE_FAILURE             => 'Deleting local file during reconciliation',
         self::RECONCILIATION_INFO_ALERT             => 'Info alert raised for reconciliation',
         self::RECONCILIATION_CRITICAL_ALERT         => 'Critical alert raised for reconciliation',

@@ -474,6 +474,13 @@ class Service extends Base\Service
 
         return $verify->verifyPaymentsWithFilter($filter);
     }
+    
+    public function verifyPayment($payment)
+    {
+        $verify = new Verify($this->mode, $this->trace);
+        
+        return $verify->verifyPayment($payment);
+    }
 
     public function sendReminderMerchantMailForAuthorizedPayments()
     {

@@ -7,6 +7,7 @@ use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
 use Models\Transaction;
+use Models\Payment\Verify;
 
 use Gateway\AxisMigs;
 
@@ -110,6 +111,66 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    protected function validatePaymentStatus()
+    {
+        $paymentStatus = $this->payment->getStatus();
+
+        if ($paymentStatus !== Payment\Status::FAILED)
+        {
+            return true;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code' => TraceCode::RECON_MISMATCH,
+                'message'    => 'Payment status is failed. Trying to authorize.',
+                'payment_id' => $this->payment->getId(),
+                'gateway'    => get_called_class()
+            ]);
+
+        return $this->tryAuthorizeFailedPayment();
+    }
+
+    protected function tryAuthorizeFailedPayment()
+    {
+        $paymentService = new Payment\Service();
+
+        // Try to make it authorized
+        $verifyResponse = $paymentService->verifyPayment($this->payment);
+
+        if ($verifyResponse === Verify::AUTHORIZED)
+        {
+            // Set the payment transaction for the row.
+            $this->paymentTransaction = $this->payment->transaction;
+
+            return true;
+        }
+
+        if ($verifyResponse === Verify::SUCCESS)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Verify returned failed. Payment is still in failed state.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::RECON_FAILED_VERIFY,
+                'message'       => 'Verify command failed or unable to recognize the response.',
+                'payment_id'    => $this->payment->getId(),
+                'verify_status' => $verifyResponse,
+                'gateway'       => get_called_class()
+            ]);
+
+        return false;
     }
 
     protected function persistReconciliationData($rowDetails)
