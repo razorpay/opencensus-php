@@ -212,7 +212,7 @@ final class Route
         'customer_delete_token'                 => ['delete',   'customers/{id}/tokens/{token}',            'CustomerController@deleteToken'                                    ],
         'customer_get_saved_status'             => ['get',      'customers/status/{contact}',               'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                => ['delete',   'apps/{appToken}/logout',                   'CustomerController@logoutCustomer'                                 ],
-        'app_delete_token'                      => ['delete',   'apps/{appToken}/tokens/{token}',           'CustomerController@deleteTokenForApp'                              ],
+        'app_delete_token'                      => ['delete',   'apps/{appToken}/tokens/{token}',           'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                      => ['get',      'apps/{appToken}/tokens',                   'CustomerController@fetchTokensByAppToken'                          ],
         'device_verify_token'                   => ['post',     'devices/{deviceToken}/verify',             'CustomerController@validateDeviceToken'                            ],
         'otp_post'                              => ['post',     'otp/create',                               'CustomerController@postOtp'                                        ],

@@ -97,7 +97,10 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
-    public function deleteTokenForApp($appToken, $token)
+    /**
+     * Deletes token associated with a card for a global customer
+     */
+    public function deleteTokenForGlobalCustomer($appToken, $token)
     {
         Customer\App\Entity::verifyIdAndStripSign($appToken);
 
