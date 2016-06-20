@@ -215,8 +215,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'payment_id' => $paymentId,
                         'gateway'    => get_called_class()
                     ]);
-
-                return null;
             }
         }
         catch (\Exception $ex)
