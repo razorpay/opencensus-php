@@ -13,7 +13,7 @@
 class Server extends Base\Mock\Server
 {
     protected $repo;
- 
+
     public function getGatewayResponse($request)
     {
         if (isset($request->payerAuthEnrollService))
@@ -52,13 +52,13 @@ class Server extends Base\Mock\Server
      {
         $response = new \stdClass();
 
-        $response->decision = "ACCEPT";
+        $response->decision = 'ACCEPT';
         $response->reasonCode = 100;
-        $response->requestID = "4661549029556297301014";
-        $response->merchantReferenceCode = "razorpay";
+        $response->requestID = '4661549029556297301014';
+        $response->merchantReferenceCode = 'razorpay';
 
         $ccCreditReply = new \stdClass();
-        $ccCreditReply->reconciliationID = "razorpay";
+        $ccCreditReply->reconciliationID = 'razorpay';
 
         $response->ccCreditReply = $ccCreditReply;
         $response->ccCreditReply = $ccCreditReply;
@@ -70,12 +70,12 @@ class Server extends Base\Mock\Server
      {
         $response = new \stdClass();
 
-        $response->decision = "ACCEPT";
+        $response->decision = 'ACCEPT';
         $response->reasonCode = 100;
-        $response->requestID = "4661468455476856801016";
+        $response->requestID = '4661468455476856801016';
 
         $ccCaptureReply = new \stdClass();
-        $ccCaptureReply->reconciliationID = "razorpay";
+        $ccCaptureReply->reconciliationID = 'razorpay';
 
         $response->ccCaptureReply = $ccCaptureReply;
 
@@ -86,15 +86,15 @@ class Server extends Base\Mock\Server
      {
         $response = new \stdClass();
 
-        $response->decision = "ACCEPT";
+        $response->decision = 'ACCEPT';
         $response->reasonCode = 100;
 
         $payerAuthValidateReply = new \stdClass();
-        $payerAuthValidateReply->eciRaw = "05";
-        $payerAuthValidateReply->xid = "TktUb3hwZVp0eTMxcTh5UlZUODA=";
-        $payerAuthValidateReply->paresStatus = "Y";
-        $payerAuthValidateReply->commerceIndicator = "Internet";
-        $payerAuthValidateReply->cavv = "1";
+        $payerAuthValidateReply->eciRaw = '05';
+        $payerAuthValidateReply->xid = 'TktUb3hwZVp0eTMxcTh5UlZUODA=';
+        $payerAuthValidateReply->paresStatus = 'Y';
+        $payerAuthValidateReply->commerceIndicator = 'Internet';
+        $payerAuthValidateReply->cavv = '1';
 
         $response->payerAuthValidateReply = $payerAuthValidateReply;
 
@@ -105,12 +105,12 @@ class Server extends Base\Mock\Server
     {
         $response = new \stdClass();
 
-        $response->decision = "ACCEPT";
+        $response->decision = 'ACCEPT';
         $response->reasonCode = 100;
-        $response->requestID = "4661454138166750401020";
+        $response->requestID = '4661454138166750401020';
 
         $ccAuthReply = new \stdClass();
-        $ccAuthReply->reconciliationID = "razorpay";
+        $ccAuthReply->reconciliationID = 'razorpay';
 
         $response->ccAuthReply = $ccAuthReply;
 
@@ -145,9 +145,9 @@ class Server extends Base\Mock\Server
             $response->reasonCode = 100;
             $response->requestID = 'f32n23ke';
 
-            $response->payerAuthEnrollReply->veresEnrolled = "U";
-            $response->payerAuthEnrollReply->commerceIndicator = "spa";
-            $response->payerAuthEnrollReply->ucafCollectionIndicator = "1";
+            $response->payerAuthEnrollReply->veresEnrolled = 'U';
+            $response->payerAuthEnrollReply->commerceIndicator = 'spa';
+            $response->payerAuthEnrollReply->ucafCollectionIndicator = '1';
         }
         else
         {
@@ -165,7 +165,7 @@ class Server extends Base\Mock\Server
 
     public function acs($input)
     {
-        return array('PaRes' => "eNpVUttygjAQfc9XMP0AkiAw",
+        return array('PaRes' => 'eNpVUttygjAQfc9XMP0AkiAw',
                      'MD' => $input['MD'],
                      'TermUrl' => $input['TermUrl']);
     }

@@ -87,6 +87,7 @@ class TraceCode
     const GATEWAY_PAYMENT_RESPONSE                  = 'GATEWAY_PAYMENT_RESPONSE';
     const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
+    const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';

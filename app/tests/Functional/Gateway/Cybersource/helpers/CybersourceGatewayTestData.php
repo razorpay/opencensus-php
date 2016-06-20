@@ -53,7 +53,6 @@ return [
 
 
     'testPaymentCybersourceEntity' => [
-        'gateway_transaction_id' => NULL,
         'amount' => '50000',
         'pares_status' => 'Y',
         'status' => 'captured',

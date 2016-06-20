@@ -10,6 +10,8 @@ class Entity extends Base\Entity
         'id',
         'payment_id',
         'received',
+        'refund_id',
+        'action',
         'amount',
         'status',
         'eci',
@@ -23,9 +25,12 @@ class Entity extends Base\Entity
 
     protected $fillable = array(
         'payment_id',
+        'received',
         'amount',
         'status',
         'eci_raw',
+        'refund_id',
+        'action',
         'cavv',
         'ref',
         'capture_ref',
