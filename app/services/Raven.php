@@ -47,9 +47,9 @@ class Raven
     {
         $response = null;
 
-        if($this->mode === Mode::TEST)
+        if ($this->mode === Mode::TEST)
         {
-            $response['success'] = true;
+            $response['sms_id'] = '10000000000sms';
         }
         else
         {

@@ -59,14 +59,38 @@ class Core extends Base\Core
 
     public function verifyOtp($input)
     {
-        $response = array();
-        $data = null;
-
-        $this->verifyOtpIsSuccessOrFail($input);
+        // verify the otp with raven service
+        $this->verifyRavenOtp($input);
 
         // Get global customer from db or create one.
         $customer = $this->getOrCreateGlobalCustomer($input[Customer\Entity::CONTACT]);
 
+        // Create app for customer
+        $app = $this->createCustomerApp($customer, $input);
+
+        //fetch existing tokens for global customer
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+
+        // setup session params
+        $this->app['session']->put('app_token', $app->getPublicId());
+        $this->app['session']->put('device_token', $app->getDeviceToken());
+
+        // create response
+        $response = array(
+            'success'      => 1,
+            'app_token'    => $app->getPublicId(),
+            'device_token' => $app->getDeviceToken());
+
+        if (($tokens !== null) and ($tokens->count() > 0))
+        {
+            $response['tokens'] = $tokens->toArrayPublic();
+        }
+
+        return $response;
+    }
+
+    protected function createCustomerApp($customer, $input)
+    {
         $custAppInput = array(
             App\Entity::CUSTOMER_ID => $customer->getId(),
             App\Entity::MERCHANT_ID => $input['context']);
@@ -78,39 +102,19 @@ class Core extends Base\Core
 
         $app = (new App\Core)->create($custAppInput);
 
-        $merchant = $this->repo->merchant->getSharedAccount();
-        $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
-
-        $response['success'] = 1;
-        $response['app_token'] = $app->getPublicId();
-        $response['device_token'] = $app->getDeviceToken();
-
-        $this->app['session']->put('app_token', $app->getPublicId());
-        $this->app['session']->put('device_token', $app->getDeviceToken());
-
-        if (($tokens !== null) and ($tokens->count() > 0))
-        {
-            $response['tokens'] = $tokens->toArrayPublic();
-        }
-
-        return $response;
+        return $app;
     }
 
-    protected function verifyOtpIsSuccessOrFail($input)
+    protected function verifyRavenOtp($input)
     {
         try
         {
-            $data = (new Customer\Raven)->verifyOtp($input);
+            (new Customer\Raven)->verifyOtp($input);
         }
         catch (\Exception $e)
         {
-            $data['success'] = false;
-
             $this->trace->traceException($e);
-        }
 
-        if ($data['success'] === false)
-        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_OTP);
         }
