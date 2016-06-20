@@ -470,7 +470,7 @@ class Service extends Base\Service
 
     public function verifyMultiplePayments($filter)
     {
-        $verify = new Verify($this->mode, $this->trace, $this->app['exception.handler']);
+        $verify = new Verify($this->mode, $this->trace);
 
         return $verify->verifyPaymentsWithFilter($filter);
     }
