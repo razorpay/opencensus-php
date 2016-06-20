@@ -28,6 +28,11 @@ class Service extends Base\Service
         {
             case 'netbanking':
                 $gateways = Payment\Gateway::$netbankingToGatewayMap;
+
+                // Refund file for kotak To be generated along with claims file.
+                // Removing from here.
+                unset($gateways[IFSC::KKBK]);
+
                 $type = Payment\Entity::BANK;
 
                 if (isset($input['bank']))
