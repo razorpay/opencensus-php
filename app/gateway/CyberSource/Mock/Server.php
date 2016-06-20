@@ -7,6 +7,7 @@
  use Models\Card;
  use Models\Payment;
  use App;
+ use Http;
  
  
 class Server extends Base\Mock\Server
@@ -131,7 +132,7 @@ class Server extends Base\Mock\Server
             $response->requestID = 'f32n23ke';
             
             $params = array('gateway' => 'cybersource');
-            $response->payerAuthEnrollReply->acsURL = 'http://localhost'.\URL::route('mockcybersource_acs', $params, false);
+            $response->payerAuthEnrollReply->acsURL = Http\Route::getUrl('mockcybersource_acs', $params);
             $response->payerAuthEnrollReply->paReq = 'eNpVUttygjAQfc9XMP0AkiAw';
             $response->payerAuthEnrollReply->xid = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
             $response->payerAuthEnrollReply->veresEnrolled = 'Y';
