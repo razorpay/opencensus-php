@@ -19,6 +19,7 @@ use Models\Payment\Method;
 use Models\Payment\Status;
 use Models\Transaction;
 use Models\Order;
+use Models\Terminal;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
@@ -342,8 +343,35 @@ trait Authorize
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        // Sets gateway and terminal for the payment.
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+
+
+
+
+
+
+
+        /*
+        * Terminal selection new steps begin here
+        **/
+
+
+        (new Terminal\Selector)->select($payment, $this->mode);
+
+
+        // // Sets gateway and terminal for the payment.
+        // (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+
+
+
+
+
+
+
+
+
+
 
         $this->repo->saveOrFail($payment);
 

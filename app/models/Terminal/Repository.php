@@ -50,6 +50,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getLiveTerminalsByMerchantId($mid)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $mid)
+                    ->get();
+    }
+
     public function getByIdAndMerchantId($mid, $tid)
     {
         $repo = $this->repo;
