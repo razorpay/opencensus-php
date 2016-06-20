@@ -96,7 +96,7 @@ return array(
 	|
 	*/
 
-	'cookie' => 'rzp_api_session',
+	'cookie' => 'razorpay_api_session',
 
 	/*
 	|--------------------------------------------------------------------------

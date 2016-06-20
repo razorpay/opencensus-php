@@ -63,7 +63,7 @@ class Entity extends Base\PublicEntity
 
     public function generateDeviceToken()
     {
-        if($this->getDeviceToken() === null)
+        if ($this->getDeviceToken() === null)
         {
             $deviceToken = self::generateUniqueId();
 
