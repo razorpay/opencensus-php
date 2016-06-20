@@ -94,7 +94,7 @@ class Verify
     {
         $ts = time() - self::MIN_TIME_BEFORE_VERIFY;
 
-        $payments = $this->repo->getUnverifiedPayments($ts);
+        $payments = $this->paymentRepo->getUnverifiedPayments($ts);
 
         return $this->verifyMultiplePayments($payments, 'all');
     }
