@@ -60,6 +60,9 @@ class CreateTokens extends Migration {
 
             $table->integer(Token::UPDATED_AT);
 
+            $table->integer(Token::DELETED_AT)
+                  ->nullable();
+
             $table->index(Token::CREATED_AT);
 
             $table->foreign(Token::CUSTOMER_ID)

@@ -10,12 +10,15 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const NAME              =       'name';
-    const CONTACT           =       'contact';
-    const EMAIL             =       'email';
-    const MERCHANT_ID       =       'merchant_id';
-    const ACTIVE            =       'active';
-    const NOTES             =       'notes';
+    const NAME                  = 'name';
+    const CONTACT               = 'contact';
+    const EMAIL                 = 'email';
+    const MERCHANT_ID           = 'merchant_id';
+    const ACTIVE                = 'active';
+    const NOTES                 = 'notes';
+    const CREATED_AT            = 'created_at';
+    const UPDATED_AT            = 'updated_at';
+    const DELETED_AT            = 'deleted_at';
 
     protected static $sign      = 'cust';
 

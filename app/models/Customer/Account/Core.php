@@ -14,6 +14,23 @@ use Session;
 
 class Core extends Base\Core
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function createLocalCustomer($input, $merchant)
+    {
+        return $this->create($input, $merchant);
+    }
+
+    public function createGlobalCustomer($input)
+    {
+        assert(isset($input[Customer\Entity::CONTACT]));
+
+        return $this->create($input, $this->repo->merchant->getSharedAccount());
+    }
+
     public function create($input, $merchant)
     {
         $customer = (new Customer\Entity)->build($input);
@@ -25,15 +42,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($customer);
 
         return $customer;
-    }
-
-    public function createGlobalCustomer($input)
-    {
-        assert(isset($input[Customer\Entity::CONTACT]));
-
-        $merchant = $this->repo->merchant->findOrFail(Account::SHARED_ACCOUNT);
-
-        return $this->create($input, $merchant);
     }
 
     public function edit($customer, $input)
@@ -117,9 +125,9 @@ class Core extends Base\Core
      */
     protected function getOrCreateGlobalCustomer($contact)
     {
-        $customer = $this->repo->customer->findByContactForMerchant(
+        $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
-            Account::SHARED_ACCOUNT);
+            $this->repo->merchant->getSharedAccount());
 
         // Create global customer if it does not exist.
         if ($customer === null)
@@ -178,16 +186,16 @@ class Core extends Base\Core
 
         if ($customer->merchant->isShared() === true)
         {
-            $customers = $this->repo->customer->findByContactForMerchant(
+            $customers = $this->repo->customer->findByContactAndMerchant(
                 $customer->getContact(),
-                $customer->merchant->getId());
+                $customer->merchant);
         }
         else
         {
-            $customers = $this->repo->customer->findByContactEmailForMerchant(
+            $customers = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),
                 $customer->getEmail(),
-                $customer->merchant->getId());
+                $customer->merchant);
         }
 
         if ($customers !== null)

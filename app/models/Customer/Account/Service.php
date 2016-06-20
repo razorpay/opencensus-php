@@ -9,11 +9,23 @@ use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
-    public function create($input)
+    /**
+     * Creates Local customer entity for merchant
+     * @param  array customer data
+     * @return array customer data
+     */
+    public function createLocalCustomer($input)
     {
-        return $this->createCustomer($input, $this->merchant);
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
+
+        return $customer->toArrayPublic();
     }
 
+    /**
+     * Creates Global customer entity for shared merchant
+     * @param  array customer data
+     * @return array customer data
+     */
     public function createGlobalCustomer($input)
     {
         $customer = (new Customer\Core)->createGlobalCustomer($input);
@@ -21,6 +33,13 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 
+    /**
+     * Edits a local customer
+     *
+     * @param  string id of the customer
+     * @param  array  edit params for customer
+     * @return array  updated customer entity
+     */
     public function edit($id, $input)
     {
         Customer\Entity::verifyIdAndStripSign($id);
@@ -32,6 +51,12 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 
+    /**
+     * Fetch local customer using id
+     *
+     * @param  string id of the customer
+     * @return array customer details
+     */
     public function fetch($id)
     {
         Customer\Entity::verifyIdAndStripSign($id);
@@ -41,6 +66,12 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 
+    /**
+     * Delete a local customer
+     *
+     * @param  local customer id
+     * @return deleted customer
+     */
     public function delete($id)
     {
         Customer\Entity::verifyIdAndStripSign($id);
@@ -55,6 +86,12 @@ class Service extends Base\Service
         return $customer->toArrayPublic();
     }
 
+    /**
+     * Send Oto to customer
+     *
+     * @param  details of customer for otp send
+     * @return success/failure
+     */
     public function sendOtp($input)
     {
         $input['context'] = $this->merchant->getId();
@@ -68,6 +105,10 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * @param  otp verification data
+     * @return success with tokens or failure
+     */
     public function verifyOtp($input)
     {
         $input['context'] = $this->merchant->getId();
@@ -79,51 +120,63 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * @param  check global customer existance and send otp
+     * @param  boolean if to send otp or not
+     * @return global customer existance, send otp if true
+     */
     public function fetchGlobalCustomerStatus($contact, $sendOtp = false)
     {
-        $data = array();
+        $data = ['saved' => false];
 
-        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
+        $merchant = $this->repo->merchant->getSharedAccount();
 
-        $customer = $this->repo->customer->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
 
         if ($customer !== null)
         {
-            $data = (new Customer\Token\Core)->fetchCustomerStatus($customer, $merchant);
+            $data['saved'] = true;
 
-            if ((isset($data['saved'])) and
-                ($data['saved'] === true) and
-                ($sendOtp == true))
+            if ($sendOtp === true)
             {
-                $this->sendOtp(array('contact' => $contact));
+                $this->sendOtp(['contact' => $contact]);
             }
-        }
-        else
-        {
-            $data['saved'] = false;
         }
 
         return $data;
     }
 
+    /**
+     * Validates if device token is valid device token for a contact
+     *
+     * @param  deviceToken to be validated
+     * @param  input params
+     * @return issues a new app_token if device_token is valid
+     */
     public function validateDeviceToken($deviceToken, $input)
     {
-        $valid = false;
+        $result = ['valid' => false];
 
         $contact = $input['contact'];
 
-        $customer = $this->repo->customer->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+        $merchant = $this->repo->merchant->getSharedAccount();
+
+        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
 
         if ($customer !== null)
         {
-            $valid = (new Customer\App\Core)->validateDeviceToken($deviceToken, $customer, $this->merchant);
+            $apps = $this->repo->customer_app->fetchAppsByDeviceToken(
+                $customer,
+                $this->merchant,
+                $deviceToken);
+
+            if ($apps !== null)
+            {
+                $result['valid'] = true;
+            }
         }
 
-        $result = array(
-            'valid' => $valid);
-
-
-        if ($valid === true)
+        if ($result['valid'] === true)
         {
             $custAppInput = array(
                 App\Entity::CUSTOMER_ID     => $customer->getId(),
@@ -143,13 +196,6 @@ class Service extends Base\Service
         $data = (new Customer\Raven)->updateSmsStatus($id, $input);
 
         return $data;
-    }
-
-    protected function createCustomer($input, $merchant)
-    {
-        $customer = (new Customer\Core)->create($input, $merchant);
-
-        return $customer->toArrayPublic();
     }
 }
 

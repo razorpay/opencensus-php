@@ -6,11 +6,11 @@ use Models\Customer\Account;
 
 class CustomerController extends BaseController
 {
-    public function createCustomer()
+    public function createLocalCustomer()
     {
         $input = Input::all();
 
-        $data = (new Customer\Service)->create($input);
+        $data = (new Customer\Service)->createLocalCustomer($input);
 
         return ApiResponse::json($data);
     }
@@ -91,9 +91,9 @@ class CustomerController extends BaseController
         return ApiResponse::json($status);
     }
 
-    public function deleteTokenForApp($appToken, $token)
+    public function deleteTokenForGlobalCustomer($appToken, $token)
     {
-        $data = (new Customer\Token\Service)->deleteTokenForApp($appToken, $token);
+        $data = (new Customer\Token\Service)->deleteTokenForGlobalCustomer($appToken, $token);
 
         return ApiResponse::json($data);
     }

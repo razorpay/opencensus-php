@@ -89,22 +89,6 @@ class Core extends Base\Core
         return $tokens;
     }
 
-    public function fetchCustomerStatus($customer, $merchant)
-    {
-        $saved = false;
-
-        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerAndMerchant(
-            $customer, $merchant);
-
-        if ($tokens !== null)
-        {
-            $saved = true;
-        }
-
-        return array(
-            'saved' => $saved);
-    }
-
     protected function validateExistingToken($token)
     {
         $params = array(

@@ -34,6 +34,9 @@ class CreateCustomerApps extends Migration {
 
             $table->integer(App::UPDATED_AT);
 
+            $table->integer(App::DELETED_AT)
+                  ->nullable();
+
             $table->index(App::CREATED_AT);
 
             $table->foreign(App::MERCHANT_ID)

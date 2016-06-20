@@ -254,9 +254,10 @@ trait Authorize
         {
             $contact = $this->getFormattedContact($input['payment']['contact']);
 
-            $customer = (new Customer\Repository)
-                                    ->findByContactForMerchant(
-                                        $contact, Merchant\Account::SHARED_ACCOUNT);
+            $sharedAccount = (new Merchant\Repository)->getSharedAccount();
+
+            $customer = (new Customer\Repository)->findByContactAndMerchant(
+                                        $contact, $sharedAccount);
 
             if ($customer === null)
             {

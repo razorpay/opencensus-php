@@ -201,7 +201,7 @@ final class Route
         'order_payments'                        => ['get',      'orders/{id}/payments',                     'OrderController@fetchPayments'                                     ],
         'reports_monthly_invoice'               => ['get',      'reports/invoice',                          'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                 => ['get',      'reports/{entity}',                         'MerchantController@getPublicEntityReport'                          ],
-        'customer_create'                       => ['post',     'customers',                                'CustomerController@createCustomer'                                 ],
+        'customer_create'                       => ['post',     'customers',                                'CustomerController@createLocalCustomer'                            ],
         'customer_update'                       => ['put',      'customers/{id}',                           'CustomerController@updateCustomer'                                 ],
         'customer_get'                          => ['get',      'customers/{id}',                           'CustomerController@getCustomer'                                    ],
         'customer_delete'                       => ['delete',   'customers/{id}',                           'CustomerController@deleteCustomer'                                 ],

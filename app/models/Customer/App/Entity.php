@@ -3,12 +3,18 @@
 namespace Models\Customer\App;
 
 use Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 
 class Entity extends Base\PublicEntity
 {
-    const MERCHANT_ID       =       'merchant_id';
-    const CUSTOMER_ID       =       'customer_id';
-    const DEVICE_TOKEN      =       'device_token';
+    use SoftDeletingTrait;
+
+    const MERCHANT_ID           = 'merchant_id';
+    const CUSTOMER_ID           = 'customer_id';
+    const DEVICE_TOKEN          = 'device_token';
+    const CREATED_AT            = 'created_at';
+    const UPDATED_AT            = 'updated_at';
+    const DELETED_AT            = 'deleted_at';
 
     protected static $sign      = 'capp';
 

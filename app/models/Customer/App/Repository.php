@@ -24,13 +24,13 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function fetchAppsByDeviceToken($deviceToken, $customer, $merchant)
+    public function fetchAppsByDeviceToken($customer, $merchant, $deviceToken)
     {
         $repo = $this->repo;
 
-        return $repo::where(App\Entity::DEVICE_TOKEN, '=', $deviceToken)
-                    ->where(App\Entity::CUSTOMER_ID, '=', $customer->getId())
+        return $repo::where(App\Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(App\Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(App\Entity::DEVICE_TOKEN, '=', $deviceToken)
                     ->get();
     }
 }
