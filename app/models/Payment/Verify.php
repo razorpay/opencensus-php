@@ -18,12 +18,11 @@ class Verify
 
     const MIN_TIME_BEFORE_VERIFY = 120; // 1 minute
 
-    public function __construct($mode, $trace, $exceptionHandler)
+    public function __construct($mode, $trace)
     {
         $this->mode = $mode;
         $this->trace = $trace;
         $this->core = new Payment\Core;
-        $this->exceptionHandler = $exceptionHandler;
         $this->repo = new Payment\Repository;
     }
 
@@ -131,13 +130,8 @@ class Verify
                 // @note: If payment verification fails due to any reason
                 // other than expected ones, we should log it as an error
                 // exception.
-                //
-                // If for eg, exception is BadRequestException, then it won't
-                // get logged by global handler because it's not a critical
-                // exception but in this context it really shouldn't have
-                // occurred.
 
-                $this->exceptionHandler->traceException($e);
+                $this->trace->traceException($e);
 
                 // Just continue
                 $error++;
