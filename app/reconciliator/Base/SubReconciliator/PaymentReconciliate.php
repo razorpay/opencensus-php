@@ -168,7 +168,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 ]);
 
             // Set the payment transaction for the row.
-            $this->paymentTransaction = $this->payment->transaction;
+            $this->paymentTransaction = $this->payment->reload()->transaction;
 
             return true;
         }
