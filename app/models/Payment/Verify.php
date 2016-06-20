@@ -18,6 +18,11 @@ class Verify
 
     const MIN_TIME_BEFORE_VERIFY = 120; // 1 minute
 
+    const SUCCESS       = 'success';
+    const ERROR         = 'error';
+    const AUTHORIZED    = 'authorized';
+    const TIMEOUT       = 'timeout';
+
     public function __construct($mode, $trace)
     {
         $this->mode = $mode;
@@ -95,46 +100,31 @@ class Verify
 
         foreach ($payments as $payment)
         {
-            $merchant = $payment->merchant;
+            $res = $this->verifyPayment($payment);
 
-            try
+            switch ($res)
             {
-                $res = $this->processor($merchant)->verify($payment);
+                case self::SUCCESS:
+                    $verified++;
+                    break;
 
-                $verified++;
-            }
-            catch (Exception\PaymentVerificationException $e)
-            {
-                $failed++;
+                case self::TIMEOUT:
+                    $timedOut++;
+                    break;
 
-                // Attempt to authorize payments whose verification failed
-                $this->processor($merchant)->authorizeFailedPayment($payment);
+                case self::AUTHORIZED:
+                    $failed++;
+                    $timeDiff += $time - $payment->getCreatedAt();
+                    $authorized++;
+                    break;
 
-                $timeDiff += $time - $payment->getCreatedAt();
+                case self::ERROR:
+                    $error++;
+                    break;
 
-                $authorized++;
-
-                // Now Just continue
-            }
-            catch (Exception\GatewayTimeoutException $e)
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                    ['payment_id' => $payment->getId()]);
-
-                // Just continue
-                $timedOut++;
-            }
-            catch (\Exception $e)
-            {
-                // @note: If payment verification fails due to any reason
-                // other than expected ones, we should log it as an error
-                // exception.
-
-                $this->trace->traceException($e);
-
-                // Just continue
-                $error++;
+                default:
+                    throw new Exception\LogicException(
+                        'Unknown result code: ' . $res);
             }
         }
 
@@ -171,6 +161,46 @@ class Verify
         }
 
         return $results;
+    }
+
+    protected function verifyPayment($payment)
+    {
+        $merchant = $payment->merchant;
+
+        try
+        {
+            $res = $this->processor($merchant)->verify($payment);
+
+            return self::SUCCESS;
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            // Attempt to authorize payments whose verification failed
+            $this->processor($merchant)->authorizeFailedPayment($payment);
+
+            return self::AUTHORIZED;
+            // Now Just continue
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                ['payment_id' => $payment->getId()]);
+
+            // Just continue
+            return self::TIMEOUT;
+        }
+        catch (\Exception $e)
+        {
+            // @note: If payment verification fails due to any reason
+            // other than expected ones, we should log it as an error
+            // exception.
+
+            $this->trace->traceException($e);
+
+            // Just continue
+            return self::ERROR;
+        }
     }
 
     protected function processor($merchant = null)
