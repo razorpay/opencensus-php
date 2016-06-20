@@ -490,11 +490,6 @@ class Gateway extends Base\Gateway
     {
         $url = $this->getWsdlFile();
 
-        if ($this->mode === Mode::TEST)
-        {
-            $url = Url::TEST_DOMAIN.Url::TARGET;
-        }
-
         $auth = array('username' => $input['terminal']['gateway_terminal_id'],
                 'password' => $input['terminal']['gateway_terminal_password']);
         $soapClient = new ExtendedClient($url, array(), $auth);
