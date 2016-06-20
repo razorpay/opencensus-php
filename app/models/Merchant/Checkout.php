@@ -2,9 +2,9 @@
 
 namespace Models\Merchant;
 
+use App;
 use Constants\Mode;
 use Models\Customer;
-use Models\Customer\App;
 use Models\Merchant;
 use Models\Payment;
 use Models\Order;
@@ -17,6 +17,11 @@ use Session;
 class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+    }
 
     public function getPreferences($merchant, $mode, $input)
     {
@@ -44,7 +49,7 @@ class Checkout
         }
         catch(\Exception $ex)
         {
-            //;
+            $this->app['trace']->traceException($ex);
         }
 
         return $orderData ;
@@ -79,8 +84,7 @@ class Checkout
         }
         catch (\Exception $e)
         {
-            //log error and ignore
-            //s($e);
+            $this->app['trace']->traceException($ex);
         }
 
         return $custData;
@@ -90,16 +94,16 @@ class Checkout
     {
         // check if appToken or device token is present in session
         $appToken = Session::get(Payment\Entity::APP_TOKEN);
-        $deviceToken = Session::get(App\Entity::DEVICE_TOKEN);
+        $deviceToken = Session::get(Customer\App\Entity::DEVICE_TOKEN);
 
         if (isset($input[Payment\Entity::APP_TOKEN]) === false)
         {
             $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
 
-        if (isset($input[App\Entity::DEVICE_TOKEN]) === false)
+        if (isset($input[Customer\App\Entity::DEVICE_TOKEN]) === false)
         {
-            $input[App\Entity::DEVICE_TOKEN] = $deviceToken;
+            $input[Customer\App\Entity::DEVICE_TOKEN] = $deviceToken;
         }
     }
 
@@ -159,11 +163,11 @@ class Checkout
                 $data['customer'] = $custData;
             }
         }
-        else if ((isset($input[App\Entity::DEVICE_TOKEN])) and
+        else if ((isset($input[Customer\App\Entity::DEVICE_TOKEN])) and
                 (isset($input['contact'])))
         {
             $response = (new Customer\Service)->validateDeviceToken(
-                $input[App\Entity::DEVICE_TOKEN],
+                $input[Customer\App\Entity::DEVICE_TOKEN],
                 $input);
 
             $data['customer'] = array(
