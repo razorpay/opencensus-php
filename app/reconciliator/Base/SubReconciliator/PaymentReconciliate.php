@@ -167,9 +167,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'gateway'    => get_called_class()
                 ]);
 
-            // Set the payment transaction for the row.
-            $this->payment = $this->payment->reload();
+            // Alternative to reload because reload wasn't working for reasons unknown.
+            $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
 
+            // Set the payment transaction for the row.
             $this->paymentTransaction = $this->payment->transaction;
 
             if ($this->paymentTransaction === null)
