@@ -561,9 +561,18 @@ class Processor
      */
     protected function lockForUpdate($payment)
     {
-        $this->payment = $this->repo->lockForUpdate($payment->getKey());
+        $lockedPayment = $this->repo->lockForUpdate($payment->getKey());
 
-        $payment->setRawAttributes($this->payment->getAttributes(), true);
+        //
+        // When $this->payment is being passed in the argument,
+        // $this->payment will be the same object as $payment.
+        // When $this->payment and $payment are two different objects,
+        // we update both of them.
+        //
+        
+        $this->payment->setRawAttributes($lockedPayment->getAttributes(), true);
+
+        $payment->setRawAttributes($lockedPayment->getAttributes(), true);
     }
 
     protected function setPayment($payment)

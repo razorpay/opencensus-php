@@ -1122,41 +1122,39 @@ trait Authorize
     {
         $this->repo->transaction(function()
         {
-            $payment = $this->payment;
+            $this->lockForUpdate($this->payment);
 
-            $this->lockForUpdate($payment);
-
-            if ($payment->getStatus() === Status::AUTHORIZED)
+            if ($this->payment->getStatus() === Status::AUTHORIZED)
             {
                 return;
             }
 
-            $payment->setErrorNull();
+            $this->payment->setErrorNull();
 
-            $payment->setAmountAuthorized();
+            $this->payment->setAmountAuthorized();
 
-            $payment->setStatus(Payment\Status::AUTHORIZED);
+            $this->payment->setStatus(Payment\Status::AUTHORIZED);
 
-            $payment->setAuthorizeTimestamp();
+            $this->payment->setAuthorizeTimestamp();
 
-            $payment->terminal->incrementUsedCount();
+            $this->payment->terminal->incrementUsedCount();
 
-            $payment->saveOrFail();
-            $payment->terminal->saveOrFail();
+            $this->payment->saveOrFail();
+            $this->payment->terminal->saveOrFail();
 
-            if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+            if ($this->isGatewayActuallyAuthorizingPayment($this->payment) === false)
             {
                 // Also sets the transaction association with the payment.
-                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
                 $txn->saveOrFail();
             }
 
-            $payment->saveOrFail();
+            $this->payment->saveOrFail();
 
             // If payment has an associated order
             // set the order to be paid
-            $this->updateAuthorizedOrderStatus($payment);
+            $this->updateAuthorizedOrderStatus($this->payment);
 
             $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
