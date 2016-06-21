@@ -69,6 +69,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
     );
 
+    protected static $cybersourceTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:cybersource',
+        //Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+    );
+
     protected static $axisMigsEditTerminalRules = array(
         Entity::GATEWAY                     => 'sometimes|in:axis_migs',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
