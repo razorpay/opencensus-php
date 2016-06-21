@@ -29,11 +29,6 @@ class Service extends Base\Service
         {
             case 'netbanking':
                 $gateways = Payment\Gateway::$netbankingToGatewayMap;
-
-                // Refund file for kotak To be generated along with claims file.
-                // Removing from here.
-                // unset($gateways[IFSC::KKBK]);
-
                 $type = Payment\Entity::BANK;
 
                 if (isset($input['bank']))
@@ -72,6 +67,7 @@ class Service extends Base\Service
 
     protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
+        // Handling netbanking kotak using seperate file.
         if (($gatewayCode === IFSC::KKBK) and
             ($type === Payment\Entity::BANK))
         {
