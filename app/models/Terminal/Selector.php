@@ -4,6 +4,15 @@ namespace Models\Terminal;
 
 class Selector
 {
+
+    protected static $filters = [
+
+    ];
+
+    protected static $sorters = [
+
+    ];
+
     public function setup($payment, $mode)
     {
         $this->mode = $mode;
@@ -18,13 +27,11 @@ class Selector
 
     public function getTerminals()
     {
-        $merchantTerminals = $this->repo->getLiveTerminalsByMerchantId($this->merchant->getId());
+        // Fetch Live terminals for both the current merchant and the shared Merchant
+        $merchantTerminals = $this->repo->
+            getLiveTerminalsForMerchantAndSharedMerchant($this->merchant->getId());
 
-        $sharedTerminals = $this->getSharedTerminalsOnCommonAccount();
-
-        $allTerminals = [$merchantTerminals, $sharedTerminals];
-
-        return $allTerminals;
+        return $merchantTerminals;
     }
 
     public function select($payment, $mode)
@@ -33,9 +40,19 @@ class Selector
 
         $terminals = $this->getTerminals();
 
+
+        foreach (self::$filters as $filter)
+        {
+
+        }
+
+
+        foreach (self::$sorters as $sorter)
+        {
+
+        }
+
     }
-
-
 
 
 }
