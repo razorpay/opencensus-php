@@ -7,6 +7,7 @@ use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;
 use Models\Transaction;
+use Models\Payment\Verify;
 
 use Gateway\AxisMigs;
 
@@ -112,6 +113,91 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
+    protected function validatePaymentStatus()
+    {
+        $paymentStatus = $this->payment->getStatus();
+
+        if ($paymentStatus !== Payment\Status::FAILED)
+        {
+            return true;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code' => TraceCode::RECON_MISMATCH,
+                'message'    => 'Payment status is failed. Trying to authorize.',
+                'payment_id' => $this->payment->getId(),
+                'gateway'    => get_called_class()
+            ]);
+
+        return $this->tryAuthorizeFailedPayment();
+    }
+
+    protected function tryAuthorizeFailedPayment()
+    {
+        $paymentService = new Payment\Service();
+
+        try
+        {
+            // Try to make it authorized
+            $verifyResponse = $paymentService->verifyPayment($this->payment);
+        }
+        catch(\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Verification/Authorization threw an exception. -> ' . $ex->getMessage(),
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            $this->app['trace']->traceException($ex);
+
+            return false;
+        }
+
+        if ($verifyResponse === Verify::AUTHORIZED)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECONCILIATION_INFO_ALERT,
+                    'message'    => 'Verify returned authorized.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            // Set the payment transaction for the row.
+            $this->paymentTransaction = $this->payment->reload()->transaction;
+
+            return true;
+        }
+
+        if ($verifyResponse === Verify::SUCCESS)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Verify returned failed. Payment is still in failed state.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::RECON_FAILED_VERIFY,
+                'message'       => 'Verify command failed or unable to recognize the response.',
+                'payment_id'    => $this->payment->getId(),
+                'verify_status' => $verifyResponse,
+                'gateway'       => get_called_class()
+            ]);
+
+        return false;
+    }
+
     protected function persistReconciliationData($rowDetails)
     {
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
@@ -154,8 +240,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'payment_id' => $paymentId,
                         'gateway'    => get_called_class()
                     ]);
-
-                return null;
             }
         }
         catch (\Exception $ex)
