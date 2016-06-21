@@ -26,6 +26,7 @@ return array(
         'sharp',
         'sbiepay',
         'wallet_olamoney',
+        'upi_icici',
         'wallet_payzapp',
         'wallet_payumoney',
     ),
@@ -45,6 +46,7 @@ return array(
     'mock_ebs'              => env('EBS_MOCK'),
     'mock_sbiepay'          => false,
     'mock_wallet_olamoney'  => env('OLAMONEY_MOCK'),
+    'mock_upi_icici'        => false,
     'mock_wallet_payzapp'   => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney' => env('PAYUMONEY_MOCK'),
 
@@ -115,6 +117,10 @@ return array(
     'paytm' => array(
         'test_merchant_id'  => env('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('PAYTM_GATEWAY_TEST_HASH_SECRET'),
+    ),
+
+    'upi_icici' =>  array(
+        'test_merchant_id'  => $_ENV['UPI_ICICI_GATEWAY_MERCHANT_ID'],
     ),
 
     'wallet_payzapp' => array(
