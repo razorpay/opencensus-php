@@ -130,7 +130,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $payment = $this->lockForUpdateAndRetrievePayment();
+            $this->lockForUpdate($payment);
 
             assert ($payment->isFailed() === true);
 
@@ -153,11 +153,13 @@ trait Authorize
      * processing (auth).
      * Returning from this function implies payment action has been successful.
      *
-     * @param  string              $id      Payment id
-     * @param  array               $input   contains fields provided
-     *                                      by bank
+     * @param string $id Payment id
+     * @param string $hash
+     * @param array  $gatewayInput contains fields provided
+     *                             by bank
      *
-     * @return Payment\Entity           Updated payment entity
+     * @return Payment\Entity Updated payment entity
+     * @throws Exception\BadRequestException
      */
     public function callback($id, $hash, array $gatewayInput)
     {
@@ -419,7 +421,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $payment = $this->lockForUpdateAndRetrievePayment();
+            $this->lockForUpdate($payment);
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
@@ -1120,7 +1122,9 @@ trait Authorize
     {
         $this->repo->transaction(function()
         {
-            $payment = $this->lockForUpdateAndRetrievePayment();
+            $payment = $this->payment;
+
+            $this->lockForUpdate($payment);
 
             if ($payment->getStatus() === Status::AUTHORIZED)
             {

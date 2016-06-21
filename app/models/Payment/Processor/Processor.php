@@ -545,13 +545,25 @@ class Processor
         return $this->payment;
     }
 
-    protected function lockForUpdateAndRetrievePayment()
+    /**
+     * Sets both, the instance payment object and the passed
+     * payment object, to the new payment object which is locked
+     * for update.
+     *
+     * setRawAttributes is being used because of the way php
+     * handles pass by reference for objects. If the passed object
+     * is ASSIGNED to another object/value, the original object
+     * from the calling function remains unaffected.
+     * Any change ON the passed object will affect the original
+     * object too.
+     *
+     * @param $payment
+     */
+    protected function lockForUpdate($payment)
     {
-        $payment = $this->repo->lockForUpdate($this->payment->getKey());
+        $this->payment = $this->repo->lockForUpdate($payment->getKey());
 
-        $this->setPayment($payment);
-
-        return $payment;
+        $payment->setRawAttributes($this->payment->getAttributes(), true);
     }
 
     protected function setPayment($payment)
