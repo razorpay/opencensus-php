@@ -12,17 +12,17 @@ class TransactionFilter extends Terminal\TerminalFilter
         'bank',
     ];
 
-    public function methodFilter($input, $terminal)
+    public function methodFilter($terminal, $input)
     {
         '';
     }
 
-    public function internationalFilter($input, $terminal)
+    public function internationalFilter($terminal, $input)
     {
 
     }
 
-    public function bankFilter($input, $terminal)
+    public function bankFilter($terminal, $input)
     {
 
     }

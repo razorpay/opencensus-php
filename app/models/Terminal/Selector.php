@@ -40,16 +40,18 @@ class Selector
 
         $terminals = $this->getTerminals();
 
+        $filteredTerminals = $terminals;
 
         foreach (self::$filters as $filter)
         {
-
+            $filteredTerminals = $filter->filter($input, $filteredTerminals);
         }
 
+        $sortedTerminals = $filteredTerminals;
 
         foreach (self::$sorters as $sorter)
         {
-
+            $sortedTerminals = $sorter->sort($input, $sortedTerminals);
         }
 
     }
