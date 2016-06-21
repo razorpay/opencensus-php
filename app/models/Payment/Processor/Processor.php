@@ -542,25 +542,21 @@ class Processor
         $this->payment = $this->core->retrieveByIdAndMerchantId(
                                     $id, $this->merchant->getKey());
 
-        $card = $this->payment->card()->first();
-
         return $this->payment;
     }
 
-    protected function lockForUpdateAndRetrievePayment(& $payment)
+    protected function lockForUpdateAndRetrievePayment()
     {
-        $payment = $this->repo->lockForUpdate($payment->getKey());
+        $payment = $this->repo->lockForUpdate($this->payment->getKey());
 
-        $this->payment = $payment;
+        $this->setPayment($payment);
 
-        return $this->payment;
+        return $payment;
     }
 
     protected function setPayment($payment)
     {
         $this->payment = $payment;
-
-        $card = $this->payment->card()->first();
     }
 
     protected function tracePaymentNewRequest($input)
