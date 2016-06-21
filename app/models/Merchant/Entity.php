@@ -117,6 +117,12 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL              => null,
     );
 
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::LOGO_URL
+    );
+
     protected function generateTransactionReportEmail($input)
     {
         $email = array($input[self::EMAIL]);
@@ -371,14 +377,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LOGO_URL);
     }
 
-    protected function getLogoUrlAttribute($size = self::ORIGINAL_SIZE)
+    public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
-        $relativeLogoUrl = $this->attributes[self::LOGO_URL];
-
-        if ($relativeLogoUrl === null)
-        {
-            return null;
-        }
+        $relativeLogoUrl = $this->getLogoUrl();
 
         // Different cdn urls for different contexts.
         $context = Config::get('app.context');
@@ -488,6 +489,14 @@ class Entity extends Base\PublicEntity
     public function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
+    public function setPublicLogoUrlAttribute(array & $array)
+    {
+        if (empty($array[self::LOGO_URL]) === false)
+        {
+            $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
+        }
     }
 
     public function getSettlementSchedule()
