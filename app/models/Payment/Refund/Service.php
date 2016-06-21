@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Models\Bank\IFSC;
 use Models\Base;
 use Models\Gateway;
+use Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;
@@ -31,7 +32,7 @@ class Service extends Base\Service
 
                 // Refund file for kotak To be generated along with claims file.
                 // Removing from here.
-                unset($gateways[IFSC::KKBK]);
+                // unset($gateways[IFSC::KKBK]);
 
                 $type = Payment\Entity::BANK;
 
@@ -74,9 +75,7 @@ class Service extends Base\Service
         if (($gatewayCode === IFSC::KKBK) and
             ($type === Payment\Entity::BANK))
         {
-            $input = Input::all();
-
-            $result = (new Gateway\Netbanking\Kotak\DailyFiles)->generate($from, $to);
+            $result = (new Netbanking\Kotak\DailyFiles)->generate($from, $to);
 
             return $result;
         }
