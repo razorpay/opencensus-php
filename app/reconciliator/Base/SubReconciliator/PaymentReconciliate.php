@@ -168,7 +168,31 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 ]);
 
             // Set the payment transaction for the row.
-            $this->paymentTransaction = $this->payment->reload()->transaction;
+            $this->payment = $this->payment->reload();
+
+            $this->paymentTransaction = $this->payment->transaction;
+
+            if ($this->paymentTransaction === null)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                        'message'    => 'Transaction is null after verifying and authorizing the payment.',
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => get_called_class()
+                    ]);
+
+                return false;
+            }
+
+            $this->app['trace']->info(
+                TraceCode::RECONCILIATION_INFO_ALERT,
+                [
+                    'message'    => 'Transaction set after verifying and authorizing the payment.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class(),
+                ]
+            );
 
             return true;
         }
