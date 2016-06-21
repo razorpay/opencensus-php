@@ -371,7 +371,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LOGO_URL);
     }
 
-    public function getLogoUrlAttribute($size = self::ORIGINAL_SIZE)
+    protected function getLogoUrlAttribute($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->attributes[self::LOGO_URL];
 
