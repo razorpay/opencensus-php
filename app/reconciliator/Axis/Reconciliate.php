@@ -21,11 +21,11 @@ class Reconciliate extends Base\Reconciliate
      */
     protected function getTypeName($fileName)
     {
-        if (strpos(self::REFUND, $fileName) !== false)
+        if (strpos($fileName, self::REFUND) !== false)
         {
             $typeName = self::REFUND;
         }
-        else if (strpos(self::SALE, $fileName) !== false)
+        else if (strpos($fileName, self::SALE) !== false)
         {
             $typeName = self::PAYMENT;
         }
