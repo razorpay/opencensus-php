@@ -124,7 +124,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->messenger->raiseReconAlert(
             [
-                'trace_code' => TraceCode::RECON_MISMATCH,
+                'trace_code' => TraceCode::RECON_INFO_ALERT,
                 'message'    => 'Payment status is failed. Trying to authorize.',
                 'payment_id' => $this->payment->getId(),
                 'gateway'    => get_called_class()
@@ -159,15 +159,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($verifyResponse === Verify::AUTHORIZED)
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code' => TraceCode::RECONCILIATION_INFO_ALERT,
                     'message'    => 'Verify returned authorized.',
                     'payment_id' => $this->payment->getId(),
                     'gateway'    => get_called_class()
-                ]);
+                ]
+            );
 
-            // Alternative to reload because reload wasn't working for reasons unknown.
             $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
 
             // Set the payment transaction for the row.
@@ -185,15 +185,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
                 return false;
             }
-
-            $this->app['trace']->info(
-                TraceCode::RECONCILIATION_INFO_ALERT,
-                [
-                    'message'    => 'Transaction set after verifying and authorizing the payment.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class(),
-                ]
-            );
 
             return true;
         }
@@ -238,7 +229,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function getRowDetailsStructured($row)
     {
         $this->app['trace']->info(
-            TraceCode::RECONCILIATION_FILE_ROW,
+            TraceCode::RECON_FILE_ROW,
             $row
         );
 
@@ -342,7 +333,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'      => TraceCode::RECONCILIATION_INFO_ALERT,
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'message'         => 'IIN absent for the card.',
                     'card_id'         => $this->payment->card->getId(),
                     'payment_id'      => $this->payment->getId(),
