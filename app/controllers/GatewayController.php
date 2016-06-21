@@ -98,13 +98,4 @@ class GatewayController extends BaseController
 
         return ['nb' => $nb, 'mode' => $mode];
     }
-
-    public function generateKotakFiles()
-    {
-        $input = Input::all();
-
-        $result = (new Gateway\Netbanking\Kotak\DailyFiles)->generate($input);
-
-        return $result;
-    }
 }

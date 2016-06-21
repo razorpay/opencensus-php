@@ -16,12 +16,14 @@ class DailyFiles
         $this->app = \App::getFacadeRoot();
 
         $this->mode = $this->app['basicauth']->getMode();
+
+        $this->bankCode = IFSC::KKBK;
+
+        $this->gateway = Payment\Gateway::$netbankingToGatewayMap[$this->bankCode];
     }
 
-    public function generate($input)
+    public function generate($from, $to)
     {
-        list($from, $to) = $this->getTimestamps($input);
-
         list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to);
 
         list($claimsAmount, $claimsFile) = $this->getClaimsData($from, $to);
@@ -38,12 +40,8 @@ class DailyFiles
 
     protected function getRefundsData($from, $to)
     {
-        $bankCode = IFSC::KKBK;
-
-        $gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
-
         $refunds = (new Payment\Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
-                                    Payment\Entity::BANK, $bankCode, $from, $to, $gateway);
+                                    Payment\Entity::BANK, $this->bankCode, $from, $to, $this->gateway);
 
         $count = $refunds->count();
 
@@ -77,14 +75,10 @@ class DailyFiles
 
     protected function getClaimsData($from, $to)
     {
-        $bankCode = IFSC::KKBK;
-
-        $gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
-
         $status = [Payment\Status::CAPTURED, Payment\Status::REFUNDED];
 
         $claims = (new Payment\Repository)->
-                        fetchPaymentsWithStatus($from, $to, $gateway, $status);
+                        fetchPaymentsWithStatus($from, $to, $this->gateway, $status);
 
         if ($claims->count() === 0)
         {
@@ -158,8 +152,7 @@ class DailyFiles
 
         $this->mail->queue('emails.admin.kotak_refunds', $data, function($message) use ($data)
         {
-            //settlements@razorpay.com
-            $emails = ['giridar123@gmail.com'];
+            $emails = ['settlements@razorpay.com'];
 
             $message->from('settlement@razorpay.com', 'Kotak Netbanking Refunds');
 

@@ -178,7 +178,6 @@ final class Route
         'gateway_payment_callback_post'           => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotakCancel'                             ],
-        'gateway_netbanking_kotak_generate_files' => ['post',     'gateway/netbanking_kotak/generate/files',  'GatewayController@generateKotakFiles'                              ],
         'reconciliate'                            => ['post',     'reconciliate',                             'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                            'AdminController@getTriggerError'                                   ],
@@ -395,7 +394,6 @@ final class Route
         'refund_verify',
         'es_migrate_entity',
         'dummy_critical_error',
-        'gateway_netbanking_kotak_generate_files',
         'reconciliate',
     );
 
@@ -468,7 +466,6 @@ final class Route
                 'payment_capture_reminder',
                 'emi_generate_excel',
                 'es_migrate_entity',
-                'gateway_netbanking_kotak_generate_files'
             ),
 
             'mailgun' => array(

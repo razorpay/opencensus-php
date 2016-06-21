@@ -71,10 +71,22 @@ class Service extends Base\Service
 
     protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
-        $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
-                                        $type, $gatewayCode, $from, $to, $gateway);
+        if (($gatewayCode === IFSC::KKBK) and
+            ($type === Payment\Entity::BANK))
+        {
+            $input = Input::all();
 
-        return $this->generateRefundFile($refunds);
+            $result = (new Gateway\Netbanking\Kotak\DailyFiles)->generate($from, $to);
+
+            return $result;
+        }
+        else
+        {
+            $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+                                            $type, $gatewayCode, $from, $to, $gateway);
+
+            return $this->generateRefundFile($refunds);
+        }
     }
 
     protected function generateRefundFile($refunds)
