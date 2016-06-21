@@ -39,14 +39,14 @@ class ExtendedClient extends SoapClient
   	        $soapHeaderDOM->loadXML($soapHeader);
 
           	$node = $requestDOM->importNode($soapHeaderDOM->firstChild, true);
-          	$requestDOM->firstChild->insertBefore(
-                   	$node, $requestDOM->firstChild->firstChild);
+          	$requestDOM->firstChild->insertBefore($node, $requestDOM->firstChild->firstChild);
 
             $request = $requestDOM->saveXML();
         }
         catch (DOMException $e) 
         {
-            throw new Exception('Error Processing Request', 1);
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR);
         }
 
         return parent::__doRequest($request, $location, $action, $version);

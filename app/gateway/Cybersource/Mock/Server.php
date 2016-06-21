@@ -1,14 +1,14 @@
 <?php
  
- namespace Gateway\Cybersource\Mock;
+namespace Gateway\Cybersource\Mock;
  
- use EE\Exception;
- use Gateway\Base;
- use Models\Card;
- use Models\Payment;
- use App;
- use Http;
- 
+use EE\Exception;
+use Gateway\Base;
+use Models\Card;
+use Models\Payment;
+use App;
+use Http;
+use Gateway\Cybersource\Payment as Pay;
  
 class Server extends Base\Mock\Server
 {
@@ -18,6 +18,8 @@ class Server extends Base\Mock\Server
     {
         if (isset($request->payerAuthEnrollService))
         {
+            $this->validateEnrollInput((array) $request);
+
             return $this->getEnrollResponse($request);
         }
 
@@ -28,6 +30,8 @@ class Server extends Base\Mock\Server
 
         if (isset($request->ccAuthService))
         {
+            $this->validateAuthorizeInput((array) $request);
+
             return $this->postEnrollAuthorize($request);
         }
 
@@ -42,18 +46,12 @@ class Server extends Base\Mock\Server
         }
     }
 
-    public function postNotEnrolledAuthorize($input, $enrollResponse)
-    {
-        $response = new \stdClass();
-
-    }
-
     public function getRefundResponse($request)
      {
         $response = new \stdClass();
 
         $response->decision = 'ACCEPT';
-        $response->reasonCode = 100;
+        $response->reasonCode = Pay\Result::SUCCESS;
         $response->requestID = '4661549029556297301014';
         $response->merchantReferenceCode = 'razorpay';
 
@@ -71,7 +69,7 @@ class Server extends Base\Mock\Server
         $response = new \stdClass();
 
         $response->decision = 'ACCEPT';
-        $response->reasonCode = 100;
+        $response->reasonCode = Pay\Result::SUCCESS;
         $response->requestID = '4661468455476856801016';
 
         $ccCaptureReply = new \stdClass();
@@ -87,7 +85,7 @@ class Server extends Base\Mock\Server
         $response = new \stdClass();
 
         $response->decision = 'ACCEPT';
-        $response->reasonCode = 100;
+        $response->reasonCode = Pay\Result::SUCCESS;
 
         $payerAuthValidateReply = new \stdClass();
         $payerAuthValidateReply->eciRaw = '05';
@@ -106,7 +104,7 @@ class Server extends Base\Mock\Server
         $response = new \stdClass();
 
         $response->decision = 'ACCEPT';
-        $response->reasonCode = 100;
+        $response->reasonCode = Pay\Result::SUCCESS;
         $response->requestID = '4661454138166750401020';
 
         $ccAuthReply = new \stdClass();
@@ -128,7 +126,7 @@ class Server extends Base\Mock\Server
         {
             $response->merchantReferenceCode = 'razorpay';
             $response->decision = 'REJECT';
-            $response->reasonCode = 475;
+            $response->reasonCode = Pay\Result::ENROLLED;
             $response->requestID = 'f32n23ke';
             
             $params = array('gateway' => 'cybersource');
@@ -142,7 +140,7 @@ class Server extends Base\Mock\Server
         {
             $response->merchantReferenceCode = 'razorpay';
             $response->decision = 'ACCEPT';
-            $response->reasonCode = 100;
+            $response->reasonCode = Pay\Result::SUCCESS;
             $response->requestID = 'f32n23ke';
 
             $response->payerAuthEnrollReply->veresEnrolled = 'U';
@@ -153,7 +151,7 @@ class Server extends Base\Mock\Server
         {
             $response->merchantReferenceCode = 'razorpay';
             $response->decision = 'ACCEPT';
-            $response->reasonCode = 100;
+            $response->reasonCode = Pay\Result::SUCCESS;
             $response->requestID = 'f32n23ke';
 
             $response->payerAuthEnrollReply->commerceIndicator = 'internet';
@@ -165,6 +163,8 @@ class Server extends Base\Mock\Server
 
     public function acs($input)
     {
+        $this->validateAuthenticateInput($input);
+
         return array('PaRes' => 'eNpVUttygjAQfc9XMP0AkiAw',
                      'MD' => $input['MD'],
                      'TermUrl' => $input['TermUrl']);

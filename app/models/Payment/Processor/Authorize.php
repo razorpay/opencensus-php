@@ -42,6 +42,7 @@ trait Authorize
         {
             return $this->runOtpPaymentFlow($gatewayInput, $payment);
         }
+
         $request = $this->callGatewayAuthorize($gatewayInput);
 
         //
@@ -247,7 +248,8 @@ trait Authorize
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
-        if (($payment->isGateway('cybersource') === true) and ($payment->isMethod('card') === true))
+        if (($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and 
+            ($payment->isMethod('card') === true))
         {
             $payment->card->vault_token = Card\Tokenex::getVaultToken($input['card']['number']);
             (new Card\Repository)->saveOrFail($payment->card);

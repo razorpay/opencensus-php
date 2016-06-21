@@ -154,6 +154,16 @@ class Server
         $this->validateActionInput($input, 'auth');
     }
 
+    protected function validateEnrollInput($input)
+    {
+        $this->validateActionInput($input, 'enroll');
+    }
+
+    protected function validateAuthenticateInput($input)
+    {
+        $this->validateActionInput($input, 'validate');
+    }
+
     protected function validateActionInput($input, $action = null)
     {
         if ($action === null)

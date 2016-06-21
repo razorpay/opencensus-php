@@ -58,19 +58,18 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterValidate($input, $response, $request)
     {
+        $repo = $this->getRepo();
+
+        $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_VALIDATE_ERROR,
                 (array) $response);
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array('error_code' => $response->reasonCode);
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
+            
         }
         else
         {
@@ -83,15 +82,11 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
             
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
-                'eci' => $response->payerAuthValidateReply->eciRaw,
+                'eci'                => $response->payerAuthValidateReply->eciRaw,
                 'commerce_indicator' => $response->payerAuthValidateReply->commerceIndicator,
-                'xid' => $response->payerAuthValidateReply->xid,
-                'pares_status' => $response->payerAuthValidateReply->paresStatus);
+                'xid'                => $response->payerAuthValidateReply->xid,
+                'pares_status'       => $response->payerAuthValidateReply->paresStatus);
             
             $network = $input['card']['network'];
 
@@ -110,10 +105,10 @@ class Gateway extends Base\Gateway
                     throw new Exception\LogicException('Should not rech here.');
                     break;
             }
-            
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
         }
+
+        $gateway->fill($attributes);
+        $gateway->saveOrFail();
     }
 
     protected function postAuthEnrolledRequest($input)
@@ -184,22 +179,19 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterNotEnrolledAuthorize($input, $response, $request)
     {
+        $repo = $this->getRepo();
+
+        $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-                
             $attributes = array(
-                'status' => Payment\Status::AUTHORIZE_FAILED,
+                'status'     => Payment\Status::AUTHORIZE_FAILED,
                 'error_code' => $response->reasonCode);
-
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
         }
         else
         {
@@ -216,36 +208,29 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
-                'ref' => $response->requestID,
+                'ref'    => $response->requestID,
                 'status' => $status);
-
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
         }
+        $gateway->fill($attributes);
+        $gateway->saveOrFail();
     }
 
     protected function persistAfterAuthorize($input, $response, $request)
     {
+        $repo = $this->getRepo();
+
+        $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_AUTHORIZE_ERROR,
                 (array) $response);
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
-                'status' => Payment\Status::AUTHORIZE_FAILED,
+                'status'     => Payment\Status::AUTHORIZE_FAILED,
                 'error_code' => $response->reasonCode);
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
         }
         else
         {
@@ -262,17 +247,13 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
-                'ref' => $response->requestID,
+                'ref'    => $response->requestID,
                 'status' => $status);
-
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
         }
+
+        $gateway->fill($attributes);
+        $gateway->saveOrFail();
     }
 
     public function createAuthEnrolledRequestFields($input)
@@ -425,7 +406,7 @@ class Gateway extends Base\Gateway
 
             $this->persistAfterCapture($input, $reply, $request);
 
-            if ($reply->reasonCode != Payment\Result::SUCCESS)
+            if ($reply->reasonCode !== Payment\Result::SUCCESS)
             {
                 throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED);
             }
@@ -532,8 +513,8 @@ class Gateway extends Base\Gateway
         $request = $this->getEnrollRequestObject($input);
 
         $this->trace->error(
-                TraceCode::GATEWAY_ENROLL_REQUEST,
-                (array) $request);
+            TraceCode::GATEWAY_ENROLL_REQUEST,
+            (array) $request);
 
         try
         {
@@ -561,12 +542,10 @@ class Gateway extends Base\Gateway
                 (array) $response);
 
             $attributes = array(
-                'payment_id'            => $input['payment']['id'],
-                'amount'                => $request->item[0]->unitPrice,
-                'error_code'            => $response->reasonCode,
-                'status'                => Payment\Status::CREATED);
-
-            $this->getRepo()->createOrFail($attributes);
+                'payment_id'    => $input['payment']['id'],
+                'amount'        => $request->item[0]->unitPrice,
+                'error_code'    => $response->reasonCode,
+                'status'        => Payment\Status::CREATED);
         }
         else
         {
@@ -575,33 +554,31 @@ class Gateway extends Base\Gateway
                 (array) $response);
 
             $attributes = array(
-                'payment_id'                => $input['payment']['id'],
-                'amount'                    => $request->item[0]->unitPrice,
-                'status'                    => Payment\Status::CREATED,
-                'ref'                       => $response->requestID);
-
-            $this->getRepo()->createOrFail($attributes);
+                'payment_id'    => $input['payment']['id'],
+                'amount'        => $request->item[0]->unitPrice,
+                'status'        => Payment\Status::CREATED,
+                'ref'           => $response->requestID);
         }
+
+        $this->getRepo()->createOrFail($attributes);
     }
 
     protected function persistAfterCapture($input, $response, $request)
     {
+        $repo = $this->getRepo();
+
+        $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_CAPTURE_ERROR,
                 (array) $response);
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
-                'status' => Payment\Status::CAPTURE_FAILED,
+                'status'     => Payment\Status::CAPTURE_FAILED,
                 'error_code' => $response->reasonCode,
-                'action' => Base\Action::CAPTURE);
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
+                'action'     => Base\Action::CAPTURE);
         }
         else
         {
@@ -618,37 +595,31 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
                 'capture_ref' => $response->requestID,
-                'status' => $status,
-                'action' => Base\Action::CAPTURE);
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
+                'status'      => $status,
+                'action'      => Base\Action::CAPTURE);
         }
+
+        $gateway->fill($attributes);
+        $gateway->saveOrFail();
     }
 
     protected function persistAfterRefund($input, $response, $request)
     {
+        $repo = $this->getRepo();
+
+        $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_REFUND_ERROR,
                 (array) $response);
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
                 'error_code' => $response->reasonCode,
-                'action' => Base\Action::REFUND);
-
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
+                'action'     => Base\Action::REFUND);
         }
         else
         {
@@ -665,17 +636,14 @@ class Gateway extends Base\Gateway
                 throw new Exception\LogicException('Should not rech here.');
             }
 
-            $repo = $this->getRepo();
-
-            $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
-
             $attributes = array(
                 'refund_id' => $input['refund']['id'],
-                'status' => $status,
-                'action' => Base\Action::REFUND);
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
+                'status'    => $status,
+                'action'    => Base\Action::REFUND);
         }
+
+        $gateway->fill($attributes);
+        $gateway->saveOrFail();
     }
 
     public function setMerchantDetailInRequest($request, $input)
@@ -776,27 +744,29 @@ class Gateway extends Base\Gateway
                 return $this->getFieldsForFormSubmitToBankACS($enrollResponse, $input);
 
             case Payment\Result::NOT_ENROLLED:
+                $payerAuth = $enrollResponse->payerAuthEnrollReply;
+
+                $eci = property_exists($payerAuth, 'eci') ? 
+                    $payerAuth->eci : '';
+
+                $ucaf = property_exists($payerAuth, 'ucafCollectionIndicator') ?
+                    $payerAuth->ucafCollectionIndicator : '';
+
+                $network = $input['card']['network'];
+                if (($network === Card\Network::getFullName('VISA')) and 
+                    ($eci === '7'))
                 {
-                    $payerAuth = $enrollResponse->payerAuthEnrollReply;
-
-                    $eci = property_exists($payerAuth, 'eci') ? 
-                        $payerAuth->eci : '';
-
-                    $ucaf = property_exists($payerAuth, 'ucafCollectionIndicator') ?
-                        $payerAuth->ucafCollectionIndicator : '';
-
-                    $network = $input['card']['network'];
-                    if (($network === Card\Network::getFullName('VISA')) and ($eci === '7'))
-                    {
-                        throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                    }
-                    if (($network === Card\Network::getFullName('MC')) and (($ucaf === '00') or ($ucaf === '7')))
-                    {
-                        throw new Exception\BadRequestException(ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                    }
-
-                    return $this->postNotEnrolledAuthorize($input, $enrollResponse);
+                    throw new Exception\BadRequestException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
                 }
+                if (($network === Card\Network::getFullName('MC')) and 
+                    (($ucaf === '00') or ($ucaf === '7')))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
+                return $this->postNotEnrolledAuthorize($input, $enrollResponse);
 
             default:
                 throw new Exception\LogicException('Should not have reached here');

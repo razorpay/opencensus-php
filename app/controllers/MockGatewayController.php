@@ -32,6 +32,8 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
+        unset($input['key_id']);
+
         $server = $this->gateway->server($gateway);
 
         $data = $server->acs($input);
