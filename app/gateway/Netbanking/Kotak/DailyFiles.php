@@ -106,39 +106,6 @@ class DailyFiles
         return Gateway::call($gateway, $action, $input, $this->mode);
     }
 
-
-    protected function getTimestamps($input)
-    {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
-
-        if (isset($input['on']))
-        {
-            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
-            $from->hour(0)->minute(0)->second(0);
-
-            $fromTimeStamp = $from->timestamp;
-
-            $to = $from->addDay()->timestamp - 1;
-
-            $from = $fromTimeStamp;
-        }
-        else
-        {
-            if (isset($input['from']))
-            {
-                $from = $input['from'];
-            }
-
-            if (isset($input['to']))
-            {
-                $to = $input['to'];
-            }
-        }
-
-        return array($from, $to);
-    }
-
     protected function sendMail($amount, $claimsFilePath, $refundFilePath)
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
