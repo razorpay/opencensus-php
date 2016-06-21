@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Amex;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use EE\Error;
 
 class AmexGatewayTest extends TestCase
 {
@@ -24,12 +25,13 @@ class AmexGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
         $this->payment = $this->getDefaultPaymentArray();
-        $this->payment['card']['number'] = '341111111111111';
         $this->payment['card']['cvv'] = '8888';
     }
 
     public function testPayment()
     {
+        $this->payment['card']['number'] = '341111111111111';
+
         $this->doAuthPayment($this->payment);
 
         $txn = $this->getEntities('transaction', [], true);
@@ -56,6 +58,8 @@ class AmexGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
+        $this->payment['card']['number'] = '341111111111111';
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->refundPayment($payment['id']);
@@ -67,6 +71,8 @@ class AmexGatewayTest extends TestCase
 
     public function testPaymentPartialRefund()
     {
+        $this->payment['card']['number'] = '341111111111111';
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
         $amount = (int) ($payment['amount'] / 3);
 
@@ -79,6 +85,8 @@ class AmexGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
+        $this->payment['card']['number'] = '341111111111111';
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->verifyPayment($payment['id']);
@@ -86,6 +94,8 @@ class AmexGatewayTest extends TestCase
 
     public function testAmexCardWhenNotEnabled()
     {
+        $this->payment['card']['number'] = '341111111111111';
+
         $this->ba->publicLiveAuth();
         $this->fixtures->merchant->activate();
         $this->fixtures->merchant->enableCard();
@@ -100,6 +110,8 @@ class AmexGatewayTest extends TestCase
 
     public function testAmexPricingCheckWhenEnablingAmex()
     {
+        $this->payment['card']['number'] = '341111111111111';
+
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
@@ -111,5 +123,14 @@ class AmexGatewayTest extends TestCase
 
             $content = $this->setPaymentMethods($methods);
         });
+    }
+
+    public function testFailureWhen3DSFailsForDomesticMerchant()
+    {
+        $this->payment['card']['number'] = '345678000000007';
+
+        $this->setExpectedException('EE\Exception\GatewayErrorException');
+
+        $this->doAuthPayment($this->payment);
     }
 }

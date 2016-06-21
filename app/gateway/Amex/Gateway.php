@@ -31,14 +31,14 @@ class Gateway extends AxisMigs\Gateway
 
         $content['vpc_Card'] = 'Amex';
 
-        if ($this->mode === Mode::TEST)
-        {
-            // 341111111111111, 345678000000007 works
+        // 341111111111111, 345678000000007 are valid Amex card numbers
 
-            $content['vpc_CardNum'] = '341111111111111';
-            $content['vpc_CardExp'] = '1705';
-            $content['vpc_CardSecurityCode'] = '0773';
-        }
+        // The following credentials are for Amex's real test gateway
+        // Note: only these creds work on the test gateway
+        //$content['vpc_CardNum'] = '341111111111111';
+        //$content['vpc_CardExp'] = '1705';
+        //$content['vpc_CardSecurityCode'] = '0773';
+
     }
 
     protected function getVpcCardValue($network)

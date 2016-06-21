@@ -5,6 +5,7 @@ namespace Tests\Functional\Gateway\AxisMigs;
 use Mockery;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use EE\Error;
 
 class AxisGatewayTest extends TestCase
 {
@@ -37,6 +38,7 @@ class AxisGatewayTest extends TestCase
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterCapture'], $txn);
 
@@ -152,5 +154,15 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('axis_migs', true);
         $this->assertEquals($payment['vpc_TransactionNo'], $txnNo);
+    }
+
+    public function testFailureWhen3DSFailsForDomesticMerchant()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '55553555655655';
+
+        $this->setExpectedException('EE\Exception\GatewayErrorException');
+
+        $this->doAuthPayment($payment);
     }
 }

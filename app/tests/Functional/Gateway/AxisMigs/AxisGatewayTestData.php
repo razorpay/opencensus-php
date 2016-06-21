@@ -65,7 +65,7 @@ return [
         'vpc_3DSECI' => '01',
 //        'vpc_3DSXID' => null,
         'vpc_3DSenrolled' => 'Y',
-        'vpc_3DSstatus' => 'A',
+        'vpc_3DSstatus' => 'Y',
         'vpc_AuthorizeId' => null,
         //'vpc_BatchNo' => '20150827', // '20150503',
         'vpc_Card' => 'MC',

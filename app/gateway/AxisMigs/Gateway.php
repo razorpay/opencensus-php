@@ -596,13 +596,15 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input)
     {
-        if ((isset($input['gateway']['vpc_TxnResponseCode']) === true) and
-            ($input['gateway']['vpc_TxnResponseCode'] === '0'))
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
+
+        // check for success
+        if (isset($txnResponseCode) && $txnResponseCode === '0' && $threeDSstatus === 'Y')
         {
-            return; // Payment succeeds
+            return; // payment succeeds
         }
 
-        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
         $message = '';
 
         if (isset($input['gateway']['vpc_Message']))
@@ -610,26 +612,46 @@ class Gateway extends Base\Gateway
             $message = $input['gateway']['vpc_Message'];
         }
 
-        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        // Get appropriate error code
+        $apiErrorCode = $this->getApiErrorCode(
+                            array('txnResponseCode' => $txnResponseCode,
+                                  'threeDSstatus' => $threeDSstatus,
+                                  'message' => $message,
+                                  'acqResponseCode' => $input['gateway']['vpc_AcqResponseCode']));
 
-        if (isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode]))
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    $apiErrorCode,
+                    $txnResponseCode,
+                    $message);
+    }
+
+    protected function getApiErrorCode($input)
+    {
+        $txnResponseCode = $input['txnResponseCode'];
+        $threeDSstatus = $input['threeDSstatus'];
+        $message = $input['message'];
+        $acqResponseCode = $input['acqResponseCode'];
+
+        if ($this->threeDAuthSkipped($input))
         {
-            $apiErrorCode = AxisMigs\TxnResponseCode::$map[$txnResponseCode];
+            return Error\ErrorCode::CARDHOLDER_NOT_ENROLLED_IN_3DSECURE;
+        }
 
-            if (($txnResponseCode === 'Aborted') and
-                ($message === 'Your Session has expired'))
-            {
-                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
-            }
-            else if (isset($input['gateway']['vpc_AcqResponseCode']))
-            {
-                $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+        if ($this->sessionExpired($input))
+        {
+            return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
+        }
 
-                if (isset(AcqResponseCode::$map[$acqResponseCode]))
-                {
-                    $apiErrorCode = AcqResponseCode::$map[$acqResponseCode];
-                }
-            }
+        if ($this->acqErrorOccurred($input))
+        {
+            return AcqResponseCode::$map[$acqResponseCode];
+        }
+
+        // Check for mapped TxnResponseCode value
+        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])))
+        {
+            return AxisMigs\TxnResponseCode::$map[$txnResponseCode];
         }
         else
         {
@@ -640,13 +662,49 @@ class Gateway extends Base\Gateway
                 'gateway_error_code' => $txnResponseCode,
                 'gateway' => $this->gateway,
                 'time' => time()]);
+            return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }
+    }
 
-        // Payment fails, throw exception
-        throw new Exception\GatewayErrorException(
-                    $apiErrorCode,
-                    $txnResponseCode,
-                    $input['gateway']['vpc_Message']);
+    protected function acqErrorOccurred($input)
+    {
+        $acqResponseCode = $input['acqResponseCode'];
+        if (isset($acqResponseCode) && isset(AcqResponseCode::$map[$acqResponseCode]))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function sessionExpired($input)
+    {
+        $txnResponseCode = $input['txnResponseCode'];
+        $message = $input['message'];
+
+        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) &&
+            ($txnResponseCode === 'Aborted') &&
+            ($message === 'Your Session has expired'))
+        {
+                return true;
+        }
+        return false;
+    }
+
+    protected function threeDAuthSkipped($input)
+    {
+        $txnResponseCode = $input['txnResponseCode'];
+        $threeDSstatus = $input['threeDSstatus'];
+
+        // if transaction succeeded at gateway without 3dsecure auth
+        // 'A' - Attempted authentication
+        // 'U' - Unavailable for checking
+        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) &&
+            ($txnResponseCode === '0') &&
+            (in_array($threeDSstatus, array('A', 'U'), true)))
+        {
+            return true;
+        }
+        return false;
     }
 
     protected function verifyAmaTransactionResponse($content, $input)
@@ -728,7 +786,7 @@ class Gateway extends Base\Gateway
         }
 
         $content['vpc_Card'] = 'MasterCard';
-        $content['vpc_CardNum'] = '5123456789012346';
+        //$content['vpc_CardNum'] = '5123456789012346';
         $content['vpc_CardExp'] = '1705';
         $content['vpc_CardSecurityCode'] = '333';
     }
