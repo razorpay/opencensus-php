@@ -1074,25 +1074,26 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->merchant->fetch($id);
+
+            // This is a hard fail and we return
+            // immediately
             if ($data->live === true)
             {
-                $error = [self::CANT_ARCHIVE_LIVE];
+                return [self::CANT_ARCHIVE_LIVE];
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
+            // We just ignore this for now
             $error =[$e->getMessage()];
         }
         finally
         {
-            if (empty($error))
-            {
-                $this->logActionToSlack($merchant, Actions::ARCHIVED);
-                $merchant->archive();
-            }
+            $this->logActionToSlack($merchant, Actions::ARCHIVED);
+            $merchant->archive();
 
             // Return empty array in case of success
-            return $error;
+            return [];
         }
     }
 
