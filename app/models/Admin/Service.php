@@ -22,6 +22,11 @@ class Service extends Base\Service
 {
     // 15 minutes
     const TIMEOUT = 900;
+    const ALREADY_ARCHIVED = 'Merchant already archived.';
+    const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
+    const INVALID_CREDENTIALS = 'Username or password is invalid.';
+    const PRIMARY_LOGIN_ERROR = "Could not log you in to the primary owner's account";
+    const SELF_DELETE_ERROR = 'You can not delete yourself.';
 
     // This is the Admin\Logger trait
     use Logger;
@@ -42,7 +47,7 @@ class Service extends Base\Service
             }
         }
 
-        $error = ($verify) ? [] : ['Username or password is invalid.'];
+        $error = ($verify) ? [] : [self::INVALID_CREDENTIALS];
 
         return [$error, null];
     }
@@ -87,7 +92,7 @@ class Service extends Base\Service
 
         if(!$user)
         {
-            $error[] = "Could not log you in to the primary owner's account";
+            $error[] = self::PRIMARY_LOGIN_ERROR;
         }
 
         return $error;
@@ -212,7 +217,7 @@ class Service extends Base\Service
 
         if ($id === Auth::admin()->id())
         {
-            $error[] = 'You can not delete yourself.';
+            $error[] = self::SELF_DELETE_ERROR;
         }
 
         $admin = Admin\Entity::findorfail($id);
@@ -1061,7 +1066,7 @@ class Service extends Base\Service
 
         if ($merchant->archived_at !== null)
         {
-            $error = ["Merchant already archived."];
+            $error = [self::ALREADY_ARCHIVED];
         }
 
         $this->setApiCredentials();
@@ -1071,7 +1076,7 @@ class Service extends Base\Service
             $data = $this->api->merchant->fetch($id);
             if ($data->live === true)
             {
-                $error = ["Live merchants can not be archived."];
+                $error = [self::CANT_ARCHIVE_LIVE];
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -1797,10 +1802,6 @@ class Service extends Base\Service
         catch(BadRequestError $e)
         {
             $error = [$e->getMessage()];
-        }
-        catch(\Exception $e)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
         }
 
        return [$error, $data];
