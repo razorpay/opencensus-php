@@ -91,7 +91,7 @@ class Orchestrator
     public function initiateReconciliationProcess(array $input)
     {
         $this->app['trace']->info(
-            TraceCode::RECONCILIATION_REQUEST,
+            TraceCode::RECON_REQUEST,
             $input
         );
 
@@ -116,6 +116,11 @@ class Orchestrator
                 'File details are empty.'
             );
         }
+
+        $this->app['trace']->info(
+            TraceCode::RECON_FILE_DETAILS,
+            $this->allFilesDetails
+        );
 
         $this->orchestrate();
 
@@ -183,6 +188,14 @@ class Orchestrator
         // Run validations and conversions on each file
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
+            $this->app['trace']->info(
+                TraceCode::RECON_FILE_DETAILS,
+                [
+                    'message' => 'File details of the file being orchestrated.',
+                    'file_details' => $fileDetails
+                ]
+            );
+
             $skipFile = $this->checkFileSkip($fileDetails);
 
             if ($skipFile === true)

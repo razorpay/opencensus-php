@@ -62,6 +62,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Payment\Entity::CREATED_AT, array($from, $to))
+                    ->whereIn('status', $status)
+                    ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
     /**
      * Returns the captured payments
      * between the given timestamps (using CAPTURED_AT)
