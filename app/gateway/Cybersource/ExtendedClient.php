@@ -1,6 +1,8 @@
 <?php
 
-class ExtendedClient extends SoapClient 
+namespace Gateway\Cybersource;
+
+class ExtendedClient extends \SoapClient 
 {
     protected $user;
     protected $password;
@@ -15,7 +17,7 @@ class ExtendedClient extends SoapClient
     }
  
 // This section inserts the UsernameToken information in the outgoing SOAP message.
-    public function __doRequest($request, $location, $action, $version, $one_way = 0) 
+    public function __doRequest($request, $location, $action, $version, $one_way = 0)
     {
         $user = $this->user;
         $password = $this->password;
@@ -24,14 +26,14 @@ class ExtendedClient extends SoapClient
                       'org/soap/envelope/\' xmlns:wsse=\'http://docs.oasis-open'.
                       '.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.'.
                       'xsd\'><wsse:Security SOAP-ENV:mustUnderstand=\'1\'><wsse'.
-                      ':UsernameToken><wsse:Username>$user</wsse:Username><wsse'.
+                      ':UsernameToken><wsse:Username>'.$user.'</wsse:Username><wsse'.
                       ':Password Type=\'http://docs.oasis-open.org/wss/2004/01/'.
                       'oasis-200401-wss-username-token-profile-1.0#PasswordText'.
-                      '\'>$password</wsse:Password></wsse:UsernameToken></wsse:'.
+                      '\'>'.$password.'</wsse:Password></wsse:UsernameToken></wsse:'.
                       'Security></SOAP-ENV:Header>';
 
-        $requestDOM = new DOMDocument('1.0');
-        $soapHeaderDOM = new DOMDocument('1.0');
+        $requestDOM = new \DOMDocument('1.0');
+        $soapHeaderDOM = new \DOMDocument('1.0');
 
         try 
         {
@@ -43,9 +45,9 @@ class ExtendedClient extends SoapClient
 
             $request = $requestDOM->saveXML();
         }
-        catch (DOMException $e) 
+        catch (\DOMException $e) 
         {
-            throw new Exception\BadRequestException(
+            throw new \EE\Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR);
         }
 

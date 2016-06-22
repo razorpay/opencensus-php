@@ -32,6 +32,7 @@ class Table
     const ATOM              = 'atom';
     const HDFC              = 'hdfc';
     const AXIS              = 'axis';
+    const CYBERSOURCE       = 'cybersource';
     const PAYTM             = 'paytm';
     const BILLDESK          = 'billdesk';
     const MOBIKWIK          = 'mobikwik';

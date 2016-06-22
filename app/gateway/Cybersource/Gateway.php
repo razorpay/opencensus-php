@@ -12,7 +12,6 @@ use Gateway\AxisMigs;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
-use ExtendedClient;
 use Models\Card;
 use EE\Error\ErrorCode;
 
