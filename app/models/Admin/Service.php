@@ -1808,11 +1808,11 @@ class Service extends Base\Service
        return [$error, $data];
     }
 
-    public function fetchSupportedNetworks()
+    public function fetchPaymentNetworks()
     {
         $this->setApiCredentials(null, 'live');
 
-        $data = $this->api->pricing->fetchNetworksPublic();
+        $data = $this->api->pricing->fetchPaymentNetworks();
 
         return $data;
     }

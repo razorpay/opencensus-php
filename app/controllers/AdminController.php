@@ -235,7 +235,7 @@ class AdminController extends BaseController
 
     public function getSupportedNetworks()
     {
-        $data = (new Admin\Service)->fetchSupportedNetworks();
+        $data = (new Admin\Service)->fetchPaymentNetworks();
 
         return AppResponse::jsonResponse([], $data->toArray());
     }
