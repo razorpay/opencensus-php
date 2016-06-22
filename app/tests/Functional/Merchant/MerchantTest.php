@@ -626,6 +626,7 @@ class MerchantTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertContains('/logos/', $response['logo_url']);
+        $this->assertStringStartsWith('http', $response['logo_url']);
     }
 
     public function testDeleteLogoUrl()
@@ -635,11 +636,11 @@ class MerchantTest extends TestCase
 
         $defaultMerchantId = '10000000000000';
 
-        $defaultImgPath = 'a.png';
+        $defaultImgPath = '/logos/a.png';
 
         $merchant = $this->fixtures->merchant->setLogoUrl($defaultImgPath);
 
-        $this->assertEquals($defaultImgPath, $merchant->logo_url);
+        $this->assertContains($defaultImgPath, $merchant->getLogoUrl());
 
         $testData = $this->testData['testDeleteLogoUrl'];
 
