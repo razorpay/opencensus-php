@@ -6,7 +6,7 @@ class Selector
 {
 
     protected static $filters = [
-
+        Filters\TransactionFilter::class,
     ];
 
     protected static $sorters = [
@@ -23,6 +23,11 @@ class Selector
 
         $this->merchant = $payment->merchant;
 
+        $this->input = [
+            'payment'  => $this->payment,
+            'merchant' => $this->merchant,
+
+        ];
     }
 
     public function getTerminals()
@@ -40,13 +45,16 @@ class Selector
 
         $terminals = $this->getTerminals();
 
+        // Terminals first filtered
+        // Terminals that result in failure due to gateway are recorded and
+        // removed in the next attempt
         $filteredTerminals = $terminals;
 
         foreach (self::$filters as $filter)
         {
-            $filteredTerminals = $filter->filter($input, $filteredTerminals);
+            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input);
         }
-
+        // Terminals next sorted
         $sortedTerminals = $filteredTerminals;
 
         foreach (self::$sorters as $sorter)
