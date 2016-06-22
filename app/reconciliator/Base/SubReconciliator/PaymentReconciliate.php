@@ -364,15 +364,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'gateway'         => get_called_class()
                     ]);
 
-                throw new ReconciliationException(
-                    'Card types in recon file and db do not match.',
-                    [
-                        'recon_card_type' => $reconCardType,
-                        'iin_card_type'   => $iinCardType,
-                    ]
-                );
-
-                //return;
+                return;
             }
         }
     }
@@ -411,16 +403,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'gateway'                 => get_called_class()
                     ]);
 
-                throw new ReconciliationException(
-                    'Card locales in recon file and db do not match.',
-                    [
-                        'recon_card_locale'         => $reconCardLocale,
-                        'is_stored_international'   => $isCardInternational,
-                    ]
-                );
-
-                //return;
-
+                return;
             }
         }
     }
