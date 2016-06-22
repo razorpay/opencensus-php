@@ -10,6 +10,7 @@ class TransactionFilter extends Terminal\Filter
 {
     protected $properties = [
         'method',
+        'network',
         'international',
         'bank',
     ];
@@ -30,7 +31,6 @@ class TransactionFilter extends Terminal\Filter
 
             // Check - Needs more work with respect to emi terminals of other banks
             case Method::EMI:
-
                 $bank = $input['payment']->getBank();
 
                 $cardTerminalBanks = array(
@@ -60,6 +60,25 @@ class TransactionFilter extends Terminal\Filter
             default:
                 break;
         }
+    }
+
+    public function networkFilter($terminal, $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $network = $input['payment']->card->getNetworkCode();
+
+                return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
+                break;
+
+            default:
+                break;
+        }
+
+        return true;
     }
 
     public function internationalFilter($terminal, $input)

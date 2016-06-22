@@ -356,8 +356,21 @@ trait Authorize
         **/
 
 
-        (new Terminal\Selector)->select($payment, $this->mode);
+        $terminals = (new Terminal\Selector)->select($payment, $this->mode);
 
+        /*
+            Post terminal selection steps
+         */
+            // if ($terminal === null)
+            // {
+            //     throw new Exception\RuntimeException(
+            //         'Terminal should not be null',
+            //         ['payment' => $payment->toArrayAdmin()]);
+            // }
+
+            // $payment->terminal()->associate($terminal);
+
+            // $payment->setGateway($terminal->getGateway());
 
         // // Sets gateway and terminal for the payment.
         // (new TerminalPicker)->selectTerminal($payment, $this->mode);
