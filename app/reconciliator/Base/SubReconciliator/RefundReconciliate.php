@@ -137,7 +137,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function getRowDetailsStructured($row)
     {
         $this->app['trace']->info(
-            TraceCode::RECONCILIATION_FILE_ROW,
+            TraceCode::RECON_FILE_ROW,
             $row
         );
 
