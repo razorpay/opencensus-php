@@ -547,4 +547,10 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
                 break;
         }
     }
+
+    public function archive()
+    {
+        $this->archived_at = time();
+        $this->save();
+    }
 }

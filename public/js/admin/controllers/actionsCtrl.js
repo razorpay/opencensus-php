@@ -319,6 +319,30 @@ app.controller('ActionsCtrl', [
       });
       modalInstance.result.then($scope.verifyPayment, $.noop);
     };
+
+    $scope.archiveMerchant = function (id) {
+      var request = $http.get('/admin/merchant/' + id + '/archive');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant archived successfully', true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.openArchiveMerchant = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'archiveMerchantModal.html',
+        controller: 'archiveMerchantModalCtrl'
+      });
+      modalInstance.result.then($scope.archiveMerchant, $.noop);
+    };
     $scope.openAuthorizeFailedPayment = function () {
       var modalInstance = $modal.open({
         templateUrl: 'authorizeFailedPaymentModalContent.html',
@@ -440,6 +464,17 @@ app.controller('ActionsCtrl', [
   '$scope',
   '$modalInstance',
   '$http',
+  function ($scope, $modalInstance, $http) {
+    $scope.ok = function (id) {
+      $modalInstance.close(id);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('archiveMerchantModalCtrl', [
+  '$scope',
+  '$modalInstance',
   function ($scope, $modalInstance, $http) {
     $scope.ok = function (id) {
       $modalInstance.close(id);
