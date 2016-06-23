@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'amount'                  =>  'required|integer|max:50000000',
         'currency'                =>  'required|size:3',
-        'method'                  =>  'in:card,netbanking,wallet,emi',
+        'method'                  =>  'in:card,netbanking,wallet,emi,upi',
         'card'                    =>  'sometimes',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'sometimes',

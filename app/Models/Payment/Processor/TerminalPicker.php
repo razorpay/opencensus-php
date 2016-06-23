@@ -103,6 +103,10 @@ class TerminalPicker
                 $terminal = $this->pickEmiTerminal($terminals, $payment);
                 break;
 
+            case Method::UPI:
+                $terminal = $this->pickUPITerminal($terminals, $payment);
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Not a valid method: ' . $method);
@@ -214,6 +218,16 @@ class TerminalPicker
         }
 
         return $this->getSharedTerminalForWallet($payment);
+    }
+
+    protected function pickUPITerminal($terminals, $payment)
+    {
+        $sharedTerminal = Shared::getSharedTerminalForGateway(Gateway::UPI_ICICI);
+
+        if ($this->terminalExists($sharedTerminal))
+        {
+            return $this->terminal;
+        }
     }
 
     protected function pickEmiTerminal($terminals, $payment)

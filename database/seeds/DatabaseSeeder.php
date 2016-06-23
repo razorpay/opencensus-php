@@ -727,6 +727,23 @@ class DatabaseSeeder extends Seeder
             );
     }
 
+    protected function createUPITerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::UPI_ICICI,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            'gateway_merchant_id'       => 'demo_merchant_upi_icici',
+            'gateway_terminal_id'       => 'demo_terminal_upi_icici',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_icici_terminal_pass'),
+            'created_at'                =>  time(),
+            'updated_at'                =>  time(),
+        ]);
+    }
+
     protected function createPayumoneyTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
