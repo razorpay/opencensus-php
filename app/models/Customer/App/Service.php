@@ -20,7 +20,7 @@ class Service extends Base\Service
     {
         App\Entity::verifyIdAndStripSign($appToken);
 
-        $app = $this->repo->findOrFail($appToken);
+        $app = $this->repo->findByIdAndMerchantId($appToken, $this->merchant->getId());
 
         $data = (new App\Core)->deleteAppTokensForGlobalCustomer($app->customer, $input);
 
