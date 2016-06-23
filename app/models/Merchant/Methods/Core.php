@@ -2,10 +2,8 @@
 
 namespace Models\Merchant\Methods;
 
-use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Models\Bank\IFSC;
 use Models\Base;
 use Models\Merchant;
 use Models\Merchant\Methods;

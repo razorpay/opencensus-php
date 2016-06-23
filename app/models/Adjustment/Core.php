@@ -11,7 +11,7 @@ class Core extends Base\Core
 {
     public function createAdjustment($input, $merchant)
     {
-     return $this->repo->transaction(function() use ($input, $merchant)
+        return $this->repo->transaction(function() use ($input, $merchant)
             {
                 return $this->createAdjInTransaction($input, $merchant);
             });

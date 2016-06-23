@@ -19,14 +19,4 @@ class Core
 
         $this->repo = $this->app['repo'];
     }
-
-    public function getEntityClass()
-    {
-        return get_namespace($this) . '\Entity';
-    }
-
-    public function getRepositoryClass()
-    {
-        return get_namespace($this) . '\Repository';
-    }
 }
