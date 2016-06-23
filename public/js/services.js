@@ -346,7 +346,7 @@ angular.module('app.services', [])
 
         if (type.substr(-3) === '_id') {
           var key = type.slice(0,-3);
-          'app.entitiesdetail({id:value, mode:mode, type: "'+key+'"})';
+          state = 'app.entitiesdetail({id:value, mode:mode, type: "'+key+'"})';
         }
 
       }
