@@ -168,7 +168,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'gateway'    => get_called_class()
                 ]
             );
-            
+
             return $this->handleVerifyAuthorized();
         }
 
@@ -192,7 +192,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function handleVerifySuccess($row)
     {
         $authorizeSuccess = $this->forceAuthorizeFailed($row);
-        
+
         if ($authorizeSuccess === true)
         {
             $this->app['trace']->info(
@@ -203,7 +203,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'gateway'    => get_called_class(),
                 ]
             );
-            
+
             return $this->handleVerifyAuthorized();
         }
 
@@ -214,7 +214,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'payment_id' => $this->payment->getId(),
                 'gateway'    => get_called_class()
             ]);
-        
+
         return false;
     }
 
@@ -317,7 +317,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             {
                 $this->messenger->raiseReconAlert(
                     [
-                        'trace_code' => TraceCode::RECON_MISMATCH,
+                        'trace_code' => TraceCode::RECON_INFO_ALERT,
                         'message'    => 'Payment Transaction not found in DB.',
                         'row'        => $row,
                         'payment_id' => $paymentId,
@@ -397,8 +397,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         else
         {
             $this->updateCardTypeIfRequired($iinCardType, $reconCardType, $paymentIin);
-
-            return;
         }
     }
 
@@ -417,8 +415,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 ]);
 
             $this->updateCardType($reconCardType, $paymentIin);
-
-            return;
         }
     }
 
@@ -446,9 +442,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $cardNetwork = $card->getNetwork();
 
         $entityAttributes = [
-            IIN\Entity::IIN => $iinId,
+            IIN\Entity::IIN     => $iinId,
             IIN\Entity::NETWORK => $cardNetwork,
-            IIN\Entity::TYPE => $reconCardType
+            IIN\Entity::TYPE    => $reconCardType
         ];
 
         $iin = (new IIN\Entity())->build($entityAttributes);

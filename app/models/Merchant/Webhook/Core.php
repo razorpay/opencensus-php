@@ -23,26 +23,24 @@ class Core extends Base\Core
 
         $webhook->merchant()->associate($merchant);
 
-        (new Webhook\Repository)->saveOrFail($webhook);
+        $this->repo->saveOrFail($webhook);
 
         return $webhook;
     }
 
     public function editWebhook($merchant, $webhookId, $input)
     {
-        $repo = new Webhook\Repository;
-
-        $webhook = $repo->findByIdAndMerchantId($webhookId, $merchant->getId());
+        $webhook = $this->repo->webhook->findByIdAndMerchantId($webhookId, $merchant->getId());
 
         $webhook->edit($input);
 
-        $repo->saveOrFail($webhook);
+        $this->repo->saveOrFail($webhook);
 
         return $webhook;
     }
 
     public function getWebhooks($merchant)
     {
-        return (new Webhook\Repository)->findByMerchant($merchant);
+        return $this->repo->webhook->findByMerchant($merchant);
     }
 }

@@ -43,6 +43,8 @@ class CreateCustomers extends Migration {
 
             $table->integer(Customer::CREATED_AT);
             $table->integer(Customer::UPDATED_AT);
+            $table->integer(Customer::DELETED_AT)
+                  ->nullable();
 
             $table->index(Customer::CONTACT);
             $table->index(Customer::CREATED_AT);

@@ -2,10 +2,8 @@
 
 namespace Models\Merchant\Methods;
 
-use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Models\Bank\IFSC;
 use Models\Base;
 use Models\Merchant;
 use Models\Merchant\Methods;
@@ -16,13 +14,6 @@ use Models\Terminal;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Repository;
-    }
-
     public function setPaymentMethods($merchant, $input)
     {
         $methods = $this->getPaymentMethods($merchant);
@@ -96,14 +87,14 @@ class Core extends Base\Core
 
     public function getEnabledAndDisabledBanks($merchant)
     {
-        $banks = $this->repo->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
 
         return $this->getEnabledDisabledBanks($banks);
     }
 
     protected function getPaymentMethods($merchant)
     {
-        $methods = $this->repo->getMerchantMethods($merchant->getId());
+        $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
 
         if ($methods === null)
         {
@@ -142,7 +133,7 @@ class Core extends Base\Core
 
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
 
         if ($banks === null)
         {

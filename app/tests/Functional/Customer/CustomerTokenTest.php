@@ -15,7 +15,7 @@ class CustomerTokenTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures("tokens");
+        $this->fixtures->merchant->editFeatures("tokens,cardsaving");
     }
 
     public function testAddCustomerTokenCard()
@@ -62,7 +62,7 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetCustomerTokensByAppId()
+    public function testGetCustomerTokensByAppToken()
     {
         $this->ba->publicAuth();
 
@@ -70,6 +70,13 @@ class CustomerTokenTest extends TestCase
     }
 
     public function testFetchSavedTokensStatusSaved()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyDeviceToken()
     {
         $this->ba->publicAuth();
 
@@ -84,6 +91,27 @@ class CustomerTokenTest extends TestCase
     }
 
     public function testDeleteAppToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogoutFromApp()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogoutFromDevice()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogoutFromAllDevices()
     {
         $this->ba->publicAuth();
 

@@ -10,112 +10,120 @@ use Models\Merchant\Account;
 
 class Service extends Base\Service
 {
-    protected $repo;
-    protected $tokensRepo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Customer\Repository;
-
-        $this->tokensRepo = new Token\Repository;
-    }
-
     /**
      * Note that this is on internal auth and not private auth
+     * Adds token for a customer
+     * @param string customer_id
+     * @param array customer token params
      */
     public function add($id, $input)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findOrFailPublic($id);
+        $customer = $this->repo->customer->findOrFailPublic($id);
 
         $token = (new Token\Core)->create($customer, $input);
 
         return $token->toArrayPublic();
     }
 
+    /**
+     * Edit an existing token for local customer
+     * @param  string customer_id
+     * @param  entity token
+     * @param  array  token edit params
+     * @return array  edited token
+     */
     public function edit($id, $token, $input)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+        $token = $this->repo->token->getByTokenAndCustomerId($token, $id);
 
         $token = (new Token\Core)->edit($token, $input);
 
         return $token->toArrayPublic();
     }
 
+    /**
+     * fetch token for local customer
+     *
+     * @param  string customer_id
+     * @param  string token id
+     * @return entity token
+     */
     public function fetch($id, $token)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+        $token = $this->repo->token->getByTokenAndCustomerId($token, $customer->getId());
 
         return $token->toArrayPublic();
     }
 
+    /**
+     * fetch tokens for local customer
+     * @param  string customer_id
+     * @return entity tokens
+     */
     public function fetchMultiple($id)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $tokens = $this->tokensRepo->getByCustomerId($id);
-
-        return $tokens->toArrayPublic();
-    }
-
-    public function fetchTokensByAppId($appId)
-    {
-        Customer\App\Entity::verifyIdAndStripSign($appId);
-
-        $tokens = (new Customer\Token\Core)->fetchTokensByAppId($this->merchant->getKey(), $appId);
+        $tokens = $this->repo->token->getByCustomerId($id);
 
         return $tokens->toArrayPublic();
     }
 
-    public function fetchCustomerStatus($contact)
+    /**
+     * fetch tokens for an app_token (global customer)
+     * @param  string app_token
+     * @return entity tokens
+     */
+    public function fetchTokensForGlobalCustomer($appToken)
     {
-        $saved = false;
+        Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-        $customer = $this->repo->findByContactForMerchant($contact, Account::SHARED_ACCOUNT);
+        $app = $this->repo->app_token->findByIdAndMerchantId($appToken, $this->merchant->getId());
 
-        if ($customer !== null)
-        {
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
-                Account::SHARED_ACCOUNT, $customer->getId());
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
 
-            if ($tokens !== null)
-            {
-                $saved = true;
-            }
-        }
-
-        $result = array(
-            'saved' =>  $saved
-        );
-
-        return $result;
+        return $tokens->toArrayPublic();
     }
 
-    public function delete($id, $token, $merchantId = null)
+    /**
+     * Deletes tokens associated with the local customer
+     */
+    public function deleteTokenForLocalCustomer($id, $token)
     {
         Customer\Entity::verifyIdAndStripSign($id);
 
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant->getId();
-        }
+        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $customer = $this->repo->findByIdAndMerchantId($id, $merchantId);
+        return $this->deleteTokenForCustomer($token, $customer);
+    }
 
-        $token = $this->tokensRepo->getByTokenAndCustomerId($id, $token);
+    /**
+     * Deletes token associated with a card for a global customer
+     */
+    public function deleteTokenForGlobalCustomer($appToken, $token)
+    {
+        Customer\App\Entity::verifyIdAndStripSign($appToken);
+
+        $app = $this->repo->app_token->findByIdAndMerchantId($appToken, $this->merchant->getId());
+
+        return $this->deleteTokenForCustomer($token, $app->customer);
+    }
+
+    protected function deleteTokenForCustomer($token, $customer)
+    {
+        $token = $this->repo->token->getByTokenAndCustomerId($token, $customer->getId());
 
         if ($token === null)
         {
@@ -123,7 +131,7 @@ class Service extends Base\Service
                 'Token not found');
         }
 
-        $token = $this->tokensRepo->deleteOrFail($token);
+        $token = $this->repo->token->deleteOrFail($token);
 
         if ($token === null)
         {
@@ -131,16 +139,5 @@ class Service extends Base\Service
         }
 
         return $token->toArrayPublic();
-    }
-
-    public function deleteAppToken($appId, $token)
-    {
-        Customer\App\Entity::verifyIdAndStripSign($appId);
-
-        $app = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $this->merchant->getId());
-
-        $customerId = $app->customer->getPublicId();
-
-        return $this->delete($customerId, $token, Account::SHARED_ACCOUNT);
     }
 }

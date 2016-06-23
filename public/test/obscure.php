@@ -123,8 +123,8 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="customer_id" size="25" value=""></td>
     </tr>
     <tr>
-        <td colspan='40'>App Id:</td>
-        <td><input type="text" name="app_id" size="25" value=""></td>
+        <td colspan='40'>App Token:</td>
+        <td><input type="text" name="app_token" size="25" value=""></td>
     </tr>
     <tr>
         <td colspan='40'>Token:</td>

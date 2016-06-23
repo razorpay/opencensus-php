@@ -2,29 +2,112 @@
 
 namespace Models\Merchant;
 
+use App;
 use Constants\Mode;
-use Models\Base;
 use Models\Customer;
-use Models\Customer\Token;
 use Models\Merchant;
-use Models\Card;
-use Models\Key;
 use Models\Payment;
-use Models\Pricing;
-use Models\Terminal;
 use Models\Order;
-use Models\Merchant\Webhook;
 use EE\Exception;
-use EE\Error;
 use EE\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
+use Session;
 
 class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
 
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+    }
+
     public function getPreferences($merchant, $mode, $input)
+    {
+        $this->checkAndFillTokensInputFromSession($input);
+
+        $data = $this->getMerchantPreferencesData($merchant, $input);
+
+        $data['methods'] = $this->getMethods($merchant, $input);
+
+        $this->checkAndFillSavedTokens($input, $merchant, $data);
+
+        $this->checkAndAddOrderForTpv($merchant, $input, $data);
+
+        return $data;
+    }
+
+    protected function fetchTPVOrderInfo($input, $merchant)
+    {
+        $orderData = null;
+
+        try
+        {
+            $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
+                                    $input[Payment\Entity::ORDER_ID], $merchant->getId());
+        }
+        catch(\Exception $ex)
+        {
+            $this->app['trace']->traceException($ex);
+        }
+
+        return $orderData ;
+    }
+
+    protected function fetchCustomerData($input, $merchant)
+    {
+        $custData = null;
+
+        try
+        {
+            list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
+
+            assert($customer !== null);
+
+            $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+
+            $custData =  array(
+                'email'     => $customer->getEmail(),
+                'contact'   => $customer->getContact(),
+                'tokens'    => $savedTokens->toArrayPublic()
+            );
+
+            if ($customer->isLocal() === true)
+            {
+                $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            }
+            else
+            {
+                $custData[Payment\Entity::APP_TOKEN] = $customerApp->getPublicId();
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->app['trace']->traceException($ex);
+        }
+
+        return $custData;
+    }
+
+    protected function checkAndFillTokensInputFromSession(array & $input)
+    {
+        // check if appToken or device token is present in session
+        $appToken = Session::get(Payment\Entity::APP_TOKEN);
+        $deviceToken = Session::get(Customer\App\Entity::DEVICE_TOKEN);
+
+        if (isset($input[Payment\Entity::APP_TOKEN]) === false)
+        {
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
+        }
+
+        if (isset($input[Customer\App\Entity::DEVICE_TOKEN]) === false)
+        {
+            $input[Customer\App\Entity::DEVICE_TOKEN] = $deviceToken;
+        }
+    }
+
+    protected function getMethods($merchant, $input)
     {
         $methodsArray = array(
             'entity'        => 'methods',
@@ -48,34 +131,11 @@ class Checkout
             $methodsArray['emi'] = $methods->isEmiEnabled();
         }
 
-        if ($mode === Mode::TEST)
-        {
-            $methods['card'] = true;
-        }
+        return $methodsArray;
+    }
 
-        $data['methods'] = $methodsArray;
-        $data['options']['theme']['color'] = $merchant->getBrandColor();
-        $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
-        $data['fee_bearer'] = false;
-        $data['version'] = 1;
-
-        if ($merchant->isFeeBearerCustomer())
-        {
-            $data['fee_bearer'] = true;
-        }
-
-        //fetch customer data and saved cards data
-        if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
-            (isset($input[Payment\Entity::APP_ID])))
-        {
-            $custData = $this->fetchCustomerData($input, $merchant);
-
-            if ($custData !== null)
-            {
-                $data['customer'] = $custData;
-            }
-        }
-
+    protected function checkAndAddOrderForTpv($merchant, $input, & $data)
+    {
         // If merchant is TPV enabled pass details for
         // current order as part of preferences
         if (($merchant->isTPVRequired()) and
@@ -88,51 +148,61 @@ class Checkout
                 $data['order'] = $orderData;
             }
         }
+    }
+
+    protected function checkAndFillSavedTokens($input, $merchant, & $data)
+    {
+        // fetch customer data and saved cards data
+        if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
+            (isset($input[Payment\Entity::APP_TOKEN])))
+        {
+            $custData = $this->fetchCustomerData($input, $merchant);
+
+            if ($custData !== null)
+            {
+                $data['customer'] = $custData;
+            }
+        }
+        else if ((isset($input[Customer\App\Entity::DEVICE_TOKEN])) and
+                (isset($input['contact'])))
+        {
+            $response = (new Customer\Service)->validateDeviceToken(
+                $input[Customer\App\Entity::DEVICE_TOKEN],
+                $input);
+
+            $data['customer'] = array(
+                'contact'   => $input['contact'],
+                'valid'     => $response['valid']);
+
+            if ($response['valid'] === true)
+            {
+                $data['customer'][Payment\Entity::APP_TOKEN] = $response[Payment\Entity::APP_TOKEN];
+            }
+        }
+        else if (isset($input['contact']))
+        {
+            $response = (new Customer\Service)->fetchGlobalCustomerStatus($input['contact']);
+
+            $data['customer'] = array(
+                'contact'   => $input['contact'],
+                'saved'     => $response['saved']);
+        }
+    }
+
+    protected function getMerchantPreferencesData($merchant, $methods)
+    {
+        $data['methods'] = $methods;
+        $data['options']['theme']['color'] = $merchant->getBrandColor();
+        $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
+        $data['options']['remember_customer'] = $merchant->isFeatureEnabled(Features::CARD_SAVING);
+        $data['fee_bearer'] = false;
+        $data['version'] = 1;
+
+        if ($merchant->isFeeBearerCustomer())
+        {
+            $data['fee_bearer'] = true;
+        }
 
         return $data;
-    }
-
-    protected function fetchTPVOrderInfo($input, $merchant)
-    {
-        $orderData = null;
-
-        try
-        {
-            $orderData = (new Order\Service)->fetchOrderBankAndAccountNumberForMerchant(
-                                    $input[Payment\Entity::ORDER_ID], $merchant->getId());
-        }
-        catch(\Exception $ex)
-        {
-            //;
-        }
-
-        return $orderData ;
-    }
-
-    protected function fetchCustomerData($input, $merchant)
-    {
-        $custData = null;
-
-        try
-        {
-            list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
-
-            assert($customer !== null);
-
-            $savedTokens = (new Customer\Token\Service)->fetchMultiple($customer->getPublicId());
-
-            $custData =  array(
-                'email'     => $customer->getEmail(),
-                'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens
-            );
-        }
-        catch (\Exception $e)
-        {
-            //log error and ignore
-            //s($e);
-        }
-
-        return $custData;
     }
 }

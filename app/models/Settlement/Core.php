@@ -16,8 +16,8 @@ class Core extends Base\Core
     {
         Settlement\Entity::verifyIdAndStripSign($id);
 
-        $payment = $this->paymentRepo->findOrFail($id);
+        $setl = $this->repo->settlement->findOrFail($id);
 
-        return $payment;
+        return $setl;
     }
 }

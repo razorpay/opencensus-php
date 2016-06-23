@@ -13,14 +13,14 @@ class Service extends Base\Service
     {
         Adjustment\Entity::verifyIdAndStripSign($id);
 
-        $setl = (new Adjustment\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->adjustment->findByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $setl->toArrayPublic();
     }
 
     public function getAdjustments($input)
     {
-        $adjustments = (new Adjustment\Repository)->fetch($input, $this->merchant->getKey());
+        $adjustments = $this->repo->adjustment->fetch($input, $this->merchant->getKey());
 
         return $adjustments->toArrayPublic();
     }
