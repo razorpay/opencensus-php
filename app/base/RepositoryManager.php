@@ -58,7 +58,7 @@ class RepositoryManager extends \Illuminate\Support\Manager
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
-        $repo->deleteOrFail($entity);
+        return $repo->deleteOrFail($entity);
     }
 
     public function pushOrFail($entity)
