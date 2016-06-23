@@ -2,6 +2,10 @@
 
 namespace Models\Terminal;
 
+use Constants\Mode;
+use EE\Exception;
+use EE\Error\ErrorCode;
+
 class Selector
 {
 
@@ -26,7 +30,7 @@ class Selector
         $this->input = [
             'payment'  => $this->payment,
             'merchant' => $this->merchant,
-
+            'mode'     => $this->mode,
         ];
     }
 
@@ -60,6 +64,7 @@ class Selector
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input);
         }
 
+
         // Terminals next sorted
         $sortedTerminals = $filteredTerminals;
 
@@ -68,14 +73,14 @@ class Selector
         //     $sortedTerminals = $sorter->sort($input, $sortedTerminals);
         // }
 
-        $terminal = $sortedTerminals[0];
-
-        if ($terminal === null)
+        if (empty($sortedTerminals))
         {
             throw new Exception\RuntimeException(
                 'Terminal should not be null',
                 ['payment' => $payment->toArrayAdmin()]);
         }
+
+        $terminal = $sortedTerminals[0];
 
         $payment->terminal()->associate($terminal);
 

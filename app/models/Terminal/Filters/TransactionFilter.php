@@ -2,6 +2,11 @@
 
 namespace Models\Terminal\Filters;
 
+use Constants\Mode;
+
+use EE\Exception;
+use EE\Error\ErrorCode;
+
 use Models\Terminal;
 use Models\Bank\IFSC;
 use Models\Payment\Method;
@@ -72,7 +77,25 @@ class TransactionFilter extends Terminal\Filter
             case Method::CARD:
                 $network = $input['payment']->card->getNetworkCode();
 
-                return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
+                if(Gateway::isCardNetworkSupported($network, $terminal->getGateway()))
+                {
+                    return true;
+                }
+                else
+                {
+                    // Check for partially supported networks on live
+                    $networks = Gateway::$partiallySupportedCardNetworks;
+
+                    if ((in_array($network, $networks)) and
+                        ($input['mode'] === Mode::LIVE))
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+                    }
+
+                    return false;
+                }
+
                 break;
 
             default:
