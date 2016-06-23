@@ -134,7 +134,6 @@ class Server extends Base\Mock\Server
             $response->payerAuthEnrollReply->paReq = 'eNpVUttygjAQfc9XMP0AkiAw';
             $response->payerAuthEnrollReply->xid = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
             $response->payerAuthEnrollReply->veresEnrolled = 'Y';
-
         }
         else if ($request->card->accountNumber === '555555555555558')
         {
@@ -156,6 +155,7 @@ class Server extends Base\Mock\Server
 
             $response->payerAuthEnrollReply->commerceIndicator = 'internet';
             $response->payerAuthEnrollReply->veresEnrolled = 'U';
+            $response->payerAuthEnrollReply->eci = '05';
         }
  
         return $response;
