@@ -6,8 +6,23 @@ use Gateway\Base;
 
 class Gateway extends Base\Gateway
 {
+    const ICICI_PUBLIC_KEY = <<<EOT
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAmj05pbyW0V0S2LDT5zNc
+lAoZevw+2vjyGBQVTBLHJ1PL9zH+TBGe6+uR6QMoF7KG1/yqILaOAmV4K2T00O4I
+hp6EoX4EdLt1E/VNpPMOhUbhxwHJ7KD8t4BEGjDRpbdBG+XOsLaXmKRty771ek0V
+i8Umbo3IUYoQuC6DIqTCXZmhxnBNd1FAikPoM9mdwFY0/PqQ92XUPmUNTZ7sEzhk
+oBrtFTcqnPacPJPa1y6n2YFmUmzv9wnFZ55OGwcvpNiI/GOjmmgemkQp6Vkleo7H
+JqoGvsqK1QG54rFhuuTSxGARFhH3wKEB4lGsJ9D1mTGUOnafC4iOC0SAk5mTrKbm
+uJdavD1TXAkhXlNs5oVJhQm1UPKtZwqpYlDWz3ybBs26412Nl/wXCshcksA/jPZS
+K0sTxEWHjJ7MLyNAoDDV+Gko6BaxURAjX86Ac930tBt2/LIdNUlT+z+uTldsHO1I
+dbNHrDYms1ZEIzVV83oN/Hev3Oae+tSWrGQRWvV9rqHByDFlsniwnYhLO6XyHvYq
+dPGKC553wEbHtJqPTaupDCY/49d7pVAWGFpVob6ebg8R51yk4mgoEaeg6s9KpMce
+RQAfGbcw2gk+LU1nxcgexz0piV0aCTWw1rD+v+O5n1AGOf+5qWUu6H8wqfJtyxGD
+N3gj6mi9EFGymEcgFWhhaO0CAwEAAQ==
+-----END PUBLIC KEY-----
+EOT;
     protected $gateway = 'upi_icici';
-
 
     protected function genKey()
     {
@@ -28,120 +43,21 @@ class Gateway extends Base\Gateway
 
     protected function collectPayData()
     {
+        sd($this->config);
         return [
-            "payerVa"       =>  "testing1@imobile",
+            // Amount and note are lowercase
+            // despite being uppercase in docs
             "amount"        =>  "5.00",
-            "note"          =>  "collect-pay-request",
-            "collectByDate" =>  "15/06/2016 11: 01 AM",
-            "merchantId"    =>  "merchantId",
-            "subMerchantId" =>  "12234",
-            "terminalId"    =>  "2342342",
-            "merchantTranId"=>  "345345345",
             "billNumber"    =>  "sdf234234"
+            "collectByDate" =>  "15/06/2016 11:01 AM",
+            "merchantId"    =>  "merchantId",
+            "merchantName"  =>  "merchantName",
+            "merchantTranId"=>  "345345345",
+            "note"          =>  "collect-pay-request",
+            "payerVa"       =>  "testing1@imobile",
+            "subMerchantId" =>  "12234",
+            "subMerchantName"=> null,
+            "terminalId"    =>  "2342342",
         ];
-    }
-
-    protected function generateInputString()
-    {
-        $data = [
-            'APIKey'    =>  111111,
-            'SDKVersion'=>  '1.8',
-            'Package'   =>  'com.razorpay',
-            'OrderId'   =>  '',
-            'MID'       =>  'merchant_id',
-            'TAmt'      =>  '14.50',
-            'Currency'  =>  'INR',
-            'CustomField1' =>   '',
-            'CustomField2' =>   '',
-            'CustomField3' =>   '',
-        ];
-
-        return http_build_query($data);
-    }
-
-    /**
-     * Generates checksum as per ICICI's spec
-     *
-     * Original Java Code below:
-     *
-     * private String generateChecksum(String inputString) {
-     *     String checksum = "";
-     *     try {
-     *         MessageDigest md = MessageDigest.getInstance("MD5");
-     *         md.update(inputString.getBytes());
-     *         byte[] digest = md.digest();
-     *         StringBuffer sb = new StringBuffer();
-     *         for (byte b : digest) {
-     *             sb.append(String.format("%02x", b & 0xff));
-     *         }
-     *         checksum = sb.toString();
-     *     }  catch(Exception e) {
-     *         e.printStackTrace();
-     *     }
-     *
-     *     return checksum;
-     * }
-     */
-    public static function generateChecksum($inputString)
-    {
-        $checksum = '';
-
-        // Second argument is raw_output which returns it
-        // in binary format of length 16
-        $hash = md5($inputString, true);
-        $hashArray = unpack('C*', $hash);
-
-        foreach ($hashArray as $byte) {
-            $checksum .= sprintf('%02x', $byte & 0xff);
-        }
-
-        return $checksum;
-    }
-
-    /**
-     *
-     * Encrypts inputString as per ICICI logic
-     *
-     * public String encrypt(String key,String inputString) {
-     *     try {
-     *         SecretKeySpec secretKeySpec = new
-     *         SecretKeySpec(key.getBytes(), "AES");
-     *         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-     *         // 1 = ENCRYPT_MODE
-     *         cipher.init(1, secretKeySpec);
-     *         byte[] aBytes = cipher.doFinal(inputString.getBytes());
-     *         BASE64Encoder encoder = new BASE64Encoder();
-     *         String base64 = encoder.encode(aBytes).toString();
-     *         base64 = URLEncoder.encode(base64, "UTF-8");
-     *         return base64;
-     *     }
-     *     catch(Exception ex) {
-     *         System.out.println("Exception occured in encrypt :"+ex.toString());
-     *     }
-     *     return null;
-     * }
-     *
-     */
-    public static function encrypt($key, $input)
-    {
-        $size = mcrypt_get_block_size('aes', 'ecb');
-        $input = $this->PKCS5Padding($input, $size);
-
-        $td = mcrypt_module_open('aes', '', 'ecb', '');
-        $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        mcrypt_generic_init($td, $key, $iv);
-
-        $data = mcrypt_generic($td, $input);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-
-        $data = base64_encode($data);
-        return $data;
-    }
-
-    protected function PKCS5Padding($text, $blocksize)
-    {
-        $pad = $blocksize - (strlen($text) % $blocksize);
-        return $text . str_repeat(chr($pad), $pad);
     }
 }
