@@ -19,7 +19,7 @@ class Repository extends Base\Repository
         'BankReferenceNo'               => 'sometimes|string',
     );
     
-    protected function findByGatewayRefundId($gatewayRefundId)
+    public function findByGatewayRefundId($gatewayRefundId)
     {
         $repo = $this->repo;
 

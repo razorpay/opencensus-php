@@ -227,6 +227,39 @@ class Gateway
         $this->mock = $mock;
     }
 
+    public function generateRefunds($input)
+    {
+        $paymentIds = array();
+
+        $paymentIds = array_map(function($row)
+        {
+            return $row['payment']['id'];
+        }, $input['data']);
+
+        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+                                $paymentIds, Action::AUTHORIZE);
+
+        $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
+
+        $input['data'] = array_map(function($row) use ($payments)
+        {
+            $paymentId = $row['payment']['id'];
+
+            if (isset($payments[$paymentId]))
+            {
+                $row['gateway'] = $payments[$paymentId]->toArray();
+            }
+
+            return $row;
+        }, $input['data']);
+
+
+        $ns = $this->getGatewayNamespace();
+        $class = $ns . '\\' . 'RefundFile';
+
+        return (new $class)->generate($input);
+    }
+
     protected function sendGatewayRequest($request)
     {
         if (isset($request['options']) === false)

@@ -36,7 +36,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $this->app = App::getFacadeRoot();
         $repo = $this->app['repo'];
 
-        $this->refundRepo      = $repo->refund;
+        $this->refundRepo = $repo->refund;
 
         $this->messenger = new Messenger();
     }
@@ -108,6 +108,26 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
     }
 
+    protected function validatePaymentStatus()
+    {
+        $paymentStatus = $this->payment->getStatus();
+
+        if ($paymentStatus === Payment\Status::FAILED)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message'    => 'Payment status is failed.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
     protected function persistReconciliationData()
     {
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
@@ -117,10 +137,10 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function getRowDetailsStructured($row)
     {
         $this->app['trace']->info(
-            TraceCode::RECONCILIATION_FILE_ROW,
+            TraceCode::RECON_FILE_ROW,
             $row
         );
-        
+
         $refundId = $this->getRefundId($row);
 
         // If refund id is not present, return. No point of evaluating the row.
@@ -163,7 +183,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'refund_id'  => $refundId,
                     'gateway'    => get_called_class()
                 ]);
-            
+
             throw new ReconciliationException(
                 'Corresponding payment for the refund not found in the DB.',
                 [

@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Carbon\Carbon;
 use Http\Route;
 
 class PayumoneyGatewayTest extends TestCase
@@ -79,8 +80,8 @@ class PayumoneyGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_OTP_INCORRECT');
-        $this->assertEquals($payment['error_code'], null);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_OTP_INCORRECT', $payment['internal_error_code']);
+        $this->assertEquals(null, $payment['error_code']);
 
         $this->step = null;
 
@@ -363,6 +364,98 @@ class PayumoneyGatewayTest extends TestCase
         $this->refundPayment($capturePayment['id']);
 
         $refund = $this->getLastEntity('wallet', true);
+    }
+
+    public function testRefundExcelFile()
+    {
+        $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForPayumoneyWallet();
+
+        $this->assertEquals(4, $data['wallet_payumoney']['count']);
+        $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+    }
+
+    public function testRefundExcelFileForAParticularMonth()
+    {
+        $knownDate = Carbon::create(2016, 5, 21);
+        Carbon::setTestNow($knownDate);
+
+        $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], [
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt
+            ]);
+        }
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForPayumoneyWallet(true);
+
+        $this->assertEquals(3, $data['wallet_payumoney']['count']);
+        $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        Carbon::setTestNow();
+    }
+
+    protected function generateRefundsExcelForPayumoneyWallet($date = false)
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/excel',
+            'method' => 'post',
+            'content' => [
+                'method'    => 'wallet',
+                'wallet'    => 'payumoney',
+                'frequency' => 'monthly'
+            ],
+        );
+
+        if ($date)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
+        }
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function runPaymentCallbackFlowWalletPayumoney($response, &$callback = null)

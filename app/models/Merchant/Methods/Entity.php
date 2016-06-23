@@ -350,4 +350,18 @@ class Entity extends Base\PublicEntity
 
         return $wallets;
     }
+
+    public static function getAllMethodNames()
+    {
+        return array(
+            self::CARD,
+            self::NETBANKING,
+            self::AMEX,
+            self::PAYTM,
+            self::MOBIKWIK,
+            self::PAYZAPP,
+            self::PAYUMONEY,
+            self::EMI
+        );
+    }
 }

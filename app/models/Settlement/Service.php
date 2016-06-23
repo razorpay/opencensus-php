@@ -110,6 +110,13 @@ class Service extends Base\Service
         return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
 
+    public function getSettlementCombinedReport($input)
+    {
+        $merchant = $this->merchant;
+
+        return (new Base\Report)->getReport($input, 'transaction');
+    }
+
     public function calculatePrevousSettlementFees()
     {
         $settlements = $this->repo->settlement->getSettlementWithFeesAsNullOrZero();

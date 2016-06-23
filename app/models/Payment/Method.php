@@ -20,4 +20,15 @@ class Method
 
         return $methodFormat[$method];
     }
+
+    public static function getAllPaymentMethods()
+    {
+        return array(
+            self::CARD,
+            self::NETBANKING,
+            self::WALLET,
+            self::EMI
+        );
+    }
+
 }

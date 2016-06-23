@@ -161,4 +161,13 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getSettlementCombinedReport()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->getSettlementCombinedReport($input);
+
+        return ApiResponse::json($data);
+    }
 }

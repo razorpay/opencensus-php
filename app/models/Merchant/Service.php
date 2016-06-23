@@ -99,6 +99,15 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
+    public function deleteMerchantLogo()
+    {
+        $this->merchant->setLogoUrl(null);
+
+        $this->repo->saveOrFail($this->merchant);
+
+        return $this->merchant->toArrayConfig();
+    }
+
     protected function uploadLogoIfFound(&$input)
     {
         // if($input->hasFile('logo') and $input['logo']->isValid())
@@ -242,6 +251,11 @@ class Service extends Base\Service
 
         $plan = (new Pricing\Repository)->getPricingPlanByIdOrFailPublic(
                                             $input['pricing_plan_id']);
+
+        // validate if this plan can be set for this merchant.
+        // Refer: https://github.com/razorpay/api/issues/324
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
