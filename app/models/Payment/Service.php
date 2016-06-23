@@ -139,7 +139,7 @@ class Service extends Base\Service
 
         $data = $this->processor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
-        
+
         return $data;
     }
 
