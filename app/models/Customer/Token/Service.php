@@ -90,7 +90,7 @@ class Service extends Base\Service
     {
         Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-        $app = $this->repo->customer_app->findByIdAndMerchantId($appToken, $this->merchant->getId());
+        $app = $this->repo->app_token->findByIdAndMerchantId($appToken, $this->merchant->getId());
 
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
 
@@ -116,7 +116,7 @@ class Service extends Base\Service
     {
         Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-        $app = $this->repo->customer_app->findByIdAndMerchantId($appToken, $this->merchant->getId());
+        $app = $this->repo->app_token->findByIdAndMerchantId($appToken, $this->merchant->getId());
 
         return $this->deleteTokenForCustomer($token, $app->customer);
     }

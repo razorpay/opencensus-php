@@ -30,12 +30,11 @@ class Entity
     const MERCHANT          = 'merchant';
     const TERMINAL          = 'terminal';
     const CUSTOMER          = 'customer';
+    const APP_TOKEN         = 'app_token';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlement';
     const TRANSACTION       = 'transaction';
-    const CUSTOMER_APP      = 'customer_app';
     const BANK_ACCOUNT      = 'bank_account';
-    const CUSTOMER_APP      = 'customer_app';
     const DAILY_SETTLEMENT  = 'daily_settlement';
 
     //
@@ -156,9 +155,8 @@ class Entity
         self::NETBANKING        => Gateway\Netbanking\Base::class,
         self::AXIS_MIGS         => Gateway\AxisMigs::class,
         self::AXIS_GENIUS       => Gateway\AxisGenius::class,
-        self::CUSTOMER_APP      => Models\Customer\App::class,
+        self::APP_TOKEN         => Models\Customer\App::class,
         self::BANK_ACCOUNT      => Models\Merchant\BankAccount::class,
-        self::CUSTOMER_APP      => Models\Customer\App::class,
         self::WALLET_PAYZAPP    => Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC   => Gateway\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,

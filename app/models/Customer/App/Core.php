@@ -32,7 +32,7 @@ class Core extends Base\Core
             $params[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
         }
 
-        $apps = $this->repo->fetch($params);
+        $apps = $this->repo->app_token->fetch($params);
 
         if ($apps !== null)
         {

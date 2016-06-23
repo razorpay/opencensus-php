@@ -10,7 +10,6 @@ use Models\Merchant;
 use Models\Merchant\Account;
 use Models\Payment;
 use Trace\TraceCode;
-use Session;
 
 class Core extends Base\Core
 {
@@ -59,27 +58,27 @@ class Core extends Base\Core
 
     public function verifyOtp($input)
     {
-        // verify the otp with raven service
+        // Verify the otp with raven service
         $this->verifyRavenOtp($input);
 
         // Get global customer from db or create one.
         $customer = $this->getOrCreateGlobalCustomer($input[Customer\Entity::CONTACT]);
 
-        // Create app for customer
-        $app = $this->createCustomerApp($customer, $input);
+        // Create app token for customer
+        $appToken = $this->createCustomerAppToken($customer, $input);
 
-        //fetch existing tokens for global customer
+        // Fetch existing tokens for global customer
         $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
-        // setup session params
-        $this->app['session']->put('app_token', $app->getPublicId());
-        $this->app['session']->put('device_token', $app->getDeviceToken());
+        // Put app token details in session so that we may not
+        // need to verify the customer in future.
+        $this->putAppTokenDetailsInSession($appToken);
 
-        // create response
+        // Create response
         $response = array(
             'success'      => 1,
-            'app_token'    => $app->getPublicId(),
-            'device_token' => $app->getDeviceToken());
+            'app_token'    => $appToken->getPublicId(),
+            'device_token' => $appToken->getDeviceToken());
 
         if (($tokens !== null) and ($tokens->count() > 0))
         {
@@ -89,7 +88,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    protected function createCustomerApp($customer, $input)
+    protected function createCustomerAppToken($customer, $input)
     {
         $custAppInput = array(
             App\Entity::CUSTOMER_ID => $customer->getId(),
@@ -180,6 +179,13 @@ class Core extends Base\Core
         }
 
         return array($customer, $customerApp);
+    }
+
+    protected function putAppTokenDetailsInSession($appToken)
+    {
+        // setup session params
+        $this->app['session']->put('app_token', $appToken->getPublicId());
+        $this->app['session']->put('device_token', $appToken->getDeviceToken());
     }
 
     protected function verifyUniqueCustomer($customer)
