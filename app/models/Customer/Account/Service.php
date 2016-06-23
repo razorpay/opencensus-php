@@ -164,7 +164,7 @@ class Service extends Base\Service
 
         if ($customer !== null)
         {
-            $apps = $this->repo->customer_app->fetchAppsByDeviceToken(
+            $apps = $this->repo->app_token->fetchAppsByDeviceToken(
                 $customer,
                 $this->merchant,
                 $deviceToken);

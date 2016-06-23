@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'CustomerApps';
+    protected $entity = 'AppToken';
 
     protected $entityFetchParamRules = array(
         App\Entity::ID            => 'sometimes|string|size:14',

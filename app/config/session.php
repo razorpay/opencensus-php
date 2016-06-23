@@ -136,5 +136,5 @@ return array(
 	|
 	*/
 
-	'secure' => $_ENV['SESSION_SECURE'],
+	'secure' => getenv('SESSION_SECURE'),
 );
