@@ -236,6 +236,7 @@ class Terminal extends Base
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'paytm',
             'card'                      => 1,
+            'netbanking'                => 1,
             'gateway_merchant_id'       => 'razorpay paytm',
             'gateway_terminal_id'       => 'nodal account paytm',
             'gateway_terminal_password' => 'razorpay_password',
