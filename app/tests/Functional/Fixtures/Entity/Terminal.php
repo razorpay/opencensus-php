@@ -286,7 +286,8 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
-            'card'                      => 1);
+            'card'                      => 1,
+            'emi'                       => 1);
 
         return parent::create($attributes);
     }
