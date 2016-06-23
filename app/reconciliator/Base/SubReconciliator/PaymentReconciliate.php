@@ -85,7 +85,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             }
 
             // Validates that the payment status is not failed.
-            $validate = $this->validatePaymentStatus();
+            $validate = $this->validatePaymentStatus($row);
 
             if ($validate === true)
             {
@@ -114,7 +114,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    protected function validatePaymentStatus()
+    protected function validatePaymentStatus($row)
     {
         $paymentStatus = $this->payment->getStatus();
 
@@ -131,10 +131,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'    => get_called_class()
             ]);
 
-        return $this->tryAuthorizeFailedPayment();
+        return $this->tryAuthorizeFailedPayment($row);
     }
 
-    protected function tryAuthorizeFailedPayment()
+    protected function tryAuthorizeFailedPayment($row)
     {
         $paymentService = new Payment\Service();
 
@@ -165,7 +165,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($verifyResponse === Verify::SUCCESS)
         {
-            return $this->handleVerifySuccess();
+            return $this->handleVerifySuccess($row);
         }
 
         $this->messenger->raiseReconAlert(
@@ -180,16 +180,32 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return false;
     }
 
-    protected function handleVerifySuccess()
+    protected function handleVerifySuccess($row)
     {
+        $payment = $this->payment;
+        
         $this->messenger->raiseReconAlert(
             [
                 'trace_code' => TraceCode::RECON_FAILED_VERIFY,
                 'message'    => 'Verify returned failed. Payment is still in failed state.',
-                'payment_id' => $this->payment->getId(),
+                'payment_id' => $payment->getId(),
                 'gateway'    => get_called_class()
             ]);
 
+        return $this->forceAuthorizeFailed($payment, $row);
+    }
+
+
+    /**
+     * This should be implemented in the child class if the gateway requires
+     * a force authorization from failed state. If no force authorization,
+     * it means that the payment is still in failed state and hence
+     * should return back false.
+     *
+     * @return bool
+     */
+    protected function forceAuthorizeFailed($payment, $row)
+    {
         return false;
     }
 
@@ -376,9 +392,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         if ($iinCardType !== $reconCardType)
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_MISMATCH,
                     'message'         => 'Card types in recon file and db do not match. Updating.',
                     'recon_card_type' => $reconCardType,
                     'iin_card_type'   => $iinCardType,
@@ -564,11 +580,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             {
                 $this->messenger->raiseReconAlert(
                     [
-                        'trace_code'        => TraceCode::RECON_FAILURE,
-                        'message'           => 'Gateway service tax in the recon file does not match with the one stored in API.',
-                        'recon_gateway_service_tax' => $reconGatewayServiceTax,
-                        'api_gateway_service_tax'   => $currentGatewayServiceTax,
-                        'gateway'           => get_called_class(),
+                        'trace_code'                 => TraceCode::RECON_FAILURE,
+                        'message'                    => 'Gateway service tax in the recon file does not match with the one stored in API.',
+                        'recon_gateway_service_tax'  => $reconGatewayServiceTax,
+                        'api_gateway_service_tax'    => $currentGatewayServiceTax,
+                        'gateway'                    => get_called_class(),
                     ]);
 
                 throw new ReconciliationException(

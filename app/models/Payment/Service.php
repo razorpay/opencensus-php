@@ -21,6 +21,8 @@ class Service extends Base\Service
 {
     protected $merchant;
 
+    protected $core;
+
     public function __construct()
     {
         parent::__construct();
@@ -137,6 +139,8 @@ class Service extends Base\Service
 
         $data = $this->processor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
+
+        sd($data);
 
         return $data;
     }
@@ -474,11 +478,11 @@ class Service extends Base\Service
 
         return $verify->verifyPaymentsWithFilter($filter);
     }
-    
+
     public function verifyPayment($payment)
     {
         $verify = new Verify($this->mode, $this->trace);
-        
+
         return $verify->verifyPayment($payment);
     }
 

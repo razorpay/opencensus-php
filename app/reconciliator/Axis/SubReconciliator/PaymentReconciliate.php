@@ -6,6 +6,7 @@ use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 
+use Models\Payment\Service as PaymentService;
 use Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -17,12 +18,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_TYPE   = 'card_type';
     const COLUMN_SERVICE_TAX = 'service_tax145';
     const COLUMN_FEE         = 'commission';
+    const RRN                = 'rrn_no';
 
     protected $messenger;
+    protected $axisMigsRepo;
 
     public function __construct()
     {
         $this->messenger = new Messenger();
+        $this->axisMigsRepo = $this->repo->axis_migs;
+
         parent::__construct();
     }
 
@@ -89,5 +94,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return [
             BaseReconciliate::CARD_TYPE => $cardType,
         ];
+    }
+
+    protected function forceAuthorizeFailed($payment, $row)
+    {
+        $paymentService = new PaymentService();
+
+        $paymentId = $payment->getPublicId();
+
+        $vpcTransactionNo = $this->axisMigsRepo->findByRrn($row[self::RRN]);
+
+        $input['vpc_TransactionNo'] = $vpcTransactionNo;
+
+        $paymentService->forceAuthorizeFailed($paymentId, $input);
     }
 }

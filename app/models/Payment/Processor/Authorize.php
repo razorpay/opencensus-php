@@ -96,6 +96,10 @@ trait Authorize
      * reconciliation only for three days. If we miss any failed payment
      * reconciliation there then we need to do it manually later.
      *
+     * @param $payment
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function forceAuthorizeFailedPayment($payment, $input)
     {
@@ -122,7 +126,7 @@ trait Authorize
             if ($flag === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Payment expected to have succeeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
             }
 

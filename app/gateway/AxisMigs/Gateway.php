@@ -113,7 +113,7 @@ class Gateway extends Base\Gateway
 
         if (isset($input['gateway']['vpc_TransactionNo']) === false)
         {
-            throw new Excception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Correct field not present for the required operation');
         }
 
