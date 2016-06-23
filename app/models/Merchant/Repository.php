@@ -39,7 +39,7 @@ class Repository extends Base\Repository
             $repo = $this->repo;
 
             $this->sharedMerchant = $repo::where(Entity::ID, "=", Account::SHARED_ACCOUNT)
-                                         ->first();
+                                         ->firstOrFail();
         }
 
         return $this->sharedMerchant;

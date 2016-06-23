@@ -148,5 +148,5 @@ return array(
     'RAVEN_URL'                                         => '',
     'RAVEN_SECRET'                                      => '',
 
-    'SESSION_SECURE'                                    => false,
+    // 'SESSION_SECURE'                                    => false,
 );

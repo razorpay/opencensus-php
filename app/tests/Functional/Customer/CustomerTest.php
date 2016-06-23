@@ -18,7 +18,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures("tokens,cardsaving");
+        $this->fixtures->merchant->editFeatures('tokens,cardsaving');
     }
 
     public function testCreateCustomer()
@@ -120,7 +120,7 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
-    public function testOtpFlow()
+    public function testOtpFlowWithoutDeviceToken()
     {
         $this->ba->publicAuth();
 
@@ -132,7 +132,7 @@ class CustomerTest extends TestCase
             'url' => '/otp/create',
             'method' => 'post',
             'content' => [
-                "contact" => "1234567890"
+                'contact' => '1234567890'
             ],
         );
 
@@ -154,7 +154,7 @@ class CustomerTest extends TestCase
         assert(empty($content['device_token']) === false);
     }
 
-    public function testOtpFlow2()
+    public function testOtpFlowWithDeviceToken()
     {
         $this->ba->publicAuth();
 
@@ -166,7 +166,7 @@ class CustomerTest extends TestCase
             'url' => '/otp/create',
             'method' => 'post',
             'content' => [
-                "contact" => "1234567890"
+                'contact' => '1234567890'
             ],
         );
 
@@ -199,7 +199,7 @@ class CustomerTest extends TestCase
               ->andReturnUsing(function ($route, $method, $input)
                     {
                         $response = array(
-                            "success" => true,
+                            'success' => true,
                         );
 
                         return $response;
