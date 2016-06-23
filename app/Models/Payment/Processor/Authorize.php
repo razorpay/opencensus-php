@@ -727,6 +727,10 @@ trait Authorize
                 $this->verifyEmiEnabled();
                 break;
 
+            case Payment\Method::UPI:
+                $this->verifyUPIEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -1218,6 +1222,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyUPIEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isUPIEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

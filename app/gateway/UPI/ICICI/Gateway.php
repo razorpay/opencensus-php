@@ -48,7 +48,7 @@ EOT;
             // Amount and note are lowercase
             // despite being uppercase in docs
             "amount"        =>  "5.00",
-            "billNumber"    =>  "sdf234234"
+            "billNumber"    =>  "sdf234234",
             "collectByDate" =>  "15/06/2016 11:01 AM",
             "merchantId"    =>  "merchantId",
             "merchantName"  =>  "merchantName",

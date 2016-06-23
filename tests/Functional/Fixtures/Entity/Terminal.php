@@ -565,4 +565,22 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedUPITerminal(array $attributes)
+    {
+        $termId = \Models\Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL;
+
+        $defaultValues = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'upi_icici',
+            'gateway_merchant_id'       => 'razorpay upi',
+            'gateway_terminal_id'       => 'nodal account upi icici',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

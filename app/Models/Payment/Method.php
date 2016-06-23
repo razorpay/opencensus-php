@@ -8,6 +8,7 @@ class Method
     const NETBANKING    = 'netbanking';
     const WALLET        = 'wallet';
     const EMI           = 'emi';
+    const UPI           = 'upi';
 
     public static function formatted($method)
     {
@@ -15,7 +16,8 @@ class Method
             self::CARD          => 'Card',
             self::NETBANKING    => 'Net Banking',
             self::WALLET        => 'Wallet',
-            self::EMI           => 'EMI'
+            self::EMI           => 'EMI',
+            self::UPI           => 'UPI',
         ];
 
         return $methodFormat[$method];
@@ -27,7 +29,8 @@ class Method
             self::CARD,
             self::NETBANKING,
             self::WALLET,
-            self::EMI
+            self::EMI,
+            self::UPI
         );
     }
 

@@ -59,7 +59,6 @@ class Entity
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
-    const WALLET_PAYZAPP        = 'wallet_payzapp';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const UPI_ICICI             = 'upi_icici';
