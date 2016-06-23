@@ -3,50 +3,72 @@
 namespace Gateway\Cybersource;
 
 use Gateway\Base;
+use Constants;
 
 class Entity extends Base\Entity
 {
+    const ID                   = 'id';
+    const COMMERCE_INDICATOR   = 'commerce_indicator';
+    const COLLECTION_INDICATOR = 'collection_indicator';
+    const AMOUNT               = 'amount';
+    const STATUS               = 'status';
+    const ECI                  = 'eci';
+    const CAVV                 = 'cavv';
+    const AUTH_DATA            = 'auth_data';
+    const REF                  = 'ref';
+    const CAPTURE_REF          = 'capture_ref';
+    const XID                  = 'xid';
+    const PARES_STATUS         = 'pares_status';
+    const ERROR_CODE           = 'error_code';
+    const CREATED_AT           = 'created_at';
+    const UPDATED_AT           = 'updated_at';
+
     protected $fields = array(
-        'id',
-        'payment_id',
-        'received',
-        'refund_id',
-        'action',
-        'amount',
-        'status',
-        'eci',
-        'auth',
-        'ref',
-        'capture_ref',
-        'error_code',
-        'created_at',
-        'updated_at',
+        self::ID,
+        self::PAYMENT_ID,
+        self::RECEIVED,
+        self::REFUND_ID,
+        self::ACTION,
+        self::AMOUNT,
+        self::STATUS,
+        self::ECI,
+        self::CAVV,
+        self::AUTH_DATA,
+        self::REF,
+        self::CAPTURE_REF,
+        self::COMMERCE_INDICATOR,
+        self::XID,
+        self::PARES_STATUS,
+        self::ERROR_CODE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::COLLECTION_INDICATOR,
     );
 
     protected $fillable = array(
-        'payment_id',
-        'received',
-        'amount',
-        'status',
-        'eci_raw',
-        'refund_id',
-        'action',
-        'cavv',
-        'ref',
-        'capture_ref',
-        'error_code',
-        'commerce_indicator',
-        'xid',
-        'pares_status',
-        'auth_data',
-        'collection_indicator',
+        self::PAYMENT_ID,
+        self::RECEIVED,
+        self::REFUND_ID,
+        self::ACTION,
+        self::AMOUNT,
+        self::STATUS,
+        self::ECI,
+        self::CAVV,
+        self::AUTH_DATA,
+        self::REF,
+        self::CAPTURE_REF,
+        self::COMMERCE_INDICATOR,
+        self::XID,
+        self::PARES_STATUS,
+        self::ERROR_CODE,
+        self::COLLECTION_INDICATOR,
     );
 
-    protected $table = 'cybersource';
+    protected $table = Constants\Table::CYBERSOURCE;
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = self::ID;
 
-    protected $entity = 'cybersource';
+    protected $entity = Constants\Table::CYBERSOURCE;
 
     public $incrementing = true;
 
@@ -54,16 +76,16 @@ class Entity extends Base\Entity
 
     public function payment()
     {
-        return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
+        return $this->belongsTo('Models\Payment\Entity', self::PAYMENT_ID, self::ID);
     }
 
     public function getStatus()
     {
-        return $this->getAttribute('status');
+        return $this->getAttribute(self::STATUS);
     }
 
     public function setStatus($status)
     {
-        $this->setAttribute('status', $status);
+        $this->setAttribute(self::STATUS, $status);
     }
 }

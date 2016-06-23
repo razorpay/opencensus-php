@@ -2,6 +2,9 @@
 
 namespace Gateway\Cybersource;
 
+use Trace\Trace;
+use Trace\TraceCode;
+
 class ExtendedClient extends \SoapClient 
 {
     protected $user;
@@ -47,8 +50,11 @@ class ExtendedClient extends \SoapClient
         }
         catch (\DOMException $e) 
         {
-            throw new \EE\Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR);
+            $this->app = \App::getFacadeRoot();
+            $this->trace = $this->app['trace'];
+            $this->trace->error(TraceCode::RUNTIME_ERROR, (array) $e);
+
+            throw new \EE\Exception\RuntimeException(null, null, $e);
         }
 
         return parent::__doRequest($request, $location, $action, $version);

@@ -48,6 +48,8 @@ class TraceCode
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
+    const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
+
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
 
     /*
@@ -173,6 +175,8 @@ class TraceCode
         self::PAYMENT_FAILED_TO_AUTHORIZED          => 'Payment failed but which succeded on gateway, converting it to authorized',
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
+
+        self::RUNTIME_ERROR                         => 'The request failed at runtime',
 
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
         self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',

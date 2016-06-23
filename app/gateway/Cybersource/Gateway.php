@@ -497,6 +497,14 @@ class Gateway extends Base\Gateway
         $auth = array(
             'username' => $input['terminal']['gateway_terminal_id'],
             'password' => $input['terminal']['gateway_terminal_password']);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $auth = array(
+            'username' => $this->config['test_merchant_id'],
+            'password' => $this->config['test_access_code']);
+        }
+        
         $soapClient = new ExtendedClient($url, array(), $auth);
 
         return $soapClient;
