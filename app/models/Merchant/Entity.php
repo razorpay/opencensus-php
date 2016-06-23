@@ -117,6 +117,12 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL              => null,
     );
 
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::LOGO_URL
+    );
+
     protected function generateTransactionReportEmail($input)
     {
         $email = array($input[self::EMAIL]);
@@ -366,9 +372,14 @@ class Entity extends Base\PublicEntity
         return '#' . $storedBrandColor;
     }
 
-    public function getLogoUrl($size = self::ORIGINAL_SIZE)
+    public function getLogoUrl()
     {
-        $relativeLogoUrl = $this->attributes[self::LOGO_URL];
+        return $this->getAttribute(self::LOGO_URL);
+    }
+
+    public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
+    {
+        $relativeLogoUrl = $this->getLogoUrl();
 
         if ($relativeLogoUrl === null)
         {
@@ -483,6 +494,14 @@ class Entity extends Base\PublicEntity
     public function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
+    public function setPublicLogoUrlAttribute(array & $array)
+    {
+        if (empty($array[self::LOGO_URL]) === false)
+        {
+            $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
+        }
     }
 
     public function getSettlementSchedule()

@@ -153,17 +153,18 @@ class TraceCode
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
 
-    const RECONCILIATION_ALERT                      = 'RECONCILIATION_ALERT';
+    const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
     const RECON_MISMATCH                            = 'RECON_MISMATCH';
     const RECON_PARSE_ERROR                         = 'RECON_PARSE_ERROR';
     const RECON_FAILURE                             = 'RECON_FAILURE';
+    const RECON_FAILED_VERIFY                       = 'RECON_FAILED_VERIFY';
     const RECON_FILE_DELETE_FAILURE                 = 'RECON_FILE_DELETE_FAILURE';
-    const RECONCILIATION_INFO_ALERT                 = 'RECONCILIATION_INFO_ALERT';
-    const RECONCILIATION_CRITICAL_ALERT             = 'RECONCILIATION_CRITICAL_ALERT';
-    const RECONCILIATION_REQUEST                    = 'RECONCILIATION_REQUEST';
-    const RECONCILIATION_RECONCILED_CHECK           = 'RECONCILIATION_RECONCILED_CHECK';
-    const RECONCILIATION_FILE_ROW                   = 'RECONCILIATION_FILE_ROW';
+    const RECON_INFO_ALERT                          = 'RECON_INFO_ALERT';
+    const RECON_CRITICAL_ALERT                      = 'RECON_CRITICAL_ALERT';
+    const RECON_REQUEST                             = 'RECON_REQUEST';
+    const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
+    const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
 
     /**
      * Trace code for critical info
@@ -209,17 +210,18 @@ class TraceCode
         self::ES_BULK_UPDATE                        => 'Bulk update for ES',
         self::ES_SAVE_REQUEST                       => 'Request for saving in ES',
 
-        self::RECONCILIATION_ALERT                  => 'Alert raised for reconciliation',
+        self::RECON_ALERT                           => 'Alert raised for reconciliation',
         self::RECON_FILE_SKIP                       => 'Skipping a reconciliation file',
         self::RECON_MISMATCH                        => 'Mismatch between the data present in DB and recon file',
         self::RECON_PARSE_ERROR                     => 'Not able to parse some content of the recon file',
         self::RECON_FAILURE                         => 'Reconciliation could not happen',
+        self::RECON_FAILED_VERIFY                   => 'Payment verify and authorize was unsuccessful',
         self::RECON_FILE_DELETE_FAILURE             => 'Deleting local file during reconciliation',
-        self::RECONCILIATION_INFO_ALERT             => 'Info alert raised for reconciliation',
-        self::RECONCILIATION_CRITICAL_ALERT         => 'Critical alert raised for reconciliation',
-        self::RECONCILIATION_REQUEST                => 'Request made for reconciliation',
-        self::RECONCILIATION_RECONCILED_CHECK       => 'Check for entity already being reconciled',
-        self::RECONCILIATION_FILE_ROW               => 'Row in the reconciliation file that is being reconciled',
+        self::RECON_INFO_ALERT                      => 'Info alert raised for reconciliation',
+        self::RECON_CRITICAL_ALERT                  => 'Critical alert raised for reconciliation',
+        self::RECON_REQUEST                         => 'Request made for reconciliation',
+        self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
+        self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request'
     );
 
     /**

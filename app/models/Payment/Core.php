@@ -13,18 +13,11 @@ use Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    protected $paymentRepo;
-
-    public function __construct()
-    {
-        $this->paymentRepo = (new Payment\Repository);
-    }
-
     public function retrieveByIdAndMerchantId($id, $merchantId)
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $payment = $this->paymentRepo->findByIdAndMerchantId($id, $merchantId);
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $merchantId);
 
         return $payment;
     }
@@ -45,14 +38,14 @@ class Core extends Base\Core
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $payment = $this->paymentRepo->findOrFail($id);
+        $payment = $this->repo->payment->findOrFail($id);
 
         return $payment;
     }
 
     public function retrievePaymentById($id)
     {
-        return $this->paymentRepo->findOrFail($id);
+        return $this->repo->payment->findOrFail($id);
     }
 
     public function retrieveRefundById($refundId)

@@ -56,7 +56,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             // PayZapp reconciliation files have service tax and cess separately
             $serviceTax += $kkCess;
         }
-        
+
         if (empty($row[self::COLUMN_EDU_CESS]) === false)
         {
             // Convert edu cess into basic unit of currency. (ex: paise)
@@ -82,41 +82,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return round($fee);
     }
-    
+
     protected function getCardDetails($row)
     {
-        if (isset($row[self::COLUMN_CARD_TYPE]) === false)
-        {
-            return null;
-        }
-
-        $cardType = strtolower($row[self::COLUMN_CARD_TYPE]);
-
-        if ($cardType === 'c')
-        {
-            $cardType = BaseReconciliate::CREDIT;
-        }
-        else if ($cardType === 'd')
-        {
-            $cardType = BaseReconciliate::DEBIT;
-        }
-        else
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to figure out the card type.',
-                    'recon_card_type' => $cardType,
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
-
-            // It's as good as no card type present in the row.
-            return null;
-        }
-
-        return [
-            BaseReconciliate::CARD_TYPE => $cardType,
-        ];
+        return [];
     }
 }

@@ -193,7 +193,7 @@ class Checkout
     {
         $data['methods'] = $methods;
         $data['options']['theme']['color'] = $merchant->getBrandColor();
-        $data['options']['image'] = $merchant->getLogoUrl(self::CHECKOUT_LOGO_SIZE);
+        $data['options']['image'] = $merchant->getFullLogoUrlWithSize(self::CHECKOUT_LOGO_SIZE);
         $data['options']['remember_customer'] = $merchant->isFeatureEnabled(Features::CARD_SAVING);
         $data['fee_bearer'] = false;
         $data['version'] = 1;

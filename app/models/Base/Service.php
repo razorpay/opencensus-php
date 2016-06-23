@@ -32,6 +32,12 @@ class Service
     protected $merchant;
 
     /**
+     * Repository manager instance
+     * @var Base\RepositoryManager
+     */
+    protected $repo;
+
+    /**
      * Trace instance used for tracing
      * @var Trace\Trace
      */

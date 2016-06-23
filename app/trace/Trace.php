@@ -25,6 +25,8 @@ class Trace extends TraceWriter
 
             if (in_array($environment, ['production', 'beta']))
             {
+                $app = \App::getFacadeRoot();
+
                 $data = array(
                     'type'          => get_class($exception),
                     'message'       => $exception->getMessage(),
@@ -35,6 +37,7 @@ class Trace extends TraceWriter
                     'environment'   => $environment,
                     'level'         => $level,
                     'trace_message' => $message,
+                    'instance'      => $app['instance']->getInstanceData(),
                     'context'       => $context
                 );
 

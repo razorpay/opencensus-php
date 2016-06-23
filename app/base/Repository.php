@@ -2,12 +2,11 @@
 
 namespace Base;
 
-use App;
 use Constants\Entity as E;
 use Constants\Table;
 use DB;
+use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
-use EE\Exception;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -78,11 +77,6 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
-    {
-        return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to);
-    }
-
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $relations = [])
     {
         $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
@@ -109,12 +103,19 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $repo = E::getEntityRepository($type);
 
-            $objects[$type] = (new $repo)->findMany($ids);
+            $typeEntities = (new $repo)->findMany($ids);
+
+            foreach ($typeEntities as $entity)
+            {
+                $objects[$entity->getId()] = $entity;
+            }
         }
 
         foreach ($entities as $entity)
         {
-            $entity->setRelation($relation, $objects[$entity->$typeCol]->find($entity->$idCol));
+            $typeEntity = $objects[$entity->$idCol];
+
+            $entity->setRelation($relation, $typeEntity);
         }
 
         return $entities;
@@ -174,8 +175,7 @@ class Repository extends \Razorpay\Spine\Repository
             // Shouldn't fail for any reason
             $this->trace->error(
                 TraceCode::ES_SAVE_FAILED,
-                $entity->toArray()
-            );
+                $entity->toArray());
 
             $this->trace->traceException($ex);
         }
