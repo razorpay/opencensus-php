@@ -2,7 +2,9 @@
 
 namespace Dashboard;
 
-class Repository extends \Base\Repository
+use Base;
+
+class Repository extends Base\Repository
 {
     protected $repo = '\Dashboard\Logs';
 
