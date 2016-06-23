@@ -96,16 +96,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         ];
     }
 
-    protected function forceAuthorizeFailed($payment, $row)
+    protected function forceAuthorizeFailed($row)
     {
         $paymentService = new PaymentService();
 
-        $paymentId = $payment->getPublicId();
+        $paymentId = $this->payment->getPublicId();
 
-        $vpcTransactionNo = $this->axisMigsRepo->findByRrn($row[self::RRN]);
+        $vpcTransactionNo = $this->axisMigsRepo
+                                 ->findByRrn($row[self::RRN])
+                                 ->getVpcTransactionNo();
 
         $input['vpc_TransactionNo'] = $vpcTransactionNo;
 
-        $paymentService->forceAuthorizeFailed($paymentId, $input);
+        // If there's any issue during authorize, the function throws an exception.
+        $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
+
+        if ((empty($response['status'] === false)) and ($response['status'] === 'AUTHORIZED'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

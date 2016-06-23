@@ -160,6 +160,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($verifyResponse === Verify::AUTHORIZED)
         {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'    => 'Verify returned authorized.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]
+            );
+            
             return $this->handleVerifyAuthorized();
         }
 
@@ -182,17 +191,31 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function handleVerifySuccess($row)
     {
-        $payment = $this->payment;
+        $authorizeSuccess = $this->forceAuthorizeFailed($row);
         
+        if ($authorizeSuccess === true)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'    => 'Verify did not authorize. Force authorized the failed payment.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class(),
+                ]
+            );
+            
+            return $this->handleVerifyAuthorized();
+        }
+
         $this->messenger->raiseReconAlert(
             [
                 'trace_code' => TraceCode::RECON_FAILED_VERIFY,
                 'message'    => 'Verify returned failed. Payment is still in failed state.',
-                'payment_id' => $payment->getId(),
+                'payment_id' => $this->payment->getId(),
                 'gateway'    => get_called_class()
             ]);
-
-        return $this->forceAuthorizeFailed($payment, $row);
+        
+        return false;
     }
 
 
@@ -204,22 +227,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @return bool
      */
-    protected function forceAuthorizeFailed($payment, $row)
+    protected function forceAuthorizeFailed($row)
     {
         return false;
     }
 
     protected function handleVerifyAuthorized()
     {
-        $this->app['trace']->info(
-            TraceCode::RECON_INFO_ALERT,
-            [
-                'message'    => 'Verify returned authorized.',
-                'payment_id' => $this->payment->getId(),
-                'gateway'    => get_called_class()
-            ]
-        );
-
         $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
 
         // Set the payment transaction for the row.

@@ -144,7 +144,8 @@ trait Authorize
             $this->repo->saveOrFail($payment);
         });
 
-        return $payment->toArrayAdmin();
+        // TODO: Remove reload once the branch hotfix/authorize-transaction-save is merged.
+        return $payment->reload()->toArrayAdmin();
     }
 
     /**
