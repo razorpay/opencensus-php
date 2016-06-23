@@ -42,7 +42,7 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
-        $terminal = $this->repo->terminal->deleteOrFail($terminal);
+        $terminal = $this->repo->deleteOrFail($terminal);
 
         if ($terminal === null)
             return [];
@@ -54,7 +54,7 @@ class Service extends Base\Service
     {
         $terminal = $this->repo->terminal->findOrFailPublic($id);
 
-        $terminal = $this->repo->terminal->deleteOrFail($terminal);
+        $terminal = $this->repo->deleteOrFail($terminal);
 
         if ($terminal === null)
             return [];

@@ -2,6 +2,8 @@
 
 namespace Models\Key;
 
+use Models\Base;
+
 class Service extends Base\Service
 {
     public function fetch($id)

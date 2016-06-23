@@ -6,6 +6,25 @@ use App;
 
 class Core
 {
+    /**
+     * The application instance.
+     *
+     * @var Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
+     * Repository manager instance
+     * @var Base\RepositoryManager
+     */
+    protected $repo;
+
+    /**
+     * Trace instance used for tracing
+     * @var Trace\Trace
+     */
+    protected $trace;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();

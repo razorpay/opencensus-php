@@ -245,7 +245,7 @@ class Service extends Base\Service
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
-        $this->repo->merchant->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         return $plan->toArrayPublic();
     }
@@ -289,7 +289,7 @@ class Service extends Base\Service
 
         $merchant->liveEnable();
 
-        $this->repo->merchant->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -312,7 +312,7 @@ class Service extends Base\Service
 
         $merchant->liveDisable();
 
-        $this->repo->merchant->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
     }

@@ -2,13 +2,11 @@
 
 namespace Models\Base;
 
-use Constants\Entity as E;
-use Constants\Table;
-use DB;
+use Base\Repository as BaseRepository;
 use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
 
-class Repository extends \Base\Repository
+class Repository extends BaseRepository
 {
     public function fetchEntitiesForReport($merchantId, $from, $to)
     {
