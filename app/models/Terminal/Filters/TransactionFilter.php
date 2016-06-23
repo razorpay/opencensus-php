@@ -3,6 +3,7 @@
 namespace Models\Terminal\Filters;
 
 use Models\Terminal;
+use Models\Bank\IFSC;
 use Models\Payment\Method;
 use Models\Payment\Gateway;
 

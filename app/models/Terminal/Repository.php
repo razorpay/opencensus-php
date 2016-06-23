@@ -116,6 +116,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getAllSharedTerminals()
+    {
+        $repo = $this->repo;
+
+        $map = Terminal\Shared::getSharedTerminalMapping();
+
+        $sharedTerminalIds = array_keys($map);
+
+        return $repo::whereIn(Terminal\Entity::ID, $sharedTerminalIds)
+                    ->get();
+    }
+
     public function deleteOrFail($entity)
     {
         $repo = $this->repo;

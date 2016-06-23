@@ -36,6 +36,11 @@ class Selector
         $merchantTerminals = $this->repo->
             getLiveTerminalsForMerchantAndSharedMerchant($this->merchant->getId());
 
+        // Fetch Shared Terminals
+        $sharedTerminals = $this->repo->getAllSharedTerminals();
+
+        $merchantTerminals = $merchantTerminals->merge($sharedTerminals);
+
         return $merchantTerminals;
     }
 
@@ -57,10 +62,25 @@ class Selector
         // Terminals next sorted
         $sortedTerminals = $filteredTerminals;
 
-        foreach (self::$sorters as $sorter)
+        // foreach (self::$sorters as $sorter)
+        // {
+        //     $sortedTerminals = $sorter->sort($input, $sortedTerminals);
+        // }
+
+        $terminal = $sortedTerminals[0];
+
+        if ($terminal === null)
         {
-            $sortedTerminals = $sorter->sort($input, $sortedTerminals);
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $payment->toArrayAdmin()]);
         }
+
+        $payment->terminal()->associate($terminal);
+
+        $payment->setGateway($terminal->getGateway());
+
+        return $terminal;
 
     }
 
