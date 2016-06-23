@@ -207,6 +207,7 @@ class Gateway
      * @var array
      */
     public static $directCardGateways = array(
+        Gateway::CYBERSOURCE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX);
