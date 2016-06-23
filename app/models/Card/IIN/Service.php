@@ -6,6 +6,8 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
 use Models\Card\IIN;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -37,7 +39,7 @@ class Service extends Base\Service
         $iin = (new Entity)->build($input);
 
         $this->repo->saveOrFail($iin);
-        
+
         return $iin->toArrayPublic();
     }
 
