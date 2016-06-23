@@ -17,7 +17,7 @@ class CreateCustomerApps extends Migration {
   	 */
   	public function up()
   	{
-        Schema::create(Table::CUSTOMER_APP, function(Blueprint $table)
+        Schema::create(Table::APP_TOKEN, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -28,11 +28,14 @@ class CreateCustomerApps extends Migration {
 
             $table->char(App::CUSTOMER_ID, 14);
 
-            $table->string(App::DEVICE_ID, 50);
+            $table->char(App::DEVICE_TOKEN, 14);
 
             $table->integer(App::CREATED_AT);
 
             $table->integer(App::UPDATED_AT);
+
+            $table->integer(App::DELETED_AT)
+                  ->nullable();
 
             $table->index(App::CREATED_AT);
 
@@ -49,9 +52,9 @@ class CreateCustomerApps extends Migration {
 
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->foreign(Payment::APP_ID)
+            $table->foreign(Payment::APP_TOKEN)
                   ->references(App::ID)
-                  ->on(Table::CUSTOMER_APP)
+                  ->on(Table::APP_TOKEN)
                   ->on_delete('restrict');
         });
 	 }
@@ -65,16 +68,16 @@ class CreateCustomerApps extends Migration {
   	{
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->dropForeign(Table::PAYMENT.'_'.Payment::APP_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::APP_TOKEN.'_foreign');
         });
 
-        Schema::table(Table::CUSTOMER_APP, function($table)
+        Schema::table(Table::APP_TOKEN, function($table)
         {
-            $table->dropForeign(Table::CUSTOMER_APP.'_'.App::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::APP_TOKEN.'_'.App::CUSTOMER_ID.'_foreign');
 
-            $table->dropForeign(Table::CUSTOMER_APP.'_'.App::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::APP_TOKEN.'_'.App::MERCHANT_ID.'_foreign');
         });
 
-    		Schema::drop(Table::CUSTOMER_APP);
+		Schema::drop(Table::APP_TOKEN);
   	}
 }

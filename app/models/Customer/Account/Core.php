@@ -16,8 +16,18 @@ class Core extends Base\Core
     public function __construct()
     {
         parent::__construct();
+    }
 
-        $this->repo = new Customer\Repository;
+    public function createLocalCustomer($input, $merchant)
+    {
+        return $this->create($input, $merchant);
+    }
+
+    public function createGlobalCustomer($input)
+    {
+        assert(isset($input[Customer\Entity::CONTACT]));
+
+        return $this->create($input, $this->repo->merchant->getSharedAccount());
     }
 
     public function create($input, $merchant)
@@ -33,15 +43,6 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function createGlobalCustomer($input)
-    {
-        assert(isset($input[Customer\Entity::CONTACT]));
-
-        $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
-
-        return $this->create($input, $merchant);
-    }
-
     public function edit($customer, $input)
     {
         $customer->edit($input);
@@ -50,69 +51,94 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($customer);
 
-        $this->trace->info(
-            TraceCode::CUSTOMER_EDIT,
-            [$input]);
+        $this->trace->info(TraceCode::CUSTOMER_EDIT, $input);
 
         return $customer;
     }
 
     public function verifyOtp($input)
     {
-        $response = array();
-        $data = null;
+        // Verify the otp with raven service
+        $this->verifyRavenOtp($input);
 
-        try
+        // Get global customer from db or create one.
+        $customer = $this->getOrCreateGlobalCustomer($input[Customer\Entity::CONTACT]);
+
+        // Create app token for customer
+        $appToken = $this->createCustomerAppToken($customer, $input);
+
+        // Fetch existing tokens for global customer
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+
+        // Put app token details in session so that we may not
+        // need to verify the customer in future.
+        $this->putAppTokenDetailsInSession($appToken);
+
+        // Create response
+        $response = array(
+            'success'      => 1,
+            'app_token'    => $appToken->getPublicId(),
+            'device_token' => $appToken->getDeviceToken());
+
+        if (($tokens !== null) and ($tokens->count() > 0))
         {
-            $data = (new Customer\Raven)->verifyOtp($input);
-        }
-        catch (\Exception $e)
-        {
-            $data['success'] = false;
-        }
-
-
-        if ((isset($data['success'])) and ($data['success'] === true))
-        {
-            $customer = $this->repo->findByContactForMerchant(
-                $input[Customer\Entity::CONTACT],
-                Account::SHARED_ACCOUNT);
-
-            if ($customer === null)
-            {
-                $custCreateInput = array(
-                    Customer\Entity::CONTACT        =>   $input[Customer\Entity::CONTACT]);
-
-                $merchant = (new Merchant\Repository)->findOrFail(Account::SHARED_ACCOUNT);
-
-                $customer = $this->create($custCreateInput, $merchant);
-            }
-
-            $custAppInput = array(
-                App\Entity::CUSTOMER_ID => $customer->getId(),
-                App\Entity::MERCHANT_ID => $input['context'],
-                App\Entity::DEVICE_ID   => $input[App\Entity::DEVICE_ID]);
-
-            $app = (new App\Core)->create($custAppInput);
-
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomerId(
-                Account::SHARED_ACCOUNT, $customer->getId());
-
-            $response['success'] = 1;
-            $response['app_id'] = $app->getPublicId();
-
-            if (($tokens !== null) and ($tokens->count() > 0))
-            {
-                $response['tokens'] = $tokens->toArrayPublic();
-            }
-        }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_OTP);
+            $response['tokens'] = $tokens->toArrayPublic();
         }
 
         return $response;
+    }
+
+    protected function createCustomerAppToken($customer, $input)
+    {
+        $custAppInput = array(
+            App\Entity::CUSTOMER_ID => $customer->getId(),
+            App\Entity::MERCHANT_ID => $input['context']);
+
+        if (isset($input[App\Entity::DEVICE_TOKEN]))
+        {
+            $custAppInput[App\Entity::DEVICE_TOKEN] = $input[App\Entity::DEVICE_TOKEN];
+        }
+
+        $app = (new App\Core)->create($custAppInput);
+
+        return $app;
+    }
+
+    protected function verifyRavenOtp($input)
+    {
+        try
+        {
+            (new Customer\Raven)->verifyOtp($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OTP);
+        }
+    }
+
+    /**
+     * Gets global customer from db or create one.
+     * @param  string $contact customer's phone number
+     * @return Customer\Entity $contact
+     */
+    protected function getOrCreateGlobalCustomer($contact)
+    {
+        $customer = $this->repo->customer->findByContactAndMerchant(
+            $contact,
+            $this->repo->merchant->getSharedAccount());
+
+        // Create global customer if it does not exist.
+        if ($customer === null)
+        {
+            $custCreateInput = [Customer\Entity::CONTACT => $contact];
+
+            $customer = $this->createGlobalCustomer($custCreateInput);
+        }
+
+        return $customer;
     }
 
     public function getCustomerAndApp($input, $merchant)
@@ -122,14 +148,14 @@ class Core extends Base\Core
         $customer = null;
         $customerApp = null;
 
-        if (empty($input[Payment\Entity::APP_ID]) === false)
+        if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
-            $appId = $input[Payment\Entity::APP_ID];
+            $appToken = $input[Payment\Entity::APP_TOKEN];
 
-            Customer\App\Entity::verifyIdAndStripSign($appId);
+            Customer\App\Entity::verifyIdAndStripSign($appToken);
 
             $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
-                $appId,
+                $appToken,
                 $merchant->getId());
 
             assert($customerApp !== null);
@@ -149,10 +175,17 @@ class Core extends Base\Core
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->findByIdAndMerchantId($customerId, $merchantId);
+            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
         }
 
         return array($customer, $customerApp);
+    }
+
+    protected function putAppTokenDetailsInSession($appToken)
+    {
+        // setup session params
+        $this->app['session']->put('app_token', $appToken->getPublicId());
+        $this->app['session']->put('device_token', $appToken->getDeviceToken());
     }
 
     protected function verifyUniqueCustomer($customer)
@@ -161,16 +194,16 @@ class Core extends Base\Core
 
         if ($customer->merchant->isShared() === true)
         {
-            $customers = $this->repo->findByContactForMerchant(
+            $customers = $this->repo->customer->findByContactAndMerchant(
                 $customer->getContact(),
-                $customer->merchant->getId());
+                $customer->merchant);
         }
         else
         {
-            $customers = $this->repo->findByContactEmailForMerchant(
+            $customers = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),
                 $customer->getEmail(),
-                $customer->merchant->getId());
+                $customer->merchant);
         }
 
         if ($customers !== null)

@@ -438,18 +438,31 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $request = array(
-            'url' => '/checkout',
-            'method' => 'get',
-            'content' => [
-                'customer_id' => 'cust_100000customer'
-            ],
-        );
+        $response = $this->startTest();
 
-        $response = $this->makeRequest($request);
+        $this->assertNotNull($response['customer']['tokens']);
+    }
 
-        $headers = $response->headers->all();
-        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    public function testGetCheckoutRouteCustomerContact()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['customer']['saved'], true);
+    }
+
+    public function testGetCheckoutRouteWithDeviceToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['customer']['app_token']);
     }
 
     public function testGetCheckoutRouteWithSavedGlobal()
@@ -458,18 +471,13 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $request = array(
-            'url' => '/checkout',
-            'method' => 'get',
-            'content' => [
-                'app_id' => 'capp_1000000custapp'
-            ],
-        );
+        $this->fixtures->merchant->editFeatures('cardsaving');
 
-        $response = $this->makeRequest($request);
+        $response = $this->startTest();
 
-        $headers = $response->headers->all();
-        $this->assertArrayNotHasKey('x-frame-options', $headers);
+        $this->assertNotNull($response['customer']['tokens']);
+
+        $this->assertEquals($response['options']['remember_customer'], true);
     }
 
     public function testGetCheckoutRouteWithWrongKey()

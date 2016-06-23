@@ -19,6 +19,7 @@ class Entity
     const KEY               = 'key';
     const CARD              = 'card';
     const ORDER             = 'order';
+    const TOKEN             = 'token';
     const REFUND            = 'refund';
     const BALANCE           = 'balance';
     const METHODS           = 'methods';
@@ -28,11 +29,12 @@ class Entity
     const EMI_PLAN          = 'emi_plan';
     const MERCHANT          = 'merchant';
     const TERMINAL          = 'terminal';
+    const CUSTOMER          = 'customer';
+    const APP_TOKEN         = 'app_token';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlement';
     const TRANSACTION       = 'transaction';
     const BANK_ACCOUNT      = 'bank_account';
-    const CUSTOMER_APP      = 'customer_app';
     const DAILY_SETTLEMENT  = 'daily_settlement';
 
     //
@@ -139,6 +141,7 @@ class Entity
         self::ORDER             => Models\Order::class,
         self::PAYTM             => Gateway\Paytm::class,
         self::SHARP             => Gateway\Sharp::class,
+        self::TOKEN             => Models\Customer\Token::class,
         self::REFUND            => Models\Payment\Refund::class,
         self::WALLET            => Gateway\Wallet\Base::class,
         self::BALANCE           => Models\Merchant\Balance::class,
@@ -146,13 +149,14 @@ class Entity
         self::PRICING           => Models\Pricing::class,
         self::WEBHOOK           => Models\Merchant\Webhook::class,
         self::BILLDESK          => Gateway\Billdesk::class,
+        self::CUSTOMER          => Models\Customer::class,
         self::EMI_PLAN          => Models\Emi::class,
         self::MOBIKWIK          => Gateway\Mobikwik::class,
         self::NETBANKING        => Gateway\Netbanking\Base::class,
         self::AXIS_MIGS         => Gateway\AxisMigs::class,
         self::AXIS_GENIUS       => Gateway\AxisGenius::class,
+        self::APP_TOKEN         => Models\Customer\App::class,
         self::BANK_ACCOUNT      => Models\Merchant\BankAccount::class,
-        self::CUSTOMER_APP      => Models\Customer\App::class,
         self::WALLET_PAYZAPP    => Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC   => Gateway\Netbanking\Hdfc::class,
         self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,

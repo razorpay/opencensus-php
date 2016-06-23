@@ -6,6 +6,7 @@ use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
+use Models\Merchant\Features;
 
 class CustomerTest extends TestCase
 {
@@ -17,7 +18,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures("tokens");
+        $this->fixtures->merchant->editFeatures("tokens,cardsaving");
     }
 
     public function testCreateCustomer()
@@ -143,13 +144,48 @@ class CustomerTest extends TestCase
             'method' => 'post',
             'content' => [
                 'contact' => '1234567890',
-                'otp' => '233323',
-                'device_id' => 'rzp_device_id'
+                'otp' => '233323'
             ],
         );
 
         $content = $this->makeRequestAndGetContent($request);
-        assert(empty($content['app_id']) === false);
+
+        assert(empty($content['app_token']) === false);
+        assert(empty($content['device_token']) === false);
+    }
+
+    public function testOtpFlow2()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        // send OTP
+
+        $request = array(
+            'url' => '/otp/create',
+            'method' => 'post',
+            'content' => [
+                "contact" => "1234567890"
+            ],
+        );
+
+        $response = $this->makeRequest($request);
+
+        // verify OTP
+        $request = array(
+            'url' => '/otp/verify',
+            'method' => 'post',
+            'content' => [
+                'contact' => '1234567890',
+                'otp' => '233323',
+                'device_token' => '123'
+            ],
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+        assert(empty($content['app_token']) === false);
+        $this->assertEquals($content['device_token'], '123');
     }
 
     protected function mockRaven()
