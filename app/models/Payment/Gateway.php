@@ -136,6 +136,7 @@ class Gateway
             Network::MC,
             Network::VISA),
         self::SHARP => array(
+            Network::MC,
             Network::VISA),
     );
 
