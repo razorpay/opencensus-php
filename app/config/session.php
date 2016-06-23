@@ -27,6 +27,7 @@ return array(
 	| to be allowed to remain idle before it expires. If you want them
 	| to immediately expire on the browser closing, set that option.
 	|
+    | Below number is equivalent to 30 days
 	*/
 
 	'lifetime' => 2592000,

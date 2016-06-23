@@ -82,7 +82,7 @@ class Checkout
                 $custData[Payment\Entity::APP_TOKEN] = $customerApp->getPublicId();
             }
         }
-        catch (\Exception $e)
+        catch (\Exception $ex)
         {
             $this->app['trace']->traceException($ex);
         }
