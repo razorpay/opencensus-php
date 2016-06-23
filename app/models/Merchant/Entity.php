@@ -381,6 +381,11 @@ class Entity extends Base\PublicEntity
     {
         $relativeLogoUrl = $this->getLogoUrl();
 
+        if ($relativeLogoUrl === null)
+        {
+            return null;
+        }
+
         // Different cdn urls for different contexts.
         $context = Config::get('app.context');
         $cdnUrl = Config::get('url.cdn')[$context];
