@@ -265,7 +265,7 @@ class Processor
                 return Payment\Status::AUTHORIZED;
             }
 
-            $payment = $this->repo->lockForUpdate($payment->getKey());
+            $this->lockForUpdateAndReload($payment);
 
             return $this->cancelPayment($payment, $input);
         });
@@ -559,7 +559,7 @@ class Processor
      *
      * @param $payment
      */
-    protected function lockForUpdate($payment)
+    protected function lockForUpdateAndReload($payment)
     {
         $lockedPayment = $this->repo->lockForUpdate($payment->getKey());
 
@@ -569,7 +569,7 @@ class Processor
         // When $this->payment and $payment are two different objects,
         // we update both of them.
         //
-        
+
         $this->payment->setRawAttributes($lockedPayment->getAttributes(), true);
 
         $payment->setRawAttributes($lockedPayment->getAttributes(), true);

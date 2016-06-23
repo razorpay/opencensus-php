@@ -130,7 +130,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $this->lockForUpdate($payment);
+            $this->lockForUpdateAndReload($payment);
 
             assert ($payment->isFailed() === true);
 
@@ -293,7 +293,7 @@ trait Authorize
         // This is because significant time has elapsed during
         // gateway request and we need to refresh it to take into
         // account race conditions.
-        $this->payment = $this->repo->lockForUpdate($this->payment->getKey());
+        $this->lockForUpdateAndReload($this->payment);
 
         $payment = $this->payment;
         $status = $payment->getStatus();
@@ -421,7 +421,7 @@ trait Authorize
                     'Should not have called this function in this scenario');
             }
 
-            $this->lockForUpdate($payment);
+            $this->lockForUpdateAndReload($payment);
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
@@ -1120,29 +1120,31 @@ trait Authorize
 
     protected function updatePaymentAuthorized()
     {
-        $this->repo->transaction(function()
+        $payment = $this->payment;
+
+        $this->repo->transaction(function() use ($payment)
         {
-            $this->lockForUpdate($this->payment);
+            $this->lockForUpdateAndReload($this->payment);
 
             if ($this->payment->getStatus() === Status::AUTHORIZED)
             {
                 return;
             }
 
-            $this->payment->setErrorNull();
+            $payment->setErrorNull();
 
-            $this->payment->setAmountAuthorized();
+            $payment->setAmountAuthorized();
 
-            $this->payment->setStatus(Payment\Status::AUTHORIZED);
+            $payment->setStatus(Payment\Status::AUTHORIZED);
 
-            $this->payment->setAuthorizeTimestamp();
+            $payment->setAuthorizeTimestamp();
 
-            $this->payment->terminal->incrementUsedCount();
+            $payment->terminal->incrementUsedCount();
 
-            $this->payment->saveOrFail();
-            $this->payment->terminal->saveOrFail();
+            $payment->saveOrFail();
+            $payment->terminal->saveOrFail();
 
-            if ($this->isGatewayActuallyAuthorizingPayment($this->payment) === false)
+            if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
                 $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
