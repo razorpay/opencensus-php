@@ -30,14 +30,14 @@ class Service extends Base\Service
     {
         Order\Entity::verifyIdAndStripSign($id);
 
-        $order = (new Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+        $order = $this->repo->order->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $order->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
-        $orders = (new Repository)->fetch($input, $this->merchant->getId());
+        $orders = $this->repo->order->fetch($input, $this->merchant->getId());
 
         return $orders->toArrayPublic();
     }
@@ -57,7 +57,7 @@ class Service extends Base\Service
     {
         Order\Entity::verifyIdAndStripSign($id);
 
-        $order = (new Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+        $order = $this->repo->order->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return [
             'bank'           => $order->getBank(),
