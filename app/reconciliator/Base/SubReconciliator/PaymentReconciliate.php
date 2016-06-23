@@ -378,6 +378,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistCardType($reconCardType)
     {
+        // TODO: Move the missing iin code to persistCardDetailsIfAbsent.
+        // If iin is created, don't do persistCardType and persistCardLocale.
+        // If iin is already present, execute both the functions.
+        // But, persist the international thing in IIN and not in card entity
+        // as is being currently implemented by persistCardLocale.
+
         $paymentIin = $this->payment->card->iinRelation;
 
         if ($paymentIin === null)
@@ -444,7 +450,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $entityAttributes = [
             IIN\Entity::IIN     => $iinId,
             IIN\Entity::NETWORK => $cardNetwork,
-            IIN\Entity::TYPE    => $reconCardType
+            IIN\Entity::TYPE    => $reconCardType,
+            // TODO: Get the value from reconCardLocale.
+            IIN\Entity::COUNTRY => 'IN',
         ];
 
         $iin = (new IIN\Entity())->build($entityAttributes);
