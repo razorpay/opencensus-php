@@ -4,9 +4,8 @@ namespace Gateway\UPI\ICICI;
 
 class Url
 {
-    const BASE = 'https://imob.icicibank.com/isdkCUG/GatewayController'
+    const BASE_TEST_URL = 'https://apigwuat.icicibank.com:8443';
 
-    const COLLECT_PAY = 'https://apigwuat.icicibank.com:8443/newCollectPay'
-
-    const STATUS = 'https://apigwuat.icicibank.com:8443/newTransactionStatus';
+    const AUTHORIZE     = '/newCollectPay';
+    const STATUS        = '/newTransactionStatus';
 }
