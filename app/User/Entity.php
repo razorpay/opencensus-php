@@ -81,6 +81,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     {
         return $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
                     ->withPivot(['role'])
+                    ->whereNull('archived_at')
                     ->orderBy('name', 'asc');
     }
 
