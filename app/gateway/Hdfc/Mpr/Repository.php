@@ -2,7 +2,7 @@
 
 namespace Gateway\Hdfc\Mpr;
 
-use Models\Base;
+use Base;
 
 class Repository extends Base\Repository
 {

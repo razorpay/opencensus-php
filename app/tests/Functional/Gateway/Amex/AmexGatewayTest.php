@@ -56,6 +56,7 @@ class AmexGatewayTest extends TestCase
             $this->testData['testPaymentAmexEntity'], $payment);
     }
 
+
     public function testPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);

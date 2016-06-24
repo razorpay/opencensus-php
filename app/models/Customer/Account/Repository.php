@@ -21,15 +21,6 @@ class Repository extends Base\Repository
         Entity::CONTACT         => 'sometimes'
     );
 
-    public function findByContactForMerchant($contact, $merchantId)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
-                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->first();
-    }
-
     public function findByContact($contact)
     {
         $repo = $this->repo;
@@ -38,13 +29,22 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByContactEmailForMerchant($contact, $email, $merchantId)
+    public function findByContactAndMerchant($contact, $merchant)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
+                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->first();
+    }
+
+    public function findByContactEmailAndMerchant($contact, $email, $merchant)
     {
         $repo = $this->repo;
 
         return $repo::where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::EMAIL, '=', $email)
-                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
     }
 }

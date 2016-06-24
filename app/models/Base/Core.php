@@ -6,6 +6,25 @@ use App;
 
 class Core
 {
+    /**
+     * The application instance.
+     *
+     * @var Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
+     * Repository manager instance
+     * @var Base\RepositoryManager
+     */
+    protected $repo;
+
+    /**
+     * Trace instance used for tracing
+     * @var Trace\Trace
+     */
+    protected $trace;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -16,15 +35,7 @@ class Core
         }
 
         $this->trace = $this->app['trace'];
-    }
 
-    public function getEntityClass()
-    {
-        return get_namespace($this) . '\Entity';
-    }
-
-    public function getRepositoryClass()
-    {
-        return get_namespace($this) . '\Repository';
+        $this->repo = $this->app['repo'];
     }
 }

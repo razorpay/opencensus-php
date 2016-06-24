@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID           = 'customer_id';
     const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
+    const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
@@ -109,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::EMI_PLAN_ID,
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
+        self::APP_TOKEN,
         self::APP_ID,
         self::TOKEN,
         self::EMAIL,
@@ -259,7 +261,7 @@ class Entity extends Base\PublicEntity
         $array = array(
             Entity::CUSTOMER_ID,
             Entity::TOKEN,
-            Entity::APP_ID);
+            Entity::APP_TOKEN);
 
         foreach ($array as $key)
         {
@@ -974,7 +976,7 @@ class Entity extends Base\PublicEntity
 
     public function app()
     {
-        return $this->belongsTo('Models\Customer\App\Entity');
+        return $this->belongsTo('Models\Customer\App\Entity', self::APP_TOKEN);
     }
 
 // --------------- Relation to other entity section ends -----------------------

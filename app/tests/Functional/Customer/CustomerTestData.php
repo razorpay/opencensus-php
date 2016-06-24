@@ -304,7 +304,7 @@ return [
         ],
     ],
 
-    'testGetCustomerTokensByAppId' => [
+    'testGetCustomerTokensByAppToken' => [
         'request' => [
             'url' => '/apps/capp_1000000custapp/tokens',
             'method' => 'get',
@@ -329,7 +329,7 @@ return [
 
     'testFetchSavedTokensStatusSaved'   => [
         'request' => [
-                'url' => '/customer/status/1234567890',
+                'url' => '/customers/status/1234567890',
                 'method' => 'get',
                 'content' => [
                 ],
@@ -343,7 +343,7 @@ return [
 
     'testFetchSavedTokensStatusNotSaved'   => [
         'request' => [
-                'url' => '/customer/status/1234567899',
+                'url' => '/customers/status/1234567899',
                 'method' => 'get',
                 'content' => [
                 ],
@@ -351,6 +351,21 @@ return [
             'response' => [
                 'content' => [
                     'saved' => false
+                ],
+            ],
+    ],
+
+    'testVerifyDeviceToken'   => [
+        'request' => [
+                'url' => '/devices/1000custdevice/verify',
+                'method' => 'post',
+                'content' => [
+                    'contact' => 1234567890
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'valid' => true
                 ],
             ],
     ],
@@ -366,5 +381,50 @@ return [
             'content' => [
             ],
         ],
+    ],
+
+    'testLogoutFromApp' => [
+        'request' => [
+            'url' => '/apps/capp_1000000custapp/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'app',
+                'app_token' => 'capp_1000000custapp',
+                'device_token' => '1000custdevice'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testLogoutFromDevice' => [
+        'request' => [
+            'url' => '/apps/capp_1000000custapp/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'device',
+                'device_token' => '1000custdevice'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testLogoutFromAllDevices' => [
+        'request' => [
+            'url' => '/apps/capp_1000000custapp/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'all'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
     ],
 ];

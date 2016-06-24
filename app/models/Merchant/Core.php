@@ -15,13 +15,6 @@ class Core extends Base\Core
 {
     use SlackPoster;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Merchant\Repository;
-    }
-
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);

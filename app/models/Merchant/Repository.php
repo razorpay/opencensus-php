@@ -7,6 +7,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Merchant;
+use Models\Merchant\Account;
 use Models\Merchant\Balance;
 use Models\Pricing;
 
@@ -16,6 +17,8 @@ class Repository extends Base\Repository
     use Base\RepositoryFetch;
 
     protected $entity = 'Merchant';
+
+    protected $sharedMerchant = null;
 
     protected $appFetchParamRules = array(
         Entity::ACTIVATED               => 'sometimes|boolean',
@@ -28,6 +31,19 @@ class Repository extends Base\Repository
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
     );
+
+    public function getSharedAccount()
+    {
+        if ($this->sharedMerchant === null)
+        {
+            $repo = $this->repo;
+
+            $this->sharedMerchant = $repo::where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+                                         ->firstOrFail();
+        }
+
+        return $this->sharedMerchant;
+    }
 
     public function getPricingPlanOrFailPublic($merchant)
     {

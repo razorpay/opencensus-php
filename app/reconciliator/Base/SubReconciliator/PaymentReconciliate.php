@@ -32,16 +32,17 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $paymentTransaction;
 
     protected $app;
+    protected $repo;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
-        $repo = $this->app['repo'];
+        $this->repo = $this->app['repo'];
 
-        $this->paymentRepo     = $repo->payment;
-        $this->iinRepo         = $repo->iin;
-        $this->transactionRepo = $repo->transaction;
-        $this->cardRepo        = $repo->card;
+        $this->paymentRepo     = $this->repo->payment;
+        $this->iinRepo         = $this->repo->iin;
+        $this->transactionRepo = $this->repo->transaction;
+        $this->cardRepo        = $this->repo->card;
     }
 
     /**
@@ -124,7 +125,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->messenger->raiseReconAlert(
             [
-                'trace_code' => TraceCode::RECON_MISMATCH,
+                'trace_code' => TraceCode::RECON_INFO_ALERT,
                 'message'    => 'Payment status is failed. Trying to authorize.',
                 'payment_id' => $this->payment->getId(),
                 'gateway'    => get_called_class()
@@ -159,56 +160,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if ($verifyResponse === Verify::AUTHORIZED)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECONCILIATION_INFO_ALERT,
-                    'message'    => 'Verify returned authorized.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]);
-
-            // Alternative to reload because reload wasn't working for reasons unknown.
-            $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
-
-            // Set the payment transaction for the row.
-            $this->paymentTransaction = $this->payment->transaction;
-
-            if ($this->paymentTransaction === null)
-            {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                        'message'    => 'Transaction is null after verifying and authorizing the payment.',
-                        'payment_id' => $this->payment->getId(),
-                        'gateway'    => get_called_class()
-                    ]);
-
-                return false;
-            }
-
-            $this->app['trace']->info(
-                TraceCode::RECONCILIATION_INFO_ALERT,
-                [
-                    'message'    => 'Transaction set after verifying and authorizing the payment.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class(),
-                ]
-            );
-
-            return true;
+            return $this->handleVerifyAuthorized();
         }
 
         if ($verifyResponse === Verify::SUCCESS)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                    'message'    => 'Verify returned failed. Payment is still in failed state.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]);
-
-            return false;
+            return $this->handleVerifySuccess();
         }
 
         $this->messenger->raiseReconAlert(
@@ -221,6 +178,51 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             ]);
 
         return false;
+    }
+
+    protected function handleVerifySuccess()
+    {
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                'message'    => 'Verify returned failed. Payment is still in failed state.',
+                'payment_id' => $this->payment->getId(),
+                'gateway'    => get_called_class()
+            ]);
+
+        return false;
+    }
+
+    protected function handleVerifyAuthorized()
+    {
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message'    => 'Verify returned authorized.',
+                'payment_id' => $this->payment->getId(),
+                'gateway'    => get_called_class()
+            ]
+        );
+
+        $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
+
+        // Set the payment transaction for the row.
+        $this->paymentTransaction = $this->payment->transaction;
+
+        if ($this->paymentTransaction === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
+                    'message'    => 'Transaction is null after verifying and authorizing the payment.',
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function persistReconciliationData($rowDetails)
@@ -238,7 +240,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function getRowDetailsStructured($row)
     {
         $this->app['trace']->info(
-            TraceCode::RECONCILIATION_FILE_ROW,
+            TraceCode::RECON_FILE_ROW,
             $row
         );
 
@@ -250,11 +252,37 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
+        $this->setPaymentAndTransaction($row, $paymentId);
+
+        $cardDetails = $this->getCardDetails($row);
+
+        $serviceTax = $this->getGatewayServiceTax($row);
+
+        $fee = $this->getGatewayFee($row);
+
+        $rowDetails = [
+            BaseReconciliate::PAYMENT_ID          => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE         => $fee,
+        ];
+
+        $this->setCardDetailsInRowDetails($cardDetails, $rowDetails);
+
+        return $rowDetails;
+    }
+
+    protected function setPaymentAndTransaction($row, $paymentId)
+    {
         try
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
 
+            //
+            // It's possible that the payment is in failed state and hence the transaction
+            // is not present. While validating the payment status, we check for failed status
+            // and try to verify and authorize. We handle an empty transaction there.
+            //
             if ($this->paymentTransaction === null)
             {
                 $this->messenger->raiseReconAlert(
@@ -282,22 +310,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             //return null;
         }
-
-        $cardDetails = $this->getCardDetails($row);
-
-        $serviceTax = $this->getGatewayServiceTax($row);
-
-        $fee = $this->getGatewayFee($row);
-
-        $rowDetails = [
-            BaseReconciliate::PAYMENT_ID          => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE         => $fee,
-        ];
-
-        $this->setCardDetailsInRowDetails($cardDetails, $rowDetails);
-
-        return $rowDetails;
     }
 
     protected function setCardDetailsInRowDetails($cardDetails, & $rowDetails)
@@ -317,12 +329,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         if (empty($rowDetails[BaseReconciliate::CARD_TYPE]) === false)
         {
-            $this->persistCardTypeIfAbsent($rowDetails[BaseReconciliate::CARD_TYPE]);
+            $this->persistCardType($rowDetails[BaseReconciliate::CARD_TYPE]);
         }
 
         if (empty($rowDetails[BaseReconciliate::CARD_LOCALE]) === false)
         {
-            $this->persistCardLocaleIfAbsent($rowDetails[BaseReconciliate::CARD_LOCALE]);
+            $this->persistCardLocale($rowDetails[BaseReconciliate::CARD_LOCALE]);
         }
     }
 
@@ -334,20 +346,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param String $reconCardType
      * @throws ReconciliationException
      */
-    protected function persistCardTypeIfAbsent($reconCardType)
+    protected function persistCardType($reconCardType)
     {
         $paymentIin = $this->payment->card->iinRelation;
 
         if ($paymentIin === null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECONCILIATION_INFO_ALERT,
-                    'message'         => 'IIN absent for the card.',
-                    'card_id'         => $this->payment->card->getId(),
-                    'payment_id'      => $this->payment->getId(),
-                    'gateway'         => get_called_class()
-                ]);
+            $this->createMissingIin($reconCardType);
 
             return;
         }
@@ -361,32 +366,67 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
         else
         {
-            if ($iinCardType !== $reconCardType)
-            {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'      => TraceCode::RECON_MISMATCH,
-                        'message'         => 'Card types in recon file and db do not match.',
-                        'recon_card_type' => $reconCardType,
-                        'iin_card_type'   => $iinCardType,
-                        'payment_id'      => $this->payment->getId(),
-                        'gateway'         => get_called_class()
-                    ]);
+            $this->updateCardTypeIfRequired($iinCardType, $reconCardType, $paymentIin);
 
-                throw new ReconciliationException(
-                    'Card types in recon file and db do not match.',
-                    [
-                        'recon_card_type' => $reconCardType,
-                        'iin_card_type'   => $iinCardType,
-                    ]
-                );
-
-                //return;
-            }
+            return;
         }
     }
 
-    protected function persistCardLocaleIfAbsent($reconCardLocale)
+    protected function updateCardTypeIfRequired($iinCardType, $reconCardType, $paymentIin)
+    {
+        if ($iinCardType !== $reconCardType)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_MISMATCH,
+                    'message'         => 'Card types in recon file and db do not match. Updating.',
+                    'recon_card_type' => $reconCardType,
+                    'iin_card_type'   => $iinCardType,
+                    'payment_id'      => $this->payment->getId(),
+                    'gateway'         => get_called_class()
+                ]);
+
+            $this->updateCardType($reconCardType, $paymentIin);
+
+            return;
+        }
+    }
+
+    protected function updateCardType($reconCardType, $paymentIin)
+    {
+        $paymentIin->setType($reconCardType);
+
+        $this->iinRepo->saveOrFail($paymentIin);
+    }
+
+    protected function createMissingIin($reconCardType)
+    {
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'message'         => 'IIN absent for the card. Creating.',
+                'card_id'         => $this->payment->card->getId(),
+                'payment_id'      => $this->payment->getId(),
+                'gateway'         => get_called_class()
+            ]);
+
+        $card = $this->payment->card;
+
+        $iinId = $card->getIin();
+        $cardNetwork = $card->getNetwork();
+
+        $entityAttributes = [
+            IIN\Entity::IIN => $iinId,
+            IIN\Entity::NETWORK => $cardNetwork,
+            IIN\Entity::TYPE => $reconCardType
+        ];
+
+        $iin = (new IIN\Entity())->build($entityAttributes);
+
+        $this->repo->saveOrFail($iin);
+    }
+
+    protected function persistCardLocale($reconCardLocale)
     {
         if ($reconCardLocale === BaseReconciliate::INTERNATIONAL)
         {
@@ -420,16 +460,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                         'gateway'                 => get_called_class()
                     ]);
 
-                throw new ReconciliationException(
-                    'Card locales in recon file and db do not match.',
-                    [
-                        'recon_card_locale'         => $reconCardLocale,
-                        'is_stored_international'   => $isCardInternational,
-                    ]
-                );
-
-                //return;
-
+                return;
             }
         }
     }
