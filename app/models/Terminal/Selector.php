@@ -64,14 +64,13 @@ class Selector
             $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input);
         }
 
-
         // Terminals next sorted
         $sortedTerminals = $filteredTerminals;
 
-        // foreach (self::$sorters as $sorter)
-        // {
-        //     $sortedTerminals = $sorter->sort($input, $sortedTerminals);
-        // }
+        foreach (self::$sorters as $sorter)
+        {
+            $sortedTerminals = $sorter->sort($input, $sortedTerminals);
+        }
 
         if (empty($sortedTerminals))
         {
