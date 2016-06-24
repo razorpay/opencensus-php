@@ -4,6 +4,8 @@ namespace Tests\Functional\Gateway\Amex;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use EE\Error;
+use EE\Error\PublicErrorCode;
 
 class AmexGatewayTest extends TestCase
 {
@@ -111,6 +113,17 @@ class AmexGatewayTest extends TestCase
             $methods = ['amex' => 1];
 
             $content = $this->setPaymentMethods($methods);
+        });
+    }
+
+    public function testFailureWhen3DSFailsForDomesticMerchant()
+    {
+        $testData = $this->testData[__FUNCTION__];
+        
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->payment['card']['number'] = '345678000000007';
+            $this->doAuthPayment($this->payment);
         });
     }
 }
