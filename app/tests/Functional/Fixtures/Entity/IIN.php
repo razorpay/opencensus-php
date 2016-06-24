@@ -138,8 +138,14 @@ class Iin extends Base
         $items = $this->items;
 
         $iins = [];
+
+        $time = time();
+
         foreach ($items as $attributes)
         {
+            $attributes['created_at'] = $time;
+            $attributes['updated_at'] = $time;
+
             $iins[] = $this->fixtures->create('iin', $attributes);
         }
 

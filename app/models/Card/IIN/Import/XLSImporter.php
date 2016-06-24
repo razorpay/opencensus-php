@@ -27,10 +27,10 @@ class XLSImporter
         // Extracts and returns the columns and data
         $ret = (new XLSFileHandler)->getData($input);
 
-        $formatedData = (new Formatter)->formatData($ret['columns'], $ret['data']);
+        $formattedData = (new Formatter)->formatData($ret['columns'], $ret['data']);
 
         $dataCleaner = new DataCleaner();
-        $cleaned = $dataCleaner->parse($input['network'], $formatedData);
+        $cleaned = $dataCleaner->parse($input['network'], $formattedData);
         $duplicates = $dataCleaner->getDuplicateEntries();
         $conflits = $dataCleaner->getDBConflicts();
         $networkCheckFails = $dataCleaner->getNetworkCheckFails();
@@ -59,12 +59,19 @@ class XLSImporter
     {
         $count = count($cleaned);
 
+        $time = time();
+
         // Too many entries crashes the sql query
         foreach (array_chunk($cleaned, 5000) as $chunks)
         {
+            foreach ($chunks as & $chunk)
+            {
+                $chunk[IIN\Entity::CREATED_AT] = $time;
+                $chunk[IIN\Entity::UPDATED_AT] = $time;
+            }
+
             IIN\Entity::insert($chunks);
         }
-
     }
 
     protected function updateIntoDB(& $conflicts)
