@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html style="height:100%">
   <head>
     <title>Processing, Please Wait...</title>
     <meta charset="utf-8">
@@ -10,7 +10,7 @@
 #top{text-align:left;border-bottom:1px solid #ddd;padding-bottom:16px;margin-bottom:-50px}
 .spin{width:60px;height:60px;margin:0 auto;margin-bottom:-60px;position:relative;top:-30px}
 .spin div{width:100%;height:100%;vertical-align:middle;display:inline-block;
-  opacity:0;border-radius:50%;border:4px solid //get('theme.color')}};
+  opacity:0;border-radius:50%;border:4px solid #BC3726;
   -webkit-animation:spin 1.3s linear infinite;animation:spin 1.3s linear infinite;
   -webkit-box-sizing:border-box;box-sizing:border-box}
 #spin2 div{-webkit-animation-delay:0.65s;animation-delay:0.65s}
@@ -20,31 +20,30 @@
 @keyframes spin{0%{transform:scale(0.5);opacity:0;border-width:8px}
 20%{transform:scale(0.6);opacity:0.8;border-width:4px}
 90%{transform:scale(1);opacity:0}}
-@media(max-height:480px){#power{display:none}#top{border:none}}
+@media(max-height:400px){#top{border:none}}
     </style>
   </head>
   <body style="overflow:hidden;text-align:center;height:100%;white-space:nowrap;margin:0;padding:0;font-family:ubuntu,verdana,helvetica,sans-serif">
-    <div style="display:inline-block;vertical-align:middle;width:90%;max-width:600px;height:60%;max-height:440px;position:relative">
-      <div id="top">
-        <span style="font-size:44px;float:right;line-height:52px;color:#666">₹</span>
-        <img src="//get('image')}}" height="52px">
-      </div>
-      <div style="position:relative;top:40%">
+    <div style="display:inline-block;vertical-align:middle;width:90%;max-width:600px;height:60%;max-height:440px;position:relative;padding-bottom:60px">
+      @if (isset($data['amount']) && isset($data['image']))
+        <div id="top">
+          <span style="font-size:44px;float:right;line-height:52px;color:#666">₹ {{$data['amount']}}</span>
+          <img src="{{$data['image']}}" height="52px">
+        </div>
+      @endif
+      <div style="margin-top:20%">
+        <div style="text-align:center;margin-bottom:60px;font-size:22px;color:#666">Processing Payment</div>
         <div class="spin"><div></div></div>
         <div class="spin" id="spin2"><div></div></div>
-        <div style="text-align:center;margin:50px 0 0 10px;font-size:22px;color:#666">//it.message||'Processing Payment'}}</div>
-      </div>
-      <div id="power" style="position:absolute;left:50%;margin-left:-96px;bottom:0">
-        <div style="position:absolute;font-size:13px;right:0;bottom:34px;letter-spacing:0.25px;color:#888">powered by</div>
-        <img width="192px" src="data:image/png;base64,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"/>
+        <img id="power" style="width:160px;margin-top:66px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAABDCAMAAADarSyCAAAAGFBMVEUtLS1VVVVvb2+JiYmhoaHAwMDa2tr+/v4xw2ptAAAEsklEQVR4Ae2Zja7jqg5G8f/7v/EdQr4GQ+6c3Uba6tHxkma3EHDTldiQTosI41Z8AFtEtIjS9zHSBUp7QBls1h5QWOP2gOKhvoLaF1AURVEURVEURVEUBfEEUSveJBasHL6FxEYZfAePDW3Fj+HouHXgUv7Dv7eqMcJFtB9g0bnmoPVvQ46rb/I8IeUtgZRzNjrWz0fN/xDupjxGZkafqA2ErhWdjgPK7WywqKow4RJfkQlTuA3QeBuNgf22QEurhqBFMWNIdXAOslw4UVCFjhfSo9tSmCWOLingH0qgMYuUf1UgRFlaUBwXNNmySFhavrN3OUfECrctThao+PwPKnlqijDe6kgPHh3jlfq5Mo0c6kdxjFaBPEa9Zq9XSG9uwD7EzbRjcEORIfhzM4eeIeNsEga4mb0WJ0JkTwJ9WtDoqcCRAE7IsCN8jwsrFN7HGL6/XcloSaBiXxzB+f7MNS/589s1hnigkDUXT577YK352duhXQ2yFa/o4vYJETpllav6odTGe1kFhoe7dH+mFqFjqPVZs8A++TBiYbhOCbnZw9C+S9R1AuVqBT06jgrNVi/Fvl87mT/BHmyhBJ/bw/g4J2mED90F0mjoSMPWeJyrJoGGu26Yg8dFT4bbDGWndq3S8wE9e6c7OBne3cAvxglCavsQ9jPbkG4W1kPyrcDRLb1xNvU88SRQxpkacnfVw7Gi2I2IHtishHyMyXrQ4CyV5wbBViM5IztCIW/p6S5EHHXER0Z5v7J0LxAX3jrdlIWuqzB09dHSLTBUAIsZV36JSqB7avHmyhepSb2ettj3h2688Wn8g7twLsQjOf8mEAjEZYEEgWM+JG97GE25x5Hxpfx1fEtWabzYRgOS+udkbD1G7RkUwce/wY1AzgIdI5vdCWQ478cVRrdNNJQlrTrubZSuJPl+gUhSdWvoOcsOEAACGe1n9BhTseXrK6PsQSAawML+bw308VeWDKHlLgjO6y5GTLJ1y0805O6ek7lB44Vn6TjohOEPgDA7rfU/c51G7YZAHB5D5W4V9jQTh4BeX8ihJ284DL3kSQhdLTSSVOT73DCs1fOyg+nmDxcQdR2bVBsRTdXP3HJV66d3diaBeh72cUqmtu8DPYLwLVpiyknD+7ThoCXFOaunmxtQ7raP/rcbkHKpBU9+SyBHucay5a9OSwKbXNPofDsJdEOcTr7EmCtznGXjp3mNofXxZHKBQTexEYYxYL9KCP8AVjVTQmt6wiUmenU2Um3jzzUU6570CKT0OkSNRHiur/smetmhYK1VEcEaY3HgAD0qzPK6RqMrxXZhZvFk2HpkTxdgQO3LWZcQTt840NLIeB+YsDQI/tZN9D7CIqNpLLdvB/ubNQ0Hvv9GZWeht3/4Tcr5/sHNZudpju6ytX015LYVae0IWqwH/U7t4tyNSf7A50CAKcRnC/VDO5QeoNnceyRUI/UjshIip0L71RCK9O9gbzgRLMDfDTG1X4PeKGrpmbrIT3Efui7e+K9l34cWEp2fF0ttRcJ/bCUvwEVeFj5dgAvqPB9YFEVRFEVRFEXxLVB7ROnjVjyAm7fiAd5C2scUGu3R76/lrwsMV6a3KVg9Iv4HYt5CPwj+3dsAAAAASUVORK5CYII=">
       </div>
     </div>
     <div style="display:inline-block;vertical-align:middle;height:90%;width:0"></div>
   </body>
   <form action="{{$data['request']['url']}}" method="post">
-<!--     @foreach ($data['request']['content'] as $key => $value)
+    @foreach ($data['request']['content'] as $key => $value)
       <input type="hidden" name="{{$key}}" value="{{$value}}">
-    @endforeach -->
+    @endforeach
   </form>
   </body>
 </html>
