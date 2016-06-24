@@ -6,30 +6,27 @@ use Gateway\AxisMigs;
 
 class ThreeDSecureStatus
 {
-	const SUCCESS = 'success';
-	const FAILURE = 'failure';
-	const SKIPPED = 'skipped';
+    /**
+     * 3DSstatus field can have follow values with associated meaning
+     *
+     * 'Y' - 3d secure auth succeeded
+     * 'N' - 3d secure auth failed
+     * 'A' - Attempted authentication
+     * 'U' - Unavailable for checking
+     */
 
-	// 'Y' - 3d secure auth succeeded
-	// 'N' - 3d secure auth failed
-	// 'A' - Attempted authentication
-    // 'U' - Unavailable for checking
-	protected static $vpc_3DSstatus_map = array(self::SUCCESS => array('Y'), 
-                                        self::FAILURE => array('N'), 
-                                        self::SKIPPED => array('U', 'A'));
+    const Y = 'Y';
+    const N = 'N';
+    const U = 'U';
+    const A = 'A';
 
-	public static function isAuthSucceeded($status)
-	{
-		return in_array($status, self::$vpc_3DSstatus_map[self::SUCCESS], true);
-	}
+	protected static $vpc3DSstatusMap = array(
+        self::SUCCESS => array('Y'),
+        self::FAILURE => array('N'),
+        self::SKIPPED => array('U', 'A'));
 
-	public static function isAuthFailed($status)
-	{
-		return in_array($status, self::$vpc_3DSstatus_map[self::FAILURE], true);
-	}
-
-	public static function isAuthSkipped($status)
-	{
-		return in_array($status, self::$vpc_3DSstatus_map[self::SKIPPED], true);
-	}
+    public static function is3DSecureSuccess($status)
+    {
+        return ($status === self::Y);
+    }
 }

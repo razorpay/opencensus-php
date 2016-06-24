@@ -34,11 +34,10 @@ class Gateway extends AxisMigs\Gateway
         // 341111111111111, 345678000000007 are valid Amex card numbers
 
         // The following credentials are for Amex's real test gateway
-        // Note: only these creds work on the test gateway
-        //$content['vpc_CardNum'] = '341111111111111';
-        //$content['vpc_CardExp'] = '1705';
-        //$content['vpc_CardSecurityCode'] = '0773';
-
+        // Note: only these creds work on the Amex test gateway
+        $content['vpc_CardNum'] = '341111111111111';
+        $content['vpc_CardExp'] = '1705';
+        $content['vpc_CardSecurityCode'] = '0773';
     }
 
     protected function getVpcCardValue($network)

@@ -396,7 +396,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
-        $network = ucfirst(strtolower($input['card']['network']));
+        $network = $input['card']['network'];
 
         $content = array(
             'vpc_Version'           => '1',
@@ -412,7 +412,8 @@ class Gateway extends Base\Gateway
 
         $content = array_merge($attributes, $content);
 
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and
+            ($this->mock === false))
         {
             $this->addTestCardDetailsInTestMode($content);
         }
@@ -598,25 +599,38 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
         $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
-
-        // check for success
-        if ((isset($txnResponseCode) === true) and
-            ($txnResponseCode === '0') and
-            ((AxisMigs\ThreeDSecureStatus::isAuthSucceeded($threeDSstatus)) or
-                ($input['merchant']->isInternational() === true)))
-        {
-            return; // payment succeeds
-        }
-
         $message = '';
+        $apiErrorCode = null;
 
         if (isset($input['gateway']['vpc_Message']))
         {
             $message = $input['gateway']['vpc_Message'];
         }
 
-        // Get appropriate error code
-        $apiErrorCode = $this->getApiErrorCode($input);
+        // check for success
+        if ($txnResponseCode === '0')
+        {
+            //
+            // Transaction has been successful
+            // However, if 3dsecure failed and international is not enabled for the merchant,
+            // then we need to block the transaction on the international card.
+            //
+
+            if (($input['merchant']['international'] === false) and
+                (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus)) === false)
+            {
+                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
+            }
+            else
+            {
+                return; // payment succeeds
+            }
+        }
+        else
+        {
+            // Get appropriate error code
+            $apiErrorCode = $this->getApiErrorCode($input);
+        }
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
@@ -628,13 +642,7 @@ class Gateway extends Base\Gateway
     protected function getApiErrorCode($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
-        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
-        $message = $input['gateway']['vpc_Message'];
         $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
-        if ($this->isThreeDAuthSkippedForNonInternationalMerchant($input))
-        {
-            return Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
-        }
 
         if ($this->isSessionExpired($input))
         {
@@ -660,17 +668,23 @@ class Gateway extends Base\Gateway
                 'gateway_error_code' => $txnResponseCode,
                 'gateway' => $this->gateway,
                 'time' => time()]);
+
             return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }
     }
 
     protected function isAcqErrorOccurred($input)
     {
-        $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
-        if (isset($acqResponseCode) and isset(AcqResponseCode::$map[$acqResponseCode]))
+        if (isset($input['gateway']['vpc_AcqResponseCode']))
         {
-            return true;
+            $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+
+            if (isset(AcqResponseCode::$map[$acqResponseCode]))
+            {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -684,20 +698,6 @@ class Gateway extends Base\Gateway
             ($message === 'Your Session has expired'))
         {
                 return true;
-        }
-        return false;
-    }
-
-    protected function isThreeDAuthSkippedForNonInternationalMerchant($input)
-    {
-        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
-        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
-
-        if (isset($txnResponseCode) and
-            ($input['merchant']->isInternational() === false) and
-            (AxisMigs\ThreeDSecureStatus::isAuthSkipped($threeDSstatus)))
-        {
-            return true;
         }
         return false;
     }
@@ -781,7 +781,7 @@ class Gateway extends Base\Gateway
         }
 
         $content['vpc_Card'] = 'MasterCard';
-        //$content['vpc_CardNum'] = '5123456789012346';
+        $content['vpc_CardNum'] = '5123456789012346';
         $content['vpc_CardExp'] = '1705';
         $content['vpc_CardSecurityCode'] = '333';
     }
