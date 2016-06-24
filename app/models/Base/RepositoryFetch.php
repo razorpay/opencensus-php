@@ -271,7 +271,8 @@ trait RepositoryFetch
 
         if ($merchantId !== null)
         {
-            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
+            $attr = static::getAttributeWithTableName(Common::MERCHANT_ID);
+            $query = $query->where($attr, '=', $merchantId);
         }
 
         //
@@ -378,5 +379,12 @@ trait RepositoryFetch
             ->skip($skip)
             ->take($count)
             ->get();
+    }
+
+    protected function getAttributeWithTableName($col)
+    {
+        $repo = $this->repo;
+
+        return $repo::getTableName() . '.' . $col;
     }
 }
