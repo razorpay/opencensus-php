@@ -3,6 +3,7 @@
 namespace Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
+use ZipArchive;
 
 use Services\TokenEx;
 use Models\Card;
@@ -39,9 +40,9 @@ class EmiFile extends Base\EmiFile
 
     protected function sendAxisEmiFile()
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $zipFile = $this->getZippedFile();
 
-        $data['file'] = $fullpath;
+        $data['file'] = $zipFile;
         $data['body'] = 'Please forward the Axis Emi file to axis';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
@@ -58,6 +59,20 @@ class EmiFile extends Base\EmiFile
 
             $message->attach($data['file']);
         });
+    }
+
+    protected function getZippedFile()
+    {
+        $zippath = $this->getZipFullFilePath();
+        $fullpath = $this->getExcelFullFilePath();
+
+        $zip = new ZipArchive();
+        $zip->open($zippath, ZipArchive::CREATE);
+        $zip->addFile($fullpath);
+        $zip->setPassword("YourPasswordHere");
+        $zip->close();
+
+        return $zippath;
     }
 
     protected function getEmiData($input)

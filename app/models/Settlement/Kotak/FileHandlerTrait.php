@@ -231,6 +231,18 @@ trait FileHandlerTrait
         return $this->getFullFilePath($name);
     }
 
+    protected function getZipFileToWriteName()
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.zip';
+    }
+
+    protected function getZipFullFilePath()
+    {
+        $name = $this->getZipFileToWriteName();
+
+        return $this->getFullFilePath($name);
+    }
+
     protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
