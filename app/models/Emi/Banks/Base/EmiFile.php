@@ -37,17 +37,17 @@ class EmiFile
 
     protected function getZippedFile()
     {
-        $zippath = $this->getZipFullFilePath();
-        $fullpath = $this->getExcelFullFilePath();
+        $zipPath = $this->getZipFullFilePath();
+        $fullPath = $this->getExcelFullFilePath();
 
         $password = \Config::get('applications.emi')['password'];
 
         $zip = new ZipArchive();
-        $zip->open($zippath, ZipArchive::CREATE);
-        $zip->addFile($fullpath);
+        $zip->open($zipPath, ZipArchive::CREATE);
+        $zip->addFile($fullPath);
         $zip->setPassword($password);
         $zip->close();
 
-        return $zippath;
+        return $zipPath;
     }
 }
