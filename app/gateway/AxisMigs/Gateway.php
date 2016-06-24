@@ -600,7 +600,10 @@ class Gateway extends Base\Gateway
         $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
 
         // check for success
-        if (isset($txnResponseCode) && $txnResponseCode === '0' && $threeDSstatus === 'Y')
+        if ((isset($txnResponseCode) === true) and
+            ($txnResponseCode === '0') and
+            ((AxisMigs\ThreeDSecureStatus::isAuthSucceeded($threeDSstatus)) or
+                ($input['merchant']->isInternational() === true)))
         {
             return; // payment succeeds
         }
@@ -613,11 +616,7 @@ class Gateway extends Base\Gateway
         }
 
         // Get appropriate error code
-        $apiErrorCode = $this->getApiErrorCode(
-                            array('txnResponseCode' => $txnResponseCode,
-                                  'threeDSstatus' => $threeDSstatus,
-                                  'message' => $message,
-                                  'acqResponseCode' => $input['gateway']['vpc_AcqResponseCode']));
+        $apiErrorCode = $this->getApiErrorCode($input);
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
@@ -628,22 +627,21 @@ class Gateway extends Base\Gateway
 
     protected function getApiErrorCode($input)
     {
-        $txnResponseCode = $input['txnResponseCode'];
-        $threeDSstatus = $input['threeDSstatus'];
-        $message = $input['message'];
-        $acqResponseCode = $input['acqResponseCode'];
-
-        if ($this->threeDAuthSkipped($input))
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
+        $message = $input['gateway']['vpc_Message'];
+        $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+        if ($this->isThreeDAuthSkippedForNonInternationalMerchant($input))
         {
-            return Error\ErrorCode::CARDHOLDER_NOT_ENROLLED_IN_3DSECURE;
+            return Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
         }
 
-        if ($this->sessionExpired($input))
+        if ($this->isSessionExpired($input))
         {
             return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
         }
 
-        if ($this->acqErrorOccurred($input))
+        if ($this->isAcqErrorOccurred($input))
         {
             return AcqResponseCode::$map[$acqResponseCode];
         }
@@ -666,23 +664,23 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function acqErrorOccurred($input)
+    protected function isAcqErrorOccurred($input)
     {
-        $acqResponseCode = $input['acqResponseCode'];
-        if (isset($acqResponseCode) && isset(AcqResponseCode::$map[$acqResponseCode]))
+        $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+        if (isset($acqResponseCode) and isset(AcqResponseCode::$map[$acqResponseCode]))
         {
             return true;
         }
         return false;
     }
 
-    protected function sessionExpired($input)
+    protected function isSessionExpired($input)
     {
-        $txnResponseCode = $input['txnResponseCode'];
-        $message = $input['message'];
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = $input['gateway']['vpc_Message'];
 
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) &&
-            ($txnResponseCode === 'Aborted') &&
+        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) and
+            ($txnResponseCode === 'Aborted') and
             ($message === 'Your Session has expired'))
         {
                 return true;
@@ -690,17 +688,14 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function threeDAuthSkipped($input)
+    protected function isThreeDAuthSkippedForNonInternationalMerchant($input)
     {
-        $txnResponseCode = $input['txnResponseCode'];
-        $threeDSstatus = $input['threeDSstatus'];
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
 
-        // if transaction succeeded at gateway without 3dsecure auth
-        // 'A' - Attempted authentication
-        // 'U' - Unavailable for checking
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) &&
-            ($txnResponseCode === '0') &&
-            (in_array($threeDSstatus, array('A', 'U'), true)))
+        if (isset($txnResponseCode) and
+            ($input['merchant']->isInternational() === false) and
+            (AxisMigs\ThreeDSecureStatus::isAuthSkipped($threeDSstatus)))
         {
             return true;
         }
