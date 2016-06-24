@@ -259,4 +259,15 @@ class MockGatewayController extends Controller
 
         return $server->authorize($input, $paymentId);
     }
+
+    public function postUPIPayment($bank)
+    {
+        $input = Input::all();
+
+        $driver = 'upi_' . $bank;
+
+        $server = $this->gateway->server($driver);
+
+        return $server->authorize($input, $paymentId);
+    }
 }

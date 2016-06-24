@@ -28,6 +28,16 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request->collectPay($data));
 
         assert($response->status_code === 200);
+
+        $response = json_decode($response->body, true);
+
+        assert($response !== null);
+
+        assert($response['response'] === '9');
+
+        $bankRRN = $response['BankRRN'];
+
+        // Write the bankRRN into the database
     }
 
     protected function formatAmount($amount)
@@ -49,17 +59,17 @@ class Gateway extends Base\Gateway
             // Amount and note are lowercase
             // despite being uppercase in docs
             "amount"        =>  $this->formatAmount($payment['amount']),
-            "billNumber"    =>  null,
-            "collectByDate" =>  null,
+            "billNumber"    =>  "sdf234234",
+            "collectByDate" =>  "15/12/2016 11:01 AM",
             "merchantId"    =>  $this->getMerchantId(),
             "merchantName"  =>  $input['merchant']['billing_label'],
             "merchantTranId"=>  $payment['id'],
-            "note"          =>  null,
+            "note"          =>  "collect-pay-request",
             // TODO: talk to icici and ask what all is allowed here
             "payerVa"       =>  "testing1@imobile",
-            "subMerchantId" =>  $input['merchant']['id'],
+            "subMerchantId" =>  "1234",//$input['merchant']['id'],
             "subMerchantName"=> $input['merchant']['name'],
-            "terminalId"    =>  null,
+            "terminalId"    =>  "1234",
         ];
     }
 
