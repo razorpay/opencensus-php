@@ -117,6 +117,12 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL              => null,
     );
 
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::LOGO_URL
+    );
+
     protected function generateTransactionReportEmail($input)
     {
         $email = array($input[self::EMAIL]);
@@ -157,9 +163,9 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
-    public function isFeatureEnabled()
+    public function isFeatureEnabled($feature)
     {
-        return !is_null($this->getAttribute(self::FEATURES));
+        return in_array($feature, $this->getFeatures());
     }
 
     public function activate()
@@ -366,9 +372,14 @@ class Entity extends Base\PublicEntity
         return '#' . $storedBrandColor;
     }
 
-    public function getLogoUrl($size = self::ORIGINAL_SIZE)
+    public function getLogoUrl()
     {
-        $relativeLogoUrl = $this->attributes[self::LOGO_URL];
+        return $this->getAttribute(self::LOGO_URL);
+    }
+
+    public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
+    {
+        $relativeLogoUrl = $this->getLogoUrl();
 
         if ($relativeLogoUrl === null)
         {
@@ -440,7 +451,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $features = explode(',', $features);
+            $features = explode(Features::DELIMITER, $features);
             return array_map('trim', $features);
         }
     }
@@ -450,7 +461,7 @@ class Entity extends Base\PublicEntity
         if (is_array($features))
         {
             $this->attributes[self::FEATURES] =
-                implode(',', $features);
+                implode(Features::DELIMITER, $features);
         }
         else
         {
@@ -483,6 +494,14 @@ class Entity extends Base\PublicEntity
     public function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = FeeBearer::getValueForBearerString($bearer);
+    }
+
+    public function setPublicLogoUrlAttribute(array & $array)
+    {
+        if (empty($array[self::LOGO_URL]) === false)
+        {
+            $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
+        }
     }
 
     public function getSettlementSchedule()

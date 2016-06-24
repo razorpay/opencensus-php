@@ -130,8 +130,6 @@ class Repository extends Base\Repository
 
     public function deleteOrFail($entity)
     {
-        $repo = $this->repo;
-
         $successCount = $entity->getUsedCount();
         $count = $this->getTotalUsedCount($entity);
 
@@ -146,7 +144,8 @@ class Repository extends Base\Repository
         {
             $entity->deleteOrFail();
 
-            return $repo::withTrashed()
+            return $this->newQuery()
+                        ->withTrashed()
                         ->findOrFail($entity->getId());
         }
     }

@@ -7,7 +7,7 @@ use Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     const SALE = 'sale';
-    const ACCEPTED_SHEET_NAMES = ['Refund', 'Sale'];
+    const ACCEPTED_SHEET_NAMES = ['Refund', 'Sales', 'Sale'];
 
     /**
      * Figures out what kind of reconciliation is it
@@ -21,11 +21,11 @@ class Reconciliate extends Base\Reconciliate
      */
     protected function getTypeName($fileName)
     {
-        if (strpos(self::REFUND, $fileName) !== false)
+        if (strpos($fileName, self::REFUND) !== false)
         {
             $typeName = self::REFUND;
         }
-        else if (strpos(self::SALE, $fileName) !== false)
+        else if (strpos($fileName, self::SALE) !== false)
         {
             $typeName = self::PAYMENT;
         }
@@ -36,7 +36,7 @@ class Reconciliate extends Base\Reconciliate
 
         return $typeName;
     }
-    
+
     /**
      * The list of sheet names in the excel file which should be
      * used to run reconciliation.

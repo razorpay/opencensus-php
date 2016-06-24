@@ -42,11 +42,11 @@ class Base
         'terminal'      => Models\Terminal\Entity::class,
         'emi_plan'      => Models\Emi\Entity::class,
         'axis_migs'     => Gateway\AxisMigs\Entity::class,
+        'app_token'     => Models\Customer\App\Entity::class,
         'adjustment'    => Models\Adjustment\Entity::class,
         'settlement'    => Models\Settlement\Entity::class,
         'transaction'   => Models\Transaction\Entity::class,
         'bank_account'  => Models\Merchant\BankAccount\Entity::class,
-        'customer_app'  => Models\Customer\App\Entity::class,
     );
 
     protected static $liveAndTest = array(

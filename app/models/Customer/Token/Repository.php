@@ -26,7 +26,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getByTokenAndCustomerId($id, $token)
+    public function getByTokenAndCustomerId($token, $id)
     {
         $repo = $this->repo;
 

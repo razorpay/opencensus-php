@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Models\Bank\IFSC;
 use Models\Base;
 use Models\Gateway;
+use Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;
@@ -66,10 +67,21 @@ class Service extends Base\Service
 
     protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
-        $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
-                                        $type, $gatewayCode, $from, $to, $gateway);
+        // Handling netbanking kotak using seperate file.
+        if (($gatewayCode === IFSC::KKBK) and
+            ($type === Payment\Entity::BANK))
+        {
+            $result = (new Netbanking\Kotak\DailyFiles)->generate($from, $to);
 
-        return $this->generateRefundFile($refunds);
+            return $result;
+        }
+        else
+        {
+            $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+                                            $type, $gatewayCode, $from, $to, $gateway);
+
+            return $this->generateRefundFile($refunds);
+        }
     }
 
     protected function generateRefundFile($refunds)

@@ -6,13 +6,24 @@ use EE\Exception;
 
 class Features
 {
+    const DUMMY         = 'dummy';
+    const WEBHOOKS      = 'webhooks';
+    const AGGREGATOR    = 'aggregator';
+    const TOKENS        = 'tokens';
+    const S2SWALLET     = 's2swallet';
+    const SETL_REPORT   = 'setl_report';
+    const CARD_SAVING   = 'cardsaving';
+
+    const DELIMITER     = ',';
+
     public static $allowedFeatures = array(
-        'dummy',
-        'webhooks',
-        'aggregator',
-        'tokens',
-        's2swallet',
-        'setl_report',
+        self::DUMMY,
+        self::WEBHOOKS,
+        self::AGGREGATOR,
+        self::TOKENS,
+        self::S2SWALLET,
+        self::SETL_REPORT,
+        self::CARD_SAVING,
     );
 
     public static function validateFeatures($input)
@@ -24,7 +35,7 @@ class Features
 
         $features = $input[Entity::FEATURES];
 
-        $features = explode(',', $features);
+        $features = explode(self::DELIMITER, $features);
 
         foreach ($features as $feature)
         {
