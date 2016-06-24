@@ -138,6 +138,8 @@ return array(
     'AWS_S3_SETTLEMENT_BUCKET'                      => '',
     'AWS_S3_LOGO_BUCKET'                            => '',
 
+    'EMI_FILE_PASSWORD'                             => 'rzp_2016',
+
     'CRON_PASSWORD'                                 => 'a923r8u98uwaf98uw9w8fu',
 
     'RUN_FIXTURES'                                  => true,
