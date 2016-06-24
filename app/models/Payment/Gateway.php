@@ -137,7 +137,8 @@ class Gateway
             Network::VISA),
         self::SHARP => array(
             Network::MC,
-            Network::VISA),
+            Network::VISA,
+            Network::MAES,),
     );
 
     public static $walletToGatewayMap = array(
