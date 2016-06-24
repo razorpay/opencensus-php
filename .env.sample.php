@@ -116,6 +116,7 @@ return array(
     'SBIEPAY_MOCK'                                      => true,
     'NETBANKING_HDFC_MOCK'                              => true,
     'NETBANKING_KOTAK_MOCK'                             => true,
+    'CYBERSOURCE_MOCK'                                  => true,
 
     'MOCK_GATEWAY_SECRET'                               => 'random_password',
 

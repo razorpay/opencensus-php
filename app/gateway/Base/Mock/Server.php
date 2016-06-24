@@ -161,7 +161,7 @@ class Server
 
     protected function validateAuthenticateInput($input)
     {
-        $this->validateActionInput($input, 'validate');
+        $this->validateActionInput($input, 'authenticate');
     }
 
     protected function validateActionInput($input, $action = null)

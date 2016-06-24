@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         'clientEnvironment'         => 'required'
     );
 
-    protected static $validateRules = array(
+    protected static $authenticateRules = array(
         'TermUrl'          => 'required|url',
         'MD'               => 'required|alpha_num',
         'PaReq'            => 'required|alpha_num',

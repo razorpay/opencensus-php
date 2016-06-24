@@ -20,7 +20,7 @@ class CreateCybersourceGateway extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
+            $table->increments(Cybersource::ID);
 
             $table->char(Cybersource::PAYMENT_ID, Cybersource::ID_LENGTH);
 

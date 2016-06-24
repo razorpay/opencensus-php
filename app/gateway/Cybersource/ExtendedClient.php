@@ -20,7 +20,7 @@ class ExtendedClient extends \SoapClient
     }
  
 // This section inserts the UsernameToken information in the outgoing SOAP message.
-    public function __doRequest($request, $location, $action, $version, $one_way = 0)
+    public function __doRequest($request, $location, $action, $version, $oneWay = 0)
     {
         $user = $this->user;
         $password = $this->password;
