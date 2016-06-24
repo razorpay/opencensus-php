@@ -11,25 +11,16 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $repo = null;
-
-    public function __construct()
+    public function fetchIin($iinId)
     {
-        parent::__construct();
-
-        $this->repo = new IIN\Repository();
-    }
-
-    public function fetchIin($iin)
-    {
-        $iin = $this->repo->findOrFail($iin);
+        $iin = $this->repo->iin->findOrFail($iinId);
 
         return $iin->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
-        $iins = $this->repo->fetch($input);
+        $iins = $this->repo->iin->fetch($input);
 
         return $iins->toArrayPublic();
     }
@@ -45,7 +36,7 @@ class Service extends Base\Service
 
     public function editIin($id, $input)
     {
-        $iin = $this->repo->findOrFail($id);
+        $iin = $this->repo->iin->findOrFail($id);
 
         $iin->edit($input);
 
