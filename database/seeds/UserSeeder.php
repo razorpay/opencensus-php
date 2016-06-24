@@ -28,6 +28,16 @@ class UserSeeder extends Seeder
             'updated_at'    =>  time()
         ]);
 
+        DB::table('users')->insert([
+            'id' => '20000000000003',
+            'name' => 'Test User Account3',
+            'email' => 'test3@razorpay.com',
+            'password'=> Hash::make('123456'),
+            'contact_mobile' => '9999999999',
+            'created_at'    =>  time(),
+            'updated_at'    =>  time()
+        ]);
+
         DB::table('merchant_users')->insert([
             [
                 'merchant_id' => '10000000000000',
@@ -39,6 +49,18 @@ class UserSeeder extends Seeder
                 'user_id'     => '20000000000001',
                 'role'        => 'manager'
             ],
+            [
+                'merchant_id' => '100DeadAccount',
+                'user_id'     => '20000000000000',
+                'role'        => 'manager'
+            ],
+
+            [
+                'merchant_id' => '100DeadAccount',
+                'user_id'     => '20000000000003',
+                'role'        => 'owner'
+            ],
+
         ]);
     }
 }
