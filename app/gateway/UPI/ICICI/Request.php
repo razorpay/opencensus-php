@@ -2,6 +2,8 @@
 
 namespace Gateway\UPI\ICICI;
 
+use Crypt_RSA;
+
 class Request
 {
     const ICICI_PUBLIC_KEY = <<<EOT
@@ -23,6 +25,41 @@ EOT;
 
     public function __construct()
     {
+        /**
+         * See http://phpseclib.sourceforge.net/rsa/examples.html
+         *
+         * We need to run in PCKS 1.5 mode
+         */
+        define('CRYPT_RSA_PKCS15_COMPAT', true);
+        $this->rsa = @new Crypt_RSA();
+        $this->rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+        $this->rsa->loadKey(self::ICICI_PUBLIC_KEY);
+    }
 
+    /**
+     * Encrypts data before sending it to ICICI
+     * @param  string $data
+     * @return string
+     */
+    protected function encrypt($data)
+    {
+        return $this->rsa->encrypt($data);
+    }
+
+    public function collectPay($data)
+    {
+        $url = Url::BASE_TEST_URL . Url::AUTHORIZE;
+        return $this->makeRequest($data, $url);
+    }
+
+    protected function makeRequest($data, $url)
+    {
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $body = base64_encode($this->encrypt($json));
+
+        return [
+            'url'       =>  $url,
+            'content'   =>  $body,
+        ];
     }
 }
