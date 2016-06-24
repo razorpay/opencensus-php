@@ -3,9 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Gateway\Cybersource;
-use Models\Base\UniqueIdEntity;
-use Constants;
+use Gateway\Cybersource\Entity as Cybersource;
+use Constants\Table;
 
 class CreateCybersourceGateway extends Migration
 {
@@ -17,60 +16,60 @@ class CreateCybersourceGateway extends Migration
      */
     public function up()
     {
-        Schema::create(Constants\Table::CYBERSOURCE, function(Blueprint $table)
+        Schema::create(Table::CYBERSOURCE, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->increments('id');
 
-            $table->char(Cybersource\Entity::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
+            $table->char(Cybersource::PAYMENT_ID, Cybersource::ID_LENGTH);
 
-            $table->char(Cybersource\Entity::ACTION, 10)->nullable();
+            $table->char(Cybersource::ACTION, 10)->nullable();
 
-            $table->integer(Cybersource\Entity::RECEIVED)->default(0);
+            $table->integer(Cybersource::RECEIVED)->default(0);
 
-            $table->char(Cybersource\Entity::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
+            $table->char(Cybersource::REFUND_ID, Cybersource::ID_LENGTH)->nullable();
 
-            $table->char(Cybersource\Entity::AUTH_DATA, 40)->nullable();
+            $table->char(Cybersource::AUTH_DATA, 40)->nullable();
 
-            $table->char(Cybersource\Entity::COMMERCE_INDICATOR, 20)->nullable();
+            $table->char(Cybersource::COMMERCE_INDICATOR, 20)->nullable();
 
-            $table->integer(Cybersource\Entity::AMOUNT);
+            $table->integer(Cybersource::AMOUNT);
 
-            $table->char(Cybersource\Entity::PARES_STATUS, 20)->nullable();
+            $table->char(Cybersource::PARES_STATUS, 20)->nullable();
 
-            $table->char(Cybersource\Entity::STATUS, 20);
+            $table->char(Cybersource::STATUS, 20);
 
-            $table->char(Cybersource\Entity::XID, 40)->nullable();
+            $table->char(Cybersource::XID, 40)->nullable();
 
-            $table->char(Cybersource\Entity::ECI, 20)->nullable();
+            $table->char(Cybersource::ECI, 20)->nullable();
 
-            $table->char(Cybersource\Entity::CAVV, 40)->nullable();
+            $table->char(Cybersource::CAVV, 40)->nullable();
             
-            $table->char(Cybersource\Entity::REF, 120)->nullable();
+            $table->char(Cybersource::REF, 120)->nullable();
             
-            $table->char(Cybersource\Entity::CAPTURE_REF, 30)->nullable();
+            $table->char(Cybersource::CAPTURE_REF, 30)->nullable();
             
-            $table->integer(Cybersource\Entity::ERROR_CODE)->nullable();
+            $table->integer(Cybersource::ERROR_CODE)->nullable();
             
-            $table->integer(Cybersource\Entity::CREATED_AT);
+            $table->integer(Cybersource::CREATED_AT);
             
-            $table->integer(Cybersource\Entity::UPDATED_AT);
+            $table->integer(Cybersource::UPDATED_AT);
             
-            $table->char(Cybersource\Entity::COLLECTION_INDICATOR, 20)->nullable();
+            $table->char(Cybersource::COLLECTION_INDICATOR, 20)->nullable();
 
-            $table->foreign(Cybersource\Entity::PAYMENT_ID)
-                  ->references(Cybersource\Entity::ID)
-                  ->on('payments')
+            $table->foreign(Cybersource::PAYMENT_ID)
+                  ->references(Cybersource::ID)
+                  ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
-            $table->index(Cybersource\Entity::STATUS);
+            $table->index(Cybersource::STATUS);
         
-            $table->index(Cybersource\Entity::RECEIVED);
+            $table->index(Cybersource::RECEIVED);
 
-            $table->index(Cybersource\Entity::CREATED_AT);
+            $table->index(Cybersource::CREATED_AT);
 
-            $table->index(Cybersource\Entity::REFUND_ID);
+            $table->index(Cybersource::REFUND_ID);
         });
     }
 
@@ -81,12 +80,12 @@ class CreateCybersourceGateway extends Migration
      */
     public function down()
     {
-        Schema::table(Constants\Table::CYBERSOURCE, function($table)
+        Schema::table(Table::CYBERSOURCE, function($table)
         {
-            $table->dropForeign('cybersource_payment_id_foreign');
+            $table->dropForeign(Table::CYBERSOURCE.'_'.Cybersource::PAYMENT_ID.'_foreign');
         });
 
-        Schema::drop(Constants\Table::CYBERSOURCE);
+        Schema::drop(Table::CYBERSOURCE);
     }
 
 }
