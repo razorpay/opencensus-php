@@ -55,7 +55,7 @@ class TxnResponseCode
         'F' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         'I' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         'L' => Error\ErrorCode::SERVER_ERROR,
-        'N' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH,
+        'N' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE,
         // 'P' => '',
         // 'R' => '',
         // 'S' => '',
