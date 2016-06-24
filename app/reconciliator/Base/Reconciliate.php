@@ -21,7 +21,7 @@ class Reconciliate
     const REFUND   = 'refund';
     const COMBINED = 'combined';
 
-    const VALID_RECONCILIATION_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
 
     /*************************
      * Internal Header Names
@@ -142,7 +142,7 @@ class Reconciliate
         $reconciliationType = $this->getTypeName($fileName);
 
         // Ideally, should never come here.
-        if ((in_array($reconciliationType, self::VALID_RECONCILIATION_TYPES) === false) or
+        if ((in_array($reconciliationType, self::VALID_RECON_TYPES) === false) or
             ($reconciliationType === null))
         {
             $this->messenger->raiseReconAlert(

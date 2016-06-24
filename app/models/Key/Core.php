@@ -6,16 +6,15 @@ use Constants\Mode;
 use Crypt;
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Base;
 use Models\Key;
 use Models\Merchant;
 
-class Core
+class Core extends Base\Core
 {
     public function createFirstKey($merchant, $mode)
     {
-        $repo = new Key\Repository;
-
-        $keys = $repo->getKeysForMerchant($merchant->getId());
+        $keys = $this->repo->key->getKeysForMerchant($merchant->getId());
 
         if (count($keys) > 0)
         {
@@ -36,8 +35,6 @@ class Core
      */
     public function createAndReturnWithSecret($merchant, $mode)
     {
-        $repo = new Key\Repository;
-
         $key = new Key\Entity();
 
         if (($mode === Mode::LIVE) and
@@ -54,7 +51,7 @@ class Core
         // Generate secret which will be returned to merchant
         $secret = $key->generateSecret();
 
-        $repo->saveOrFail($key);
+        $this->repo->saveOrFail($key);
 
         $keyData = $key->toArrayPublic();
         $keyData[Key\Entity::SECRET] = $secret;
@@ -107,7 +104,7 @@ class Core
     {
         Key\Entity::verifyIdAndStripSign($keyId);
 
-        $key = (new Key\Repository)->findOrFailPublic($keyId);
+        $key = $this->repo->key->findOrFailPublic($keyId);
 
         $secret = Crypt::decrypt($key->getSecret());
 

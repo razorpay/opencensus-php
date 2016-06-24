@@ -3,9 +3,12 @@
 namespace Models\Customer\Token;
 
 use Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletingTrait;
+
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const TERMINAL_ID           = 'terminal_id';
@@ -18,6 +21,9 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
     const EXPIRED_AT            = 'expired_at';
+    const CREATED_AT            = 'created_at';
+    const UPDATED_AT            = 'updated_at';
+    const DELETED_AT            = 'deleted_at';
 
     protected static $sign      = 'token';
 

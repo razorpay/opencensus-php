@@ -2,12 +2,12 @@
 
 namespace Base;
 
-use App;
 use Constants\Entity as E;
 use Constants\Table;
 use DB;
+use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
-use EE\Exception;
+use EE\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -63,7 +63,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function throwException(array $e)
     {
-        throw new Exception\DbQueryException($e);
+        throw new DbQueryException($e);
     }
 
     public function isTransactionActive()
@@ -76,11 +76,6 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return ($this->db->transactionLevel() > 0);
-    }
-
-    public function fetchEntitiesForReport($merchantId, $from, $to)
-    {
-        return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to);
     }
 
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $relations = [])
@@ -109,12 +104,19 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $repo = E::getEntityRepository($type);
 
-            $objects[$type] = (new $repo)->findMany($ids);
+            $typeEntities = (new $repo)->findMany($ids);
+
+            foreach ($typeEntities as $entity)
+            {
+                $objects[$entity->getId()] = $entity;
+            }
         }
 
         foreach ($entities as $entity)
         {
-            $entity->setRelation($relation, $objects[$entity->$typeCol]->find($entity->$idCol));
+            $typeEntity = $objects[$entity->$idCol];
+
+            $entity->setRelation($relation, $typeEntity);
         }
 
         return $entities;

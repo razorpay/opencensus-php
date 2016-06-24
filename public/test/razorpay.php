@@ -44,7 +44,7 @@ $public_url = $key_id.'@'.$baseurl;
         </div>
 
         <div class="section">
-            <label>App Id</label><input id="app_id" value="">
+            <label>App Token</label><input id="app_token" value="">
             <label>Save</label><input type="input" id="save" value="">
         </div>
         <div style="clear: both"></div>

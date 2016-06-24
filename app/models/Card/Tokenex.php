@@ -19,6 +19,8 @@ class Tokenex
             assert(empty($cardNumber) === false);
 
             $cardNumber = strval($cardNumber);
+
+            return $cardNumber;
         }
         catch (\Exception $e)
         {
@@ -30,10 +32,8 @@ class Tokenex
                 ]
             );
 
-            $app['trace']->traceException($e);
+            throw $e;
         }
-
-        return $cardNumber;
     }
 
     public static function getVaultToken($cardNumber)
@@ -43,6 +43,8 @@ class Tokenex
         try
         {
             $token = $app['card.tokenex']->tokenize($cardNumber);
+
+            return $token;
         }
         catch (Exception $e)
         {
@@ -53,9 +55,7 @@ class Tokenex
                 ]
             );
 
-            $app['trace']->traceException($e);
+            throw $e;
         }
-
-        return $token;
     }
 }
