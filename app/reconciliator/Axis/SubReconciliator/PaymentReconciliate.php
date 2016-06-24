@@ -104,14 +104,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $vpcTransactionNo = $this->axisMigsRepo
                                  ->findByRrn($row[self::RRN])
-                                 ->getVpcTransactionNo();
+                                 ->getTransactionId();
 
         $input['vpc_TransactionNo'] = $vpcTransactionNo;
 
         // If there's any issue during authorize, the function throws an exception.
         $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
 
-        if ((empty($response['status'] === false)) and ($response['status'] === 'AUTHORIZED'))
+        if ((empty($response['status']) === false) and ($response['status'] === 'AUTHORIZED'))
         {
             return true;
         }

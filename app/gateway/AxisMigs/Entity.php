@@ -100,7 +100,7 @@ class Entity extends Base\Entity
         return $this->attributes['vpc_AuthorizeId'];
     }
 
-    public function getVpcTransactionNo()
+    public function getTransactionId()
     {
         return $this->attributes['vpc_TransactionNo'];
     }
