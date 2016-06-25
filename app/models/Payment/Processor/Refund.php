@@ -49,16 +49,12 @@ trait Refund
             'payment'   => $payment->toArray(),
             'refund'    => $refund->toArray(),
             'amount'    => $refund->getAmount());
-
-        $method = $refund->payment->getMethod();
-
+        
         if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $refund->payment->card->toArray();
         }
-
-        $gateway = $payment->getGateway();
-
+        
         if (($payment->getTransactionId() !== null) or
             ($payment->isAuthorized() === false))
         {

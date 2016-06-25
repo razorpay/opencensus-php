@@ -2,7 +2,6 @@
 
 namespace Models\Card\IIN;
 
-use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
 use Models\Card\IIN;
