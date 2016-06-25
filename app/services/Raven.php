@@ -143,7 +143,7 @@ class Raven
 
         if (isset($response['error']))
         {
-            throw new Exception\RuntimeException('RAVEN_ERROR: ' . $response['internal_error_code']);
+            throw new Exception\RuntimeException($response['error']['description'], $response['error']['internal_error_code']);
         }
     }
 }

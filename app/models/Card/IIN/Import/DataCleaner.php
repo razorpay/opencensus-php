@@ -119,7 +119,7 @@ class DataCleaner
     protected function removeDuplicate($inputNetwork, $data)
     {
         $indexed = array();
-        // Indexeing the data based on IIN number
+        // Indexing the data based on IIN number
 
         $index = 0;
         foreach ($data as $input)
