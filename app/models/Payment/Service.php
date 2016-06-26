@@ -285,6 +285,8 @@ class Service extends Base\Service
         $timedOut = 0; $failed = 0; $error = 0;
         $time = time();
 
+        $payments->shuffle();
+
         foreach ($payments as $payment)
         {
             try
