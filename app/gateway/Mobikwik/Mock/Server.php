@@ -179,7 +179,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($responseContent);
     }
 
-    public function createWalletUser($input)
+    public function createUser($input)
     {
         $content = array(
             'messagecode'       => '502',

@@ -221,9 +221,40 @@ class Gateway extends Base\Gateway
         return $this->authorize($input);
     }
 
+    public function checkExistingUser($input)
+    {
+        $this->action($input, Action::CHECK_USER);
+
+        $content = $this->getCheckExistingUserRequestContent($input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+        $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $content['received'] = 1;
+
+        $code = $content['statuscode'];
+
+        if ($content['statuscode'] !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content['statuscode'],
+                $content['statusdescription']);
+        }
+    }
+
     public function createWalletUser($input)
     {
-        $this->action($input, Action::CREATE_WALLET_USER);
+        $this->action($input, Action::CREATE_USER);
 
         $content = $this->getCreateWalletUserRequestContent($input);
 
@@ -422,7 +453,7 @@ class Gateway extends Base\Gateway
             'email'         => $input['email'],
             'merchantname'  => 'Razorpay',
             'mid'           => $input['mid'],
-            'msgcode'       => MessageCode::CREATE_WALLET_USER,
+            'msgcode'       => MessageCode::CREATE_USER,
             'otp'           => $input['otp'],
             );
 
