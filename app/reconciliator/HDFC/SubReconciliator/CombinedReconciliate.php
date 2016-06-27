@@ -14,15 +14,17 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
 
     protected function getReconciliationTypeForRow($row)
     {
-        if ($row[self::COLUMN_ENTITY_TYPE] === 'CVD')
+        $entityType = trim($row[self::COLUMN_ENTITY_TYPE]);
+
+        if ($entityType === 'CVD')
         {
             return BaseReconciliate::REFUND;
         }
-        else if ($row[self::COLUMN_ENTITY_TYPE] === 'BAT')
+        else if ($entityType === 'BAT')
         {
             return BaseReconciliate::PAYMENT;
         }
-        else if (empty($row[self::COLUMN_ENTITY_TYPE]) === true)
+        else if (empty($entityType) === true)
         {
             return self::NA;
         }
