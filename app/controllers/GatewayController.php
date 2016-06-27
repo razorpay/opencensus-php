@@ -59,7 +59,7 @@ class GatewayController extends BaseController
         $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
 
-        $payment = (new \Models\Payment\Repository)->findOrFailPublic($paymentId);
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
         $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');

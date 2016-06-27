@@ -7,5 +7,7 @@ class BaseController extends Controller
         $this->app = \App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
     }
 }
