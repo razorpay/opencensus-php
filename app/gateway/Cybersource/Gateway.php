@@ -338,7 +338,7 @@ class Gateway extends Base\Gateway
             case Card\Network::getFullName('MC'):
                 $ucaf = new \stdClass();
                 $ucaf->collectionIndicator = $enrollResponse->payerAuthEnrollReply->ucafCollectionIndicator;
-                $ccAuthService->ucaf = $ucaf;
+                $request->ucaf = $ucaf;
                 break;
             
             default:
