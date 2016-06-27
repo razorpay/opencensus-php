@@ -119,11 +119,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         // If there's any issue during authorize, the function throws an exception.
         $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
-
-        if ((empty($response['status']) === false) and ($response['status'] === 'AUTHORIZED'))
-        {
-            return true;
-        }
+        
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message' => 'Response received from force authorization',
+                'response' => $response
+            ]
+        );
 
         return false;
     }
