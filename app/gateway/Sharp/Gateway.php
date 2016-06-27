@@ -70,7 +70,24 @@ class Gateway extends Base\Gateway
 
     public function callbackOtpSubmit(array $input)
     {
-        ;
+        switch ($input['otp'])
+        {
+            case '100000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
+
+            case '200000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+
+            case '300000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED);
+
+            case '400000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
+        }
     }
 
     public function capture(array $input)
