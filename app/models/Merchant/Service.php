@@ -214,22 +214,15 @@ class Service extends Base\Service
      * @param  string $id    Merchant Id
      * @param  array $input  Array with new Merchant Name
      */
-    public function changeName($id, $input)
+    public static function changeName($id, $name)
     {
         $merchant = Merchant\Entity::findorfail($id);
 
         if ($merchant->isTestAccount()) {
-            return [[static::NAME_CHANGE_FORBIDDEN], null];
+            return [static::NAME_CHANGE_FORBIDDEN];
         }
 
-        $error = $merchant->changeName($input);
-
-        if (empty($error))
-        {
-            $merchant->save();
-        }
-
-        return [$error, null];
+        return $merchant->changeName($name);
     }
 
     public function confirm($token)
