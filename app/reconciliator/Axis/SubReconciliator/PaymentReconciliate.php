@@ -28,7 +28,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         parent::__construct();
 
         $this->messenger = new Messenger();
-        $this->axisMigsRepo = $this->app->axis_migs;
+
+        $this->axisMigsRepo = $this->repo->axis_migs;
     }
 
     protected function getPaymentId($row)
