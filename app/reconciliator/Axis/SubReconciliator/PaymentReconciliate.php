@@ -112,7 +112,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // If there's any issue during authorize, the function throws an exception.
         $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
 
-        if ((empty($response['status']) === false) and ($response['status'] === 'AUTHORIZED'))
+        if ((empty($response['status']) === false) and ($response['status'] === 'authorized'))
         {
             return true;
         }

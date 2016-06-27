@@ -280,7 +280,7 @@ trait Authorize
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
         }
 
         if (isset($data['token']) === true)
@@ -323,7 +323,7 @@ trait Authorize
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();
-                $payment->saveOrFail();
+                $this->repo->saveOrFail($payment);
                 break;
         }
 
@@ -516,9 +516,9 @@ trait Authorize
             {
                 $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
-                $this->payment->card->globalCard()->associate($token->card);
+                $payment->card->globalCard()->associate($token->card);
 
-                $this->payment->card->saveOrFail();
+                $this->repo->saveOrFail($payment->card);
             }
             else if ($payment->isMethod(Payment\Method::WALLET))
             {
@@ -579,9 +579,9 @@ trait Authorize
 
                 $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
 
-                $this->payment->card->globalCard()->associate($savedCard);
+                $payment->card->globalCard()->associate($savedCard);
 
-                $this->payment->card->saveOrFail();
+                $this->repo->saveOrFail($payment->card);
             }
 
         }
@@ -713,7 +713,7 @@ trait Authorize
         {
             $order->setAuthorized(true);
 
-            $order->saveOrFail();
+            $this->repo->saveOrFail($order);
         }
     }
 
@@ -977,7 +977,7 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
-        (new Card\Repository)->saveOrFail($card);
+        $this->repo->saveOrFail($card);
 
         return $cardData;
 
@@ -1115,7 +1115,7 @@ trait Authorize
 
     protected function savePaymentAndCard()
     {
-        (new Card\Repository)->saveOrFail($this->payment->card);
+        $this->repo->saveOrFail($this->payment->card);
 
         $this->repo->saveOrFail($this->payment);
     }
@@ -1126,7 +1126,7 @@ trait Authorize
 
         $this->repo->transaction(function() use ($payment)
         {
-            $this->lockForUpdateAndReload($this->payment);
+            $this->lockForUpdateAndReload($payment);
 
             if ($this->payment->getStatus() === Status::AUTHORIZED)
             {
@@ -1143,22 +1143,22 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            $payment->saveOrFail();
-            $payment->terminal->saveOrFail();
+            $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
 
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
-                $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
-                $txn->saveOrFail();
+                $this->repo->saveOrFail($txn);
             }
 
-            $this->payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
 
             // If payment has an associated order
             // set the order to be paid
-            $this->updateAuthorizedOrderStatus($this->payment);
+            $this->updateAuthorizedOrderStatus($payment);
 
             $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
         });
