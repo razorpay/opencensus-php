@@ -14,7 +14,7 @@ class Selector
     ];
 
     protected static $sorters = [
-
+        Sorters\NetbankingSorter::class,
     ];
 
     public function setup($payment, $mode)
@@ -69,7 +69,7 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = $sorter->sort($input, $sortedTerminals);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input);
         }
 
         if (empty($sortedTerminals))

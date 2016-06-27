@@ -11,6 +11,7 @@ use Models\Terminal;
 use Models\Bank\IFSC;
 use Models\Payment\Method;
 use Models\Payment\Gateway;
+use Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -112,6 +113,24 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal, $input)
     {
+        $method = $input['payment']->getMethod();
+
+        switch ($method)
+        {
+            case Method::NETBANKING:
+                $bank = $input['payment']->getBank();
+
+                $terminalGateway = $terminal->getGateway();
+
+                $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+
+                return in_array($terminalGateway, $gateways);
+                break;
+
+            default:
+                break;
+        }
+
         return true;
     }
 }

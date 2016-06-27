@@ -7,6 +7,7 @@ use Models\Bank\IFSC;
 use Models\Card\Network;
 use Models\Settlement;
 use Models\Payment\Processor\Wallet;
+use Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
@@ -359,5 +360,51 @@ class Gateway
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
                 (in_array($network, self::$cardNetworkMap[$gateway])));
+    }
+
+    public static function getGatewaysForNetbankingBank($bank, $indexed = false)
+    {
+        $gateways = [];
+
+        // Check for direct netbanking gateway
+        if (self::isNetbankingBankDirectlySupported($bank))
+        {
+            if ($indexed)
+            {
+                $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
+            }
+            else
+            {
+                $gateways[] = self::$netbankingToGatewayMap[$bank];
+            }
+        }
+
+        // Add netbanking gateways that support bank
+        foreach (self::$netbankingGateways as $netbankingGateway)
+        {
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            {
+                if ($indexed)
+                {
+                    $gateways['gateway'][] = $netbankingGateway;
+                }
+                else
+                {
+                    $gateways[] = $netbankingGateway;
+                }
+            }
+        }
+
+        return $gateways;
+    }
+
+    // Prepends direct to the beginning of the priority array
+    public static function getGatewaysPriorityForNetbanking()
+    {
+        $gateways = self::$netbankingGateways;
+
+        array_unshift($gateways, 'direct');
+
+        return $gateways;
     }
 }
