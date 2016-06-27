@@ -70,7 +70,7 @@ class Gateway extends Base\Gateway
 
     public function callbackOtpSubmit(array $input)
     {
-        switch ($input['otp'])
+        switch ($input['gateway']['otp'])
         {
             case '100000':
                 throw new Exception\GatewayErrorException(
@@ -87,6 +87,10 @@ class Gateway extends Base\Gateway
             case '400000':
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
+
+            case '500000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
         }
     }
 

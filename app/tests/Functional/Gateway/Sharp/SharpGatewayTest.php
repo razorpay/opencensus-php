@@ -55,4 +55,72 @@ class SharpGatewayTest extends TestCase
         $testData['request']['content'] = $payment;
         $this->startTest($testData);
     }
+
+    public function testOtpFlowInsufficientBalancePayment()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->publicAuth();
+
+        $this->setOtp('100000');
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testOtpFlowIncorrectOtpPayment()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->publicAuth();
+
+        $this->setOtp('200000');
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testOtpFlowOtpExpiredPayment()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->publicAuth();
+
+        $this->setOtp('300000');
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testOtpFlowAttemptsExceededPayment()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->publicAuth();
+
+        $this->setOtp('400000');
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
 }
