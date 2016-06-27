@@ -45,7 +45,7 @@ class Reconciliate extends Base\Reconciliate
 
         $terminalRepo = App::getFacadeRoot()['repo']->terminal;
 
-        $reconPassword = $terminalRepo->getById($terminalId)->getReconPassword();
+        $reconPassword = $terminalRepo->getById($terminalId)->getGatewayReconPassword();
 
         return $reconPassword;
     }

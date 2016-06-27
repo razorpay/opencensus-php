@@ -218,7 +218,8 @@ class Orchestrator
                         'trace_code'   => TraceCode::RECON_FILE_SKIP,
                         'message'      => 'Skipping file because not able to convert file content to array. -> ' . $ex->getMessage(),
                         'file_details' => $fileDetails,
-                        'gateway'      => get_class($this->gatewayReconciliator),
+                        //'gateway'      => get_class($this->gatewayReconciliator),
+                        'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
                     ]);
 
                 $this->app['trace']->traceException($ex);
@@ -259,7 +260,8 @@ class Orchestrator
                     'trace_code'   => TraceCode::RECON_FILE_SKIP,
                     'message'      => 'Skipping file because it is present in the exclude list of the gateway.',
                     'file_details' => $fileDetails,
-                    'gateway'      => get_class($this->gatewayReconciliator),
+                    //'gateway'      => get_class($this->gatewayReconciliator),
+                    'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
                 ]);
 
             return true;
@@ -275,7 +277,8 @@ class Orchestrator
                     'trace_code'   => TraceCode::RECON_FILE_SKIP,
                     'message'      => 'Skipping file because validations failed.',
                     'file_details' => $fileDetails,
-                    'gateway'      => get_class($this->gatewayReconciliator),
+                    //'gateway'      => get_class($this->gatewayReconciliator),
+                    'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
                 ]);
 
             return true;
@@ -434,7 +437,8 @@ class Orchestrator
                             'trace_code'   => TraceCode::RECON_FILE_SKIP,
                             'message'      => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
                             'file_details' => !empty($extractedFileDetails) ?  $extractedFileDetails : null,
-                            'gateway'      => get_class($this->gatewayReconciliator),
+                            //'gateway'      => get_class($this->gatewayReconciliator),
+                            'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName(),
                             'exception'    => $ex->getTrace()
                         ]);
 
