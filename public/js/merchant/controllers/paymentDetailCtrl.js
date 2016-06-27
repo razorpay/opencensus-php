@@ -1,4 +1,4 @@
-//Single Payment Details controller
+"use strict";
 //Child of TransactionDetailCtrl
 app.controller('PaymentDetailCtrl', [
   '$scope',
@@ -58,7 +58,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.entity.status = 'captured';
           $scope.entity.amount = captureAmount;
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -69,17 +69,18 @@ app.controller('PaymentDetailCtrl', [
     $scope.refund = function (data) {
       data.amount = parseInt(data.amount);
       var unrefundedAmount = parseInt($scope.entity.amount) - parseInt($scope.entity.amount_refunded);
+
       if (!data.amount || data.amount > unrefundedAmount) {
         $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
         return;
       }
-      console.debug(data);
+
       var request = $http({
         method: 'post',
         url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/refund',
-        // transformRequest: transformRequestAsFormPost,
         data: data
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Payment Refunded', true);
@@ -89,7 +90,7 @@ app.controller('PaymentDetailCtrl', [
             $scope.entity.refund_status = 'partial';
           $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + data.amount;
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -109,7 +110,7 @@ app.controller('PaymentDetailCtrl', [
           $scope.entity.refunds = data.data;
           $scope.isRefundsCollapsed = false;
         } else {
-          angular.forEach(data.errors, function (error, key) {
+          angular.forEach(data.errors, function (error) {
             $scope.alerts.addAlert('danger', error);
           });
         }
