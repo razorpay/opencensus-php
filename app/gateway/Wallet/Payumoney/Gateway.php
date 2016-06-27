@@ -242,10 +242,10 @@ class Gateway extends Base\Gateway
             $content['message']);
     }
 
-    public function checkExistingUser($input)
-    {
-        ;
-    }
+    // public function checkExistingUser($input)
+    // {
+    //     ;
+    // }
 
     public function otpGenerate($input)
     {

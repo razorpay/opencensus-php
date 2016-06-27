@@ -43,10 +43,10 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function checkExistingUser(array $input)
-    {
-        ;
-    }
+    // public function checkExistingUser(array $input)
+    // {
+    //     ;
+    // }
 
     public function otpGenerate(array $input)
     {

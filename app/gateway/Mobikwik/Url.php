@@ -12,7 +12,8 @@ class Url
     const AUTHORIZE 	= '/wallet';
     const REFUND 		= '/walletrefund';
     const VERIFY 		= '/checkstatus';
-    const CHECK_USER 	= '/querywallet';
+    // const CHECK_USER 	= '/querywallet';
     const OTP_GENERATE 	= '/otpgenerate';
     const OTP_SUBMIT 	= '/debitwallet';
+    const CREATE_WALLET_USER = '/createwalletuser';
 }

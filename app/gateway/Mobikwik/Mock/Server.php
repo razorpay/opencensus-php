@@ -144,6 +144,16 @@ class Server extends Base\Mock\Server
             'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
         );
 
+        // OTP 141414 is for when user contact/email is not registered
+        if ($input['otp'] === '141414')
+        {
+            $content = array(
+                'status'            => 'FAILURE',
+                'statuscode'        => '159',
+                'statusdescription' => Mobikwik\ResponseCode::getResponseMessage('159'),
+                );
+        }
+
         // OTP 131313 is for insufficient balance
         if ($input['otp'] === '131313')
         {
@@ -167,6 +177,22 @@ class Server extends Base\Mock\Server
         $responseContent = $this->generateXMLResponse($content);
 
         return $this->makeResponse($responseContent);
+    }
+
+    public function createWalletUser($input)
+    {
+        $content = array(
+            'messagecode'       => '502',
+            'status'            => 'SUCCESS',
+            'statuscode'        => '0',
+            'statusdescription' => 'User Created',
+            'checksum'          => '750014952183964866a5e4a2a59f9d632e4b500130611507fba5e39325df5f65',
+        );
+
+        $responseContent = $this->generateXMLResponse($content);
+
+        return $this->makeResponse($responseContent);
+
     }
 
     protected function makeResponse($json)
