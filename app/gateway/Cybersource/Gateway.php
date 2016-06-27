@@ -468,7 +468,7 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject($input)
     {
-        $url = $this->getWsdlFile();
+        $url = 'https://ics2wstesta.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.78.wsdl';//$this->getWsdlFile();
 
         $auth = array(
             'username' => $input['terminal']['gateway_terminal_id'],
@@ -506,7 +506,6 @@ class Gateway extends Base\Gateway
             $this->persistAfterEnroll($input, $reply, $request);
 
             return $reply;
-
         }
         catch (SoapFault $exception)
         {
@@ -528,7 +527,8 @@ class Gateway extends Base\Gateway
                 'payment_id'    => $input['payment']['id'],
                 'amount'        => $request->item[0]->unitPrice,
                 'error_code'    => $response->reasonCode,
-                'status'        => Payment\Status::CREATED);
+                'status'        => Payment\Status::CREATED,
+                'ref'           => $response->requestID);
 
             $this->getRepo()->createOrFail($attributes);
 
