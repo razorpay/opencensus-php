@@ -18,7 +18,8 @@ class Validator extends Base\Validator
         'billTo'                  => 'required',
         'card'                    => 'required',
         'purchaseTotals'          => 'required',
-        'item'                    => 'required'
+        'item'                    => 'required',
+        'ucaf'                    => 'sometimes',
     );
 
     protected static $enrollRules = array(
