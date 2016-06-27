@@ -9,7 +9,7 @@ class Terminal extends Base
     public function createAllSharedTerminals()
     {
         $this->createSharedHdfcTerminal();
-        // $this->createSharedAtomTerminal();
+        $this->createSharedAtomTerminal();
         $this->createSharedAxisTerminal();
         $this->createSharedBilldeskTerminal();
         $this->createSharedAxisGeniusTerminal();
@@ -17,6 +17,13 @@ class Terminal extends Base
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
+        $this->createSharedNetbankingKotakTerminal();
+    }
+
+    public function createMultipleNetbankingTerminals()
+    {
+        $this->createSharedAtomNetbankingTerminal();
+        $this->createSharedBilldeskTerminal();
         $this->createSharedNetbankingKotakTerminal();
     }
 
@@ -85,6 +92,25 @@ class Terminal extends Base
             'gateway'               => 'atom',
             'card'                  => 1,
             'netbanking'            => 1,
+            'gateway_merchant_id'   => 'razorpay',
+            'gateway_terminal_id'   => 'nodal account',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedAtomNetbankingTerminal()
+    {
+        $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '1MercShareTerm',
+            'gateway'               => 'atom',
+            // 'card'                  => 1,
+            'netbanking'            => 1,
+            'shared'                => 1,
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
             'gateway_terminal_password' => 'razorpay_password',
@@ -363,7 +389,9 @@ class Terminal extends Base
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'netbanking_kotak',
             'gateway_merchant_id'       => 'abcd',
-            'gateway_terminal_id'       => 'abcde');
+            'gateway_terminal_id'       => 'abcde',
+            'netbanking'                => 1,
+            'shared'                    => 1);
 
         return parent::create($attributes);
     }
