@@ -192,6 +192,7 @@ class Gateway
      * @var array
      */
     public static $domesticCardGatewaysInTest = array(
+        Gateway::CYBERSOURCE,
         Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
@@ -222,6 +223,7 @@ class Gateway
      * @var array
      */
     public static $directCardGatewaysInTest = array(
+        Gateway::CYBERSOURCE,
         Gateway::AXIS_GENIUS,
         Gateway::SBIEPAY,
         Gateway::KOTAK,
