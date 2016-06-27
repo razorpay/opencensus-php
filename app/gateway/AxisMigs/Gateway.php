@@ -108,8 +108,8 @@ class Gateway extends Base\Gateway
         $payment = $repo->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
 
-        assert ($payment['received'] === false);
-        assert ($payment['vpc_TxnResponseCode'] !== '0');
+        // assert ($payment['received'] === false);
+        // assert ($payment['vpc_TxnResponseCode'] !== '0');
 
         if (isset($input['gateway']['vpc_TransactionNo']) === false)
         {

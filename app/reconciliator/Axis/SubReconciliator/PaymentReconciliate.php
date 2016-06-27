@@ -7,6 +7,7 @@ use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 
 use Models\Payment\Service as PaymentService;
+use Models\Payment\Status as PaymentStatus;
 use Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -109,10 +110,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $input['vpc_TransactionNo'] = $vpcTransactionNo;
 
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'message'         => 'Payment status is still failed. Doing force authorize now.',
+                'payment_id'      => $this->payment->getId(),
+                'gateway'         => get_called_class()
+            ]);
+
         // If there's any issue during authorize, the function throws an exception.
         $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
 
-        if ((empty($response['status']) === false) and ($response['status'] === 'authorized'))
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message' => 'Response received from force authorization',
+                'response' => $response
+            ]
+        );
+
+        if ((empty($response['status']) === false) and ($response['status'] === PaymentStatus::AUTHORIZED))
         {
             return true;
         }

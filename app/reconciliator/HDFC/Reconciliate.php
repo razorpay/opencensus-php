@@ -4,6 +4,7 @@ namespace Reconciliator\HDFC;
 
 use Reconciliator\Base;
 use App;
+use Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -22,10 +23,15 @@ class Reconciliate extends Base\Reconciliate
     {
         return self::COMBINED;
     }
-    
+
     public function inExcludeList(array $fileDetails)
     {
-        if (strpos($fileDetails['file_name'], 'detailed') !== false)
+        if (strpos($fileDetails[FileProcessor::FILE_NAME], 'detailed') !== false)
+        {
+            return true;
+        }
+
+        if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') !== false)
         {
             return true;
         }

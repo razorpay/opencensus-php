@@ -236,7 +236,7 @@ trait Authorize
         if ((isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp'))
         {
-            // TODO: Better name suggestions :(
+            // TODO: Better name suggestions
             $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
