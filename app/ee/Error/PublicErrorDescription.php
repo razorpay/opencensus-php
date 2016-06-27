@@ -76,6 +76,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ACTIVATED                              = 'Wallet has not been activated for the customer';
     const BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST                        = 'Wallet user does not exist';
     const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_MOBILE                     = 'Wallet account seems to be registered with invalid mobile number';
+    const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INVALID_CREDENTIALS                = 'No Wallet Account is associated with the given email and mobile number combination';
     const BAD_REQUEST_PAYMENT_WALLET_NO_USER_WITH_CELL                          = 'No Wallet Account is associated with specified contact number';
     const BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED                      = 'Payment failed due to wallet authentication failure';
     const BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE                       = 'Payment failed due to insufficient balance in wallet';
@@ -136,6 +137,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication faliure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
+    const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
@@ -156,4 +158,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE                                   = 'The image type is not jpg, jpeg or png.';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                   = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
+
+    const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
+
+    const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                      = 'Payment processing failed because topup cannot be done';
 }

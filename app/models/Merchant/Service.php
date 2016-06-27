@@ -23,16 +23,6 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $repo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Merchant\Repository;
-        $this->balanceRepo = new Merchant\Balance\Repository;
-    }
-
     /**
      * Creates a merchant and saves in database
      *
@@ -60,7 +50,7 @@ class Service extends Base\Service
 
     public function edit($id, array $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
@@ -91,7 +81,7 @@ class Service extends Base\Service
 
     public function editEmail($id, array $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
 
@@ -105,6 +95,15 @@ class Service extends Base\Service
         $this->uploadLogoIfFound($input);
 
         (new Merchant\Core)->editConfig($this->merchant, $input);
+
+        return $this->merchant->toArrayConfig();
+    }
+
+    public function deleteMerchantLogo()
+    {
+        $this->merchant->setLogoUrl(null);
+
+        $this->repo->saveOrFail($this->merchant);
 
         return $this->merchant->toArrayConfig();
     }
@@ -124,7 +123,7 @@ class Service extends Base\Service
 
     public function addOrUpdateMerchantFeatures($id, array $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         foreach ($input as $key => $value)
         {
@@ -138,7 +137,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $features = $merchant->getFeatures();
 
@@ -148,7 +147,7 @@ class Service extends Base\Service
     // This is on internal auth
     public function fetch($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $methods = $merchant->methods;
 
@@ -157,7 +156,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $merchants = $this->repo->fetch($input);
+        $merchants = $this->repo->merchant->fetch($input);
 
         return $merchants->toArrayPublic();
     }
@@ -167,7 +166,7 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $merchant = $this->repo->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
 
         return $merchant->toArray();
     }
@@ -179,7 +178,7 @@ class Service extends Base\Service
             $merchantId = $this->merchant->getId();
         }
 
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         //
         // For non-activated merchants in live mode, simply return 0.
@@ -196,7 +195,7 @@ class Service extends Base\Service
             return $balance;
         }
 
-        $balance = $this->balanceRepo->getMerchantBalance($merchant);
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
 
         return $balance->toArray();
     }
@@ -207,16 +206,16 @@ class Service extends Base\Service
 
         $freeCredits = $input['credits'];
 
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $balance = $this->balanceRepo->editMerchantFreeCredits($merchant, $freeCredits);
+        $balance = $this->repo->balance->editMerchantFreeCredits($merchant, $freeCredits);
 
         return $balance->toArray();
     }
 
     public function createKey($merchantId)
     {
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
 
@@ -225,14 +224,14 @@ class Service extends Base\Service
 
     public function updateKey($merchantId, $keyId, array $input)
     {
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
     }
 
     public function fetchKeys($merchantId)
     {
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
@@ -241,7 +240,7 @@ class Service extends Base\Service
 
     public function assignPricingPlan($id, $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
         {
@@ -253,6 +252,11 @@ class Service extends Base\Service
         $plan = (new Pricing\Repository)->getPricingPlanByIdOrFailPublic(
                                             $input['pricing_plan_id']);
 
+        // validate if this plan can be set for this merchant.
+        // Refer: https://github.com/razorpay/api/issues/324
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
@@ -262,7 +266,7 @@ class Service extends Base\Service
 
     public function getPricingPlan($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
@@ -273,7 +277,7 @@ class Service extends Base\Service
 
     public function activate($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $act = new Activate($this->app);
         $act->activate($merchant);
@@ -283,7 +287,7 @@ class Service extends Base\Service
 
     public function liveEnable($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
         {
@@ -306,7 +310,7 @@ class Service extends Base\Service
 
     public function liveDisable($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
         {
@@ -329,7 +333,7 @@ class Service extends Base\Service
 
     public function addBankAccount($id, $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
@@ -338,7 +342,7 @@ class Service extends Base\Service
 
     public function getBankAccount($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
@@ -376,7 +380,8 @@ class Service extends Base\Service
 
         $count = 0;
 
-        try {
+        try
+        {
             foreach ($bankAccounts as $bankAcc)
             {
                 $bankAcc->generateIdFromCreatedAt();
@@ -420,7 +425,7 @@ class Service extends Base\Service
 
     public function getBanks($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $banks = (new Methods\Core)->getEnabledAndDisabledBanks($merchant);
 
@@ -441,7 +446,7 @@ class Service extends Base\Service
 
     public function setPaymentBanks($id, $input)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $methods = new Merchant\Methods\Entity;
 
@@ -496,14 +501,14 @@ class Service extends Base\Service
 
     public function setPaymentMethods($merchantId, $input)
     {
-        $merchant = $this->repo->findOrFailPublic($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantWebhooks($id)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $webhooks = (new Webhook\Core)->getWebhooks($merchant);
 
@@ -573,7 +578,7 @@ class Service extends Base\Service
 
         $filterDate = $filterDate->subDays($filterDays);
 
-        $merchantsActivatedSinceLastReport = $this->repo->getCountOfMerchantsActivatedBetween(
+        $merchantsActivatedSinceLastReport = $this->repo->merchant->getCountOfMerchantsActivatedBetween(
                                                         $filterDate->timestamp,
                                                         $today->timestamp);
 
@@ -614,7 +619,7 @@ class Service extends Base\Service
             $filter = [Entity::ACTIVATED => 1];
         }
 
-        $merchants = $this->repo->fetch($filter);
+        $merchants = $this->repo->merchant->fetch($filter);
 
         // sent will hold array of merchant data
         $response = ['sent' => [], 'skipped' => 0];
@@ -659,7 +664,7 @@ class Service extends Base\Service
 
         $template = $input['template'];
 
-        $merchant = $this->repo->findOrFailPublic($id)->toArray();
+        $merchant = $this->repo->merchant->findOrFailPublic($id)->toArray();
     }
 
     protected function sendEmail($template, $subject, $data)

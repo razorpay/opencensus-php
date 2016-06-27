@@ -84,6 +84,16 @@ class Report extends Service
 
         $repo = E::getEntityRepository($entity);
 
+        $this->trace->debug(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            [
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'merchantId'    => $merchantId,
+                'time_started'  => $begin
+            ]);
+
         $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
 
         $timeTaken = time() - $begin;
@@ -286,6 +296,6 @@ class Report extends Service
     protected function increaseAllowedSystemLimits()
     {
         ini_set('memory_limit', '1024M');
-        set_time_limit(300);
+        set_time_limit(301);
     }
 }

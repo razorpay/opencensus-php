@@ -63,18 +63,19 @@ class Entity extends EloquentEx
      */
     public function getEntityName()
     {
-        $class = get_class($this);
+        return $this->entity;
+        // $class = get_class($this);
 
-        $segments = explode('\\',$class);
+        // $segments = explode('\\',$class);
 
-        if (end($segments) === 'Entity')
-        {
-            return prev($segments);
-        }
-        else
-        {
-            return class_basename($this);
-        }
+        // if (end($segments) === 'Entity')
+        // {
+        //     return prev($segments);
+        // }
+        // else
+        // {
+        //     return class_basename($this);
+        // }
     }
 
     public function getCreatedAt()

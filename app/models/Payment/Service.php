@@ -4,6 +4,7 @@ namespace Models\Payment;
 
 use Carbon\Carbon;
 use EE\Exception;
+use EE\Error;
 
 use Mail;
 
@@ -19,6 +20,8 @@ use Trace\TraceCode;
 class Service extends Base\Service
 {
     protected $merchant;
+
+    protected $core;
 
     public function __construct()
     {
@@ -55,14 +58,29 @@ class Service extends Base\Service
     /**
      * Resend OTP
      *
-     * @param  string   $id
+     * @param string  $id
+     * @param array   $input
      *
-     * @return Payment\Entity
-     *
+     * @return array
      */
     public function otpResend($id, $input)
     {
         return $this->processor()->otpResend($id, $input);
+    }
+
+    /*
+     * Topup a wallet
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function topup($id, $input)
+    {
+        $data = $this->processor()->topup($id, $input);
+
+        return $data;
     }
 
     /**
@@ -267,6 +285,8 @@ class Service extends Base\Service
         $timedOut = 0; $failed = 0; $error = 0;
         $time = time();
 
+        $payments->shuffle();
+
         foreach ($payments as $payment)
         {
             try
@@ -357,7 +377,33 @@ class Service extends Base\Service
     {
         $timestamp = time() - 9 * 60;
 
+        // Timeout all the pending payments, changing the error to timeout
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+
+        // Timeout old payment while retaining the error, if set
+        $payments = (new Payment\Repository)->fetchCreatedPaymentsWithInternalError($timestamp);
+
+        foreach ($payments as $payment)
+        {
+            $error = new Error\Error($payment->getInternalErrorCode());
+
+            $code = $error->getPublicErrorCode();
+
+            $desc = $error->getDescription();
+
+            $internalCode = $error->getInternalErrorCode();
+
+            $payment->setStatus(Payment\Status::FAILED);
+
+            $payment->setError($code, $desc, $internalCode);
+
+            $saved = $payment->save();
+
+            if ($saved === true)
+            {
+                ++$count;
+            }
+        }
 
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
@@ -428,9 +474,16 @@ class Service extends Base\Service
 
     public function verifyMultiplePayments($filter)
     {
-        $verify = new Verify($this->mode, $this->trace, $this->app['exception.handler']);
+        $verify = new Verify($this->mode, $this->trace);
 
         return $verify->verifyPaymentsWithFilter($filter);
+    }
+
+    public function verifyPayment($payment)
+    {
+        $verify = new Verify($this->mode, $this->trace);
+
+        return $verify->verifyPayment($payment);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()

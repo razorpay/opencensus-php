@@ -5,6 +5,8 @@ namespace Tests\Functional\Gateway\AxisMigs;
 use Mockery;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use EE\Error;
+use EE\Error\PublicErrorCode;
 
 class AxisGatewayTest extends TestCase
 {
@@ -37,6 +39,7 @@ class AxisGatewayTest extends TestCase
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterCapture'], $txn);
 
@@ -140,10 +143,10 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('axis_migs', true);
         $pid1 = 'pay_'.$payment['payment_id'];
+
         $this->fixtures->edit('axis_migs', $payment['id'], ['received' => '0']);
 
         $this->resetMockServer();
-
 
         $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
 
@@ -152,5 +155,17 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('axis_migs', true);
         $this->assertEquals($payment['vpc_TransactionNo'], $txnNo);
+    }
+
+    public function testFailureWhen3DSFailsForDomesticMerchant()
+    {
+        $testData = $this->testData[__FUNCTION__];
+        
+        $this->runRequestResponseFlow($testData, function()
+        {
+	        $payment = $this->getDefaultPaymentArray();
+	        $payment['card']['number'] = '55553555655655';
+	        $payment = $this->doAuthPayment($payment);
+	    });
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Functional\Fixtures\Entity;
 
 use Models\Merchant\Account;
+use Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
 {
@@ -242,5 +243,22 @@ class Merchant extends Base
     public function disableTPV($id = '10000000000000')
     {
         return $this->edit($id, ['category' => 9990]);
+    }
+
+    public function disableAllMethods($id = '10000000000000')
+    {
+        $methodNames = MerchantMethodEntity::getAllMethodNames();
+
+        foreach ($methodNames as $method)
+        {
+            $this->disableMethod($id, $method);
+        }
+
+        $this->disableInternational();
+    }
+
+    public function setLogoUrl($url_path, $id = '10000000000000')
+    {
+        return $this->edit($id,['logo_url' => $url_path]);
     }
 }

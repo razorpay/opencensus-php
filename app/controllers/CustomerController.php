@@ -6,11 +6,11 @@ use Models\Customer\Account;
 
 class CustomerController extends BaseController
 {
-    public function createCustomer()
+    public function createLocalCustomer()
     {
         $input = Input::all();
 
-        $data = (new Customer\Service)->create($input);
+        $data = (new Customer\Service)->createLocalCustomer($input);
 
         return ApiResponse::json($data);
     }
@@ -58,7 +58,7 @@ class CustomerController extends BaseController
 
     public function deleteToken($id, $token)
     {
-        $data = (new Customer\Token\Service)->delete($id, $token);
+        $data = (new Customer\Token\Service)->deleteTokenForLocalCustomer($id, $token);
 
         return ApiResponse::json($data);
     }
@@ -77,23 +77,32 @@ class CustomerController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function fetchTokensByAppId($appId)
+    public function fetchTokensForGlobalCustomer($appToken)
     {
-        $tokens = (new Customer\Token\Service)->fetchTokensByAppId($appId);
+        $tokens = (new Customer\Token\Service)->fetchTokensForGlobalCustomer($appToken);
 
         return ApiResponse::json($tokens);
     }
 
-    public function fetchCustomerStatus($contact)
+    public function fetchGlobalCustomerStatus($contact)
     {
-        $status = (new Customer\Token\Service)->fetchCustomerStatus($contact);
+        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, true);
 
         return ApiResponse::json($status);
     }
 
-    public function deleteAppToken($appId, $token)
+    public function deleteTokenForGlobalCustomer($appToken, $token)
     {
-        $data = (new Customer\Token\Service)->deleteAppToken($appId, $token);
+        $data = (new Customer\Token\Service)->deleteTokenForGlobalCustomer($appToken, $token);
+
+        return ApiResponse::json($data);
+    }
+
+    public function logoutCustomer($appToken)
+    {
+        $input = Input::all();
+
+        $data = (new Customer\App\Service)->deleteAppTokensForGlobalCustomer($appToken, $input);
 
         return ApiResponse::json($data);
     }
@@ -112,6 +121,15 @@ class CustomerController extends BaseController
         $input = Input::all();
 
         $data = (new Customer\Service)->verifyOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function validateDeviceToken($deviceToken)
+    {
+        $input = Input::all();
+
+        $data = (new Customer\Service)->validateDeviceToken($deviceToken, $input);
 
         return ApiResponse::json($data);
     }

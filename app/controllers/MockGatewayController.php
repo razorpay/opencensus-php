@@ -234,7 +234,7 @@ class MockGatewayController extends BaseController
         return $server->authorize($input);
     }
 
-    public function postWalletPayment($wallet)
+    public function postWalletPayment($wallet, $paymentId = null)
     {
         $input = Input::all();
 
@@ -242,6 +242,6 @@ class MockGatewayController extends BaseController
 
         $server = $this->gateway->server($driver);
 
-        return $server->authorize($input);
+        return $server->authorize($input, $paymentId);
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Carbon\Carbon;
 use Http\Route;
 
 class PayumoneyGatewayTest extends TestCase
@@ -76,6 +77,11 @@ class PayumoneyGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('BAD_REQUEST_PAYMENT_OTP_INCORRECT', $payment['internal_error_code']);
+        $this->assertEquals(null, $payment['error_code']);
 
         $this->step = null;
 
@@ -155,6 +161,146 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertSame($payment['otp_count'], 2);
     }
 
+    public function testInsufficientBalancePayment()
+    {
+        $this->step = 'TOPUP';
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+        $payment['amount'] = 100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        $this->step = null;
+
+        return $response;
+    }
+
+    public function testTopupPayment()
+    {
+        // Get Innsufficient balance response
+        $response = $this->testInsufficientBalancePayment();
+
+        $this->step = 'TOPUP';
+
+        $responseData = $this->response->original->data;
+
+        $topupRequest = $this->testData['topupData'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $topupResponse = $this->runRequestResponseFlow($topupRequest);
+
+        // Make topup redirection request
+        $topupRedirect = $this->makeRequest($topupResponse['request']);
+
+        $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
+            ($topupRedirect->getStatusCode() === 302));
+
+        if ($ret === true)
+        {
+            $callback = array(
+                'url' => $topupRedirect->getTargetUrl(),
+                'method' => 'get',
+                'content' => []
+            );
+
+            $callbackResponse = $this->makeRequest($callback);
+        }
+        else
+        {
+            assert(false);
+        }
+
+        $this->assertArrayHasKey('razorpay_payment_id', $callbackResponse->original->data);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, __FUNCTION__);
+
+        $this->step = null;
+
+        return $callbackResponse->original->data;
+    }
+
+    public function testTopupAlreadyProcessedPayment()
+    {
+        $responseData = $this->testTopupPayment();
+
+        $this->ba->publicAuth();
+        $this->step = 'TOPUP';
+
+        $topupRequest = $this->testData['topupDataAlreadyProcessed'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $this->runRequestResponseFlow($topupRequest);
+    }
+
+    public function testTopupCapturePayment()
+    {
+        $responseData = $this->testTopupPayment();
+
+        $capturePayment = $this->capturePayment($responseData['razorpay_payment_id'], 100000);
+
+        $this->ba->publicAuth();
+        $this->step = 'TOPUP';
+
+        $topupRequest = $this->testData['topupDataAlreadyProcessed'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $this->runRequestResponseFlow($topupRequest);
+    }
+
+    public function testTopupFailedPayment()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->fixtures->create('payment:failed', [
+                            'email'         => 'a@b.com',
+                            'amount'        => 50000,
+                            'contact'       => '9918899029',
+                            'method'        => 'wallet',
+                            'wallet'        => 'payumoney',
+                            'gateway'       => 'wallet_payumoney',
+                            'card_id'       => null,
+                            'terminal_id'   => $this->sharedTerminal->getId()
+                        ]);
+
+        $paymentId = $payment->getPublicId();
+
+        $topupRequest = $this->testData['topupDataAlreadyProcessed'];
+
+        // Generate relative URL for topup
+        $url = \URL::route('payment_topup_ajax', ['id' => $paymentId], false);
+        $url = 'http://localhost' . $url;
+
+        $topupRequest['request']['url'] = $url;
+
+        // Send topup request
+        $this->runRequestResponseFlow($topupRequest);
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
@@ -220,12 +366,105 @@ class PayumoneyGatewayTest extends TestCase
         $refund = $this->getLastEntity('wallet', true);
     }
 
+    public function testRefundExcelFile()
+    {
+        $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForPayumoneyWallet();
+
+        $this->assertEquals(4, $data['wallet_payumoney']['count']);
+        $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+    }
+
+    public function testRefundExcelFileForAParticularMonth()
+    {
+        $knownDate = Carbon::create(2016, 5, 21);
+        Carbon::setTestNow($knownDate);
+
+        $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $refund = $this->refundPayment($payment['id'], 10000);
+        $refund = $this->refundPayment($payment['id']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], [
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt
+            ]);
+        }
+
+        $payment = $this->doAuthAndCapturePayment($defaultPayment);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForPayumoneyWallet(true);
+
+        $this->assertEquals(3, $data['wallet_payumoney']['count']);
+        $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
+
+        Carbon::setTestNow();
+    }
+
+    protected function generateRefundsExcelForPayumoneyWallet($date = false)
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/excel',
+            'method' => 'post',
+            'content' => [
+                'method'    => 'wallet',
+                'wallet'    => 'payumoney',
+                'frequency' => 'monthly'
+            ],
+        );
+
+        if ($date)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
+        }
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function runPaymentCallbackFlowWalletPayumoney($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
+        $this->response     = $response;
         $this->otpSubmitUrl = $url;
 
         if ($mock)

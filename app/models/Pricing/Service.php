@@ -5,20 +5,14 @@ namespace Models\Pricing;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
+use Models\Bank;
+use Models\Card;
 use Models\Pricing;
+use Models\Payment\Processor;
 use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $repo = null;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Pricing\Repository();
-    }
-
     public function createPricingPlan($input)
     {
         $pricing = (new Pricing\Entity)->build($input);
@@ -27,7 +21,7 @@ class Service extends Base\Service
             TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
             $input);
 
-        $plan = $this->repo->getPricingPlanByName($input[Entity::PLAN_NAME]);
+        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
         Pricing\Validator::validatePlanCountZero($plan);
 
@@ -50,7 +44,7 @@ class Service extends Base\Service
             TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
             ['id' => $id, $input]);
 
-        $plan = $this->repo->getPricingPlanByIdOrFailPublic($id);
+        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
 
         $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
 
@@ -68,35 +62,35 @@ class Service extends Base\Service
 
     public function getPricingPlanById($id)
     {
-        $pricingPlan = $this->repo->getPricingPlanById($id);
+        $pricingPlan = $this->repo->pricing->getPricingPlanById($id);
 
         return $pricingPlan->toArrayPublic();
     }
 
     public function getPricingPlans()
     {
-        $pricingPlans = $this->repo->getPricingPlansOrderedByPlanId();
+        $pricingPlans = $this->repo->pricing->getPricingPlansOrderedByPlanId();
 
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
     public function getMerchantPricingPlans()
     {
-        $pricingPlans = $this->repo->getMerchantPricingPlans();
+        $pricingPlans = $this->repo->pricing->getMerchantPricingPlans();
 
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
     public function getGatewayPricingPlans()
     {
-        $pricingPlans = $this->repo->getGatewayPricingPlans();
+        $pricingPlans = $this->repo->pricing->getGatewayPricingPlans();
 
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
     public function deletePricingPlanRule($planId, $ruleId)
     {
-        $flag = $this->repo->deletePlanRule($planId, $ruleId);
+        $flag = $this->repo->pricing->deletePlanRule($planId, $ruleId);
 
         if ($flag === true)
         {
@@ -115,4 +109,23 @@ class Service extends Base\Service
     {
         ;
     }
+
+    public function getSupportedNetworks()
+    {
+        $bankCodes = Processor\Netbanking::getSupportedBanks('live');
+
+        $bankNamesMap = Bank\Name::getNames($bankCodes);
+
+        $cards = Card\Network::getSupportedNetworksNamesMap();
+
+        $wallets = Processor\Wallet::getWalletNetworkNamesMap();
+
+        $networks = array(
+            'bank' => $bankNamesMap,
+            'card' => $cards,
+            'wallet' => $wallets);
+
+        return $networks;
+    }
+
 }

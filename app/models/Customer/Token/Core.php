@@ -7,29 +7,16 @@ use EE\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Customer;
+use Models\Terminal;
 use Models\Customer\App;
 use Models\Customer\Token;
 use Models\Merchant\Account;
 
 class Core extends Base\Core
 {
-    protected $custRepo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Token\Repository;
-
-        $this->custRepo = new Customer\Repository;
-    }
-
     public function create($customer, $input)
     {
-        $token = (new Token\Entity)->build($input);
-
-        $token->customer()->associate($customer);
-        $token->merchant()->associate($customer->merchant);
+        $token = new Token\Entity;
 
         if (isset($input[Token\Entity::CARD_ID]))
         {
@@ -40,14 +27,20 @@ class Core extends Base\Core
 
         if (isset($input[Token\Entity::TERMINAL_ID]))
         {
-            $terminal = (new Card\Repository)->findOrFailPublic($input[Token\Entity::TERMINAL_ID]);
+            $terminal = (new Terminal\Repository)->findOrFail($input[Token\Entity::TERMINAL_ID]);
 
             $token->terminal()->associate($terminal);
+
+            unset($input[Token\Entity::TERMINAL_ID]);
         }
 
+        $token->customer()->associate($customer);
+        $token->merchant()->associate($customer->merchant);
+
+        $token->build($input);
         $this->validateExistingToken($token);
 
-        $this->repo->saveOrFail($token);
+        $this->repo->token->saveOrFail($token);
 
         return $token;
     }
@@ -70,20 +63,9 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function fetchTokensByAppId($merchantId, $appId)
+    public function fetchTokensByCustomer($customer)
     {
-        $appEntity = (new Customer\App\Repository)->findByIdAndMerchantId($appId, $merchantId);
-
-        $tokens = $this->fetchTokensByCustomerId(Account::SHARED_ACCOUNT, $appEntity->customer->getId());
-
-        return $tokens;
-    }
-
-    public function fetchTokensByCustomerId($merchantId, $customerId)
-    {
-        $customer = $this->custRepo->findByIdAndMerchantId($customerId, $merchantId);
-
-        $tokens = $this->repo->getByCustomerId($customerId);
+        $tokens = $this->repo->token->getByCustomerId($customer->getId());
 
         return $tokens;
     }
@@ -94,7 +76,7 @@ class Core extends Base\Core
             Token\Entity::METHOD      => $token->getMethod(),
             Token\Entity::CUSTOMER_ID => $token->customer->getId());
 
-        $existingTokens = $this->repo->getByMethodAndCustomerId(
+        $existingTokens = $this->repo->token->getByMethodAndCustomerId(
                                 $token->getMethod(), $token->customer->getId());
 
         $func = 'validateExistingToken'.$token->getMethod();
@@ -132,7 +114,7 @@ class Core extends Base\Core
         foreach ($existingTokens as $token)
         {
             if (($token->getWallet()  === $newToken->getWallet()) and
-                ($token->getGatewayToken() === $newToken->getGatewayToken()))
+                ($token->terminal() === $newToken->terminal()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS);

@@ -49,7 +49,7 @@ class Gateway extends Base\Gateway
 
         $values['received'] = 1;
         $payment->fill($values);
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
 
         $this->verifyPaymentCallbackResponse($input);
     }
@@ -94,7 +94,8 @@ class Gateway extends Base\Gateway
         $attr = $this->lowerArrayKeys($content);
         $attr['received'] = 1;
 
-        $refund->fill($attr)->saveOrFail();
+        $refund->fill($attr);
+        $this->repo->saveOrFail($refund);
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {

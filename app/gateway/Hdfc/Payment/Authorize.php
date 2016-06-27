@@ -204,6 +204,10 @@ trait Authorize
                 $errorCode = Hdfc\ErrorCode::RP00010;
                 break;
 
+            case Payment\Result::CANCELED:
+                $errorCode = Hdfc\ErrorCode::RP00011;
+                break;
+
             default:
                 $errorCode = Hdfc\ErrorCode::RP00002;
                 break;

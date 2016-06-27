@@ -65,16 +65,10 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
         }
 
-        if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
-        {
-            return $this->callbackOtpSubmit($input);
-        }
-
         $this->verifyPaymentCreateResponse($input);
     }
 
-    protected function callbackOtpSubmit($input)
+    public function callbackOtpSubmit(array $input)
     {
         ;
     }
@@ -136,11 +130,15 @@ class Gateway extends Base\Gateway
 
         $method = 'post';
 
-        if (($input['payment']['method'] === 'card') and
-            ($input['card']['number'] === '4111111111111111'))
+        if ($input['payment']['method'] === 'card')
         {
             $content['card_number'] = $this->encryptCardNumber($input['card']['number']);
             $content['encrypt'] = '1';
+        }
+
+        if (($input['payment']['method'] === 'card') and
+            ($input['card']['number'] === '4111111111111111'))
+        {
             $method = 'get';
             $url = $url . '&' . http_build_query($content);
             $content = [];

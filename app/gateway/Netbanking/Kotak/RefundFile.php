@@ -27,9 +27,7 @@ class RefundFile extends Base\RefundFile
 
         $fileFullPath = $this->getFullFilePath($name);
 
-        $this->sendKotakRefundsMail($totalAmount, $fileFullPath);
-
-        return $filePath;
+        return [$totalAmount, $fileFullPath];
     }
 
     protected function getTextData($data, $prependLine = '')
@@ -41,30 +39,6 @@ class RefundFile extends Base\RefundFile
         $txt = $prependLine.$txt;
 
         return $txt;
-    }
-
-    protected function sendKotakRefundsMail($totalAmount, $filePath)
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $data = [
-            'subject'   => 'Kotak NB Refund files for '.$today,
-            'body'      => 'PFA attached refund file.',
-            'file'      => $filePath,
-        ];
-
-        $this->mail->queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('settlement@razorpay.com', 'Kotak Refunds');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-        });
     }
 
     protected function getRefundData($input)

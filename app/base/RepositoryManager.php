@@ -1,0 +1,138 @@
+<?php
+
+namespace Base;
+
+use Constants\Entity;
+use EE\Exception;
+
+class RepositoryManager extends \Illuminate\Support\Manager
+{
+
+    public function __construct($app)
+    {
+        parent::__construct($app);
+
+        $this->db = $app['db'];
+    }
+
+    public function __get($entity)
+    {
+        return $this->driver($entity);
+    }
+
+    public function getDefaultDriver()
+    {
+        throw new Exception\LogicException(
+            'No default repository driver');
+    }
+
+    protected function createDriver($driver)
+    {
+        $repo = Entity::getEntityRepository($driver);
+
+        return new $repo($this->app);
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->saveOrFail($entity, $options);
+    }
+
+    public function save($entity, array $options = array())
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->save($entity, $options);
+    }
+
+    public function delete($entity)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->delete($entity);
+    }
+
+    public function deleteOrFail($entity)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->deleteOrFail($entity);
+    }
+
+    public function pushOrFail($entity)
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        $repo->pushOrFail($entity);
+    }
+
+    public function reload(& $entity)
+    {
+        $repo = $this->repo;
+
+        $reloadedEntity = $repo::findOrFail($entity->getKey());
+
+        $attributes = $reloadedEntity->getAttributes();
+
+        $entity->setRawAttributes($attributes, true);
+
+        return $entity;
+    }
+
+    protected function getRepositoryClassFromObject($entityObject)
+    {
+        $entity = $entityObject->getEntityName();
+
+        return $this->driver($entity);
+    }
+
+    public function beginTransaction()
+    {
+        $this->db->beginTransaction();
+
+        return $this;
+    }
+
+    public function commit()
+    {
+        $this->db->commit();
+    }
+
+    public function rollback()
+    {
+        $this->db->rollback();
+    }
+
+    /**
+     * Execute a callable within a transaction.
+     *
+     * @param  Closure  $callback
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    public function transaction(callable $callback)
+    {
+        if ((is_object($callback) === false) or
+            ($callback instanceof Closure === false))
+        {
+            //
+            // It's a callable not closure. Wrap it in closure because
+            // transaction function in db only accepts closures.
+            //
+            $result = $this->db->transaction(function() use ($callback)
+            {
+                return call_user_func($callback);
+            });
+
+        }
+        else
+        {
+            $result = $this->db->transaction($callback);
+        }
+
+        return $result;
+    }
+}

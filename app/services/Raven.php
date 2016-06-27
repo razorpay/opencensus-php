@@ -2,6 +2,7 @@
 
 namespace Services;
 
+use Constants\Mode;
 use EE\Exception;
 use Requests;
 use Trace\Trace;
@@ -9,7 +10,7 @@ use Trace\TraceCode;
 
 class Raven
 {
-    const SUCCESS       = 'success';
+    const SMS_ID = 'sms_id';
 
     protected $baseUrl;
 
@@ -23,6 +24,8 @@ class Raven
 
     protected $proxy;
 
+    protected $mode;
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -30,6 +33,8 @@ class Raven
         $this->config = $app['config']->get('applications.raven');
 
         $this->baseUrl = $this->config['url'];
+
+        $this->mode = $app['rzp.mode'];
 
         $this->key = 'rzp';
 
@@ -40,14 +45,32 @@ class Raven
 
     public function sendOtp($input)
     {
-        $response = $this->sendRequest('sms/send-otp', 'post', $input);
+        $response = null;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $response['sms_id'] = '10000000000sms';
+        }
+        else
+        {
+            $response = $this->sendRequest('sms/send-otp', 'post', $input);
+        }
 
         return $response;
     }
 
     public function verifyOtp($input)
     {
-        $response = $this->sendRequest('sms/verify-otp', 'post', $input);
+        $response = null;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $response['success'] = true;
+        }
+        else
+        {
+            $response = $this->sendRequest('sms/verify-otp', 'post', $input);
+        }
 
         return $response;
     }
@@ -87,9 +110,11 @@ class Raven
 
         $response = $this->sendRavenRequest($request);
 
-        $this->checkErrors(json_decode($response->body, true));
+        $decodedResponse = json_decode($response->body, true);
 
-        return json_decode($response->body, true);
+        $this->checkErrors($decodedResponse);
+
+        return $decodedResponse;
     }
 
     protected function sendRavenRequest($request)
@@ -114,22 +139,11 @@ class Raven
 
     protected function checkErrors($response)
     {
-        $success = false;
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $response);
 
-        if (isset($response[self::SUCCESS]))
+        if (isset($response['error']))
         {
-            $success = $response[self::SUCCESS];
-        }
-
-        $this->trace->info(
-            TraceCode::RAVEN_REQUEST,
-            [
-                'response' => $response
-            ]);
-
-        if($success === false)
-        {
-            throw new Exception\RuntimeException('raven request failed');
+            throw new Exception\RuntimeException($response['error']['description'], $response['error']['internal_error_code']);
         }
     }
 }

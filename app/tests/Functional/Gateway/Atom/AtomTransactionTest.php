@@ -2,10 +2,10 @@
 
 namespace Tests\Functional\Gateway\Atom;
 
+use Carbon\Carbon;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
-use Carbon\Carbon;
 class AtomTransactionTest extends TestCase
 {
     use PaymentTrait;

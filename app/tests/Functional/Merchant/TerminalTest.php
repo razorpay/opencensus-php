@@ -86,6 +86,20 @@ class TerminalTest extends TestCase
         $this->assertEquals($content['gateway_terminal_id'], 'random');
     }
 
+    public function testEditHdfcTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['used_count' => 2, 'gateway_recon_password' => 'boo']);
+
+        $tid = $terminal['id'];
+
+        $data = array('gateway_recon_password' => 'random');
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('random', $terminal->reload()->getGatewayReconPassword());
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

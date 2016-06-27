@@ -135,9 +135,39 @@ return [
         ]
     ],
 
+    'testInsufficientBalancePayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+                    'action'      => 'TOPUP'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+        ],
+    ],
+
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,
+        'wallet'                => 'payumoney',
+        'received'              => true,
+        'email'                 => 'a@b.com',
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'status_code'           => '0',
+        'refund_id'             => null,
+        'entity'                => 'wallet',
+    ],
+
+    'testTopupPayment'               => [
+        'action'                => 'authorize',
+        'amount'                => 100000,
         'wallet'                => 'payumoney',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -185,5 +215,42 @@ return [
                 'otp'   => '111111'
             ]
         ]
+    ],
+
+    'topupData'     => [
+        'request' => [
+            'content'   => [],
+            'method'    => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'first',
+                'request' => [
+                    'method'    => 'post',
+                    'content'   => []
+                ],
+                'version'   => 1
+            ]
+        ]
+    ],
+
+    'topupDataAlreadyProcessed'  => [
+        'request' => [
+            'content'   => [],
+            'method'    => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED
+        ],
     ]
 ];

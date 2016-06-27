@@ -32,6 +32,11 @@ class Gateway
         Wallet::PAYUMONEY
     );
 
+    const TOPUP_GATEWAYS = array(
+        self::MOBIKWIK,
+        self::WALLET_PAYUMONEY
+    );
+
     public static $channels = array(
         self::CYBERSOURCE       => Settlement\Channel::KOTAK,
         self::AMEX              => Settlement\Channel::KOTAK,
@@ -353,6 +358,11 @@ class Gateway
     public static function isPowerWallet($wallet)
     {
         return (in_array($wallet, self::POWER_WALLETS));
+    }
+
+    public static function canGatewayTopup($gateway)
+    {
+        return (in_array($gateway, self::TOPUP_GATEWAYS));
     }
 
     public static function isCardNetworkSupported($network, $gateway)

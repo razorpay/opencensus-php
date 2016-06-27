@@ -49,6 +49,12 @@ class Gateway
     protected $action;
 
     /**
+     * Whether the gateway supports topup payments
+     * @var boolean
+     */
+    protected $topup = false;
+
+    /**
      * Whether the gateway supports authorizing payments.
      * @var boolean
      */
@@ -88,6 +94,13 @@ class Gateway
     protected $testing;
 
     /**
+     * Gateway's config present in app/config/gateway.php
+     *
+     * @var array
+     */
+    protected $config;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -115,6 +128,8 @@ class Gateway
         }
 
         $this->loadGatewayConfig();
+
+        $this->repo = $this->getRepository();
     }
 
     public function authorize(array $input)
@@ -123,10 +138,31 @@ class Gateway
         $this->action = Action::AUTHORIZE;
     }
 
+    /**
+     * Handles gateway callback
+     *
+     * @param array $input
+     * @return array|null
+     */
     public function callback(array $input)
-    {//s($input['gateway']);
+    {
         $this->input = $input;
         $this->action = Action::CALLBACK;
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function debit(array $input)
+    {
+        ;
+    }
+
+    public function checkBalance(array $input)
+    {
+        ;
     }
 
     public function capture(array $input)
@@ -169,6 +205,11 @@ class Gateway
         return $this->canRunOtpFlow;
     }
 
+    public function canTopup()
+    {
+        return $this->topup;
+    }
+
     public function setTerminal($terminal)
     {
         $this->terminal = $terminal;
@@ -184,6 +225,39 @@ class Gateway
         assert (is_bool($mock));
 
         $this->mock = $mock;
+    }
+
+    public function generateRefunds($input)
+    {
+        $paymentIds = array();
+
+        $paymentIds = array_map(function($row)
+        {
+            return $row['payment']['id'];
+        }, $input['data']);
+
+        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+                                $paymentIds, Action::AUTHORIZE);
+
+        $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
+
+        $input['data'] = array_map(function($row) use ($payments)
+        {
+            $paymentId = $row['payment']['id'];
+
+            if (isset($payments[$paymentId]))
+            {
+                $row['gateway'] = $payments[$paymentId]->toArray();
+            }
+
+            return $row;
+        }, $input['data']);
+
+
+        $ns = $this->getGatewayNamespace();
+        $class = $ns . '\\' . 'RefundFile';
+
+        return (new $class)->generate($input);
     }
 
     protected function sendGatewayRequest($request)
@@ -387,9 +461,7 @@ class Gateway
 
     protected function getRepo()
     {
-        $class = $this->getGatewayNamespace() . '\Repository';
-
-        return new $class;
+        return $this->getRepository();
     }
 
     protected function getStringToHash($content, $glue = '')
@@ -546,5 +618,12 @@ class Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    protected function getRepository()
+    {
+        $gateway = $this->gateway;
+
+        return $this->app['repo']->$gateway;
     }
 }

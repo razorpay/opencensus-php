@@ -2,11 +2,12 @@
 
 namespace Gateway\Base;
 
-use Models\Base;
+use Base;
+use Models;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
+    use Models\Base\RepositoryFetch;
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID          => 'sometimes|string|min:14|max:18');
@@ -25,6 +26,14 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->first();
+    }
+
+    public function fetchByPaymentIdsAndAction($paymentIds, $action)
+    {
+        return $this->newQuery()
+                    ->whereIn('payment_id', $paymentIds)
+                    ->where('action', '=', $action)
+                    ->get();
     }
 
     public function findByTraceIdAndAction($paymentId, $action)

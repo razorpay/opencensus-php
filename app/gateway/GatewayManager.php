@@ -4,6 +4,7 @@ namespace Gateway;
 
 use Config;
 use Constants\Mode;
+use Constants\Entity;
 use EE\Exception;
 use Gateway\Base\Mock;
 
@@ -185,24 +186,12 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function getGatewayNamespace($driver, $mock = false)
     {
-        $driver1 = ucfirst(studly_case($driver));
-
-        $driver2 = ucwords(str_replace('_', ' ', $driver));
-        $driver2 = str_replace(' ', '\\', $driver2);
-
-        $class1 = 'Gateway\\'.$driver1.'\Gateway';
-        $class2 = 'Gateway\\'.$driver2.'\Gateway';
-
-        $namespace = null;
-        if (class_exists($class1))
-            $namespace = $driver1;
-        else if (class_exists($class2))
-            $namespace = $driver2;
-
-        $namespace = 'Gateway\\'.$namespace;
+        $namespace = Entity::getEntityNamespace($driver);
 
         if ($mock === true)
+        {
             $namespace .= '\\' . 'Mock';
+        }
 
         return $namespace;
     }

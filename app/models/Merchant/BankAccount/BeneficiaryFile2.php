@@ -51,7 +51,7 @@ class BeneficiaryFile2
         foreach ($list as $ba)
         {
             $array = array(
-                'Client_Code'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CODE),
+                'Client_Code'           => $ba->getAttribute(BankAccount\Entity::ID),
                 'Bene_Code'             => '',
                 'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
                 'Bene_Add_1'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),

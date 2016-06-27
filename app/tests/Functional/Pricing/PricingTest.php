@@ -83,6 +83,22 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testGetPricingNetworks()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['bank']);
+        $this->assertNotNull($response['card']);
+        $this->assertNotNull($response['wallet']);
+
+        $this->assertNotEquals(count($response['bank']), 0);
+        $this->assertNotEquals(count($response['card']), 0);
+        $this->assertNotEquals(count($response['wallet']), 0);
+
+    }
+
     public function testGetPricingPlans()
     {
         $this->createPricingPlan();
@@ -101,7 +117,7 @@ class PricingTest extends TestCase
         $this->createPricingPlan2();
 
         $this->addPricingPlanRule($content['id']);
-        
+
         $this->ba->appAuth('rzp_test');
         $this->startTest();
 
@@ -109,14 +125,67 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantAssignPricingPlan()
+    public function testMerchantAssignPricingPlanDefault()
     {
+        $id = $this->createPricingPlan()['id'];
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        // The default pricing plan has only card enabled. In
+        //   case, the merchant has any other method enabled,
+        //   disable it to pass the validation test. Else,
+        //   the validation test might not succeed.
+
+        $this->setDefaultMerchantMethods();
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantAssignPricingPlanWithInternational()
+    {
+
+        $id = $this->createPricingPlan()['id'];
+
+        // Test with the default pricing plan with netbanking
+        //   enabled. Disable existing methods except card
+        //   and only test for international. Default pricing does not
+        //   have international
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->enableInternational();
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+    }
+
+    public function testMerchantAssignPricingPlanMerchantDefault()
+    {
+        // This test case is for handling errors where
+        //   a specific method is not enabled for pricing
+        //   but is enabled for the merchant. e.g. merchant has
+        //   netbanking enabled but the pricing does not have it.
+
         $id = $this->createPricingPlan()['id'];
 
         $testData['request']['content']['pricing_plan_id'] = $id;
 
         $this->startTest($testData);
     }
+
+    public function testMerchantWithAmexEnabled()
+    {
+        $id = $this->createPricingPlan()['id'];
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+    }
+
 
     public function testMerchantAssignAndGetPricingPlan()
     {
@@ -129,7 +198,7 @@ class PricingTest extends TestCase
 
     public function testMerchantReplacePricingPlan()
     {
-        $this->testMerchantAssignPricingPlan();
+        $this->testMerchantAssignPricingPlanDefault();
 
         $id = $this->createPricingPlan2()['id'];
 
@@ -264,9 +333,21 @@ class PricingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function setDefaultMerchantMethods()
+    {
+        // Disable all methods and only enable card.
+        // The default pricing plan has only card enabled
+
+        $this->fixtures->merchant->disableAllMethods();
+
+        $this->fixtures->merchant->enableCard();
+    }
+
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
+
+        $this->setDefaultMerchantMethods();
 
         $request = array(
             'url' => '/merchants/10000000000000/pricing',
@@ -313,7 +394,7 @@ class PricingTest extends TestCase
                 'amount_range_min' => null,
                 'amount_range_max' => null,
         );
-        
+
         $request = array(
             'method' => 'POST',
             'url' => '/pricing/'.$id.'/rule',
@@ -323,6 +404,7 @@ class PricingTest extends TestCase
 
         return $content;
     }
+
 
     protected function createPricingPlan2()
     {

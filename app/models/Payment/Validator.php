@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         'callback_url'  =>  'sometimes|url',
         'order_id'      =>  'sometimes',
         'customer_id'   =>  'sometimes',
-        'app_id'        =>  'sometimes',
+        'app_token'     =>  'sometimes',
         'token'         =>  'sometimes',
         'save'          =>  'sometimes|in:0,1',
         'fee'           =>  'sometimes|integer|max:50000000',

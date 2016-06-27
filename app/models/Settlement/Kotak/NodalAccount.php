@@ -138,13 +138,15 @@ class NodalAccount
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,
                 'Bank_Code_Indicator'   => 'M',
-//                'Beneficiary_Code'      => $ba->beneficiary_code,
+//                'Beneficiary_Code'      => $ba->getId(),
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ifsc,
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
                 'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
-                'Payment Details 2'     => $merchant->getPublicId());
+                'Payment Details 2'     => $merchant->getPublicId(),
+                'Payment Details 3'     => $ba->getId()
+            );
 
             $array = $this->getAllFields($array);
 

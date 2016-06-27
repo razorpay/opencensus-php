@@ -56,9 +56,6 @@ return array(
     'BILLDESK_GATEWAY_TEST_ACCESS_CODE'                 => 'random',
     'BILLDESK_GATEWAY_TEST_HASH_SECRET'                 => 'random',
 
-    'BILLDESK_GATEWAY_LIVE_ACCESS_CODE'                 => 'random',
-    'BILLDESK_GATEWAY_LIVE_HASH_SECRET'                 => 'random',
-
     // BILLDESK CATEGORY ACCESS CODE AND SECRET
     'BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'      => 'random',
     'BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'      => 'random',
@@ -154,4 +151,6 @@ return array(
 
     'RAVEN_URL'                                         => '',
     'RAVEN_SECRET'                                      => '',
+
+    // 'SESSION_SECURE'                                    => false,
 );

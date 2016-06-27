@@ -50,14 +50,10 @@ trait Refund
             'refund'    => $refund->toArray(),
             'amount'    => $refund->getAmount());
 
-        $method = $refund->payment->getMethod();
-
         if ($payment->isMethodCardOrEmi())
         {
             $data['card'] = $refund->payment->card->toArray();
         }
-
-        $gateway = $payment->getGateway();
 
         if (($payment->getTransactionId() !== null) or
             ($payment->isAuthorized() === false))
@@ -297,6 +293,12 @@ trait Refund
         if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
             ($payment->getCaptureTimestamp() !== null))
         {
+            if ($payment->transaction === null)
+            {
+                Exception\LogicException(
+                    'Transaction expected but not present for payment: ' . $payment->getId());
+            }
+
             $txn = (new Transaction\Core)->createFromRefund($refund);
 
             $txn->saveOrFail();

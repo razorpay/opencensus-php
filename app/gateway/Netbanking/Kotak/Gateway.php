@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
+use Gateway\Base\Entity;
 use Gateway\Base\Action;
 use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
@@ -258,5 +259,37 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
+    }
+
+    public function generateClaims($input)
+    {
+        $paymentIds = array();
+
+        $paymentIds = array_map(function($row)
+        {
+            return $row['payment']['id'];
+        }, $input['data']);
+
+        $payments = $this->getRepo()->fetchByPaymentIdsAndAction(
+                                $paymentIds, Action::AUTHORIZE);
+
+        $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
+
+        $input['data'] = array_map(function($row) use ($payments)
+        {
+            $paymentId = $row['payment']['id'];
+
+            if (isset($payments[$paymentId]))
+            {
+                $row['gateway'] = $payments[$paymentId]->toArray();
+            }
+
+            return $row;
+        }, $input['data']);
+
+        $ns = $this->getGatewayNamespace();
+        $class = $ns . '\\' . 'ClaimsFile';
+
+        return (new $class)->generate($input);
     }
 }

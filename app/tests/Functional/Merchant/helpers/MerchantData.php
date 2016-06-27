@@ -375,6 +375,22 @@ return [
         ]
     ],
 
+    'testDeleteLogoUrl' => [
+        'request' => [
+            'content' => [],
+            'url' => '/account/config/logo',
+            'method' => 'delete',
+            'files' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+            ]
+        ]
+    ],
+
     'testEditMerchantConfigWithEmail' => [
         'request' => [
             'content' => [
@@ -819,6 +835,63 @@ return [
         'exception' => [
             'class' => EE\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetCheckoutRouteWithSavedGlobal' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'app_token' => 'capp_1000000custapp'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithSavedLocal' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'customer_id' => 'cust_100000customer'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteCustomerContact' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '1234567890',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithDeviceToken' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '1234567890',
+                'device_token' => '1000custdevice'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
         ],
     ],
 ];

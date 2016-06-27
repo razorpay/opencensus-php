@@ -323,7 +323,7 @@ class Entity extends Base\PublicEntity
 
         if ($intl === null)
         {
-            return;
+            return null;
         }
 
         return (bool) $this->attributes[self::INTERNATIONAL];

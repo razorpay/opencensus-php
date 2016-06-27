@@ -20,12 +20,12 @@ class Table
     const MERCHANT          = 'merchants';
     const TERMINAL          = 'terminals';
     const CUSTOMER          = 'customers';
+    const APP_TOKEN         = 'customer_apps';
     const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlements';
     const EMI_PLAN          = 'emi_plans';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
-    const CUSTOMER_APP      = 'customer_apps';
     const DAILY_SETTLEMENT  = 'daily_settlements';
 
     // Gateway related
@@ -37,4 +37,7 @@ class Table
     const BILLDESK          = 'billdesk';
     const MOBIKWIK          = 'mobikwik';
     const NETBANKING        = 'netbanking';
+
+    // Sessions table
+    const SESSION           = 'sessions';
 }

@@ -3,6 +3,7 @@
 namespace Models\Card\IIN;
 
 use Models\Base;
+use Models\Card;
 use Constants\Table;
 
 class Entity extends Base\PublicEntity
@@ -28,8 +29,6 @@ class Entity extends Base\PublicEntity
     protected $table = Table::IIN;
 
     protected $primaryKey = self::IIN;
-
-    public $timestamps = false;
 
     protected $appends = array(self::INTERNATIONAL);
 
@@ -64,7 +63,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::EMI       =>  false,
+        self::EMI => false,
     );
 
     public function isEmiAvailable()
@@ -85,6 +84,12 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function setType($type)
+    {
+        Card\Type::checkType($type);
+        $this->setAttribute(self::TYPE, $type);
     }
 
     public function getCountry()

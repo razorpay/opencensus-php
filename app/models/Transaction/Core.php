@@ -30,12 +30,7 @@ class Core extends Base\Core
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
-        $txn = new Transaction\Entity;
-        $txn->generateId();
-
-        $this->fillTxnFeesAndAmount($txn, $payment);
-
-        $this->txnCreationFromPaymentOperation($txn, $payment);
+        $txn = $this->txnCreationFromPaymentOperation($payment);
 
         $this->updateFreeCredits($txn);
 
@@ -61,12 +56,7 @@ class Core extends Base\Core
 
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
-        $txn = new Transaction\Entity;
-        $txn->generateId();
-
-        $this->fillTxnFeesAndAmount($txn, $payment);
-
-        $this->txnCreationFromPaymentOperation($txn, $payment);
+        $txn = $this->txnCreationFromPaymentOperation($payment);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
@@ -79,8 +69,13 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function txnCreationFromPaymentOperation($txn, $payment)
+    protected function txnCreationFromPaymentOperation($payment)
     {
+        $txn = new Transaction\Entity;
+        $txn->generateId();
+
+        $this->fillTxnFeesAndAmount($txn, $payment);
+
         $txnData = array(
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
             Transaction\Entity::CURRENCY        => 'INR',
@@ -95,6 +90,8 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($payment);
         $txn->merchant()->associate($payment->merchant);
+
+        return $txn;
     }
 
     protected function fillTxnFeesAndAmount($txn, $payment)

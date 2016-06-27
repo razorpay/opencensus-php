@@ -1,7 +1,6 @@
 <?php
 
 use Http\ApiResponse;
-use EE\Exception\RecoverableException;
 use Models\Payment;
 use Models\Card;
 use Trace\TraceCode;
@@ -127,6 +126,8 @@ class PaymentCreateController extends BaseController
 
     /**
      * Creates a new payment on a JSONP Request
+     *
+     * @returns \Illuminate\Http\JsonResponse
      */
     public function getCreatePaymentJsonp()
     {
@@ -145,6 +146,8 @@ class PaymentCreateController extends BaseController
     /**
      * Creates a new payment with an AJAX Request
      * Sets the proper CORS headers
+     *
+     * @returns \Illuminate\Http\JsonResponse
      */
     public function postAJAX()
     {
@@ -182,8 +185,13 @@ class PaymentCreateController extends BaseController
     }
 
     /**
-     * Creates a dummy payments and
-     * return corresponding fees and service_tax
+     * Creates a dummy payment and
+     * returns corresponding fees and service_tax
+     * Used where customer is the fee-bearer and the
+     * fee needs to be displayed to the user on the checkout.
+     *
+     * @return \Illuminate\View\View displaying the fees and
+     *                              submit button to proceed to payment
      */
     public function postCreatePaymentFees()
     {
@@ -210,6 +218,30 @@ class PaymentCreateController extends BaseController
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
 
+    /**
+     * Resend OTP for a payment
+     */
+    public function postOtpResend($id)
+    {
+        $input = Input::all();
+
+        $payment = $this->payment->otpResend($id, $input);
+
+        return ApiResponse::json($payment);
+    }
+
+    /*
+     * Topup Wallet for a payment
+     */
+    public function postTopupAjax($id)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->topup($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -217,6 +249,14 @@ class PaymentCreateController extends BaseController
         return ApiResponse::json($data);
     }
 
+    /**
+     * It's hit when banks/networks redirect back to gateway
+     * on the callback url. Mostly gets hit after two-factor auth.
+     *
+     * @param $id
+     * @param $hash
+     * @return mixed
+     */
     public function postCallback($id, $hash)
     {
         $input = Input::all();

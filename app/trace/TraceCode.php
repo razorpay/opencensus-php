@@ -19,6 +19,9 @@ class TraceCode
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
     const PAYMENT_REFUND_FAILURE                    = 'PAYMENT_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE             = 'PAYMENT_VERIFY_REFUND_FAILURE';
+    const PAYMENT_TOPUP_REQUEST                     = 'PAYMENT_TOPUP_REQUEST';
+    const PAYMENT_TOPUP_RESPONSE                    = 'PAYMENT_TOPUP_RESPONSE';
+    const PAYMENT_TOPUP_FAILURE                     = 'PAYMENT_TOPUP_FAILURE';
     const PAYMENT_CAPTURE_REQUEST                   = 'PAYMENT_CAPTURE_REQUEST';
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
@@ -84,6 +87,7 @@ class TraceCode
     const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
+    const GATEWAY_PAYMENT_TOPUP_CALLBACK            = 'GATEWAY_PAYMENT_TOPUP_CALLBACK';
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
     const GATEWAY_PAYMENT_RESPONSE                  = 'GATEWAY_PAYMENT_RESPONSE';
@@ -152,12 +156,30 @@ class TraceCode
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
+    const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
 
+    const RECON_ALERT                               = 'RECON_ALERT';
+    const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
+    const RECON_MISMATCH                            = 'RECON_MISMATCH';
+    const RECON_PARSE_ERROR                         = 'RECON_PARSE_ERROR';
+    const RECON_FAILURE                             = 'RECON_FAILURE';
+    const RECON_FAILED_VERIFY                       = 'RECON_FAILED_VERIFY';
+    const RECON_FILE_DELETE_FAILURE                 = 'RECON_FILE_DELETE_FAILURE';
+    const RECON_INFO_ALERT                          = 'RECON_INFO_ALERT';
+    const RECON_CRITICAL_ALERT                      = 'RECON_CRITICAL_ALERT';
+    const RECON_REQUEST                             = 'RECON_REQUEST';
+    const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
+    const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
+
+    /**
+     * Trace code for critical info
+     */
+    const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
@@ -199,6 +221,19 @@ class TraceCode
         self::ES_BULK_UPDATE_FAILED                 => 'Failed while bulk updating in ES',
         self::ES_BULK_UPDATE                        => 'Bulk update for ES',
         self::ES_SAVE_REQUEST                       => 'Request for saving in ES',
+
+        self::RECON_ALERT                           => 'Alert raised for reconciliation',
+        self::RECON_FILE_SKIP                       => 'Skipping a reconciliation file',
+        self::RECON_MISMATCH                        => 'Mismatch between the data present in DB and recon file',
+        self::RECON_PARSE_ERROR                     => 'Not able to parse some content of the recon file',
+        self::RECON_FAILURE                         => 'Reconciliation could not happen',
+        self::RECON_FAILED_VERIFY                   => 'Payment verify and authorize was unsuccessful',
+        self::RECON_FILE_DELETE_FAILURE             => 'Deleting local file during reconciliation',
+        self::RECON_INFO_ALERT                      => 'Info alert raised for reconciliation',
+        self::RECON_CRITICAL_ALERT                  => 'Critical alert raised for reconciliation',
+        self::RECON_REQUEST                         => 'Request made for reconciliation',
+        self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
+        self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request'
     );
 
     /**

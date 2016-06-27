@@ -32,7 +32,9 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const CUSTOMER_ID           = 'customer_id';
+    const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
+    const APP_TOKEN             = 'app_token';
     const TOKEN                 = 'token';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
@@ -67,6 +69,8 @@ class Entity extends Base\PublicEntity
     protected $entity           = 'payment';
 
     protected $table            = \Constants\Table::PAYMENT;
+
+    protected $metadata         = array();
 
     protected $generateIdOnCreate = true;
 
@@ -105,6 +109,8 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::EMI_PLAN_ID,
         self::CUSTOMER_ID,
+        self::GLOBAL_CUSTOMER_ID,
+        self::APP_TOKEN,
         self::APP_ID,
         self::TOKEN,
         self::EMAIL,
@@ -255,7 +261,7 @@ class Entity extends Base\PublicEntity
         $array = array(
             Entity::CUSTOMER_ID,
             Entity::TOKEN,
-            Entity::APP_ID);
+            Entity::APP_TOKEN);
 
         foreach ($array as $key)
         {
@@ -324,6 +330,11 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ERROR_CODE, $errorCode);
         $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
+    public function setInternalErrorCode($internalErrorCode)
+    {
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
@@ -399,6 +410,11 @@ class Entity extends Base\PublicEntity
     public function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
+    }
+
+    public function setMetadata($metadata)
+    {
+        $this->metadata = $metadata;
     }
 
     public function incrementOtpAttempts()
@@ -512,6 +528,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $count;
+    }
+
+    public function getMetadata()
+    {
+        return $this->metadata;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -948,9 +969,14 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Customer\Entity');
     }
 
+    public function globalCustomer()
+    {
+        return $this->belongsTo('Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
+    }
+
     public function app()
     {
-        return $this->belongsTo('Models\Customer\App\Entity');
+        return $this->belongsTo('Models\Customer\App\Entity', self::APP_TOKEN);
     }
 
 // --------------- Relation to other entity section ends -----------------------

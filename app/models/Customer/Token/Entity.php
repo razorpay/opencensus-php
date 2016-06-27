@@ -3,9 +3,12 @@
 namespace Models\Customer\Token;
 
 use Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletingTrait;
+
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';
     const TERMINAL_ID           = 'terminal_id';
@@ -16,6 +19,11 @@ class Entity extends Base\PublicEntity
     const BANK                  = 'bank';
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
+    const GATEWAY_TOKEN2        = 'gateway_token2';
+    const EXPIRED_AT            = 'expired_at';
+    const CREATED_AT            = 'created_at';
+    const UPDATED_AT            = 'updated_at';
+    const DELETED_AT            = 'deleted_at';
 
     protected static $sign      = 'token';
 
@@ -32,6 +40,8 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::TOKEN,
         self::GATEWAY_TOKEN,
+        self::GATEWAY_TOKEN2,
+        self::EXPIRED_AT,
     );
 
     protected $visible = array(
@@ -46,6 +56,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
+        self::GATEWAY_TOKEN2,
+        self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     );
@@ -59,9 +71,11 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::WALLET    => null,
-        self::BANK      => null,
-        self::CARD_ID   => null,
+        self::WALLET         => null,
+        self::BANK           => null,
+        self::CARD_ID        => null,
+        self::GATEWAY_TOKEN2 => null,
+        self::EXPIRED_AT     => null
     );
 
     protected $publicSetters = array(
@@ -111,6 +125,28 @@ class Entity extends Base\PublicEntity
     public function getGatewayToken()
     {
         return $this->getAttribute(self::GATEWAY_TOKEN);
+    }
+
+    public function getGatewayToken2()
+    {
+        return $this->getAttribute(self::GATEWAY_TOKEN2);
+    }
+
+    public function getExpiredAt()
+    {
+        return $this->getAttribute(self::EXPIRED_AT);
+    }
+
+    public function isExpired()
+    {
+        $expiredAt = $this->getExpiredAt();
+
+        if ($expiredAt === null)
+        {
+            return false;
+        }
+
+        return ($expiredAt <= time());
     }
 
     public function setPublicCardAttribute(array & $array)

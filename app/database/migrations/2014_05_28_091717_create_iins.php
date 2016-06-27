@@ -40,6 +40,10 @@ class CreateIins extends Migration {
             $table->boolean(IIN\Entity::EMI)
                   ->default(0);
 
+            $table->integer(IIN\Entity::CREATED_AT);
+
+            $table->integer(IIN\Entity::UPDATED_AT);
+
             $table->boolean(IIN\Entity::OTP_READ)
                   ->default(0);
 
@@ -48,6 +52,7 @@ class CreateIins extends Migration {
 
             $table->index(IIN\Entity::OTP_READ);
             $table->index(IIN\Entity::EMI);
+            $table->index(IIN\Entity::CREATED_AT);
         });
     }
 

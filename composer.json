@@ -37,6 +37,7 @@
     },
     "autoload": {
         "classmap": [
+            "app/base",
             "app/commands",
             "app/constants",
             "app/controllers",
@@ -49,7 +50,8 @@
             "app/models",
             "app/services",
             "app/tests",
-            "app/trace"
+            "app/trace",
+            "app/reconciliator"
         ]
     },
     "scripts": {

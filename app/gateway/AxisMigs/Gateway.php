@@ -108,12 +108,12 @@ class Gateway extends Base\Gateway
         $payment = $repo->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
 
-        assert ($payment['received'] === false);
-        assert ($payment['vpc_TxnResponseCode'] !== '0');
+        // assert ($payment['received'] === false);
+        // assert ($payment['vpc_TxnResponseCode'] !== '0');
 
         if (isset($input['gateway']['vpc_TransactionNo']) === false)
         {
-            throw new Excception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Correct field not present for the required operation');
         }
 
@@ -257,69 +257,89 @@ class Gateway extends Base\Gateway
 
         if ($content['vpc_DRExists'] !== 'Y')
         {
-            // Could be the case where the transaction didn't even hit migs
-            if (($payment['received'] === false) and
-                (($payment['vpc_TxnResponseCode'] === null) or
-                 ($payment['vpc_TxnResponseCode'] !== '0')))
-            {
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
-            else
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
+            $this->verifyPaymentNonExistentCase($verify, $payment);
         }
         else
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            if ($content['vpc_TxnResponseCode'] === '0')
-            {
-                $verify->gatewaySuccess = true;
-
-                if (($payment['vpc_TxnResponseCode'] !== '0') or
-                    ($input['payment']['status'] === 'failed') or
-                    ($input['payment']['status'] === 'created'))
-                {
-                    $verify->apiSuccess = false;
-                    $status = VerifyResult::STATUS_MISMATCH;
-                }
-                else
-                {
-                    $verify->apiSuccess = true;
-                }
-            }
-            else
-            {
-                $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-
-                //
-                // If payment is not marked as success then it shouldn't be success
-                // on migs end as well.
-                //
-
-                if (($payment['vpc_TxnResponseCode'] === '0') or
-                    (($input['payment']['status'] !== 'failed') and
-                     ($input['payment']['status'] !== 'created')))
-                {
-                    // It's marked as success, in this case, if it's totally refunded,
-                    // then that means billdesk refunded the payment on it's own end
-                    // and we don't need to worry.
-
-                    $verify->gatewaySuccess = true;
-                    $status = VerifyResult::STATUS_MISMATCH;
-                }
-            }
+            $this->verifyPaymentReconcileWithGatewayResponse($content, $verify, $status);
         }
 
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
+        $this->verifyPaymentBackfillDataIfRequired($content, $payment);
+
+        return $status;
+    }
+
+    protected function verifyPaymentNonExistentCase($verify, $payment)
+    {
+        // Could be the case where the transaction didn't even hit migs
+        if (($payment['received'] === false) and
+            (($payment['vpc_TxnResponseCode'] === null) or
+             ($payment['vpc_TxnResponseCode'] !== '0')))
+        {
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+        }
+    }
+
+    protected function verifyPaymentReconcileWithGatewayResponse($content, $verify, & $status)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        if ($content['vpc_TxnResponseCode'] === '0')
+        {
+            $verify->gatewaySuccess = true;
+
+            if (($payment['vpc_TxnResponseCode'] !== '0') or
+                ($input['payment']['status'] === 'failed') or
+                ($input['payment']['status'] === 'created'))
+            {
+                $verify->apiSuccess = false;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+            else
+            {
+                $verify->apiSuccess = true;
+            }
+        }
+        else
+        {
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+
+            //
+            // If payment is not marked as success then it shouldn't be success
+            // on migs end as well.
+            //
+
+            if (($payment['vpc_TxnResponseCode'] === '0') or
+                (($input['payment']['status'] !== 'failed') and
+                 ($input['payment']['status'] !== 'created')))
+            {
+                // It's marked as success, in this case, if it's totally refunded,
+                // then that means billdesk refunded the payment on it's own end
+                // and we don't need to worry.
+
+                $verify->gatewaySuccess = true;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+        }
+    }
+
+    protected function verifyPaymentBackfillDataIfRequired($content, $payment)
+    {
         if ($payment['received'] === false)
         {
             unset($content['vpc_Command']);
@@ -347,8 +367,6 @@ class Gateway extends Base\Gateway
 
             $payment->saveOrFail();
         }
-
-        return $status;
     }
 
     protected function postAmaTransactionRequestAndGetContent(array & $content, $input)
@@ -378,7 +396,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
-        $network = ucfirst(strtolower($input['card']['network']));
+        $network = $input['card']['network'];
 
         $content = array(
             'vpc_Version'           => '1',
@@ -394,7 +412,8 @@ class Gateway extends Base\Gateway
 
         $content = array_merge($attributes, $content);
 
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and
+            ($this->mock === false))
         {
             $this->addTestCardDetailsInTestMode($content);
         }
@@ -578,40 +597,67 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input)
     {
-        if ((isset($input['gateway']['vpc_TxnResponseCode']) === true) and
-            ($input['gateway']['vpc_TxnResponseCode'] === '0'))
-        {
-            return; // Payment succeeds
-        }
-
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
         $message = '';
+        $apiErrorCode = null;
 
         if (isset($input['gateway']['vpc_Message']))
         {
             $message = $input['gateway']['vpc_Message'];
         }
 
-        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-
-        if (isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode]))
+        // check for success
+        if ($txnResponseCode === '0')
         {
-            $apiErrorCode = AxisMigs\TxnResponseCode::$map[$txnResponseCode];
+            //
+            // Transaction has been successful
+            // However, if 3dsecure failed and international is not enabled for the merchant,
+            // then we need to block the transaction on the international card.
+            //
 
-            if (($txnResponseCode === 'Aborted') and
-                ($message === 'Your Session has expired'))
+            if (($input['merchant']['international'] === false) and
+                (ThreeDSecureStatus::is3DSecureSuccess($threeDSstatus)) === false)
             {
-                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
+                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
             }
-            else if (isset($input['gateway']['vpc_AcqResponseCode']))
+            else
             {
-                $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+                return; // payment succeeds
+            }
+        }
+        else
+        {
+            // Get appropriate error code
+            $apiErrorCode = $this->getApiErrorCode($input);
+        }
 
-                if (isset(AcqResponseCode::$map[$acqResponseCode]))
-                {
-                    $apiErrorCode = AcqResponseCode::$map[$acqResponseCode];
-                }
-            }
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    $apiErrorCode,
+                    $txnResponseCode,
+                    $message);
+    }
+
+    protected function getApiErrorCode($input)
+    {
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+
+        if ($this->isSessionExpired($input))
+        {
+            return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
+        }
+
+        if ($this->isAcqErrorOccurred($input))
+        {
+            return AcqResponseCode::$map[$acqResponseCode];
+        }
+
+        // Check for mapped TxnResponseCode value
+        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])))
+        {
+            return AxisMigs\TxnResponseCode::$map[$txnResponseCode];
         }
         else
         {
@@ -622,13 +668,38 @@ class Gateway extends Base\Gateway
                 'gateway_error_code' => $txnResponseCode,
                 'gateway' => $this->gateway,
                 'time' => time()]);
+
+            return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        }
+    }
+
+    protected function isAcqErrorOccurred($input)
+    {
+        if (isset($input['gateway']['vpc_AcqResponseCode']))
+        {
+            $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+
+            if (isset(AcqResponseCode::$map[$acqResponseCode]))
+            {
+                return true;
+            }
         }
 
-        // Payment fails, throw exception
-        throw new Exception\GatewayErrorException(
-                    $apiErrorCode,
-                    $txnResponseCode,
-                    $input['gateway']['vpc_Message']);
+        return false;
+    }
+
+    protected function isSessionExpired($input)
+    {
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = $input['gateway']['vpc_Message'];
+
+        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) and
+            ($txnResponseCode === 'Aborted') and
+            ($message === 'Your Session has expired'))
+        {
+                return true;
+        }
+        return false;
     }
 
     protected function verifyAmaTransactionResponse($content, $input)
