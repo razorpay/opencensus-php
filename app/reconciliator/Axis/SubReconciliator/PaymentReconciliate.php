@@ -25,10 +25,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     public function __construct()
     {
-        $this->messenger = new Messenger();
-        $this->axisMigsRepo = $this->repo->axis_migs;
-
         parent::__construct();
+
+        $this->messenger = new Messenger();
+        $this->axisMigsRepo = $this->app->axis_migs;
     }
 
     protected function getPaymentId($row)
