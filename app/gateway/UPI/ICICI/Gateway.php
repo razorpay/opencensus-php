@@ -3,41 +3,49 @@
 namespace Gateway\UPI\ICICI;
 
 use Gateway\Base;
+use Crypt_RSA;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'upi_icici';
 
+        const PUBLIC_KEY = <<<EOT
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAmj05pbyW0V0S2LDT5zNc
+lAoZevw+2vjyGBQVTBLHJ1PL9zH+TBGe6+uR6QMoF7KG1/yqILaOAmV4K2T00O4I
+hp6EoX4EdLt1E/VNpPMOhUbhxwHJ7KD8t4BEGjDRpbdBG+XOsLaXmKRty771ek0V
+i8Umbo3IUYoQuC6DIqTCXZmhxnBNd1FAikPoM9mdwFY0/PqQ92XUPmUNTZ7sEzhk
+oBrtFTcqnPacPJPa1y6n2YFmUmzv9wnFZ55OGwcvpNiI/GOjmmgemkQp6Vkleo7H
+JqoGvsqK1QG54rFhuuTSxGARFhH3wKEB4lGsJ9D1mTGUOnafC4iOC0SAk5mTrKbm
+uJdavD1TXAkhXlNs5oVJhQm1UPKtZwqpYlDWz3ybBs26412Nl/wXCshcksA/jPZS
+K0sTxEWHjJ7MLyNAoDDV+Gko6BaxURAjX86Ac930tBt2/LIdNUlT+z+uTldsHO1I
+dbNHrDYms1ZEIzVV83oN/Hev3Oae+tSWrGQRWvV9rqHByDFlsniwnYhLO6XyHvYq
+dPGKC553wEbHtJqPTaupDCY/49d7pVAWGFpVob6ebg8R51yk4mgoEaeg6s9KpMce
+RQAfGbcw2gk+LU1nxcgexz0piV0aCTWw1rD+v+O5n1AGOf+5qWUu6H8wqfJtyxGD
+N3gj6mi9EFGymEcgFWhhaO0CAwEAAQ==
+-----END PUBLIC KEY-----
+EOT;
+
+    public function __construct()
+    {
+        /**
+         * See http://phpseclib.sourceforge.net/rsa/examples.html
+         *
+         * We need to run in PCKS 1.5 mode
+         */
+        define('CRYPT_RSA_PKCS15_COMPAT', true);
+        $this->rsa = @new Crypt_RSA();
+        $this->rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+        $this->rsa->loadKey(self::PUBLIC_KEY);
+    }
+
     public function authorize(array $input)
     {
-        $this->makeCollectRequest($input);
-    }
+        $this->input = $input;
+        $this->action = Action::AUTHORIZE;
+        $request = $this->getAuthorizeRequestContent($input);
 
-    protected function makeCollectRequest(array $input)
-    {
-        $data = $this->generateCollectRequestData($input);
-
-        $this->makeRequest($data);
-    }
-
-    protected function makeRequest(array $data)
-    {
-        $request = new Request();
-
-        // TODO: Improve on the request<>gateway interface
-        $response = $this->sendGatewayRequest($request->collectPay($data));
-
-        assert($response->status_code === 200);
-
-        $response = json_decode($response->body, true);
-
-        assert($response !== null);
-
-        assert($response['response'] === '9');
-
-        $bankRRN = $response['BankRRN'];
-
-        // Write the bankRRN into the database
+        $response = $this->sendGatewayRequest($request);
     }
 
     protected function formatAmount($amount)
@@ -51,11 +59,35 @@ class Gateway extends Base\Gateway
         return $this->config['test_merchant_id'];
     }
 
-    protected function generateCollectRequestData(array $input)
+    /**
+     * Generates request object for the status call
+     * @return array
+     */
+    protected function statusData()
+    {
+        return [
+            "merchantId"        =>  "merchantId",
+            "subMerchantId"     =>  "12234",
+            "terminalId"        =>  "2342342",
+            "merchantTranId"    =>  "612413726581"
+        ];
+    }
+
+    /**
+     * Encrypts data before sending it to ICICI
+     * @param  string $data
+     * @return string
+     */
+    protected function encrypt($data)
+    {
+        return $this->rsa->encrypt($data);
+    }
+
+    protected function getAuthorizeRequestContent($input)
     {
         $payment = $input['payment'];
 
-        return [
+        $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
             "amount"        =>  $this->formatAmount($payment['amount']),
@@ -71,19 +103,21 @@ class Gateway extends Base\Gateway
             "subMerchantName"=> $input['merchant']['name'],
             "terminalId"    =>  "1234",
         ];
+
+        return $this->makeRequest($data);
     }
 
-    /**
-     * Generates request object for the status call
-     * @return array
-     */
-    protected function statusData()
+    protected function makeRequest($data)
     {
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $body = base64_encode($this->encrypt($json));
+
+        // getUrl relies on $this->action, ensure that
+        // it is set
         return [
-            "merchantId"        =>  "merchantId",
-            "subMerchantId"     =>  "12234",
-            "terminalId"        =>  "2342342",
-            "merchantTranId"    =>  "612413726581"
+            'url'       =>  $this->getUrl(),
+            'content'   =>  $body,
+            'method'    =>  'post',
         ];
     }
 }

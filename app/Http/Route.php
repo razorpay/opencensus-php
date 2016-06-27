@@ -277,6 +277,7 @@ final class Route
         'mock_sbiepay_payment',
         'mock_wallet_payment',
         'mock_wallet_payment_get',
+        'mock_upi_icici_payment',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'get_emi_plans',
