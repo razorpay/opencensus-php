@@ -5,7 +5,6 @@ namespace Gateway\Cybersource;
 use EE\Exception;
 use Gateway\Cybersource\Payment;
 use Gateway\Cybersource;
-//use Gateway\Cybersource\Payment\Action;
 use Gateway\Base;
 
 class Repository extends Base\Repository
@@ -19,8 +18,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where('payment_id', '=', $id)
-                  ->where('status', '=', $status)
+        return $repo::where(Entity::PAYMENT_ID, '=', $id)
+                  ->where(Entity::STATUS, '=', $status)
                   ->firstOrFail();
     }
 }

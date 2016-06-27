@@ -157,7 +157,7 @@ class Terminal extends Base
 
     public function createSharedCybersourceTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::CYBERSOURCE_RAZORPAY_TERMINAL;
+        $termId = \Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,

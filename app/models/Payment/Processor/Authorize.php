@@ -251,7 +251,7 @@ trait Authorize
         if (($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and 
             ($payment->isMethod('card') === true))
         {
-            $payment->card->vault_token = Card\Tokenex::getVaultToken($input['card']['number']);
+            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($input['card']['number']));
             (new Card\Repository)->saveOrFail($payment->card);
         }
 

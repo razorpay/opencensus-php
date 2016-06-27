@@ -18,7 +18,7 @@ class Server extends Base\Mock\Server
     {
         if (isset($request->payerAuthEnrollService))
         {
-            $this->validateEnrollInput((array) $request);
+            $this->validateEnrollInput(json_decode(json_encode($request), true));
 
             return $this->getEnrollResponse($request);
         }
@@ -30,7 +30,7 @@ class Server extends Base\Mock\Server
 
         if (isset($request->ccAuthService))
         {
-            $this->validateAuthorizeInput((array) $request);
+            $this->validateAuthorizeInput(json_decode(json_encode($request), true));
 
             return $this->postEnrollAuthorize($request);
         }
@@ -122,12 +122,13 @@ class Server extends Base\Mock\Server
         $payerAuthEnrollReply = new \stdClass();
         $response->payerAuthEnrollReply = $payerAuthEnrollReply;
 
+        $response->merchantReferenceCode = 'razorpay';
+        $response->requestID = 'f32n23ke';
+
         if ($request->card->accountNumber === '4012001038443335')
         {
-            $response->merchantReferenceCode = 'razorpay';
             $response->decision = 'REJECT';
             $response->reasonCode = Pay\Result::ENROLLED;
-            $response->requestID = 'f32n23ke';
             
             $params = array('gateway' => 'cybersource');
             $response->payerAuthEnrollReply->acsURL = Http\Route::getUrl('mockcybersource_acs', $params);
@@ -137,10 +138,8 @@ class Server extends Base\Mock\Server
         }
         else if ($request->card->accountNumber === '555555555555558')
         {
-            $response->merchantReferenceCode = 'razorpay';
             $response->decision = 'ACCEPT';
             $response->reasonCode = Pay\Result::SUCCESS;
-            $response->requestID = 'f32n23ke';
 
             $response->payerAuthEnrollReply->veresEnrolled = 'U';
             $response->payerAuthEnrollReply->commerceIndicator = 'spa';
@@ -148,10 +147,8 @@ class Server extends Base\Mock\Server
         }
         else
         {
-            $response->merchantReferenceCode = 'razorpay';
             $response->decision = 'ACCEPT';
             $response->reasonCode = Pay\Result::SUCCESS;
-            $response->requestID = 'f32n23ke';
 
             $response->payerAuthEnrollReply->commerceIndicator = 'internet';
             $response->payerAuthEnrollReply->veresEnrolled = 'U';

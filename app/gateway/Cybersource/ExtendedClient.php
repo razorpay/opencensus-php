@@ -10,13 +10,16 @@ class ExtendedClient extends \SoapClient
     protected $user;
     protected $password;
 
-    public function __construct($wsdl, $options = null, $auth) 
+    public function __construct($wsdl, $auth, $options = array()) 
     {
         parent::__construct($wsdl, $options);
 
         $this->user = $auth['username'];
 
         $this->password = $auth['password'];
+
+        $this->app = \App::getFacadeRoot();
+        $this->trace = $this->app['trace'];
     }
  
 // This section inserts the UsernameToken information in the outgoing SOAP message.
@@ -50,9 +53,7 @@ class ExtendedClient extends \SoapClient
         }
         catch (\DOMException $e) 
         {
-            $this->app = \App::getFacadeRoot();
-            $this->trace = $this->app['trace'];
-            $this->trace->error(TraceCode::RUNTIME_ERROR, (array) $e);
+            $this->trace->traceException($e);
 
             throw new \EE\Exception\RuntimeException(null, null, $e);
         }

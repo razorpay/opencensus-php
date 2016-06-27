@@ -59,12 +59,12 @@ class Gateway extends Base\Gateway
 
         $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_VALIDATE_RESPONSE,
+            (array) $response);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_VALIDATE_ERROR,
-                (array) $response);
-
             $attributes = array('error_code' => $response->reasonCode);
 
             $gateway->fill($attributes);
@@ -75,10 +75,6 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_VALIDATE_RESPONSE,
-                (array) $response);
-
             $attributes = array(
                 'eci'                => $response->payerAuthValidateReply->eciRaw,
                 'commerce_indicator' => $response->payerAuthValidateReply->commerceIndicator,
@@ -180,12 +176,12 @@ class Gateway extends Base\Gateway
 
         $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+            (array) $response);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_AUTHORIZE_ERROR,
-                (array) $response);
-
             $attributes = array(
                 'status'     => Payment\Status::AUTHORIZE_FAILED,
                 'error_code' => $response->reasonCode);
@@ -197,10 +193,6 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
-                (array) $response);
-
             $status = Payment\Status::AUTHORIZED;
 
             
@@ -219,12 +211,12 @@ class Gateway extends Base\Gateway
 
         $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+            (array) $response);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_AUTHORIZE_ERROR,
-                (array) $response);
-
             $attributes = array(
                 'status'     => Payment\Status::AUTHORIZE_FAILED,
                 'error_code' => $response->reasonCode);
@@ -236,10 +228,6 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
-                (array) $response);
-
             $status = Payment\Status::AUTHORIZED;
 
             $attributes = array(
@@ -266,11 +254,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->setBillingInfo($request, $input);
 
-        $card = new \stdClass();
-        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
-        $card->expirationMonth = $input['card']['expiry_month'];
-        $card->expirationYear = $input['card']['expiry_year'];
-        $request->card = $card;
+        $request = $this->setCardInfo($request, $input);
 
         $request = $this->setPurchaseDetail($request, $input);
 
@@ -323,11 +307,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->setBillingInfo($request, $input);
 
-        $card = new \stdClass();
-        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
-        $card->expirationMonth = $input['card']['expiry_month'];
-        $card->expirationYear = $input['card']['expiry_year'];
-        $request->card = $card;
+        $request = $this->setCardInfo($request, $input);
 
         $request = $this->setPurchaseDetail($request, $input);
 
@@ -392,8 +372,8 @@ class Gateway extends Base\Gateway
         $request = $this->createCaptureRequestFields($input);
 
         $this->trace->info(
-                TraceCode::GATEWAY_CAPTURE_REQUEST,
-                (array) $request);
+            TraceCode::GATEWAY_CAPTURE_REQUEST,
+            (array) $request);
 
         try
         {
@@ -501,7 +481,7 @@ class Gateway extends Base\Gateway
             'password' => $this->config['test_access_code']);
         }
         
-        $soapClient = new ExtendedClient($url, array(), $auth);
+        $soapClient = new ExtendedClient($url, $auth);
 
         return $soapClient;
     }
@@ -537,13 +517,13 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterEnroll($input, $response, $request)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_ENROLL_RESPONSE,
+            (array) $response);
+
         if (($response->reasonCode !== Payment\Result::ENROLLED) and 
             ($response->reasonCode !== Payment\Result::SUCCESS))
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_ENROLL_ERROR,
-                (array) $response);
-
             $attributes = array(
                 'payment_id'    => $input['payment']['id'],
                 'amount'        => $request->item[0]->unitPrice,
@@ -557,10 +537,6 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_ENROLL_RESPONSE,
-                (array) $response);
-
             $attributes = array(
                 'payment_id'    => $input['payment']['id'],
                 'amount'        => $request->item[0]->unitPrice,
@@ -577,12 +553,12 @@ class Gateway extends Base\Gateway
 
         $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_CAPTURE_RESPONSE,
+            (array) $response);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_CAPTURE_ERROR,
-                (array) $response);
-
             $attributes = array(
                 'status'     => Payment\Status::CAPTURE_FAILED,
                 'error_code' => $response->reasonCode,
@@ -595,10 +571,6 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_CAPTURE_RESPONSE,
-                (array) $response);
-
             $status = Payment\Status::CAPTURED;
 
             $attributes = array(
@@ -617,12 +589,12 @@ class Gateway extends Base\Gateway
 
         $gateway = $repo->retrieveByPaymentId($input['payment']['id']);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            (array) $response);
+
         if ($response->reasonCode !== Payment\Result::SUCCESS)
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_REFUND_ERROR,
-                (array) $response);
-
             $attributes = array(
                 'error_code' => $response->reasonCode,
                 'action'     => Base\Action::REFUND);
@@ -635,10 +607,6 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_REFUND_RESPONSE,
-                (array) $response);
-
             $status = Payment\Status::REFUNDED;
 
             $attributes = array(
@@ -693,6 +661,17 @@ class Gateway extends Base\Gateway
         $billTo->country = 'India';
         $billTo->email = $input['payment']['email'];
         $request->billTo = $billTo;
+
+        return $request;
+    }
+
+    public function setCardInfo($request, $input)
+    {
+        $card = new \stdClass();
+        $card->accountNumber = Card\Tokenex::getCardNumber($input['card']['vault_token']);
+        $card->expirationMonth = $input['card']['expiry_month'];
+        $card->expirationYear = $input['card']['expiry_year'];
+        $request->card = $card;
 
         return $request;
     }

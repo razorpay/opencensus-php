@@ -222,6 +222,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VAULT_TOKEN);
     }
 
+    public function setVaultToken($vault_token)
+    {
+        return $this->setAttribute(self::VAULT_TOKEN, $vault_token);
+    }
+
     public function getVault()
     {
         return $this->getAttribute(self::VAULT);

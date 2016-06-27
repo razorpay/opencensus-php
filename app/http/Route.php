@@ -418,13 +418,13 @@ final class Route
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',
+        'mockcybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
-        'mockcybersource_acs',
     );
 
     public static $internalApps = array(
