@@ -154,9 +154,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * Take care while calling this method
      * @param array $input array with new name
      */
-    public function changeName($input)
+    public function changeName($name)
     {
-        return $this->edit($input, 'changeName');
+        return $this->edit([
+            'name' => $name
+        ], 'changeName');
     }
 
     /**

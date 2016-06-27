@@ -445,28 +445,6 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
-    $scope.editMerchantName = function (name) {
-      var request = $http({
-        method: 'put',
-        url: '/admin/merchant/' + $scope.merchant.id + '/name',
-        data: { name: name }
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Merchant name edited successfully', true);
-          generateMerchant();
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
-
     $scope.changeBankAccountDetails = function (bankAccount) {
       var request = $http({
         method: 'put',
@@ -674,20 +652,6 @@ app.controller('MerchantDetailCtrl', [
       });
       modalInstance.result.then(function (email) {
         $scope.editMerchantEmail(email);
-      }, $.noop);
-    };
-    $scope.openEditMerchantName = function () {
-      var modalInstance = $modal.open({
-        templateUrl: 'editMerchantNameModalContent.html',
-        controller: 'editMerchantNameModalCtrl',
-        resolve: {
-          current: function () {
-            return $scope.merchant.details;
-          }
-        }
-      });
-      modalInstance.result.then(function (name) {
-        $scope.editMerchantName(name);
       }, $.noop);
     };
     $scope.openChangeBankAccountDetails = function () {

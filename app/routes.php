@@ -241,7 +241,6 @@ Route::group(array('before' => 'auth.admin'), function()
             Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
             Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
             Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-            Route::put('/admin/merchant/{id}/name', 'AdminController@putEditMerchantName');
             Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
         });
 
