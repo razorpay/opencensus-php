@@ -432,14 +432,14 @@ class Orchestrator
                 }
                 catch (\Exception $ex)
                 {
+                    $this->app['trace']->traceException($ex);
+
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'   => TraceCode::RECON_FILE_SKIP,
                             'message'      => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
                             'file_details' => !empty($extractedFileDetails) ?  $extractedFileDetails : null,
-                            //'gateway'      => get_class($this->gatewayReconciliator),
-                            'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName(),
-                            'exception'    => $ex->getTrace()
+                            'gateway'      => get_class($this->gatewayReconciliator),
                         ]);
 
                     continue;
