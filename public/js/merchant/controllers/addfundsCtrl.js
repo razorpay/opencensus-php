@@ -1,3 +1,4 @@
+"use strict";
 //Add Funds Controller
 app.controller('AddfundsCtrl', [
   '$scope',
@@ -48,7 +49,7 @@ app.controller('AddfundsCtrl', [
           $scope.alerts.addAlert('success', 'Funds added successfully', true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -86,10 +87,7 @@ app.controller('AddfundsCtrl', [
         // This needs to be global
         window.Razorpay = {
           config: {
-            protocol: api.protocol.slice(0,-1),
-            hostname: api.hostname,
-            // Remove the starting slash, but keep the trailing one
-            version: api.pathname.slice(1)
+            api: api.protocol + '//' + api.hostname + '/'
           }
         };
       }
