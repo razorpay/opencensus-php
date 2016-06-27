@@ -2,15 +2,12 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
-use Mockery;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use Tests\Functional\TestCase;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CustomerTokenTest extends TestCase
 {
-    use InteractsWithSession;
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -23,23 +20,27 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenCard()
     {
-        $this->fixtures->create('card', ['id' => '10000savedcard']);
+        $this->ba->privateAuth();
 
-        $this->ba->proxyAuth();
+        $this->mockTokenex();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenWallet()
     {
-        $this->ba->proxyAuth();
+        $this->markTestSkipped();
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenNetbanking()
     {
-        $this->ba->proxyAuth();
+        $this->markTestSkipped();
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }

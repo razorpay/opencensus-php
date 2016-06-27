@@ -14,6 +14,32 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
+    public function createToken($customer, $input)
+    {
+        $this->getCardToken($input['card']);
+
+        $card = (new Card\Core)->create($input['card'], $customer->merchant);
+
+        $this->repo->saveOrFail($card);
+
+        $input[Token\Entity::CARD_ID] = $card->getId();
+
+        unset($input['card']);
+
+        return $this->create($customer, $input);
+    }
+
+    protected function getCardToken(& $input)
+    {
+        $vaultToken = Card\Tokenex::getVaultToken($input['number']);
+
+        if (empty($vaultToken) === false)
+        {
+            $input[Card\Entity::VAULT_TOKEN] = $vaultToken;
+            $input[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+        }
+    }
+
     public function create($customer, $input)
     {
         $token = new Token\Entity;

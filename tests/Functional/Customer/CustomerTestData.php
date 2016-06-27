@@ -252,7 +252,13 @@ return [
             'method' => 'post',
             'content' => [
                 'method' => 'card',
-                'card_id' => '10000savedcard',
+                'card' => [
+                    'number' => '4111111111111111',
+                    'expiry_month' => '11',
+                    'expiry_year'  => '21',
+                    'name' => 'test',
+                    'cvv' => '222',
+                ],
             ],
         ],
         'response' => [

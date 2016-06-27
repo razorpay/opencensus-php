@@ -23,7 +23,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
 
-        $token = (new Token\Core)->create($customer, $input);
+        $token = (new Token\Core)->createToken($customer, $input);
 
         return $token->toArrayPublic();
     }
