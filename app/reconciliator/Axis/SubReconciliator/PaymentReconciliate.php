@@ -7,6 +7,7 @@ use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 
 use Models\Payment\Service as PaymentService;
+use Models\Payment\Status as PaymentStatus;
 use Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -119,7 +120,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         // If there's any issue during authorize, the function throws an exception.
         $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
-        
+
+
         $this->app['trace']->info(
             TraceCode::RECON_INFO_ALERT,
             [
@@ -127,6 +129,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 'response' => $response
             ]
         );
+
+        if ((empty($response['status']) === false) and ($response['status'] === PaymentStatus::AUTHORIZED))
+        {
+            return true;
+        }
 
         return false;
     }
