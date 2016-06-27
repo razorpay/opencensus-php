@@ -5,6 +5,7 @@ namespace Reconciliator\HDFC;
 use Reconciliator\Base;
 use App;
 use Reconciliator\FileProcessor;
+use Constants\Entity;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -45,7 +46,8 @@ class Reconciliate extends Base\Reconciliate
 
         $terminalRepo = App::getFacadeRoot()['repo']->terminal;
 
-        $reconPassword = $terminalRepo->getById($terminalId)->getGatewayReconPassword();
+        $reconPassword = $terminalRepo->getByGatewayTerminalIdAndGateway($terminalId, Entity::HDFC)
+                                      ->getGatewayReconPassword();
 
         return $reconPassword;
     }
