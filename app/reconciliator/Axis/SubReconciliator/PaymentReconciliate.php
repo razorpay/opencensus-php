@@ -6,6 +6,8 @@ use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
 
+use Models\Payment\Service as PaymentService;
+use Models\Payment\Status as PaymentStatus;
 use Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -17,13 +19,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_TYPE   = 'card_type';
     const COLUMN_SERVICE_TAX = 'service_tax145';
     const COLUMN_FEE         = 'commission';
+    const RRN                = 'rrn_no';
 
     protected $messenger;
+    protected $axisMigsRepo;
 
     public function __construct()
     {
-        $this->messenger = new Messenger();
         parent::__construct();
+
+        $this->messenger = new Messenger();
+
+        $this->axisMigsRepo = $this->repo->axis_migs;
     }
 
     protected function getPaymentId($row)
@@ -89,5 +96,44 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return [
             BaseReconciliate::CARD_TYPE => $cardType,
         ];
+    }
+
+    protected function forceAuthorizeFailed($row)
+    {
+        $paymentService = new PaymentService();
+
+        $paymentId = $this->payment->getPublicId();
+
+        $vpcTransactionNo = $this->axisMigsRepo
+                                 ->findByRrn($row[self::RRN])
+                                 ->getTransactionId();
+
+        $input['vpc_TransactionNo'] = $vpcTransactionNo;
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'message'         => 'Payment status is still failed. Doing force authorize now.',
+                'payment_id'      => $this->payment->getId(),
+                'gateway'         => get_called_class()
+            ]);
+
+        // If there's any issue during authorize, the function throws an exception.
+        $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
+
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message' => 'Response received from force authorization',
+                'response' => $response
+            ]
+        );
+
+        if ((empty($response['status']) === false) and ($response['status'] === PaymentStatus::AUTHORIZED))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

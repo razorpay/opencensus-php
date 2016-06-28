@@ -56,7 +56,7 @@ trait Authorize
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        $this->updateAndNotifyPaymentAuthorized($payment);
+        $this->updateAndNotifyPaymentAuthorized();
 
         $payment = $this->payment;
 
@@ -96,6 +96,10 @@ trait Authorize
      * reconciliation only for three days. If we miss any failed payment
      * reconciliation there then we need to do it manually later.
      *
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @return array $payment
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function forceAuthorizeFailedPayment($payment, $input)
     {
@@ -122,25 +126,26 @@ trait Authorize
             if ($flag === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Payment expected to have succeeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
             }
 
-            $payment = $this->lockForUpdateAndRetrievePayment($payment);
+            $this->lockForUpdateAndReload($payment);
 
             assert ($payment->isFailed() === true);
 
             $payment->setErrorNull();
             $payment->setVerified(true);
 
-            // The second argument marks the payment as converted from failed
+            // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized($payment, true);
+            $this->updateAndNotifyPaymentAuthorized(true);
 
             $this->repo->saveOrFail($payment);
         });
 
-        return $payment->toArrayAdmin();
+        // TODO: Remove reload once the branch hotfix/authorize-transaction-save is merged.
+        return $payment->reload()->toArrayAdmin();
     }
 
     /**
@@ -149,11 +154,13 @@ trait Authorize
      * processing (auth).
      * Returning from this function implies payment action has been successful.
      *
-     * @param  string              $id      Payment id
-     * @param  array               $input   contains fields provided
-     *                                      by bank
+     * @param string $id Payment id
+     * @param string $hash
+     * @param array  $gatewayInput contains fields provided
+     *                             by bank
      *
-     * @return Payment\Entity           Updated payment entity
+     * @return Payment\Entity Updated payment entity
+     * @throws Exception\BadRequestException
      */
     public function callback($id, $hash, array $gatewayInput)
     {
@@ -210,7 +217,7 @@ trait Authorize
             $this->processPaymentCallbackException($e);
         }
 
-        $this->updateAndNotifyPaymentAuthorized($payment);
+        $this->updateAndNotifyPaymentAuthorized();
 
         $payment = $this->payment;
 
@@ -229,7 +236,7 @@ trait Authorize
         if ((isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp'))
         {
-            // TODO: Better name suggestions :(
+            // TODO: Better name suggestions
             $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
@@ -273,7 +280,7 @@ trait Authorize
             $input['customer'] = $customer;
 
             $payment->globalCustomer()->associate($customer);
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
         }
 
         if (isset($data['token']) === true)
@@ -288,7 +295,7 @@ trait Authorize
         // This is because significant time has elapsed during
         // gateway request and we need to refresh it to take into
         // account race conditions.
-        $this->payment = $this->repo->lockForUpdate($this->payment->getKey());
+        $this->lockForUpdateAndReload($this->payment);
 
         $payment = $this->payment;
         $status = $payment->getStatus();
@@ -316,7 +323,7 @@ trait Authorize
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();
-                $payment->saveOrFail();
+                $this->repo->saveOrFail($payment);
                 break;
         }
 
@@ -412,11 +419,11 @@ trait Authorize
             if ($flag === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Payment expected to have succeeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
             }
 
-            $payment = $this->lockForUpdateAndRetrievePayment($payment);
+            $this->lockForUpdateAndReload($payment);
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
@@ -429,9 +436,9 @@ trait Authorize
             $payment->setErrorNull();
             $payment->setVerified(true);
 
-            // The second argument marks the payment as converted from failed
+            // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized($payment, true);
+            $this->updateAndNotifyPaymentAuthorized(true);
 
             $this->repo->saveOrFail($payment);
 
@@ -509,9 +516,9 @@ trait Authorize
             {
                 $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
-                $this->payment->card->globalCard()->associate($token->card);
+                $payment->card->globalCard()->associate($token->card);
 
-                $this->payment->card->saveOrFail();
+                $this->repo->saveOrFail($payment->card);
             }
             else if ($payment->isMethod(Payment\Method::WALLET))
             {
@@ -572,9 +579,9 @@ trait Authorize
 
                 $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
 
-                $this->payment->card->globalCard()->associate($savedCard);
+                $payment->card->globalCard()->associate($savedCard);
 
-                $this->payment->card->saveOrFail();
+                $this->repo->saveOrFail($payment->card);
             }
 
         }
@@ -688,7 +695,7 @@ trait Authorize
         return $data;
     }
 
-    protected function updateAndNotifyPaymentAuthorized($payment, $wasFailed = false)
+    protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
         $this->updatePaymentAuthorized();
@@ -706,7 +713,7 @@ trait Authorize
         {
             $order->setAuthorized(true);
 
-            $order->saveOrFail();
+            $this->repo->saveOrFail($order);
         }
     }
 
@@ -970,7 +977,7 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
-        (new Card\Repository)->saveOrFail($card);
+        $this->repo->saveOrFail($card);
 
         return $cardData;
 
@@ -1108,18 +1115,20 @@ trait Authorize
 
     protected function savePaymentAndCard()
     {
-        (new Card\Repository)->saveOrFail($this->payment->card);
+        $this->repo->saveOrFail($this->payment->card);
 
         $this->repo->saveOrFail($this->payment);
     }
 
     protected function updatePaymentAuthorized()
     {
-        $this->repo->transaction(function()
-        {
-            $payment = $this->lockForUpdateAndRetrievePayment($this->payment);
+        $payment = $this->payment;
 
-            if ($payment->getStatus() === Status::AUTHORIZED)
+        $this->repo->transaction(function() use ($payment)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            if ($this->payment->getStatus() === Status::AUTHORIZED)
             {
                 return;
             }
@@ -1134,17 +1143,18 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            $payment->saveOrFail();
-            $payment->terminal->saveOrFail();
+            $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment->terminal);
 
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
-                $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+                // Also sets the transaction association with the payment.
+                $txn = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
-                $txn->saveOrFail();
+                $this->repo->saveOrFail($txn);
             }
 
-            $payment->saveOrFail();
+            $this->repo->saveOrFail($payment);
 
             // If payment has an associated order
             // set the order to be paid

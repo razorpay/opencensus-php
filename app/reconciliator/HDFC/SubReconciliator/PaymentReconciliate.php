@@ -23,8 +23,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     public function __construct()
     {
-        $this->messenger = new Messenger();
         parent::__construct();
+
+        $this->messenger = new Messenger();
     }
 
     protected function getPaymentId($row)
@@ -94,11 +95,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardType($cardType, $row)
     {
-        if ($cardType === 'dc')
+        if ($cardType[1] === 'c')
         {
             $cardType = BaseReconciliate::CREDIT;
         }
-        else if ($cardType === 'dd')
+        else if ($cardType[1] === 'd')
         {
             $cardType = BaseReconciliate::DEBIT;
         }

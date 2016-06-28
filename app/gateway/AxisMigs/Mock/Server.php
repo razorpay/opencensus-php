@@ -32,7 +32,6 @@ class Server extends Base\Mock\Server
             'vpc_3DSECI'            => '01',
             'vpc_3DSXID'            => '6NQZ/DZVL/LgcawFYz7cMP0vpMo=',
             'vpc_3DSenrolled'       => 'Y',
-            'vpc_3DSstatus'         => 'A',
             'vpc_AVSRequestCode'    => 'Z',
             'vpc_AVSResultCode'     => 'Unsupported',
             'vpc_AcqAVSRespCode'    => 'Unsupported',
@@ -57,6 +56,8 @@ class Server extends Base\Mock\Server
             'vpc_VerType'           => '3DS',
             'vpc_Version'           => '1',
         );
+
+        $this->addVpcCard($content, $input);
 
         $this->addVpcMerchant($content, $input);
 
@@ -189,6 +190,18 @@ class Server extends Base\Mock\Server
     protected function addVpcMerchant(array & $content, $input)
     {
         $content['vpc_Merchant'] = $input['vpc_Merchant'];
+    }
+
+    protected function addVpcCard(array & $content, $input)
+    {
+        switch ($input['vpc_CardNum'])
+        {
+            case '55553555655655':
+                $content['vpc_3DSstatus'] = 'A';
+                break;
+            default:
+                $content['vpc_3DSstatus'] = 'Y';
+        }
     }
 
     protected function generateTransactionNo()

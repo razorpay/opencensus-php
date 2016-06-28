@@ -18,8 +18,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     public function __construct()
     {
-        $this->messenger = new Messenger();
         parent::__construct();
+        
+        $this->messenger = new Messenger();
     }
 
     protected function getPaymentId($row)

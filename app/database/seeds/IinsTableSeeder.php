@@ -21,7 +21,9 @@ class IinsTableSeeder extends Seeder
             IIN\Entity::COUNTRY,
             IIN\Entity::ISSUER_NAME,
             IIN\Entity::ISSUER,
-            IIN\Entity::EMI
+            IIN\Entity::EMI,
+            IIN\Entity::CREATED_AT,
+            IIN\Entity::UPDATED_AT,
         );
 
         $assocRecords = array();
@@ -51,10 +53,13 @@ class IinsTableSeeder extends Seeder
         $fileHandle = fopen($path, 'r');
 
         $records = array();
-        $iinRecord = array();
+        
+        $time = time();
 
         while(($iinRecord = fgetcsv($fileHandle)) !== FALSE)
         {
+            $iinRecord[IIN\Entity::CREATED_AT] = $time;
+            $iinRecord[IIN\Entity::UPDATED_AT] = $time;
             array_push($records, $iinRecord);
         }
 
