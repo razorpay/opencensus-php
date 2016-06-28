@@ -19,9 +19,9 @@
     /**
      * API Details. Make sure it includes a trailing slash
      */
-    'API_URL'           => 'http://api.razorpay.com/v1/',
+    'API_URL'           => 'http://api.razorpay.dev/v1/',
     'API_AUTH_PASS'     => 'secret',
-    'API_MOCK'          => true,
+    'API_MOCK'          => false,
 
     /**
      *  QUEUE System Configuration
