@@ -9,6 +9,8 @@ class SignatureTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $payment;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/SignatureTestData.php';
@@ -23,16 +25,16 @@ class SignatureTest extends TestCase
 
     public function testValidSignature()
     {
-        $payment = &$this->payment;
+        $payment = $this->payment;
         $payment['card']['number'] = '4012001037141112';
 
         $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
 
         $testData = &$this->testData[__FUNCTION__];
 
-        $this->replaceValuesRecursively($this->payment, $testData['request']['content']);
+        $this->replaceValuesRecursively($payment, $testData['request']['content']);
 
-        $testData['request']['content'] = $this->payment;
+        $testData['request']['content'] = $payment;
 
         $content = $this->startTest();
 

@@ -65,7 +65,7 @@ return [
         'vpc_3DSECI' => '01',
 //        'vpc_3DSXID' => null,
         'vpc_3DSenrolled' => 'Y',
-        'vpc_3DSstatus' => 'A',
+        'vpc_3DSstatus' => 'Y',
         'vpc_AuthorizeId' => null,
         //'vpc_BatchNo' => '20150827', // '20150503',
         'vpc_Card' => 'MC',
@@ -133,4 +133,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
         ],
     ],
+
+    'testFailureWhen3DSFailsForDomesticMerchant' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'International card is not allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
+        ],
+    ]
 ];
