@@ -1,3 +1,4 @@
+"use strict";
 //Pricing List controller
 app.controller('PricingsCtrl', [
   '$scope',
@@ -24,16 +25,16 @@ app.controller('PricingsCtrl', [
         amount_range_max: 0,
         percent_rate: 200,
         fixed_rate: 0
-      }
-    }
+      };
+    };
 
     function getPayload (input) {
       var data = input;
       // This contains high/low and we don't send that
-      delete data['amount_range'];
+      delete data.amount_range;
       if (data.amount_range_active == '0') {
-        delete data['amount_range_min'];
-        delete data['amount_range_max'];
+        delete data.amount_range_min;
+        delete data.amount_range_max;
       }
       return data;
     }
@@ -46,51 +47,26 @@ app.controller('PricingsCtrl', [
       $scope.create_plan = true;
     };
     $scope.itemList = [];
-    
-    
+
+
     $scope.loadNetworks = function (item) {
       $scope.new_plan.payment_network = null;
-      if (item == "card") {
-        $scope.itemList = $scope.cardNetworks;
-      } else if (item == "netbanking") {
-        $scope.itemList = $scope.bankNetworks;
-      } else if (item == "wallet") {
-        $scope.itemList = $scope.walletNetworks;
-      } else {
-        $scope.itemList = [];
-      }
-    }
+      $scope.itemList = $scope.networks[item];
+    };
 
     $scope.getNetworks = function () {
       var request = $http({
         url: '/admin/networks' ,
         method: 'GET'
       });
-      
+
       request.success(function (data) {
         if (data.success) {
-          var networks = data.data;
-          var card_networks = [];
-          var bank_networks = [];
-          var wallet_networks = [];
-          angular.forEach(networks.card, function (value, key) {
-            card_networks.push({id:key, name:value});
-          });
-          $scope.cardNetworks = card_networks;
-
-          angular.forEach(networks.bank, function (value, key) {
-            bank_networks.push({id:key, name:value});
-          });
-          $scope.bankNetworks = bank_networks;
-
-          angular.forEach(networks.wallet, function (value, key) {
-            wallet_networks.push({id:key, name:value});
-          });
-          $scope.walletNetworks = wallet_networks;
-          $scope.itemList = $scope.cardNetworks;
+          $scope.networks = data.data;
+          $scope.itemList = $scope.networks.card;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -118,7 +94,7 @@ app.controller('PricingsCtrl', [
           $scope.showPlan(data.data.id);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -146,7 +122,7 @@ app.controller('PricingsCtrl', [
           );
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -185,7 +161,7 @@ app.controller('PricingsCtrl', [
           $scope.show_plan.rules.push(data.data);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -233,9 +209,7 @@ app.controller('PricingsCtrl', [
       return range;
     }
 
-    var init = function () {
-      $scope.getNetworks();
-    }
-    init();
+    // We fetch the networks on Load
+    $scope.getNetworks();
   }
 ]);
