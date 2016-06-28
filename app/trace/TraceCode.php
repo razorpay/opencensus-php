@@ -98,6 +98,7 @@ class TraceCode
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
+    const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -213,6 +214,7 @@ class TraceCode
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
         self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
+        self::GATEWAY_UNSUPPORTED_CARD_NETWORK      => 'Card network not supported',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                 => 'Recoverable exception occurred',

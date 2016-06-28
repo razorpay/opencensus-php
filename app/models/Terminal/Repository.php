@@ -23,6 +23,7 @@ class Repository extends Base\Repository
         Entity::CATEGORY            => 'sometimes|integer|digits:4',
         'deleted'                   => 'sometimes|boolean',
         Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
+        Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
     );
 
     public function addQueryParamDeleted($query, $params)

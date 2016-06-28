@@ -95,7 +95,7 @@ class Gateway extends Base\Gateway
                     break;
                 
                 default:
-                    throw new Exception\LogicException('Should not rech here.');
+                    throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
                     break;
             }
 
@@ -299,7 +299,7 @@ class Gateway extends Base\Gateway
                 break;
             
             default:
-                throw new Exception\LogicException('Should not rech here.');
+                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
                 break;
         }
 
@@ -342,7 +342,7 @@ class Gateway extends Base\Gateway
                 break;
             
             default:
-                throw new Exception\LogicException('Should not rech here.');
+                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
                 break;
         }
         
@@ -753,7 +753,7 @@ class Gateway extends Base\Gateway
                 return $this->postNotEnrolledAuthorize($input, $enrollResponse);
 
             default:
-                throw new Exception\LogicException('Should not have reached here');
+                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
         }
     }
 

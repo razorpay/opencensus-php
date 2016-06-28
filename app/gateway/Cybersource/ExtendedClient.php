@@ -44,10 +44,10 @@ class ExtendedClient extends \SoapClient
         try 
         {
             $requestDOM->loadXML($request);
-  	        $soapHeaderDOM->loadXML($soapHeader);
+            $soapHeaderDOM->loadXML($soapHeader);
 
-          	$node = $requestDOM->importNode($soapHeaderDOM->firstChild, true);
-          	$requestDOM->firstChild->insertBefore($node, $requestDOM->firstChild->firstChild);
+            $node = $requestDOM->importNode($soapHeaderDOM->firstChild, true);
+            $requestDOM->firstChild->insertBefore($node, $requestDOM->firstChild->firstChild);
 
             $request = $requestDOM->saveXML();
         }

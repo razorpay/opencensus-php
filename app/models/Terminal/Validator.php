@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
     );
 
     protected static $editTerminalGateways = array(
@@ -78,9 +79,9 @@ class Validator extends Base\Validator
 
     protected static $cybersourceTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:cybersource',
-        //Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+        Entity::GATEWAY_ACQUIRER            => 'required|string',
     );
 
     protected static $axisMigsEditTerminalRules = array(
