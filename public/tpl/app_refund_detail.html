@@ -12,7 +12,7 @@
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
-    <div class="row wrapper">
+  <div class="row wrapper">
       <div class="list-group">
         <a ui-sref="app.payments.detail({id:entity.payment_id})" class="list-group-item">
           <span class="pull-right">{{entity.payment_id}}</span>
@@ -31,13 +31,17 @@
           <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
           Created At
         </a>
-      </div>
-      <div class="panel-body">
-        <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
-          <span class="pull-right">{{key}}</span>
-          {{label}}
+        <a href class="list-group-item" ng-show="entity.notes">
+          Notes
         </a>
+        <div class="panel-body">
+          <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
+            <span class="pull-right">{{key}}</span>
+            {{label}}
+          </a>
+        </div>
       </div>
+
     </div>
   </div>
 </div>
