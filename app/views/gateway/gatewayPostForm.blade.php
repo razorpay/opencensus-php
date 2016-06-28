@@ -49,11 +49,17 @@ try{
       </div>
     </div>
     <div style="display:inline-block;vertical-align:middle;height:90%;width:0"></div>
-  </body>
-  <form action="{{$data['request']['url']}}" method="post">
+
+    <form id="form1" name="form1" action="{{$data['request']['url']}}" method="post" onsubmit="return true;">
     @foreach ($data['request']['content'] as $key => $value)
-      <input type="hidden" name="{{$key}}" value="{{$value}}">
+       <input type="hidden" name="{{$key}}" value="{{$value}}">
+       <br />
     @endforeach
-  </form>
+    </form>
+    <br>
+    <form id="form2" name="form2">
+       <input type="hidden" name="type" value="{{$data['type']}}">
+       <input type="hidden" name="gateway" value="{{$data['gateway']}}">
+    </form>
   </body>
 </html>
