@@ -16,13 +16,13 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::GATEWAY             => 'sometimes',
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-        Entity::GATEWAY             => 'sometimes',
         Entity::CARD                => 'sometimes|boolean',
         Entity::NETBANKING          => 'sometimes|boolean',
         Entity::SHARED              => 'sometimes|boolean',
         Entity::CATEGORY            => 'sometimes|integer|digits:4',
         'deleted'                   => 'sometimes|boolean',
         Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
+        Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
     );
 
     public function addQueryParamDeleted($query, $params)
@@ -58,6 +58,16 @@ class Repository extends Base\Repository
 
         return $repo::whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
                     ->get();
+    }
+
+    public function getByGatewayTerminalIdAndGateway($gatewayTerminalId, $gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::withTrashed()
+                    ->where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
+                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->first();
     }
 
     public function getByIdAndMerchantId($mid, $tid)

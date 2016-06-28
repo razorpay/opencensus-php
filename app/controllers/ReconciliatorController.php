@@ -9,6 +9,8 @@ class ReconciliatorController extends BaseController
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->orchestrator = new Reconciliator\Orchestrator();
     }
 

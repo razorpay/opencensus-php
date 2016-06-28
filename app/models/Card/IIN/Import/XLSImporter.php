@@ -4,18 +4,28 @@ namespace Models\Card\IIN\Import;
 
 use Models\Card\IIN;
 use EE\Exception;
+use App;
+
 /**
  * This class is called by the service function with the input data.
  * The handles the rest of processing.
  */
 class XLSImporter
 {
+    protected $app;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+    }
+
     /**
      * This is the main function.
      *
      * @param array $input    the post data
      *
      * @return array $input   contains the duplicates and db conflicts
+     * @throws Exception\BadRequestException
      */
     public function import($input)
     {
@@ -32,17 +42,17 @@ class XLSImporter
         $dataCleaner = new DataCleaner();
         $cleaned = $dataCleaner->parse($input['network'], $formattedData);
         $duplicates = $dataCleaner->getDuplicateEntries();
-        $conflits = $dataCleaner->getDBConflicts();
+        $conflicts = $dataCleaner->getDBConflicts();
         $networkCheckFails = $dataCleaner->getNetworkCheckFails();
 
         $this->enterIntoDB($cleaned);
-        $this->updateIntoDB($conflits);
+        $this->updateIntoDB($conflicts);
 
         $successCount = count($cleaned);
 
         return array(
             'duplicates'   => $duplicates,
-            'db_conflicts' => $conflits,
+            'db_conflicts' => $conflicts,
             'network_errors' => $networkCheckFails,
             'success' => $successCount,
         );
@@ -57,8 +67,6 @@ class XLSImporter
      */
     protected function enterIntoDB($cleaned)
     {
-        $count = count($cleaned);
-
         $time = time();
 
         // Too many entries crashes the sql query
@@ -78,25 +86,25 @@ class XLSImporter
     {
         $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::COUNTRY);
 
-        foreach ($conflicts as $iin => $entry)
+        foreach ($conflicts as $iinId => $entry)
         {
             list($input, $conflict, $diff) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
 
             if (($conflict === false) and
                 (empty($input) === false))
             {
-                $entity = IIN\Entity::find($iin);
+                $entity = $this->app['repo']->iin->find($iinId);
                 $entity->edit($input);
-                $entity->saveOrFail();
+                $this->app['repo']->saveOrFail($entity);
             }
 
             if ($conflict === false)
             {
-                unset($conflicts[$iin]);
+                unset($conflicts[$iinId]);
             }
             else
             {
-                $conflicts[$iin] = $diff;
+                $conflicts[$iinId] = $diff;
             }
         }
     }
