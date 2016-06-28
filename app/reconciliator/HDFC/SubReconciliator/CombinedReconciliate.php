@@ -25,7 +25,7 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
         {
             return BaseReconciliate::PAYMENT;
         }
-        else if ($entityType === 'CDP')
+        else if (($entityType === 'CDP') or ($entityType === 'CBR'))
         {
             $this->messenger->raiseReconAlert(
                 [
