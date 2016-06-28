@@ -15,7 +15,13 @@ trait PaymentSharpTrait
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
+        if ($this->isOtpCallbackUrl($url))
+        {
+            return $this->makeOtpCallback($url);
+        }
+
         $request = compact('url', 'method', 'content');
+
         $response = $this->makeRequestParent($request);
 
         $request = $this->getFormRequestFromResponse(
