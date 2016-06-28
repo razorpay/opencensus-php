@@ -10,6 +10,8 @@ app.controller('PricingsCtrl', [
     $scope.pricing_plans = {};
     $scope.show_plan = {};
     $scope.create_plan = false;
+    $scope.itemList = [];
+    $scope.networks = null;
     generateTable();
 
     var getDefaultRule = function() {
@@ -46,12 +48,29 @@ app.controller('PricingsCtrl', [
       $scope.show_plan = {};
       $scope.create_plan = true;
     };
-    $scope.itemList = [];
 
+    var getNetworkList = function (method) {
+      if ($scope.networks === null) {
+        return {"":"All"};
+      }
 
-    $scope.loadNetworks = function (item) {
-      $scope.new_plan.payment_network = null;
-      $scope.itemList = $scope.networks[item];
+      var networks = {};
+
+      switch (method) {
+        // The networks object is differently indexed
+        case 'netbanking':
+          networks = $scope.networks.bank;
+          break;
+        // we copy over the card networks list to EMI networks list
+        case 'emi':
+          networks = $scope.networks.card;
+          break;
+        default:
+          networks = $scope.networks[method];
+      }
+
+      networks[""] = "All";
+      return networks;
     };
 
     $scope.getNetworks = function () {
@@ -63,7 +82,7 @@ app.controller('PricingsCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.networks = data.data;
-          $scope.itemList = $scope.networks.card;
+          setPaymentNetworkList('new_rule', 'card');
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value) {
@@ -141,6 +160,22 @@ app.controller('PricingsCtrl', [
       var range = getDefaultAmountRange($scope.new_plan);
       $scope.new_plan.amount_range_min = range[0];
       $scope.new_plan.amount_range_max = range[1];
+    });
+
+    // where is either new_rule or new_plan
+    var setPaymentNetworkList = function(where) {
+      var method = $scope[where].payment_method;
+      $scope.itemList = getNetworkList(method);
+      // This sets it to "All"
+      $scope[where].payment_network = '';
+    };
+
+    $scope.$watch('new_rule.payment_method', function() {
+      setPaymentNetworkList('new_rule');
+    });
+
+    $scope.$watch('new_plan.payment_method', function() {
+      setPaymentNetworkList('new_plan');
     });
 
     $scope.saveRule = function () {
