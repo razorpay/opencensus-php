@@ -21,14 +21,6 @@ class Repository extends Base\Repository
         Entity::CONTACT         => 'sometimes'
     );
 
-    public function findByContact($contact)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Customer\Entity::CONTACT, '=', $contact)
-                    ->first();
-    }
-
     public function findByContactAndMerchant($contact, $merchant)
     {
         $repo = $this->repo;

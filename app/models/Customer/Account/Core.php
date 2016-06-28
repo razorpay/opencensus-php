@@ -10,7 +10,6 @@ use Models\Merchant;
 use Models\Merchant\Account;
 use Models\Payment;
 use Trace\TraceCode;
-use libphonenumber\PhoneNumberFormat;
 
 class Core extends Base\Core
 {
@@ -54,7 +53,8 @@ class Core extends Base\Core
 
     public function sendOtp($input)
     {
-        $this->validateAndParseContent($input);
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
+            $input[Entity::CONTACT]);
 
         $data = (new Customer\Raven)->sendOtp($input);
 
@@ -64,7 +64,8 @@ class Core extends Base\Core
     public function verifyOtp($input)
     {
         //validate and parse contact
-        $this->validateAndParseContent($input);
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
+            $input[Entity::CONTACT]);
 
         // Verify the otp with raven service
         $this->verifyRavenOtp($input);
@@ -220,17 +221,4 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
     }
-
-    protected function validateAndParseContent(&$input)
-    {
-        (new Customer\Validator)->validateInput('contact', ['contact' => $input[Entity::CONTACT]]);
-
-        $phoneNumberLib = $this->app['libphonenumber'];
-
-        // Second argument is a default country code
-        $phoneNumber = $phoneNumberLib->parse($input[Entity::CONTACT], 'IN');
-
-        $input[Entity::CONTACT] = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
-    }
-
 }

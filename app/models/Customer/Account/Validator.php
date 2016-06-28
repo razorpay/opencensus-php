@@ -4,6 +4,7 @@ namespace Models\Customer;
 
 use Models\Base;
 use Models\Customer\Entity;
+use libphonenumber\PhoneNumberFormat;
 
 class Validator extends Base\Validator
 {
@@ -24,4 +25,20 @@ class Validator extends Base\Validator
     protected static $contactRules = array(
         Entity::CONTACT => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
     );
+
+    public static function validateAndParseContact($contact)
+    {
+        (new static)->validateInput('contact', ['contact' => $contact]);
+
+        $app = \App::getFacadeRoot();
+
+        $phoneNumberLib = $app['libphonenumber'];
+
+        // Second argument is a default country code
+        $phoneNumber = $phoneNumberLib->parse($contact, 'IN');
+
+        $contact = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
+
+        return $contact;
+    }
 }

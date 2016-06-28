@@ -131,6 +131,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->getSharedAccount();
 
+        $contact = Customer\Validator::validateAndParseContact($contact);
+
         $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
 
         if ($customer !== null)
@@ -156,7 +158,7 @@ class Service extends Base\Service
     {
         $result = ['valid' => false];
 
-        $contact = $input['contact'];
+        $contact = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
 
         $merchant = $this->repo->merchant->getSharedAccount();
 

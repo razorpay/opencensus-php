@@ -22,7 +22,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         if (is_string($contact) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_CHARACTERS,
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
                 $field);
         }
 
@@ -38,7 +38,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         if (ctype_digit($contact) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_CHARACTERS,
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
                 $attribute);
         }
 
