@@ -232,7 +232,7 @@ class Service extends Base\Service
         return $file;
     }
 
-    public function refundPayment($id, $amount, $mode)
+    public function refundPayment($id, $input, $mode)
     {
         $error = array();
 
@@ -241,7 +241,7 @@ class Service extends Base\Service
             $this->setApiCredentials($this->merchantId, $mode);
             $data = $this->api->payment
                               ->fetch($id)
-                              ->refund(array('amount' => $amount))
+                              ->refund($input)
                               ->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
@@ -250,7 +250,7 @@ class Service extends Base\Service
             return $error;
         }
 
-        if ($data['entity'] !== "refund" or $data['amount'] !== (int)$amount)
+        if ($data['entity'] !== "refund" or $data['amount'] !== (int) $input['amount'])
         {
             $error[] = "Refund Failed";
         }
