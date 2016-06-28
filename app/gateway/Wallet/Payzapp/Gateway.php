@@ -328,7 +328,7 @@ class Gateway extends Base\Gateway
         );
 
         // If the wallet entity does not have an acosa transaction id, fill it.
-        if (!isset($payment['gateway_payment_id_2']))
+        if (empty($payment['gateway_payment_id_2']))
         {
             $gateway_payment_id_2 =
                 $verify->verifystatusResults['SALE']['status']['transaction_id'];
