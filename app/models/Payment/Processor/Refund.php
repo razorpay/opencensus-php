@@ -239,7 +239,7 @@ trait Refund
         {
             $payment = $this->payment;
 
-            $this->repo->lockForUpdate($payment->getKey());
+            $this->paymentRepo->lockForUpdate($payment->getKey());
 
             $this->createTransactionForRefund($this->refund, $payment);
 
@@ -286,7 +286,7 @@ trait Refund
         }
     }
 
-    protected function createTransactionForRefund($refund, $payment)
+    public function createTransactionForRefund($refund, $payment)
     {
         $gateway = $payment->getGateway();
 
@@ -295,15 +295,17 @@ trait Refund
         {
             if ($payment->transaction === null)
             {
-                Exception\LogicException(
+                throw new Exception\LogicException(
                     'Transaction expected but not present for payment: ' . $payment->getId());
             }
 
             $txn = (new Transaction\Core)->createFromRefund($refund);
 
-            $txn->saveOrFail();
+            $this->repo->saveOrFail($txn);
 
             return $txn;
         }
+        
+        return null;
     }
 }

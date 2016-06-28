@@ -89,17 +89,15 @@ class Repository extends Base\Repository
 
     public function fetchRefundsWithoutTransactions()
     {
-        $repo = $this->repo;
-
-        return $repo::join(
+        return $this->newQuery()
+                    ->join(
                             Table::PAYMENT,
-                            Table::REFUND . '.' . Refund\Entity::PAYMENT_ID, 
+                            Table::REFUND . '.' . Refund\Entity::PAYMENT_ID,
                             '=',
-                            Table::PAYMENT . '.' . Payment\Entity::ID
-                        )
-                    ->select(Table::REFUND . '.*', Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
+                            Table::PAYMENT . '.' . Payment\Entity::ID)
                     ->whereNull(Refund\Entity::TRANSACTION_ID)
                     ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
+                    ->with('payment')
                     ->get();
     }
 

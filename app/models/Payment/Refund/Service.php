@@ -10,8 +10,9 @@ use Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;
-use Trace\Trace;
 use Trace\TraceCode;
+use EE\Exception;
+use Models\Transaction;
 
 class Service extends Base\Service
 {
@@ -197,7 +198,7 @@ class Service extends Base\Service
 
         $merchantId = $refund->getMerchantId();
 
-        $merchant = $this->repo->refund->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $data = $this->processor($merchant)->verifyRefund($refund);
 
@@ -208,11 +209,80 @@ class Service extends Base\Service
     {
         $refundsWithoutTransaction = $this->repo->refund->fetchRefundsWithoutTransactions();
 
+        $totalCount = count($refundsWithoutTransaction);
+        
+        $this->trace->info(
+            TraceCode::TRANSACTION_REFUND_TRACE,
+            [
+                'total_count' => $totalCount
+            ]
+        );
+        
+        $successes = $failures = 0;
+        $failureRefundIds = [];
+
         foreach ($refundsWithoutTransaction as $refundWithoutTransaction)
         {
-            $payment = $refundsWithoutTransaction->payment;
+            $this->trace->info(
+                TraceCode::TRANSACTION_REFUND_TRACE,
+                $refundWithoutTransaction->toArray()
+            );
 
-            $this->createTransactionForRefund($refundWithoutTransaction, $payment);
+            try
+            {
+                $payment = $refundsWithoutTransaction->payment;
+
+                $transaction = $this->createTransactionForRefund($refundWithoutTransaction, $payment);
+                
+                if ($transaction === null)
+                {
+                    throw new Exception\LogicException(
+                        "Should not have reached here."
+                    );
+                }
+                
+                $successes += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failures += 1;
+                $failureRefundIds[] = $refundsWithoutTransaction->getId();
+                
+                $this->trace->error(
+                    TraceCode::REFUND_TRANSACTION_FAILED,
+                    $refundWithoutTransaction->toArray()
+                );
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        return [
+            'total_count'       => $totalCount,
+            'success_count'     => $successes,
+            'failure_count'     => $failures,
+            'failed_refund_ids' => $failureRefundIds,
+        ];
+    }
+
+    protected function createTransactionForRefund($refund, $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+            ($payment->getCaptureTimestamp() !== null))
+        {
+            if ($payment->transaction === null)
+            {
+                throw new Exception\LogicException(
+                    'Transaction expected but not present for payment: ' . $payment->getId());
+            }
+
+            $txn = (new Transaction\Core)->createFromRefund($refund);
+
+            $this->repo->saveOrFail($txn);
+
+            return $txn;
         }
 
         return null;
@@ -227,8 +297,6 @@ class Service extends Base\Service
 
     protected function getBindings(Merchant\Entity $merchant = null)
     {
-        $trace = \Trace::getFacadeRoot();
-
         $bindings = array(
             'merchant'  => $merchant,
             'core'      => new Payment\Core(),

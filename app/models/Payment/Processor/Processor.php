@@ -25,25 +25,22 @@ class Processor
 {
     use Authorize;
     use Capture;
-    use Callback;
     use Refund;
     use Verify;
     use OtpResend;
     use Topup;
 
     protected $merchant;
-
     protected $core;
-
     protected $trace;
-
     protected $payment;
-
     protected $terminal;
-
     protected $mode;
-
     protected $repo;
+    protected $orderRepo;
+    protected $paymentRepo;
+    protected $app;
+    protected $methods;
 
     protected $verifyRefundStatus;
 
@@ -62,12 +59,12 @@ class Processor
 
         $this->checkMerchantPermissions();
 
-        $this->repo = new Payment\Repository;
+        $this->repo = $this->app['repo'];
+        
+        $this->paymentRepo = $this->repo->payment;
 
-        $this->orderRepo = new Order\Repository;
-
-        $this->app = App::getFacadeRoot();
-
+        $this->orderRepo = $this->repo->order;
+        
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
     }
@@ -561,7 +558,7 @@ class Processor
      */
     protected function lockForUpdateAndReload($payment)
     {
-        $lockedPayment = $this->repo->lockForUpdate($payment->getKey());
+        $lockedPayment = $this->paymentRepo->lockForUpdate($payment->getKey());
 
         //
         // When $this->payment is being passed in the argument,
