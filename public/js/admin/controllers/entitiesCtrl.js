@@ -124,7 +124,8 @@ app.controller('EntitiesCtrl', [
         vpc_TransactionNo: ['Transaction No'],
         vpc_ShopTransactionNo: ['Shop Transaction No'],
         vpc_TxnResponseCode: ['Txn Response Code'],
-        vpc_ReceiptNo: ['Receipt No']
+        vpc_ReceiptNo: ['Receipt No'],
+        vpc_3DSstatus: ['3DSecure Status']
       },
       bank_account: {
         merchant_id: ['Merchant Id'],
