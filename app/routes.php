@@ -139,6 +139,7 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
     // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
+    Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
 
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');

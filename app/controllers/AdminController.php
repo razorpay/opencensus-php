@@ -233,11 +233,19 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getSupportedNetworks()
+    {
+        $data = (new Admin\Service)->fetchPaymentNetworks();
+
+        return AppResponse::jsonResponse([], $data->toArray());
+    }
+
     public function postEditMerchant($id)
     {
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
+
 
         return AppResponse::jsonResponse($error, $data);
     }

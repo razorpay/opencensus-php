@@ -1,3 +1,4 @@
+"use strict";
 //Pricing List controller
 app.controller('PricingsCtrl', [
   '$scope',
@@ -9,6 +10,8 @@ app.controller('PricingsCtrl', [
     $scope.pricing_plans = {};
     $scope.show_plan = {};
     $scope.create_plan = false;
+    $scope.itemList = [];
+    $scope.networks = null;
     generateTable();
 
     var getDefaultRule = function() {
@@ -24,16 +27,16 @@ app.controller('PricingsCtrl', [
         amount_range_max: 0,
         percent_rate: 200,
         fixed_rate: 0
-      }
-    }
+      };
+    };
 
     function getPayload (input) {
       var data = input;
       // This contains high/low and we don't send that
-      delete data['amount_range'];
+      delete data.amount_range;
       if (data.amount_range_active == '0') {
-        delete data['amount_range_min'];
-        delete data['amount_range_max'];
+        delete data.amount_range_min;
+        delete data.amount_range_max;
       }
       return data;
     }
@@ -45,6 +48,51 @@ app.controller('PricingsCtrl', [
       $scope.show_plan = {};
       $scope.create_plan = true;
     };
+
+    var getNetworkList = function (method) {
+      if ($scope.networks === null) {
+        return {"":"All"};
+      }
+
+      var networks = {};
+
+      switch (method) {
+        // The networks object is differently indexed
+        case 'netbanking':
+          networks = $scope.networks.bank;
+          break;
+        // we copy over the card networks list to EMI networks list
+        case 'emi':
+          networks = $scope.networks.card;
+          break;
+        default:
+          networks = $scope.networks[method];
+      }
+
+      networks[""] = "All";
+      return networks;
+    };
+
+    $scope.getNetworks = function () {
+      var request = $http({
+        url: '/admin/networks' ,
+        method: 'GET'
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.networks = data.data;
+          setPaymentNetworkList('new_rule', 'card');
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+     };
 
     $scope.savePlan = function () {
 
@@ -65,7 +113,7 @@ app.controller('PricingsCtrl', [
           $scope.showPlan(data.data.id);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -93,7 +141,7 @@ app.controller('PricingsCtrl', [
           );
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -114,6 +162,22 @@ app.controller('PricingsCtrl', [
       $scope.new_plan.amount_range_max = range[1];
     });
 
+    // where is either new_rule or new_plan
+    var setPaymentNetworkList = function(where) {
+      var method = $scope[where].payment_method;
+      $scope.itemList = getNetworkList(method);
+      // This sets it to "All"
+      $scope[where].payment_network = '';
+    };
+
+    $scope.$watch('new_rule.payment_method', function() {
+      setPaymentNetworkList('new_rule');
+    });
+
+    $scope.$watch('new_plan.payment_method', function() {
+      setPaymentNetworkList('new_plan');
+    });
+
     $scope.saveRule = function () {
 
       var data = getPayload($scope.new_rule);
@@ -132,7 +196,7 @@ app.controller('PricingsCtrl', [
           $scope.show_plan.rules.push(data.data);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -179,5 +243,8 @@ app.controller('PricingsCtrl', [
 
       return range;
     }
+
+    // We fetch the networks on Load
+    $scope.getNetworks();
   }
 ]);
