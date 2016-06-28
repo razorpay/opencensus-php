@@ -127,7 +127,7 @@ class Service extends Base\Service
 
     protected function validateAndParseContent(&$input)
     {
-        validate(Validator::$contactRules, ['contact' => $input[Entity::CONTACT]], false);
+        (new Customer\Validator)->validateInput('contact', ['contact' => $input[Entity::CONTACT]]);
 
         $phoneNumberLib = $this->app['libphonenumber'];
 

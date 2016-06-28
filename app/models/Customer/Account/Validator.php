@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'sometimes|email',
     );
 
-    public static $contactRules = array(
+    protected static $contactRules = array(
         Entity::CONTACT => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
     );
 }
