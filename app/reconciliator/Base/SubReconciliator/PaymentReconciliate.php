@@ -446,9 +446,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function createMissingIin($reconCardType, $reconCardLocale)
     {
-        $this->messenger->raiseReconAlert(
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
             [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
                 'message'         => 'IIN absent for the card. Creating.',
                 'card_id'         => $this->payment->card->getId(),
                 'payment_id'      => $this->payment->getId(),
