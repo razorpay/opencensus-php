@@ -330,7 +330,6 @@ class MerchantTest extends TestCase
         $this->initiateSettlements('kotak', $settleAtTimestamp);
 
         $testData = & $this->testData['testChangeBankAccount'];
-        $testData['response']['content']['beneficiary_code'] = 'TEST2';
         $this->runRequestResponseFlow($testData);
 
         $bankAccounts = $this->getEntities(
