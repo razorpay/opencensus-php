@@ -33,7 +33,7 @@ try{
 @media(max-height:400px){#top{border:none}}
     </style>
   </head>
-  <body onload="document.forms[0].submit()" style="overflow:hidden;text-align:center;height:100%;white-space:nowrap;margin:0;padding:0;font-family:ubuntu,verdana,helvetica,sans-serif">
+  <body onload="document.form1.submit" style="overflow:hidden;text-align:center;height:100%;white-space:nowrap;margin:0;padding:0;font-family:ubuntu,verdana,helvetica,sans-serif">
     <div style="display:inline-block;vertical-align:middle;width:90%;max-width:600px;height:60%;max-height:440px;position:relative;padding-bottom:60px">
       @if (isset($data['amount']) && isset($data['image']))
         <div id="top">
