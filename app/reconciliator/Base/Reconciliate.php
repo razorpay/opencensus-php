@@ -9,6 +9,7 @@ use Reconciliator\Messenger;
 use EE\Exception;
 use Trace\TraceCode;
 use DB;
+use App;
 
 class Reconciliate
 {
@@ -49,9 +50,13 @@ class Reconciliate
 
     protected $subReconciliator;
     protected $messenger;
+    protected $app;
+    protected $repo;
 
     public function __construct()
     {
+        $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
         $this->messenger = new Messenger();
     }
 
@@ -77,7 +82,7 @@ class Reconciliate
 
             $this->setSubReconciliator($reconciliationType);
 
-            DB::transaction(function() use ($fileContents)
+            $this->repo->transactionOnLiveAndTest(function() use ($fileContents)
             {
                 $this->subReconciliator->startReconciliation($fileContents);
             });

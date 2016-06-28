@@ -265,7 +265,7 @@ class Processor
                 return Payment\Status::AUTHORIZED;
             }
 
-            $payment = $this->repo->lockForUpdate($payment->getKey());
+            $this->lockForUpdateAndReload($payment);
 
             return $this->cancelPayment($payment, $input);
         });
@@ -542,25 +542,42 @@ class Processor
         $this->payment = $this->core->retrieveByIdAndMerchantId(
                                     $id, $this->merchant->getKey());
 
-        $card = $this->payment->card()->first();
-
         return $this->payment;
     }
 
-    protected function lockForUpdateAndRetrievePayment(& $payment)
+    /**
+     * Sets both, the instance payment object and the passed
+     * payment object, to the new payment object which is locked
+     * for update.
+     *
+     * setRawAttributes is being used because of the way php
+     * handles pass by reference for objects. If the passed object
+     * is ASSIGNED to another object/value, the original object
+     * from the calling function remains unaffected.
+     * Any change ON the passed object will affect the original
+     * object too.
+     *
+     * @param $payment
+     */
+    protected function lockForUpdateAndReload($payment)
     {
-        $payment = $this->repo->lockForUpdate($payment->getKey());
+        $lockedPayment = $this->repo->lockForUpdate($payment->getKey());
 
-        $this->payment = $payment;
+        //
+        // When $this->payment is being passed in the argument,
+        // $this->payment will be the same object as $payment.
+        // When $this->payment and $payment are two different objects,
+        // we update both of them.
+        //
 
-        return $this->payment;
+        $this->payment->setRawAttributes($lockedPayment->getAttributes(), true);
+
+        $payment->setRawAttributes($lockedPayment->getAttributes(), true);
     }
 
     protected function setPayment($payment)
     {
         $this->payment = $payment;
-
-        $card = $this->payment->card()->first();
     }
 
     protected function tracePaymentNewRequest($input)

@@ -7,6 +7,7 @@ use Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
+use EE\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -62,7 +63,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function throwException(array $e)
     {
-        throw new Exception\DbQueryException($e);
+        throw new DbQueryException($e);
     }
 
     public function isTransactionActive()

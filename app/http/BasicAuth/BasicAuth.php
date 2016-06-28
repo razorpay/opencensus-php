@@ -153,6 +153,7 @@ class BasicAuth
         $this->cloud = $app['config']->get('app.cloud');
         $this->router = $app['router'];
         $this->trace = $this->app['trace'];
+        $this->repo = $this->app['repo'];
     }
 
     public function setCredentials()
@@ -548,7 +549,7 @@ class BasicAuth
         // The key in case of app proxy will be the merchant id
         $merchantId = $this->getKey();
 
-        $this->merchant = (new Merchant\Repository)->find($merchantId);
+        $this->merchant = $this->repo->merchant->find($merchantId);
 
         // If merchant id isn't found, then return false.
         return ($this->merchant !== null);
@@ -788,7 +789,7 @@ class BasicAuth
 
     protected function fetchKey($keyId)
     {
-        $this->key = (new Key\Repository)->findNotExpired($keyId);
+        $this->key = $this->repo->key->findNotExpired($keyId);
 
         return $this->key;
     }
@@ -797,7 +798,7 @@ class BasicAuth
     {
         $merchantId = $key->getMerchantId();
 
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $this->checkMerchantActivatedForLive();
 

@@ -30,8 +30,6 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::IIN;
 
-    public $timestamps = false;
-
     protected $appends = array(self::INTERNATIONAL);
 
     protected static $modifiers = array('inputRemoveBlanks');
@@ -65,7 +63,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::EMI       =>  false,
+        self::EMI => false,
     );
 
     public function isEmiAvailable()

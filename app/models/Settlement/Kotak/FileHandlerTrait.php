@@ -2,6 +2,7 @@
 
 namespace Models\Settlement\Kotak;
 
+use ZipArchive;
 use Carbon\Carbon;
 use EE\Exception;
 use Excel;
@@ -241,6 +242,27 @@ trait FileHandlerTrait
         $name = $this->getZipFileToWriteName();
 
         return $this->getFullFilePath($name);
+    }
+
+    protected function makeZipFile($fileArray, $password = null)
+    {
+        $zipPath = $this->getZipFullFilePath();
+
+        $zip = new ZipArchive();
+        $zip->open($zipPath, ZipArchive::CREATE);
+
+        foreach ($fileArray as $file)
+        {
+            $zip->addFile($file);
+        }
+
+        if (isset($password))
+        {
+            $zip->setPassword($password);
+        }
+
+        $zip->close();
+        return $zipPath;
     }
 
     protected function getFileToWriteNameWithoutExt()

@@ -2,7 +2,6 @@
 
 namespace Models\Emi\Banks\Base;
 
-use ZipArchive;
 use Carbon\Carbon;
 use Models\Card;
 use Models\Settlement\Kotak\FileHandlerTrait;
@@ -37,16 +36,12 @@ class EmiFile
 
     protected function getZippedFile()
     {
-        $zipPath = $this->getZipFullFilePath();
         $fullPath = $this->getExcelFullFilePath();
+        $fileArray = array($fullPath);
 
         $password = \Config::get('applications.emi')['password'];
 
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
-        $zip->addFile($fullPath);
-        $zip->setPassword($password);
-        $zip->close();
+        $zipPath = $this->makeZipFile($fileArray, $password);
 
         return $zipPath;
     }
