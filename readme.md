@@ -60,3 +60,11 @@ blade templates before committing. Run the following command to regenerate:
 
 If you have created a new email template, make sure you edit the
 `GenerateEmailTemplate.php` file to add the template in the templates array.
+
+
+# Editor Configuration
+
+Make sure that you install the plguin for your editor from <http://editorconfig.org/>.
+
+This will ensure that your editor respects our coding style. You can find the styles
+themselves at [.editorconfig](.editorconfig) file in the root of this repo
