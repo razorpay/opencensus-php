@@ -6,7 +6,6 @@ use Models\Base;
 use Models\Customer;
 use Models\Merchant;
 use Models\Merchant\Account;
-use libphonenumber\PhoneNumberFormat;
 
 class Service extends Base\Service
 {
@@ -95,15 +94,13 @@ class Service extends Base\Service
      */
     public function sendOtp($input)
     {
-        $this->validateAndParseContent($input);
-
         $input['context'] = $this->merchant->getId();
 
         $input['source'] = 'api';
 
         $input['params']['merchant_name'] = $this->merchant->getBillingLabelElseName();
 
-        $data = (new Customer\Raven)->sendOtp($input);
+        $data = (new Customer\Core)->sendOtp($input);
 
         return $data;
     }
@@ -114,8 +111,6 @@ class Service extends Base\Service
      */
     public function verifyOtp($input)
     {
-        $this->validateAndParseContent($input);
-
         $input['context'] = $this->merchant->getId();
 
         $input['source'] = 'api';
@@ -123,18 +118,6 @@ class Service extends Base\Service
         $data = (new Customer\Core)->verifyOtp($input);
 
         return $data;
-    }
-
-    protected function validateAndParseContent(&$input)
-    {
-        (new Customer\Validator)->validateInput('contact', ['contact' => $input[Entity::CONTACT]]);
-
-        $phoneNumberLib = $this->app['libphonenumber'];
-
-        // Second argument is a default country code
-        $phoneNumber = $phoneNumberLib->parse($input[Entity::CONTACT], 'IN');
-
-        $input[Entity::CONTACT] = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
     }
 
     /**
