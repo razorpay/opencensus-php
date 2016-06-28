@@ -295,7 +295,7 @@ trait Refund
         {
             if ($payment->transaction === null)
             {
-                Exception\LogicException(
+                throw new Exception\LogicException(
                     'Transaction expected but not present for payment: ' . $payment->getId());
             }
 
