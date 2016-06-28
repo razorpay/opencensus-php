@@ -6,12 +6,13 @@ use EE\Exception;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Constants\Table;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'Refund';
+    protected $entity = 'refund';
 
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
@@ -84,6 +85,22 @@ class Repository extends Base\Repository
     {
         return $this->fetchBetweenTimestampWithRelations(
                         $merchantId, $from, $to, ['payment']);
+    }
+
+    public function fetchRefundsWithoutTransactions()
+    {
+        $repo = $this->repo;
+
+        return $repo::join(
+                            Table::PAYMENT,
+                            Table::REFUND . '.' . Refund\Entity::PAYMENT_ID, 
+                            '=',
+                            Table::PAYMENT . '.' . Payment\Entity::ID
+                        )
+                    ->select(Table::REFUND . '.*', Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
+                    ->whereNull(Refund\Entity::TRANSACTION_ID)
+                    ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
+                    ->get();
     }
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)

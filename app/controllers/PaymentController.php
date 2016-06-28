@@ -8,10 +8,12 @@ use Models\Card;
 class PaymentController extends BaseController
 {
     protected $payment;
+    protected $refund;
 
     public function __construct()
     {
         $this->payment = new Payment\Service();
+        $this->refund = new Payment\Refund\Service();
     }
 
     public function getPayment($id)
@@ -98,6 +100,14 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    /**
+     * Creates transactions for all refunds if not present.
+     */
+    public function postRefundsTransactions()
+    {
+       $refunds = $this->refund->createMissingTransactions();
+    }
+
     public function postCancel($id)
     {
         $input = Input::all();
@@ -123,7 +133,7 @@ class PaymentController extends BaseController
 
     public function getRefund($id)
     {
-        $refunds = (new Payment\Refund\Service)->fetch($id);
+        $refunds = $this->refund->fetch($id);
 
         return ApiResponse::json($refunds);
     }
@@ -132,7 +142,7 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $refunds = (new Payment\Refund\Service)->fetchMultiple($input);
+        $refunds = $this->refund->fetchMultiple($input);
 
         return ApiResponse::json($refunds);
     }
@@ -151,7 +161,7 @@ class PaymentController extends BaseController
         // once properly deployed
         $input['method'] = 'netbanking';
 
-        $refundExcel = (new Payment\Refund\Service)->getRefundsFile($input);
+        $refundExcel = $this->refund->getRefundsFile($input);
 
         return ApiResponse::json($refundExcel);
     }
@@ -160,7 +170,7 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $refundExcel = (new Payment\Refund\Service)->getRefundsFile($input);
+        $refundExcel = $this->refund->getRefundsFile($input);
 
         return ApiResponse::json($refundExcel);
     }
@@ -254,9 +264,7 @@ class PaymentController extends BaseController
 
     public function getRefundVerify($id)
     {
-        $input = Input::all();
-
-        $data = (new Payment\Refund\Service)->verify($id);
+        $data = $this->refund->verify($id);
 
         return ApiResponse::json($data);
     }

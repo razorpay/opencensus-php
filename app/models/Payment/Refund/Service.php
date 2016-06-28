@@ -77,7 +77,7 @@ class Service extends Base\Service
         }
         else
         {
-            $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+            $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                             $type, $gatewayCode, $from, $to, $gateway);
 
             return $this->generateRefundFile($refunds);
@@ -177,14 +177,14 @@ class Service extends Base\Service
     {
         Refund\Entity::verifyIdAndStripSign($id);
 
-        $refund = (new Refund\Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+        $refund = $this->repo->refund->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $refund->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
-        $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
+        $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
         return $refunds->toArrayPublic();
     }
@@ -193,15 +193,29 @@ class Service extends Base\Service
     {
         Refund\Entity::verifyIdAndStripSign($id);
 
-        $refund = (new Refund\Repository)->findOrFail($id);
+        $refund = $this->repo->refund->findOrFail($id);
 
         $merchantId = $refund->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = $this->repo->refund->findOrFail($merchantId);
 
         $data = $this->processor($merchant)->verifyRefund($refund);
 
         return $data;
+    }
+
+    public function createMissingTransactions()
+    {
+        $refundsWithoutTransaction = $this->repo->refund->fetchRefundsWithoutTransactions();
+
+        foreach ($refundsWithoutTransaction as $refundWithoutTransaction)
+        {
+            $payment = $refundsWithoutTransaction->payment;
+
+            $this->createTransactionForRefund($refundWithoutTransaction, $payment);
+        }
+
+        return null;
     }
 
     protected function processor($merchant = null)
