@@ -58,68 +58,40 @@ class SharpGatewayTest extends TestCase
 
     public function testOtpFlowInsufficientBalancePayment()
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
-
-        $this->ba->publicAuth();
-
-        $this->setOtp('100000');
-
-        $payment = $this->getDefaultWalletPaymentArray('payumoney');
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->otpCommonFlow('100000');
     }
 
     public function testOtpFlowIncorrectOtpPayment()
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
-
-        $this->ba->publicAuth();
-
-        $this->setOtp('200000');
-
-        $payment = $this->getDefaultWalletPaymentArray('payumoney');
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->otpCommonFlow('200000');
     }
 
     public function testOtpFlowOtpExpiredPayment()
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
-
-        $this->ba->publicAuth();
-
-        $this->setOtp('300000');
-
-        $payment = $this->getDefaultWalletPaymentArray('payumoney');
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doAuthPayment($payment);
-        });
+        $this->otpCommonFlow('300000');
     }
 
     public function testOtpFlowAttemptsExceededPayment()
+    {
+        $this->otpCommonFlow('400000');
+    }
+
+    protected function otpCommonFlow($otp)
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
 
         $this->ba->publicAuth();
 
-        $this->setOtp('400000');
+        $this->setOtp($otp);
 
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
-        $data = $this->testData[__FUNCTION__];
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+        $data = $this->testData[$name];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
