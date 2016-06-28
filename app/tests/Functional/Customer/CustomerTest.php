@@ -188,6 +188,29 @@ class CustomerTest extends TestCase
         $this->assertEquals($content['device_token'], '123');
     }
 
+    public function testOtpFlowWithInvalidNumber()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        // send OTP
+        $request = array(
+            'url' => '/otp/create',
+            'method' => 'post',
+            'content' => [
+                'contact' => '4637346743722'
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($request)
+        {
+            $this->makeRequest($request);
+        });
+    }
+
     protected function mockRaven()
     {
         $raven = Mockery::mock('Services\Raven')->makePartial();

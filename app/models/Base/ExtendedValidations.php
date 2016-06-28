@@ -10,6 +10,68 @@ use Symfony\Component\Translation\TranslatorInterface;
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
     /**
+     * Create basic contact validate
+     *
+     *
+     */
+    protected function validateContactSyntax($attribute, $contact, $parameters)
+    {
+        $code = null;
+        $message = null;
+
+        if (is_string($contact) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_CHARACTERS,
+                $field);
+        }
+
+        $origContact = $contact;
+
+        // Except digits, only '+' symbol is allowed in the beginning
+        if ($contact[0] === '+')
+            $contact = substr($contact, 1);
+
+        // Cleaning contact, removing -,),(, space
+        $contact = str_replace(['-', '(', ')', ' '], '', $contact);
+
+        if (ctype_digit($contact) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_CHARACTERS,
+                $attribute);
+        }
+
+        /**
+         * The minimum contact number length including international
+         * prefix (country code) is theoritically 8 digits.
+         *
+         * See http://stackoverflow.com/a/17814276/368328
+         *
+         * The correct way to do this would be to use libphonennumber
+         */
+        if (strlen($contact) < 8)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
+                $attribute);
+        }
+
+        /**
+         * See https://en.wikipedia.org/wiki/Telephone_numbering_plan#International_numbering_plan
+         * for why 15
+         */
+        if (strlen($contact) > 15)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
+                $attribute);
+        }
+
+        return true;
+    }
+
+    /**
      * Create notes validation
      *
      * @param string $attribute
