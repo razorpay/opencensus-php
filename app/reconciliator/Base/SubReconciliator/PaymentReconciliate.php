@@ -374,6 +374,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                            $rowDetails[BaseReconciliate::CARD_LOCALE] :
                            null;
 
+        // TODO: Handle this better.
+        if (($reconCardType === null) and ($reconCardLocale === null))
+        {
+            return;
+        }
+
         $this->paymentIin = $this->payment->card->iinRelation;
 
         if ($this->paymentIin === null)
