@@ -74,12 +74,21 @@ class Selector
 
         if (empty($sortedTerminals))
         {
-            throw new Exception\RuntimeException(
-                'Terminal should not be null',
-                ['payment' => $payment->toArrayAdmin()]);
+            if ($this->mode === Mode::TEST)
+            {
+                $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+            }
+            else
+            {
+                throw new Exception\RuntimeException(
+                    'Terminal should not be null',
+                    ['payment' => $payment->toArrayAdmin()]);
+            }
         }
-
-        $terminal = $sortedTerminals[0];
+        else
+        {
+            $terminal = $sortedTerminals[0];
+        }
 
         $payment->terminal()->associate($terminal);
 
@@ -88,6 +97,4 @@ class Selector
         return $terminal;
 
     }
-
-
 }
