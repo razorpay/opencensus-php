@@ -268,7 +268,7 @@ app.controller('EntitiesCtrl', [
         iin: ['Card IIN'],
         last4: ['Card Last 4'],
         notes: ['Notes'],
-        international: ['International']
+        international: booleanList
       },
       paytm: {
         payment_id: ['Payment Id'],
