@@ -11,10 +11,6 @@ class MobikwikGatewayTest extends TestCase
 
     protected $payment;
 
-    protected $step = null;
-
-    protected $type = null;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/MobikwikGatewayTestData.php';
@@ -57,8 +53,6 @@ class MobikwikGatewayTest extends TestCase
 
     public function testPowerWalletPayment()
     {
-        $this->type = 'otp';
-
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
         $payment['_']['source'] = 'checkoutjs';
 
@@ -73,19 +67,16 @@ class MobikwikGatewayTest extends TestCase
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
         $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
-
-        $this->type = null;
     }
 
     public function testPowerWalletOtpRetryPayment()
     {
-        $this->type = 'otp';
-        $this->step = 'RETRY';
-
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
         $payment['_']['source'] = 'checkoutjs';
 
         $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp('200000');
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
@@ -96,10 +87,10 @@ class MobikwikGatewayTest extends TestCase
         $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_OTP_INCORRECT');
         $this->assertEquals($payment['error_code'], null);
 
-        $this->step = null;
+        $this->setOtp(null);
 
         $data = $this->testData['otpRetryRequest'];
-        $data['request']['url'] = $this->otpSubmitUrl;
+        $data['request']['url'] = $this->callbackUrl;
 
         $authPayment = $this->makeRequestAndGetContent($data['request']);
 
@@ -112,8 +103,6 @@ class MobikwikGatewayTest extends TestCase
         $mobikwik = $this->getLastEntity('mobikwik', true);
 
         $this->assertTestResponse($mobikwik, 'testMobikwikWalletEntity');
-
-        $this->type = null;
     }
 
     public function testOtpRetryExceededPayment()
@@ -178,42 +167,32 @@ class MobikwikGatewayTest extends TestCase
 
     public function testInsufficientBalancePayment()
     {
-        $this->type = 'otp';
-        $this->step = 'TOPUP';
-
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
         $payment['_']['source'] = 'checkoutjs';
 
         $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp('100000');
 
         $response = $this->runRequestResponseFlow($data, function() use ($payment)
         {
             return $this->doAuthPayment($payment);
         });
 
-        $this->step = null;
-        $this->type = null;
-
         return $response;
     }
 
     public function testTopupPayment()
     {
-        // Get Innsufficient balance response
+        // Get Insufficient balance response
         $response = $this->testInsufficientBalancePayment();
 
         $responseData = $this->response->original->data;
 
         $topupRequest = $this->testData['topupData'];
 
-        // Generate relative URL for topup
-        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
-        $url = 'http://localhost' . $url;
-
-        $topupRequest['request']['url'] = $url;
-
         // Send topup request
-        $topupResponse = $this->runRequestResponseFlow($topupRequest);
+        $topupResponse = $this->topupPayment($responseData['payment_id']);
 
         // Make topup redirection request
         $topupRedirect = $this->makeRequest($topupResponse['request']);
@@ -253,8 +232,6 @@ class MobikwikGatewayTest extends TestCase
 
     public function testPowerWalletVerifyPayment()
     {
-        $this->type = 'otp';
-
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
         $payment['_']['source'] = 'checkoutjs';
 
@@ -267,8 +244,6 @@ class MobikwikGatewayTest extends TestCase
         $response = $this->verifyPayment($id);
 
         $this->assertEquals($response['payment']['verified'], 1);
-
-        $this->type = null;
     }
 
     public function testPowerWalletVerifyFailedPayment()

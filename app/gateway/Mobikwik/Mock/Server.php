@@ -155,7 +155,7 @@ class Server extends Base\Mock\Server
         }
 
         // OTP 131313 is for insufficient balance
-        if ($input['otp'] === '131313')
+        if ($input['otp'] === '100000')
         {
             $content = array(
                 'status'            => 'FAILURE',
@@ -165,7 +165,7 @@ class Server extends Base\Mock\Server
         }
 
         // OTP 121212 is for incorrect OTP
-        if ($input['otp'] === '121212')
+        if ($input['otp'] === '200000')
         {
             $content = array(
                 'status'            => 'FAILURE',
