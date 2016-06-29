@@ -127,28 +127,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-
-        $request = array(
-            'url' => '/otp/create',
-            'method' => 'post',
-            'content' => [
-                'contact' => '1234567890'
-            ],
-        );
-
-        $response = $this->makeRequest($request);
+        $response = $this->sendOtp('1234567890');
 
         // verify OTP
-        $request = array(
-            'url' => '/otp/verify',
-            'method' => 'post',
-            'content' => [
-                'contact' => '1234567890',
-                'otp' => '233323'
-            ],
-        );
-
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->verifyOtp('1234567890', '233323');
 
         assert(empty($content['app_token']) === false);
         assert(empty($content['device_token']) === false);
@@ -161,31 +143,67 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
+        $response = $this->sendOtp('1234567890');
 
+        // verify OTP
+        $content = $this->verifyOtp('1234567890', '233443', '123');
+
+        assert(empty($content['app_token']) === false);
+        $this->assertEquals($content['device_token'], '123');
+    }
+
+    public function testOtpFlowWithInvalidNumber()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        // send OTP
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->sendOtp('4637346743722');
+        });
+    }
+
+    protected function sendOtp($contact)
+    {
         $request = array(
             'url' => '/otp/create',
             'method' => 'post',
             'content' => [
-                'contact' => '1234567890'
+                'contact' => $contact
             ],
         );
 
         $response = $this->makeRequest($request);
 
-        // verify OTP
+        return $response;
+    }
+
+
+    protected function verifyOtp($contact, $otp, $deviceToken = null)
+    {
+        $content = [
+            'contact' => $contact,
+            'otp' => $otp
+        ];
+
+        if ($deviceToken !== null)
+        {
+            $content['device_token'] = $deviceToken;
+        }
+
         $request = array(
             'url' => '/otp/verify',
             'method' => 'post',
-            'content' => [
-                'contact' => '1234567890',
-                'otp' => '233323',
-                'device_token' => '123'
-            ],
+            'content' => $content
         );
 
-        $content = $this->makeRequestAndGetContent($request);
-        assert(empty($content['app_token']) === false);
-        $this->assertEquals($content['device_token'], '123');
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function mockRaven()
