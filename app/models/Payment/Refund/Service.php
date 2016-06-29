@@ -207,17 +207,17 @@ class Service extends Base\Service
 
     public function createMissingTransactions()
     {
-        $refundsWithoutTransaction = $this->repo->refund->fetchRefundsWithoutTransactions();
+        $refundsWithoutTransaction = $this->repo->refund->fetchRefundsWithoutTransactionsAndWithPaymentTransactions();
 
         $totalCount = count($refundsWithoutTransaction);
-        
+
         $this->trace->info(
             TraceCode::TRANSACTION_REFUND_TRACE,
             [
                 'total_count' => $totalCount
             ]
         );
-        
+
         $successes = $failures = 0;
         $failureRefundIds = [];
 
@@ -233,21 +233,21 @@ class Service extends Base\Service
                 $payment = $refundsWithoutTransaction->payment;
 
                 $transaction = $this->createTransactionForRefund($refundWithoutTransaction, $payment);
-                
+
                 if ($transaction === null)
                 {
                     throw new Exception\LogicException(
                         "Should not have reached here."
                     );
                 }
-                
+
                 $successes += 1;
             }
             catch (\Exception $ex)
             {
                 $failures += 1;
                 $failureRefundIds[] = $refundsWithoutTransaction->getId();
-                
+
                 $this->trace->error(
                     TraceCode::REFUND_TRANSACTION_FAILED,
                     $refundWithoutTransaction->toArray()

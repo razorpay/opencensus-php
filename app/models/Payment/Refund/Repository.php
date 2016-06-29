@@ -87,14 +87,21 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
-    public function fetchRefundsWithoutTransactions()
+    /**
+     * Fetches all refunds which have no transactions, but the
+     * corresponding payments have transactions.
+     * This should ideally always return an empty collection.
+     *
+     * @return array
+     */
+    public function fetchRefundsWithoutTransactionsAndWithPaymentTransactions()
     {
         return $this->newQuery()
                     ->join(
-                            Table::PAYMENT,
-                            Table::REFUND . '.' . Refund\Entity::PAYMENT_ID,
-                            '=',
-                            Table::PAYMENT . '.' . Payment\Entity::ID)
+                                Table::PAYMENT,
+                                Table::REFUND . '.' . Refund\Entity::PAYMENT_ID,
+                                '=',
+                                Table::PAYMENT . '.' . Payment\Entity::ID)
                     ->whereNull(Refund\Entity::TRANSACTION_ID)
                     ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
                     ->with('payment')
@@ -103,8 +110,6 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
-        $repo = $this->repo;
-
         $ptable = Payment\Entity::getTableName();
 
         $attrs = Refund\Entity::getTableName() . '.*';
