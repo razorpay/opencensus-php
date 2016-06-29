@@ -213,9 +213,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TRANSACTION_REFUND_TRACE,
-            [
-                'total_count' => $totalCount
-            ]
+            ['total_count' => $totalCount]
         );
 
         $successes = $failures = 0;
@@ -225,28 +223,32 @@ class Service extends Base\Service
         {
             $this->trace->info(
                 TraceCode::TRANSACTION_REFUND_TRACE,
-                $refundWithoutTransaction->toArray()
-            );
+                $refundWithoutTransaction->toArray());
 
             try
             {
-                $payment = $refundsWithoutTransaction->payment;
+                $payment = $refundWithoutTransaction->payment;
 
-                $transaction = $this->createTransactionForRefund($refundWithoutTransaction, $payment);
-
-                if ($transaction === null)
+                $this->repo->transaction(function() use($refundWithoutTransaction, $payment)
                 {
-                    throw new Exception\LogicException(
-                        "Should not have reached here."
-                    );
-                }
+                    $transaction = $this->processor($refundWithoutTransaction->merchant)
+                                        ->createTransactionForRefund(
+                                            $refundWithoutTransaction, $payment);
+
+                    $this->repo->saveOrFail($refundWithoutTransaction);
+
+                    if ($transaction === null)
+                    {
+                        throw new Exception\LogicException('Should not have reached here.');
+                    }
+                });
 
                 $successes += 1;
             }
             catch (\Exception $ex)
             {
                 $failures += 1;
-                $failureRefundIds[] = $refundsWithoutTransaction->getId();
+                $failureRefundIds[] = $refundWithoutTransaction->getId();
 
                 $this->trace->error(
                     TraceCode::REFUND_TRANSACTION_FAILED,
@@ -265,44 +267,10 @@ class Service extends Base\Service
         ];
     }
 
-    protected function createTransactionForRefund($refund, $payment)
+    protected function processor($merchant)
     {
-        $gateway = $payment->getGateway();
+        $processor = new Payment\Processor\Processor($merchant);
 
-        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-            ($payment->getCaptureTimestamp() !== null))
-        {
-            if ($payment->transaction === null)
-            {
-                throw new Exception\LogicException(
-                    'Transaction expected but not present for payment: ' . $payment->getId());
-            }
-
-            $txn = (new Transaction\Core)->createFromRefund($refund);
-
-            $this->repo->saveOrFail($txn);
-
-            return $txn;
-        }
-
-        return null;
-    }
-
-    protected function processor($merchant = null)
-    {
-        $bindings = $this->getBindings($merchant);
-
-        return Payment\Processor\Processor::create($bindings);
-    }
-
-    protected function getBindings(Merchant\Entity $merchant = null)
-    {
-        $bindings = array(
-            'merchant'  => $merchant,
-            'core'      => new Payment\Core(),
-            'trace'     => $this->trace,
-            'mode'      => $this->mode);
-
-        return $bindings;
+        return $processor;
     }
 }

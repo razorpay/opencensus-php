@@ -105,7 +105,7 @@ class Repository extends Base\Repository
                     ->select(Table::REFUND . '.*')
                     ->whereNull(Table::REFUND . '.' . Refund\Entity::TRANSACTION_ID)
                     ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
-                    ->with('payment')
+                    ->with('payment', 'merchant')
                     ->get();
     }
 

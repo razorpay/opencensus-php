@@ -31,7 +31,6 @@ class Processor
     use Topup;
 
     protected $merchant;
-    protected $core;
     protected $trace;
     protected $payment;
     protected $terminal;
@@ -44,38 +43,25 @@ class Processor
 
     protected $verifyRefundStatus;
 
-    public function __construct(
-        Merchant\Entity $merchant,
-        Payment\Core $core,
-        Trace $trace,
-        $mode)
+    public function __construct(Merchant\Entity $merchant)
     {
+        $this->app  = App::getFacadeRoot();
+        $this->trace = $this->app['trace'];
+        $this->mode = $this->app['rzp.mode'];
+
         $this->merchant = $merchant;
         $this->methods = $merchant->methods;
-        $this->core = $core;
-        $this->trace = $trace;
-        $this->mode = $mode;
-        $this->app  = App::getFacadeRoot();
 
         $this->checkMerchantPermissions();
 
         $this->repo = $this->app['repo'];
-        
+
         $this->paymentRepo = $this->repo->payment;
 
         $this->orderRepo = $this->repo->order;
-        
+
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
-    }
-
-    public static function create($bindings)
-    {
-        return new self(
-            $bindings['merchant'],
-            $bindings['core'],
-            $bindings['trace'],
-            $bindings['mode']);
     }
 
     public function process($input)
@@ -536,8 +522,10 @@ class Processor
 
     protected function retrieve($id)
     {
-        $this->payment = $this->core->retrieveByIdAndMerchantId(
-                                    $id, $this->merchant->getKey());
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $this->payment = $this->repo->payment->findByIdAndMerchantId(
+                                                $id, $this->merchant->getKey());
 
         return $this->payment;
     }
