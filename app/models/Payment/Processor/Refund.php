@@ -290,6 +290,8 @@ trait Refund
     {
         $gateway = $payment->getGateway();
 
+        assert ($refund->getTransactionId() === null);
+
         if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
             ($payment->getCaptureTimestamp() !== null))
         {
@@ -305,7 +307,7 @@ trait Refund
 
             return $txn;
         }
-        
+
         return null;
     }
 }

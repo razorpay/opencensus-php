@@ -213,9 +213,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TRANSACTION_REFUND_TRACE,
-            [
-                'total_count' => $totalCount
-            ]
+            ['total_count' => $totalCount]
         );
 
         $successes = $failures = 0;
@@ -225,20 +223,19 @@ class Service extends Base\Service
         {
             $this->trace->info(
                 TraceCode::TRANSACTION_REFUND_TRACE,
-                $refundWithoutTransaction->toArray()
-            );
+                $refundWithoutTransaction->toArray());
 
             try
             {
                 $payment = $refundsWithoutTransaction->payment;
 
-                $transaction = $this->createTransactionForRefund($refundWithoutTransaction, $payment);
+                $transaction = $this->processor($refund->merchant)
+                                    ->createTransactionForRefund(
+                                            $refundWithoutTransaction, $payment);
 
                 if ($transaction === null)
                 {
-                    throw new Exception\LogicException(
-                        "Should not have reached here."
-                    );
+                    throw new Exception\LogicException('Should not have reached here.');
                 }
 
                 $successes += 1;
@@ -265,44 +262,10 @@ class Service extends Base\Service
         ];
     }
 
-    protected function createTransactionForRefund($refund, $payment)
+    protected function processor($merchant)
     {
-        $gateway = $payment->getGateway();
+        $processor = new Payment\Processor\Processor($merchant);
 
-        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-            ($payment->getCaptureTimestamp() !== null))
-        {
-            if ($payment->transaction === null)
-            {
-                throw new Exception\LogicException(
-                    'Transaction expected but not present for payment: ' . $payment->getId());
-            }
-
-            $txn = (new Transaction\Core)->createFromRefund($refund);
-
-            $this->repo->saveOrFail($txn);
-
-            return $txn;
-        }
-
-        return null;
-    }
-
-    protected function processor($merchant = null)
-    {
-        $bindings = $this->getBindings($merchant);
-
-        return Payment\Processor\Processor::create($bindings);
-    }
-
-    protected function getBindings(Merchant\Entity $merchant = null)
-    {
-        $bindings = array(
-            'merchant'  => $merchant,
-            'core'      => new Payment\Core(),
-            'trace'     => $this->trace,
-            'mode'      => $this->mode);
-
-        return $bindings;
+        return $processor;
     }
 }
