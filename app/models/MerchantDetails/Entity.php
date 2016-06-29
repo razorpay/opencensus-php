@@ -225,12 +225,15 @@ class Entity extends Base\Entity
 
     public static function getFileUploadData($input)
     {
-        $field = static::$uploadKeys[key($input)];
+        // Make sure that field is never filled
+        // using user input
+        $field = self::UPLOAD_KEYS[key($input)];
 
-        return array(
+        return [
             'key'   => key($input),
             'file'  => current($input),
-            'field' => $field);
+            'field' => $field
+        ];
     }
 
     public function getUrls()

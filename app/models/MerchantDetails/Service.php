@@ -178,9 +178,10 @@ class Service extends Base\Service
                 'SourceFile'    => $data['file']->getRealPath(),
             );
 
+            $field = $data['field'];
             $result = $s3->putObject($s3Obj);
 
-            $merchantDetails->$data['field'] = $result['ObjectURL'];
+            $merchantDetails->$field = $result->get('ObjectURL');
             $merchantDetails->saveOrFail();
         }
         catch(\Exception $e)
