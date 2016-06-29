@@ -454,22 +454,6 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getCreateWalletUserRequestContent($input)
-    {
-        $content = array(
-            'cell'          => $input['cell'],
-            'email'         => $input['email'],
-            'merchantname'  => 'Razorpay',
-            'mid'           => $input['mid'],
-            'msgcode'       => MessageCode::CREATE_USER,
-            'otp'           => $input['otp'],
-            );
-
-        $content['checksum'] = $this->getHashforCreateWalletUserRequest($content);
-
-        return $content;
-    }
-
     protected function getCheckExistingUserRequestContent($input)
     {
         $content = array(
@@ -622,19 +606,6 @@ class Gateway extends Base\Gateway
             $content['orderid']     . "''" .
             $content['redirecturl'] . "''" .
             $content['mid'] . "'";
-
-        return $this->getHashOfString($str);
-    }
-
-    protected function getHashforCreateWalletUserRequest($content)
-    {
-        $str = "'".
-            $content['cell']            . "''" .
-            $content['email']           . "''" .
-            $content['merchantname']    . "''" .
-            $content['mid']             . "''" .
-            $content['msgcode']         . "''" .
-            $content['otp'] . "'";
 
         return $this->getHashOfString($str);
     }
