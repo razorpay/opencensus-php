@@ -26,6 +26,9 @@ class Gateway
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
+    const NOT_SUPPORTED     = 'not_supported';
+    const SUPPORTED         = 'supported';
+
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY
@@ -101,18 +104,10 @@ class Gateway
      * @var array
      */
     public static $authAndCapture = array(
-        self::HDFC,
-        self::AMEX,
-    );
-
-    /**
-     * Card gateways which support auth and capture mechanism for
-     * some card networks and does not for other card networks.
-     * 
-     * @var array
-     */
-    public static $partialAuthAndCapture = array(
-        self::HDFC
+        self::HDFC => [
+            self::NOT_SUPPORTED => [Network::MAES, Network::DICL]
+        ],
+        self::AMEX => [],
     );
 
     /**
@@ -232,7 +227,7 @@ class Gateway
         Gateway::PAYTM);
 
     /**
-     * Some card networks are only supported partiall for one or two gateway.
+     * Some card networks are only supported partially for one or two gateway.
      *
      * @var array
      */
@@ -349,12 +344,30 @@ class Gateway
 
     public static function supportsAuthAndCapture($gateway)
     {
-        return (in_array($gateway, self::$authAndCapture));
+        $arrayKeys = array_keys(self::$authAndCapture);
+
+        return in_array($gateway, $arrayKeys);
     }
-    
-    public static function supportsPartialAuthAndCapture($gateway)
+
+    public static function hasNoAuthAndCaptureSupportForNetwork($gateway, $network)
     {
-        return (in_array($gateway, self::$partialAuthAndCapture));
+        // This means that all the networks are supported by the gateway for authAndCapture.
+        if (isset(self::$authAndCapture[$gateway][self::NOT_SUPPORTED]) === false)
+        {
+            return false;
+        }
+
+        // Get all the networks which are NOT supported by the gateway for authAndCapture.
+        $notSupportedNetworks = self::$authAndCapture[$gateway][self::NOT_SUPPORTED];
+
+        // If a given network is in the list of notSupportedNetworks, it means that the network
+        // is not supported by the gateway for authAndCapture.
+        if (in_array($network, $notSupportedNetworks))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function isPowerWallet($wallet)
