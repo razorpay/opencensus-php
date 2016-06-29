@@ -108,7 +108,6 @@ class PaymentController extends BaseController
         $summary = $this->refund->createMissingTransactions();
 
         return ApiResponse::json($summary);
-
     }
 
     public function postCancel($id)
