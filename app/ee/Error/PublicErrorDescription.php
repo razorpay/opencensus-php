@@ -151,7 +151,11 @@ class PublicErrorDescription
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                              = 'Card already exists for the customer';
     const BAD_REQUEST_CUSTOMER_BANK_ALREADY_EXISTS                              = 'Bank already exists for the customer';
     const BAD_REQUEST_CUSTOMER_WALLET_ALREADY_EXISTS                            = 'Wallet already exists for the customer';
-    const BAD_REQUEST_INVALID_OTP                                               = 'otp verificaiton failed';
+
+    const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                              = 'OTP verification failed because attempt threshold has been reached';
+    const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                 = 'SMS sending failed because threshold has been reached.';
+    const BAD_REQUEST_INCORRECT_OTP                                             = 'Verification failed because of incorrect OTP.';
+    const BAD_REQUEST_SMS_FAILED                                                = 'SMS sending failed.';
 
     const BAD_REQUEST_LOGO_NOT_PRESENT                                          = 'The input does not contain a file named logo';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
