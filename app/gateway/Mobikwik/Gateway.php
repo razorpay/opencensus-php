@@ -256,7 +256,15 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::CREATE_USER);
 
-        $content = $this->getCreateWalletUserRequestContent($input);
+        $content = array(
+            'cell'          => $input['cell'],
+            'email'         => $input['email'],
+            'merchantname'  => 'Razorpay',
+            'mid'           => $input['mid'],
+            'msgcode'       => MessageCode::CREATE_USER,
+            'otp'           => $input['otp'],
+            );
+        $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -358,7 +366,7 @@ class Gateway extends Base\Gateway
             if (ResponseCodeMap::isWalletUserNotPresent($code))
             {
                 // if user doesn't exist, first register the user
-                // then throw insufficient funds exception 
+                // then throw insufficient funds exception
                 // so that he's shown an 'Add Funds' button
                 $this->createWalletUser($content);
 
