@@ -98,8 +98,6 @@ class Core extends Base\Core
     {
         $ba = $this->buildBankAccount($input, $merchant, $mode);
 
-        $this->generateBeneficiaryCode($ba, $mode);
-
         $this->repo->saveOrFail($ba);
 
         return $ba;
@@ -136,29 +134,6 @@ class Core extends Base\Core
         $emailView = 'emails.merchant.bankaccount_change';
 
         $this->sendEmail($emailView, $subject, $data);
-    }
-
-    /**
-     * generate the benificiary code from benificiary name
-     *
-     * @param  string $name benificiary name
-     * @param  string $mode the mode that should be used
-     * @return string       generated benificiary code
-     */
-    protected function generateBeneficiaryCode($ba, $mode)
-    {
-        $name = $ba->getBeneficiaryName();
-
-        // Caps all then remove spaces then cut first 4.
-        $code = substr(str_replace(' ', '', strtoupper($name)), 0, 4);
-
-        $count = $this->repo->getBeneficiaryCodeCountByPattern($code, $mode);
-
-        $count = ($count === 0) ? '' : $count + 1;
-
-        $code .= $count;
-
-        $ba->setBeneficiaryCode($code);
     }
 
     protected function sendEmail($template, $subject, $data)
