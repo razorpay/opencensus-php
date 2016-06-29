@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Mockery;
+use ReflectionObject;
 
 /**
  * Base test case class provided bdy laravel all, test cases inherit it
@@ -48,7 +49,24 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     {
         Mockery::close();
 
+        $this->freeUpObjectProperties();
+
         parent::tearDown();
+    }
+
+    protected function freeUpObjectProperties()
+    {
+        $reflectionObject = new ReflectionObject($this);
+
+        foreach ($reflectionObject->getProperties() as $property)
+        {
+            if (($property->isStatic() === false) and
+                (strpos($property->getDeclaringClass()->getName(), 'PHPUnit_') !== 0))
+            {
+                $property->setAccessible(true);
+                $property->setValue($this, null);
+            }
+        }
     }
 
     protected function loadTestData()
