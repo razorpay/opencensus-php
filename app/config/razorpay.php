@@ -30,6 +30,9 @@ return array(
 
     'zapier'    =>  [
         'signups'       =>  'https://zapier.com/hooks/catch/1088429/2e1xtg/',
+        'submissions'   =>  'https://hooks.zapier.com/hooks/catch/1088429/46x8fa/',
+        // Define this and set to true in order to enable mocking
+        'mock'          =>  getenv('ZAPIER_MOCK'),
     ],
 
     'slack' =>  [
