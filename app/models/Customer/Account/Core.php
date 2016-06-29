@@ -124,7 +124,7 @@ class Core extends Base\Core
             $this->trace->traceException($e);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_OTP);
+                ErrorCode::BAD_REQUEST_INCORRECT_OTP);
         }
     }
 
