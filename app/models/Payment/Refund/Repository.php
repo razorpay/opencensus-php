@@ -98,13 +98,13 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->join(
-                                Table::PAYMENT,
-                                Table::REFUND . '.' . Refund\Entity::PAYMENT_ID,
-                                '=',
-                                Table::PAYMENT . '.' . Payment\Entity::ID)
+                        Table::PAYMENT,
+                        Table::REFUND . '.' . Refund\Entity::PAYMENT_ID,
+                        '=',
+                        Table::PAYMENT . '.' . Payment\Entity::ID)
                     ->whereNull(Refund\Entity::TRANSACTION_ID)
                     ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
-                    ->with('payment')
+                    ->with('payment', 'merchant')
                     ->get();
     }
 
