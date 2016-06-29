@@ -31,6 +31,7 @@ class NodalAccount
         'Dr_Ac_No',
         'Amount',
         'Bank_Code_Indicator',
+        'Beneficiary_Code',
         'Beneficiary_Name',
         'Beneficiary_Bank',
         'IFSC Code',
