@@ -18,7 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
-        $this->createSharedCybersourceTerminal();
+        $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceAxisTerminal();
     }
 
@@ -155,7 +155,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedCybersourceTerminal(array $attributes = array())
+    public function createSharedCybersourceHdfcTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
 
@@ -166,7 +166,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
-            'gateway_merchant_id'       => 'cybersource',
+            'gateway_merchant_id'       => '',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',

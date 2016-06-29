@@ -38,7 +38,6 @@ class Gateway
     );
 
     public static $channels = array(
-        self::CYBERSOURCE       => Settlement\Channel::KOTAK,
         self::AMEX              => Settlement\Channel::KOTAK,
         self::ATOM              => Settlement\Channel::ATOM,
         self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
@@ -54,6 +53,7 @@ class Gateway
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE       => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -64,7 +64,6 @@ class Gateway
      */
     public static $methodMap = array(
         Method::CARD => array(
-            self::CYBERSOURCE,
             self::HDFC,
             self::ATOM,
             self::AXIS_MIGS,
@@ -72,6 +71,7 @@ class Gateway
             self::KOTAK,
             self::PAYTM,
             self::AMEX,
+            self::CYBERSOURCE,
         ),
 
         Method::NETBANKING => array(
@@ -79,7 +79,7 @@ class Gateway
             self::BILLDESK,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
-            self::SBIEPAY
+            self::SBIEPAY,
         ),
 
         Method::WALLET => array(
@@ -103,9 +103,9 @@ class Gateway
      * @var array
      */
     public static $authAndCapture = array(
-        self::CYBERSOURCE,
         self::HDFC,
         self::AMEX,
+        self::CYBERSOURCE,
     );
 
     /**
@@ -165,7 +165,8 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC,
-        self::WALLET_PAYZAPP);
+        self::WALLET_PAYZAPP,
+    );
 
     /**
      * Card gateways which support international payments
@@ -173,11 +174,11 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = array(
-        Gateway::CYBERSOURCE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
-        );
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * Card gateways which support domestic payments in live mode.
@@ -185,11 +186,11 @@ class Gateway
      * @var array
      */
     public static $domesticCardGateways = array(
-        Gateway::CYBERSOURCE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
-        );
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * Card gateways which support domestic payments in test mode.
@@ -197,11 +198,12 @@ class Gateway
      * @var array
      */
     public static $domesticCardGatewaysInTest = array(
-        Gateway::CYBERSOURCE,
         Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
-        Gateway::AXIS_GENIUS);
+        Gateway::AXIS_GENIUS,
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * These card gateways can be used live and can have direct
@@ -213,10 +215,11 @@ class Gateway
      * @var array
      */
     public static $directCardGateways = array(
-        Gateway::CYBERSOURCE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
-        Gateway::AMEX);
+        Gateway::AMEX,
+        Gateway::CYBERSOURCE,
+        );
 
     /**
      * These gateways are only used in test and may or may not graduate to live
@@ -228,11 +231,12 @@ class Gateway
      * @var array
      */
     public static $directCardGatewaysInTest = array(
-        Gateway::CYBERSOURCE,
         Gateway::AXIS_GENIUS,
         Gateway::SBIEPAY,
         Gateway::KOTAK,
-        Gateway::PAYTM);
+        Gateway::PAYTM,
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * Some card networks are only supported partiall for one or two gateway.
