@@ -67,6 +67,7 @@
     'MAILCHIMP_LIST_ID' => 'list_id',
     'MAILCHIMP_API_TOKEN'=> 'xxxx-yyyy-zzzz',
     'MAILCHIMP_MOCK'    => true,
+    'ZAPIER_MOCK'       =>  true,
 
     'CRON_PASS'         => 'RANDOM_CRON_PASS'
     );
