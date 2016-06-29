@@ -13,11 +13,6 @@ use Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function createLocalCustomer($input, $merchant)
     {
         return $this->create($input, $merchant);
@@ -56,8 +51,22 @@ class Core extends Base\Core
         return $customer;
     }
 
+    public function sendOtp($input)
+    {
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
+            $input[Entity::CONTACT]);
+
+        $data = (new Customer\Raven)->sendOtp($input);
+
+        return $data;
+    }
+
     public function verifyOtp($input)
     {
+        //validate and parse contact
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
+            $input[Entity::CONTACT]);
+
         // Verify the otp with raven service
         $this->verifyRavenOtp($input);
 
