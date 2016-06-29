@@ -106,6 +106,16 @@ class Gateway
     );
 
     /**
+     * Card gateways which support auth and capture mechanism for
+     * some card networks and does not for other card networks.
+     * 
+     * @var array
+     */
+    public static $partialAuthAndCapture = array(
+        self::HDFC
+    );
+
+    /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
      * is used in gateway and terminal selection logic
@@ -340,6 +350,11 @@ class Gateway
     public static function supportsAuthAndCapture($gateway)
     {
         return (in_array($gateway, self::$authAndCapture));
+    }
+    
+    public static function supportsPartialAuthAndCapture($gateway)
+    {
+        return (in_array($gateway, self::$partialAuthAndCapture));
     }
 
     public static function isPowerWallet($wallet)

@@ -292,8 +292,20 @@ trait Refund
 
         assert ($refund->getTransactionId() === null);
 
-        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-            ($payment->getCaptureTimestamp() !== null))
+        // For authAndCapture supported gateways, payment transaction is created only after capture.
+        // For gateways which don't support authAndCapture, payment transaction is created after authorization.
+        // There are a few gateways which are partially authAndCapture gateways. This means that for
+        // some payments, payment transaction is created at authorization and for some payments, payment
+        // transaction is created at capture.
+
+        // Hence, for [partialAuthAndCapture] and [notAuthAndCapture] gateways,
+        // we do not check for the capture timestamp.
+        // For [authAndCapture] gateways, we check for capture timestamp.
+
+        if (((Payment\Gateway::supportsAuthAndCapture($gateway) === true) and
+             ($payment->getCaptureTimestamp() !== null)) or
+            (Payment\Gateway::supportsPartialAuthAndCapture($gateway) === true) or
+            (Payment\Gateway::supportsAuthAndCapture($gateway) === false))
         {
             if ($payment->transaction === null)
             {
