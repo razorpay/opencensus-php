@@ -6,12 +6,13 @@ use EE\Exception;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Constants\Table;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'Refund';
+    protected $entity = 'refund';
 
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
@@ -86,10 +87,30 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
+    /**
+     * Fetches all refunds which have no transactions, but the
+     * corresponding payments have transactions.
+     * This should ideally always return an empty collection.
+     *
+     * @return array
+     */
+    public function fetchRefundsWithoutTransactionsAndWithPaymentTransactions()
+    {
+        return $this->newQuery()
+                    ->join(
+                                Table::PAYMENT,
+                                Table::REFUND . '.' . Refund\Entity::PAYMENT_ID,
+                                '=',
+                                Table::PAYMENT . '.' . Payment\Entity::ID)
+                    ->select(Table::REFUND . '.*')
+                    ->whereNull(Table::REFUND . '.' . Refund\Entity::TRANSACTION_ID)
+                    ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
+                    ->with('payment', 'merchant')
+                    ->get();
+    }
+
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
-        $repo = $this->repo;
-
         $ptable = Payment\Entity::getTableName();
 
         $attrs = Refund\Entity::getTableName() . '.*';

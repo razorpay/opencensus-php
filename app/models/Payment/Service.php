@@ -584,27 +584,16 @@ class Service extends Base\Service
             });
     }
 
-    protected function processor($merchant = null)
-    {
-        $bindings = $this->getBindings($merchant);
-
-        return Processor\Processor::create($bindings);
-    }
-
-    protected function getBindings(Merchant\Entity $merchant = null)
+    protected function processor(Merchant\Entity $merchant = null)
     {
         if ($merchant === null)
         {
             $merchant = $this->merchant;
         }
 
-        $bindings = array(
-            'merchant'  => $merchant,
-            'core'      => $this->core,
-            'trace'     => $this->trace,
-            'mode'      => $this->mode);
+        $processor = new Processor\Processor($merchant);
 
-        return $bindings;
+        return $processor;
     }
 
     public function computeServiceTax()

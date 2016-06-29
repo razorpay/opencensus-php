@@ -239,7 +239,7 @@ trait Refund
         {
             $payment = $this->payment;
 
-            $this->repo->lockForUpdate($payment->getKey());
+            $this->paymentRepo->lockForUpdate($payment->getKey());
 
             $this->createTransactionForRefund($this->refund, $payment);
 
@@ -286,9 +286,11 @@ trait Refund
         }
     }
 
-    protected function createTransactionForRefund($refund, $payment)
+    public function createTransactionForRefund($refund, $payment)
     {
         $gateway = $payment->getGateway();
+
+        assert ($refund->getTransactionId() === null);
 
         if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
             ($payment->getCaptureTimestamp() !== null))
@@ -301,9 +303,11 @@ trait Refund
 
             $txn = (new Transaction\Core)->createFromRefund($refund);
 
-            $txn->saveOrFail();
+            $this->repo->saveOrFail($txn);
 
             return $txn;
         }
+
+        return null;
     }
 }
