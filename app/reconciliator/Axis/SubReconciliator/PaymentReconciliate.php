@@ -19,6 +19,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_CARD_TYPE   = 'card_type';
     const COLUMN_SERVICE_TAX = 'service_tax145';
     const COLUMN_FEE         = 'commission';
+    const COLUMN_CARD_TRIVIA = 'card';
     const RRN                = 'rrn_no';
 
     protected $messenger;
@@ -63,13 +64,47 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardDetails($row)
     {
+        // If the card type (debit/credit) is not present, we don't want
+        // to store any of the other card details.
         if (isset($row[self::COLUMN_CARD_TYPE]) === false)
         {
             return null;
         }
 
-        $cardType = strtolower($row[self::COLUMN_CARD_TYPE]);
+        $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
+        $columnCardTrivia = strtolower($row[self::COLUMN_CARD_TRIVIA]);
 
+        $cardType = $this->getCardType($columnCardType, $row);
+        $cardTrivia = $this->getCardTrivia($columnCardTrivia, $row);
+
+        return [
+            BaseReconciliate::CARD_TYPE => $cardType,
+            BaseReconciliate::CARD_TRIVIA => $cardTrivia,
+        ];
+    }
+
+    protected function getCardTrivia($cardTrivia, $row)
+    {
+        if (empty($cardTrivia) === true)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'           => 'Unable to get the card trivia. This is unexpected.',
+                    'recon_card_trivia' => $cardTrivia,
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
+
+            $cardTrivia = null;
+        }
+
+        return $cardTrivia;
+    }
+
+    protected function getCardType($cardType, $row)
+    {
         if ($cardType === 'c')
         {
             $cardType = BaseReconciliate::CREDIT;
@@ -90,12 +125,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 ]);
 
             // It's as good as no card type present in the row.
-            return null;
+            $cardType = null;
         }
 
-        return [
-            BaseReconciliate::CARD_TYPE => $cardType,
-        ];
+        return $cardType;
     }
 
     protected function forceAuthorizeFailed($row)
