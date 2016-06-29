@@ -455,7 +455,7 @@ class Gateway extends Base\Gateway
 
     public function getSoapClientObject($input)
     {
-        $url = 'https://ics2wstesta.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.78.wsdl';//$this->getWsdlFile();
+        $url = $this->getWsdlFile();
 
         $auth = array(
             'username' => $input['terminal']['gateway_terminal_id'],
