@@ -1173,16 +1173,9 @@ trait Authorize
             return false;
         }
 
-        if ($gateway === Payment\Gateway::HDFC)
+        if (Payment\Gateway::hasNoAuthAndCaptureSupportForNetwork($gateway, $payment->card->getNetworkCode()) === true)
         {
-            $network = $payment->card->getNetwork();
-            $network = Card\Network::getCode($network);
-
-            if (($network === Card\Network::MAES) or
-                ($network === Card\Network::RUPAY))
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;

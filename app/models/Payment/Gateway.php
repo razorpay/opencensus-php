@@ -105,7 +105,7 @@ class Gateway
      */
     public static $authAndCapture = array(
         self::HDFC => [
-            self::NOT_SUPPORTED => [Network::MAES, Network::DICL]
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::AMEX => [],
     );
@@ -316,11 +316,6 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__.'::'.strtoupper($gateway)));
-    }
-
-    public static function getWalletGateways()
-    {
-        return self::$method[Method::WALLET];
     }
 
     public static function getGatewayForWallet($wallet)

@@ -305,7 +305,7 @@ trait Refund
         if (((Payment\Gateway::supportsAuthAndCapture($gateway) === true) and
              ($payment->getCaptureTimestamp() !== null)) or
             (Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-            (Payment\Gateway::hasNoAuthAndCaptureSupportForNetwork($gateway, $payment->card->network)) === true)
+            (Payment\Gateway::hasNoAuthAndCaptureSupportForNetwork($gateway, $payment->card->getNetworkCode())) === true)
         {
             if ($payment->transaction === null)
             {
