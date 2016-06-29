@@ -37,7 +37,7 @@ var app = angular.module('app', [
         authorization.authorize();
       }
     });
-    $rootScope.$on('$stateChangeError', function (event) {
+    $rootScope.$on('$stateChangeError', function () {
       $state.go('500');
     });
 
@@ -50,8 +50,7 @@ var app = angular.module('app', [
   '$compileProvider',
   '$filterProvider',
   '$provide',
-  '$analyticsProvider',
-  function ($stateProvider, $urlRouterProvider, $controllerProvider, $compileProvider, $filterProvider, $provide, $analyticsProvider) {
+  function ($stateProvider, $urlRouterProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
     // lazy controller, directive and service
     app.controller = $controllerProvider.register;
     app.directive = $compileProvider.directive;
@@ -171,7 +170,10 @@ var app = angular.module('app', [
       templateUrl: 'tpl/page_lockme.html'
     }).state('access.signupnasscom', {
       url: '/signup/nasscom',
-      templateUrl: 'tpl/page_signup_nasscom.html'
+      templateUrl: 'tpl/page_signup.html',
+      data: {
+        ref: 'nasscom'
+      }
     }).state('access.signup', {
       url: '/signup',
       templateUrl: 'tpl/page_signup.html'

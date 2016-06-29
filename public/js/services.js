@@ -20,7 +20,7 @@ angular.module('app.services', [])
       },
       authenticate: function (identity) {
         _identity = identity;
-        _authenticated = identity != null;
+        _authenticated = identity !== null;
       },
       identity: function (force) {
         var deferred = $q.defer();
@@ -59,7 +59,7 @@ angular.module('app.services', [])
   '$state',
   'user',
   '$location',
-  function ($rootScope, $state, user, $location) {
+  function ($rootScope, $state, user) {
     return {
       authorize: function () {
         return user.identity().then(function () {
