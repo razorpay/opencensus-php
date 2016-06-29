@@ -56,6 +56,7 @@ class Gateway
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
+        self::WALLET_OLAMONEY   => Settlement\Channel::KOTAK,
     );
 
     /**

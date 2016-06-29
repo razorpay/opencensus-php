@@ -106,6 +106,7 @@ return array(
     'PAYTM_MOCK'                                    => true,
     'PAYZAPP_MOCK'                                  => true,
     'PAYUMONEY_MOCK'                                => true,
+    'OLAMONEY_MOCK'                                 => true,
     'SBIEPAY_MOCK'                                  => true,
     'NETBANKING_HDFC_MOCK'                          => true,
     'NETBANKING_KOTAK_MOCK'                         => true,

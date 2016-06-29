@@ -121,7 +121,7 @@ return array(
 
     'wallet_olamoney'  =>array(
         'test_access_token'     => $_ENV['OLAMONEY_WALLET_TEST_MERCHANT_ID'],
-        'test_salt'             => $_ENV['OLAMONEY_WALLET_TEST_HASH_SECRET'],
+        'test_hash_secret'      => $_ENV['OLAMONEY_WALLET_TEST_HASH_SECRET'],
     ),
 
     'netbanking_hdfc' => array(

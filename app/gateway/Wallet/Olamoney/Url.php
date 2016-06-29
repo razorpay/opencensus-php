@@ -4,9 +4,10 @@ namespace Gateway\Wallet\Olamoney;
 
 class Url
 {
-    const TEST_BASE_URL = "http://sandbox.olamoney.in"
-    const LIVE_BASE_URL = "https://om.olacabs.com";
+    const TEST_DOMAIN   = 'http://sandbox.olamoney.in';
+    const LIVE_DOMAIN   = 'https://om.olacabs.com';
 
-    const OTP_GENERATE      = '/olamoney/v1/debit';
-    const DEBIT             = '/olamoney/v1/capture';
+    const OTP_GENERATE  = '/olamoney/v1/debit?phone=:contact';
+    const AUTHORIZE     = '/olamoney/webview/index.html';
+    const DEBIT         = '/olamoney/v1/capture';
 }
