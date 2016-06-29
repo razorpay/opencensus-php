@@ -89,7 +89,7 @@ class Validator extends Base\Validator
         'bank_beneficiary_pin'       => 'required|integer|digits:6'
     );
 
-    protected static $uploadKeys = array(
+    const UPLOAD_KEYS = array(
         'business_proof',
         'business_operation_proof',
         'business_pan_proof',
@@ -167,10 +167,8 @@ class Validator extends Base\Validator
     {
         $error = array();
 
-        $uploadKeys = static::$uploadKeys;
-
         if ((count($input) !== 1) or
-            (in_array(key($input), $uploadKeys) == false))
+            (in_array(key($input), self::UPLOAD_KEYS) == false))
         {
             throw new \InvalidArgumentException('Invalid parameters.');
         }

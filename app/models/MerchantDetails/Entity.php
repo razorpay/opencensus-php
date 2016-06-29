@@ -83,7 +83,7 @@ class Entity extends Base\Entity
         'transaction_report_email'
     );
 
-    protected static $ajaxFields = array(
+    const AJAX_FIELDS = array(
         'contact_name',
         'contact_email',
         'contact_mobile',
@@ -144,7 +144,7 @@ class Entity extends Base\Entity
         'transaction_report_email'
     );
 
-    protected static $uploadKeys = array(
+    const UPLOAD_KEYS = [
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
         'business_pan_proof'       => 'business_pan_url',
@@ -152,10 +152,9 @@ class Entity extends Base\Entity
         'promoter_proof'            => 'promoter_proof_url',
         'promoter_pan_proof'        => 'promoter_pan_url',
         'promoter_address_proof'    => 'promoter_address_url'
+    ];
 
-    );
-
-    protected static $uploadDocuments = array(
+    const UPLOAD_DOCUMENTS = array(
         'business_proof_url'    => "Please upload business proof",
         'business_pan_url'      => "Please upload business pan card scan.",
         'address_proof_url'     => "Please upload address proof.",
@@ -184,9 +183,9 @@ class Entity extends Base\Entity
     {
         $data = array_intersect_key(
                     $this->toArray(),
-                    array_flip(static::$ajaxFields));
+                    array_flip(self::AJAX_FIELDS));
 
-        $map = array_flip(static::$uploadKeys);
+        $map = array_flip(self::UPLOAD_KEYS);
 
         $files = array();
 
@@ -249,7 +248,7 @@ class Entity extends Base\Entity
     {
         $error = array();
 
-        foreach (static::$uploadDocuments as $key => $document)
+        foreach (self::UPLOAD_DOCUMENTS as $key => $document)
         {
             if ($this->getAttribute($key) == null)
             {
