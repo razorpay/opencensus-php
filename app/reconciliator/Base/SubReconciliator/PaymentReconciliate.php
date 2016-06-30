@@ -389,20 +389,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function persistCardTrivia($reconCardTrivia)
     {
         $iinTrivia = $this->paymentIin->getTrivia();
-        
+
         if (empty($iinTrivia) === true)
         {
             $this->paymentIin->setTrivia($reconCardTrivia);
         }
         else
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'        => TraceCode::RECON_MISMATCH,
                     'message'           => 'IIN already contains trivia. Not updating it.',
                     'payment_id'        => $this->payment->getId(),
-                    'iin_id'            => $this->paymentIin->getId(),
-                    'recon_card_trvia'  => $reconCardTrivia,
+                    'iin_id'            => $this->paymentIin->getKey(),
+                    'recon_card_trivia' => $reconCardTrivia,
                     'iin_card_trivia'   => $iinTrivia,
                     'gateway'           => get_called_class()
                 ]);
@@ -525,7 +525,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'trace_code'  => TraceCode::RECON_MISMATCH,
                     'message'     => 'DB says international but recon says domestic',
                     'payment_id'  => $this->payment->getId(),
-                    'iin_id'      => $this->paymentIin->getId(),
+                    'iin_id'      => $this->paymentIin->getKey(),
                     'gateway'     => get_called_class()
                 ]);
         }
