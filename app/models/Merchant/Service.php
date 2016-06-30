@@ -233,7 +233,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
+        $keys = $this->repo->key->getKeysForMerchant($merchantId);
 
         return $keys->toArrayPublic();
     }
@@ -249,7 +249,7 @@ class Service extends Base\Service
                 'pricing_plan_id');
         }
 
-        $plan = (new Pricing\Repository)->getPricingPlanByIdOrFailPublic(
+        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic(
                                             $input['pricing_plan_id']);
 
         // validate if this plan can be set for this merchant.
@@ -270,7 +270,7 @@ class Service extends Base\Service
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $plan = (new Pricing\Repository)->getPricingPlanById($pricingPlanId);
+        $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
 
         return $plan->toArrayPublic();
     }
@@ -530,14 +530,14 @@ class Service extends Base\Service
 
     public function getWebhook($id)
     {
-        $webhook = (new Webhook\Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+        $webhook = $this->repo->webhook->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $webhook->toArray();
     }
 
     public function getWebhooks()
     {
-        $webhooks = (new Webhook\Repository)->fetch([], $this->merchant->getId());
+        $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }

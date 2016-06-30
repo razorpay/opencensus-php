@@ -163,7 +163,7 @@ class Core extends Base\Core
             Card\Entity::VAULT           => $newCard->getVault(),
         );
 
-        $cards = (new Card\Repository)->getByParams($params);
+        $cards = $this->repo->card->getByParams($params);
 
         if ($cards->count() > 0)
         {

@@ -48,7 +48,7 @@ class Service extends Base\Service
             'order_id' => $id,
         ];
 
-        $payments = (new Payment\Repository)->fetch($options, $this->merchant->getKey());
+        $payments = $this->repo->payment->fetch($options, $this->merchant->getKey());
 
         return $payments->toArrayPublic();
     }

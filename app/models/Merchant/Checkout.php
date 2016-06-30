@@ -152,42 +152,49 @@ class Checkout
 
     protected function checkAndFillSavedTokens($input, $merchant, & $data)
     {
-        // fetch customer data and saved cards data
-        if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
-            (isset($input[Payment\Entity::APP_TOKEN])))
+        try
         {
-            $custData = $this->fetchCustomerData($input, $merchant);
-
-            if ($custData !== null)
+            // fetch customer data and saved cards data
+            if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
+                (isset($input[Payment\Entity::APP_TOKEN])))
             {
-                $data['customer'] = $custData;
+                $custData = $this->fetchCustomerData($input, $merchant);
+
+                if ($custData !== null)
+                {
+                    $data['customer'] = $custData;
+                }
+            }
+            else if ((isset($input[Customer\App\Entity::DEVICE_TOKEN])) and
+                    (isset($input['contact'])))
+            {
+                $response = (new Customer\Service)->validateDeviceToken(
+                    $input[Customer\App\Entity::DEVICE_TOKEN],
+                    $input);
+
+                $data['customer'] = array(
+                    'contact'   => $input['contact'],
+                    'valid'     => $response['valid']);
+
+                if ($response['valid'] === true)
+                {
+                    $data['customer'][Payment\Entity::APP_TOKEN] = $response[Payment\Entity::APP_TOKEN];
+                }
+            }
+            else if (isset($input['contact']))
+            {
+                $response = (new Customer\Service)->fetchGlobalCustomerStatus($input['contact']);
+
+                $data['customer'] = array(
+                    'contact'   => $input['contact'],
+                    'saved'     => $response['saved']);
             }
         }
-        else if ((isset($input[Customer\App\Entity::DEVICE_TOKEN])) and
-                (isset($input['contact'])))
+        catch (\Exception $ex)
         {
-            $response = (new Customer\Service)->validateDeviceToken(
-                $input[Customer\App\Entity::DEVICE_TOKEN],
-                $input);
-
-            $data['customer'] = array(
-                'contact'   => $input['contact'],
-                'valid'     => $response['valid']);
-
-            if ($response['valid'] === true)
-            {
-                $data['customer'][Payment\Entity::APP_TOKEN] = $response[Payment\Entity::APP_TOKEN];
-            }
+            $this->app['trace']->traceException($ex);
         }
-        else if (isset($input['contact']))
-        {
-            $response = (new Customer\Service)->fetchGlobalCustomerStatus($input['contact']);
-
-            $data['customer'] = array(
-                'contact'   => $input['contact'],
-                'saved'     => $response['saved']);
-        }
-    }
+     }
 
     protected function getMerchantPreferencesData($merchant, $methods)
     {
