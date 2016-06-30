@@ -183,9 +183,16 @@ class Service extends Base\Service
             );
 
             $field = $data['field'];
-            $result = $s3->putObject($s3Obj);
+            if (getenv('S3_MOCK'))
+            {
+                $url = 'https://example.com';
+            }
+            else
+            {
+                $url = $s3->putObject($s3Obj)->get('ObjectURL');
+            }
 
-            $merchantDetails->$field = $result->get('ObjectURL');
+            $merchantDetails->$field = $url;
             $merchantDetails->saveOrFail();
         }
         catch(\Exception $e)
