@@ -918,8 +918,6 @@ trait Authorize
         {
             $this->type = 'otp_generate';
 
-            $this->callGatewayFunction('checkExistingUser', $data);
-
             $this->callGatewayFunction('otpGenerate', $data);
 
             $payment->incrementOtpCount();
