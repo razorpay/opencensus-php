@@ -4,10 +4,13 @@ namespace Models\MerchantDetails;
 
 use Auth;
 use AWS;
+use Carbon\Carbon;
+use Config;
 use Mail;
 use Models\Base;
 use Queue;
 use Razorpay\Mailers\MerchantMailer;
+use Requests;
 
 class Service extends Base\Service
 {
@@ -17,6 +20,7 @@ class Service extends Base\Service
 
         $this->merchant = $user->currentMerchant;
         $this->merchantDetails = $user->currentMerchant->MerchantDetails;
+        $this->user = $user;
     }
 
     public function fetchDetails()
@@ -178,9 +182,17 @@ class Service extends Base\Service
                 'SourceFile'    => $data['file']->getRealPath(),
             );
 
-            $result = $s3->putObject($s3Obj);
+            $field = $data['field'];
+            if (getenv('S3_MOCK'))
+            {
+                $url = 'https://example.com';
+            }
+            else
+            {
+                $url = $s3->putObject($s3Obj)->get('ObjectURL');
+            }
 
-            $merchantDetails->$data['field'] = $result['ObjectURL'];
+            $merchantDetails->$field = $url;
             $merchantDetails->saveOrFail();
         }
         catch(\Exception $e)
@@ -225,6 +237,32 @@ class Service extends Base\Service
         // We also send over details to slack
         $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
         $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
+
+        $zapierData = $this->activationZapierData($customer);
+        Queue::push('Models\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
+    }
+
+    protected function activationZapierData(array $customer)
+    {
+        $customer['date'] =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
+            ->format('j/m/Y');
+
+        $customer['contact_name'] = $this->user->name;
+
+        return $customer;
+    }
+
+    public function postFormSubmissionToZapier($job, $data)
+    {
+        if (Config::get('razorpay.zapier.mock'))
+        {
+            return;
+        }
+
+        $url = Config::get('razorpay.zapier.submissions');
+        Requests::post($url, [], $data);
+
+        $job->delete();
     }
 
     protected function isLockedError()

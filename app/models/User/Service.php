@@ -326,7 +326,7 @@ class Service extends Base\Service
 
     public function postToZapier($job, $data)
     {
-        $url = Config::get('razorpay.sorting_hat.zapier_url');
+        $url = Config::get('razorpay.zapier.signups');
         Requests::post($url, [], $data);
 
         $job->delete();
