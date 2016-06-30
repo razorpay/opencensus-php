@@ -226,7 +226,7 @@ class Gateway extends Base\Gateway
         {
             $attributes = array(
                 Entity::STATUS     => Payment\Status::AUTHORIZE_FAILED,
-                Entity::ERROR_CODE => $response->reasonCode);
+                Entity::ERROR_CODE => $response[self::REASON_CODE]);
 
             $gateway->fill($attributes);
             $gateway->saveOrFail();
