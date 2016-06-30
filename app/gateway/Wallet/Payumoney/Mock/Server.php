@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Models\Payment;
 use EE\Error\ErrorCode;
 use Gateway\Base\Action;
+use Gateway\Wallet\Base\Otp;
 use Gateway\Wallet\Payumoney;
 
 class Server extends Base\Mock\Server
@@ -216,8 +217,7 @@ class Server extends Base\Mock\Server
             )
         );
 
-        // OTP 123456 is for expired verification code.
-        if ($input['otp'] === '300000')
+        if ($input['otp'] === Otp::EXPIRED)
         {
             $response = array(
                 'status'        => -1,
@@ -229,8 +229,7 @@ class Server extends Base\Mock\Server
             );
         }
 
-        // OTP 121212 is for incorrect verification code
-        if ($input['otp'] === '200000')
+        if ($input['otp'] === Otp::INCORRECT)
         {
             $response = array(
                 'status'        => -1,

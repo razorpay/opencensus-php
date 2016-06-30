@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Mobikwik;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Gateway\Wallet\Base\Otp;
 
 class MobikwikGatewayTest extends TestCase
 {
@@ -76,7 +77,7 @@ class MobikwikGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->setOtp('200000');
+        $this->setOtp(Otp::INCORRECT);
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
@@ -172,7 +173,7 @@ class MobikwikGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->setOtp('100000');
+        $this->setOtp(Otp::INSUFFICIENT_BALANCE);
 
         $response = $this->runRequestResponseFlow($data, function() use ($payment)
         {

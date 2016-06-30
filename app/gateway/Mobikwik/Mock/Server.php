@@ -7,6 +7,7 @@ use Gateway\Mobikwik;
 use Gateway\Base;
 use Gateway\Base\Action;
 use Models\Payment;
+use Gateway\Wallet\Base\Otp;
 
 class Server extends Base\Mock\Server
 {
@@ -144,8 +145,7 @@ class Server extends Base\Mock\Server
             'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
         );
 
-        // OTP 141414 is for when user contact/email is not registered
-        if ($input['otp'] === '141414')
+        if ($input['otp'] === Otp::USER_DOES_NOT_EXIST)
         {
             $content = array(
                 'status'            => 'FAILURE',
@@ -154,8 +154,7 @@ class Server extends Base\Mock\Server
                 );
         }
 
-        // OTP 131313 is for insufficient balance
-        if ($input['otp'] === '100000')
+        if ($input['otp'] === Otp::INSUFFICIENT_BALANCE)
         {
             $content = array(
                 'status'            => 'FAILURE',
@@ -164,8 +163,7 @@ class Server extends Base\Mock\Server
             );
         }
 
-        // OTP 121212 is for incorrect OTP
-        if ($input['otp'] === '200000')
+        if ($input['otp'] === Otp::INCORRECT)
         {
             $content = array(
                 'status'            => 'FAILURE',

@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
 use Http\Route;
 
@@ -53,7 +54,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->setOtp('200000');
+        $this->setOtp(Otp::INCORRECT);
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
@@ -72,7 +73,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->setOtp('200000');
+        $this->setOtp(Otp::INCORRECT);
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
