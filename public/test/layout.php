@@ -44,10 +44,19 @@ try {
 
 textarea.oninput = function(e){
   try {
-    localStorage.setItem('options', textarea.value);
     eval('options = ' + textarea.value);
+    localStorage.setItem('options', textarea.value);
   } catch(e){
     console.log(e.message);
+  }
+}
+
+textarea.onkeydown = function(e){
+  if (e.which == 9) {
+    e.preventDefault();
+    var selStart = this.value.slice(0, this.selectionStart);
+    this.value = selStart + '  ' + this.value.slice(this.selectionEnd);
+    this.selectionEnd = this.selectionStart = selStart.length + 2;
   }
 }
 
