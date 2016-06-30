@@ -197,6 +197,15 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
     }
 
+    protected function parseContact($contact)
+    {
+        // Constructor does the basic validation
+        $phoneBook = new \Lib\PhoneBook($contact);
+
+        // Setting an instance just like carbon
+        return $phoneBook;
+    }
+
     protected function validateInternationalAllowed($payment)
     {
         if ($payment->getMethod() !== Method::CARD)

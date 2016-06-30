@@ -362,10 +362,12 @@ class Gateway extends Base\Gateway
                 $content['message']);
         }
 
+        $contact = $this->parseContact($input['payment']['contact']);
+
         $contentToSave = array(
             'key'      => $this->getMerchantId($input['terminal']),
             'email'    => $input['payment']['email'],
-            'mobile'   => $this->getFormattedContact($input['payment']['contact']),
+            'mobile'   => $contact->format(\Lib\PhoneBook::DOMESTIC),
             'status'   => $content['status'],
             'amount'   => $input['payment']['amount'],
             'txnId'    => $content['result'],
@@ -493,6 +495,8 @@ class Gateway extends Base\Gateway
 
     protected function getRefundAttributesFromRefundResponse($input, $response)
     {
+        $contact = $this->parseContact($input['payment']['contact']);
+
         $refundAttributes = array(
             'payment_id'            =>  $input['payment']['id'],
             'action'                =>  $this->action,
@@ -500,7 +504,7 @@ class Gateway extends Base\Gateway
             'wallet'                =>  $input['payment']['wallet'],
             'email'                 =>  $input['payment']['email'],
             'received'              =>  1,
-            'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
+            'contact'               =>  $contact->format(\Lib\PhoneBook::DOMESTIC),
             'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
             'refund_id'             =>  $input['refund']['id'],
             'response_code'         =>  '',
@@ -536,9 +540,11 @@ class Gateway extends Base\Gateway
 
     protected function getOtpGenerateRequestArray($input)
     {
+        $contact = $this->parseContact($input['payment']['contact']);
+
         $content = array(
             'email'     => $input['payment']['email'],
-            'mobile'    => $this->getFormattedContact($input['payment']['contact']),
+            'mobile'    => $contact->format(\Lib\PhoneBook::DOMESTIC),
             'client_id' => $this->getClientId($input['terminal'])
         );
 
@@ -553,9 +559,11 @@ class Gateway extends Base\Gateway
 
     protected function getOtpSubmitRequestArray($input)
     {
+        $contact = $this->parseContact($input['payment']['contact']);
+
         $content = array(
             'email'         => $input['payment']['email'],
-            'mobile'        => $this->getFormattedContact($input['payment']['contact']),
+            'mobile'        => $contact->format(\Lib\PhoneBook::DOMESTIC),
             'client_id'     => $this->getClientId($input['terminal']),
             'otp'           => $input['gateway']['otp']
         );
@@ -670,9 +678,10 @@ class Gateway extends Base\Gateway
             'email',
         );
 
+        $contact = $this->parseContact($this->input['payment']['contact']);
+
         $content['key']     = $this->getMerchantId($this->input['terminal']);
-        $content['mobile']  = $this->getFormattedContact(
-                                    $this->input['payment']['contact']);
+        $content['mobile']  = $contact->format(\Lib\PhoneBook::DOMESTIC);
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -751,10 +760,12 @@ class Gateway extends Base\Gateway
 
     protected function getWalletContentFromVerify($payment, array $content)
     {
+        $contact = $this->parseContact($this->input['payment']['contact']);
+
         $contentToSave = array(
             'key'                   => $this->getMerchantId($this->input['terminal']),
             'email'                 => $this->input['payment']['email'],
-            'mobile'                => $this->getFormattedContact($this->input['payment']['contact']),
+            'mobile'                => $contact->format(\Lib\PhoneBook::DOMESTIC),
             'status'                => Status::SUCCESS,
             'txnId'                 => $content['paymentId'],
             'received'              => true
@@ -784,26 +795,17 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCustomerAttributes($input)
-    {
-        $contact = $this->getFormattedContact($input['payment']['contact']);
-
-        $attributes = array(
-            'contact'   => $contact,
-            'email'     => $input['payment']['email']
-        );
-
-        return $attributes;
-    }
-
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
     }
 
-    protected function getFormattedContact($contact)
+    protected function parseContact($contact)
     {
-        return substr($contact, -10);
+        // Constructor does the basic validation
+        $phoneBook = new \Lib\PhoneBook($contact);
+
+        return $phoneBook;
     }
 
     protected function getValidWalletToken($input)

@@ -162,17 +162,17 @@ trait Callback
 
         if (isset($input['customer']) === false)
         {
-            $contact = $this->getFormattedContact($input['payment']['contact']);
+            $contact = $this->parseContact($input['payment']['contact']);
 
             $sharedAccount = (new Merchant\Repository)->getSharedAccount();
 
             $customer = (new Customer\Repository)->findByContactAndMerchant(
-                                        $contact, $sharedAccount);
+                                    $contact->format(), $sharedAccount);
 
             if ($customer === null)
             {
                 $customerAttributes = array(
-                    'contact' => $contact,
+                    'contact' => $contact->format(),
                     'email'   => $input['payment']['email']
                 );
 

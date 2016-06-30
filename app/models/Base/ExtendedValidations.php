@@ -12,7 +12,10 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     /**
      * Create basic contact validate
      *
-     *
+     * @param  string   $attribute     Attrbute name
+     * @param  string   $contact       Contact number
+     * @param  array    $parameters    Parameter list
+     * @return boolean
      */
     protected function validateContactSyntax($attribute, $contact, $parameters)
     {
