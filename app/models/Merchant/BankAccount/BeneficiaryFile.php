@@ -57,7 +57,7 @@ class BeneficiaryFile
 
             $ratesColumnHeader = 'Agreed rates with Merchant/participating bank';
             $array = array(
-                'Client_Code'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CODE),
+                'Client_Code'           => $ba->getAttribute(BankAccount\Entity::ID),
                 'Merchant_Code'         => '',
                 'Merchant_Name'         => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
                 'Merchant_Add_1'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),

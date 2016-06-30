@@ -297,7 +297,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_FEE         => $fee,
         ];
 
-        $this->setCardDetailsInRowDetails($cardDetails, $rowDetails);
+        if (empty(array_filter($cardDetails)) === false)
+        {
+            $rowDetails[BaseReconciliate::CARD_DETAILS] = array_filter($cardDetails);
+        }
 
         return $rowDetails;
     }
@@ -343,20 +346,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    protected function setCardDetailsInRowDetails($cardDetails, & $rowDetails)
-    {
-        if (empty($cardDetails[BaseReconciliate::CARD_TYPE]) === false)
-        {
-            $rowDetails[BaseReconciliate::CARD_TYPE] = $cardDetails[BaseReconciliate::CARD_TYPE];
-        }
-
-        if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)
-        {
-            $rowDetails[BaseReconciliate::CARD_LOCALE] = $cardDetails[BaseReconciliate::CARD_LOCALE];
-        }
-    }
-
-
     /**
      * If IIN is missing, a new IIN is created with the card type (debit/credit)
      * and card locale (domestic/international).
@@ -366,34 +355,58 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistCardDetailsIfAbsent($rowDetails)
     {
-        $reconCardType = !empty($rowDetails[BaseReconciliate::CARD_TYPE]) ?
-                         $rowDetails[BaseReconciliate::CARD_TYPE] :
-                         null;
+        if (empty($rowDetails[BaseReconciliate::CARD_DETAILS]) === true)
+        {
+            return;
+        }
 
-        $reconCardLocale = !empty($rowDetails[BaseReconciliate::CARD_LOCALE]) ?
-                           $rowDetails[BaseReconciliate::CARD_LOCALE] :
-                           null;
+        $cardDetails = $rowDetails[BaseReconciliate::CARD_DETAILS];
 
         $this->paymentIin = $this->payment->card->iinRelation;
 
         if ($this->paymentIin === null)
         {
-            $this->createMissingIin($reconCardType, $reconCardLocale);
+            $this->createMissingIin($cardDetails);
 
             return;
         }
 
-        if (empty($reconCardType) === false)
+        $this->persistCardType($cardDetails[BaseReconciliate::CARD_TYPE]);
+
+        if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)
         {
-            $this->persistCardType($reconCardType);
+            $this->persistCardLocale($cardDetails[BaseReconciliate::CARD_LOCALE]);
         }
 
-        if (empty($reconCardLocale) === false)
+        if (empty($cardDetails[BaseReconciliate::CARD_TRIVIA]) === false)
         {
-            $this->persistCardLocale($reconCardLocale);
+            $this->persistCardTrivia($cardDetails[BaseReconciliate::CARD_TRIVIA]);
         }
 
         $this->repo->saveOrFail($this->paymentIin);
+    }
+
+    protected function persistCardTrivia($reconCardTrivia)
+    {
+        $iinTrivia = $this->paymentIin->getTrivia();
+        
+        if (empty($iinTrivia) === true)
+        {
+            $this->paymentIin->setTrivia($reconCardTrivia);
+        }
+        else
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_MISMATCH,
+                    'message'           => 'IIN already contains trivia. Not updating it.',
+                    'payment_id'        => $this->payment->getId(),
+                    'iin_id'            => $this->paymentIin->getId(),
+                    'recon_card_trvia'  => $reconCardTrivia,
+                    'iin_card_trivia'   => $iinTrivia,
+                    'gateway'           => get_called_class()
+                ]);
+        }
     }
 
     /**
@@ -438,16 +451,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    protected function createMissingIin($reconCardType, $reconCardLocale)
+    protected function createMissingIin($reconCardDetails)
     {
-        $this->messenger->raiseReconAlert(
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
             [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                'message'         => 'IIN absent for the card. Creating.',
-                'card_id'         => $this->payment->card->getId(),
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => get_called_class()
+                'message'     => 'IIN absent for the card. Creating.',
+                'card_id'     => $this->payment->card->getId(),
+                'payment_id'  => $this->payment->getId(),
+                'gateway'     => get_called_class()
             ]);
+
+        $reconCardType = $reconCardDetails[BaseReconciliate::CARD_TYPE];
+        $reconCardLocale = $reconCardDetails[BaseReconciliate::CARD_LOCALE];
 
         $card = $this->payment->card;
 
@@ -506,11 +522,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'              => TraceCode::RECON_MISMATCH,
-                    'message'                 => 'DB says international but recon says domestic',
-                    'payment_id'              => $this->payment->getId(),
-                    'iin_id'                  => $this->paymentIin->getId(),
-                    'gateway'                 => get_called_class()
+                    'trace_code'  => TraceCode::RECON_MISMATCH,
+                    'message'     => 'DB says international but recon says domestic',
+                    'payment_id'  => $this->payment->getId(),
+                    'iin_id'      => $this->paymentIin->getId(),
+                    'gateway'     => get_called_class()
                 ]);
         }
     }

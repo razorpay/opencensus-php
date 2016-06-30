@@ -101,6 +101,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::NETWORK);
     }
+    
+    public function getTrivia()
+    {
+        return $this->getAttribute(self::TRIVIA);
+    }
+    
+    public function setTrivia($trivia)
+    {
+        $this->setAttribute(self::TRIVIA, $trivia);
+    }
 
     public function getIinAttribute()
     {

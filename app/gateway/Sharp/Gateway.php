@@ -53,6 +53,11 @@ class Gateway extends Base\Gateway
         ;
     }
 
+    public function topup(array $input)
+    {
+        return $this->authorize($input);
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
