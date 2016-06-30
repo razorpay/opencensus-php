@@ -34,6 +34,10 @@ trait PaymentMobikwikTrait
                         case 'TOPUP':
                             $content['otp'] = '131313';
                             break;
+
+                        case 'UNREGISTERED_USER':
+                            $content['otp'] = '141414';
+                            break;
                     }
                 }
 

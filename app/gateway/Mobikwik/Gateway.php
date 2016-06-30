@@ -42,13 +42,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
-        {
-            return $this->callbackOtpSubmit($input);
-        }
-
-
         return $this->callbackNormalFlow($input);
     }
 
@@ -259,6 +252,42 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function createWalletUser($input)
+    {
+        $this->action($input, Action::CREATE_USER);
+
+        $content = array(
+            'cell'          => $input['cell'],
+            'email'         => $input['email'],
+            'merchantname'  => 'Razorpay',
+            'mid'           => $input['mid'],
+            'msgcode'       => MessageCode::CREATE_USER,
+            'otp'           => $input['otp'],
+        );
+        $content['checksum'] = $this->getHashOfArray($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+        $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $code = $content['statuscode'];
+        if ($code !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+            // Wallet creation fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $content['statuscode'],
+                $content['statusdescription']);
+        }
+    }
+
     public function otpGenerate($input)
     {
         $this->action($input, Action::OTP_GENERATE);
@@ -329,18 +358,32 @@ class Gateway extends Base\Gateway
 
         $code = $responseArray['statuscode'];
 
+        $content['email'] = $input['payment']['email'];
+
         if ($responseArray['statuscode'] !== Status::SUCCESS)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode($code);
-
             // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $responseArray['statuscode'],
-                $responseArray['statusdescription']);
+            if (ResponseCodeMap::isWalletUserNotPresent($code))
+            {
+                // if user doesn't exist, first register the user
+                // then throw insufficient funds exception
+                // so that he's shown an 'Add Funds' button
+                $this->createWalletUser($content);
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
+                    $responseArray['statuscode'],
+                    $responseArray['statusdescription']);
+            }
+            else
+            {
+                throw new Exception\GatewayErrorException(
+                    ResponseCodeMap::getApiErrorCode($code),
+                    $responseArray['statuscode'],
+                    $responseArray['statusdescription']);
+            }
         }
 
-        $content['email'] = $input['payment']['email'];
         $content['received'] = true;
 
         if (isset($responseArray['statuscode']))
@@ -418,7 +461,7 @@ class Gateway extends Base\Gateway
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'merchantname'  => 'Razorpay',
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
-            'msgcode'       => '500',
+            'msgcode'       => MessageCode::CHECK_EXISTING_USER,
         );
 
         $content['checksum'] = $this->getHashForCheckExistingUserRequest($content);
