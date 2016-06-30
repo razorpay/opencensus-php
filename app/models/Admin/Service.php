@@ -5,7 +5,11 @@ namespace Models\Admin;
 use AWS;
 use Auth;
 use Hash;
+use Carbon\Carbon;
 use Config;
+use Queue;
+use Requests;
+use Session;
 
 use Models\Base;
 use Models\Admin;
@@ -16,7 +20,7 @@ use Models\Transaction;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
-use Session;
+
 
 class Service extends Base\Service
 {
@@ -943,6 +947,40 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Incoming data is what is stored in the merchant details table
+     * outgoing is what we store in the bank account itself
+     * on the API
+     * @param  array $details
+     * @return array
+     */
+    protected function bankAccountMap($details)
+    {
+        return [
+            'ifsc_code'             => $details['bank_branch_ifsc'],
+            'beneficiary_name'      => $details['bank_account_name'],
+            'account_number'        => $details['bank_account_number'],
+            'beneficiary_address1'  => $details['bank_beneficiary_address1'],
+            'beneficiary_address2'  => $details['bank_beneficiary_address2'],
+            'beneficiary_address3'  => $details['bank_beneficiary_address3'],
+            'beneficiary_address4'  => '',
+            'beneficiary_pin'       => $details['bank_beneficiary_pin'],
+            'beneficiary_city'      => $details['bank_beneficiary_city'],
+            'beneficiary_state'     => $details['bank_beneficiary_state'],
+            'beneficiary_country'   => 'IN',
+            'beneficiary_email'     => $details['contact_email'],
+            'beneficiary_mobile'    => $details['contact_mobile']
+        ];
+    }
+
+    /**
+     * Activates a merchant account
+     * @param  string  $id            Merchant Id
+     * @param  boolean $dashboardOnly Only perform the activation on dashboard, not on API
+     *                                Useful in certain contexts, when merchant is already activated
+     *                                in the API, but now causing issue elsewhere
+     * @return Array Empty array in case of success
+     */
     public function activateMerchant($id, $dashboardOnly = false)
     {
         $merchant = Merchant\Entity::findorfail($id);
@@ -963,21 +1001,7 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $bankAccount = array(
-            'ifsc_code'             => $details['merchant_details']['bank_branch_ifsc'],
-            'beneficiary_name'      => $details['merchant_details']['bank_account_name'],
-            'account_number'        => $details['merchant_details']['bank_account_number'],
-            'beneficiary_address1'  => $details['merchant_details']['bank_beneficiary_address1'],
-            'beneficiary_address2'  => $details['merchant_details']['bank_beneficiary_address2'],
-            'beneficiary_address3'  => $details['merchant_details']['bank_beneficiary_address3'],
-            'beneficiary_address4'  => '',
-            'beneficiary_pin'       => $details['merchant_details']['bank_beneficiary_pin'],
-            'beneficiary_city'      => $details['merchant_details']['bank_beneficiary_city'],
-            'beneficiary_state'     => $details['merchant_details']['bank_beneficiary_state'],
-            'beneficiary_country'   => 'IN',
-            'beneficiary_email'     => $details['merchant_details']['contact_email'],
-            'beneficiary_mobile'    => $details['merchant_details']['contact_mobile']
-        );
+        $bankAccount = $this->bankAccountMap($details['merchant_details']);
 
         $bankAccountApi = false;
         // Check if the merchant has a bank account
@@ -1001,6 +1025,11 @@ class Service extends Base\Service
             }
 
             $this->api->merchant->fetch($id)->activate();
+
+            // Log activation on marketing google spreadsheet
+            $zapierData = $this->activationZapierData($details);
+            Queue::push('Models\Admin\Service@postActivationToZapier', $zapierData);
+
             $this->logActionToSlack($merchant, Actions::ACTIVATED);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -1009,6 +1038,39 @@ class Service extends Base\Service
         }
 
         return $this->activateMerchantOnDashboard($merchant);
+    }
+
+    public function postActivationToZapier($job, $data)
+    {
+        if (Config::get('razorpay.zapier.mock'))
+        {
+            return;
+        }
+
+        $url = Config::get('razorpay.zapier.activations');
+        Requests::post($url, [], $data);
+
+        $job->delete();
+    }
+
+    protected function activationZapierData(array $merchant)
+    {
+
+        $date =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
+            ->format('j/m/Y');
+
+        $merchantDetails = $merchant['merchant_details'];
+
+        return [
+            'date'  =>  $date,
+            'id'    =>  $merchant['id'],
+            'email' =>  $merchant['email'],
+            'name'          =>  $merchant['name'],
+            'contact_name'  =>  $merchantDetails['contact_name'],
+            'business_name' =>  $merchantDetails['business_name'],
+            'business_dba'  =>  $merchantDetails['business_dba'],
+            'business_website'  =>  $merchantDetails['business_website'],
+        ];
     }
 
     protected function activateMerchantOnDashboard($merchant)
