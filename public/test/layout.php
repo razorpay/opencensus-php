@@ -4,7 +4,7 @@
   <title>Razorpay - Checkout Testing page</title>
 </head>
 <body style="width: 80%; max-width: 800px; margin: 30px auto; font-family: ubuntu, helvetica">
-<textarea style="border-radius: 3px; width: 100%; display: block; height: 500px; font-family: mono; font-color: #444; resize: none;">
+<textarea style="border-radius: 3px; width: 100%; display: block; height: 500px; font-family: monospace; font-color: #444; resize: none;">
 {
   "key": "rzp_test_1DP5mmOlF5G5ag",
   "amount": 600000,
@@ -64,7 +64,7 @@ textarea.onkeydown = function(e){
 }
 
 <?php
-if ($baseurl !== "https://api.razorpay.com") {
+if ($_SERVER['HTTP_HOST'] !== "https://api.razorpay.com") {
 ?>
 var Razorpay = {
   config: {
