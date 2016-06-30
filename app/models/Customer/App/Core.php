@@ -44,4 +44,19 @@ class Core extends Base\Core
 
         return [];
     }
+
+    public function getAppTokenByDeviceTokenAndMerchant($deviceToken, $merchant)
+    {
+        $apps = $this->repo->app_token->fetchByDeviceTokenAndMerchant(
+            $deviceToken, $merchant);
+
+        if ($apps->count() === 0)
+        {
+            return null;
+        }
+
+        assert(($apps->count() > 1) === false);
+
+        return $apps[0];
+    }
 }
