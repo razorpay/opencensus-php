@@ -392,27 +392,6 @@ class Gateway
         return true;
     }
 
-    // public static function hasNoAuthAndCaptureSupportForNetwork($gateway, $networkCode)
-    // {
-    //     // This means that all the networks are supported by the gateway for authAndCapture.
-    //     if (isset(self::$authAndCapture[$gateway][self::NOT_SUPPORTED]) === false)
-    //     {
-    //         return false;
-    //     }
-    //
-    //     // Get all the networks which are NOT supported by the gateway for authAndCapture.
-    //     $notSupportedNetworks = self::$authAndCapture[$gateway][self::NOT_SUPPORTED];
-    //
-    //     // If a given network is in the list of notSupportedNetworks, it means that the network
-    //     // is not supported by the gateway for authAndCapture.
-    //     if (in_array($networkCode, $notSupportedNetworks))
-    //     {
-    //         return true;
-    //     }
-    //
-    //     return false;
-    // }
-
     public static function isPowerWallet($wallet)
     {
         return (in_array($wallet, self::POWER_WALLETS));
