@@ -263,7 +263,7 @@ class Gateway extends Base\Gateway
             'mid'           => $input['mid'],
             'msgcode'       => MessageCode::CREATE_USER,
             'otp'           => $input['otp'],
-            );
+        );
         $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
