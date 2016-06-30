@@ -119,6 +119,8 @@ class Raven
 
     protected function sendRavenRequest($request)
     {
+        $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
+
         $method = $request['method'];
 
         try
