@@ -4,7 +4,7 @@
   <title>Razorpay - Checkout Testing page</title>
 </head>
 <body style="width: 80%; max-width: 800px; margin: 30px auto; font-family: ubuntu, helvetica">
-<textarea style="border-radius: 3px; width: 100%; display: block; height: 580px; font-family: mono; font-color: #444; resize: none;">
+<textarea style="border-radius: 3px; width: 100%; display: block; height: 500px; font-family: mono; font-color: #444; resize: none;">
 {
   "key": "rzp_test_1DP5mmOlF5G5ag",
   "amount": 600000,
@@ -34,8 +34,8 @@
 <script>
 var options;
 var textarea = document.querySelector('textarea');
-
 try {
+  textarea.focus();
   saved = localStorage.getItem('options');
   if (saved) {
     textarea.value = saved;
@@ -52,6 +52,9 @@ textarea.oninput = function(e){
 }
 
 textarea.onkeydown = function(e){
+  if (e.which == 13 && e.ctrlKey) {
+    document.querySelector('button').click();
+  }
   if (e.which == 9) {
     e.preventDefault();
     var selStart = this.value.slice(0, this.selectionStart);
@@ -76,6 +79,6 @@ var Razorpay = {
 <button style="font-size: 16px; font-family: inherit; padding: .5em 1em; color: #444;
   border: 1px solid #999; background-color: #E6E6E6; text-decoration: none;
   display: block; margin: 20px auto; border-radius: 2px;"
-  onclick="open();return false;">Open</button>
+  onclick="Razorpay.open(options);return false;">Open</button>
 </body>
 </html>
