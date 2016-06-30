@@ -142,6 +142,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
+    const BAD_REQUEST_PAYMENT_MISSING_DATA                                      = 'One or more required fields are missing';
+    const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
 
     const BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED                                 = 'Order id is mandatory for payment';
     const BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT                        = 'Order payment method is mandatory for this merchant';
