@@ -364,15 +364,35 @@ class Gateway extends Base\Gateway
         $network = $input[Constants\Entity::CARD][Card\Entity::NETWORK];
 
         $payAuthRep = $enrollResponse[self::PAYER_AUTH_ENROLL_REPLY];
+        $network = $input[Constants\Entity::CARD][Card\Entity::NETWORK];
+        
         switch ($network)
         {
             case Card\Network::getFullName(Card\Network::VISA):
-                $ccAuthService[Entity::ECI] = $payAuthRep[Entity::ECI];
+
+                $eci = $payAuthRep[Entity::ECI];
+
+                if ((int)$eci === 7)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                    }
+
+                $ccAuthService[Entity::ECI] = $eci;
                 break;
 
             case Card\Network::getFullName(Card\Network::MC):
+
+                $colInd = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
+
+                if(((int)$colInd === 0) or ((int)$colInd === 7))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
+
                 $ucaf = array();
-                $ucaf[self::COLLECTION_INDICATOR] = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
+                $ucaf[self::COLLECTION_INDICATOR] = $colInd;
                 $request[self::UCAF] = $ucaf;
                 break;
             
@@ -754,24 +774,27 @@ class Gateway extends Base\Gateway
             case Payment\Result::NOT_ENROLLED:
                 $payerAuth = $enrollResponse[self::PAYER_AUTH_ENROLL_REPLY];
 
-                $eci = array_key_exists(Entity::ECI, $payerAuth) ? 
-                    $payerAuth[Entity::ECI] : '';
-
-                $ucaf = array_key_exists(self::UCAF_COLLECTION_INDICATOR, $payerAuth) ?
-                    $payerAuth[self::UCAF_COLLECTION_INDICATOR] : '';
-
                 $network = $input[Constants\Entity::CARD][Card\Entity::NETWORK];
-                if (($network === Card\Network::getFullName(Card\Network::VISA)) and 
-                    ($eci === '7'))
+
+                if ($network === Card\Network::getFullName(Card\Network::VISA))
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                    $eci = $payerAuth[Entity::ECI];
+
+                    if ((int)$eci === 7)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                    }
                 }
-                if (($network === Card\Network::getFullName(Card\Network::MC)) and 
-                    (($ucaf === '00') or ($ucaf === '7')))
+                if ($network === Card\Network::getFullName(Card\Network::MC))
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                    $ucaf = $payerAuth[self::UCAF_COLLECTION_INDICATOR];
+
+                    if(((int)$ucaf === 0) or ((int)$ucaf === 7))
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                    }
                 }
 
                 return $this->postNotEnrolledAuthorize($input, $enrollResponse);
