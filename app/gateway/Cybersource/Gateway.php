@@ -107,8 +107,8 @@ class Gateway extends Base\Gateway
             $gateway->fill($attributes);
             $gateway->saveOrFail();   
 
-            throw new Exception("Error in Validate: ".ResponseCodeMap::$map[$response[self::REASON_CODE]], 1);
-            
+            throw new Exception\BadRequestException(
+                            ResponseCodeMap::$map[$response[self::REASON_CODE]]);
         }
         else
         {
@@ -231,13 +231,13 @@ class Gateway extends Base\Gateway
             $gateway->fill($attributes);
             $gateway->saveOrFail();
 
-            throw new Exception("Error in Authorize: ".ResponseCodeMap::$map[$response[self::REASON_CODE]], 1);
+            throw new Exception\BadRequestException(
+                            ResponseCodeMap::$map[$response[self::REASON_CODE]]);
         }
         else
         {
             $status = Payment\Status::AUTHORIZED;
 
-            
             $attributes = array(
                 Entity::REF    => $response[self::REQUEST_ID],
                 Entity::STATUS => $status);
@@ -264,7 +264,8 @@ class Gateway extends Base\Gateway
             $gateway->fill($attributes);
             $gateway->saveOrFail();
 
-            throw new Exception("Error in Authorize: ".ResponseCodeMap::$map[$response[self::REASON_CODE]], 1);
+            throw new Exception\BadRequestException(
+                            ResponseCodeMap::$map[$response[self::REASON_CODE]]);
         }
         else
         {
@@ -365,7 +366,7 @@ class Gateway extends Base\Gateway
 
         $payAuthRep = $enrollResponse[self::PAYER_AUTH_ENROLL_REPLY];
         $network = $input[Constants\Entity::CARD][Card\Entity::NETWORK];
-        
+
         switch ($network)
         {
             case Card\Network::getFullName(Card\Network::VISA):
@@ -582,7 +583,8 @@ class Gateway extends Base\Gateway
 
             $this->getRepo()->createOrFail($attributes);
 
-            throw new Exception('Error in Enroll: '.ResponseCodeMap::$map[$response[self::REASON_CODE]], 1);
+            throw new Exception\BadRequestException(
+                            ResponseCodeMap::$map[$response[self::REASON_CODE]]);
             
         }
         else
@@ -615,7 +617,8 @@ class Gateway extends Base\Gateway
             $gateway->fill($attributes);
             $gateway->saveOrFail();
 
-            throw new Exception("Error in Capture: ".ResponseCodeMap::$map[$response[self::REASON_CODE]], 1);
+            throw new Exception\BadRequestException(
+                            ResponseCodeMap::$map[$response[self::REASON_CODE]]);
         }
         else
         {
@@ -648,7 +651,8 @@ class Gateway extends Base\Gateway
             $gateway->fill($attributes);
             $gateway->saveOrFail();
 
-            throw new Exception('Error in Refund: '.ResponseCodeMap::$map[$response[self::REASON_CODE]], 1);
+            throw new Exception\BadRequestException(
+                            ResponseCodeMap::$map[$response[self::REASON_CODE]]);
             
         }
         else

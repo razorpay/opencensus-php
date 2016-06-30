@@ -23,13 +23,13 @@ class ResponseCodeMap
     );
 
     public static $map = array(
-        101 => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        102 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
-        150 => 'System failure. Wait a few minutes and resend the request',
+        101 => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
+        102 => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
+        150 => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         151 => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
         152 => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
-        234 => 'Problem with our merchant configuration',
+        234 => ErrorCode::BAD_REQUEST_ERROR,
         475 => 'Enrolled. Authenticate before continuing the transaction',
-        476 => 'Cannot be authenticated',
+        476 => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
     );
 }
