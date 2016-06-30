@@ -9,15 +9,15 @@ use Gateway\Billdesk;
 use Gateway\Base;
 use Gateway\Base\Action;
 use Models\Card;
+use Requests;
+use Models\Payment\Core;
 
 class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
         $input = $this->getContentFromInput($input);
-
         parent::authorize($input);
-
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
@@ -53,13 +53,25 @@ class Server extends Base\Mock\Server
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
+        //uncomment below to mock s2s callback
+        /*$headers = array(
+                            'User-Agent'    => 'Razorpay-Webhook/v1',
+                    );
+        $url = \Http\Route::getUrlWithPublicAuth('gateway_payment_callback_post',
+                                                ['gateway' => 'billdesk']);
+
+        Requests::post(
+            $url,
+            $headers,
+            ['msg' => $msg]);
+        */
+
         $request = array(
             'url' => $input['RU'],
             'content' => ['msg' => $msg],
             'method' => 'post',
         );
-
-        return $this->makePostResponse($request);;
+        return $this->makePostResponse($request);
     }
 
     public function verify($input)
@@ -155,10 +167,21 @@ class Server extends Base\Mock\Server
         $name = $trace[1]['function'];
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
-
         $content = explode('|', $input['msg']);
         $input = array_combine($fields, $content);
 
         return $input;
+    }
+
+    protected function makeRequest($request)
+    {
+        $method = $request['method'];
+
+        $response = Requests::$method(
+            $request['url'],
+            $request['headers'],
+            $request['content']);
+
+        return $response;
     }
 }
