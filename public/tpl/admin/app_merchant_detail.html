@@ -14,7 +14,7 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Use with caution">
+        <a tooltip="Confirm merchant Account." ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
           Confirm Merchant
         </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
