@@ -1168,12 +1168,15 @@ trait Authorize
     {
         $gateway = $payment->getGateway();
 
-        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        $networkCode = null;
+        $paymentCard = $payment->card;
+
+        if ($paymentCard !== null)
         {
-            return false;
+            $networkCode = $paymentCard->getNetworkCode();
         }
 
-        if (Payment\Gateway::hasNoAuthAndCaptureSupportForNetwork($gateway, $payment->card->getNetworkCode()) === true)
+        if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
         {
             return false;
         }

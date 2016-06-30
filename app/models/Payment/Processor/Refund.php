@@ -302,10 +302,18 @@ trait Refund
         // we do not check for the capture timestamp.
         // For [authAndCapture] gateways, we check for capture timestamp.
 
-        if (((Payment\Gateway::supportsAuthAndCapture($gateway) === true) and
-             ($payment->getCaptureTimestamp() !== null)) or
-            (Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-            (Payment\Gateway::hasNoAuthAndCaptureSupportForNetwork($gateway, $payment->card->getNetworkCode())) === true)
+        $networkCode = null;
+        $paymentCard = $payment->card;
+
+        if ($paymentCard !== null)
+        {
+            $networkCode = $paymentCard->getNetworkCode();
+        }
+
+        $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
+
+        if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
+            ($supportsAuthAndCapture === false))
         {
             if ($payment->transaction === null)
             {
