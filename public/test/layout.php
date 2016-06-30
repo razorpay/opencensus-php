@@ -4,21 +4,6 @@
   <title>Razorpay - Checkout Testing page</title>
 </head>
 <body style="width: 80%; max-width: 800px; margin: 30px auto; font-family: ubuntu, helvetica">
-<script>
-var options;
-<?php
-if ($baseurl !== "https://api.razorpay.com") {
-?>
-var Razorpay = {
-  config: {
-    api: "/"
-  }
-}
-<?php
-}
-?>
-</script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <textarea style="border-radius: 3px; width: 100%; display: block; height: 580px; font-family: mono; font-color: #444; resize: none;">
 {
   "key": "rzp_test_1DP5mmOlF5G5ag",
@@ -46,9 +31,42 @@ var Razorpay = {
   }
 }
 </textarea>
+<script>
+var options;
+var textarea = document.querySelector('textarea');
+
+try {
+  saved = localStorage.getItem('options');
+  if (saved) {
+    textarea.value = saved;
+  }
+} catch(e){}
+
+textarea.oninput = function(e){
+  try {
+    localStorage.setItem('options', textarea.value);
+    eval('options = ' + textarea.value);
+  } catch(e){
+    console.log(e.message);
+  }
+}
+
+<?php
+if ($baseurl !== "https://api.razorpay.com") {
+?>
+var Razorpay = {
+  config: {
+    api: "/"
+  }
+}
+<?php
+}
+?>
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <button style="font-size: 16px; font-family: inherit; padding: .5em 1em; color: #444;
   border: 1px solid #999; background-color: #E6E6E6; text-decoration: none;
   display: block; margin: 20px auto; border-radius: 2px;"
-  onclick="eval('options = ' + document.querySelector('textarea').value); Razorpay.open(options); return false;">Open</button>
+  onclick="open();return false;">Open</button>
 </body>
 </html>
