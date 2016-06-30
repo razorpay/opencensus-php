@@ -305,6 +305,7 @@ trait Refund
         $networkCode = null;
         $paymentCard = $payment->card;
 
+        // If payment method is wallet or net banking.
         if ($paymentCard !== null)
         {
             $networkCode = $paymentCard->getNetworkCode();
