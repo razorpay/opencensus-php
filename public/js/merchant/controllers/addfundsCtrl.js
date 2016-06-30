@@ -79,7 +79,7 @@ app.controller('AddfundsCtrl', [
       var api = document.createElement('a');
       api.href = apiURL;
 
-      var checkoutURL = 'https://checkout.razorpay.com/v1/checkout.js';
+      var checkoutURL = 'https://checkout.razorpay.com/';
 
       // We call this to ensure that Checkout is calling the correct API
       // Skipped in production
@@ -87,10 +87,15 @@ app.controller('AddfundsCtrl', [
         // This needs to be global
         window.Razorpay = {
           config: {
-            api: api.protocol + '//' + api.hostname + '/'
+            api: api.protocol + '//' + api.hostname + '/',
+
+            // path for checkout
+            js: checkoutURL
           }
         };
       }
+
+      checkoutURL += 'v1/checkout.js';
 
       uiLoad.loadScript(checkoutURL).then(function() {
         $scope.disableAddFunds = false;
