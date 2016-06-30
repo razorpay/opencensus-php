@@ -15,6 +15,7 @@ use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
+use Lib\PhoneBook;
 use Models\Customer\Token;
 use Gateway\Base\VerifyResult;
 use Gateway\Base\AuthorizeFailed;
@@ -367,7 +368,7 @@ class Gateway extends Base\Gateway
         $contentToSave = array(
             'key'      => $this->getMerchantId($input['terminal']),
             'email'    => $input['payment']['email'],
-            'mobile'   => $contact->format(\Lib\PhoneBook::DOMESTIC),
+            'mobile'   => $contact->format(PhoneBook::DOMESTIC),
             'status'   => $content['status'],
             'amount'   => $input['payment']['amount'],
             'txnId'    => $content['result'],
@@ -504,7 +505,7 @@ class Gateway extends Base\Gateway
             'wallet'                =>  $input['payment']['wallet'],
             'email'                 =>  $input['payment']['email'],
             'received'              =>  1,
-            'contact'               =>  $contact->format(\Lib\PhoneBook::DOMESTIC),
+            'contact'               =>  $contact->format(PhoneBook::DOMESTIC),
             'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
             'refund_id'             =>  $input['refund']['id'],
             'response_code'         =>  '',
@@ -544,7 +545,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             'email'     => $input['payment']['email'],
-            'mobile'    => $contact->format(\Lib\PhoneBook::DOMESTIC),
+            'mobile'    => $contact->format(PhoneBook::DOMESTIC),
             'client_id' => $this->getClientId($input['terminal'])
         );
 
@@ -563,7 +564,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             'email'         => $input['payment']['email'],
-            'mobile'        => $contact->format(\Lib\PhoneBook::DOMESTIC),
+            'mobile'        => $contact->format(PhoneBook::DOMESTIC),
             'client_id'     => $this->getClientId($input['terminal']),
             'otp'           => $input['gateway']['otp']
         );
@@ -681,7 +682,7 @@ class Gateway extends Base\Gateway
         $contact = $this->parseContact($this->input['payment']['contact']);
 
         $content['key']     = $this->getMerchantId($this->input['terminal']);
-        $content['mobile']  = $contact->format(\Lib\PhoneBook::DOMESTIC);
+        $content['mobile']  = $contact->format(PhoneBook::DOMESTIC);
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -765,7 +766,7 @@ class Gateway extends Base\Gateway
         $contentToSave = array(
             'key'                   => $this->getMerchantId($this->input['terminal']),
             'email'                 => $this->input['payment']['email'],
-            'mobile'                => $contact->format(\Lib\PhoneBook::DOMESTIC),
+            'mobile'                => $contact->format(PhoneBook::DOMESTIC),
             'status'                => Status::SUCCESS,
             'txnId'                 => $content['paymentId'],
             'received'              => true
@@ -803,7 +804,7 @@ class Gateway extends Base\Gateway
     protected function parseContact($contact)
     {
         // Constructor does the basic validation
-        $phoneBook = new \Lib\PhoneBook($contact);
+        $phoneBook = new PhoneBook($contact);
 
         return $phoneBook;
     }

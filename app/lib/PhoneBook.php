@@ -54,22 +54,27 @@ class PhoneBook
 
         switch ($format)
         {
+            // International format - +91 99876 54321
             case self::INTERNATIONAL:
-                $contact = $libphonenumber->format($number, PhoneNumberFormat::E164);
+                $contact = $libphonenumber->format($number, PhoneNumberFormat::INTERNATIONAL);
                 break;
 
+            // Gives national number - 099876 54321
             case self::NATIONAL:
                 $contact = $libphonenumber->format($number, PhoneNumberFormat::NATIONAL);
                 break;
 
+            // Gives national number without zero and space - 9987654321
             case self::DOMESTIC:
                 $contact = $number->getNationalNumber();
                 break;
 
+            // RFC3966 format for using in html links - tel:+91-99876-54321
             case self::RFC3966:
                 $contact = $libphonenumber->format($number, PhoneNumberFormat::RFC3966);
                 break;
 
+            // Standardized format E164 - +919987654321
             default:
                 $contact = $libphonenumber->format($number, PhoneNumberFormat::E164);
                 break;

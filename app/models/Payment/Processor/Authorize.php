@@ -22,6 +22,7 @@ use Models\Order;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
+use Lib\PhoneBook;
 
 trait Authorize
 {
@@ -200,7 +201,7 @@ trait Authorize
     protected function parseContact($contact)
     {
         // Constructor does the basic validation
-        $phoneBook = new \Lib\PhoneBook($contact);
+        $phoneBook = new PhoneBook($contact);
 
         // Setting an instance just like carbon
         return $phoneBook;
