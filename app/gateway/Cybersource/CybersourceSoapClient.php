@@ -5,7 +5,7 @@ namespace Gateway\Cybersource;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class ExtendedClient extends \SoapClient 
+class CybersourceSoapClient extends \SoapClient 
 {
     protected $user;
     protected $password;
