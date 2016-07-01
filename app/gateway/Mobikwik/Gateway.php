@@ -257,13 +257,14 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::CREATE_USER);
 
         $content = array(
-            'cell'          => $input['cell'],
-            'email'         => $input['email'],
+            'cell'          => $this->getFormattedContact($input['payment']['contact']),
+            'email'         => $input['payment']['email'],
             'merchantname'  => 'Razorpay',
-            'mid'           => $input['mid'],
+            'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::CREATE_USER,
-            'otp'           => $input['otp'],
+            'otp'           => $input['gateway']['otp'],
         );
+
         $content['checksum'] = $this->getHashOfArray($content);
 
         $request = $this->getStandardRequestArray($content);
@@ -276,6 +277,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $code = $content['statuscode'];
+
         if ($code !== Status::SUCCESS)
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($code);
@@ -368,7 +370,7 @@ class Gateway extends Base\Gateway
                 // if user doesn't exist, first register the user
                 // then throw insufficient funds exception
                 // so that he's shown an 'Add Funds' button
-                $this->createWalletUser($content);
+                $this->createWalletUser($input);
 
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
