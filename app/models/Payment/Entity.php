@@ -464,13 +464,14 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT];
     }
 
+    // TODO: Return a phonebook instance (like carbon) instead of string
     public function getContactAttribute()
     {
         $contact = $this->attributes[self::CONTACT];
 
         $phoneBook = new PhoneBook($contact, true);
 
-        return $phoneBook;
+        return (string) $phoneBook;
     }
 
     public function getAmountAuthorizedAttribute()

@@ -5,10 +5,8 @@ namespace Lib;
 use App;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\NumberParseExeption;
-use Illuminate\Support\Contracts\JsonableInterface;
-use Illuminate\Support\Contracts\ArrayableInterface;
 
-class PhoneBook implements ArrayableInterface, JsonableInterface
+class PhoneBook
 {
     const DEFAULT_COUNTRY_CODE = 'IN';
 
@@ -136,26 +134,6 @@ class PhoneBook implements ArrayableInterface, JsonableInterface
     }
 
     public function __toString()
-    {
-        if ($this->isValidNumber() === true)
-        {
-            return $this->format();
-        }
-
-        return $this->getRawInput();
-    }
-
-    public function toArray()
-    {
-        if ($this->isValidNumber() === true)
-        {
-            return $this->format();
-        }
-
-        return $this->getRawInput();
-    }
-
-    public function toJson($options = 0)
     {
         if ($this->isValidNumber() === true)
         {
