@@ -353,12 +353,7 @@ trait Authorize
         // Sets gateway and terminal for the payment.
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
-        if (($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and 
-            ($payment->isMethod('card') === true))
-        {
-            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($input['card']['number']));
-            (new Card\Repository)->saveOrFail($payment->card);
-        }
+        $this->runPaymentGatewayRelatedPreProcessing($payment, $input);
 
         $this->repo->saveOrFail($payment);
 
@@ -664,6 +659,20 @@ trait Authorize
                         $iinEntity->getIssuer(), $emiDuration);
 
         $payment->setEmiPlanId($emiPlan->getId());
+    }
+
+    protected function runPaymentGatewayRelatedPreProcessing($payment, $input)
+    {
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and
+            ($payment->card->getVaultToken() === null))
+        {
+            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($input['card']['number']));
+
+            $payment->card->setVault(Card\Vault::TOKENEX);
+
+            (new Card\Repository)->saveOrFail($payment->card);
+        }
     }
 
     protected function getReturnRequestDataForMerchant($payment)

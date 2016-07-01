@@ -222,10 +222,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VAULT_TOKEN);
     }
 
-    public function setVaultToken($vault_token)
-    {
-        return $this->setAttribute(self::VAULT_TOKEN, $vault_token);
-    }
 
     public function getVault()
     {
@@ -270,6 +266,16 @@ class Entity extends Base\PublicEntity
     public function setEmi($flag)
     {
         $this->setAttribute(self::EMI, $flag);
+    }
+
+    public function setVaultToken($vaultToken)
+    {
+        $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
+    }
+
+    public function setVault($vault)
+    {
+        $this->setAttribute(self::VAULT, $vault);
     }
 
     public function setTrivia($trivia)

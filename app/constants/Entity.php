@@ -43,7 +43,6 @@ class Entity
 
     const ATOM              = 'atom';
     const HDFC              = 'hdfc';
-    const CYBERSOURCE       = 'cybersource';
     const AMEX              = 'amex';
     const PAYTM             = 'paytm';
     const SHARP             = 'sharp';
@@ -51,8 +50,9 @@ class Entity
     const BILLDESK          = 'billdesk';
     const MOBIKWIK          = 'mobikwik';
     const AXIS_MIGS         = 'axis_migs';
-    const AXIS_GENIUS       = 'axis_genius';
     const NETBANKING        = 'netbanking';
+    const AXIS_GENIUS       = 'axis_genius';
+    const CYBERSOURCE       = 'cybersource';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const NETBANKING_KOTAK  = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';

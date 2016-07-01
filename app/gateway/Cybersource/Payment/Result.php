@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Cybersource\Payment;
+namespace Gateway\Cybersource;
 
 use Gateway\Cybersource;
 

@@ -1,15 +1,15 @@
 <?php
- 
+
 namespace Gateway\Cybersource\Mock;
- 
+
 use EE\Exception;
 use Gateway\Base;
 use Models\Card;
 use Models\Payment;
 use App;
 use Http;
-use Gateway\Cybersource\Payment as Pay;
- 
+use Gateway\Cybersource;
+
 class Server extends Base\Mock\Server
 {
     protected $repo;
@@ -51,7 +51,7 @@ class Server extends Base\Mock\Server
         $response = array();
 
         $response['decision'] = 'ACCEPT';
-        $response['reasonCode'] = Pay\Result::SUCCESS;
+        $response['reasonCode'] = Cybersource\Result::SUCCESS;
         $response['requestID'] = '4661549029556297301014';
         $response['merchantReferenceCode'] = 'razorpay';
 
@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
         $response = array();
 
         $response['decision'] = 'ACCEPT';
-        $response['reasonCode'] = Pay\Result::SUCCESS;
+        $response['reasonCode'] = Cybersource\Result::SUCCESS;
         $response['requestID'] = '4661468455476856801016';
 
         $ccCaptureReply = array();
@@ -85,7 +85,7 @@ class Server extends Base\Mock\Server
         $response = array();
 
         $response['decision'] = 'ACCEPT';
-        $response['reasonCode'] = Pay\Result::SUCCESS;
+        $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
         $payerAuthValidateReply = array();
         $payerAuthValidateReply['eciRaw'] = '05';
@@ -104,7 +104,7 @@ class Server extends Base\Mock\Server
         $response = array();
 
         $response['decision'] = 'ACCEPT';
-        $response['reasonCode'] = Pay\Result::SUCCESS;
+        $response['reasonCode'] = Cybersource\Result::SUCCESS;
         $response['requestID'] = '4661454138166750401020';
 
         $ccAuthReply = array();
@@ -114,7 +114,7 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
- 
+
     public function getEnrollResponse($request)
     {
         $response = array();
@@ -128,8 +128,8 @@ class Server extends Base\Mock\Server
         if ($request['card']['accountNumber'] === '4012001038443335')
         {
             $response['decision'] = 'REJECT';
-            $response['reasonCode'] = Pay\Result::ENROLLED;
-            
+            $response['reasonCode'] = Cybersource\Result::ENROLLED;
+
             $params = array('gateway' => 'cybersource');
             $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
             $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
@@ -139,7 +139,7 @@ class Server extends Base\Mock\Server
         else if ($request['card']['accountNumber'] === '555555555555558')
         {
             $response['decision'] = 'ACCEPT';
-            $response['reasonCode'] = Pay\Result::SUCCESS;
+            $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
             $response['payerAuthEnrollReply']['veresEnrolled'] = 'U';
             $response['payerAuthEnrollReply']['commerceIndicator'] = 'spa';
@@ -148,13 +148,13 @@ class Server extends Base\Mock\Server
         else
         {
             $response['decision'] = 'ACCEPT';
-            $response['reasonCode'] = Pay\Result::SUCCESS;
+            $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
             $response['payerAuthEnrollReply']['commerceIndicator'] = 'internet';
             $response['payerAuthEnrollReply']['veresEnrolled ']= 'U';
             $response['payerAuthEnrollReply']['eci'] = '05';
         }
- 
+
         return $response;
     }
 

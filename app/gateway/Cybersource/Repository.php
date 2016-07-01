@@ -3,7 +3,6 @@
 namespace Gateway\Cybersource;
 
 use EE\Exception;
-use Gateway\Cybersource\Payment;
 use Gateway\Cybersource;
 use Gateway\Base;
 

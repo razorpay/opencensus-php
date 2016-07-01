@@ -79,9 +79,69 @@ class Entity extends Base\Entity
         return $this->belongsTo('Models\Payment\Entity', self::PAYMENT_ID, self::ID);
     }
 
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
+
+    public function getCommerceIndicator()
+    {
+        return $this->getAttribute(self::COMMERCE_INDICATOR);
+    }
+
+    public function getCollectionIndicator()
+    {
+        return $this->getAttribute(self::COLLECTION_INDICATOR);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getEci()
+    {
+        return $this->getAttribute(self::ECI);
+    }
+
+    public function getCavv()
+    {
+        return $this->getAttribute(self::CAVV);
+    }
+
+    public function getAuthData()
+    {
+        return $this->getAttribute(self::AUTH_DATA);
+    }
+
+    public function getRef()
+    {
+        return $this->getAttribute(self::REF);
+    }
+
+    public function getCaptureRef()
+    {
+        return $this->getAttribute(self::CAPTURE_REF);
+    }
+
+    public function getXid()
+    {
+        return $this->getAttribute(self::XID);
+    }
+
+    public function getParesStatus()
+    {
+        return $this->getAttribute(self::PARES_STATUS);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
     }
 
     public function setStatus($status)
