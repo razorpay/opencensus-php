@@ -849,16 +849,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "7.4.3",
+            "version": "7.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "415cef198620774bd54f63af097006ab3e6c64aa"
+                "reference": "75cc4cb41d1f590391f15484df5bdc13963c2b1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/415cef198620774bd54f63af097006ab3e6c64aa",
-                "reference": "415cef198620774bd54f63af097006ab3e6c64aa",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/75cc4cb41d1f590391f15484df5bdc13963c2b1a",
+                "reference": "75cc4cb41d1f590391f15484df5bdc13963c2b1a",
                 "shasum": ""
             },
             "require": {
@@ -909,7 +909,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2016-06-15 13:08:56"
+            "time": "2016-06-29 14:09:08"
         },
         {
             "name": "guzzle/guzzle",
@@ -1004,6 +1004,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2015-03-18 18:23:50"
         },
         {
@@ -2695,16 +2696,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.7",
+            "version": "v2.8.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "2a6b8713f8bdb582058cfda463527f195b066110"
+                "reference": "b180b70439dca70049b6b9b7e21d75e6e5d7aca9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/2a6b8713f8bdb582058cfda463527f195b066110",
-                "reference": "2a6b8713f8bdb582058cfda463527f195b066110",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/b180b70439dca70049b6b9b7e21d75e6e5d7aca9",
+                "reference": "b180b70439dca70049b6b9b7e21d75e6e5d7aca9",
                 "shasum": ""
             },
             "require": {
@@ -2751,20 +2752,20 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-06-06 11:11:27"
+            "time": "2016-06-29 05:29:29"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.8.7",
+            "version": "v2.8.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "dee379131dceed90a429e951546b33edfe7dccbb"
+                "reference": "7258ddd6f987053f21fa43d03430580ba54e6096"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/dee379131dceed90a429e951546b33edfe7dccbb",
-                "reference": "dee379131dceed90a429e951546b33edfe7dccbb",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/7258ddd6f987053f21fa43d03430580ba54e6096",
+                "reference": "7258ddd6f987053f21fa43d03430580ba54e6096",
                 "shasum": ""
             },
             "require": {
@@ -2800,7 +2801,7 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "time": "2016-04-12 18:01:21"
+            "time": "2016-06-29 05:31:50"
         },
         {
             "name": "symfony/finder",
@@ -4626,16 +4627,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.1.1",
+            "version": "v3.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "c5a7e7fc273c758b92b85dcb9c46149ccda89623"
+                "reference": "2884c26ce4c1d61aebf423a8b912950fe7c764de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/c5a7e7fc273c758b92b85dcb9c46149ccda89623",
-                "reference": "c5a7e7fc273c758b92b85dcb9c46149ccda89623",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/2884c26ce4c1d61aebf423a8b912950fe7c764de",
+                "reference": "2884c26ce4c1d61aebf423a8b912950fe7c764de",
                 "shasum": ""
             },
             "require": {
@@ -4671,7 +4672,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-06-14 11:18:07"
+            "time": "2016-06-29 05:41:56"
         },
         {
             "name": "webmozart/assert",

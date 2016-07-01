@@ -34,4 +34,15 @@ class EmiFile
         return $cardNumber;
     }
 
+    protected function getZippedFile()
+    {
+        $fullPath = $this->getExcelFullFilePath();
+        $fileArray = array($fullPath);
+
+        $password = \Config::get('applications.emi')['password'];
+
+        $zipPath = $this->makeZipFile($fileArray, $password);
+
+        return $zipPath;
+    }
 }
