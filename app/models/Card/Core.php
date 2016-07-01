@@ -6,9 +6,12 @@ use Models\Base;
 use Models\Card;
 use EE\Error\ErrorCode;
 use EE\Exception;
+use Services\SlackPoster;
 
 class Core extends Base\Core
 {
+    use SlackPoster;
+
     protected $card = null;
 
     public function create($input, $merchant)
@@ -124,6 +127,18 @@ class Core extends Base\Core
             );
 
             $card->fill($arr);
+        }
+        else
+        {
+            $slackArray = array(
+                'iin'       => $card->getIin(),
+                'card_id'   => $card->getDashboardEntityLinkForSlack(),
+            );
+
+            $this->slackPost(
+                'Missing IIN for payment',
+                $slackArray,
+                ['channel' => '#tech_alerts']);
         }
 
         $type = Card\Type::getType($type, $network);
