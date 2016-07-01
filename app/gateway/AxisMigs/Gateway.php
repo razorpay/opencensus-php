@@ -642,16 +642,21 @@ class Gateway extends Base\Gateway
     protected function getApiErrorCode($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
-        $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
 
         if ($this->isSessionExpired($input))
         {
             return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
         }
 
-        if ($this->isAcqErrorOccurred($input))
+        // check if Acq error
+        if (isset($input['gateway']['vpc_AcqResponseCode']))
         {
-            return AcqResponseCode::$map[$acqResponseCode];
+            $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+
+            if (isset(AcqResponseCode::$map[$acqResponseCode]))
+            {
+                return AcqResponseCode::$map[$acqResponseCode];
+            }
         }
 
         // Check for mapped TxnResponseCode value
@@ -671,21 +676,6 @@ class Gateway extends Base\Gateway
 
             return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }
-    }
-
-    protected function isAcqErrorOccurred($input)
-    {
-        if (isset($input['gateway']['vpc_AcqResponseCode']))
-        {
-            $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
-
-            if (isset(AcqResponseCode::$map[$acqResponseCode]))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     protected function isSessionExpired($input)
