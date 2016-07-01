@@ -26,6 +26,10 @@ return array(
         'from_email' => 'support@razorpay.com'
     ),
 
+    'emi' => array(
+        'password'  =>  $_ENV['EMI_FILE_PASSWORD']
+    ),
+
     'slack' => array(
         'team'      => 'razorpay',
         'token'     =>  $_ENV['SLACK_TOKEN'],
