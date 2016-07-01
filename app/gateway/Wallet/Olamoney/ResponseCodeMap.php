@@ -8,8 +8,15 @@ use EE\Error\ErrorCode;
 class ResponseCodeMap
 {
     public static $codes = array(
-        'hash_mismatch'  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        'user_not_found' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST
+        'hash_mismatch'     => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        'user_not_found'    => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST,
+        '100'               => 'Transaction Successful',
+        '101'               => 'User not logged in',
+        '102'               => 'User has 0 balance',
+        '103'               => 'User has insufficient balance',
+        '104'               => 'Payment Failed',
+        '105'               => 'Hash verification failed',
+        '106'               => 'Duplicate transaction not allowed',
     );
 
     protected static $success = array(

@@ -31,6 +31,88 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        return $this->callRedirectFlow($input);
+    }
+
+    public function callRedirectFlow($input)
+    {
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+
+        $this->verifySecureHash($input['gateway']);
+
+        $this->createGatewayPaymentEntity($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => self::$gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $this->verifyPaymentCallbackResponse($input);
+    }
+
+    protected createGatewayPaymentEntity($input)
+    {
+        $contentToSave = array(
+            'payment_id'=> $input['payment']['id'],
+            'action'    => $this->action;
+            'amount'    => $input['payment']['amount'],
+            'wallet'    => self::$gateway,
+            'received'  => true,
+            'email'     => $input['payment']['email'],
+            'contact'   => $this->getFormattedContact($input['payment']['contact']),
+            'status_code'    => $content['status'],
+            'txnId'     => $content['result'],
+            'message'   => $content['error_message'],
+        );
+
+        parent::createGatewayPaymentEntity($contentToSave);
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
+        $content = $input['gateway'];
+        $code = (int) $input['gateway']['statuscode'];
+
+        if ($content['statuscode'] !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $input['gateway']['statuscode'],
+                $input['gateway']['statusmessage']);
+        }
+    }
+
+    protected function verifySecureHash($content)
+    {
+        $fieldsInOrder = array(
+            'type',
+            'status',
+            'merchantBillId',
+            'transactionId',
+            'amount',
+            'comments',
+            'udf',
+            //'timestamp', ?
+            //'salt', ?
+        );
+
+        $hash = $content['checksum'];
+
+        $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        $generatedHash = $this->getHashOfArray($content);
+
+        if ($generatedHash !== $hash)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
+        }
     }
 
     protected function getBillGeneratorRequest($input)
@@ -111,7 +193,7 @@ class Gateway extends Base\Gateway
     protected function getOtpGenerateRequestArray($input)
     {
         $amount = ($input['payment']['amount'] / 100);
-
+        s($input['callbackUrl']);
         $content = array(
             'command'           => Command::DEBIT,
             'accessToken'       => $this->getAccessToken($input['terminal']),
