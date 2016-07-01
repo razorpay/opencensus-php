@@ -193,7 +193,7 @@ class Core extends Base\Core
     protected function putAppTokenDetailsInSession($appToken)
     {
         // setup session params
-        $this->app['session']->put('app_token', $appToken->getPublicId());
+        //$this->app['session']->put('app_token', $appToken->getPublicId());
         $this->app['session']->put('device_token', $appToken->getDeviceToken());
     }
 
