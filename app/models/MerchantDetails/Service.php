@@ -18,9 +18,12 @@ class Service extends Base\Service
     {
         $user = Auth::user()->user();
 
-        $this->merchant = $user->currentMerchant;
-        $this->merchantDetails = $user->currentMerchant->MerchantDetails;
-        $this->user = $user;
+        if ($user)
+        {
+            $this->merchant = $user->currentMerchant;
+            $this->merchantDetails = $user->currentMerchant->MerchantDetails;
+            $this->user = $user;
+        }
     }
 
     public function fetchDetails()
