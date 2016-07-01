@@ -33,4 +33,13 @@ class Repository extends Base\Repository
                     ->where(App\Entity::DEVICE_TOKEN, '=', $deviceToken)
                     ->get();
     }
+
+    public function fetchByDeviceTokenAndMerchant($deviceToken, $merchant)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(App\Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(App\Entity::DEVICE_TOKEN, '=', $deviceToken)
+                    ->get();
+    }
 }
