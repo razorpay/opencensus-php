@@ -155,5 +155,5 @@ return array(
     'RAVEN_URL'                                     => 'https://raven.razorpay.com/v1/',
     'RAVEN_SECRET'                                  => '',
 
-    'SESSION_SECURE'                                => true,
+    'SESSION_SECURE'                                => getenv('SESSION_SECURE'),
 );

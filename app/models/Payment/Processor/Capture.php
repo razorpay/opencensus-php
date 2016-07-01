@@ -120,7 +120,7 @@ trait Capture
     {
         $this->repo->transaction(function()
         {
-            $this->repo->lockForUpdate($this->payment->getKey());
+            $this->paymentRepo->lockForUpdate($this->payment->getKey());
 
             $this->updatePaymentCaptured();
 

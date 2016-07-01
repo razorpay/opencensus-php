@@ -138,7 +138,6 @@ class NodalAccount
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,
                 'Bank_Code_Indicator'   => 'M',
-//                'Beneficiary_Code'      => $ba->getId(),
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ifsc,
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),

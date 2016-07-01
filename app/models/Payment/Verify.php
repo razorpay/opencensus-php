@@ -220,21 +220,8 @@ class Verify
 
     protected function processor($merchant = null)
     {
-        $bindings = $this->getBindings($merchant);
+        $processor = new Payment\Processor\Processor($merchant);
 
-        return Payment\Processor\Processor::create($bindings);
-    }
-
-    protected function getBindings(Merchant\Entity $merchant = null)
-    {
-        $trace = \Trace::getFacadeRoot();
-
-        $bindings = array(
-            'merchant'  => $merchant,
-            'core'      => $this->core,
-            'trace'     => $this->trace,
-            'mode'      => $this->mode);
-
-        return $bindings;
+        return $processor;
     }
 }

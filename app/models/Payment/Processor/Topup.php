@@ -67,10 +67,12 @@ trait Topup
         }
 
         //
+        // Sharp gateway will execute in test mode and won't have global customer and
         // Slight hack for mobikwik as we are falling back on traditional redirection
         // flow for mobikwik as we are not using their topup flow right now
         //
-        if (($payment->getWallet() !== Wallet::MOBIKWIK) and
+        if (($gateway !== Payment\Gateway::SHARP) and
+            ($payment->getWallet() !== Wallet::MOBIKWIK) and
             ($payment->globalCustomer === null))
         {
             throw new Exception\LogicException(

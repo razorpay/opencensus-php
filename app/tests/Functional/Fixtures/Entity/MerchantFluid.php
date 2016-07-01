@@ -156,7 +156,6 @@ class MerchantFluid extends Base
         $defaultValues = array(
             'merchant_id'      => $this->getId(),
             'beneficiary_name' => $name,
-            'beneficiary_code' => $code,
         );
 
         $attributes = array_merge($defaultValues, $attributes);

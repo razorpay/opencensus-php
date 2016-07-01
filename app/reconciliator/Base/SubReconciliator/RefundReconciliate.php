@@ -130,6 +130,21 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function persistReconciliationData()
     {
+        $refundTransaction = $this->refund->transaction;
+
+        if ($refundTransaction === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message'    => 'Refund transaction not found in DB.',
+                    'refund_id'  => $this->refund->getId(),
+                    'gateway'    => get_called_class()
+                ]);
+
+            return;
+        }
+
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
     }

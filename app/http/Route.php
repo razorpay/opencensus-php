@@ -123,6 +123,7 @@ final class Route
         'pricing_get_plan_rule'                   => ['get',      'pricing/{planId}/rule/{ruleId}',           'PricingController@getPricingPlanRule'                              ],
         'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                        'PricingController@postAddPricingPlanRule'                          ],
         'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',           'PricingController@deletePricingPlanRule'                           ],
+        'refund_create_missing_txn'               => ['post',     'refunds/transaction',                      'PaymentController@postRefundsTransactions'                         ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                        'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                             'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                      'TransactionController@getMonthlyReport'                            ],
@@ -367,6 +368,7 @@ final class Route
         'payment_refund_authorized',
         'payment_compute_tax',
         'payment_verify_multiple',
+        'refund_create_missing_txn',
         'settlement_compute_tax',
         'daily_settlement_compute_tax',
         'refund_netbanking_generate_excel',
@@ -444,43 +446,43 @@ final class Route
     );
 
     public static $internalApps = array(
-            'dashboard' => array('*'),
+        'dashboard' => array('*'),
 
-            'mock_gateways' => array(
-                'mockhdfc_enroll',
-                'mockhdfc_auth_enrolled',
-                'mockhdfc_payment',
-            ),
+        'mock_gateways' => array(
+            'mockhdfc_enroll',
+            'mockhdfc_auth_enrolled',
+            'mockhdfc_payment',
+        ),
 
-            'cron' => array(
-                'hdfc_mpr_generate',
-                'setl_initiate',
-                'setl_reconcile_generate',
-                'setl_return_generate',
-                'payment_auth_notify',
-                'payment_timeout',
-                'merchant_daily_report',
-                'merchant_post_beneficiary_file',
-                'merchant_notify_holiday',
-                'payment_auto_capture',
-                'payment_verify_multiple',
-                'refund_netbanking_generate_excel',
-                'refund_generate_excel',
-                'payment_refund_authorized',
-                'payment_capture_reminder',
-                'emi_generate_excel',
-                'es_migrate_entity',
-            ),
+        'cron' => array(
+            'hdfc_mpr_generate',
+            'setl_initiate',
+            'setl_reconcile_generate',
+            'setl_return_generate',
+            'payment_auth_notify',
+            'payment_timeout',
+            'merchant_daily_report',
+            'merchant_post_beneficiary_file',
+            'merchant_notify_holiday',
+            'payment_auto_capture',
+            'payment_verify_multiple',
+            'refund_netbanking_generate_excel',
+            'refund_generate_excel',
+            'payment_refund_authorized',
+            'payment_capture_reminder',
+            'emi_generate_excel',
+            'es_migrate_entity',
+        ),
 
-            'mailgun' => array(
-                'hdfc_mpr_reconcile',
-                'reconciliate',
-            ),
+        'mailgun' => array(
+            'hdfc_mpr_reconcile',
+            'reconciliate',
+        ),
 
-            'hosted' => array(
-                'merchant_secret',
-            ),
-        );
+        'hosted' => array(
+            'merchant_secret',
+        ),
+    );
 
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.

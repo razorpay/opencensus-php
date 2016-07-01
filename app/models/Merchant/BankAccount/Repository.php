@@ -30,38 +30,6 @@ class Repository extends Base\Repository
         return $merchant->bankAccount;
     }
 
-    public function getBankAccountByBeneficiaryCode($code)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, '=', $code)->first();
-    }
-
-    public function getBeneficiaryCodeCountByPattern($code, $mode)
-    {
-        $repo = $this->repo;
-
-        $highest = $repo::on($mode)
-                    ->withTrashed()
-                    ->where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')
-                    ->orderBy(BankAccount\Entity::CREATED_AT, 'desc')
-                    ->first();
-
-        if ($highest === null)
-        {
-            return 0;
-        }
-
-        $count = (int) substr($highest->getBeneficiaryCode(), 4);
-
-        // The first entry doesn't have any count
-        if ($count === 0)
-        {
-            $count = 1;
-        }
-
-        return $count;
-    }
 
     public function getAllOrderedByCreatedAt()
     {
