@@ -287,20 +287,16 @@ class MobikwikGatewayTest extends TestCase
 
     public function testNonExistingWalletUserPayment()
     {
-        $this->type = 'otp';
-        $this->step = 'UNREGISTERED_USER';
-
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
         $payment['_']['source'] = 'checkoutjs';
 
         $data = $this->testData[__FUNCTION__];
 
+        $this->setOtp(Otp::USER_DOES_NOT_EXIST);
+
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPayment($payment);
         });
-
-        $this->step = null;
-        $this->type = null;
     }
 }
