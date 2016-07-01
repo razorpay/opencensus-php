@@ -3,8 +3,10 @@
 namespace Models\Base;
 
 use EE\Exception;
+use Lib\PhoneBook;
 use Trace\TraceCode;
 use EE\Error\ErrorCode;
+use libphonenumber\NumberParseException;
 use Symfony\Component\Translation\TranslatorInterface;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
@@ -22,27 +24,52 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         $code = null;
         $message = null;
 
-        if (is_string($contact) === false)
+        try
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
+            $number = new PhoneBook($contact);
         }
-
-        $origContact = $contact;
-
-        // Except digits, only '+' symbol is allowed in the beginning
-        if ($contact[0] === '+')
-            $contact = substr($contact, 1);
-
-        // Cleaning contact, removing -,),(, space
-        $contact = str_replace(['-', '(', ')', ' '], '', $contact);
-
-        if (ctype_digit($contact) === false)
+        catch (NumberParseException $e)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $attribute);
+            switch ($e->getErrorType())
+            {
+                // Example: +697 87654321323
+                case NumberParseException::INVALID_COUNTRY_CODE:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE,
+                        $attribute);
+
+                // This generally indicates the string passed in had less than 3 digits in it. More
+                // specifically, the number failed to match the regular expression VALID_PHONE_NUMBER in
+                // PhoneNumberUtil.
+                // Example: +91 322-23-43b
+                case NumberParseException::NOT_A_NUMBER:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT,
+                        $attribute);
+
+                // This indicates the string started with an international dialing prefix, but after this was
+                // stripped from the number, had less digits than any valid phone number (including country
+                // code) could have.
+                // Example: +91 998765432
+                case NumberParseException::TOO_SHORT_AFTER_IDD:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
+                        $attribute);
+
+                // This indicates the string, after any country code has been stripped, had less digits than any
+                // valid phone number could have.
+                // Example: +91 9
+                case NumberParseException::TOO_SHORT_NSN:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
+                        $attribute);
+
+                // Example: +1 234-234-234-234-234-23
+                case NumberParseException::TOO_LONG:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
+                        $attribute);
+            }
         }
 
         /**
@@ -51,9 +78,10 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
          *
          * See http://stackoverflow.com/a/17814276/368328
          *
-         * The correct way to do this would be to use libphonennumber
+         * libphonenumber only matches NSN (National significant number)
+         * we are checking for the length of mobile and fixed_line
          */
-        if (strlen($contact) < 8)
+        if (strlen($number->getNormalizedNumber()) < 8)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
@@ -63,6 +91,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         /**
          * See https://en.wikipedia.org/wiki/Telephone_numbering_plan#International_numbering_plan
          * for why 15
+         * libphonenumber takes 17 as limit, because german number can be longer. However, we are
+         * are sticking to the ITU standard for now.
          */
         if (strlen($contact) > 15)
         {

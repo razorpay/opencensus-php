@@ -19,7 +19,7 @@ return [
         'error_code' => null,
         'error_description' => null,
         'email' => 'a@b.com',
-        'contact' => '9918899029',
+        'contact' => '+919918899029',
         'notes' => [
             'merchant_order_id' => 'random order id',
         ],
@@ -100,7 +100,7 @@ return [
         'wallet' => 'payzapp',
         'received' => true,
         'email' => 'a@b.com',
-        'contact' => '9918899029',
+        'contact' => '+919918899029',
 //        'gateway_merchant_id' => '29837498237498723433',
 //        'gateway_payment_id' => 'hr8mncd5bqygokfs14w29',
 //        'gateway_payment_id_2' => '65657627',
@@ -135,7 +135,7 @@ return [
           'internal_error_code' => NULL,
           'error_description' => NULL,
           'email' => 'a@b.com',
-          'contact' => '9918899029',
+          'contact' => '+919918899029',
           'notes' =>
           array (
             'merchant_order_id' => 'random order id',
@@ -165,7 +165,7 @@ return [
           'wallet'                  => 'payzapp',
           'received'                => false,
           'email'                   => 'a@b.com',
-          'contact'                 => '9918899029',
+          'contact'                 => '+919918899029',
           'gateway_merchant_id'     => '3456',
           'gateway_payment_id'      => NULL,
           // 'gateway_payment_id_2'    => NULL,

@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         'emi_duration'  =>  'required_with:emi|integer|in:3,6,9,12,18,24',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
-        'contact'       =>  'required',
+        'contact'       =>  'required|contact_syntax',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes|notes|contains_merchantorderid_if_signature',
         'callback_url'  =>  'sometimes|url',
@@ -47,7 +47,6 @@ class Validator extends Base\Validator
         'amount',
         'bank',
         'currency',
-        'contact',
         'description',
         'fee');
 
