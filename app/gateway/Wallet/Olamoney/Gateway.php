@@ -16,7 +16,7 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'wallet_olamoney';
 
-    protected $canRunOtpFlow = true;
+    protected $canRunOtpFlow = false;
 
     public function authorize(array $input)
     {
@@ -31,10 +31,10 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        return $this->callRedirectFlow($input);
+        return $this->callbackRedirectFlow($input);
     }
 
-    public function callRedirectFlow($input)
+    public function callbackRedirectFlow($input)
     {
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
@@ -98,8 +98,7 @@ class Gateway extends Base\Gateway
             'amount',
             'comments',
             'udf',
-            //'timestamp', ?
-            //'salt', ?
+            'timestamp',
         );
 
         $hash = $content['checksum'];
@@ -121,11 +120,11 @@ class Gateway extends Base\Gateway
 
         $request = [
             'method'  => 'get',
-            'url'     => $request['url'] . '?'. http_build_query([
+            'url'     => $request['url'],
+            'content' => [
                 'bill'  => base64_encode($request['content']),
-                'phone' => $input['payment']['contact'],
-            ], null, '&'),
-            'content' => []
+                'phone'
+            ]
         ];
 
         return $request;
@@ -201,7 +200,7 @@ class Gateway extends Base\Gateway
             'comments'          => 'Razorpay_payment',
             'udf'               => $input['payment']['public_id'],
             'returnUrl'         => $input['callbackUrl'],
-            'notificationUrl'   => $input['callbackUrl'],
+            // 'notificationUrl'   => $input['callbackUrl'],
             'amount'            => number_format($amount, 2, '.', ''),
             'currency'          => 'INR',
             'couponCode'        => 'NA',
