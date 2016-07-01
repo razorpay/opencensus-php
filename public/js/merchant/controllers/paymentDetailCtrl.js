@@ -8,7 +8,15 @@ app.controller('PaymentDetailCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   'statusClass',
-  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass) {
+  'user',
+  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass, user) {
+
+    $scope.tags = [];
+
+    user.identity(true).then(function (data) {
+      $scope.tags = data.tags;
+    });
+
     $scope.getStatusClass = getStatusClass;
     $scope.openRefundModal = function () {
       var modalInstance = $modal.open({
@@ -30,7 +38,13 @@ app.controller('PaymentDetailCtrl', [
         controller: 'CaptureModalCtrl',
         resolve: {
           amount: function () {
-            return $scope.entity.amount;
+            var baseAmount = $scope.entity.amount;
+
+            if ($scope.tags.indexOf('Feebearer') !== -1) {
+              baseAmount -= $scope.entity.fee;
+            }
+
+            return baseAmount;
           }
         }
       });
