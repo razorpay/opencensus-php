@@ -443,6 +443,11 @@ class Service extends Base\Service
             {
                 $error = Merchant\Service::changeName($id, $input['name']);
             }
+
+            if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
+            {
+                $this->addTagToMerchant($id, 'feebearer');
+            }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1709,6 +1714,12 @@ class Service extends Base\Service
         {
             return [$error, null];
         }
+    }
+
+    protected function addTagToMerchant($merchantId, $tag)
+    {
+        $merchant = Merchant\Entity::findOrFail($merchantId);
+        $merchant->tag($tag);
     }
 
     public function syncMerchantFeatures($merchantId, $input)
