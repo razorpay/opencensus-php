@@ -655,7 +655,7 @@ class Gateway extends Base\Gateway
 
             if (isset(AcqResponseCode::$map[$acqResponseCode]))
             {
-                return AcqResponseCode::$map[$acqResponseCode]
+                return AcqResponseCode::$map[$acqResponseCode];
             }
         }
 
