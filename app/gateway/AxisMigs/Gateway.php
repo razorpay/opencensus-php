@@ -598,7 +598,7 @@ class Gateway extends Base\Gateway
     protected function verifyPaymentCallbackResponse($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
-        $threeDSstatus = $input['gateway']['vpc_3DSstatus'];
+        $threeDSstatus = isset($input['gateway']['vpc_3DSstatus']) ? $input['gateway']['vpc_3DSstatus'] : '';
         $message = '';
         $apiErrorCode = null;
 
