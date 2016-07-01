@@ -3,8 +3,8 @@
 <head>
   <title>Razorpay - Checkout Testing page</title>
 </head>
-<body style="width: 80%; max-width: 800px; margin: 30px auto; font-family: ubuntu, helvetica">
-<textarea style="border-radius: 3px; width: 100%; display: block; height: 500px; font-family: mono; font-color: #444; resize: none;">
+<body style="width: 80%; max-width: 500px; margin: 30px auto; font-family: ubuntu, helvetica">
+<textarea style="border-radius: 3px; width: 100%; display: block; height: 400px; font-family: mono; font-color: #444; resize: none;">
 {
   "key": "rzp_test_1DP5mmOlF5G5ag",
   "amount": 600000,
@@ -42,14 +42,17 @@ try {
   }
 } catch(e){}
 
-textarea.oninput = function(e){
+function setOptions(){
   try {
     eval('options = ' + textarea.value);
     localStorage.setItem('options', textarea.value);
-  } catch(e){
-    console.log(e.message);
+  } catch(err){
+    console.log(err.message);
   }
 }
+
+textarea.oninput = setOptions;
+setOptions();
 
 textarea.onkeydown = function(e){
   if (e.which == 13 && e.ctrlKey) {
