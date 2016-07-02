@@ -79,8 +79,8 @@ class Validator extends Base\Validator
 
     protected static $cybersourceTerminalRules = array(
         Entity::GATEWAY                     => 'required|in:cybersource',
-        Entity::GATEWAY_TERMINAL_ID         => 'required',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string|size:13',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
     );
 

@@ -55,7 +55,8 @@ class Gateway extends Base\Gateway
     const UCAF_COLLECTION_INDICATOR   = 'ucafCollectionIndicator';
     const UNIT_PRICE                  = 'unitPrice';
     const VERES_ENROLLED              = 'veresEnrolled';
-    const WSDL_FILE                   = 'cybs.wsdl.xml';
+    const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
+    const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
     const XID                         = 'xid';
 
     protected $gateway = Constants\Table::CYBERSOURCE;
@@ -648,7 +649,13 @@ class Gateway extends Base\Gateway
 
     protected function getWsdlFile()
     {
-        return dirname(__FILE__) .'/'.self::WSDL_FILE;
+        $file = dirname(__FILE__) .'/'.self::LIVE_WSDL_FILE;
+        
+        if ($this->mode === Mode::TEST)
+        {
+            $file = dirname(__FILE__) .'/'.self::TEST_WSDL_FILE;
+        }
+        return $file;
     }
 
     protected function setMerchantDetailInRequest(&$request, $input)
