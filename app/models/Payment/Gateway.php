@@ -107,12 +107,11 @@ class Gateway
      * @var array
      */
     public static $authAndCapture = array(
-        self::HDFC,
-        self::AMEX,
-        self::CYBERSOURCE,
-        self::HDFC => [],
-        self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY];
+        self::HDFC => [
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
+        ],
         self::AMEX => [],
+        self::CYBERSOURCE,
     );
 
     /**
