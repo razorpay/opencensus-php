@@ -9,9 +9,9 @@ The pricing details associated with your account are:
 - {{$rules['amountRangeRules']['high']}}
 @endif
 @foreach ($rules['otherRules'] as $pricing => $methodDisplay)
-- {{implode(',', $methodDisplay)}} - {{$pricing}}
+- {{implode(', ', $methodDisplay)}} - {{$pricing}}
 @endforeach
-- Service Taxes Extra (14.5%)
+- Service Taxes Extra (15%)
 
 In case you haven't integrated our API in your application, the instructions can be found at https://docs.razorpay.com.
 Please ensure that your production website/app is using the live keys generated from the dashboard.
