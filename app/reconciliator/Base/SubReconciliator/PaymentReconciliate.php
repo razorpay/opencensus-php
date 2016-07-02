@@ -320,9 +320,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($this->paymentTransaction === null)
             {
                 // The row details are already traced and can be retrieved from Splunk.
-                $this->messenger->raiseReconAlert(
+                $this->app['trace']->info(
+                    TraceCode::RECON_INFO_ALERT,
                     [
-                        'trace_code' => TraceCode::RECON_INFO_ALERT,
                         'message'    => 'Payment Transaction not found in DB.',
                         'payment_id' => $paymentId,
                         'gateway'    => get_called_class()
@@ -546,20 +546,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'    => TraceCode::RECON_FAILURE,
+                    'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
                     'message'       => 'Transaction not present for the given payment ID.',
                     'row_details'   => $rowDetails,
                     'gateway'       => get_called_class()
                 ]);
 
-            throw new ReconciliationException(
-                'Transaction not present for the given payment ID.',
-                [
-                    'row_details' => $rowDetails,
-                    'gateway'     => get_called_class(),
-                ]
-            );
-
-            //return false;
+            return false;
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
