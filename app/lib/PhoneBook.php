@@ -33,7 +33,7 @@ class PhoneBook
         self::RFC3966       => PhoneNumberFormat::RFC3966,
     ];
 
-    protected $specialChars = ['+', '-', '(', ')', ' '];
+    protected $specialChars = ['-', '(', ')', ' '];
 
     public function __construct($phoneNumber, $parseSilently = false)
     {
@@ -81,14 +81,26 @@ class PhoneBook
 
     public function getRawInput()
     {
-        $number = $this->phoneNumber;
+        return $this->normalizeNumber($this->rawNumber);
+    }
 
-        if ($number === null)
+    public function normalizeNumber($number)
+    {
+        if (is_string($number) === false)
         {
-            return $this->rawNumber;
+            return $number;
         }
 
-        return '+' . $number->getCountryCode() . $number->getNationalNumber();
+        $number = str_replace($this->specialChars, '', $number);
+
+        // Remove the 0 at the start
+        if ((strlen($number) > 1) and
+            ($number[0] === '0'))
+        {
+            $number = substr($number, 1);
+        }
+
+        return $number;
     }
 
     public function getNormalizedNumber()
