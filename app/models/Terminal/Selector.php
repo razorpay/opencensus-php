@@ -11,10 +11,12 @@ class Selector
 
     protected static $filters = [
         Filters\TransactionFilter::class,
+        Filters\MerchantFilter::class,
     ];
 
     protected static $sorters = [
         Sorters\NetbankingSorter::class,
+        // Sorters\MerchantSorter::class,
     ];
 
     public function setup($payment, $mode)
