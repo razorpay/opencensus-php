@@ -20,7 +20,6 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
-        'corporate',
     ];
 
     public function methodFilter($terminal, $input)
@@ -126,30 +125,6 @@ class TransactionFilter extends Terminal\Filter
                 $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
                 return in_array($terminalGateway, $gateways);
-                break;
-
-            default:
-                break;
-        }
-
-        return true;
-    }
-
-    public function corporateFilter($terminal, $input)
-    {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
-        {
-            case Method::NETBANKING:
-                $bank = $input['payment']->getBank();
-
-                $corporateNetbankingBanks = Netbanking::getCorporateNetbankingBanks();
-
-                if (in_array($bank, $corporateNetbankingBanks))
-                {
-                    return $terminal->isCorporate();
-                }
                 break;
 
             default:

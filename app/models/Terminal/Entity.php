@@ -28,7 +28,6 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const EMI_DURATION                  = 'emi_duration';
-    const CORPORATE                     = 'corporate';
 
     const SHARED                        = 'shared';
 
@@ -44,7 +43,6 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
-        self::CORPORATE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -64,7 +62,6 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
-        self::CORPORATE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -105,7 +102,6 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::EMI_DURATION              => null,
-        self::CORPORATE                 => false,
     );
 
     public function generateMethod($input)
@@ -307,11 +303,6 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SHARED];
     }
 
-    public function getCorporateAttribute()
-    {
-        return (bool) $this->attributes[self::CORPORATE];
-    }
-
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
@@ -349,11 +340,6 @@ class Entity extends Base\PublicEntity
     public function isShared()
     {
         return (bool) $this->getAttribute(self::SHARED);
-    }
-
-    public function isCorporate()
-    {
-        return (bool) $this->getAttribute(self::CORPORATE);
     }
 
     public function isDeleted()

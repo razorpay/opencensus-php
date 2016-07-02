@@ -211,12 +211,6 @@ class Netbanking
         IFSC::YESB,
     );
 
-    protected static $corporateNetbankingBanks = [
-        Netbanking::BARB_C,
-        Netbanking::PUNB_C,
-        Netbanking::LAVB_C
-    ];
-
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks()));
