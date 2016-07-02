@@ -7,6 +7,7 @@ use Gateway\Mobikwik;
 use Gateway\Base;
 use Gateway\Base\Action;
 use Models\Payment;
+use Gateway\Wallet\Base\Otp;
 
 class Server extends Base\Mock\Server
 {
@@ -144,8 +145,16 @@ class Server extends Base\Mock\Server
             'checksum'          => '0e897831293479380e7cb6b77d60ecec0c75f8ccb',
         );
 
-        // OTP 131313 is for insufficient balance
-        if ($input['otp'] === '131313')
+        if ($input['otp'] === Otp::USER_DOES_NOT_EXIST)
+        {
+            $content = array(
+                'status'            => 'FAILURE',
+                'statuscode'        => '159',
+                'statusdescription' => Mobikwik\ResponseCode::getResponseMessage('159'),
+                );
+        }
+
+        if ($input['otp'] === Otp::INSUFFICIENT_BALANCE)
         {
             $content = array(
                 'status'            => 'FAILURE',
@@ -154,8 +163,7 @@ class Server extends Base\Mock\Server
             );
         }
 
-        // OTP 121212 is for incorrect OTP
-        if ($input['otp'] === '121212')
+        if ($input['otp'] === Otp::INCORRECT)
         {
             $content = array(
                 'status'            => 'FAILURE',
@@ -167,6 +175,22 @@ class Server extends Base\Mock\Server
         $responseContent = $this->generateXMLResponse($content);
 
         return $this->makeResponse($responseContent);
+    }
+
+    public function createUser($input)
+    {
+        $content = array(
+            'messagecode'       => '502',
+            'status'            => 'SUCCESS',
+            'statuscode'        => '0',
+            'statusdescription' => 'User Created',
+            'checksum'          => '750014952183964866a5e4a2a59f9d632e4b500130611507fba5e39325df5f65',
+        );
+
+        $responseContent = $this->generateXMLResponse($content);
+
+        return $this->makeResponse($responseContent);
+
     }
 
     protected function makeResponse($json)

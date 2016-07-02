@@ -15,29 +15,27 @@ class Repository extends Base\Repository
         'received'                      => 'sometimes|in:0,1',
         'vpc_TransactionNo'             => 'sometimes|string|max:10',
         'vpc_ShopTransactionNo'         => 'sometimes|string|max:10',
-        'vpc_TxnResponseCode'           => 'sometimes|string|max:10');
+        'vpc_TxnResponseCode'           => 'sometimes|string|max:10',
+        'vpc_3DSstatus'                 => 'sometimes|string|max:2');
 
     public function findByMerchantTxnRef($merchantTxnRef)
     {
-        $repo = $this->repo;
-
-        return $repo::where('vpc_MerchTxnRef', '=', $merchantTxnRef)
+        return $this->newQuery()
+                    ->where('vpc_MerchTxnRef', '=', $merchantTxnRef)
                     ->firstOrFail();
     }
-    
+
     public function findByRrn($rrn)
     {
-        $repo = $this->repo;
-        
-        return $repo::where('vpc_ReceiptNo', '=', $rrn)
+        return $this->newQuery()
+                    ->where('vpc_ReceiptNo', '=', $rrn)
                     ->firstOrFail();
     }
 
     public function findByMerchantTxnRefAndCommand($merchantTxnRef, $command)
     {
-        $repo = $this->repo;
-
-        return $repo::where('vpc_MerchTxnRef', '=', $merchantTxnRef)
+        return $this->newQuery()
+                    ->where('vpc_MerchTxnRef', '=', $merchantTxnRef)
                     ->where('vpc_Command', '=', $command)
                     ->firstOrFail();
     }

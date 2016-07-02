@@ -34,7 +34,8 @@ class Gateway
 
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
-        self::WALLET_PAYUMONEY
+        self::WALLET_PAYUMONEY,
+        self::SHARP,
     );
 
     public static $channels = array(

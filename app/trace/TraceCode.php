@@ -155,6 +155,7 @@ class TraceCode
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
     const ERROR_INVALID_ARGUMENT                    = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
+    const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -238,7 +239,8 @@ class TraceCode
         self::RECON_CRITICAL_ALERT                  => 'Critical alert raised for reconciliation',
         self::RECON_REQUEST                         => 'Request made for reconciliation',
         self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
-        self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request'
+        self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request',
+        self::REFUND_TRANSACTION_FAILED             => 'Transaction failed to create for refund',
     );
 
     /**

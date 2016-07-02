@@ -103,7 +103,6 @@ class Merchant extends Base
 
         $defaultValues = array(
             'beneficiary_name' => $name,
-            'beneficiary_code' => $code,
         );
 
         $attributes = array_merge($defaultValues, $attributes);

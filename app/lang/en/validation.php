@@ -84,8 +84,11 @@ return array(
     |
     */
 
-    'custom' => array(),
-
+    "custom" => array(
+        "contact" => array(
+            "phone" => "The :attribute field is invalid."
+        )
+    ),
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes

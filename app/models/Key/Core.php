@@ -72,7 +72,7 @@ class Core extends Base\Core
 
         Key\Validator::checkForDemoKeys($keyId);
 
-        $old = (new Key\Repository)->findByMerchantIdAndKeyId($merchantId, $keyId);
+        $old = $this->repo->key->findByMerchantIdAndKeyId($merchantId, $keyId);
 
         if ($old === null)
         {

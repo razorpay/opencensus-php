@@ -31,6 +31,8 @@ trait PaymentTrait
         makeRequest as makeRequestParent;
     }
 
+    protected $otp = null;
+
     protected $gateway = null;
 
     protected $merchantCallbackUrl = null;
@@ -304,6 +306,20 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function makeOtpCallback($url)
+    {
+        $request = array(
+            'url'       => $url,
+            'method'    => 'POST',
+            'content'   => array(
+                'otp' => $this->getOtp(),
+                'type' => 'otp'
+            ),
+        );
+
+        return $this->makeRequest($request);
+    }
+
     protected function topupPayment($id)
     {
         $request = array(
@@ -317,6 +333,16 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function getOtp()
+    {
+        return $this->otp ?: '123456';
+    }
+
+    protected function setOtp($otp)
+    {
+        $this->otp = $otp;
     }
 
     protected function getFeesForPayment($payment)
@@ -893,6 +919,13 @@ trait PaymentTrait
             '/payments');
 
         return in_array($url, $urls);
+    }
+
+    protected function isOtpCallbackUrl($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp_submit\/[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
     }
 
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)

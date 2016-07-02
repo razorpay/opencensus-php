@@ -254,5 +254,8 @@ class ErrorCode
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
 
-    const BAD_REQUEST_INVALID_OTP                                                   = 'BAD_REQUEST_INVALID_OTP';
+    const BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED                                     = 'BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED';
+    const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                                  = 'BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED';
+    const BAD_REQUEST_INCORRECT_OTP                                                 = 'BAD_REQUEST_INCORRECT_OTP';
+    const BAD_REQUEST_SMS_FAILED                                                    = 'BAD_REQUEST_SMS_FAILED';
 }

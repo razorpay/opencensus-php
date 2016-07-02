@@ -10,8 +10,9 @@ use Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;
-use Trace\Trace;
 use Trace\TraceCode;
+use EE\Exception;
+use Models\Transaction;
 
 class Service extends Base\Service
 {
@@ -77,7 +78,7 @@ class Service extends Base\Service
         }
         else
         {
-            $refunds = (new Refund\Repository)->fetchRefundsForGatewayBetweenTimestamps(
+            $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                             $type, $gatewayCode, $from, $to, $gateway);
 
             return $this->generateRefundFile($refunds);
@@ -177,14 +178,14 @@ class Service extends Base\Service
     {
         Refund\Entity::verifyIdAndStripSign($id);
 
-        $refund = (new Refund\Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+        $refund = $this->repo->refund->findByIdAndMerchantId($id, $this->merchant->getId());
 
         return $refund->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
-        $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getId());
+        $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
         return $refunds->toArrayPublic();
     }
@@ -193,34 +194,83 @@ class Service extends Base\Service
     {
         Refund\Entity::verifyIdAndStripSign($id);
 
-        $refund = (new Refund\Repository)->findOrFail($id);
+        $refund = $this->repo->refund->findOrFail($id);
 
         $merchantId = $refund->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $data = $this->processor($merchant)->verifyRefund($refund);
 
         return $data;
     }
 
-    protected function processor($merchant = null)
+    public function createMissingTransactions()
     {
-        $bindings = $this->getBindings($merchant);
+        $refundsWithoutTransaction = $this->repo->refund->fetchRefundsWithoutTransactionsAndWithPaymentTransactions();
 
-        return Payment\Processor\Processor::create($bindings);
+        $totalCount = count($refundsWithoutTransaction);
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_REFUND_TRACE,
+            ['total_count' => $totalCount]
+        );
+
+        $successes = $failures = 0;
+        $failureRefundIds = [];
+
+        foreach ($refundsWithoutTransaction as $refundWithoutTransaction)
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_REFUND_TRACE,
+                $refundWithoutTransaction->toArray());
+
+            try
+            {
+                $payment = $refundWithoutTransaction->payment;
+
+                $this->repo->transaction(function() use($refundWithoutTransaction, $payment)
+                {
+                    $transaction = $this->processor($refundWithoutTransaction->merchant)
+                                        ->createTransactionForRefund(
+                                            $refundWithoutTransaction, $payment);
+
+                    $this->repo->saveOrFail($refundWithoutTransaction);
+
+                    if ($transaction === null)
+                    {
+                        throw new Exception\LogicException('Should not have reached here.');
+                    }
+                });
+
+                $successes += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failures += 1;
+                $failureRefundIds[] = $refundWithoutTransaction->getId();
+
+                $this->trace->error(
+                    TraceCode::REFUND_TRANSACTION_FAILED,
+                    $refundWithoutTransaction->toArray()
+                );
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        return [
+            'total_count'       => $totalCount,
+            'success_count'     => $successes,
+            'failure_count'     => $failures,
+            'failed_refund_ids' => $failureRefundIds,
+        ];
     }
 
-    protected function getBindings(Merchant\Entity $merchant = null)
+    protected function processor($merchant)
     {
-        $trace = \Trace::getFacadeRoot();
+        $processor = new Payment\Processor\Processor($merchant);
 
-        $bindings = array(
-            'merchant'  => $merchant,
-            'core'      => new Payment\Core(),
-            'trace'     => $this->trace,
-            'mode'      => $this->mode);
-
-        return $bindings;
+        return $processor;
     }
 }

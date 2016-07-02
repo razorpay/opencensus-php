@@ -13,7 +13,6 @@ class Entity extends Base\PublicEntity
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
-    const BENEFICIARY_CODE      = 'beneficiary_code';
     const IFSC_CODE             = 'ifsc_code';
     const ACCOUNT_NUMBER        = 'account_number';
     const BENEFICIARY_NAME      = 'beneficiary_name';
@@ -58,7 +57,6 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::MERCHANT_ID,
-        self::BENEFICIARY_CODE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -141,15 +139,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
-    public function getBeneficiaryCode()
-    {
-        return $this->getAttribute(self::BENEFICIARY_CODE);
-    }
-
-    public function setBeneficiaryCode($code)
-    {
-        return $this->setAttribute(self::BENEFICIARY_CODE, $code);
-    }
 
     protected function setIfscCodeAttribute($code)
     {
@@ -181,7 +170,6 @@ class Entity extends Base\PublicEntity
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
             $orig[self::DELETED_AT],
-            $orig[self::BENEFICIARY_CODE],
             $orig[self::BENEFICIARY_ADDRESS3],
             $orig[self::BENEFICIARY_ADDRESS4]);
         $copy = $baCopy->toArray();
@@ -191,8 +179,7 @@ class Entity extends Base\PublicEntity
             $copy[self::UPDATED_AT],
             $copy[self::DELETED_AT],
             $copy[self::BENEFICIARY_ADDRESS3],
-            $copy[self::BENEFICIARY_ADDRESS4],
-            $copy[self::BENEFICIARY_CODE]);
+            $copy[self::BENEFICIARY_ADDRESS4]);
         return ($orig === $copy);
     }
 }

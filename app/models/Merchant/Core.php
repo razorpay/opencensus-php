@@ -135,7 +135,7 @@ class Core extends Base\Core
 
         $merchantBalance->setConnection($mode);
 
-        (new Merchant\Balance\Repository)->createBalance($merchantBalance);
+        $this->repo->balance->createBalance($merchantBalance);
 
         return $merchantBalance;
     }

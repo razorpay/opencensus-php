@@ -53,6 +53,11 @@ class Gateway extends Base\Gateway
         ;
     }
 
+    public function topup(array $input)
+    {
+        return $this->authorize($input);
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
@@ -70,7 +75,28 @@ class Gateway extends Base\Gateway
 
     public function callbackOtpSubmit(array $input)
     {
-        ;
+        switch ($input['gateway']['otp'])
+        {
+            case '100000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
+
+            case '200000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+
+            case '300000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED);
+
+            case '400000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
+
+            case '500000':
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST);
+        }
     }
 
     public function capture(array $input)

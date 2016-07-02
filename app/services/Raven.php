@@ -119,6 +119,8 @@ class Raven
 
     protected function sendRavenRequest($request)
     {
+        $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
+
         $method = $request['method'];
 
         try
@@ -143,7 +145,7 @@ class Raven
 
         if (isset($response['error']))
         {
-            throw new Exception\RuntimeException($response['error']['description'], $response['error']['internal_error_code']);
+            throw new Exception\BadRequestException($response['error']['internal_error_code']);
         }
     }
 }

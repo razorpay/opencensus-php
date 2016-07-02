@@ -18,13 +18,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SB_CESS     = 'sb_cess';
     const COLUMN_KK_CESS     = 'kk_cess';
     const COLUMN_FEE         = 'msf';
+    const COLUMN_CARD_TRIVIA = 'card_type';
 
     protected $messenger;
 
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->messenger = new Messenger();
     }
 
@@ -77,29 +78,54 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardDetails($row)
     {
+        // If the card type (debit/credit) is not present, we don't want
+        // to store any of the other card details.
         if (isset($row[self::COLUMN_CARD_TYPE]) === false)
         {
             return null;
         }
 
         $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
+        $columnCardTrivia = strtolower($row[self::COLUMN_CARD_TRIVIA]);
 
         $cardType = $this->getCardType($columnCardType, $row);
         $cardLocale = $this->getCardLocale($columnCardType, $row);
+        $cardTrivia = $this->getCardTrivia($columnCardTrivia, $row);
 
         return [
             BaseReconciliate::CARD_TYPE   => $cardType,
-            BaseReconciliate::CARD_LOCALE => $cardLocale
+            BaseReconciliate::CARD_LOCALE => $cardLocale,
+            BaseReconciliate::CARD_TRIVIA => $cardTrivia,
         ];
+    }
+
+    protected function getCardTrivia($cardTrivia, $row)
+    {
+        if (empty($cardTrivia) === true)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'           => 'Unable to get the card trivia. This is unexpected.',
+                    'recon_card_trivia' => $cardTrivia,
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
+
+            $cardTrivia = null;
+        }
+
+        return $cardTrivia;
     }
 
     protected function getCardType($cardType, $row)
     {
-        if ($cardType === 'dc')
+        if ($cardType[1] === 'c')
         {
             $cardType = BaseReconciliate::CREDIT;
         }
-        else if ($cardType === 'dd')
+        else if ($cardType[1] === 'd')
         {
             $cardType = BaseReconciliate::DEBIT;
         }
@@ -115,7 +141,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 ]);
 
             // It's as good as no card type present in the row.
-            return null;
+            $cardType = null;
         }
 
         return $cardType;

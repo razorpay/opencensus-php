@@ -25,6 +25,14 @@ class Inferno
 
     const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
 
+    const KNOWN_ERRORS = [
+        'unable to get local issuer certificate',
+        'empty reply from server',
+        'ssl certificate problem: certificate has expired',
+        '<url> malformed',
+        'server error response',
+    ];
+
     /**
      * We keep it internally as 7 seconds
      * but publicly we only say it's 5 seconds.
@@ -350,16 +358,13 @@ class Inferno
         $msg = $e->getMessage();
         $msg = strtolower($msg);
 
-        if ((strpos($msg, 'empty reply from server') !== false) or
-            (strpos($msg, 'ssl certificate problem: certificate has expired') !== false) or
-            (strpos($msg, '<url> malformed') !== false) or
-            (strpos($msg, 'server error response') !== false))
+        foreach (self::KNOWN_ERRORS as $errorMessage)
         {
-            return true;
+            if (strpos($msg, $errorMessage) !== false)
+            {
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 }

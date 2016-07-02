@@ -43,7 +43,6 @@ $factory(Models\Merchant\BankAccount\Entity::class, [
     'ifsc_code' => 'RZPB0000000',
     'account_number' => 10010101011,
     'beneficiary_name' => 'random_name',
-    'beneficiary_code' => 'RAND',
     'beneficiary_address1' => 'address1',
     'beneficiary_address2' => 'address2',
     'beneficiary_address3' => 'address3',

@@ -2,6 +2,7 @@
 
 namespace Base;
 
+use Closure;
 use Constants\Entity;
 use EE\Exception;
 
@@ -126,11 +127,40 @@ class RepositoryManager extends \Illuminate\Support\Manager
             {
                 return call_user_func($callback);
             });
-
         }
         else
         {
             $result = $this->db->transaction($callback);
+        }
+
+        return $result;
+    }
+
+    public function transactionOnLiveAndTest(callable $callback)
+    {
+        $this->db->connection('test')->beginTransaction();
+        $this->db->connection('live')->beginTransaction();
+
+        // We'll simply execute the given callback within a try / catch block
+        // and if we catch any exception we can rollback the transaction
+        // so that none of the changes are persisted to the database.
+        try
+        {
+            $result = $callback($this);
+
+            $this->db->connection('live')->commit();
+            $this->db->connection('test')->commit();
+        }
+
+        // If we catch an exception, we will roll back so nothing gets messed
+        // up in the database. Then we'll re-throw the exception so it can
+        // be handled how the developer sees fit for their applications.
+        catch (\Exception $e)
+        {
+            $this->db->connection('live')->rollBack();
+            $this->db->connection('test')->rollBack();
+
+            throw $e;
         }
 
         return $result;

@@ -3,6 +3,7 @@
 namespace Reconciliator\HDFC;
 
 use Reconciliator\Base;
+use Trace\TraceCode;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate  extends Base\CombinedReconciliate
@@ -14,15 +15,29 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
 
     protected function getReconciliationTypeForRow($row)
     {
-        if ($row[self::COLUMN_ENTITY_TYPE] === 'CVD')
+        $entityType = trim($row[self::COLUMN_ENTITY_TYPE]);
+
+        if ($entityType === 'CVD')
         {
             return BaseReconciliate::REFUND;
         }
-        else if ($row[self::COLUMN_ENTITY_TYPE] === 'BAT')
+        else if ($entityType === 'BAT')
         {
             return BaseReconciliate::PAYMENT;
         }
-        else if (empty($row[self::COLUMN_ENTITY_TYPE]) === true)
+        else if (($entityType === 'CDP') or ($entityType === 'CBR'))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_MISMATCH,
+                    'message'       => 'This payment has to be authorized and reconciled manually.',
+                    'row_details'   => $row,
+                    'gateway'       => get_called_class()
+                ]);
+
+            return self::NA;
+        }
+        else if (empty($entityType) === true)
         {
             return self::NA;
         }

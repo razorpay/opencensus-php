@@ -55,4 +55,44 @@ class SharpGatewayTest extends TestCase
         $testData['request']['content'] = $payment;
         $this->startTest($testData);
     }
+
+    public function testOtpFlowInsufficientBalancePayment()
+    {
+        $this->otpCommonFlow('100000');
+    }
+
+    public function testOtpFlowIncorrectOtpPayment()
+    {
+        $this->otpCommonFlow('200000');
+    }
+
+    public function testOtpFlowOtpExpiredPayment()
+    {
+        $this->otpCommonFlow('300000');
+    }
+
+    public function testOtpFlowAttemptsExceededPayment()
+    {
+        $this->otpCommonFlow('400000');
+    }
+
+    protected function otpCommonFlow($otp)
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->publicAuth();
+
+        $this->setOtp($otp);
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+        $data = $this->testData[$name];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
 }
