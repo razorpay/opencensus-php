@@ -81,13 +81,17 @@ class Core extends Base\Core
 
         // Put app token details in session so that we may not
         // need to verify the customer in future.
-        $this->putAppTokenDetailsInSession($appToken);
+        $this->putAppTokenInSession($appToken);
 
         // Create response
         $response = array(
-            'success'      => 1,
-            'app_token'    => $appToken->getPublicId(),
-            'device_token' => $appToken->getDeviceToken());
+            'success'      => 1
+        );
+
+        if ($appToken->merchant->getId() !== $this->repo->merchant->getSharedAccount()->getId())
+        {
+            $response['device_token'] = $appToken->getDeviceToken();
+        }
 
         if (($tokens !== null) and ($tokens->count() > 0))
         {
@@ -99,9 +103,14 @@ class Core extends Base\Core
 
     protected function createCustomerAppToken($customer, $input)
     {
+        //currently all app_tokens will be generated for common rzp merchant
+        $appMerchant = $customer->merchant->getId();
+
+        //TODO: switch to merchant for newer sdk based on query params
+
         $custAppInput = array(
             App\Entity::CUSTOMER_ID => $customer->getId(),
-            App\Entity::MERCHANT_ID => $input['context']);
+            App\Entity::MERCHANT_ID => $appMerchant);
 
         if (isset($input[App\Entity::DEVICE_TOKEN]))
         {
@@ -163,11 +172,9 @@ class Core extends Base\Core
 
             Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-            $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
+            $customerApp = (new Customer\App\Core)->getAppByAppToken(
                 $appToken,
-                $merchant->getId());
-
-            assert($customerApp !== null);
+                $merchant);
 
             $customerId = $customerApp->getCustomerId();
 
@@ -190,11 +197,11 @@ class Core extends Base\Core
         return array($customer, $customerApp);
     }
 
-    protected function putAppTokenDetailsInSession($appToken)
+    protected function putAppTokenInSession($appToken)
     {
         // setup session params
-        //$this->app['session']->put('app_token', $appToken->getPublicId());
-        $this->app['session']->put('device_token', $appToken->getDeviceToken());
+        // as device token is public, only app_token is sufficient
+        $this->app['session']->put('app_token', $appToken->getPublicId());
     }
 
     protected function verifyUniqueCustomer($customer)

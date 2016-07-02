@@ -77,10 +77,6 @@ class Checkout
             {
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
-            else
-            {
-                $custData[Payment\Entity::APP_TOKEN] = $customerApp->getPublicId();
-            }
         }
         catch (\Exception $ex)
         {
@@ -94,20 +90,12 @@ class Checkout
     {
         try
         {
-            // check if device token is present in session
-            $deviceToken = Session::get(Customer\App\Entity::DEVICE_TOKEN);
+            // check if app token is present in session
+            $appToken = Session::get(Payment\Entity::APP_TOKEN);
 
-            if (isset($input[Customer\App\Entity::DEVICE_TOKEN]) === false)
+            if (isset($input[Payment\Entity::APP_TOKEN]) === false)
             {
-                $input[Customer\App\Entity::DEVICE_TOKEN] = $deviceToken;
-
-                $appEntity = (new Customer\App\Core)->getAppTokenByDeviceTokenAndMerchant(
-                    $deviceToken, $merchant);
-
-                if ($appEntity !== null)
-                {
-                    $input[Payment\Entity::APP_TOKEN] = $appEntity->getPublicId();
-                }
+                $input[Payment\Entity::APP_TOKEN] = $appToken;
             }
         }
         catch (\Exception $ex)

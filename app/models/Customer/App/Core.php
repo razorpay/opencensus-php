@@ -2,6 +2,7 @@
 
 namespace Models\Customer\App;
 
+use EE\Exception;
 use Models\Base;
 use Models\Customer\App;
 
@@ -43,6 +44,26 @@ class Core extends Base\Core
         }
 
         return [];
+    }
+
+    public function getAppByAppToken($appToken, $merchant)
+    {
+        $app = null;
+
+        try
+        {
+            $app = $this->repo->app_token->findByIdAndMerchantId(
+                $appToken,
+                $this->repo->merchant->getSharedAccount()->getId());
+        }
+        catch (Exception\BadRequestException $ex)
+        {
+            $app = $this->repo->app_token->findByIdAndMerchantId(
+                $appToken,
+                $merchant->getId());
+        }
+
+        return $app;
     }
 
     public function getAppTokenByDeviceTokenAndMerchant($deviceToken, $merchant)

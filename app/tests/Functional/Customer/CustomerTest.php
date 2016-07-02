@@ -132,8 +132,7 @@ class CustomerTest extends TestCase
         // verify OTP
         $content = $this->verifyOtp('1234567890', '233323');
 
-        assert(empty($content['app_token']) === false);
-        assert(empty($content['device_token']) === false);
+        $this->assertEquals($content['success'], 1);
     }
 
     public function testOtpFlowWithDeviceToken()
@@ -148,8 +147,7 @@ class CustomerTest extends TestCase
         // verify OTP
         $content = $this->verifyOtp('1234567890', '233443', '123');
 
-        assert(empty($content['app_token']) === false);
-        $this->assertEquals($content['device_token'], '123');
+        $this->assertEquals($content['success'], 1);
     }
 
     public function testOtpFlowWithInvalidNumber()
