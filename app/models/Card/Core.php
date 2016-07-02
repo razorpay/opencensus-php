@@ -130,15 +130,18 @@ class Core extends Base\Core
         }
         else
         {
-            $slackArray = array(
-                'iin'       => $card->getIin(),
-                'card_id'   => $card->getDashboardEntityLinkForSlack(),
-            );
+            if (($card->isAmex()) === false)
+            {
+                $slackArray = array(
+                    'iin'       => $card->getIin(),
+                    'card_id'   => $card->getDashboardEntityLinkForSlack(),
+                );
 
-            $this->slackPost(
-                'Missing IIN for payment',
-                $slackArray,
-                ['channel' => '#tech_alerts']);
+                $this->slackPost(
+                    'Missing IIN for payment',
+                    $slackArray,
+                    ['channel' => '#tech_alerts']);
+            }
         }
 
         $type = Card\Type::getType($type, $network);
