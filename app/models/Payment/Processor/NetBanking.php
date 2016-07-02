@@ -336,4 +336,9 @@ class Netbanking
     {
         return in_array($bank, self::$sbiepay);
     }
+
+    public static function getCorporateNetbankingBanks()
+    {
+        return self::$corporateNetbankingBanks;
+    }
 }

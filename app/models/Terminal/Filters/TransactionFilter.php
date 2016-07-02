@@ -144,7 +144,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::NETBANKING:
                 $bank = $input['payment']->getBank();
 
-                if (in_array(Netbanking::$corporateNetbankingBanks, $bank))
+                $corporateNetbankingBanks = Netbanking::getCorporateNetbankingBanks();
+
+                if (in_array($bank, $corporateNetbankingBanks))
                 {
                     return $terminal->isCorporate();
                 }
