@@ -31,7 +31,6 @@ class Gateway extends Base\Gateway
     const COLLECTION_INDICATOR        = 'collectionIndicator';
     const COMMERCE_INDICATOR          = 'commerceIndicator';
     const ECI                         = 'eci';
-    const ECI_RAW                     = 'eciRaw';
     const EXPIRATION_MONTH            = 'expirationMonth';
     const EXPIRATION_YEAR             = 'expirationYear';
     const GATEWAY                     = 'gateway';
@@ -229,7 +228,6 @@ class Gateway extends Base\Gateway
             $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
 
             $attributes = array(
-                Entity::ECI                => $payAuthRep[self::ECI_RAW],
                 Entity::COMMERCE_INDICATOR => $payAuthRep[self::COMMERCE_INDICATOR],
                 Entity::XID                => $payAuthRep[self::XID],
                 Entity::PARES_STATUS       => $payAuthRep[self::PARES_STATUS]
@@ -240,6 +238,12 @@ class Gateway extends Base\Gateway
             switch ($network)
             {
                 case Card\Network::getFullName(Card\Network::VISA):
+                    if (array_key_exists(Entity::ECI, $payAuthRep) === false)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                    }
+                    $attributes[Entity::ECI] = $payAuthRep[Entity::ECI];
                     $attributes[Entity::CAVV] = $payAuthRep[self::CAVV];
                     break;
 
@@ -464,7 +468,7 @@ class Gateway extends Base\Gateway
         $request[self::CC_AUTH_SERVICE][self::PARES_STATUS] = $gateway->getParesStatus();
         $request[self::CC_AUTH_SERVICE][self::XID] = $gateway->getXid();
         $request[self::CC_AUTH_SERVICE][self::COMMERCE_INDICATOR] = $gateway->getCommerceIndicator();
-        $request[self::CC_AUTH_SERVICE][self::ECI_RAW] = $gateway->getEci();
+        $request[self::CC_AUTH_SERVICE][Entity::ECI] = $gateway->getEci();
         $request[self::CC_AUTH_SERVICE][self::RECONCILIATION_ID] = $input['payment']['id'];
 
         $network = $input['card']['network'];
@@ -509,7 +513,7 @@ class Gateway extends Base\Gateway
 
                 $eci = $enrollResponse[self::PAYER_AUTH_ENROLL_REPLY][self::ECI];
 
-                if ((int)$eci === 7)
+                if (((int)$eci === 7) or ((int)$eci === 0))
                     {
                         throw new Exception\BadRequestException(
                             ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
@@ -766,9 +770,17 @@ class Gateway extends Base\Gateway
 
         if ($network === Card\Network::getFullName(Card\Network::VISA))
         {
-            $eci = $payerAuth[Entity::ECI];
+            if (array_key_exists(Entity::ECI, $payerAuth) === true)
+            {
+                $eci = $payerAuth[Entity::ECI];
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+            }
 
-            if ((int)$eci === 7)
+            if (((int)$eci === 7) or ((int)$eci === 0))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);

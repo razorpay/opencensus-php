@@ -88,7 +88,7 @@ class Server extends Base\Mock\Server
         $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
         $payerAuthValidateReply = array();
-        $payerAuthValidateReply['eciRaw'] = '05';
+        $payerAuthValidateReply['eci'] = '05';
         $payerAuthValidateReply['xid'] = 'TktUb3hwZVp0eTMxcTh5UlZUODA=';
         $payerAuthValidateReply['paresStatus'] = 'Y';
         $payerAuthValidateReply['commerceIndicator'] = 'Internet';
