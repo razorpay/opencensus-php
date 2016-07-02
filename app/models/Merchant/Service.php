@@ -88,7 +88,6 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    // Proxy Auth.
     public function editConfig(array $input)
     {
         // Adds uploaded logo's url to the input.

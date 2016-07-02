@@ -210,7 +210,7 @@ trait Authorize
 
         try
         {
-            $data = $this->callGatewayCallback($payment, $input);
+            $data = $this->callGatewayCallback($input);
         }
         catch (Exception\BaseException $e)
         {
@@ -230,7 +230,7 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    protected function callGatewayCallback($payment, $input)
+    protected function callGatewayCallback($input)
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
@@ -708,6 +708,10 @@ trait Authorize
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
+        $amount = $payment->getAmount() / 100;
+        $data['amount'] = sprintf($amount == intval($amount) ? "%d" : "%.2f", $amount);
+        $data['image'] = $payment->merchant->getFullLogoUrlWithSize();
+
         return $data;
     }
 
@@ -1182,21 +1186,18 @@ trait Authorize
     {
         $gateway = $payment->getGateway();
 
-        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        $networkCode = null;
+        $paymentCard = $payment->card;
+
+        // If payment method is wallet or net banking.
+        if ($paymentCard !== null)
         {
-            return false;
+            $networkCode = $paymentCard->getNetworkCode();
         }
 
-        if ($gateway === Payment\Gateway::HDFC)
+        if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
         {
-            $network = $payment->card->getNetwork();
-            $network = Card\Network::getCode($network);
-
-            if (($network === Card\Network::MAES) or
-                ($network === Card\Network::RUPAY))
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -1210,7 +1211,7 @@ trait Authorize
 
     protected function verifyHash($hash, $paymentPublicId)
     {
-        $expectedHash = $this->getHashOfPaymentPublicId();
+        $expectedHash = $this->getHashOf($paymentPublicId);
 
         if ($expectedHash !== $hash)
         {
@@ -1248,22 +1249,21 @@ trait Authorize
     {
         $publicId = $this->payment->getPublicId();
 
-        $hash = $this->getHashOfPaymentPublicId();
+        $hash = $this->getHashOf($publicId);
 
         return ['id' => $publicId, 'hash' => $hash];
     }
 
     /**
-     * Returns a hash of payment public id.
+     * Returns a hash of a string.
      *
-     * @return string Hash of payment public id
+     * @param string $string
+     * @return string Hash of the string
      */
-    protected function getHashOfPaymentPublicId()
+    protected function getHashOf($string)
     {
         $secret = $this->app->config->get('app.key');
 
-        $publicId = $this->payment->getPublicId();
-
-        return hash_hmac('sha1', $publicId, $secret);
+        return hash_hmac('sha1', $string, $secret);
     }
 }

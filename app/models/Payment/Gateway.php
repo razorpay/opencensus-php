@@ -27,6 +27,9 @@ class Gateway
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
     const CYBERSOURCE       = 'cybersource';
 
+    const NOT_SUPPORTED     = 'not_supported';
+    const SUPPORTED         = 'supported';
+
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY
@@ -107,6 +110,9 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::CYBERSOURCE,
+        self::HDFC => [],
+        self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY];
+        self::AMEX => [],
     );
 
     /**
@@ -240,7 +246,7 @@ class Gateway
     );
 
     /**
-     * Some card networks are only supported partiall for one or two gateway.
+     * Some card networks are only supported partially for one or two gateway.
      *
      * @var array
      */
@@ -331,11 +337,6 @@ class Gateway
         return (defined(__CLASS__.'::'.strtoupper($gateway)));
     }
 
-    public static function getWalletGateways()
-    {
-        return self::$method[Method::WALLET];
-    }
-
     public static function getGatewayForWallet($wallet)
     {
         return self::$walletToGatewayMap[$wallet];
@@ -355,9 +356,59 @@ class Gateway
         return (in_array($gateway, self::$methodMap[$method]));
     }
 
-    public static function supportsAuthAndCapture($gateway)
+    /**
+     * If network code is null, the function returns back whether the
+     * given gateway has support for authAndCapture or not.
+     * If network code is not null, the functions returns back whether
+     * the given gateway has support for authAndCapture for the given
+     * network.
+     *
+     * @param string $gateway
+     * @param string $networkCode
+     * @return bool
+     */
+    public static function supportsAuthAndCapture($gateway, $networkCode = null)
     {
-        return (in_array($gateway, self::$authAndCapture));
+        $arrayKeys = array_keys(self::$authAndCapture);
+
+        $supportsAuthAndCapture = in_array($gateway, $arrayKeys);
+
+        if ($supportsAuthAndCapture === false)
+        {
+            return false;
+        }
+        else
+        {
+            if ($networkCode === null)
+            {
+                return $supportsAuthAndCapture;
+            }
+            else
+            {
+                return self::supportsAuthAndCaptureForNetwork($gateway, $networkCode);
+            }
+        }
+    }
+
+    public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
+    {
+        // This means that all the networks are supported by the gateway for authAndCapture.
+        if (isset(self::$authAndCapture[$gateway][self::NOT_SUPPORTED]) === false)
+        {
+            return true;
+        }
+
+        // Get all the networks which are NOT supported by the gateway for authAndCapture.
+        $notSupportedNetworks = self::$authAndCapture[$gateway][self::NOT_SUPPORTED];
+
+        // If a given network is in the list of notSupportedNetworks, it means that the network
+        // is not supported by the gateway for authAndCapture.
+        if (in_array($networkCode, $notSupportedNetworks))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public static function isPowerWallet($wallet)
