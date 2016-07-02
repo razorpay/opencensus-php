@@ -71,7 +71,7 @@ class Core extends Base\Core
         $this->verifyRavenOtp($input);
 
         // Get global customer from db or create one.
-        $customer = $this->getOrCreateGlobalCustomer($input[Customer\Entity::CONTACT]);
+        $customer = $this->getOrCreateGlobalCustomer($input);
 
         // Create app token for customer
         $appToken = $this->createCustomerAppToken($customer, $input);
@@ -142,8 +142,11 @@ class Core extends Base\Core
      * @param  string $contact customer's phone number
      * @return Customer\Entity $contact
      */
-    protected function getOrCreateGlobalCustomer($contact)
+    protected function getOrCreateGlobalCustomer($input)
     {
+        $contact = $input[Customer\Entity::CONTACT];
+        $email = $input[Customer\Entity::EMAIL];
+
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
             $this->repo->merchant->getSharedAccount());
@@ -151,7 +154,10 @@ class Core extends Base\Core
         // Create global customer if it does not exist.
         if ($customer === null)
         {
-            $custCreateInput = [Customer\Entity::CONTACT => $contact];
+            $custCreateInput = [
+                Customer\Entity::CONTACT => $contact,
+                Customer\Entity::EMAIL => $email
+            ];
 
             $customer = $this->createGlobalCustomer($custCreateInput);
         }

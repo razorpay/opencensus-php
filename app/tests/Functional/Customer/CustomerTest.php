@@ -130,7 +130,7 @@ class CustomerTest extends TestCase
         $response = $this->sendOtp('1234567890');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', '233323');
+        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233323');
 
         $this->assertEquals($content['success'], 1);
     }
@@ -145,7 +145,7 @@ class CustomerTest extends TestCase
         $response = $this->sendOtp('1234567890');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', '233443', '123');
+        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233443', '123');
 
         $this->assertEquals($content['success'], 1);
     }
@@ -181,10 +181,11 @@ class CustomerTest extends TestCase
     }
 
 
-    protected function verifyOtp($contact, $otp, $deviceToken = null)
+    protected function verifyOtp($contact, $email, $otp, $deviceToken = null)
     {
         $content = [
             'contact' => $contact,
+            'email' => $email,
             'otp' => $otp
         ];
 
