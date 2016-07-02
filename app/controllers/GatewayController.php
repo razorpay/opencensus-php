@@ -1,10 +1,11 @@
 <?php
 
+use EE\Exception;
+use Http\ApiResponse;
+use Http\Route;
+use Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
-use Http\Route;
-use EE\Exception;
-use Gateway\Billdesk\AuthStatus;
 
 class GatewayController extends BaseController
 {
@@ -13,93 +14,47 @@ class GatewayController extends BaseController
         $this->callbackGateway('axis');
     }
 
-    protected function callbackBillDesk($input)
+    protected function callbackBilldesk($input)
     {
-        $app = \App::getFacadeRoot();
-
         $msg = $input['msg'];
 
-        $gateway = new \Gateway\Billdesk\Gateway();
+        $gateway = $this->app['gateway']->gateway('billdesk');
 
-        $fields = $gateway->getFieldsForAction('callback');
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
-        $content = explode('|', $msg);
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        $content = array_combine($fields, $content);
+        \Database\DefaultConnection::set($mode);
 
-        $payment_id = "pay_" . $content['CustomerID'];
-
-        $result = $this->getBillDeskModeAndPaymentById($payment_id);
-
-        $payment = $result['payment'];
-
-        $mode = $result['mode'];
-
-        $trace = $app['trace'];
-
-        // check mode before search
-        $trace->info(
-            TraceCode::NETBANKING_PAYMENT_CALLBACK,
-            [
-                'input_all' => Input::all(),
-                'input_msg' => Input::get('msg'),
-                'input_arr' => $input
-            ]);
-
-        if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
+        if ($mode === null)
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['AuthStatus'], '');
-
+            throw new Exception\LogicException(
+                'Payment id not found in either database: ' . $paymentId);
         }
 
-        if ($payment->isAuthorized() === false)
-        {
-            // ideally we could have gone through the \Models\Payment\Service::callback
-            // however, when doing so, throws up class rzp.mode not found. Hence, to
-            // avoid this, we go through the regular URL post callback flow
-            // just like how its implemented in kotak's case. However, we do
-            // not do any redirection here since there is already a redirection
-            // that happens via the browser. We just simply post and be done.
-            $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
+        $this->app['basicauth']->setMode($mode);
 
-            $secret = \App::make('config')->get('app.key');
+        $paymentId = 'pay_' . $paymentId;
 
-            $hash = hash_hmac('sha1', $payment_id, $secret);
-
-            $params = ['id' => $payment_id, 'hash' => $hash];
-
-            $url = Route::getUrlWithPublicCallbackAuth($params, $publicKey);
-
-            $headers = array(
-                'User-Agent' => 'Razorpay-Webhook/v1',
-            );
-
-            Requests::post(
-                $url,
-                $headers,
-                ['msg' => $msg]);
-
-            // at this point, payment should be authorized. Assert so...
-            assert($payment->isAuthorized() === false);
-
-        }
+        return (new Payment\Service)->callbackWithoutHash($paymentId, $input);
     }
 
     public function callbackGateway($gateway)
     {
         $input = Input::all();
 
-        if($gateway === 'billdesk')
-        {
-            $this->callbackBillDesk($input);
+        $data = [];
 
+        if ($gateway === 'billdesk')
+        {
+            $data = $this->callbackBilldesk($input);
         }
 
         // $input['gateway'] = $gateway;
 
         // $app['slack']->send($input, 'transactions', '#tech_logs');
+
+        return ApiResponse::json($data);
     }
 
     public function callbackKotakCancel()
@@ -180,30 +135,5 @@ class GatewayController extends BaseController
         }
 
         return ['nb' => $nb, 'mode' => $mode];
-    }
-
-    protected function getBillDeskModeAndPaymentById($payment_id)
-    {
-        $app = \App::getFacadeRoot();
-        $core = new Core();
-        $mode = 'test';
-        $app['config']->set('database.default', $mode);
-        $payment = null;
-        try
-        {
-            $payment = $core->retrieveById($payment_id);
-        }
-        catch(\Exception $e)
-        {
-
-        }
-        if($payment == null)
-        {
-            $mode = 'live';
-            $app['config']->set('database.default', $mode);
-            $payment = $core->retrievePaymentById($payment_id);
-        }
-        return ['payment' => $payment, 'mode' => $mode];
-
     }
 }

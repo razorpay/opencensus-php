@@ -467,8 +467,6 @@ class BasicAuth
             return false;
         }
 
-        $this->app['rzp.mode'] = $mode;
-
         \Database\DefaultConnection::set($mode);
 
         return true;
@@ -715,9 +713,10 @@ class BasicAuth
 
 // --------------------- Setters -----------------------------------------------
 
-    protected function setMode($mode)
+    public function setMode($mode)
     {
         $this->mode = $mode;
+        $this->app['rzp.mode'] = $mode;
     }
 
     protected function setType($type)

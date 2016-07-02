@@ -24,6 +24,7 @@ use Models\Customer;
 class Processor
 {
     use Authorize;
+    use Callback;
     use Capture;
     use Refund;
     use Verify;

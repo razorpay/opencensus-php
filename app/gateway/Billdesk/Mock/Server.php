@@ -16,8 +16,10 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
-        $input = $this->getContentFromInput($input);
         parent::authorize($input);
+
+        $input = $this->getContentFromInput($input);
+
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
@@ -53,32 +55,36 @@ class Server extends Base\Mock\Server
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
-        //uncomment below to mock s2s callback
-        /*$headers = array(
-                            'User-Agent'    => 'Razorpay-Webhook/v1',
-                    );
-        $url = \Http\Route::getUrlWithPublicAuth('gateway_payment_callback_post',
-                                                ['gateway' => 'billdesk']);
+        // // Uncomment below to mock s2s callback
+        // $headers = array(
+        //                     'User-Agent'    => 'Razorpay-Webhook/v1',
+        //             );
+        // $url = \Http\Route::getUrlWithPublicAuth('gateway_payment_callback_post',
+        //                                         ['gateway' => 'billdesk']);
 
-        Requests::post(
-            $url,
-            $headers,
-            ['msg' => $msg]);
-        */
+        // Requests::post(
+        //     $url,
+        //     $headers,
+        //     ['msg' => $msg]);
+
+        $content = ['msg' => $msg];
+
+        $this->content($content);
 
         $request = array(
             'url' => $input['RU'],
-            'content' => ['msg' => $msg],
+            'content' => $content,
             'method' => 'post',
         );
+
         return $this->makePostResponse($request);
     }
 
     public function verify($input)
     {
-        $input = $this->getContentFromInput($input);
-
         parent::verify($input);
+
+        $input = $this->getContentFromInput($input);
 
         $this->validateActionInput($input, 'verify');
 
@@ -123,9 +129,9 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
-        $input = $this->getContentFromInput($input);
+        parent::refund($input);
 
-        parent::verify($input);
+        $input = $this->getContentFromInput($input);
 
         $this->validateActionInput($input, 'refund');
 
@@ -163,12 +169,13 @@ class Server extends Base\Mock\Server
 
     protected function getContentFromInput($input)
     {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
+        $name = $this->action;
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
         $content = explode('|', $input['msg']);
         $input = array_combine($fields, $content);
+
+        $this->input = $input;
 
         return $input;
     }

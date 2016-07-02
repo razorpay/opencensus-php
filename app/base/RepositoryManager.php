@@ -82,6 +82,27 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $entity;
     }
 
+    public function determineLiveOrTestModeForEntity($id, $entity)
+    {
+        $repo = $this->driver($entity);
+
+        $obj = $repo->connection('live')->find($id);
+
+        if ($obj !== null)
+        {
+            return 'live';
+        }
+
+        $obj = $repo->connection('test')->find($id);
+
+        if ($obj !== null)
+        {
+            return 'test';
+        }
+
+        return null;
+    }
+
     protected function getRepositoryClassFromObject($entityObject)
     {
         $entity = $entityObject->getEntityName();

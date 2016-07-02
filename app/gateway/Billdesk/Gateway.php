@@ -153,6 +153,19 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function getPaymentIdFromServerCallback($input)
+    {
+        $msg = $input['msg'];
+
+        $fields = $this->getFieldsForAction('callback');
+
+        $content = explode('|', $msg);
+
+        $content = array_combine($fields, $content);
+
+        return $content['CustomerID'];
+    }
+
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
