@@ -74,22 +74,20 @@ class Selector
             $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input);
         }
 
-        if (empty($sortedTerminals))
+        if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
         {
-            if ($this->mode === Mode::TEST)
-            {
-                $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
-            }
-            else
-            {
-                throw new Exception\RuntimeException(
-                    'Terminal should not be null',
-                    ['payment' => $payment->toArrayAdmin()]);
-            }
+            $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
         }
         else
         {
             $terminal = $sortedTerminals[0];
+        }
+
+        if ($terminal === null)
+        {
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $payment->toArrayAdmin()]);
         }
 
         $payment->terminal()->associate($terminal);
@@ -97,6 +95,5 @@ class Selector
         $payment->setGateway($terminal->getGateway());
 
         return $terminal;
-
     }
 }

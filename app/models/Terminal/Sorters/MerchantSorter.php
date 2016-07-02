@@ -27,9 +27,6 @@ class MerchantSorter extends Terminal\Sorter
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            // s($terminal->getCategory());
-            // s($merchantCategory);
-
             if ($terminal->getCategory() === $merchantCategory)
             {
                 $testTerminals['specific'][] = $terminal;
