@@ -111,7 +111,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::AMEX => [],
-        self::CYBERSOURCE,
+        self::CYBERSOURCE => [],
     );
 
     /**
