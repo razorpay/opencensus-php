@@ -47,9 +47,9 @@ class EmiFile extends Base\EmiFile
 
     protected function sendKotakEmiFile()
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $zipFile = $this->getZippedFile();
 
-        $data['file'] = $fullpath;
+        $data['file'] = $zipFile;
 
         $data['body'] = 'Please forward the Kotak Emi file to kotak';
 

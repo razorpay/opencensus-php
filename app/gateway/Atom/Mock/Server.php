@@ -223,7 +223,7 @@ class Server extends Base\Mock\Server
 
     protected function formMerchantCallbackUrl($paymentPublicId)
     {
-        $hash = $this->getHashOfPaymentPublicId($paymentPublicId);
+        $hash = $this->getHashOf($paymentPublicId);
 
         $params = ['id' => $paymentPublicId, 'hash' => $hash];
 
@@ -232,11 +232,11 @@ class Server extends Base\Mock\Server
         return $callbackUrl;
     }
 
-    protected function getHashOfPaymentPublicId($paymentPublicId)
+    protected function getHashOf($string)
     {
         $secret = \App::make('config')->get('app.key');
 
-        return hash_hmac('sha1', $paymentPublicId, $secret);
+        return hash_hmac('sha1', $string, $secret);
     }
 
     public function verifyTxn1stStageInput($input)

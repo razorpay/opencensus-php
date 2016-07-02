@@ -15,48 +15,23 @@ trait PaymentMobikwikTrait
 
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
 
-        if ($mock) {
-
-            if (isset($this->type) and $this->type === 'otp')
+        if ($mock)
+        {
+            if ($this->isOtpCallbackUrl($url))
             {
-                $this->otpSubmitUrl = $url;
+                $this->callbackUrl = $url;
 
-                $content['otp'] = '123456';
-
-                if (isset($this->step))
-                {
-                    switch ($this->step)
-                    {
-                        case 'RETRY':
-                            $content['otp'] = '121212';
-                            break;
-
-                        case 'TOPUP':
-                            $content['otp'] = '131313';
-                            break;
-
-                        case 'UNREGISTERED_USER':
-                            $content['otp'] = '141414';
-                            break;
-                    }
-                }
-
-                $content['type'] = 'otp';
-
-                $request = array(
-                    'url'       => $url,
-                    'method'    => $method,
-                    'content'   => $content
-                );
-
-                return $this->makeRequest($request);
+                return $this->makeOtpCallback($url);
             }
 
             $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
 
             return $this->submitPaymentCallbackRedirect($url);
-        } else {
+        }
+        else
+        {
             $options = ['follow_redirects' => false];
+
             list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, [], $values, $options);
             list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, [], $values, $options);
             list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, [], $values, $options);
