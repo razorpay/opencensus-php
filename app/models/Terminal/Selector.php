@@ -16,7 +16,7 @@ class Selector
 
     protected static $sorters = [
         Sorters\NetbankingSorter::class,
-        // Sorters\MerchantSorter::class,
+        Sorters\MerchantSorter::class,
     ];
 
     public function setup($payment, $mode)

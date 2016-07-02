@@ -27,30 +27,30 @@ class MerchantSorter extends Terminal\Sorter
         // append to the terminal
         foreach ($terminals as $terminal)
         {
-            s($terminal->getCategory());
-            s($merchantCategory);
+            // s($terminal->getCategory());
+            // s($merchantCategory);
 
-            // if ($terminal->getCategory() === $merchantCategory)
-            // {
-            //     $testTerminals['specific'][] = $terminal;
-            // }
-            // else
-            // {
-            //     $testTerminals['generic'][] = $terminal;
-            // }
+            if ($terminal->getCategory() === $merchantCategory)
+            {
+                $testTerminals['specific'][] = $terminal;
+            }
+            else
+            {
+                $testTerminals['generic'][] = $terminal;
+            }
         }
 
-        // $returnTerminals = [];
+        $returnTerminals = [];
 
-        // if (isset($testTerminals['specific']))
-        // {
-        //     array_unshift($returnTerminals, $testTerminals['specific']);
-        // }
+        if (isset($testTerminals['specific']))
+        {
+            array_unshift($returnTerminals, $testTerminals['specific']);
+        }
 
-        // if (isset($testTerminals['generic']))
-        // {
-        //     array_unshift($returnTerminals, $testTerminals['generic']);
-        // }
+        if (isset($testTerminals['generic']))
+        {
+            array_unshift($returnTerminals, $testTerminals['generic']);
+        }
 
         return $terminals;
     }
