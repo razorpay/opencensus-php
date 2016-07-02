@@ -39,9 +39,9 @@ class EmiFile extends Base\EmiFile
 
     protected function sendAxisEmiFile()
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $zipFile = $this->getZippedFile();
 
-        $data['file'] = $fullpath;
+        $data['file'] = $zipFile;
         $data['body'] = 'Please forward the Axis Emi file to axis';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)

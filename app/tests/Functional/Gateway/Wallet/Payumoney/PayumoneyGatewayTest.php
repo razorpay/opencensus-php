@@ -4,6 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
+use Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
 use Http\Route;
 
@@ -49,11 +50,11 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpRetryPayment()
     {
-        $this->step = 'RETRY';
-
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp(Otp::INCORRECT);
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
@@ -68,11 +69,11 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpRetrySuccessPayment()
     {
-        $this->step = 'RETRY';
-
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $data = $this->testData[__FUNCTION__];
+
+        $this->setOtp(Otp::INCORRECT);
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthPayment($payment);
@@ -83,10 +84,10 @@ class PayumoneyGatewayTest extends TestCase
         $this->assertEquals('BAD_REQUEST_PAYMENT_OTP_INCORRECT', $payment['internal_error_code']);
         $this->assertEquals(null, $payment['error_code']);
 
-        $this->step = null;
+        $this->setOtp(null);
 
         $data = $this->testData['otpRetryRequest'];
-        $data['request']['url'] = $this->otpSubmitUrl;
+        $data['request']['url'] = $this->callbackUrl;
 
         $authPayment = $this->makeRequestAndGetContent($data['request']);
 
@@ -163,8 +164,6 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testInsufficientBalancePayment()
     {
-        $this->step = 'TOPUP';
-
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
         $payment['amount'] = 100000;
 
@@ -185,20 +184,10 @@ class PayumoneyGatewayTest extends TestCase
         // Get Innsufficient balance response
         $response = $this->testInsufficientBalancePayment();
 
-        $this->step = 'TOPUP';
-
         $responseData = $this->response->original->data;
 
-        $topupRequest = $this->testData['topupData'];
-
-        // Generate relative URL for topup
-        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['payment_id']], false);
-        $url = 'http://localhost' . $url;
-
-        $topupRequest['request']['url'] = $url;
-
         // Send topup request
-        $topupResponse = $this->runRequestResponseFlow($topupRequest);
+        $topupResponse = $this->topupPayment($responseData['payment_id']);
 
         // Make topup redirection request
         $topupRedirect = $this->makeRequest($topupResponse['request']);
@@ -237,18 +226,13 @@ class PayumoneyGatewayTest extends TestCase
         $responseData = $this->testTopupPayment();
 
         $this->ba->publicAuth();
-        $this->step = 'TOPUP';
 
         $topupRequest = $this->testData['topupDataAlreadyProcessed'];
 
-        // Generate relative URL for topup
-        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
-        $url = 'http://localhost' . $url;
-
-        $topupRequest['request']['url'] = $url;
-
         // Send topup request
-        $this->runRequestResponseFlow($topupRequest);
+        $this->runRequestResponseFlow($topupRequest, function() use ($responseData) {
+            $this->topupPayment($responseData['razorpay_payment_id']);
+        });
     }
 
     public function testTopupCapturePayment()
@@ -258,18 +242,13 @@ class PayumoneyGatewayTest extends TestCase
         $capturePayment = $this->capturePayment($responseData['razorpay_payment_id'], 100000);
 
         $this->ba->publicAuth();
-        $this->step = 'TOPUP';
 
         $topupRequest = $this->testData['topupDataAlreadyProcessed'];
 
-        // Generate relative URL for topup
-        $url = \URL::route('payment_topup_ajax', ['id' => $responseData['razorpay_payment_id']], false);
-        $url = 'http://localhost' . $url;
-
-        $topupRequest['request']['url'] = $url;
-
         // Send topup request
-        $this->runRequestResponseFlow($topupRequest);
+        $this->runRequestResponseFlow($topupRequest, function() use ($responseData) {
+            $this->topupPayment($responseData['razorpay_payment_id']);
+        });
     }
 
     public function testTopupFailedPayment()
@@ -291,14 +270,10 @@ class PayumoneyGatewayTest extends TestCase
 
         $topupRequest = $this->testData['topupDataAlreadyProcessed'];
 
-        // Generate relative URL for topup
-        $url = \URL::route('payment_topup_ajax', ['id' => $paymentId], false);
-        $url = 'http://localhost' . $url;
-
-        $topupRequest['request']['url'] = $url;
-
         // Send topup request
-        $this->runRequestResponseFlow($topupRequest);
+        $this->runRequestResponseFlow($topupRequest, function() use ($paymentId) {
+            $this->topupPayment($paymentId);
+        });
     }
 
     public function testVerifyPayment()
@@ -465,31 +440,14 @@ class PayumoneyGatewayTest extends TestCase
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;
-        $this->otpSubmitUrl = $url;
+        $this->callbackUrl  = $url;
 
         if ($mock)
         {
-            $content['otp'] = '111111';
-
-            if (isset($this->step))
+            if ($this->isOtpCallbackUrl($url))
             {
-                switch ($this->step)
-                {
-                    case 'RETRY':
-                        $content['otp'] = '121212';
-                        break;
-                }
+                return $this->makeOtpCallback($url);
             }
-
-            $content['type'] = 'otp';
-
-            $request = array(
-                'url'       => $url,
-                'method'    => $method,
-                'content'   => $content
-            );
-
-            return $this->makeRequest($request);
         }
 
         return null;
