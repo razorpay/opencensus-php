@@ -150,7 +150,8 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment');
+                'Failed to find a valid pricing rule for the payment. ' .
+                'Payment id: ' . $payment->getId());
         }
 
         return $rule;
@@ -240,7 +241,8 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment');
+                'Failed to find a valid pricing rule for the payment. ' .
+                'Payment id: ' . $payment->getId());
         }
 
         return $rule;
