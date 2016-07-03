@@ -209,6 +209,17 @@ class Service extends Base\Service
         return $this->processor()->callback($id, $hash, $input);
     }
 
+    public function s2sCallback($id, $input)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findOrFailPublic($id);
+
+        $merchant = $payment->merchant;
+
+        return $this->processor($merchant)->s2sCallback($payment, $input);
+    }
+
     public function fetchMultiple(array $input)
     {
         $merchantId = $this->merchant->getId();

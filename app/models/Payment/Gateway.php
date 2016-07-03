@@ -167,6 +167,15 @@ class Gateway
         self::WALLET_PAYZAPP);
 
     /**
+     * List of gateways which give s2s callback where we do not validate
+     * payment callback hash
+     *
+     * @var array
+     */
+    public static $s2sCallbackGateways = array(
+        Gateway::BILLDESK);
+
+    /**
      * Card gateways which support international payments
      *
      * @var array
