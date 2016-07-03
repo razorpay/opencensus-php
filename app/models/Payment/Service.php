@@ -209,7 +209,7 @@ class Service extends Base\Service
         return $this->processor()->callback($id, $hash, $input);
     }
 
-    public function callbackWithoutHash($id, $input)
+    public function s2sCallback($id, $input)
     {
         Payment\Entity::verifyIdAndStripSign($id);
 

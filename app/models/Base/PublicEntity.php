@@ -274,6 +274,11 @@ class PublicEntity extends UniqueIdEntity
         return static::$delimiter;
     }
 
+    public static function getSignedId($id)
+    {
+        return static::getIdPrefix() . $id;
+    }
+
     public function getEntity()
     {
         return $this->entity;

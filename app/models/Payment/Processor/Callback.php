@@ -26,15 +26,6 @@ use Mail;
 trait Callback
 {
     /**
-     * List of gateways which give s2s callback where we do not validate
-     * payment callback hash
-     *
-     * @var array
-     */
-    protected $s2sCallbackGateways = array(
-        Payment\Gateway::BILLDESK);
-
-    /**
      * After payment initiation, bank redirects to us
      * and we send it to gateway for further
      * processing (auth).
@@ -98,7 +89,7 @@ trait Callback
 
         $gateway = $payment->getGateway();
 
-        if (in_array($gateway, $this->s2sCallbackGateways) === false)
+        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways) === false)
         {
             throw new Exception\LogicException(
                 'Invalid gateway provided: ' . $gateway);

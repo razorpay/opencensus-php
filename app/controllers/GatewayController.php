@@ -24,7 +24,7 @@ class GatewayController extends BaseController
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        \Database\DefaultConnection::set($mode);
+        Database\DefaultConnection::set($mode);
 
         if ($mode === null)
         {
@@ -34,9 +34,9 @@ class GatewayController extends BaseController
 
         $this->app['basicauth']->setMode($mode);
 
-        $paymentId = 'pay_' . $paymentId;
+        $paymentId = Payment\Entity::getSignedId($paymentId);
 
-        return (new Payment\Service)->callbackWithoutHash($paymentId, $input);
+        return (new Payment\Service)->s2sCallback($paymentId, $input);
     }
 
     public function callbackGateway($gateway)
