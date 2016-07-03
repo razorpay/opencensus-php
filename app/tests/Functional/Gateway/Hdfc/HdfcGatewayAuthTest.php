@@ -30,6 +30,8 @@ class HdfcGatewayAuthTest extends TestCase
         parent::setUp();
 
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableInternational();
     }
 
     public function testCardTimeout()

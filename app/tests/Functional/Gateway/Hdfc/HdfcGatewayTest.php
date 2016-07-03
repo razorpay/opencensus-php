@@ -21,6 +21,8 @@ class HdfcGatewayTest extends TestCase
         $this->gateway = 'hdfc';
 
         $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->enableInternational();
     }
 
     public function testPayment()

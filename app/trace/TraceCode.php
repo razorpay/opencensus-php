@@ -41,6 +41,7 @@ class TraceCode
     const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
     const PAYMENT_METADATA                          = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                  = 'PAYMENT_CREATE_ON_PUBLIC';
+    const PAYMENT_CARD_NOT_ENROLLED                 = 'PAYMENT_CARD_NOT_ENROLLED';
 
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';

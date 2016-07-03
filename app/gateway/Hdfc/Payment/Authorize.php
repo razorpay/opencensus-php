@@ -3,6 +3,7 @@
 namespace Gateway\Hdfc\Payment;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use Trace\Trace;
@@ -28,6 +29,7 @@ trait Authorize
                 return $this->getFieldsForFormSubmitToBankACS();
 
             case Payment\Result::NOT_ENROLLED:
+                $this->validateMerchantInternationalEnabled();
                 return $this->postAuthNotEnrolledRequestToBank();
 
             case Payment\Result::INITIALIZED:
@@ -320,6 +322,22 @@ trait Authorize
         $this->authEnrolledRequest['data']['paymentid'] = $input['gateway']['MD'];
 
         $this->authEnrolledRequest['data']['PaRes'] = $input['gateway']['PaRes'];
+    }
+
+    protected function validateMerchantInternationalEnabled()
+    {
+        $input = $this->input;
+
+        if ($input['merchant']['international'] === false)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::PAYMENT_CARD_NOT_ENROLLED,
+                ['payment_id' => $input['payment']['id']]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
+        }
     }
 
     protected function validateAuthNotEnrolledResponse()
