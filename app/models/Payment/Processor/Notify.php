@@ -469,7 +469,8 @@ class Notify
             unset($data['timestamp']);
         }
 
-        if ($data['risk'] === self::MAX_HIGH_RISK_RATING)
+        if ((isset($data['risk']) === true) and
+            ($data['risk'] === self::MAX_HIGH_RISK_RATING))
         {
             unset ($data['risk']);
             $data['email'] = $this->template['customer']['email'];
