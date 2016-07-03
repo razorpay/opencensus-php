@@ -523,7 +523,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             // Make sure that international returns true in this case, after the country code is set.
             assert($this->paymentIin->isInternational());
 
-            $this->trace->info(
+            $this->app['trace']->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code'  => 'IIN_INTERNATIONAL_SET',
@@ -533,7 +533,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'payment_id' => $this->payment->getId(),
                 ]
             );
-
         }
         else if (($currentInternational === true) and ($reconInternational === false))
         {
