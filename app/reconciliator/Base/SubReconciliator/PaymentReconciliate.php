@@ -521,7 +521,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->paymentIin->setCountry($countryCode);
 
             // Make sure that international returns true in this case, after the country code is set.
-            assert($this->paymentIin->isInternational);
+            assert($this->paymentIin->isInternational());
 
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
