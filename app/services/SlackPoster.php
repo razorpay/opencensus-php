@@ -20,7 +20,7 @@ trait SlackPoster
     public function slackPost($headline, array $postdata, array $settings = [], $pretext = '')
     {
         // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
-        if(Config::get('slack.mock') === false)
+        if (Config::get('slack.mock') === false)
         {
             $data = $this->getSlackContext();
 
@@ -80,7 +80,7 @@ trait SlackPoster
             'cloud'         =>  $cloud
         ];
 
-        if($cloud)
+        if ($cloud)
         {
             $data['instance'] = $app['instance']->getInstanceId();
         }

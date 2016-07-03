@@ -59,6 +59,11 @@ class ResponseCodeMap
         1, 8,
     );
 
+    public static function isWalletUserNotPresent($code)
+    {
+        return self::getApiErrorCode($code) === ErrorCode::BAD_REQUEST_PAYMENT_WALLET_USER_DOES_NOT_EXIST;
+    }
+
     public static function getResponseMessage($code)
     {
         $codes = self::$codes;

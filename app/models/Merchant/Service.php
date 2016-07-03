@@ -88,7 +88,6 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    // Proxy Auth.
     public function editConfig(array $input)
     {
         // Adds uploaded logo's url to the input.
@@ -110,7 +109,7 @@ class Service extends Base\Service
 
     protected function uploadLogoIfFound(&$input)
     {
-        // if($input->hasFile('logo') and $input['logo']->isValid())
+        // if ($input->hasFile('logo') and $input['logo']->isValid())
         if (isset($input['logo']))
         {
             // Store the logos in AWS
@@ -173,7 +172,7 @@ class Service extends Base\Service
 
     public function fetchBalance($merchantId = null)
     {
-        if(null === $merchantId)
+        if ($merchantId === null)
         {
             $merchantId = $this->merchant->getId();
         }
@@ -632,7 +631,7 @@ class Service extends Base\Service
 
             $sent = $dailyReport->send();
 
-            if(empty($sent))
+            if (empty($sent))
             {
                 $response['skipped']++;
             }

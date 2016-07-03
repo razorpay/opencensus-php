@@ -82,8 +82,8 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if(($input['method'] === Payment\Method::EMI) and
-           ($input['amount'] < 300000))
+        if (($input['method'] === Payment\Method::EMI) and
+            ($input['amount'] < 300000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,

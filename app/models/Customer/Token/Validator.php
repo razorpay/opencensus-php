@@ -4,7 +4,7 @@ namespace Models\Customer\Token;
 
 use Models\Bank;
 use Models\Base;
-use Models\Customer\Token\Entity;
+use EE\Exception;
 
 class Validator extends Base\Validator
 {
@@ -24,12 +24,12 @@ class Validator extends Base\Validator
 
     protected static function validateBank($input)
     {
-        if(empty($input[Entity::BANK]))
+        if (empty($input[Entity::BANK]))
         {
             return;
         }
 
-        if(!Bank\IFSC::exists($input[Entity::BANK]))
+        if (Bank\IFSC::exists($input[Entity::BANK]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid bank name in input: '. $input[Entity::BANK]);

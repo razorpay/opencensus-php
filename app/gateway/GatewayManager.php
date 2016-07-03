@@ -27,6 +27,21 @@ class GatewayManager extends \Illuminate\Support\Manager
         $this->registerMocks($gatewayConfig);
     }
 
+    public function call($gateway, $action, $input, $mode, $terminal = null)
+    {
+        $gateway = $this->gateway($gateway);
+
+        $gateway->setTerminal($terminal);
+
+        $gateway->setMode($mode);
+
+        // Laravel helper function converts snake case to camel case
+        $action = camel_case($action);
+
+        // Call function on actual gateway instance
+        return  $gateway->$action($input);
+    }
+
     protected function registerMocks($gatewayConfig)
     {
         foreach ($this->gateways as $gateway)

@@ -320,9 +320,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($this->paymentTransaction === null)
             {
                 // The row details are already traced and can be retrieved from Splunk.
-                $this->messenger->raiseReconAlert(
+                $this->app['trace']->info(
+                    TraceCode::RECON_INFO_ALERT,
                     [
-                        'trace_code' => TraceCode::RECON_INFO_ALERT,
                         'message'    => 'Payment Transaction not found in DB.',
                         'payment_id' => $paymentId,
                         'gateway'    => get_called_class()
@@ -389,20 +389,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function persistCardTrivia($reconCardTrivia)
     {
         $iinTrivia = $this->paymentIin->getTrivia();
-        
+
         if (empty($iinTrivia) === true)
         {
             $this->paymentIin->setTrivia($reconCardTrivia);
         }
         else
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'        => TraceCode::RECON_MISMATCH,
                     'message'           => 'IIN already contains trivia. Not updating it.',
                     'payment_id'        => $this->payment->getId(),
-                    'iin_id'            => $this->paymentIin->getId(),
-                    'recon_card_trvia'  => $reconCardTrivia,
+                    'iin_id'            => $this->paymentIin->getKey(),
+                    'recon_card_trivia' => $reconCardTrivia,
                     'iin_card_trivia'   => $iinTrivia,
                     'gateway'           => get_called_class()
                 ]);
@@ -525,7 +525,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'trace_code'  => TraceCode::RECON_MISMATCH,
                     'message'     => 'DB says international but recon says domestic',
                     'payment_id'  => $this->payment->getId(),
-                    'iin_id'      => $this->paymentIin->getId(),
+                    'iin_id'      => $this->paymentIin->getKey(),
                     'gateway'     => get_called_class()
                 ]);
         }
@@ -546,20 +546,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'    => TraceCode::RECON_FAILURE,
+                    'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
                     'message'       => 'Transaction not present for the given payment ID.',
                     'row_details'   => $rowDetails,
                     'gateway'       => get_called_class()
                 ]);
 
-            throw new ReconciliationException(
-                'Transaction not present for the given payment ID.',
-                [
-                    'row_details' => $rowDetails,
-                    'gateway'     => get_called_class(),
-                ]
-            );
-
-            //return false;
+            return false;
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
