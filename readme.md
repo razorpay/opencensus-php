@@ -3,6 +3,11 @@
 [![wercker status](https://app.wercker.com/status/1d1fe880039df1e76548e43566a144bb/m "wercker status")](https://app.wercker.com/project/bykey/1d1fe880039df1e76548e43566a144bb) [![Codacy Badge](https://www.codacy.com/project/badge/8d5f8e7504b24c71999d884569725575)](https://www.codacy.com) [![Documentation Link](https://img.shields.io/badge/docs-api-orange.svg)](https://cc.razorpay.com/api/docs/index.html)
 
 ## Set up instructions ( for development )
+
+#### Pre-requistics
+
+* Install [composer](https://getcomposer.org/download/) PHP package manager
+
 ### ( Vagrant / Homestead )
 
 * Install Virtualbox & Vagrant
@@ -13,12 +18,17 @@
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
-### ( Ubuntu - System )
+### ( Ubuntu / OSX - System )
 
 * Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lieks.
 * `sudo a2ensite api.razorpay.com.conf`
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
+
+#### OSX - Extra steps
+
+* Install coreutils `brew install coreutils --with-default-names`
+* Create a symbolic link for date util `sudo ln -s /usr/local/opt/coreutils/libexec/gnubin/date /usr/bin/date`
 
 ### Common Instruction
 
