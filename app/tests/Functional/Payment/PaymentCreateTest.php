@@ -74,6 +74,7 @@ class PaymentCreateTest extends TestCase
 
     public function testIntlPaymentWhenNotAllowed()
     {
+        $this->fixtures->merchant->disableInternational();
         $this->runRequestResponseFlow(
             $this->testData[__FUNCTION__],
             function ()
