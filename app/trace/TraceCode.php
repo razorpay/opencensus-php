@@ -158,6 +158,7 @@ class TraceCode
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
     const RECON_MISMATCH                            = 'RECON_MISMATCH';
+    const RECON_INFO                                = 'RECON_INFO';
     const RECON_PARSE_ERROR                         = 'RECON_PARSE_ERROR';
     const RECON_FAILURE                             = 'RECON_FAILURE';
     const RECON_FAILED_VERIFY                       = 'RECON_FAILED_VERIFY';
@@ -224,6 +225,7 @@ class TraceCode
         self::RECON_REQUEST                         => 'Request made for reconciliation',
         self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
         self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request',
+        self::RECON_INFO                            => 'General recon info',
         self::REFUND_TRANSACTION_FAILED             => 'Transaction failed to create for refund',
     );
 

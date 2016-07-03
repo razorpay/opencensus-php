@@ -124,9 +124,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return true;
         }
 
-        $this->messenger->raiseReconAlert(
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO,
             [
-                'trace_code' => TraceCode::RECON_INFO_ALERT,
                 'message'    => 'Payment status is failed. Trying to authorize.',
                 'payment_id' => $this->payment->getId(),
                 'gateway'    => get_called_class()
@@ -162,7 +162,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         if ($verifyResponse === Verify::AUTHORIZED)
         {
             $this->app['trace']->info(
-                TraceCode::RECON_INFO_ALERT,
+                TraceCode::RECON_INFO,
                 [
                     'message'    => 'Verify returned authorized.',
                     'payment_id' => $this->payment->getId(),
@@ -321,9 +321,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             {
                 // The row details are already traced and can be retrieved from Splunk.
                 $this->app['trace']->info(
-                    TraceCode::RECON_INFO_ALERT,
+                    TraceCode::RECON_INFO,
                     [
                         'message'    => 'Payment Transaction not found in DB.',
+                        'info_code'  => 'PAYMENT_TRANSACTION_ABSENT',
                         'payment_id' => $paymentId,
                         'gateway'    => get_called_class()
                     ]);
@@ -397,8 +398,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         else
         {
             $this->app['trace']->info(
-                TraceCode::RECON_INFO_ALERT,
+                TraceCode::RECON_INFO,
                 [
+                    'info_code'         => 'IIN_TRIVIA_ALREADY_PRESENT',
                     'message'           => 'IIN already contains trivia. Not updating it.',
                     'payment_id'        => $this->payment->getId(),
                     'iin_id'            => $this->paymentIin->getKey(),
@@ -441,6 +443,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'message'         => 'Card types in recon file and db do not match. Updating.',
+                    'info_code'       => 'CARD_TYPE_MISMATCH',
                     'recon_card_type' => $reconCardType,
                     'iin_card_type'   => $iinCardType,
                     'payment_id'      => $this->payment->getId(),
@@ -457,6 +460,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             TraceCode::RECON_INFO_ALERT,
             [
                 'message'     => 'IIN absent for the card. Creating.',
+                'info_code'   => 'IIN_CREATE',
                 'card_id'     => $this->payment->card->getId(),
                 'payment_id'  => $this->payment->getId(),
                 'gateway'     => get_called_class()
@@ -514,9 +518,22 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (($currentInternational === false) and ($reconInternational === true))
         {
-            $this->paymentIin->setCountryCode($countryCode);
+            $this->paymentIin->setCountry($countryCode);
+
             // Make sure that international returns true in this case, after the country code is set.
             assert($this->paymentIin->isInternational);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => 'IIN_INTERNATIONAL_SET',
+                    'message'    => 'Setting an IIN to international.',
+                    'iin_id'     => $this->paymentIin->getKey(),
+                    'gateway'    => get_called_class(),
+                    'payment_id' => $this->payment->getId(),
+                ]
+            );
+
         }
         else if (($currentInternational === true) and ($reconInternational === false))
         {

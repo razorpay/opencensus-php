@@ -91,6 +91,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
+                    'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'recon_card_trivia' => $cardTrivia,
                     'row'               => $row,
                     'gateway'           => get_class()
@@ -146,7 +147,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $this->messenger->raiseReconAlert(
             [
                 'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                'message'         => 'Payment status is still failed. Doing force authorize now.',
+                'message'         => 'Payment status is still failed after verify. Doing force authorize now.',
                 'payment_id'      => $this->payment->getId(),
                 'gateway'         => get_called_class()
             ]);
@@ -155,10 +156,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
 
         $this->app['trace']->info(
-            TraceCode::RECON_INFO_ALERT,
+            TraceCode::RECON_INFO,
             [
-                'message' => 'Response received from force authorization',
-                'response' => $response
+                'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
+                'message'   => 'Response received from force authorization',
+                'response'  => $response
             ]
         );
 

@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
         Card\Type::checkType($type);
         $this->setAttribute(self::TYPE, $type);
     }
+    
+    public function setCountry($countryCode)
+    {
+        $this->setAttribute(self::COUNTRY, $countryCode);
+    }
 
     public function getCountry()
     {
