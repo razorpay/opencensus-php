@@ -345,7 +345,7 @@ class Processor
             $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
         }
 
-        return Gateway::call($gateway, $action, $gatewayData, $this->mode, $terminal);
+        return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
     protected function createPaymentEntity($input)

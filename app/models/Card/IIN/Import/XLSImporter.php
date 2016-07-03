@@ -29,7 +29,7 @@ class XLSImporter
      */
     public function import($input)
     {
-        if(!isset($input['network']))
+        if (isset($input['network']) === false)
         {
             throw new Exception\BadRequestException("please pass network name as input for given file");
         }

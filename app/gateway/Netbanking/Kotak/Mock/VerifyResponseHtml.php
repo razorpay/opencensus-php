@@ -14,7 +14,7 @@ function is_space1 (
 
     for (l_i=0;l_i<=l_length;l_i++) {
         var l_chr = l_new_string.charAt(l_i);
-        if(l_chr == " ") {
+        if (l_chr == " ") {
             l_new_string = l_new_string.replace (l_chr,"+");
         }
     }

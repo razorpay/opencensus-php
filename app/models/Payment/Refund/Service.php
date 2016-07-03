@@ -5,7 +5,6 @@ namespace Models\Payment\Refund;
 use Carbon\Carbon;
 use Models\Bank\IFSC;
 use Models\Base;
-use Models\Gateway;
 use Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
@@ -114,7 +113,7 @@ class Service extends Base\Service
 
         $action = 'generateRefunds';
 
-        $file = Gateway::call($gateway, $action, $input, $this->mode);
+        $file = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
     }
@@ -125,7 +124,7 @@ class Service extends Base\Service
         $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
         $frequency = 'daily';
 
-        if(isset($input['frequency']))
+        if (isset($input['frequency']))
         {
             $frequency = $input['frequency'];
         }

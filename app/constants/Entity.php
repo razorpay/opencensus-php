@@ -57,82 +57,6 @@ class Entity
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
-    public static $core = array(
-        self::IIN,
-        self::KEY,
-        self::CARD,
-        self::REFUND,
-        self::BALANCE,
-        self::METHODS,
-        self::PRICING,
-        self::PAYMENT,
-        self::WEBHOOK,
-        self::MERCHANT,
-        self::TERMINAL,
-        self::ADJUSTMENT,
-        self::SETTLEMENT,
-        self::TRANSACTION,
-        self::BANK_ACCOUNT,
-        self::DAILY_SETTLEMENT,
-    );
-
-    public static $list = array(
-        self::IIN,
-        self::KEY,
-        self::CARD,
-        self::REFUND,
-        self::BALANCE,
-        self::METHODS,
-        self::PRICING,
-        self::PAYMENT,
-        self::WEBHOOK,
-        self::MERCHANT,
-        self::TERMINAL,
-        self::ADJUSTMENT,
-        self::SETTLEMENT,
-        self::TRANSACTION,
-        self::BANK_ACCOUNT,
-        self::DAILY_SETTLEMENT,
-        self::ATOM,
-        self::HDFC,
-        self::AMEX,
-        self::PAYTM,
-        self::BILLDESK,
-        self::MOBIKWIK,
-        self::AXIS_MIGS,
-        self::AXIS_GENIUS,
-        self::NETBANKING_HDFC,
-    );
-
-    public static $map = array(
-        self::IIN,
-        self::KEY,
-        self::CARD,
-        self::REFUND,
-        self::BALANCE,
-        self::METHODS,
-        self::PRICING,
-        self::PAYMENT,
-        self::WEBHOOK,
-        self::MERCHANT,
-        self::TERMINAL,
-        self::ADJUSTMENT,
-        self::SETTLEMENT,
-        self::TRANSACTION,
-        self::BANK_ACCOUNT,
-        self::DAILY_SETTLEMENT,
-    );
-
-    /**
-     * Entities exposed outside
-     * @var array
-     */
-    public static $public = array(
-        self::PAYMENT,
-        self::REFUND,
-        self::ORDER,
-    );
-
     public static $namespace = array(
         self::IIN               => Models\Card\IIN::class,
         self::ATOM              => Gateway\Atom::class,
@@ -180,19 +104,31 @@ class Entity
             return self::$namespace[$entity];
         }
 
-        return 'Models\\' . ucfirst($entity);
+        // Converts first character of the
+        // words (delimited by underscores/hyphens/spaces) to uppercase
+        return 'Models\\' . studly_case($entity);
     }
 
-    public static function getPublicEntityNamespace($entity)
+    public static function getEntityClass($entity)
     {
-        self::validateIsPublicEntity($entity);
+        $ns = self::getEntityNamespace($entity);
 
-        if (array_key_exists($entity, self::$namespace))
+        $class = $ns . '\Entity';
+
+        return $class;
+    }
+
+    public static function getEntityObject($entity)
+    {
+        $class = self::getEntityClass($entity);
+
+        if (class_exists($class) === false)
         {
-            return $self::$namespace[$entity];
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid entity: ' . $entity);
         }
 
-        return 'Models\\' . ucfirst($entity);
+        return new $class;
     }
 
     public static function getEntityRepository($entity)
@@ -215,36 +151,16 @@ class Entity
         return $class;
     }
 
-    public static function getPublicEntityRepository($entity)
-    {
-        self::validateIsPublicEntity($entity);
-
-        return self::getEntityRepository($entity);
-    }
-
     public static function validateIsEntity($entity)
     {
-        if (constant(__CLASS__.'::'.strtoupper($entity)) === null)
+        if (constant(__CLASS__ . '::' . strtoupper($entity)) === null)
         {
             Trace::error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);
 
             throw new Exception\RuntimeException(
-                'Not a valid entity');
-        }
-    }
-
-    public static function validateIsPublicEntity($entity)
-    {
-        if (in_array($entity, self::$public) === false)
-        {
-            Trace::error(
-                TraceCode::ERROR_INVALID_ARGUMENT,
-                ['entity' => $entity]);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid input');
+                'Not a valid entity.');
         }
     }
 }

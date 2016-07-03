@@ -70,7 +70,7 @@ class GenerateEmailTemplates extends Command {
             $cssContent = $base_css;
             $css_file = $view_directory.$template.".css";
 
-            if(file_exists($css_file))
+            if (file_exists($css_file))
             {
                 $cssContent .= PHP_EOL . file_get_contents($css_file);
             }

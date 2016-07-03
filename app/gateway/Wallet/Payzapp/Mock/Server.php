@@ -73,7 +73,7 @@ class Server extends Base\Mock\Server
 
         $txnCodeToTypeMap = array_flip($txnTypeToCodeMap);
 
-        if($txnCodeToTypeMap[strval($input['transaction_type'])] === 'SETTLE')
+        if ($txnCodeToTypeMap[strval($input['transaction_type'])] === 'SETTLE')
         {
             echo "Not supposed to reach here";
         }

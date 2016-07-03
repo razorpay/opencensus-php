@@ -2,6 +2,7 @@
 
 namespace Models\Settlement\Mpr;
 
+use App;
 use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
@@ -13,6 +14,7 @@ use Models\Payment;
 use Models\Pricing;
 use Models\Settlement;
 use Models\Transaction;
+
 
 class Reconciler
 {
@@ -26,7 +28,11 @@ class Reconciler
     protected $reconciledAt;
 
     protected $settledAt = null;
+    protected $app;
+    protected $mode;
+    protected $env;
 
+    protected $feeCalculator;
     protected $transaction;
     protected $merchant;
     protected $payment;
@@ -34,9 +40,9 @@ class Reconciler
 
     public function __construct()
     {
-        $app = \App::getFacadeRoot();
-        $this->mode = $app['rzp.mode'];
-        $this->env = $app->environment();
+        $this->app = App::getFacadeRoot();
+        $this->mode = $this->app['rzp.mode'];
+        $this->env = $this->app->environment();
 
         $this->reconciledAt = time();
 
@@ -103,11 +109,11 @@ class Reconciler
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
-        $entityInfo = Gateway::call(
-                            'hdfc',
-                            'getPaymentOrRefundId',
-                            $mprRecord,
-                            $this->mode);
+        $entityInfo = $this->app['gateway']->call(
+                                                'hdfc',
+                                                'getPaymentOrRefundId',
+                                                $mprRecord,
+                                                $this->mode);
 
         list($transaction, $entitiesArray) = $this->loadTransactionAndRelations($entityInfo);
 
@@ -116,7 +122,7 @@ class Reconciler
             'transactionId' => $this->transaction->getId(),
             'entities' => $entitiesArray);
 
-        $data = Gateway::call('hdfc', 'reconcile', $params, $this->mode);
+        $data = $this->app['gateway']->call('hdfc', 'reconcile', $params, $this->mode);
 
         $transaction = $this->reconcileRecord($transaction, $data);
 
