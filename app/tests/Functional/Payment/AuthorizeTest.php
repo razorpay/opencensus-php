@@ -58,6 +58,15 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidContactPassingSyntaxCheck()
+    {
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('43634423', $payment['contact']);
+    }
+
     public function testNonInrCurrency()
     {
         $this->startTest();
@@ -318,6 +327,21 @@ class AuthorizeTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testWalletWithInternationalContact()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment);
     }
 
     public function testPayumoneyPaymentViaWalletS2S()

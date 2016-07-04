@@ -792,7 +792,7 @@ class Gateway extends Base\Gateway
     protected function getFormattedContact($contact)
     {
         // Constructor does the basic validation
-        $phoneBook = new PhoneBook($contact);
+        $phoneBook = new PhoneBook($contact, true);
 
         return $phoneBook->format(PhoneBook::DOMESTIC);
     }

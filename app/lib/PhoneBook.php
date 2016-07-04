@@ -41,6 +41,8 @@ class PhoneBook
 
     const SPECIAL_CHARS = ['-', '(', ')', ' '];
 
+    const UNKNOWN_REGION = 'ZZ';
+
     /**
      * @param string  $phoneNumber
      * @param boolean $parseSilently Whether to throw exception or not
@@ -161,6 +163,19 @@ class PhoneBook
         }
 
         return $contact;
+    }
+
+    /**
+     * Gets region code for the given number
+     */
+    public function getRegionCodeForNumber()
+    {
+        if ($this->phoneNumber !== null)
+        {
+            return $this->libphonenumber->getRegionCodeForNumber($this->phoneNumber);
+        }
+
+        return self::UNKNOWN_REGION;
     }
 
     public function __toString()

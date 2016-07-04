@@ -4,6 +4,7 @@ namespace Models\Payment;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Lib\PhoneBook;
 use Models\Base;
 use Models\Payment;
 use Models\Merchant;
@@ -114,11 +115,9 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        $payment = $this->entity;
-
-        if ($payment->isWallet())
+        if ($input['method'] === Payment\Method::WALLET)
         {
-            $number = new PhoneBook($contact, true);
+            $number = new PhoneBook($input['contact'], true);
             $country = $number->getRegionCodeForNumber();
 
             if ($country !== 'IN')

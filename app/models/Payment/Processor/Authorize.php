@@ -201,7 +201,7 @@ trait Authorize
     protected function parseContact($contact)
     {
         // Constructor does the basic validation
-        $phoneBook = new PhoneBook($contact);
+        $phoneBook = new PhoneBook($contact, true);
 
         // Setting an instance just like carbon
         return $phoneBook;
