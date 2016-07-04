@@ -98,6 +98,16 @@ class Service extends Base\Service
         }
     }
 
+    public function deletePricingPlanRuleForce($planId, $ruleId)
+    {
+        $flag = $this->repo->pricing->deletePlanRuleForce($planId, $ruleId);
+
+        if ($flag === true)
+        {
+            return ['message' => 'Pricing successfully deleted'];
+        }
+    }
+
     public function replacePricingPlanRule($input)
     {
         $this->core->checkPlanId($id);
