@@ -130,7 +130,7 @@ class Core extends Base\Core
         }
         else
         {
-            // For cards other than AMEX notify slack
+            // For cards other than AMEX notify slack of missing IIN
             if (($card->isAmex()) === false)
             {
                 $this->notifySlack($card);
