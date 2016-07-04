@@ -18,6 +18,15 @@ class Gateway extends Base\Gateway
 
     protected $canRunOtpFlow = false;
 
+    // find out significance of gateway_payment_id, gateway_payment_id_2
+    protected $map = array(
+        'email'     => 'email',
+        'contact'   => 'contact',
+        'status'    => 'status_code',
+        'amount'    => 'amount',
+        'received' => 'received',
+    );
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -53,31 +62,28 @@ class Gateway extends Base\Gateway
         $this->verifyPaymentCallbackResponse($input);
     }
 
-    protected createGatewayPaymentEntity($input)
+    protected function createGatewayPaymentEntity($input)
     {
         $contentToSave = array(
-            'payment_id'=> $input['payment']['id'],
-            'action'    => $this->action;
             'amount'    => $input['payment']['amount'],
-            'wallet'    => self::$gateway,
             'received'  => true,
             'email'     => $input['payment']['email'],
-            'contact'   => $this->getFormattedContact($input['payment']['contact']),
-            'status_code'    => $content['status'],
-            'txnId'     => $content['result'],
-            'message'   => $content['error_message'],
+            'contact'   => $input['payment']['contact'],
+            'status' => $input['payment']['status'],
         );
-
         parent::createGatewayPaymentEntity($contentToSave);
     }
 
     protected function verifyPaymentCallbackResponse($input)
     {
         $content = $input['gateway'];
-        $code = (int) $input['gateway']['statuscode'];
+        // $code = (int) $input['gateway']['statuscode'];
 
-        if ($content['statuscode'] !== Status::SUCCESS)
+        // if ($content['statuscode'] !== Status::SUCCESS)
+        s($content['status']);
+        if ($content['status'] !== Status::SUCCESS)
         {
+            // need to test with ola to find which field has error code
             $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
             // Payment fails, throw exception
@@ -88,7 +94,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifySecureHash($content)
+    public function verifySecureHash($content)
     {
         $fieldsInOrder = array(
             'type',
@@ -100,8 +106,7 @@ class Gateway extends Base\Gateway
             'udf',
             'timestamp',
         );
-
-        $hash = $content['checksum'];
+        $hash = $content['hash'];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -120,11 +125,7 @@ class Gateway extends Base\Gateway
 
         $request = [
             'method'  => 'get',
-            'url'     => $request['url'],
-            'content' => [
-                'bill'  => base64_encode($request['content']),
-                'phone'
-            ]
+            'url'     => $request['url'].'?bill='.base64_encode($request['content']).'&phone='.$input['payment']['contact'],
         ];
 
         return $request;
@@ -192,7 +193,7 @@ class Gateway extends Base\Gateway
     protected function getOtpGenerateRequestArray($input)
     {
         $amount = ($input['payment']['amount'] / 100);
-        s($input['callbackUrl']);
+
         $content = array(
             'command'           => Command::DEBIT,
             'accessToken'       => $this->getAccessToken($input['terminal']),
@@ -200,7 +201,7 @@ class Gateway extends Base\Gateway
             'comments'          => 'Razorpay_payment',
             'udf'               => $input['payment']['public_id'],
             'returnUrl'         => $input['callbackUrl'],
-            // 'notificationUrl'   => $input['callbackUrl'],
+            'notificationUrl'   => '',
             'amount'            => number_format($amount, 2, '.', ''),
             'currency'          => 'INR',
             'couponCode'        => 'NA',
@@ -289,7 +290,7 @@ class Gateway extends Base\Gateway
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getHashOfArray($content)
+    public function getHashOfArray($content)
     {
         $str = $this->getStringToHash($content, "|");
 

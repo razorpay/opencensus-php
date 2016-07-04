@@ -31,7 +31,6 @@ class Gateway
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
-        Wallet::OLAMONEY,
     );
 
     const TOPUP_GATEWAYS = array(

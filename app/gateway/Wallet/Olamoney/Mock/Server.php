@@ -13,6 +13,36 @@ use Gateway\Wallet\Olamoney;
 
 class Server extends Base\Mock\Server
 {
+
+    public function authorize($input)
+    {
+        $bill = json_decode(base64_decode($input['bill']), true);
+
+        parent::authorize($input);
+
+        $this->validateActionInput($input);
+
+        $content = array(
+            'type'              => 'debit',
+            'status'            => 'success',
+            'merchantBillId'    => $input['paymentId'],
+            'transactionId'     => 'ola_txn_id',
+            'amount'            => $bill['amount'],
+            'comments'          => $bill['comments'],
+            'udf'               => $bill['udf'],
+            'timestamp'         => '1467613732',
+        );
+        $content['hash'] = $this->generateHash($content);
+
+        $request = array(
+            'url' => $bill['returnUrl'],
+            'content' => $content,
+            'method' => 'post',
+        );
+
+        return $this->makePostResponse($request);
+    }
+
     protected function makeResponse($json)
     {
         $response = \Response::make($json);
@@ -22,4 +52,5 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
+
 }
