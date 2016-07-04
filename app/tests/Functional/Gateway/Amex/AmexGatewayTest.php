@@ -118,8 +118,9 @@ class AmexGatewayTest extends TestCase
 
     public function testFailureWhen3DSFailsForDomesticMerchant()
     {
+        $this->fixtures->merchant->disableInternational();
         $testData = $this->testData[__FUNCTION__];
-        
+
         $this->runRequestResponseFlow($testData, function()
         {
             $this->payment['card']['number'] = '345678000000007';

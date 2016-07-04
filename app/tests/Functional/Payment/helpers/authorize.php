@@ -119,6 +119,20 @@ return [
         ],
     ],
 
+    'testInvalidContactPassingSyntaxCheck' => [
+        'request' => [
+            'content' => [
+                'contact' => '43634423',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testNonInrCurrency' => [
         'request' => [
             'content' => [
@@ -602,6 +616,36 @@ return [
             ],
             'status_code' => 400,
         ]
+    ],
+
+    'testWalletWithInternationalContact' =>[
+        'request' => [
+            'content' => [
+                'wallet'        => 'payumoney',
+                'method'        => 'wallet',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '+1 (213) 298-9734',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED,
+        ],
     ],
 
     'testPayumoneyPaymentViaWalletS2S' =>[

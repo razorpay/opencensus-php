@@ -150,7 +150,8 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment');
+                'Failed to find a valid pricing rule for the payment. ' .
+                'Payment id: ' . $payment->getId());
         }
 
         return $rule;
@@ -240,7 +241,8 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment');
+                'Failed to find a valid pricing rule for the payment. ' .
+                'Payment id: ' . $payment->getId());
         }
 
         return $rule;
@@ -434,7 +436,7 @@ class FeeCalculator
      * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
      * @param int $fixed
-     * @param int $serviceTaxPercentage  14.5
+     * @param float $serviceTaxPercentage  15.0
      * @param boolean $preCalculationOfFees
      * @return fees
      */
@@ -443,7 +445,7 @@ class FeeCalculator
         return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed, $serviceTaxPercentage);
     }
 
-    /** getRzpFeesUsingPercentOfTotalAmount
+    /**
      * This formula is only to be used if support is required for the following
      * formula.
      *
@@ -460,7 +462,7 @@ class FeeCalculator
         return $numerator / $denominator;
     }
 
-    /** getRzpFeesUsingPercentOfOriginalAmount
+    /**
      *
      * Uses the following formula for fees calculation
      *

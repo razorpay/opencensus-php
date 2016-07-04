@@ -539,7 +539,7 @@ class Entity extends Base\PublicEntity
     {
         $bankAccount = $this->bankAccount()->first();
 
-        if($bankAccount !== null)
+        if ($bankAccount !== null)
         {
             $ac = $bankAccount->getAccountNumber();
             //

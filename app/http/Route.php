@@ -123,6 +123,7 @@ final class Route
         'pricing_get_plan_rule'                   => ['get',      'pricing/{planId}/rule/{ruleId}',           'PricingController@getPricingPlanRule'                              ],
         'pricing_add_plan_rule'                   => ['post',     'pricing/{id}/rule',                        'PricingController@postAddPricingPlanRule'                          ],
         'pricing_delete_plan_rule'                => ['delete',   'pricing/{planId}/rule/{ruleId}',           'PricingController@deletePricingPlanRule'                           ],
+        'pricing_delete_plan_rule_force'          => ['delete',   'pricing/{planId}/rule/{ruleId}/force',     'PricingController@deletePricingPlanRuleForce'                      ],
         'refund_create_missing_txn'               => ['post',     'refunds/transaction',                      'PaymentController@postRefundsTransactions'                         ],
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                        'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                             'TransactionController@getTransactions'                             ],

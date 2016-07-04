@@ -34,6 +34,7 @@ class TerminalTest extends TestCase
 
     public function testHdfcGatewayOnSharedTerminals()
     {
+        $this->fixtures->merchant->enableInternational();
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         // $this->fixtures->create('terminal:all_shared_terminals');

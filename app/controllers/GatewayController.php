@@ -1,9 +1,11 @@
 <?php
 
+use EE\Exception;
+use Http\ApiResponse;
+use Http\Route;
+use Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
-use Http\Route;
-use EE\Exception;
 
 class GatewayController extends BaseController
 {
@@ -12,13 +14,47 @@ class GatewayController extends BaseController
         $this->callbackGateway('axis');
     }
 
+    protected function callbackBilldesk($input)
+    {
+        $msg = $input['msg'];
+
+        $gateway = $this->app['gateway']->gateway('billdesk');
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        Database\DefaultConnection::set($mode);
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database: ' . $paymentId);
+        }
+
+        $this->app['basicauth']->setMode($mode);
+
+        $paymentId = Payment\Entity::getSignedId($paymentId);
+
+        return (new Payment\Service)->s2sCallback($paymentId, $input);
+    }
+
     public function callbackGateway($gateway)
     {
         $input = Input::all();
-        $input['gateway'] = $gateway;
 
-        $app = \App::getFacadeRoot();
+        $data = [];
+
+        if ($gateway === 'billdesk')
+        {
+            $data = $this->callbackBilldesk($input);
+        }
+
+        // $input['gateway'] = $gateway;
+
         // $app['slack']->send($input, 'transactions', '#tech_logs');
+
+        return ApiResponse::json($data);
     }
 
     public function callbackKotakCancel()
@@ -59,7 +95,9 @@ class GatewayController extends BaseController
         $paymentId = $nb->getPaymentId();
         $publicPaymentId = $nb->getPublicPaymentId();
 
+
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
         $publicKey = $payment->merchant->keys()->first()->getPublicKey($mode);
 
         $secret = \App::make('config')->get('app.key');

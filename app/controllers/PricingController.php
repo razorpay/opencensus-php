@@ -58,6 +58,13 @@ class PricingController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function deletePricingPlanRuleForce($planId, $ruleId)
+    {
+        $data = (new Pricing\Service)->deletePricingPlanRuleForce($planId, $ruleId);
+
+        return ApiResponse::json($data);
+    }
+
     public function deletePricingPlan($id)
     {
         ;

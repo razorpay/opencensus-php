@@ -124,7 +124,7 @@ class Newsletter
      */
     protected function getMerchantListChunks($lists)
     {
-        if(strpos($lists, ',') !== false)
+        if (strpos($lists, ',') !== false)
         {
             $lists = explode(',', $lists);
         }

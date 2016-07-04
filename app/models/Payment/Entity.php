@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Order;
+use Lib\PhoneBook;
 use Models\Payment;
 use Models\Payment\Refund;
 use Models\Base\Traits\NotesTrait;
@@ -345,7 +346,7 @@ class Entity extends Base\PublicEntity
 
     public function setAuthorizeTimestamp($authTimestamp = NULL)
     {
-        if(is_null($authTimestamp))
+        if (is_null($authTimestamp))
         {
             $this->setAttribute(self::AUTHORIZED_AT, time());
         }
@@ -440,6 +441,20 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
+    public function setContactAttribute($contact)
+    {
+        $number = new PhoneBook($contact, true);
+
+        if ($number->isValidNumber() === true)
+        {
+            $this->attributes[self::CONTACT] = $number->format();
+        }
+        else
+        {
+            $this->attributes[self::CONTACT] = $number->getRawInput();
+        }
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
@@ -447,6 +462,16 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    // TODO: Return a phonebook instance (like carbon) instead of string
+    public function getContactAttribute()
+    {
+        $contact = $this->attributes[self::CONTACT];
+
+        $phoneBook = new PhoneBook($contact, true);
+
+        return (string) $phoneBook;
     }
 
     public function getAmountAuthorizedAttribute()

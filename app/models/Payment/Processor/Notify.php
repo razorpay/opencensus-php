@@ -24,7 +24,7 @@ class Notify
      * This is used to decide low and high value transactions and pick
      * the correct slack channel. Currently set to INR 3000
      */
-    const MIN_RISK_AMOUNT = 300000;
+    const MIN_RISK_AMOUNT = 200000;
 
     /**
      * This is the minimum risk rating for a merchant that prompts a
@@ -32,6 +32,7 @@ class Notify
      * decided by our risk team.
      */
     const MIN_HIGH_RISK_RATING = 3;
+    const MAX_HIGH_RISK_RATING = 5;
 
     /**
      * When are receipt emails sent to the customer
@@ -285,7 +286,11 @@ class Notify
         $riskRating = $this->template['payment']['risk'];
 
         // The priority order is important here
-        if ($riskRating >= self::MIN_HIGH_RISK_RATING)
+        if ($riskRating == self::MAX_HIGH_RISK_RATING)
+        {
+            $channel = $this->app['config']->get('slack.channels.highrisk');
+        }
+        else if ($riskRating >= self::MIN_HIGH_RISK_RATING)
         {
             $channel = $this->app['config']->get('slack.channels.risky');
         }
@@ -462,6 +467,14 @@ class Notify
         if (isset($data['timestamp']))
         {
             unset($data['timestamp']);
+        }
+
+        if ((isset($data['risk']) === true) and
+            ($data['risk'] === self::MAX_HIGH_RISK_RATING))
+        {
+            unset ($data['risk']);
+            $data['email'] = $this->template['customer']['email'];
+            $data['phone'] = $this->template['customer']['phone'];
         }
 
         $data = $this->flatten($data);

@@ -34,6 +34,8 @@ class Merchant extends Base
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableInternational();
     }
 
     public function createNodalAccount()

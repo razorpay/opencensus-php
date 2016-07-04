@@ -6,14 +6,16 @@ use Carbon\Carbon;
 use Models\Payment;
 use Models\Gateway;
 use Models\Bank\IFSC;
+use App;
+use Mail;
 
 class DailyFiles
 {
     public function __construct()
     {
-        $this->mail = \Mail::getFacadeRoot();
+        $this->mail = Mail::getFacadeRoot();
 
-        $this->app = \App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
         $this->mode = $this->app['basicauth']->getMode();
 
@@ -70,7 +72,7 @@ class DailyFiles
 
         $action = 'generateRefunds';
 
-        return Gateway::call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
     protected function getClaimsData($from, $to)
@@ -103,7 +105,7 @@ class DailyFiles
 
         $action = 'generateClaims';
 
-        return Gateway::call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
     protected function sendMail($amount, $claimsFilePath, $refundFilePath)

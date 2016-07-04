@@ -159,8 +159,10 @@ class AxisGatewayTest extends TestCase
 
     public function testFailureWhen3DSFailsForDomesticMerchant()
     {
+        $this->fixtures->merchant->disableInternational();
+
         $testData = $this->testData[__FUNCTION__];
-        
+
         $this->runRequestResponseFlow($testData, function()
         {
 	        $payment = $this->getDefaultPaymentArray();

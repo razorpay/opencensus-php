@@ -16,6 +16,7 @@ use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
 use View;
+use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {

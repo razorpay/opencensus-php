@@ -53,7 +53,7 @@ class Validator extends Base\Validator
 
     protected function validateEditNetwork($input)
     {
-        if(!isset($input[Entity::NETWORK]))
+        if (isset($input[Entity::NETWORK]) === false)
         {
             return;
         }
@@ -98,12 +98,12 @@ class Validator extends Base\Validator
 
     protected function validateIssuer($input)
     {
-        if(!isset($input[Entity::ISSUER]))
+        if (isset($input[Entity::ISSUER]) === false)
         {
             return;
         }
 
-        if(!Bank\IFSC::exists($input[Entity::ISSUER]))
+        if (Bank\IFSC::exists($input[Entity::ISSUER]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid bank name in input: '. $input[Entity::ISSUER]);

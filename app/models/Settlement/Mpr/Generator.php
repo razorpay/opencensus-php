@@ -11,6 +11,8 @@ use Models\Payment;
 use Models\Payment\Refund;
 use Models\Settlement\SlackNotification;
 use Queue;
+use App;
+use Mail;
 
 class Generator
 {
@@ -29,25 +31,26 @@ class Generator
     public static $toTimestamp = null;
 
     protected $queue;
+    protected $app;
 
     public function __construct()
     {
-        $app = \App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->mode = $app['rzp.mode'];
+        $this->mode = $this->app['rzp.mode'];
 
-        $this->context = $app['config']->get('app.context');
+        $this->context = $this->app['config']->get('app.context');
 
         if ($this->mode !== 'test')
         {
             throw new Exception\LogicException('Only test mode allowed');
         }
 
-        $this->env = \App::environment();
-
+        $this->env = $this->app->environment();
+        
         $this->queue = Queue::getFacadeRoot();
 
-        $this->mail = \Mail::getFacadeRoot();
+        $this->mail = Mail::getFacadeRoot();
     }
 
     public function generateTestMpr($input)
@@ -86,7 +89,7 @@ class Generator
 
         $gateway = Payment\Gateway::HDFC;
 
-        $mprFile = Gateway::call(Payment\Gateway::HDFC, 'mprFileExists', null, 'test');
+        $mprFile = $this->app['gateway']->call(Payment\Gateway::HDFC, 'mprFileExists', null, 'test');
 
         if ($mprFile !== false)
             return array('file' => null, 'count' => 0);
@@ -112,7 +115,7 @@ class Generator
 
         $array = $this->getRelatedEntities($payments, $refunds);
 
-        $mprFile = Gateway::call(Payment\Gateway::HDFC, 'generateMpr', $array, 'test');
+        $mprFile = $this->app['gateway']->call(Payment\Gateway::HDFC, 'generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }

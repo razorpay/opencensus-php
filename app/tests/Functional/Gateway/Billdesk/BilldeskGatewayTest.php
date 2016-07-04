@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Gateway\Billdesk;
 
+use EE\Exception;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
@@ -122,5 +123,44 @@ class BilldeskGatewayTest extends TestCase
 
         $count = count($content['netbanking']);
         $this->assertEquals(59, $count);
+    }
+
+    public function testServerToServerCallback()
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $request = array(
+                                'content' => $content,
+                                'url' => '/callback/billdesk',
+                                'method' => 'post');
+
+                            // Fire s2s callback request
+                            $response = $this->makeRequestAndGetContent($request);
+
+                            $this->assertEquals($response['success'], true);
+
+                            // Stop the progress here.
+                            throw new Exception\RuntimeException(
+                                'Stop here.');
+
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        try
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray();
+            $payment = $this->doAuthPayment($payment);
+        }
+        catch (Exception\RuntimeException $e)
+        {
+            ;
+        }
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
     }
 }

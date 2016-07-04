@@ -41,6 +41,8 @@ class TraceCode
     const PAYMENT_PRICING_RULE_SELECTION            = 'PAYMENT_PRICING_RULE_SELECTION';
     const PAYMENT_METADATA                          = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                  = 'PAYMENT_CREATE_ON_PUBLIC';
+    const PAYMENT_CARD_NOT_ENROLLED                 = 'PAYMENT_CARD_NOT_ENROLLED';
+    const PAYMENT_INVALID_CONTACT_NUMBER            = 'PAYMENT_INVALID_CONTACT_NUMBER';
 
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
@@ -157,6 +159,7 @@ class TraceCode
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
     const RECON_MISMATCH                            = 'RECON_MISMATCH';
+    const RECON_INFO                                = 'RECON_INFO';
     const RECON_PARSE_ERROR                         = 'RECON_PARSE_ERROR';
     const RECON_FAILURE                             = 'RECON_FAILURE';
     const RECON_FAILED_VERIFY                       = 'RECON_FAILED_VERIFY';
@@ -223,6 +226,7 @@ class TraceCode
         self::RECON_REQUEST                         => 'Request made for reconciliation',
         self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
         self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request',
+        self::RECON_INFO                            => 'General recon info',
         self::REFUND_TRANSACTION_FAILED             => 'Transaction failed to create for refund',
     );
 

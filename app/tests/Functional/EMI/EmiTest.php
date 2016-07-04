@@ -21,7 +21,7 @@ class EmiTest extends TestCase
     public function testAddEmiPlans()
     {
         $emiPlan = $this->startTest();
-        
+
         return $emiPlan;
     }
 
@@ -34,13 +34,13 @@ class EmiTest extends TestCase
         $plans = $this->startTest();
 
         $this->assertEquals($plans['entity'], 'collection');
-    } 
+    }
 
     public function testFetchEmiPlanUsingPlanId()
     {
         $this->testAddEmiPlans();
 
-        $emi = $this->getLastEntity('emi', true);
+        $emi = $this->getLastEntity('emi_plan', true);
 
         $request = &$this->testData['testFetchEmiPlanUsingPlanId']['request'];
         $request['url'] = '/emi/'.$emi['id'];
@@ -52,7 +52,7 @@ class EmiTest extends TestCase
     {
         $this->testAddEmiPlans();
 
-        $emi = $this->getLastEntity('emi', true);
+        $emi = $this->getLastEntity('emi_plan', true);
 
         $request = &$this->testData['testDeleteEmiPlan']['request'];
         $request['url'] = '/emi/'.$emi['id'];

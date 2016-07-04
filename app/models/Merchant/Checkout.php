@@ -163,6 +163,7 @@ class Checkout
                     $input);
 
                 $data['customer'] = array(
+                    'email'     => $response['email'],
                     'contact'   => $input['contact'],
                     'valid'     => $response['valid']);
 

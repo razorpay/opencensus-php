@@ -13,5 +13,6 @@ return array(
         'high'           => '#transactions_high',
         'risky'          => '#transactions_risky',
         'reconciliation' => '#reconciliation',
+        'highrisk'       => '#transactions_highrisk',
     ]
 );

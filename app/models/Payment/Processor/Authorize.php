@@ -22,6 +22,7 @@ use Models\Order;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
+use Lib\PhoneBook;
 
 trait Authorize
 {
@@ -149,188 +150,6 @@ trait Authorize
     }
 
     /**
-     * After payment initiation, bank redirects to us
-     * and we send it to gateway for further
-     * processing (auth).
-     * Returning from this function implies payment action has been successful.
-     *
-     * @param string $id Payment id
-     * @param string $hash
-     * @param array  $gatewayInput contains fields provided
-     *                             by bank
-     *
-     * @return Payment\Entity Updated payment entity
-     * @throws Exception\BadRequestException
-     */
-    public function callback($id, $hash, array $gatewayInput)
-    {
-        $payment = $this->retrieve($id);
-
-        // For redirect flow
-        $this->checkForMerchantCallbackUrl($payment);
-
-        //
-        // This field is received back from bank acs.
-        // Kinda weird! And it's always null.
-        //
-        unset($gatewayInput['csrf']);
-
-        $this->verifyHash($hash, $payment->getPublicId());
-
-        if ($payment->isCreated() === false)
-        {
-            $diff = time() - $payment->getCreatedAt();
-
-            // If it was authorized recently then send back authorized again.
-            if (($payment->isAuthorized()) and
-                ($diff < 5 * 60))
-            {
-                return $this->postPaymentAuthorizeProcessing($payment);
-            }
-
-            // If it failed recently, then return the failure directly.
-            $this->checkForRecentFailedPayment($payment);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-        }
-
-        $input['payment'] = $payment->toArray();
-        $input['gateway'] = $gatewayInput;
-
-        if ($payment->globalCustomer !== null)
-        {
-            $input['customer'] = $payment->globalCustomer;
-        }
-
-        if ($payment->card !== null)
-        {
-            $input['card'] = $payment->card->toArray();
-        }
-
-        try
-        {
-            $data = $this->callGatewayCallback($input);
-        }
-        catch (Exception\BaseException $e)
-        {
-            $this->processPaymentCallbackException($e);
-        }
-
-        $this->updateAndNotifyPaymentAuthorized();
-
-        $payment = $this->payment;
-
-        if ($payment->isSigned())
-        {
-            // If payment is signed, then we capture it in this step only.
-            $payment = $this->capturePayment($payment, $payment->getAmount());
-        }
-
-        return $this->postPaymentAuthorizeProcessing($payment);
-    }
-
-    protected function callGatewayCallback($input)
-    {
-        // TODO: Refactor
-        if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
-        {
-            // TODO: Better name suggestions
-            $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
-
-            $this->postPaymentOtpCallbackProcessing($input, $data);
-
-            $this->callGatewayFunction('checkBalance', $input);
-        }
-        else
-        {
-            $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
-        }
-
-        $this->callGatewayFunction(Payment\Action::DEBIT, $input);
-
-        return $data;
-    }
-
-    protected function postPaymentOtpCallbackProcessing($input, $data)
-    {
-        $payment = $this->payment;
-
-        if (isset($input['customer']) === false)
-        {
-            $contact = $this->getFormattedContact($input['payment']['contact']);
-
-            $sharedAccount = (new Merchant\Repository)->getSharedAccount();
-
-            $customer = (new Customer\Repository)->findByContactAndMerchant(
-                                        $contact, $sharedAccount);
-
-            if ($customer === null)
-            {
-                $customerAttributes = array(
-                    'contact' => $contact,
-                    'email'   => $input['payment']['email']
-                );
-
-                $customer = (new Customer\Core)
-                                    ->createGlobalCustomer($customerAttributes);
-            }
-
-            $input['customer'] = $customer;
-
-            $payment->globalCustomer()->associate($customer);
-            $this->repo->saveOrFail($payment);
-        }
-
-        if (isset($data['token']) === true)
-        {
-            $this->createOrUpdateToken($input, $data);
-        }
-    }
-
-    protected function processPaymentCallbackException($e)
-    {
-        // Refresh and check that payment is in created state only
-        // This is because significant time has elapsed during
-        // gateway request and we need to refresh it to take into
-        // account race conditions.
-        $this->lockForUpdateAndReload($this->payment);
-
-        $payment = $this->payment;
-        $status = $payment->getStatus();
-
-        if ($status !== Status::CREATED)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
-        }
-
-        $code = $e->getError()->getInternalErrorCode();
-
-        if (Error\Error::hasAction($code) === false)
-        {
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
-        }
-        else
-        {
-            $this->setPaymentError($e->getError());
-        }
-
-        switch ($code)
-        {
-            case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
-                $payment->incrementOtpAttempts();
-                $this->repo->saveOrFail($payment);
-                break;
-        }
-
-        throw $e;
-    }
-
-    /**
      * It does the following -
      * Verifies payment method, if it's enabled for the merchant or not.
      * Saves card entities, bank account, etc.
@@ -377,6 +196,15 @@ trait Authorize
         $gatewayInput = [];
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+    }
+
+    protected function parseContact($contact)
+    {
+        // Constructor does the basic validation
+        $phoneBook = new PhoneBook($contact, true);
+
+        // Setting an instance just like carbon
+        return $phoneBook;
     }
 
     protected function validateInternationalAllowed($payment)
@@ -691,6 +519,10 @@ trait Authorize
         $data['payment_id'] = $payment->getPublicId();
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
+
+        $amount = $payment->getAmount() / 100;
+        $data['amount'] = sprintf($amount == intval($amount) ? "%d" : "%.2f", $amount);
+        $data['image'] = $payment->merchant->getFullLogoUrlWithSize();
 
         return $data;
     }

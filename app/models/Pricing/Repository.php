@@ -152,4 +152,26 @@ class Repository extends Base\Repository
                 'Pricing rule cannot be deleted because it has been used more than once');
         }
     }
+
+    public function deletePlanRuleForce($planId, $ruleId)
+    {
+        $repo = $this->repo;
+
+        $rule = $repo::where(Entity::PLAN_ID, '=', $planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFail();
+
+        $count = $rule->payments->count();
+
+        if ($count === 0)
+        {
+            return $rule->forceDelete();
+        }
+        else
+        {
+            $rule->delete();
+
+            return true;
+        }
+    }
 }
