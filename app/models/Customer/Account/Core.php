@@ -22,7 +22,7 @@ class Core extends Base\Core
     {
         assert(isset($input[Customer\Entity::CONTACT]));
 
-        return $this->create($input, $this->repo->merchant->getSharedAccount());
+        return $this->create($input, $this->getSharedAccount());
     }
 
     public function create($input, $merchant)
@@ -71,7 +71,7 @@ class Core extends Base\Core
         $this->verifyRavenOtp($input);
 
         // Get global customer from db or create one.
-        $customer = $this->getOrCreateGlobalCustomer($input[Customer\Entity::CONTACT]);
+        $customer = $this->getOrCreateGlobalCustomer($input);
 
         // Create app token for customer
         $appToken = $this->createCustomerAppToken($customer, $input);
@@ -81,13 +81,15 @@ class Core extends Base\Core
 
         // Put app token details in session so that we may not
         // need to verify the customer in future.
-        $this->putAppTokenDetailsInSession($appToken);
+        $this->putAppTokenInSession($appToken);
 
         // Create response
-        $response = array(
-            'success'      => 1,
-            'app_token'    => $appToken->getPublicId(),
-            'device_token' => $appToken->getDeviceToken());
+        $response = array('success' => 1);
+
+        if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
+        {
+            $response['device_token'] = $appToken->getDeviceToken();
+        }
 
         if (($tokens !== null) and ($tokens->count() > 0))
         {
@@ -99,9 +101,14 @@ class Core extends Base\Core
 
     protected function createCustomerAppToken($customer, $input)
     {
+        // Currently all app_tokens will be generated for common rzp merchant
+        $appMerchant = $customer->merchant->getId();
+
+        // @todo: switch to merchant for newer sdk based on query params
+
         $custAppInput = array(
             App\Entity::CUSTOMER_ID => $customer->getId(),
-            App\Entity::MERCHANT_ID => $input['context']);
+            App\Entity::MERCHANT_ID => $appMerchant);
 
         if (isset($input[App\Entity::DEVICE_TOKEN]))
         {
@@ -133,16 +140,22 @@ class Core extends Base\Core
      * @param  string $contact customer's phone number
      * @return Customer\Entity $contact
      */
-    protected function getOrCreateGlobalCustomer($contact)
+    protected function getOrCreateGlobalCustomer($input)
     {
+        $contact = $input[Customer\Entity::CONTACT];
+        $email = $input[Customer\Entity::EMAIL];
+
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
-            $this->repo->merchant->getSharedAccount());
+            $this->getSharedAccount());
 
         // Create global customer if it does not exist.
         if ($customer === null)
         {
-            $custCreateInput = [Customer\Entity::CONTACT => $contact];
+            $custCreateInput = [
+                Customer\Entity::CONTACT => $contact,
+                Customer\Entity::EMAIL => $email
+            ];
 
             $customer = $this->createGlobalCustomer($custCreateInput);
         }
@@ -163,11 +176,9 @@ class Core extends Base\Core
 
             Customer\App\Entity::verifyIdAndStripSign($appToken);
 
-            $customerApp = (new Customer\App\Repository)->findByIdAndMerchantId(
+            $customerApp = (new Customer\App\Core)->getAppByAppToken(
                 $appToken,
-                $merchant->getId());
-
-            assert($customerApp !== null);
+                $merchant);
 
             $customerId = $customerApp->getCustomerId();
 
@@ -190,11 +201,11 @@ class Core extends Base\Core
         return array($customer, $customerApp);
     }
 
-    protected function putAppTokenDetailsInSession($appToken)
+    protected function putAppTokenInSession($appToken)
     {
         // setup session params
-        //$this->app['session']->put('app_token', $appToken->getPublicId());
-        $this->app['session']->put('device_token', $appToken->getDeviceToken());
+        // as device token is public, only app_token is sufficient
+        $this->app['session']->put('app_token', $appToken->getPublicId());
     }
 
     protected function verifyUniqueCustomer($customer)
@@ -220,5 +231,10 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
+    }
+
+    protected function getSharedAccount()
+    {
+        return $this->repo->merchant->getSharedAccount();
     }
 }

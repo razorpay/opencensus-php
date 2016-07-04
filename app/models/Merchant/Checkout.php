@@ -25,7 +25,7 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        $this->checkAndFillTokensInputFromSession($input, $merchant);
+        $this->checkAndFillAppTokenInputFromSession($input);
 
         $data = $this->getMerchantPreferencesData($merchant, $input);
 
@@ -77,10 +77,6 @@ class Checkout
             {
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
-            else
-            {
-                $custData[Payment\Entity::APP_TOKEN] = $customerApp->getPublicId();
-            }
         }
         catch (\Exception $ex)
         {
@@ -90,29 +86,14 @@ class Checkout
         return $custData;
     }
 
-    protected function checkAndFillTokensInputFromSession(array & $input, $merchant)
+    protected function checkAndFillAppTokenInputFromSession(array & $input)
     {
-        try
+        // Check if app token is present in session
+        $appToken = Session::get(Payment\Entity::APP_TOKEN);
+
+        if (empty($appToken) === false)
         {
-            // check if device token is present in session
-            $deviceToken = Session::get(Customer\App\Entity::DEVICE_TOKEN);
-
-            if (isset($input[Customer\App\Entity::DEVICE_TOKEN]) === false)
-            {
-                $input[Customer\App\Entity::DEVICE_TOKEN] = $deviceToken;
-
-                $appEntity = (new Customer\App\Core)->getAppTokenByDeviceTokenAndMerchant(
-                    $deviceToken, $merchant);
-
-                if ($appEntity !== null)
-                {
-                    $input[Payment\Entity::APP_TOKEN] = $appEntity->getPublicId();
-                }
-            }
-        }
-        catch (\Exception $ex)
-        {
-            $this->app['trace']->traceException($ex);
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
     }
 

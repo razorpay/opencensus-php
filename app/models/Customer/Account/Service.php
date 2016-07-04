@@ -168,15 +168,15 @@ class Service extends Base\Service
         {
             $apps = $this->repo->app_token->fetchAppsByDeviceToken(
                 $customer,
-                $this->merchant,
                 $deviceToken);
 
-            if ($apps !== null)
+            if (($apps !== null) and ($apps->count() > 0))
             {
                 $result['valid'] = true;
             }
         }
 
+        // If result is valid, then create a new app token.
         if ($result['valid'] === true)
         {
             $custAppInput = array(
