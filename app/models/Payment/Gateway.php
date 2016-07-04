@@ -139,7 +139,11 @@ class Gateway
         self::SHARP => array(
             Network::MC,
             Network::VISA,
-            Network::MAES,),
+            Network::MAES,
+            Network::AMEX,
+            Network::DICL,
+            Network::RUPAY,
+            Network::UNKNOWN),
     );
 
     public static $walletToGatewayMap = array(
