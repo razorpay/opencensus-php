@@ -170,14 +170,13 @@ class Service extends Base\Service
                 $customer,
                 $deviceToken);
 
-
-
             if (($apps !== null) and ($apps->count() > 0))
             {
                 $result['valid'] = true;
             }
         }
 
+        // If result is valid, then create a new app token.
         if ($result['valid'] === true)
         {
             $custAppInput = array(

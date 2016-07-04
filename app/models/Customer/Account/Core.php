@@ -22,7 +22,7 @@ class Core extends Base\Core
     {
         assert(isset($input[Customer\Entity::CONTACT]));
 
-        return $this->create($input, $this->repo->merchant->getSharedAccount());
+        return $this->create($input, $this->getSharedAccount());
     }
 
     public function create($input, $merchant)
@@ -84,11 +84,9 @@ class Core extends Base\Core
         $this->putAppTokenInSession($appToken);
 
         // Create response
-        $response = array(
-            'success'      => 1
-        );
+        $response = array('success' => 1);
 
-        if ($appToken->merchant->getId() !== $this->repo->merchant->getSharedAccount()->getId())
+        if ($appToken->merchant->getId() !== $this->getSharedAccount()->getId())
         {
             $response['device_token'] = $appToken->getDeviceToken();
         }
@@ -103,10 +101,10 @@ class Core extends Base\Core
 
     protected function createCustomerAppToken($customer, $input)
     {
-        //currently all app_tokens will be generated for common rzp merchant
+        // Currently all app_tokens will be generated for common rzp merchant
         $appMerchant = $customer->merchant->getId();
 
-        //TODO: switch to merchant for newer sdk based on query params
+        // @todo: switch to merchant for newer sdk based on query params
 
         $custAppInput = array(
             App\Entity::CUSTOMER_ID => $customer->getId(),
@@ -149,7 +147,7 @@ class Core extends Base\Core
 
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
-            $this->repo->merchant->getSharedAccount());
+            $this->getSharedAccount());
 
         // Create global customer if it does not exist.
         if ($customer === null)
@@ -233,5 +231,10 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
+    }
+
+    protected function getSharedAccount()
+    {
+        return $this->repo->merchant->getSharedAccount();
     }
 }

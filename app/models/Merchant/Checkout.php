@@ -25,7 +25,7 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        $this->checkAndFillTokensInputFromSession($input, $merchant);
+        $this->checkAndFillAppTokenInputFromSession($input);
 
         $data = $this->getMerchantPreferencesData($merchant, $input);
 
@@ -86,21 +86,14 @@ class Checkout
         return $custData;
     }
 
-    protected function checkAndFillTokensInputFromSession(array & $input, $merchant)
+    protected function checkAndFillAppTokenInputFromSession(array & $input)
     {
-        try
-        {
-            // check if app token is present in session
-            $appToken = Session::get(Payment\Entity::APP_TOKEN);
+        // Check if app token is present in session
+        $appToken = Session::get(Payment\Entity::APP_TOKEN);
 
-            if (isset($input[Payment\Entity::APP_TOKEN]) === false)
-            {
-                $input[Payment\Entity::APP_TOKEN] = $appToken;
-            }
-        }
-        catch (\Exception $ex)
+        if (empty($appToken) === false)
         {
-            $this->app['trace']->traceException($ex);
+            $input[Payment\Entity::APP_TOKEN] = $appToken;
         }
     }
 
