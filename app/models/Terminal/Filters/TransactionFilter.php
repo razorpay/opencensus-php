@@ -108,7 +108,27 @@ class TransactionFilter extends Terminal\Filter
 
     public function internationalFilter($terminal, $input)
     {
-        return true;
+        $method = $input['payment']->getMethod();
+
+        if ($method !== Method::CARD)
+        {
+            return true;
+        }
+
+        $isMerchantInternational = $input['merchant']->isInternational();
+
+        if ($isMerchantInternational)
+        {
+            return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
+        }
+        else if ($input['mode'] === Mode::TEST)
+        {
+            return in_array($terminal->getGateway(), Gateway::$domesticCardGatewaysInTest);
+        }
+        else
+        {
+            return in_array($terminal->getGateway(), Gateway::$domesticCardGateways);
+        }
     }
 
     public function bankFilter($terminal, $input)

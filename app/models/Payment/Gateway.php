@@ -195,6 +195,10 @@ class Gateway
      * @var array
      */
     public static $domesticCardGatewaysInTest = array(
+        Gateway::SHARP,
+        Gateway::HDFC,
+        Gateway::AXIS_MIGS,
+        Gateway::AMEX,
         Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
