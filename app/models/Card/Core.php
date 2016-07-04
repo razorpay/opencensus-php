@@ -130,17 +130,10 @@ class Core extends Base\Core
         }
         else
         {
+            // For cards other than AMEX notify slack
             if (($card->isAmex()) === false)
             {
-                $slackArray = array(
-                    'iin'       => $card->getIin(),
-                    'card_id'   => $card->getDashboardEntityLinkForSlack(),
-                );
-
-                $this->slackPost(
-                    'Missing IIN for payment',
-                    $slackArray,
-                    ['channel' => '#tech_alerts']);
+                $this->notifySlack($card);
             }
         }
 
@@ -150,12 +143,32 @@ class Core extends Base\Core
         $this->checkCvvLength($card, $input);
     }
 
+    protected function notifySlack($card)
+    {
+        $slackArray = array(
+            'iin'       => $card->getIin(),
+            'card_id'   => $card->getDashboardEntityLinkForSlack(),
+        );
+
+        try
+        {
+            $this->slackPost(
+                'Missing IIN for payment',
+                $slackArray,
+                ['channel' => '#tech_alerts']);
+        }
+        catch(\Exception $e)
+        {
+            ;
+        }
+    }
+
     protected function checkCvvLength($card, $input)
     {
         $cvvLength = strlen($input['cvv']);
 
         // If card is Amex, cvv length should be 4.
-        if ($card->getNetworkCode() === Card\Network::AMEX)
+        if ($card->isAmex())
         {
             if ($cvvLength !== 4)
             {
