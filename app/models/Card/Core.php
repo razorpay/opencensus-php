@@ -6,9 +6,12 @@ use Models\Base;
 use Models\Card;
 use EE\Error\ErrorCode;
 use EE\Exception;
+use Services\SlackPoster;
 
 class Core extends Base\Core
 {
+    use SlackPoster;
+
     protected $card = null;
 
     public function create($input, $merchant)
@@ -125,6 +128,14 @@ class Core extends Base\Core
 
             $card->fill($arr);
         }
+        else
+        {
+            // For cards other than AMEX notify slack of missing IIN
+            if (($card->isAmex()) === false)
+            {
+                $this->notifySlack($card);
+            }
+        }
 
         $type = Card\Type::getType($type, $network);
         $card->setType($type);
@@ -132,12 +143,32 @@ class Core extends Base\Core
         $this->checkCvvLength($card, $input);
     }
 
+    protected function notifySlack($card)
+    {
+        $slackArray = array(
+            'iin'       => $card->getIin(),
+            'card_id'   => $card->getDashboardEntityLinkForSlack(),
+        );
+
+        try
+        {
+            $this->slackPost(
+                'Missing IIN for payment',
+                $slackArray,
+                ['channel' => '#reconciliation']);
+        }
+        catch(\Exception $e)
+        {
+            ;
+        }
+    }
+
     protected function checkCvvLength($card, $input)
     {
         $cvvLength = strlen($input['cvv']);
 
         // If card is Amex, cvv length should be 4.
-        if ($card->getNetworkCode() === Card\Network::AMEX)
+        if ($card->isAmex())
         {
             if ($cvvLength !== 4)
             {

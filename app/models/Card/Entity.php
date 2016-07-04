@@ -350,4 +350,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::COUNTRY);
     }
+
+    public function isAmex()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::AMEX]);
+   }
 }
