@@ -187,6 +187,7 @@ class Service extends Base\Service
             $app = (new App\Core)->create($custAppInput);
 
             $result['app_token'] = $app->getPublicId();
+            $result['email'] = $customer->getEmail();
         }
 
         return $result;
