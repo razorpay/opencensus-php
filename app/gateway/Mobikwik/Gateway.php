@@ -405,8 +405,6 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestContent($input)
     {
-        s($input); sddb(1);
-
         $content = array(
             'email'         => $input['payment']['email'],
             'amount'        => $input['payment']['amount'] / 100,

@@ -71,26 +71,21 @@ class Gateway extends Base\Gateway
             'contact'   => $input['payment']['contact'],
             'status' => $input['payment']['status'],
         );
+
         parent::createGatewayPaymentEntity($contentToSave);
     }
 
     protected function verifyPaymentCallbackResponse($input)
     {
         $content = $input['gateway'];
-        // $code = (int) $input['gateway']['statuscode'];
 
-        // if ($content['statuscode'] !== Status::SUCCESS)
-        s($content['status']);
         if ($content['status'] !== Status::SUCCESS)
         {
-            // need to test with ola to find which field has error code
-            $errorCode = ResponseCodeMap::getApiErrorCode($code);
-
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                $errorCode,
-                $input['gateway']['statuscode'],
-                $input['gateway']['statusmessage']);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $input['gateway']['status'],
+                $input['gateway']['message']);
         }
     }
 
