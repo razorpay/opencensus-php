@@ -22,6 +22,7 @@ use Models\Order;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
+use Lib\PhoneBook;
 
 trait Authorize
 {
@@ -195,6 +196,15 @@ trait Authorize
         $gatewayInput = [];
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+    }
+
+    protected function parseContact($contact)
+    {
+        // Constructor does the basic validation
+        $phoneBook = new PhoneBook($contact, true);
+
+        // Setting an instance just like carbon
+        return $phoneBook;
     }
 
     protected function validateInternationalAllowed($payment)

@@ -15,6 +15,7 @@ use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
+use Lib\PhoneBook;
 use Models\Customer\Token;
 use Gateway\Base\VerifyResult;
 use Gateway\Base\AuthorizeFailed;
@@ -671,8 +672,7 @@ class Gateway extends Base\Gateway
         );
 
         $content['key']     = $this->getMerchantId($this->input['terminal']);
-        $content['mobile']  = $this->getFormattedContact(
-                                    $this->input['payment']['contact']);
+        $content['mobile']  = $this->getFormattedContact($this->input['payment']['contact']);
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -784,18 +784,6 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getCustomerAttributes($input)
-    {
-        $contact = $this->getFormattedContact($input['payment']['contact']);
-
-        $attributes = array(
-            'contact'   => $contact,
-            'email'     => $input['payment']['email']
-        );
-
-        return $attributes;
-    }
-
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
@@ -803,7 +791,10 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedContact($contact)
     {
-        return substr($contact, -10);
+        // Constructor does the basic validation
+        $phoneBook = new PhoneBook($contact, true);
+
+        return $phoneBook->format(PhoneBook::DOMESTIC);
     }
 
     protected function getValidWalletToken($input)

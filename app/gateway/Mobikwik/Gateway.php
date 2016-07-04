@@ -12,6 +12,7 @@ use Gateway\Base\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
 use Gateway\Mobikwik\Type;
+use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway
 {
@@ -764,6 +765,8 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedContact($contact)
     {
-        return substr($contact, -10);
+        $number = new PhoneBook($contact, true);
+
+        return $number->format(PhoneBook::DOMESTIC);
     }
 }

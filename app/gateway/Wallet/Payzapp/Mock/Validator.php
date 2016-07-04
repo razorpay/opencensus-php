@@ -63,7 +63,7 @@ class Validator extends Base\Validator
 
     protected static $customerInfoRules = array(
         'custEmail'                 => 'required|email',
-        'custMobile'                => 'required|integer|digits_between:9,12',
+        'custMobile'                => 'required|integer|digits_between:9,13',
     );
 
     protected static $wIapDefaultsRules = array(
