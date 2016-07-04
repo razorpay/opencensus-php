@@ -155,7 +155,7 @@ class Core extends Base\Core
             $this->slackPost(
                 'Missing IIN for payment',
                 $slackArray,
-                ['channel' => '#tech_alerts']);
+                ['channel' => '#reconciliation']);
         }
         catch(\Exception $e)
         {
