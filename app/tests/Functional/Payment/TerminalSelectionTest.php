@@ -10,7 +10,7 @@ class TerminalSelectionTest extends TestCase
 {
     use PaymentTrait;
 
-    public function testChoiceGatewayWithSharedTerminals()
+    public function testChooseGatewayWithSharedTerminals()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
 
@@ -22,6 +22,21 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+    }
+
+    public function testChooseTerminalWithCategory()
+    {
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $this->fixtures->merchant->setCategory(123);
+
+        // Make Payment
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // Payment should have been made through shared terminl of correct category
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('SharedTrmnl123', $payment['terminal_id']);
     }
 
 }

@@ -27,6 +27,26 @@ class Terminal extends Base
         $this->createSharedNetbankingKotakTerminal();
     }
 
+    public function createMultipleCategoryTerminals()
+    {
+        $sharedMerchantAccount = \Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl123',
+                                         'merchant_id' => $sharedMerchantAccount,
+                                         'category' => 123,
+                                         'shared' => 1]);
+
+        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl124',
+                                         'merchant_id' => $sharedMerchantAccount,
+                                         'category' => 124,
+                                         'shared' => 1]);
+
+        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl125',
+                                         'merchant_id' => $sharedMerchantAccount,
+                                         'category' => 125,
+                                         'shared' => 1]);
+    }
+
     public function createAtomTerminal(array $attributes = array())
     {
         $attributes = array(
