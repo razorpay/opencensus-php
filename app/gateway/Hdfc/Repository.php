@@ -76,12 +76,11 @@ class Repository extends Base\Repository
     {
         $enrollResult = null;
 
-        if (isset($error['enroll_result']))
+        if (isset($error['enroll_result']) === true)
         {
             $enrollResult = $error['enroll_result'];
         }
 
-        $enrollResult =
         $attributes = array(
             'received'              => '1',
             'payment_id'            => $id,
