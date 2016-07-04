@@ -3,11 +3,14 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use Constants\Mode;
 use Models\Bank\IFSC;
 use Models\Card\Network;
 use Models\Settlement;
+use Models\Payment\Method;
 use Models\Payment\Processor\Wallet;
 use Models\Payment\Processor\Netbanking;
+
 
 class Gateway
 {
@@ -231,7 +234,9 @@ class Gateway
         Gateway::AXIS_GENIUS,
         Gateway::SBIEPAY,
         Gateway::KOTAK,
-        Gateway::PAYTM);
+        Gateway::PAYTM,
+        Gateway::ATOM,
+        Gateway::SHARP);
 
     /**
      * Some card networks are only supported partiall for one or two gateway.
@@ -406,12 +411,33 @@ class Gateway
         return $gateways;
     }
 
-    // Prepends direct to the beginning of the priority array
-    public static function getGatewaysPriorityForNetbanking()
+    public static function getGatewaysPriority($method, $mode = 'live')
     {
-        $gateways = self::$netbankingGateways;
+        switch ($method) {
+            case Method::CARD:
+                $gateways = self::$directCardGateways;
 
-        array_unshift($gateways, 'direct');
+                if ($mode === Mode::TEST)
+                {
+                    $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
+                }
+                break;
+
+            case Method::NETBANKING:
+                $gateways = self::$directNetbankingGateways;
+
+                if ($mode === Mode::TEST)
+                {
+                    $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
+                }
+
+                array_unshift($gateways, 'direct');
+                break;
+
+            default:
+
+                break;
+        }
 
         return $gateways;
     }

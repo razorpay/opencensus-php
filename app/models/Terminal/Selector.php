@@ -15,6 +15,7 @@ class Selector
     ];
 
     protected static $sorters = [
+        Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
         Sorters\MerchantSorter::class,
     ];

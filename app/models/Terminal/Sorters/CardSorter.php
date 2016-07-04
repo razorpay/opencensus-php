@@ -6,48 +6,29 @@ use Models\Terminal;
 use Models\Payment\Method;
 use Models\Payment\Gateway;
 
-class NetbankingSorter extends Terminal\Sorter
+class CardSorter extends Terminal\Sorter
 {
     protected $properties = [
         'gateway',
     ];
 
-    // Arrange netbanking terminals in the order
-    // Direct bank first, next Direct gateway, finally shared
-    // In This order as well use,
+    // Arrange card terminals in the order
     public function gatewaySorter($terminals, $input)
     {
         $method = $input['payment']->getMethod();
 
-        // No need unless doing for netbanking
-        if ($method !== Method::NETBANKING)
+        // No need unless doing for card
+        if ($method !== Method::CARD)
         {
             return $terminals;
         }
-
-        $indexed = true;
-
-        $bank = $input['payment']->getBank();
-
-        $gatewaysForBank = Gateway::getGatewaysForNetbankingBank($bank, $indexed);
 
         $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
 
         $testTerminals = [];
 
-        foreach ($gatewaysPriority as $gatewayType)
+        foreach ($gatewaysPriority as $gateway)
         {
-            // First use the direct terminal
-            if (($gatewayType === 'direct') and
-                isset($gatewaysForBank['direct']))
-            {
-                $gateway = $gatewaysForBank['direct'];
-            }
-            else
-            {
-                $gateway = $gatewayType;
-            }
-
             // As the terminals are from the priority list
             // append to the terminal
             foreach ($terminals as $terminal)
@@ -61,4 +42,5 @@ class NetbankingSorter extends Terminal\Sorter
 
         return $testTerminals;
     }
+
 }
