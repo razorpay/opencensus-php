@@ -971,6 +971,9 @@ trait Authorize
                 'version' => 1,
                 'payment_id' => $payment->getPublicId(),
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+                // TODO: Return metadata in a better format
+                'contact' => $payment->getContact(),
+                'amount'  => number_format(($payment->getAmount()/100), 2),
             );
         }
         catch (Exception\BaseException $e)
