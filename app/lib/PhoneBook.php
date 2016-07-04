@@ -5,6 +5,7 @@ namespace Lib;
 use App;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\NumberParseExeption;
+use Trace\TraceCode;
 
 class PhoneBook
 {
@@ -19,7 +20,12 @@ class PhoneBook
     /*
      * Phone number formats
      *
+     * E164             - Standardized format - +919987654321
+     * INTERNATIONAL    - International format - +91 99876 54321
+     * NATIONAL         - Gives national number - 099876 54321
+     * RFC3966          - Format for using in html links - tel:+91-99876-54321
      */
+
     const E164          = 'e164';
     const INTERNATIONAL = 'international';
     const NATIONAL      = 'national';
@@ -33,13 +39,17 @@ class PhoneBook
         self::RFC3966       => PhoneNumberFormat::RFC3966,
     ];
 
-    protected $specialChars = ['-', '(', ')', ' '];
+    const SPECIAL_CHARS = ['-', '(', ')', ' '];
 
+    /**
+     * @param string  $phoneNumber
+     * @param boolean $parseSilently Whether to throw exception or not
+     */
     public function __construct($phoneNumber, $parseSilently = false)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->libphonenumber = $app['libphonenumber'];
+        $this->libphonenumber = $this->app['libphonenumber'];
 
         $this->rawNumber = $phoneNumber;
 
@@ -50,7 +60,7 @@ class PhoneBook
         }
         catch (NumberParseExeption $e)
         {
-            if ($parseSilently)
+            if ($parseSilently === false)
             {
                 throw $e;
             }
@@ -59,31 +69,35 @@ class PhoneBook
 
     public function isValidNumber()
     {
-        $libphonenumber = $this->libphonenumber;
-        $number = $this->phoneNumber;
-
         // For backward compatibility
-        if ($number === null)
+        if ($this->phoneNumber === null)
         {
             return false;
         }
 
-        return $libphonenumber->isValidNumber($number);
+        return $this->libphonenumber->isValidNumber($this->phoneNumber);
     }
 
     public function isPossibleNumber()
     {
-        $libphonenumber = $this->libphonenumber;
-        $number = $this->phoneNumber;
-
-        return $libphonenumber->isPossibleNumber($number);
+        return $this->libphonenumber->isPossibleNumber($this->phoneNumber);
     }
 
     public function getRawInput()
     {
-        return $this->normalizeNumber($this->rawNumber);
+        $normalizedRawNumber = $this->normalizeNumber($this->rawNumber);
+
+        $this->app['trace']->info(
+            TraceCode::PAYMENT_INVALID_CONTACT_NUMBER,
+            ['number' => $this->rawNumber, 'normalized_number' => $normalizedRawNumber]);
+
+        return $normalizedRawNumber;
     }
 
+    /**
+     * Removes spaces, special characters etc.,
+     * gives back digits along with plus sign
+     */
     public function normalizeNumber($number)
     {
         if (is_string($number) === false)
@@ -91,7 +105,7 @@ class PhoneBook
             return $number;
         }
 
-        $number = str_replace($this->specialChars, '', $number);
+        $number = str_replace(self::SPECIAL_CHARS, '', $number);
 
         // Remove the 0 at the start
         if ((strlen($number) > 1) and
@@ -103,6 +117,10 @@ class PhoneBook
         return $number;
     }
 
+    /**
+     * Returns normalized number for phonebook library.
+     * However, if the number is invalid, then it returns null.
+     */
     public function getNormalizedNumber()
     {
         return $this->phoneNumber->getNationalNumber();

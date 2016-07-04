@@ -48,7 +48,8 @@ class Validator extends Base\Validator
         'bank',
         'currency',
         'description',
-        'fee');
+        'fee',
+        'contact');
 
     protected function validateCardKey($input)
     {
@@ -113,57 +114,18 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        $contact = $input['contact'];
+        $payment = $this->entity;
 
-        $code = null;
-        $message = null;
-
-        $field = Entity::CONTACT;
-
-        if (is_string($contact) === false)
+        if ($payment->isWallet())
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
-        }
+            $number = new PhoneBook($contact, true);
+            $country = $number->getRegionCodeForNumber();
 
-        $origContact = $contact;
-
-        // Except digits, only '+' symbol is allowed in the beginning
-        if ($contact[0] === '+')
-            $contact = substr($contact, 1);
-
-        if (ctype_digit($contact) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
-                $field);
-        }
-
-        /**
-         * The minimum contact number length including international
-         * prefix (country code) is theoritically 8 digits.
-         *
-         * See http://stackoverflow.com/a/17814276/368328
-         *
-         * The correct way to do this would be to use libphonennumber
-         */
-        if (strlen($contact) < 8)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
-                $field);
-        }
-
-        /**
-         * See https://en.wikipedia.org/wiki/Telephone_numbering_plan#International_numbering_plan
-         * for why 15
-         */
-        if (strlen($contact) > 15)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
-                $field);
+            if ($country !== 'IN')
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
+            }
         }
     }
 

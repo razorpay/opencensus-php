@@ -43,6 +43,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE                      = 'Contact number contains invalid country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT                                 = 'Contact number should be at least 8 digits, including country code';
     const BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG                                  = 'Contact number should not be greater than 15 digits, including country code';
+    const BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED                       = 'Contact number needs to be Indian.';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                        = 'Card network not supported';
     const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
