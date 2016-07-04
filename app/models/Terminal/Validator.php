@@ -85,6 +85,8 @@ class Validator extends Base\Validator
 
     protected static $hdfcEditTerminalRules = array(
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+        Entity::GATEWAY                     => 'sometimes|in:hdfc',
+        Entity::CARD                        => 'sometimes|boolean|in:1',
     );
 
     protected static $walletPayzappTerminalRules = array(
