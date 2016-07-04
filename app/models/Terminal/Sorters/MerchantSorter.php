@@ -41,14 +41,20 @@ class MerchantSorter extends Terminal\Sorter
 
         if (isset($testTerminals['specific']))
         {
-            array_unshift($returnTerminals, $testTerminals['specific']);
+            foreach ($testTerminals['specific'] as $terminal)
+            {
+                $returnTerminals[] = $terminal;
+            }
         }
 
         if (isset($testTerminals['generic']))
         {
-            array_unshift($returnTerminals, $testTerminals['generic']);
+            foreach ($testTerminals['generic'] as $terminal)
+            {
+                $returnTerminals[] = $terminal;
+            }
         }
 
-        return $terminals;
+        return $returnTerminals;
     }
 }

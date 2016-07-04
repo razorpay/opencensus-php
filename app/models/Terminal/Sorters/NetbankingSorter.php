@@ -3,6 +3,7 @@
 namespace Models\Terminal\Sorters;
 
 use Models\Terminal;
+use Models\Payment\Method;
 use Models\Payment\Gateway;
 
 class NetbankingSorter extends Terminal\Sorter
@@ -16,6 +17,14 @@ class NetbankingSorter extends Terminal\Sorter
     // In This order as well use,
     public function gatewaySorter($terminals, $input)
     {
+        $method = $input['payment']->getMethod();
+
+        // No need unless doing for netbanking
+        if ($method !== Method::NETBANKING)
+        {
+            return $terminals;
+        }
+
         $indexed = true;
 
         $bank = $input['payment']->getBank();
