@@ -69,6 +69,8 @@ trait Enroll
         //
         if ($this->error)
         {
+            $this->persistAfterEnroll();
+
             $this->throwException($this->enrollResponse['error']);
         }
 
@@ -289,7 +291,12 @@ trait Enroll
      */
     protected function checkAndSetEci()
     {
-        $eci = &$this->enrollResponse['data']['eci'];
+        $eci = null;
+
+        if (isset($this->enrollResponse['data']['eci']))
+        {
+            $eci = &$this->enrollResponse['data']['eci'];
+        }
 
         //
         // Set to 7 if it's null, that is we didn't receive a value.

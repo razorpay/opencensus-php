@@ -31,12 +31,18 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->ba->publicAuth();
 
+        $this->gateway = 'hdfc';
+
         $this->fixtures->merchant->enableInternational();
     }
 
     public function testCardTimeout()
     {
         $this->startTest();
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['error_code'], 'RP00003');
     }
 
     public function testCreditCardSuccess()
@@ -91,6 +97,21 @@ class HdfcGatewayAuthTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastPayment(true);
         $this->assertEquals($payment['gateway'], 'hdfc');
+    }
+
+    public function testCaptureTimeout()
+    {
+        $payment = $this->defaultAuthPayment();
+        $this->captureErrorReturnGatewayTimeout();
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testCardTimeout'];
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+        });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
     }
 
     public function testMockOnLiveMode()

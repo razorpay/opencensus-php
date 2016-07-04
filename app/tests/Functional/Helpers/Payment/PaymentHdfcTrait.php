@@ -99,4 +99,18 @@ trait PaymentHdfcTrait
 
         $this->setMockServer($server);
     }
+
+    protected function captureErrorReturnGatewayTimeout()
+    {
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            throw new \Requests_Exception(
+                                'cURL error 28: Operation timed out after ' .
+                                '10001 milliseconds with 0 bytes received', 'curlerror');
+                        })->mock();
+
+        $this->setMockServer($server);
+    }
 }

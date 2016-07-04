@@ -120,7 +120,6 @@ class Gateway extends Hdfc\Gateway
             throw new \Requests_Exception(
                 'cURL error 28: Operation timed out after ' .
                 '10 ' . static::TIMEOUT . '001 milliseconds with 0 bytes received', 'curlerror');
-
         }
     }
 

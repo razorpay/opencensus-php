@@ -484,7 +484,7 @@ trait PaymentTrait
     protected function refundAuthorizedPayment($id, array $input = array())
     {
         $this->ba->proxyAuth();
-        
+
         $request = array(
             'method' => 'POST',
             'url' => '/payments/'.$id.'/authorize_refund',

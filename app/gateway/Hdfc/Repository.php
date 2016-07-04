@@ -74,6 +74,14 @@ class Repository extends Base\Repository
 
     public function persistAfterEnrollError($id, array $error, $requestData)
     {
+        $enrollResult = null;
+
+        if (isset($error['enroll_result']))
+        {
+            $enrollResult = $error['enroll_result'];
+        }
+
+        $enrollResult =
         $attributes = array(
             'received'              => '1',
             'payment_id'            => $id,
@@ -81,7 +89,7 @@ class Repository extends Base\Repository
             'amount'                => $requestData['amt'],
             'error_code'            => $error['code'],
             'error_text'            => $error['text'],
-            'enroll_result'         => $error['enroll_result'],
+            'enroll_result'         => $enrollResult,
             'status'                => Payment\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
@@ -230,11 +238,11 @@ class Repository extends Base\Repository
                 break;
         }
 
-        $result = null;
+        $errorText = $error['text'];
 
         if (isset($error['result']))
         {
-            $result = $error['result'];
+            $errorText = $error['result'];
         }
 
         $attributes = array(
@@ -244,7 +252,7 @@ class Repository extends Base\Repository
             'gateway_transaction_id'    => $requestdata['transid'],
             'amount'                    => $requestdata['amt'],
             'error_code'                => $error['code'],
-            'error_text'                => $result,
+            'error_text'                => $errorText,
             'action'                    => $action,
             'status'                    => $status);
 
