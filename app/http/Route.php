@@ -346,6 +346,7 @@ final class Route
         'pricing_get_plan',
         'pricing_get_plan_rule',
         'pricing_delete_plan_rule',
+        'pricing_delete_plan_rule_force',
         'setl_initiate',
         'setl_reconcile',
         'setl_reconcile_generate',
