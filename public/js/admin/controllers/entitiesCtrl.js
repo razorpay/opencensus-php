@@ -300,6 +300,7 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         settled: booleanList,
         settlement_id: ['Settlement Id'],
+        reconciled: booleanList,
         type: [
           'all',
           'payment',
