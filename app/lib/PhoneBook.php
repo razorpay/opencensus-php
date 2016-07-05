@@ -5,7 +5,6 @@ namespace Lib;
 use App;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\NumberParseExeption;
-use Trace\TraceCode;
 
 class PhoneBook
 {
@@ -88,10 +87,6 @@ class PhoneBook
     public function getRawInput()
     {
         $normalizedRawNumber = $this->normalizeNumber($this->rawNumber);
-
-        $this->app['trace']->info(
-            TraceCode::PAYMENT_INVALID_CONTACT_NUMBER,
-            ['number' => $this->rawNumber, 'normalized_number' => $normalizedRawNumber]);
 
         return $normalizedRawNumber;
     }

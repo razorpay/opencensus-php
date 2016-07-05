@@ -12,6 +12,7 @@ use Models\Payment\Refund;
 use Models\Base\Traits\NotesTrait;
 use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
+use Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -451,7 +452,17 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $this->attributes[self::CONTACT] = $number->getRawInput();
+            $normalizedNumber = $number->getRawInput();
+
+            // Hack for tracing new invalid numbers
+            // to get the stats
+            $app = \App::getFacadeRoot();
+
+            $app['trace']->info(
+                TraceCode::PAYMENT_INVALID_CONTACT_NUMBER,
+                ['number' => $contact, 'normalized_number' => $normalizedNumber]);
+
+            $this->attributes[self::CONTACT] = $normalizedNumber;
         }
     }
 
