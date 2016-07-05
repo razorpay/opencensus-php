@@ -7,11 +7,12 @@ use EE\Error\ErrorCode;
 
 class Status
 {
-    const SUCCESS               = 100;
+    const SUCCESS               = 'success';
+    const FAILED                = 'error';
+    // need to reconsider the following
     const NLOGGEDIN             = 101;
     const NOBALANCE             = 102;
     const INSUFFICIENTBALANCE   = 103;
-    const FAILED                = 103;
     const HASHFAILED            = 105;
     const DUPLICATE             = 106;
 }

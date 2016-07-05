@@ -29,7 +29,6 @@ class Server extends Base\Mock\Server
 
 
         $content['checksum'] = $this->generateHash($content);
-//        sd($content);
 
         $url = $input['redirecturl'];
         $url .= '?' . http_build_query($content);

@@ -16,7 +16,7 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        $bill = json_decode(base64_decode($input['bill']), true);
+        $bill = json_decode(base64_decode(urldecode($input['bill'])), true);
 
         parent::authorize($input);
 
@@ -40,14 +40,36 @@ class Server extends Base\Mock\Server
             'method' => 'post',
         );
 
-        return $this->makePostResponse($request);
+        return $this->makePostResponse($request, 'application/x-www-form-urlencoded');
     }
 
-    protected function makeResponse($json)
+    public function refund($input)
+    {
+        $input = json_decode($input, true);
+
+        parent::refund($input);
+
+        $this->validateActionInput($input, 'refund');
+
+        $responseContent = array(
+            'type'              => 'refund',
+            'status'            => 'success',
+            'transactionId'     => 'bgho5botne16',
+            'merchantBillId'    => 'cd1501cea88e4654898d8b2a266bc467',
+            'amount'            => '20.0',
+            'timestamp'         => '1439473847354',
+            'comments'          => 'test',
+            'udf'               =>'test',
+        );
+
+        return $this->makeResponse($responseContent);
+    }
+
+    protected function makeResponse($json, $content_type = 'application/json; charset=UTF-8')
     {
         $response = \Response::make($json);
 
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        $response->headers->set('Content-Type', $content_type);
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

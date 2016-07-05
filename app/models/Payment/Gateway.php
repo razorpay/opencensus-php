@@ -18,7 +18,6 @@ class Gateway
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
     const MOBIKWIK          = 'mobikwik';
-    const OLAMONEY          = 'olamoney';
     const PAYTM             = 'paytm';
     const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';

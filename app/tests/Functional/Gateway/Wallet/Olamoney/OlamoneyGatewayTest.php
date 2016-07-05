@@ -57,14 +57,14 @@ class OlamoneyGatewayTest extends TestCase
 
         if (true)
         {
-            $content['otp'] = '111111';
+            $this->setOtp('111111');
 
             if (isset($this->step))
             {
                 switch ($this->step)
                 {
                     case 'RETRY':
-                        $content['otp'] = '121212';
+                        $this->setOtp('121212');
                         break;
                 }
             }

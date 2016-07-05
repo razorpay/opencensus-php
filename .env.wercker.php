@@ -70,6 +70,9 @@ return array(
 
     'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'             => 'randomkuchbhi',
 
+    'OLAMONEY_WALLET_TEST_MERCHANT_ID'              =>  'rand_wercker_ola_merchant'
+    'OLAMONEY_WALLET_TEST_HASH_SECRET'              => 'rand_wercker_ola_secret',
+
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'                => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
     'PAYTM_GATEWAY_TEST_HASH_SECRET'                => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
 

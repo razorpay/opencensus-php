@@ -14,6 +14,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    const CURRENCY = 'INR';
+
     protected $gateway = 'wallet_olamoney';
 
     protected $canRunOtpFlow = false;
@@ -81,11 +83,10 @@ class Gateway extends Base\Gateway
 
         if ($content['status'] !== Status::SUCCESS)
         {
-            // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $input['gateway']['status'],
-                $input['gateway']['message']);
+                $content['status'],
+                $content['message']);
         }
     }
 
@@ -101,6 +102,7 @@ class Gateway extends Base\Gateway
             'udf',
             'timestamp',
         );
+
         $hash = $content['hash'];
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
@@ -118,9 +120,14 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getOtpGenerateRequestArray($input);
 
+        $query = http_build_query(array(
+                    'bill'   => base64_encode($request['content']),
+                    'phone'  => $input['payment']['contact'],
+                ));
+
         $request = [
             'method'  => 'get',
-            'url'     => $request['url'].'?bill='.base64_encode($request['content']).'&phone='.$input['payment']['contact'],
+            'url'     => $request['url']."?".$query,
         ];
 
         return $request;
@@ -198,7 +205,7 @@ class Gateway extends Base\Gateway
             'returnUrl'         => $input['callbackUrl'],
             'notificationUrl'   => '',
             'amount'            => number_format($amount, 2, '.', ''),
-            'currency'          => 'INR',
+            'currency'          => self::CURRENCY,
             'couponCode'        => 'NA',
         );
 
@@ -224,7 +231,7 @@ class Gateway extends Base\Gateway
             'returnUrl'         => $input['callbackUrl'],
             'notificationUrl'   => '',
             'amount'            => ($input['payment']['amount'] / 100),
-            'currency'          => 'INR',
+            'currency'          => self::CURRENCY,
             'couponCode'        => 'NA',
             'otp'               => $input['gateway']['otp'],
         );
@@ -236,6 +243,102 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         return $request;
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $request = $this->getRefundRequest($input);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+        $content = json_decode($response->body, true);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+
+        $this->createWalletRefundEntity($content, $input);
+
+        if ($content['status'] !== Status::SUCCESS)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $content['status'],
+                $content['message']);
+        }
+    }
+
+    protected function createWalletRefundEntity($content, $input)
+    {
+        $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($content, $input);
+
+        return $this->createGatewayRefundEntity($refundAttributes);
+    }
+
+    protected function getRefundEntityAttributesFromRefundResponse($content, $input)
+    {
+        $refundAttributes = array(
+            'payment_id'            => $input['payment']['id'],
+            'action'                => $this->action,
+            'amount'                => $input['payment']['amount'],
+            'received'              => 1,
+            'wallet'                => $input['payment']['wallet'],
+            'email'                 => $input['payment']['email'],
+            'contact'               => $input['payment']['contact'],
+            'gateway_merchant_id'   => $input['terminal']['gateway_merchant_id2'],
+            'refund_id'             => $input['refund']['id'],
+            'response_code'         => isset($content['errorCode']) ? $content['errorCode'] : '',
+            'status_code'           => $content['status'],
+            'error_message'         => isset($content['message']) ? $content['message'] : '',
+        );
+
+        return $refundAttributes;
+    }
+
+    protected function getRefundRequest($input)
+    {
+        $content = array(
+            'command'           => Command::REFUND,
+            'accessToken'       => $this->getAccessToken($input['terminal']),
+            'uniqueId'          => $input['refund']['id'], // what to put here?
+            'comments'          => 'Razorpay_refund',
+            'udf'               => $input['payment']['public_id'],
+            'returnUrl'         => '',
+            'notificationUrl'   => '',
+            'amount'            => $input['refund']['amount'] / 100,
+            'balanceType'       => 'cash',
+            'balanceName'       => 'cash',
+            'saleId'            => $input['payment']['id'], //what to put here?
+            'currency'          => self::CURRENCY,
+        );
+
+        $content['hash'] = $this->getHashForRefundRequest($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = ['Content-Type' => 'application/json'];
+
+        return $request;
+    }
+
+    protected function getHashForRefundRequest(array $content)
+    {
+        $fieldsInOrder = array(
+            'accessToken',
+            'uniqueId',
+            'comments',
+            'udf',
+            'returnUrl',
+            'notificationUrl',
+            'currency',
+            'amount',
+            'balanceType',
+            'balanceName',
+            'saleId',
+        );
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
     }
 
     protected function getAccessToken($terminal)

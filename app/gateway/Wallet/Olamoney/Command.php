@@ -6,4 +6,5 @@ class Command
 {
     const DEBIT     = 'debit';
     const CAPTURE   = 'capture';
+    const REFUND    = 'refund';
 }
