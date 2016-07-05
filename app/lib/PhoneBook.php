@@ -4,7 +4,7 @@ namespace Lib;
 
 use App;
 use libphonenumber\PhoneNumberFormat;
-use libphonenumber\NumberParseExeption;
+use libphonenumber\NumberParseException;
 
 class PhoneBook
 {
@@ -59,7 +59,7 @@ class PhoneBook
             // Second argument is a default country code
             $this->phoneNumber = $this->libphonenumber->parse($phoneNumber, self::DEFAULT_COUNTRY_CODE);
         }
-        catch (NumberParseExeption $e)
+        catch (NumberParseException $e)
         {
             if ($parseSilently === false)
             {
