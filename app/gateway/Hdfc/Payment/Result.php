@@ -54,9 +54,9 @@ final class Result
      | • NOT CAPTURED - Payment was failed (For Action Code “1”, “2” , “5”) i.e. PURCHASE, REFUND and CAPTURE
      | • NOT APPROVED - Payment was failed (For Action Code “4”) i.e. AUTHORIZE
      | • DENIED BY RISK - Risk denied the payment processing
-     | • HOST TIMEOUT - The authorization system did not respond within the Time out
-     | limit
+     | • HOST TIMEOUT - The authorization system did not respond within the Time out limit
      | • AUTH ERROR - For certain cases when in case card is invalid.
+     | • NOT SUPPORTED - For cases where card network is not supported
      | • SUCCESS – The payment is successful (For Action Code “8” i.e. "INQUIRY" if original requested
      | payment is successful at Payment Gateway)
      | Payment Gateway Services
@@ -80,6 +80,7 @@ final class Result
     const HOST_TIMEOUT      = 'HOST TIMEOUT';
     const AUTH_ERROR        = 'AUTH ERROR';
     const CANCELED          = 'CANCELED';
+    const NOT_SUPPORTED     = 'NOT SUPPORTED';
 
     public static function getResultCode($result)
     {

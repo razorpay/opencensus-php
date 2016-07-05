@@ -64,6 +64,7 @@ trait Enroll
             $this->enrollRequest,
             $this->enrollResponse);
 
+
         //
         // If there is an error then just return
         //
@@ -422,6 +423,12 @@ trait Enroll
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $this->enrollResponse,
                     Hdfc\ErrorCode::RP00010);
+                break;
+
+            case Payment\Result::NOT_SUPPORTED:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $this->enrollResponse,
+                    Hdfc\ErrorCode::RP00012)
                 break;
 
             default:

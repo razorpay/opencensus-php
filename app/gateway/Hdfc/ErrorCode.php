@@ -170,6 +170,12 @@ class ErrorCode
      */
     const RP00011   = 'RP00011';
 
+    /**
+     * When enroll response result code is
+     * NOT SUPPORTED
+     */
+    const RP00012   = 'RP00012';
+
     public static $errorMessages = array(
         Hdfc\ErrorCode::FSS0001   => 'Authentication Not Available',
         Hdfc\ErrorCode::FSS00002  => 'Duplicate Payment Request',
@@ -254,6 +260,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
         Hdfc\ErrorCode::RP00010   => 'Result code is AUTH ERROR. This happens mostly because card number provided is invalid',
         Hdfc\ErrorCode::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on rupay 3dsecure page.',
+        Hdfc\ErrorCode::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported'
     );
 
     /**
@@ -329,6 +336,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00009   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         Hdfc\ErrorCode::RP00010   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
         Hdfc\ErrorCode::RP00011   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,
+        Hdfc\ErrorCode::RP00012   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
     );
 
     public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;
