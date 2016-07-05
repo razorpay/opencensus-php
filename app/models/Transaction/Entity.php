@@ -34,6 +34,8 @@ class Entity extends Base\PublicEntity
 
     const PAYMENT_ID        = 'payment_id';
 
+    const RECONCILED        = 'reconciled';
+
     protected $table = \Constants\Table::TRANSACTION;
 
     protected static $sign = 'txn';

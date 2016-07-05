@@ -20,6 +20,7 @@ class Repository extends Base\Repository
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
         Entity::ENTITY_ID       => 'sometimes|string|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::RECONCILED      => 'sometimes|in:0,1',
     );
 
     public function fetchTxnsExpectedToSettle($timestamp)
@@ -232,5 +233,19 @@ class Repository extends Base\Repository
         Entity::stripSignWithoutValidation($entityId);
 
         $query->where(Entity::ENTITY_ID, '=', $entityId);
+    }
+
+    protected function addQueryParamReconciled($query, $params)
+    {
+        $reconciled = $params[Entity::RECONCILED];
+
+        if ($reconciled === '0')
+        {
+            $query->whereNull(Entity::RECONCILED_AT);
+        }
+        else if ($reconciled === '1')
+        {
+            $query->whereNotNull(Entity::RECONCILED_AT);
+        }
     }
 }
