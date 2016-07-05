@@ -428,7 +428,7 @@ trait Enroll
             case Payment\Result::NOT_SUPPORTED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $this->enrollResponse,
-                    Hdfc\ErrorCode::RP00012)
+                    Hdfc\ErrorCode::RP00012);
                 break;
 
             default:

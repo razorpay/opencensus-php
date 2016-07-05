@@ -260,7 +260,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
         Hdfc\ErrorCode::RP00010   => 'Result code is AUTH ERROR. This happens mostly because card number provided is invalid',
         Hdfc\ErrorCode::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on rupay 3dsecure page.',
-        Hdfc\ErrorCode::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported'
+        Hdfc\ErrorCode::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
     );
 
     /**
