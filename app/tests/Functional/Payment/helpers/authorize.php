@@ -119,6 +119,28 @@ return [
         ],
     ],
 
+    'testContactInvalidCountryCode' => [
+        'request' => [
+            'content' => [
+                'contact' => '+091212324',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE,
+                    'field' => 'contact',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE,
+        ],
+    ],
+
     'testInvalidContactPassingSyntaxCheck' => [
         'request' => [
             'content' => [
