@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Gateway\Paytm;
+namespace RZP\Tests\Functional\Gateway\Paytm;
 
 use EE\Exception;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class PaytmGatewayTest extends TestCase
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Gateway\Mobikwik;
+namespace RZP\Tests\Functional\Gateway\Mobikwik;
 
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Base\Otp;
 
 class MobikwikGatewayTest extends TestCase

@@ -5,7 +5,7 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 use RZP\Gateway\Hdfc;
 
-use Tests\Functional\Fixtures\Entity\Iin;
+use RZP\Tests\Functional\Fixtures\Entity\Iin;
 return [
     'testAddIin' => [
         'request' => [

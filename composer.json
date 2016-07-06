@@ -8,8 +8,9 @@
         "doctrine/dbal": "~2.5",
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
-        "maatwebsite/excel": "1.*",
-        "mailgun/mailgun-php": "~1.8",
+        "laravelcollective/bus": "^5.2",
+        "maatwebsite/excel": "~2.1.0",
+        "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "~3.0",
         "symfony/event-dispatcher": "~2.2",
         "maknz/slack": "dev-queue",
@@ -39,7 +40,8 @@
     },
     "autoload": {
         "classmap": [
-            "database"
+            "database",
+            "tests"
         ],
         "psr-4": {
             "RZP\\": "app/"

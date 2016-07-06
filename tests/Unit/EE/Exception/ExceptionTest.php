@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Unit\EE\Exception;
+namespace RZP\Tests\Unit\EE\Exception;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorDescription;
 use Mockery;
 use Models\Card;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 
 class ExceptionTest extends TestCase
 {

@@ -1,13 +1,14 @@
 <?php
 
-namespace Tests\Functional\Fixtures\Entity;
+namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Config;
 use Eloquent;
 use Models;
 use RZP\Gateway;
-use Tests\TestDummy\Factory;
-use Tests\Functional\Fixtures\Fixtures;
+use Gateway;
+use RZP\Tests\TestDummy\Factory;
+use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
 
 class Base

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Card;
+namespace RZP\Tests\Functional\Card;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class IinTest extends TestCase
 {

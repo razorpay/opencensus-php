@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Functional\Helpers\Payment;
+namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Config;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\TestCase;
 
 trait PaymentSharpTrait
 {

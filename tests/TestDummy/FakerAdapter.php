@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\TestDummy;
+namespace RZP\Tests\TestDummy;
 
 use Laracasts\TestDummy as Base;
 use Faker\Factory as Faker;
