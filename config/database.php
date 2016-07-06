@@ -47,7 +47,7 @@ return array(
     'connections' => [
         // 'mysql' => [
             'live' => [
-                'driver'    => env('DB_LIVE_DRIVER', ),
+                'driver'    => env('DB_LIVE_DRIVER'),
                 'host'      => env('DB_LIVE_HOST'),
                 'port'      => env('DB_LIVE_PORT'),
                 'database'  => env('DB_LIVE_DATABASE'),
