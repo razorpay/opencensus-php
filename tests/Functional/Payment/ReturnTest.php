@@ -80,10 +80,13 @@ class ReturnTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'error[code]' => 'BAD_REQUEST_ERROR',
-                    'error[description]' => 'The number is invalid.',
-                    'error[field]' => 'number',
+                    'error' => [
+                        'code' => 'BAD_REQUEST_ERROR',
+                        'description' => 'The number is invalid.',
+                        'field' => 'number',
+                    ],
                 ],
+                'status_code' => 400,
             ]
         );
 
@@ -91,7 +94,9 @@ class ReturnTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->assertTrue($this->merchantCallbackFlow);
+        // Callback flow in this case will be false because we are returning
+        // the result after first request only without any redirection.
+        $this->assertFalse($this->merchantCallbackFlow);
     }
 
     public function testReturnUrlWith3dSecureFailure()
