@@ -241,9 +241,9 @@ return array(
         'Trace'     => RZP\Trace\Facade::class,
 
         // Custom Facade
-        'Excel'     => 'Maatwebsite\Excel\Facades\Excel',
-        'AWS'       => 'Aws\Laravel\AwsFacade::class',
-        'Slack'     => 'Maknz\Slack\Laravel\Facade::class'
+        'Excel'     => Maatwebsite\Excel\Facades\Excel::class,
+        'AWS'       => Aws\Laravel\AwsFacade::class,
+        'Slack'     => Maknz\Slack\Laravel\Facade::class
     ),
 
     'checkout' => 'https://checkout.razorpay.com',
