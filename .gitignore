@@ -9,9 +9,10 @@ node_modules/
 tmp*.blade.php
 generated/
 bootstrap/environment.php
-app/storage/selenium.png
-app/config/**/dev/*
-!app/config/dev/session.php
+storage/selenium.png
+config/dev/*
+config/**/dev/*
+!config/dev/session.php
 apigen
 docs/
 public/docs
