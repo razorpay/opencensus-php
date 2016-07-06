@@ -153,7 +153,7 @@ return array(
         'Illuminate\View\ViewServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Aws\Laravel\AwsServiceProvider',
-        'Http\BasicAuth\ServiceProvider',
+        'RZP\Http\BasicAuth\ServiceProvider',
         'Trace\TraceServiceProvider',
         'Dashboard\DashboardServiceProvider',
         'Services\ApiServiceProvider',
@@ -225,7 +225,7 @@ return array(
         'Validator'       => 'Illuminate\Support\Facades\Validator',
         'View'            => 'Illuminate\Support\Facades\View',
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
-        'BasicAuth'       => 'Http\BasicAuth\Facade',
+        'BasicAuth'       => 'RZP\Http\BasicAuth\Facade',
         'Trace'           => 'Trace\Facade',
         'Slack'           => 'Maknz\Slack\Facades\Slack'
     ),

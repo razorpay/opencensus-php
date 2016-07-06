@@ -4,9 +4,6 @@ namespace Trace;
 
 use Illuminate\Support\Facades\Facade as BaseFacade;
 
-/**
- * @see \Http\BasicAuth
- */
 class Facade extends BaseFacade
 {
     /**
