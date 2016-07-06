@@ -334,7 +334,7 @@ class Entity extends Base\PublicEntity
     {
         $banks = $this->getBanks();
 
-        $names = RZP\Models\Payment\Processor\Netbanking::getNames($banks);
+        $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
 
         return $names;
     }

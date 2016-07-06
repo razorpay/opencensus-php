@@ -9,8 +9,8 @@ use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Services\SlackPoster;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class FeeCalculator
 {

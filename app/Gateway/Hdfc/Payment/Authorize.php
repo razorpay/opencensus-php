@@ -4,8 +4,8 @@ namespace RZP\Gateway\Hdfc\Payment;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Payment;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 

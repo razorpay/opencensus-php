@@ -167,7 +167,7 @@ class Dashboard
 
             $mode = \BasicAuth::getMode();
 
-            Queue::push('Dashboard\\'.ucwords($type).'@postRequest', array(
+            Queue::push('\RZP\Dashboard\\'.ucwords($type).'@postRequest', array(
                 'mode'      => $mode,
                 'message'   => $data
             ));

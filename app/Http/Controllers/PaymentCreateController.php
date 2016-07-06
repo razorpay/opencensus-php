@@ -96,7 +96,7 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'get')
                 {
-                    $response = Redirect::away($data['request']['url']);
+                    $response = \Redirect::away($data['request']['url']);
                     $response->headers->set('X-gateway', $data['gateway']);
 
                     return $response;

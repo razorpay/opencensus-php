@@ -5,7 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use RZP\Constants\Mode;
 use BasicAuth;
-use Dashboard\Dashboard;
+use RZP\Dashboard\Dashboard;
 use RZP\Http\Route;
 use RZP\Models\Gateway;
 use RZP\Models\Merchant;

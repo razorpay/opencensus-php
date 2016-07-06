@@ -4,7 +4,7 @@ namespace RZP\Gateway\Hdfc;
 
 use RZP\Gateway\Hdfc;
 
-class Utility extends RZP\Gateway\Utility
+class Utility extends \RZP\Gateway\Utility
 {
     public static function createXml($array)
     {
