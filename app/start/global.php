@@ -80,7 +80,7 @@ require app_path().'/lib/validation.php';
 
 Validator::resolver(function($translator, $data, $rules, $messages)
 {
-    return new Models\Base\ExtendedValidations(
+    return new RZP\Models\Base\ExtendedValidations(
                     $translator, $data, $rules, $messages);
 });
 
@@ -89,4 +89,4 @@ Queue::failing(function($connection, $job, $data)
     Trace::error(Trace\TraceCode::QUEUE_JOB_FAILURE);
 });
 
-Event::subscribe(Models\Event\ApiEventSubscriber::class);
+Event::subscribe(RZP\Models\Event\ApiEventSubscriber::class);

@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Amex;
 
-use Models\Base;
+use RZP\Models\Base;
 use RZP\Gateway\AxisMigs;
 
 class Entity extends AxisMigs\Entity

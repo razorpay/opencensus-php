@@ -1,0 +1,235 @@
+<?php
+
+namespace RZP\Models\Merchant;
+
+use Config;
+use Carbon\Carbon;
+use RZP\Exception;
+use Mail;
+use RZP\Models\Payment;
+use RZP\Models\Settlement;
+use Trace\TraceCode;
+
+class DailyReport
+{
+    /**
+     * Generates a new daily report
+     * @param String $id Merchant Id
+     */
+    function __construct($id)
+    {
+        $this->merchantId = $id;
+
+        // 00:00 Yesterday
+        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
+
+        // 00:00 Today
+        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
+
+        // date format = 6th July 2015
+        $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
+
+        $this->data = $this->fetchDailyDetails();
+
+        $this->trace = \Trace::getFacadeRoot();
+    }
+
+    /**
+     * Sends the daily report
+     * @return array of summary data
+     * array is empty if mail wasn't sent
+     */
+    public function send()
+    {
+        if ($this->isBlank() === false)
+        {
+            $this->sendDailyReport();
+            return $this->data;
+        }
+        return [];
+    }
+
+    /**
+     * Sends daily transaction report over email to the given merchant
+     * @param  String $id merchant id
+     * @return null
+     */
+    protected function sendDailyReport()
+    {
+        $view = ['html'=>'emails.merchant.daily_report'];
+
+        $data = $this->data;
+
+        // This is a debug view only for raising proper errors
+        \View::make('emails.merchant.daily_report_debug', $data)->render();
+
+        Mail::send($view, $data, function($message) use ($data)
+        {
+            $to = $data['merchant']['email'];
+
+            // to might be an array
+            if (is_array($to))
+            {
+                foreach ($to as $email)
+                {
+                    $message->to($email);
+                }
+            }
+            else
+            {
+                // This should not be getting called
+                // But just for fallback
+                $message->to($to);
+            }
+
+            $message->from('reports@razorpay.com');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->cc('notifications@razorpay.com');
+
+            $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
+        });
+    }
+
+    /**
+     * Returns an array with the following attributes:
+     *     sum: sum of all authorized payments
+     *     payments: array containing all authorized payments
+     *     order_id: whether any of the payments had an orderId
+     *
+     * @return array
+     */
+    protected function getAuthorizedPayments()
+    {
+        $authorizedCollection = (new Payment\Repository)->fetch(
+            ['status'    => 'authorized'],
+            $this->merchantId);
+
+        return $this->summarizePayments($authorizedCollection);
+    }
+
+    protected function getCapturedPayments()
+    {
+        $capturedCollection = (new Payment\Repository)
+            ->fetchCapturedBetweenTimestamp(
+                $this->timeLowerLimit,
+                $this->timeUpperLimit,
+                $this->merchantId
+            );
+
+        return $this->summarizePayments($capturedCollection);
+    }
+
+    /**
+     * This method is called over a collection of payments
+     *
+     * @return Array
+     */
+    private function summarizePayments($payments)
+    {
+        //
+        // Remove comment when we start using order id
+        //
+
+        // $isOrderIdSet = false;
+        // $sum = 0;
+        // $payments = [];
+
+        // // This loop makes sure that every member of payments is
+        // // an array with all required attribute
+        // foreach ($paymentCollection as $payment)
+        // {
+        //     $isOrderIdSet = (bool) $payment->getOrderId();
+
+        //     $sum += $payment->getAmount();
+
+        //     $paymentArray = $payment->toArray();
+        //     $paymentArray['orderId'] = $payment->getOrderId();
+
+        //     $payments[] = $paymentArray;
+        // }
+
+        return [
+            'payments' => $payments->toArrayAdmin(),
+            'sum'      => $payments->sum('amount'),
+            'orderId'  => false
+        ];
+    }
+
+    /**
+     * Returns a settlement if found or null
+     * Raises exception if more than one settlement was found
+     * @return Array|null
+     */
+    protected function getSettlement()
+    {
+        $settlements = (new Settlement\Repository)->fetch([
+            'from' => $this->timeLowerLimit,
+            'to' => $this->timeUpperLimit
+        ], $this->merchantId);
+
+        // Return null if no settlement found
+        $settlement = null;
+
+        if (count($settlements) > 1)
+        {
+            $data = [
+                'merchant_id'       => $this->merchantId,
+                'settlement_count'  => count($settlements)
+            ];
+
+            throw new Exception\RuntimeException(
+                'Found more than 1 settlement within one day', $data);
+        }
+        else if (count($settlements) === 1)
+        {
+            $settlement = $settlements[0]->toArray();
+        }
+
+        return $settlement;
+    }
+
+    protected function getRefunds()
+    {
+        $refunds = (new Payment\Refund\Repository)->fetch([
+            'from' => $this->timeLowerLimit,
+            'to' => $this->timeUpperLimit
+        ], $this->merchantId);
+
+        return [
+            'sum'      => $refunds->sum('amount'),
+            'refunds'  => $refunds->toArrayPublic(),
+        ];
+    }
+
+    protected function fetchDailyDetails()
+    {
+        $merchant = (new Repository)->findOrFailPublic($this->merchantId);
+
+        $data = [
+            'captured'       => $this->getCapturedPayments(),
+            'authorized'     => $this->getAuthorizedPayments(),
+            'refunds'        => $this->getRefunds(),
+            'settlement'     => $this->getSettlement(),
+            'merchant'       => $merchant->toArray(),
+            'account_number' => $merchant->getRedactedAccountNumber(),
+            'date'           => $this->date,
+        ];
+
+        // toArray is not reliable
+        $data['merchant']['email'] = $merchant->getTransactionReportEmail();
+
+        return $data;
+    }
+
+    protected function isBlank()
+    {
+        $data = $this->data;
+
+        return (($data['captured']['payments']['count'] === 0) and
+                ($data['authorized']['payments']['count'] === 0) and
+                ($data['refunds']['refunds']['count'] === 0) and
+                ($data['settlement'] === null));
+    }
+}
