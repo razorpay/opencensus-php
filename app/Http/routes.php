@@ -244,10 +244,7 @@ Route::group(['middleware'  =>  'auth:admin'], function()
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 });
 
-Route::group([],function()
-{
-    Route::post('/admin/signin', array('before' => 'csrf','uses'=> 'AdminController@postSignin'));
-});
+Route::post('/admin/signin', 'AdminController@postSignin');
 Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');
