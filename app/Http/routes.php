@@ -71,45 +71,42 @@ Route::group(['middleware'  =>  'auth:user'], function()
     // This is a sensitive route
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
 
-    Route::group(['middleware'  =>  'csrf'], function()
-    {
-        // Team Administration
-        Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
-        Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
+    // Team Administration
+    Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
+    Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember');
 
-        // Invite Administration (Owners)
-        Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
-        Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitation');
-        Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
-        Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
+    // Invite Administration (Owners)
+    Route::post('settings/invitations', 'InvitationsController@postSendMerchantInvitation');
+    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitation');
+    Route::put('settings/invitations/{invite}', 'InvitationsController@updateMerchantInvitation');
+    Route::delete('settings/invitations/{invite}', 'InvitationsController@deleteMerchantInvitationForUser');
 
-        // Invitation related (User side)
-        Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
-        Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
+    // Invitation related (User side)
+    Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
+    Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
-        Route::post('/password', 'UserController@postPassword');
-        Route::post('/activation', 'MerchantController@postActivation');
-        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
-        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
-        Route::post('/{mode}/keys', 'MerchantController@postKeys');
-        Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
-        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment');
-        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
-        Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-        Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
-        Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
+    Route::post('/password', 'UserController@postPassword');
+    Route::post('/activation', 'MerchantController@postActivation');
+    Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
+    Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
+    Route::post('/{mode}/keys', 'MerchantController@postKeys');
+    Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
+    Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment');
+    Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
+    Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
+    Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook');
+    Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook');
 
-        // Upgrades a standard invited user to a merchant
-        Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
+    // Upgrades a standard invited user to a merchant
+    Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
 
-        // Registers a sub-merchant account
-        Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant');
-    });
+    // Registers a sub-merchant account
+    Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant');
 });
-Route::group(array('before' => 'guest.user'), function()
+Route::group([], function()
 {
     Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
-    Route::group(array('before' => 'csrf'), function()
+    Route::group([], function()
     {
         Route::post('/user/signin', 'UserController@postSignin');
         Route::post('/user/register', 'UserController@postRegister');
@@ -126,10 +123,6 @@ Route::group(['middleware'  =>  'slack'], function ()
 
 Route::group(['middleware'  =>  'auth:admin'], function()
 {
-
-    // Warning: Anything added to this list is vulnerable to CSRF
-    // So Make sure that you do not take any actions that are not
-    // just FETCH operations
     Route::get('/admin/user', 'AdminController@getAdmin');
     Route::get('/admin/user/logout', 'AdminController@getLogout');
     Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
@@ -158,93 +151,88 @@ Route::group(['middleware'  =>  'auth:admin'], function()
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
     Route::get('/admin/triggererror', 'AdminController@undefinedMethod');
 
-    Route::group(['middleware'  =>  'csrf'], function()
-    {
-        // Admin Meta Routes
-        Route::post('/admin/password', 'AdminController@postPassword');
+    // Admin Meta Routes
+    Route::post('/admin/password', 'AdminController@postPassword');
 
-        // Pricing Plan Routes
-        Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
-        Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
-        Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
+    // Pricing Plan Routes
+    Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
+    Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
+    Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
 
-        // EMI Routes
-        Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
-        Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
+    // EMI Routes
+    Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
+    Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
 
-        // Admin merchant actions
-        Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
-        Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
-        Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
-        Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
-        Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
-        Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
-        Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
-        Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
-        Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-        Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
-        Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
-        Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
-        Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
-        Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
-        Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
-        Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
-        Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
-        Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
+    // Admin merchant actions
+    Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
+    Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
+    Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
+    Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
+    Route::post('/admin/merchant/{id}/features', 'AdminController@syncMerchantFeatures');
+    Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
+    Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
+    Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
+    Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
+    Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
+    Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
+    Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
+    Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
+    Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
+    Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
+    Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
+    Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
+    Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 
-        // Creevey Related routes
-        Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
-        Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
+    // Creevey Related routes
+    Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
+    Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
-        // IIN Routes
-        Route::post('/admin/iin/add', 'AdminController@postAddIIN');
-        Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
-        Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
-        // EMI Plan Routes
-        Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
+    // IIN Routes
+    Route::post('/admin/iin/add', 'AdminController@postAddIIN');
+    Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
+    Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
+    // EMI Plan Routes
+    Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
-        // Admin Payment Actions
-        Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
-        Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
-        Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
-        Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
-        // More admin payment actions
-        // These use proxy auth so needs merchantId
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
-        Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
+    // Admin Payment Actions
+    Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
+    Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
+    Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
+    Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
+    // More admin payment actions
+    // These use proxy auth so needs merchantId
+    Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
+    Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
+    Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
+    Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
 
-        // Admin Main Actions, mostly initiated from the Actions screen
-        Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
-        Route::post('/admin/trigger/error', 'AdminController@triggerError');
-        Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
-        Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
-        // Newsletter
-        Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
-        Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
-        // Terminal Routes
-        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
-        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
+    // Admin Main Actions, mostly initiated from the Actions screen
+    Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
+    Route::post('/admin/trigger/error', 'AdminController@triggerError');
+    Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
+    Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
+    // Newsletter
+    Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
+    Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
+    // Terminal Routes
+    Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
+    Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
 
-        // Reconcile settlements
-        Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
+    // Reconcile settlements
+    Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
 
-        Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
-    });
+    Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
     Route::group(['middleware'  =>  ['auth:admin', 'superadmin']], function()
     {
-        Route::group(['middleware'  =>  'csrf'], function() {
-            // This is the RAW API route which processes api calls
-            Route::post('/api/{path?}', 'AdminController@passThrough')
-                ->where('path', '.*$');
-            Route::post('/admin/users', 'AdminController@postAddAdmin');
-            Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
-            Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
-            Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-            Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
-        });
+        // This is the RAW API route which processes api calls
+        Route::post('/api/{path?}', 'AdminController@passThrough')
+            ->where('path', '.*$');
+        Route::post('/admin/users', 'AdminController@postAddAdmin');
+        Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
+        Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
+        Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+        Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
         Route::get('/admin/users', 'AdminController@getAdmins');
     });
