@@ -1,5 +1,5 @@
 <?php
-namespace Models\Admin;
+namespace App\Admin;
 
 use AWS;
 use Config;

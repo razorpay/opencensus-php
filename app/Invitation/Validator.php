@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Invitation;
+namespace App\Invitation;
 
-use Models\Base;
+use App\Base;
 
 class Validator extends Base\Validator
 {

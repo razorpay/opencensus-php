@@ -1,9 +1,9 @@
 <?php
 
-namespace Models\Invitation;
+namespace App\Invitation;
 
-use Models\Merchant;
-use Models\Base;
+use App\Merchant;
+use App\Base;
 
 class Entity extends Base\Entity
 {

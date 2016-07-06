@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin;
 
 use Carbon\Carbon;
-use Models\Api;
-use Models\MerchantDetails;
+use App\Api;
+use App\MerchantDetails;
 
 class Slack
 {

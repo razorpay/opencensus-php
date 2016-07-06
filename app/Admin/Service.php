@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin;
 
 use AWS;
 use Auth;
@@ -11,10 +11,10 @@ use Queue;
 use Requests;
 use Session;
 
-use Models\Base;
-use Models\Admin;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Base;
+use App\Admin;
+use App\Merchant;
+use App\MerchantDetails;
 use Models\Transaction;
 
 use Razorpay\Api\Request as ApiRequest;
@@ -1033,7 +1033,7 @@ class Service extends Base\Service
 
             // Log activation on marketing google spreadsheet
             $zapierData = $this->activationZapierData($details);
-            Queue::push('Models\Admin\Service@postActivationToZapier', $zapierData);
+            Queue::push('App\Models\Service@postActivationToZapier', $zapierData);
 
             $this->logActionToSlack($merchant, Actions::ACTIVATED);
         }
@@ -1456,7 +1456,7 @@ class Service extends Base\Service
 
         if (count($urls) >= 7)
         {
-            \Queue::push('Models\Admin\Creevey', [$id, $urls, $name]);
+            \Queue::push('App\Models\Creevey', [$id, $urls, $name]);
             return [];
         }
         else

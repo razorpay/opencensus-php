@@ -1,6 +1,7 @@
 <?php
+namespace App\Console\Commands;
 
-use Models\Merchant\Entity as Merchant;
+use App\Merchant\Entity as Merchant;
 use Models\User\Entity as UserEntity;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;

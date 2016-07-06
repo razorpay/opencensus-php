@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Merchant;
+namespace App\Merchant;
 
-use Models\Base;
+use App\Base;
 
 class Validator extends Base\Validator
 {

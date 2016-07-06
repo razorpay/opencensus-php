@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\Api;
+namespace App\Api;
 
 use Carbon\Carbon;
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Auth;
-use Models\Base;
+use App\Base;
 use Trace;
 
 class Service extends Base\Service

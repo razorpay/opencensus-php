@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin;
 
 use Requests_Session;
 use Sunra\PhpSimple\HtmlDomParser;

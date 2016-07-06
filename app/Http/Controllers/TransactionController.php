@@ -1,9 +1,10 @@
 <?php
+namespace App\Http\Controllers;
 
-use Models\Api;
-use Models\Merchant;
+use App\Api;
+use App\Merchant;
 
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Models\Transaction;
 
 class TransactionController extends BaseController

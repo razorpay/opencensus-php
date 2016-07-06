@@ -1,8 +1,9 @@
 <?php
+namespace App\Http\Controllers;
 
-use Http\AppResponse;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Http\AppResponse;
+use App\Merchant;
+use App\MerchantDetails;
 use Razorpay\Mailers\ContactFormMailer;
 
 class MerchantController extends BaseController

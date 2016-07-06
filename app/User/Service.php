@@ -10,10 +10,10 @@ use Auth;
 use Hash;
 use Input;
 
-use Models\Base;
-use Models\Invitation;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Base;
+use App\Invitation;
+use App\Merchant;
+use App\MerchantDetails;
 use Models\User;
 
 use Queue;

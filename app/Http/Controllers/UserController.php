@@ -1,9 +1,10 @@
 <?php
+namespace App\Http\Controllers;
 
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Models\User;
-use Models\MerchantDetails;
-use Models\Merchant;
+use App\MerchantDetails;
+use App\Merchant;
 
 class UserController extends BaseController
 {

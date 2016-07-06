@@ -1,13 +1,13 @@
 <?php
 
-namespace Models\MerchantDetails;
+namespace App\MerchantDetails;
 
 use Auth;
 use AWS;
 use Carbon\Carbon;
 use Config;
 use Mail;
-use Models\Base;
+use App\Base;
 use Queue;
 use Razorpay\Mailers\MerchantMailer;
 use Requests;
@@ -231,7 +231,7 @@ class Service extends Base\Service
         // Take screenshots as well
         $urls = $merchantDetails->getUrls();
 
-        Queue::push('Models\Admin\Creevey', [
+        Queue::push('App\Models\Creevey', [
             $customer['id'],
             $urls,
             $customer['business_name']
@@ -242,7 +242,7 @@ class Service extends Base\Service
         $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
 
         $zapierData = $this->activationZapierData($customer);
-        Queue::push('Models\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
+        Queue::push('App\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
     }
 
     protected function activationZapierData(array $customer)

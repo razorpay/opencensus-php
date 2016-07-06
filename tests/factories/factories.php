@@ -2,7 +2,7 @@
 
 $password = Hash::make('123456');
 
-$factory('Models\Merchant\Entity', [
+$factory('App\Merchant\Entity', [
     'id'  =>  $faker->word,
     'name'  =>  $faker->word,
     'email'  =>  $faker->email,
@@ -16,7 +16,7 @@ $factory('Models\User\Entity', [
     'password'  =>  $password
 ]);
 
-$factory('Models\Admin\Entity', [
+$factory('App\Admin\Entity', [
     'name'  => $faker->word,
     'username'  => $faker->word,
     'password'  => $password,
@@ -24,8 +24,8 @@ $factory('Models\Admin\Entity', [
     'superadmin'    => '1'
 ]);
 
-$factory('Models\MerchantDetails\Entity', [
-    'merchant_id'   => 'Models\Merchant\Entity',
+$factory('App\MerchantDetails\Entity', [
+    'merchant_id'   => 'App\Merchant\Entity',
     'contact_name'  => $faker->word,
     'contact_email' => $faker->email,
     'transaction_report_email'=>$faker->email,

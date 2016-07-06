@@ -1,16 +1,16 @@
 <?php
 
-namespace Models\Merchant;
+namespace App\Merchant;
 
 use Auth;
 use Hash;
 use Requests;
 
-use Models\Base;
-use Models\Merchant;
+use App\Base;
+use App\Merchant;
 use Models\User;
-use Models\Invitation;
-use Models\MerchantDetails;
+use App\Invitation;
+use App\MerchantDetails;
 
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;

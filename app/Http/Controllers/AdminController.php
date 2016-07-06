@@ -1,9 +1,10 @@
 <?php
+namespace App\Http\Controllers;
 
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Http\SlackResponse;
-use Models\Admin;
-use Models\Merchant;
+use App\Admin;
+use App\Merchant;
 
 class AdminController extends BaseController
 {

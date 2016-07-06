@@ -34,8 +34,8 @@ class AdminTest extends TestCase
         /** Creates a new admin & merchant if none exist in db, else uses first admin. This is necesssary to persist sessions between tests **/
         try
         {
-            $this->admin = Models\Admin\Entity::firstorfail();
-            $this->merchant_details = Models\MerchantDetails\Entity::firstorfail();
+            $this->admin = App\Models\Entity::firstorfail();
+            $this->merchant_details = App\MerchantDetails\Entity::firstorfail();
             $this->merchant = $this->merchant_details->merchant;
         }
         catch(Exception $e)
@@ -49,7 +49,7 @@ class AdminTest extends TestCase
                 'business_name' =>  substr(strtoupper(md5('Razorpay' . microtime())), 0, 20)
             ];
 
-            $this->merchant = Models\Merchant\Entity::createFromUser($user, $data);
+            $this->merchant = App\Merchant\Entity::createFromUser($user, $data);
             $this->merchant->saveOrFail();
 
             $this->merchant_details = $this->createEntity('merchant_details',[
@@ -61,7 +61,7 @@ class AdminTest extends TestCase
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
             try
             {
-                $error = (new Models\Merchant\Service)
+                $error = (new App\Merchant\Service)
                     ->confirmMerchantById($this->merchant->id);
             }
 

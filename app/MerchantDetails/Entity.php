@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\MerchantDetails;
+namespace App\MerchantDetails;
 
-use Models\Base;
+use App\Base;
 
 class Entity extends Base\Entity
 {
@@ -163,7 +163,7 @@ class Entity extends Base\Entity
 
     public function merchant()
     {
-        return $this->belongsTo('Models\Merchant\Entity');
+        return $this->belongsTo('App\Merchant\Entity');
     }
 
     public function filterForAjax()

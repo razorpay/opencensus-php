@@ -1,7 +1,8 @@
 <?php
+namespace App\Http\Controllers;
 
-use Models\Invitation;
-use Http\AppResponse;
+use App\Invitation;
+use App\Http\AppResponse;
 
 class InvitationsController extends BaseController
 {

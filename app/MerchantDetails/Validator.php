@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\MerchantDetails;
+namespace App\MerchantDetails;
 
-use Models\Base;
+use App\Base;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Razorpay\IFSC\IFSC;
 
