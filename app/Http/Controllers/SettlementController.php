@@ -6,6 +6,7 @@ use RZP\Http\ApiResponse;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use Request;
 
 class SettlementController extends Controller
 {

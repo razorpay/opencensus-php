@@ -4,8 +4,8 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use Illuminate\Foundation\Application;
-use App\Http\ApiResponse;
-use App\Http\Route;
+use RZP\Http\ApiResponse;
+use RZP\Http\Route;
 
 class Authenticate
 {

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Models\Base\EsDao;
 use RZP\Trace\TraceCode;
+use Request;
 
 class EsController extends Controller
 {

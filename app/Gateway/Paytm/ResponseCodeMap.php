@@ -296,7 +296,7 @@ class ResponseCodeMap
 
     public static function getApiErrorCode($code)
     {
-        $class = 'EE\Error\ErrorCode::';
+        $class = 'RZP\Error\ErrorCode::';
 
         if (isset(self::$codes[$code]) === false)
         {

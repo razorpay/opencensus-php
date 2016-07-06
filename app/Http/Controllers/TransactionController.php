@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Http\ApiResponse;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Transaction;
+use Request;
 
 class TransactionController extends Controller
 {

@@ -2,8 +2,8 @@
 
 namespace RZP\Trace;
 
-use Trace\TraceCode;
-use Trace\TraceFields;
+use RZP\Trace\TraceCode;
+use RZP\Trace\TraceFields;
 
 class Trace extends TraceWriter
 {

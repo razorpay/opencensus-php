@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
 use RZP\Exception;
+use Request;
 
 class ReconciliatorController extends Controller
 {

@@ -31,11 +31,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new AwsInstance($app);
         });
 
-        $this->app->singleton('exception.handler', function($app)
-        {
-            return new \EE\Exception\Handler($app);
-        });
-
         $this->app->singleton('gateway', function($app)
         {
             return new GatewayManager($app);
@@ -63,7 +58,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('repo', function($app)
         {
-            return new \Base\RepositoryManager($app);
+            return new \RZP\Base\RepositoryManager($app);
         });
     }
 

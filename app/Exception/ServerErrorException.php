@@ -31,7 +31,7 @@ class ServerErrorException extends BaseException
     {
         $this->data = $data;
 
-        $error = new \EE\Error\Error($code, null, null, $data);
+        $error = new \RZP\Error\Error($code, null, null, $data);
 
         $this->error = $error;
 
