@@ -126,8 +126,7 @@ class Database
 
     protected function truncateTestingDatabaseIfRequired()
     {
-        if ((isset($_ENV['TRUNCATE_DATABASE'])) and
-            ($_ENV['TRUNCATE_DATABASE'] === true) and
+        if ((env('TRUNCATE_DATABASE') === true) and
             (self::$fixturesDone === false))
         {
             $this->truncate();
