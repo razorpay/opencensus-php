@@ -196,7 +196,7 @@ class MobikwikGatewayTest extends TestCase
         $topupResponse = $this->topupPayment($responseData['payment_id']);
 
         // Make topup redirection request
-        $topupRedirect = $this->makeRequest($topupResponse['request']);
+        $topupRedirect = $this->sendRequest($topupResponse['request']);
 
         $ret = (($this->isResponseInstanceType('redirect', $topupRedirect)) and
             ($topupRedirect->getStatusCode() === 302));
@@ -209,7 +209,7 @@ class MobikwikGatewayTest extends TestCase
                 'content' => []
             );
 
-            $callbackResponse = $this->makeRequest($callback);
+            $callbackResponse = $this->sendRequest($callback);
         }
         else
         {

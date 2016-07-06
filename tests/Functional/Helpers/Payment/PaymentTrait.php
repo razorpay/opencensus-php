@@ -27,7 +27,7 @@ trait PaymentTrait
 
     use RequestResponseFlowTrait
     {
-        makeRequest as makeRequestParent;
+        sendRequest as makeRequestParent;
     }
 
     protected $otp = null;
@@ -892,7 +892,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function makeRequest($request, &$callback = null)
+    protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
 

@@ -22,7 +22,7 @@ trait SettlementTrait
         {
             $request = ['url' => $deleteUrl, 'method' => 'delete'];
 
-            $response = $this->makeRequest($request);
+            $response = $this->sendRequest($request);
 
             $this->assertResponseStatus(200);
         }

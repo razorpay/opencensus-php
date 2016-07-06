@@ -175,7 +175,7 @@ class CustomerTest extends TestCase
             ],
         );
 
-        $response = $this->makeRequest($request);
+        $response = $this->sendRequest($request);
 
         return $response;
     }

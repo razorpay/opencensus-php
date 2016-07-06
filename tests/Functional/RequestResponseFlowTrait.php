@@ -26,7 +26,7 @@ trait RequestResponseFlowTrait
             }
             else
             {
-                $response = $this->makeRequest($data['request']);
+                $response = $this->sendRequest($data['request']);
             }
         }
         catch (BaseException $e)
@@ -185,7 +185,7 @@ trait RequestResponseFlowTrait
             return 200;
     }
 
-    protected function makeRequest($request)
+    protected function sendRequest($request)
     {
         $defaults = array(
             'method' => 'POST',
@@ -236,7 +236,7 @@ trait RequestResponseFlowTrait
 
     protected function makeRequestAndGetContent($request, &$callback = null)
     {
-        $response = $this->makeRequest($request, $callback);
+        $response = $this->sendRequest($request, $callback);
 
         return $this->getJsonContentFromResponse($response, $callback);
     }
