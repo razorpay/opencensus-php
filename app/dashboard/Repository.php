@@ -1,6 +1,6 @@
 <?php
 
-namespace Dashboard;
+namespace RZP\Dashboard;
 
 use Base;
 

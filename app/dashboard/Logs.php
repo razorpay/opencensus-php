@@ -1,6 +1,6 @@
 <?php
 
-namespace Dashboard;
+namespace RZP\Dashboard;
 
 class Logs extends \Models\Base\Entity
 {
