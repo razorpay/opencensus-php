@@ -243,7 +243,7 @@ return array(
 
         // Custom Facade
         'Excel'     => 'Maatwebsite\Excel\Facades\Excel',
-        'AWS'       => Aws\Laravel\AwsFacade::class,
+        'AWS'       => 'Aws\Laravel\AwsFacade::class',
         // 'BasicAuth'       => 'Http\BasicAuth\Facade',
         // 'Trace'           => 'Trace\Facade',
         // 'Slack'           => 'Maknz\Slack\Facades\Slack'
