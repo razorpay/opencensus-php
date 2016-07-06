@@ -1,9 +1,6 @@
 <?php
 
 namespace RZP\Services;
-
-use RZP\Dashboard\Dashboard;
-
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Dashboard\Dashboard;
 
