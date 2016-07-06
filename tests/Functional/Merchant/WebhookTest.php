@@ -285,7 +285,7 @@ class WebhookTest extends TestCase
 
     protected function mockInferno()
     {
-        $class = \Models\Merchant\Webhook\Inferno::class;
+        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
 
         $inferno = Mockery::mock($class, [])->makePartial();
 

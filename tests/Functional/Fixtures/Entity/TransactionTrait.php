@@ -8,7 +8,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payment)
         {
-            return (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+            return (new \RZP\Models\Transaction\Core)->createFromPaymentAuthorized($payment);
         });
     }
 
@@ -16,7 +16,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payment)
         {
-            return (new \Models\Transaction\Core)->updateOnCapture($payment);
+            return (new \RZP\Models\Transaction\Core)->updateOnCapture($payment);
         });
     }
 
@@ -24,7 +24,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($refund)
         {
-            return  (new \Models\Transaction\Core)->createFromRefund($refund);
+            return  (new \RZP\Models\Transaction\Core)->createFromRefund($refund);
         });
     }
 }
