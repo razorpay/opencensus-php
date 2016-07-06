@@ -113,7 +113,6 @@ return array(
         /*
          * Laravel Framework Service Providers...
          */
-        'Illuminate\Auth\AuthServiceProvider',
         'Illuminate\Auth\Passwords\PasswordResetServiceProvider',
         'Illuminate\Broadcasting\BroadcastServiceProvider',
         'Illuminate\Cache\CacheServiceProvider',
@@ -139,6 +138,7 @@ return array(
         /*
          * Application Service Providers...
          */
+        'App\Providers\AuthServiceProvider',
         'App\Providers\AppServiceProvider',
         'App\Providers\EventServiceProvider',
         'App\Providers\RouteServiceProvider',
@@ -200,6 +200,7 @@ return array(
         'Eloquent'        => 'Illuminate\Database\Eloquent\Model',
         'Event'           => 'Illuminate\Support\Facades\Event',
         'File'            => 'Illuminate\Support\Facades\File',
+        'Gate'            => Illuminate\Support\Facades\Gate::class,
         'Hash'            => 'Illuminate\Support\Facades\Hash',
         'Input'           => 'Illuminate\Support\Facades\Input',
         'Inspiring'       => 'Illuminate\Foundation\Inspiring',

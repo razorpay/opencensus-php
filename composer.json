@@ -3,7 +3,7 @@
     "description": "Razorpay Merchant Dashbaord",
     "keywords": ["dashboard", "razorpay"],
     "require": {
-        "laravel/framework": "5.1.*",
+        "laravel/framework": "5.1.33",
         "razorpay/razorpay": "dev-master",
         "rmccue/requests": ">=1.0",
         "aws/aws-sdk-php-laravel": "~3.0",

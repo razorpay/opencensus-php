@@ -9,10 +9,7 @@ use App\Base;
 use App\User;
 use App\Invitation;
 
-use Illuminate\Auth\UserInterface;
-use Illuminate\Auth\Reminders\RemindableInterface;
-
-class Entity extends Base\Entity implements UserInterface, RemindableInterface
+class Entity extends Base\Entity
 {
     use \Conner\Tagging\TaggableTrait;
 

@@ -8,11 +8,19 @@ use App\Base;
 use App\Merchant;
 use App\Invitation;
 use RandomLib\Factory as RandomLibFactory;
-use Illuminate\Auth\UserInterface;
-use Illuminate\Auth\Reminders\RemindableInterface;
 
-class Entity extends Base\Entity implements UserInterface, RemindableInterface
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+
+class Entity extends Base\Entity implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
+    use Authenticatable, Authorizable, CanResetPassword;
+
     /**
      * Indicates if the IDs are auto-incrementing.
      *
