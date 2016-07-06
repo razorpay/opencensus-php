@@ -3,7 +3,7 @@
 namespace App\Mailers;
 
 use App\User\Entity as UserEntity;
-use App\Exceptions\InvalidContactInformationException;
+use App\Exception\InvalidContactInformationException;
 
 class UserMailer extends Mailer
 {

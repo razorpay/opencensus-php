@@ -3,7 +3,7 @@
 namespace App\Mailers;
 
 use App\Merchant\Entity as MerchantEntity;
-use App\Exceptions\InvalidContactInformationException;
+use App\Exception\InvalidContactInformationException;
 
 class MerchantMailer extends Mailer
 {
