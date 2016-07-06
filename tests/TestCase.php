@@ -31,7 +31,11 @@ class TestCase extends \TestCase
 
         $testEnvironment = 'testing';
 
-        return require __DIR__.'/../../bootstrap/start.php';
+        $app = require __DIR__.'/../bootstrap/app.php';
+
+        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+        return $app;
     }
 
     public function setUp()
@@ -52,6 +56,11 @@ class TestCase extends \TestCase
         $this->freeUpObjectProperties();
 
         parent::tearDown();
+    }
+
+    protected function setUpTraits()
+    {
+        ;
     }
 
     protected function freeUpObjectProperties()
