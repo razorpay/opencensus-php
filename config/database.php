@@ -45,7 +45,7 @@ return array(
     */
 
     'connections' => [
-        'mysql' => [
+        // 'mysql' => [
             'live' => [
                 'driver'    => env('DB_LIVE_DRIVER'),
                 'host'      => env('DB_LIVE_HOST'),
@@ -100,7 +100,7 @@ return array(
                 'prefix'    => '',
                 'strict'    => true
             ],
-        ]
+        // ]
     ],
 
     /*
