@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'app_token';
 
-    protected $table            = RZP\Constants\Table::APP_TOKEN;
+    protected $table            = \RZP\Constants\Table::APP_TOKEN;
 
     protected $generateIdOnCreate = true;
 

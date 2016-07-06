@@ -1,6 +1,6 @@
 <?php
 
-namespace Base;
+namespace RZP\Base;
 
 use Closure;
 use RZP\Constants\Entity;

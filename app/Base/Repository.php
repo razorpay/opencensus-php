@@ -1,6 +1,6 @@
 <?php
 
-namespace Base;
+namespace RZP\Base;
 
 use RZP\Constants\Entity as E;
 use RZP\Constants\Table;

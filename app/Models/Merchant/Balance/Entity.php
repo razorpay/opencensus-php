@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
     const ON_HOLD = 'on_hold';
     const CREDITS = 'credits';
 
-    protected $table = RZP\Constants\Table::BALANCE;
+    protected $table = \RZP\Constants\Table::BALANCE;
 
     protected $fillable = array(
         self::ID);

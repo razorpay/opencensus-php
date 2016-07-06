@@ -60,4 +60,8 @@ $app->singleton(
 |
 */
 
+require __DIR__.'/../app/lib/utility.php';
+require __DIR__.'/../app/lib/utility2.php';
+require __DIR__.'/../app/lib/PhoneBook.php';
+
 return $app;

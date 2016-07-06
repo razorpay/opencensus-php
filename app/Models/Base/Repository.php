@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Base;
 
-use Base\Repository as BaseRepository;
+use RZP\Base\Repository as BaseRepository;
 use Illuminate\Support\Facades\App;
 use Trace\TraceCode;
 
