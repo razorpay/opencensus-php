@@ -60,7 +60,7 @@ class Repository extends Base\Repository
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
-        $setlIds = $setls->fetch(Settlement\Entity::ID)->all();
+        $setlIds = $setls->modelKeys();
 
         $query = $this->newQuery();
 
