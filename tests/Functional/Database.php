@@ -20,7 +20,7 @@ class Database
 
         $this->config = $app['config'];
 
-        $this->artisan = $app['artisan'];
+        // $this->artisan = $app['artisan'];
     }
 
     public function tearDown()
@@ -118,8 +118,10 @@ class Database
      */
     public function migrate()
     {
-        $this->artisan->call('migrate', array('--database' => 'live'));
-        $this->artisan->call('migrate', array('--database' => 'test'));
+        // $this->artisan->call('migrate', array('--database' => 'live'));
+        // $this->artisan->call('migrate', array('--database' => 'test'));
+        \Artisan::call('migrate', array('--database' => 'live'));
+        \Artisan::call('migrate', array('--database' => 'test'));
     }
 
     protected function truncateTestingDatabaseIfRequired()
