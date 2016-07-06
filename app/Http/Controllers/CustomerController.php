@@ -10,7 +10,7 @@ class CustomerController extends Controller
 {
     public function createLocalCustomer()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Service)->createLocalCustomer($input);
 
@@ -19,7 +19,7 @@ class CustomerController extends Controller
 
     public function updateCustomer($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Service)->edit($id, $input);
 
@@ -42,7 +42,7 @@ class CustomerController extends Controller
 
     public function addToken($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Token\Service)->add($id, $input);
 
@@ -51,7 +51,7 @@ class CustomerController extends Controller
 
     public function updateToken($id, $token)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Token\Service)->edit($id, $token, $input);
 
@@ -102,7 +102,7 @@ class CustomerController extends Controller
 
     public function logoutCustomer($appToken)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\App\Service)->deleteAppTokensForGlobalCustomer($appToken, $input);
 
@@ -111,7 +111,7 @@ class CustomerController extends Controller
 
     public function postOtp()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Service)->sendOtp($input);
 
@@ -120,7 +120,7 @@ class CustomerController extends Controller
 
     public function verifyOtp()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Service)->verifyOtp($input);
 
@@ -129,7 +129,7 @@ class CustomerController extends Controller
 
     public function validateDeviceToken($deviceToken)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Service)->validateDeviceToken($deviceToken, $input);
 
@@ -138,7 +138,7 @@ class CustomerController extends Controller
 
     public function updateSmsStatus($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Customer\Service)->updateSmsStatus($id, $input);
 

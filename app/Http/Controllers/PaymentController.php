@@ -30,7 +30,7 @@ class PaymentController extends Controller
      */
     public function getPayments()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payments = $this->payment->fetchMultiple($input);
 
@@ -49,7 +49,7 @@ class PaymentController extends Controller
      */
     public function postRefund($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payment = $this->payment->refund($id, $input);
 
@@ -58,7 +58,7 @@ class PaymentController extends Controller
 
     public function postRefundAuthorized($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payment = $this->payment->refundAuthorized($id, $input);
 
@@ -67,7 +67,7 @@ class PaymentController extends Controller
 
     public function postForceAuthorize($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payment = $this->payment->forceAuthorizeFailed($id, $input);
 
@@ -76,7 +76,7 @@ class PaymentController extends Controller
 
     public function postRefundOldAUthorizedPayments()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->payment->refundOldAuthorizedPayments($input);
 
@@ -95,7 +95,7 @@ class PaymentController extends Controller
      */
     public function postCapture($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payment = $this->payment->capture($id, $input);
 
@@ -114,7 +114,7 @@ class PaymentController extends Controller
 
     public function postCancel($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->payment->cancel($id, $input);
 
@@ -144,7 +144,7 @@ class PaymentController extends Controller
 
     public function getRefunds()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $refunds = $this->refund->fetchMultiple($input);
 
@@ -160,7 +160,7 @@ class PaymentController extends Controller
 
     public function generateNetbankingRefunds()
     {
-        $input = Input::all();
+        $input = Request::all();
         // Just a hack, will be shifted to the /refunds/excel route
         // once properly deployed
         $input['method'] = 'netbanking';
@@ -172,7 +172,7 @@ class PaymentController extends Controller
 
     public function generateRefunds()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $refundExcel = $this->refund->getRefundsFile($input);
 
@@ -195,7 +195,7 @@ class PaymentController extends Controller
 
     public function getCards()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Card\Service)->fetchMultiple($input);
 
@@ -232,7 +232,7 @@ class PaymentController extends Controller
 
     public function postDummyReturnCallback()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         return ApiResponse::json($input);
     }
@@ -250,7 +250,7 @@ class PaymentController extends Controller
 
     public function postDummyRoute()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $this->app['trace']->info(
             \Trace\TraceCode::PAYMENT_WEBHOOK,
@@ -259,7 +259,7 @@ class PaymentController extends Controller
 
     public function postPaymentMetadata($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->payment->addPaymentMetadata($id, $input);
 

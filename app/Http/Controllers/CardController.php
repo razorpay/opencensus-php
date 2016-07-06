@@ -18,7 +18,7 @@ class CardController extends Controller
 
     public function getCards()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Card\Service)->fetchMultiple($input);
 
@@ -34,7 +34,7 @@ class CardController extends Controller
 
     public function getIins()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Card\IIN\Service)->fetchMultiple($input);
 
@@ -43,7 +43,7 @@ class CardController extends Controller
 
     public function postIin()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         if (isset($input['file']))
         {
@@ -59,7 +59,7 @@ class CardController extends Controller
 
     public function editIin($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Card\IIN\Service)->editIin($id, $input);
 
@@ -68,7 +68,7 @@ class CardController extends Controller
 
     public function postIinGenerate()
     {
-        $input = Input::all();
+        $input = Request::all();
         $fileName = (new Card\IIN\Service)->generateIinFile($input);
 
         return ApiResponse::json($fileName);
