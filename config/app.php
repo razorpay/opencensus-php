@@ -170,9 +170,9 @@ return array(
          */
         // 'Maatwebsite\Excel\ExcelServiceProvider',
         Aws\Laravel\AwsServiceProvider::class,
-        Trace\TraceServiceProvider::class,
-        Dashboard\DashboardServiceProvider::class,
-        Services\ApiServiceProvider::class,
+        RZP\Trace\TraceServiceProvider::class,
+        RZP\Services\DashboardServiceProvider::class,
+        RZP\Services\ApiServiceProvider::class,
         Maknz\Slack\SlackServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class
     ),
@@ -237,7 +237,7 @@ return array(
 
         // Application Facades
         'BasicAuth' => RZP\Http\BasicAuth::class,
-        'Trace'     => Trace\Facade::class,
+        'Trace'     => RZP\Trace\Facade::class,
 
         // Custom Facade
         // 'Excel'      => 'Maatwebsite\Excel\Facades\Excel',

@@ -1,14 +1,14 @@
 <?php
 
-namespace Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 use Mockery;
 use Models\Transaction;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\TestCase;
 use Models\Settlement\Holidays;
-use Tests\Functional\RequestResponseFlowTrait;
-use Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class DailyReportTest extends TestCase
 {

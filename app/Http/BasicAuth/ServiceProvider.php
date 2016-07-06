@@ -20,7 +20,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->bindShared('basicauth', function($app)
+        $this->app->singleton('basicauth', function($app)
         {
             return new BasicAuth();
         });

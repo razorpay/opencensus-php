@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Unit\Models\Transaction;
+namespace RZP\Tests\Unit\Models\Transaction;
 
 use Carbon\Carbon;
 use Mockery;
 use Models\Transaction;
 use ReflectionClass;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 
 class SettledAtTimestampTest extends TestCase
 {

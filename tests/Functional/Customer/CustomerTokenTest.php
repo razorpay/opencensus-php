@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\CustomerToken;
+namespace RZP\Tests\Functional\CustomerToken;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class CustomerTokenTest extends TestCase
 {

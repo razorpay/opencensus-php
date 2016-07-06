@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Functional;
+namespace RZP\Tests\Functional;
 
 use Closure;
 use EE\Exception\BaseException;
 use Requests;
-use Tests\Functional\Helpers\EntityFetchTrait;
+use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 
 trait RequestResponseFlowTrait
 {

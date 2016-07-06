@@ -5,10 +5,10 @@
  * ALl test cases follow, GIVEN, WHEN, THEN structure
  */
 
-namespace Tests\Functional;
+namespace RZP\Tests\Functional;
 
 use Artisan;
-use Tests\TestCase as ParentTestCase;
+use RZP\Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase
 {

@@ -2,7 +2,7 @@
 
 use Mailgun\Mailgun;
 
-class RoutesTest extends Tests\TestCase
+class RoutesTest extends RZP\Tests\TestCase
 {
     public function setUp()
     {

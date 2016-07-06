@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Customer;
+namespace RZP\Tests\Functional\Customer;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
 use Models\Merchant\Features;
