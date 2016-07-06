@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
     );
 
-    protected $table = RZP\Constants\Table::ORDER;
+    protected $table = \RZP\Constants\Table::ORDER;
 
     protected $generateIdOnCreate = true;
 

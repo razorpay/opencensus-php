@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
 
-    protected $table = RZP\Constants\Table::MERCHANT;
+    protected $table = \RZP\Constants\Table::MERCHANT;
 
     protected $entity = 'merchant';
 

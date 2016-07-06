@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
-    
+
     const ID                    = 'id';
     const BANK                  = 'bank';
     const RATE                  = 'rate';
@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'emi';
 
-    protected $table            = RZP\Constants\Table::EMI_PLAN;
+    protected $table            = \RZP\Constants\Table::EMI_PLAN;
 
     protected $generateIdOnCreate = true;
 

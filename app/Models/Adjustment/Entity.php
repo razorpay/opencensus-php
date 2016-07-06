@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const TRANSACTION_ID    = 'transaction_id';
 
-    protected $table = RZP\Constants\Table::ADJUSTMENT;
+    protected $table = \RZP\Constants\Table::ADJUSTMENT;
 
     protected static $sign = 'adj';
 
