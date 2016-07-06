@@ -441,7 +441,7 @@ return [
         ],
     ],
 
-    'testActivateMerhantWithoutBankAccount' => [
+    'testActivateMerchantWithoutBankAccount' => [
         'request' => [
             'content' => [],
             'url' => '/merchants/1cXSLlUU8V9sXl/activate',

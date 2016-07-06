@@ -174,6 +174,6 @@ class Core extends Base\Core
 
     public function getBankNames($banks)
     {
-        return RZP\Models\Bank\Name::getNames($banks);
+        return \RZP\Models\Bank\Name::getNames($banks);
     }
 }
