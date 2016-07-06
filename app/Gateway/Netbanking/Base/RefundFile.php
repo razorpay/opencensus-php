@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Base;
 
 use Carbon\Carbon;
-use Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class RefundFile
 {

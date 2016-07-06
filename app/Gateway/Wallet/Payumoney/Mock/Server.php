@@ -2,11 +2,11 @@
 
 namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
-use Http\Route;
+use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Exception;
 use Carbon\Carbon;
-use Models\Payment;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;

@@ -20,7 +20,7 @@ trait GatewayTrait
         $gateway = $this->gateway;
         $route = 'mock_'.$gateway.'_payment';
 
-        $url = \Http\Route::getUrlWithPublicAuth($route);
+        $url = RZP\Http\Route::getUrlWithPublicAuth($route);
 
         if ($request['method'] === 'get')
         {

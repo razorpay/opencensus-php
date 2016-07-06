@@ -7,8 +7,8 @@ use Constants\Mode;
 use RZP\Exception;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
-use Models\Card;
-use Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {

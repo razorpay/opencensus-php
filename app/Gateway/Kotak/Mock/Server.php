@@ -7,7 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Kotak;
 use RZP\Gateway\Base;
-use Models\Card;
+use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
 {

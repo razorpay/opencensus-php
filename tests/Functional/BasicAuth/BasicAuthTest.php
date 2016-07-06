@@ -128,7 +128,7 @@ class BasicAuthTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $internalRoutes = \Http\Route::getApiRouteInCategory('internal');
+        $internalRoutes = RZP\Http\Route::getApiRouteInCategory('internal');
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
@@ -143,7 +143,7 @@ class BasicAuthTest extends TestCase
     {
         $this->ba->privateAuth(null, '=');
 
-        $internalRoutes = \Http\Route::getApiRouteInCategory('internal');
+        $internalRoutes = RZP\Http\Route::getApiRouteInCategory('internal');
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {

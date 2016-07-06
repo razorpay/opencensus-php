@@ -215,7 +215,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
-        $url = Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = RZP\Http\Route::getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
