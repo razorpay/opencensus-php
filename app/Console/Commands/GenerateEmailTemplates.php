@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Console\Commands;
+
 use Illuminate\Console\Command;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
