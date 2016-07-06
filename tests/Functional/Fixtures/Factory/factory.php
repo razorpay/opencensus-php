@@ -165,7 +165,7 @@ $factory(\RZP\Models\Adjustment\Entity::class, [
     'transaction_id' => 'factory:Models\Transaction\Entity',
 ]);
 
-$factory('\RZP\Gateway\Hdfc\Entity', [
+$factory(\RZP\Gateway\Hdfc\Entity::class, [
     'id' => $faker->randomNumber(6),
     'payment_id' => null,
     'refund_id' => null,
@@ -182,7 +182,7 @@ $factory('\RZP\Gateway\Hdfc\Entity', [
     'postdate' => $faker->hdfcPostDate,
 ]);
 
-$factory('\RZP\Gateway\Atom\Entity', [
+$factory(\RZP\Gateway\Atom\Entity::class, [
     'id' => $faker->randomNumber(6),
     'gateway_payment_id' => 'factory:Models\Payment\Entity',
     'token' => $faker->token,
