@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class MerchantCreateTest extends TestCase
 {

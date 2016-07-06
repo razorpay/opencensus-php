@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Fixtures\Entity;
+namespace RZP\Tests\Functional\Fixtures\Entity;
 
 class Webhook extends Base
 {

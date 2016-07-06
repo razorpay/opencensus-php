@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Payment;
 
 use EE\Error\ErrorCode;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\TestCase;
 use EE\Error\PublicErrorDescription;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class AuthorizeTest extends TestCase
 {

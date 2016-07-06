@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Payment;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SavedCardPaymentCreateTest extends TestCase
 {

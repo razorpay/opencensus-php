@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Gateway\Hdfc;
+namespace RZP\Tests\Functional\Gateway\Hdfc;
 
 /**
  * Tests all cards in cards.php to ensure they return expected response,
@@ -9,8 +9,8 @@ namespace Tests\Functional\Gateway\Hdfc;
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
-use Tests\Functional\TestCase;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HdfcGatewayAuthTest extends TestCase
 {

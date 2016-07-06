@@ -1,14 +1,14 @@
 <?php
 
-namespace Tests\Functional\Gateway\Hdfc;
+namespace RZP\Tests\Functional\Gateway\Hdfc;
 
 use Carbon\Carbon;
 use Config;
 use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Tests\Functional\RequestResponseFlowTrait;
-use Tests\Functional\Settlement\SettlementTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\TestCase;
 
 class HdfcGatewayMprTest extends TestCase
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Settlement;
+namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class SettlementTest extends TestCase
 {

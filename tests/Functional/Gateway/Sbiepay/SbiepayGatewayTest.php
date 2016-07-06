@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Gateway\Sbiepay;
+namespace RZP\Tests\Functional\Gateway\Sbiepay;
 
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class SbiepayGatewayTest extends TestCase
 {
