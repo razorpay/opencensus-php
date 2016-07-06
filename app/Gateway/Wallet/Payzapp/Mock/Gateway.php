@@ -17,7 +17,7 @@ class Gateway extends Payzapp\Gateway
 
         if ($this->testing)
         {
-            $url = \Http\Route::getUrlWithPublicAuth('mock_wallet_payment', ['wallet' => 'payzapp']);
+            $url = RZP\Http\Route::getUrlWithPublicAuth('mock_wallet_payment', ['wallet' => 'payzapp']);
 
             $request['content'] .= '***'.$url.'***';
         }

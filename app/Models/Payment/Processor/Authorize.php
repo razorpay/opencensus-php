@@ -6,7 +6,7 @@ use Constants\Mode;
 use EE\Exception;
 use EE\Error;
 use EE\Error\ErrorCode;
-use Http\Route;
+use RZP\Http\Route;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Card;

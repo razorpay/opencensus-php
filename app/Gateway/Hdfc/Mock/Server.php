@@ -8,7 +8,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment\Action;
 use RZP\Gateway\Hdfc\Mock;
-use Http\Route;
+use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Models\Card\Network;
 

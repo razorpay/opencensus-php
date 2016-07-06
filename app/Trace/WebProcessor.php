@@ -3,7 +3,7 @@
 namespace RZP\Trace;
 
 use App;
-use Http\Route;
+use RZP\Http\Route;
 use Request;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
-use Http\Route;
+use RZP\Http\Route;
 use EE\Exception;
 use RZP\Gateway\Base;
 use EE\Error\ErrorCode;

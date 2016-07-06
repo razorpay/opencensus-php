@@ -6,7 +6,7 @@ use BasicAuth;
 use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Http\Route;
+use RZP\Http\Route;
 use Mail;
 use RZP\Models\Card;
 use RZP\Models\Merchant;

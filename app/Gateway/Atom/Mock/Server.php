@@ -8,7 +8,7 @@ use EE\Exception;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Atom\Mock;
 use RZP\Gateway\Base;
-use Http\Route;
+use RZP\Http\Route;
 use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server

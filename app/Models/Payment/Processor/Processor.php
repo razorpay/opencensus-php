@@ -8,7 +8,7 @@ use BasicAuth;
 use Dashboard\Dashboard;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Http\Route;
+use RZP\Http\Route;
 use RZP\Models\Gateway;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\BankAccount;
