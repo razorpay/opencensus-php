@@ -147,6 +147,11 @@ return array(
         // This one is our own custom provider
         'App\Providers\UuidServiceProvider',
 
+        // We are extending because 1.4 is the last version
+        // that works with L5.0
+        // and it does not work with PHP7
+        'App\Providers\PasswordStrengthServiceProvider',
+
         // Package providers follow
         'Aws\Laravel\AwsServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
@@ -154,7 +159,6 @@ return array(
         // 'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
-        // 'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
     ],
 
     /*
