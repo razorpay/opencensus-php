@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Sharp;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {

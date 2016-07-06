@@ -3,7 +3,7 @@
 namespace RZP\Reconciliator\Base;
 
 use Trace\TraceCode;
-use EE\Exception\ReconciliationException;
+use RZP\Exception\ReconciliationException;
 
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;

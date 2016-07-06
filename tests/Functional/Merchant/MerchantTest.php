@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 use Models\Transaction;
-use Tests\Functional\TestCase;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 use Models\Merchant;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

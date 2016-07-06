@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Sharp;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use Requests;
 use Trace\Trace;
@@ -76,7 +76,7 @@ class Server
         }
 
         $data['action'] = 'authorize';
-        $data['url'] = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment_submit');
+        $data['url'] = RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
             'callback_url' => $input['callback_url'],
         );

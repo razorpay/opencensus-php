@@ -4,13 +4,13 @@ namespace RZP\Http\BasicAuth;
 
 use Config;
 use Constants\Mode;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Crypt;
-use Http\ApiResponse;
-use Http\Route;
-use Models\Key;
-use Models\Merchant;
+use RZP\Http\ApiResponse;
+use RZP\Http\Route;
+use RZP\Models\Key;
+use RZP\Models\Merchant;
 use Trace\TraceCode;
 
 class BasicAuth

@@ -3,11 +3,11 @@
 namespace RZP\Gateway\Atom\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Base;
-use Models\Card;
+use RZP\Models\Card;
 
 class Gateway extends Atom\Gateway
 {
@@ -30,7 +30,7 @@ class Gateway extends Atom\Gateway
         // The key thing now is to replace redirectUrl from atom's to ours!
         $parts = parse_url($data['url']);
 
-        $baseUrl = \Http\Route::getUrlWithPublicAuth('mockatom_choose_org');
+        $baseUrl = RZP\Http\Route::getUrlWithPublicAuth('mockatom_choose_org');
         $newRedirectUrl = $baseUrl . '&' .$parts['query'];
 
         // Put the new redirect url back in!
@@ -51,7 +51,7 @@ class Gateway extends Atom\Gateway
             $mockGatewaysConfig = \Config::get('applications.mock_gateways');
             $secret = $mockGatewaysConfig['secret'];
 
-            $mockUrl = \Http\Route::getUrl('mockatom_init_payment', array(), 'rzp_test', $secret);
+            $mockUrl = RZP\Http\Route::getUrl('mockatom_init_payment', array(), 'rzp_test', $secret);
 
             $parts = parse_url($url);
 

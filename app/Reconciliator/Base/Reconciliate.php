@@ -6,7 +6,7 @@ use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
 
-use EE\Exception;
+use RZP\Exception;
 use Trace\TraceCode;
 use DB;
 use App;

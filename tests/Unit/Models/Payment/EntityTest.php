@@ -1,7 +1,7 @@
 <?php
-namespace Tests\Unit\Models\Payment;
+namespace RZP\Tests\Unit\Models\Payment;
 
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\TestCase;
 
 class EntityTest extends TestCase
 {

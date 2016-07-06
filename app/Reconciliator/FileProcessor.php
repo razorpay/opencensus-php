@@ -2,9 +2,9 @@
 
 namespace RZP\Reconciliator;
 
-use EE\Exception;
+use RZP\Exception;
 use Trace\TraceCode;
-use Models\Base\UniqueIdEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;

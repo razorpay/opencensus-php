@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Payment;
 
-use EE\Exception\RuntimeException;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class TerminalTest extends TestCase
 {

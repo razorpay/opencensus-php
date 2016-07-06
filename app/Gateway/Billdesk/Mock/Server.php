@@ -3,14 +3,14 @@
 namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Billdesk;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
-use Models\Card;
+use RZP\Models\Card;
 use Requests;
-use Models\Payment\Core;
+use RZP\Models\Payment\Core;
 
 class Server extends Base\Mock\Server
 {
@@ -59,7 +59,7 @@ class Server extends Base\Mock\Server
         // $headers = array(
         //                     'User-Agent'    => 'Razorpay-Webhook/v1',
         //             );
-        // $url = \Http\Route::getUrlWithPublicAuth('gateway_payment_callback_post',
+        // $url = RZP\Http\Route::getUrlWithPublicAuth('gateway_payment_callback_post',
         //                                         ['gateway' => 'billdesk']);
 
         // Requests::post(

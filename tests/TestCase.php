@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace RZP\Tests;
 
 use Mockery;
 use ReflectionObject;
@@ -12,7 +12,7 @@ use ReflectionObject;
 
 use Laracasts\TestDummy\Factory;
 
-class TestCase extends \Illuminate\Foundation\Testing\TestCase
+class TestCase extends \TestCase
 {
     protected $testDataFilePath;
 

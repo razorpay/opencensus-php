@@ -2,10 +2,10 @@
 
 namespace Constants;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Gateway;
-use Models;
+use RZP\Models;
 use Trace;
 use Trace\TraceCode;
 
@@ -58,32 +58,32 @@ class Entity
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
 
     public static $namespace = array(
-        self::IIN               => Models\Card\IIN::class,
+        self::IIN               => RZP\Models\Card\IIN::class,
         self::ATOM              => RZP\Gateway\Atom::class,
         self::AMEX              => RZP\Gateway\Amex::class,
         self::HDFC              => RZP\Gateway\Hdfc::class,
-        self::ORDER             => Models\Order::class,
+        self::ORDER             => RZP\Models\Order::class,
         self::PAYTM             => RZP\Gateway\Paytm::class,
         self::SHARP             => RZP\Gateway\Sharp::class,
-        self::TOKEN             => Models\Customer\Token::class,
-        self::REFUND            => Models\Payment\Refund::class,
+        self::TOKEN             => RZP\Models\Customer\Token::class,
+        self::REFUND            => RZP\Models\Payment\Refund::class,
         self::WALLET            => RZP\Gateway\Wallet\Base::class,
-        self::BALANCE           => Models\Merchant\Balance::class,
-        self::METHODS           => Models\Merchant\Methods::class,
-        self::PRICING           => Models\Pricing::class,
-        self::WEBHOOK           => Models\Merchant\Webhook::class,
+        self::BALANCE           => RZP\Models\Merchant\Balance::class,
+        self::METHODS           => RZP\Models\Merchant\Methods::class,
+        self::PRICING           => RZP\Models\Pricing::class,
+        self::WEBHOOK           => RZP\Models\Merchant\Webhook::class,
         self::BILLDESK          => RZP\Gateway\Billdesk::class,
-        self::CUSTOMER          => Models\Customer::class,
-        self::EMI_PLAN          => Models\Emi::class,
+        self::CUSTOMER          => RZP\Models\Customer::class,
+        self::EMI_PLAN          => RZP\Models\Emi::class,
         self::MOBIKWIK          => RZP\Gateway\Mobikwik::class,
         self::NETBANKING        => RZP\Gateway\Netbanking\Base::class,
         self::AXIS_MIGS         => RZP\Gateway\AxisMigs::class,
         self::AXIS_GENIUS       => RZP\Gateway\AxisGenius::class,
-        self::APP_TOKEN         => Models\Customer\App::class,
-        self::BANK_ACCOUNT      => Models\Merchant\BankAccount::class,
+        self::APP_TOKEN         => RZP\Models\Customer\App::class,
+        self::BANK_ACCOUNT      => RZP\Models\Merchant\BankAccount::class,
         self::WALLET_PAYZAPP    => RZP\Gateway\Wallet\Payzapp::class,
         self::NETBANKING_HDFC   => RZP\Gateway\Netbanking\Hdfc::class,
-        self::DAILY_SETTLEMENT  => Models\Settlement\Daily::class,
+        self::DAILY_SETTLEMENT  => RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK  => RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY  => RZP\Gateway\Wallet\Payumoney::class,
     );
@@ -106,7 +106,7 @@ class Entity
 
         // Converts first character of the
         // words (delimited by underscores/hyphens/spaces) to uppercase
-        return 'Models\\' . studly_case($entity);
+        return 'RZP\\Models\\' . studly_case($entity);
     }
 
     public static function getEntityClass($entity)

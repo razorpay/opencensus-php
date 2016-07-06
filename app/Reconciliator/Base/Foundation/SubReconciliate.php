@@ -2,7 +2,7 @@
 
 namespace RZP\Reconciliator\Base\Foundation;
 
-use Models\Payment;
+use RZP\Models\Payment;
 use App;
 
 class SubReconciliate

@@ -4,14 +4,14 @@ namespace RZP\Gateway\Sbiepay;
 
 use Carbon\Carbon;
 use Constants\Mode;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\VerifyResult;
-use Models\Card;
-use Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 use Trace\TraceCode;
 
 class Gateway extends Base\Gateway

@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Base;
 
-use EE\Exception;
+use RZP\Exception;
 use Trace\TraceCode;
 
 trait AuthorizeFailed

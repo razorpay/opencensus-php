@@ -3,14 +3,14 @@
 namespace RZP\Gateway\Sbiepay\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Sbiepay;
 use RZP\Gateway\Sbiepay\Security;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use Illuminate\Support\Facades\Response;
-use Models\Card;
+use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
 {

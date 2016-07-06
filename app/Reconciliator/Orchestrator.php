@@ -5,7 +5,7 @@ namespace RZP\Reconciliator;
 use DirectoryIterator;
 
 use App;
-use EE\Exception;
+use RZP\Exception;
 use Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

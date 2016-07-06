@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Payzapp;
 
-use EE\ErrorCode;
+use RZP\ErrorCode;
 
 class ResponseCode
 {

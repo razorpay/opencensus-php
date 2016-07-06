@@ -3,15 +3,15 @@
 namespace RZP\Gateway\Wallet\Payzapp;
 
 use Constants\Mode;
-use EE\Error;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
-use Models\Payment\Core;
+use RZP\Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;

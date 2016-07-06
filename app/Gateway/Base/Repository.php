@@ -3,11 +3,11 @@
 namespace RZP\Gateway\Base;
 
 use Base;
-use Models;
+use RZP\Models;
 
 class Repository extends Base\Repository
 {
-    use Models\Base\RepositoryFetch;
+    use RZP\Models\Base\RepositoryFetch;
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID          => 'sometimes|string|min:14|max:18');

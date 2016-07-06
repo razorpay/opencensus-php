@@ -2,7 +2,7 @@
 
 namespace RZP\Reconciliator;
 
-use EE\Exception;
+use RZP\Exception;
 
 class Validator
 {

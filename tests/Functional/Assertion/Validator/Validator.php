@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Assertion\Validator;
+namespace RZP\Tests\Functional\Assertion\Validator;
 
 use Razorpay\Spine;
 

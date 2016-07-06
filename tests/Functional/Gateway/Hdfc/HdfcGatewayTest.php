@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Functional\Gateway\Hdfc;
+namespace RZP\Tests\Functional\Gateway\Hdfc;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class HdfcGatewayTest extends TestCase
 {
@@ -148,7 +148,7 @@ class HdfcGatewayTest extends TestCase
                 'status_code' => 400,
             ],
             'exception' => [
-                'class' => 'EE\Exception\GatewayErrorException',
+                'class' => 'RZP\Exception\GatewayErrorException',
                 'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
             ],
         ];

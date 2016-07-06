@@ -4,13 +4,13 @@ namespace RZP\Gateway\Sharp;
 
 use Constants\Mode;
 use Crypt;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
-use Models\Payment;
+use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -152,7 +152,7 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArray($content, $input)
     {
-        $url = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
+        $url = RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
 
         $method = 'post';
 

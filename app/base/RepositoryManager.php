@@ -4,7 +4,7 @@ namespace Base;
 
 use Closure;
 use Constants\Entity;
-use EE\Exception;
+use RZP\Exception;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {

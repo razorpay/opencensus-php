@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit\Models\Card;
+namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
 use Models\Card;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 
 class ValidationTest extends TestCase
 {
@@ -25,7 +25,7 @@ class ValidationTest extends TestCase
 
     public function testShortCardNumber()
     {
-        $this->setExpectedException('EE\Exception\BadRequestValidationFailureException');
+        $this->setExpectedException('RZP\Exception\BadRequestValidationFailureException');
 
         $this->input['number'] = '42';
         $this->card->build($this->input);

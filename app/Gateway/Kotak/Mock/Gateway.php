@@ -3,11 +3,11 @@
 namespace RZP\Gateway\Kotak\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Kotak;
 use RZP\Gateway\Base;
-use Models\Card;
+use RZP\Models\Card;
 
 class Gateway extends Kotak\Gateway
 {
@@ -20,7 +20,7 @@ class Gateway extends Kotak\Gateway
         // The key thing now is to replace redirectUrl from kotak's to ours!
         $parts = parse_url($request['url']);
 
-        $url = \Http\Route::getUrlWithPublicAuth('mock_kotak_payment');
+        $url = RZP\Http\Route::getUrlWithPublicAuth('mock_kotak_payment');
         $url = $url . '&' .$parts['query'];
 
         $request['url'] = $url;

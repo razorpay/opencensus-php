@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Sbiepay\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 
 class Gateway extends RZP\Gateway\Sbiepay\Gateway

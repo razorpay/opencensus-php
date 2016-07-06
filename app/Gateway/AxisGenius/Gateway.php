@@ -3,8 +3,8 @@
 namespace RZP\Gateway\AxisGenius;
 
 use Constants\Mode;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Gateway\AxisGenius;

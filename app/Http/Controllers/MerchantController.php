@@ -8,8 +8,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class MerchantController extends Controller
 {
@@ -490,14 +490,14 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        return (new Models\Base\Report)->getReport($input, $entity);
+        return (new RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
     public function getInvoiceReport()
     {
         $input = Input::all();
 
-        return (new Models\Base\Report)->getInvoice($input);
+        return (new RZP\Models\Base\Report)->getInvoice($input);
     }
 
     /**
@@ -506,7 +506,7 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
+        $counts = (new RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
     }
 

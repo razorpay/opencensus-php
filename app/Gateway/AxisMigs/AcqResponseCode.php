@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-use EE\Error;
+use RZP\Error;
 
 class AcqResponseCode
 {

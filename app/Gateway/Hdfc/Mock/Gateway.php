@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Action;
@@ -97,7 +97,7 @@ class Gateway extends Hdfc\Gateway
 
         $urlSegment = constant('Gateway\Hdfc\Mock\Urls::'.$name);
 
-        $url = \Http\Route::getUrlWithAuth($urlSegment, 'rzp_test', $secret);
+        $url = RZP\Http\Route::getUrlWithAuth($urlSegment, 'rzp_test', $secret);
 
         return $url;
     }

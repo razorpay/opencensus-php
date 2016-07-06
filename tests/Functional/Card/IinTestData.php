@@ -1,11 +1,11 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
-use Tests\Functional\Fixtures\Entity\Iin;
+use RZP\Tests\Functional\Fixtures\Entity\Iin;
 return [
     'testAddIin' => [
         'request' => [

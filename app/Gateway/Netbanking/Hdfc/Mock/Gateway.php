@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Hdfc;
 
@@ -15,7 +15,7 @@ class Gateway extends Hdfc\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = \Http\Route::getUrlWithPublicAuth(
+        $url = RZP\Http\Route::getUrlWithPublicAuth(
                                 'mock_netbanking_payment',
                                 ['bank' => $this->bank]);
 
