@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {

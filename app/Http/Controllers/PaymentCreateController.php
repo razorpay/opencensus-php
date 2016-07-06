@@ -7,6 +7,8 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use Request;
+use App;
+use View;
 
 class PaymentCreateController extends Controller
 {
