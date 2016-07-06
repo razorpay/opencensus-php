@@ -20,7 +20,7 @@ class TraceServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->bindShared('trace', function($app)
+        $this->app->singleton('trace', function($app)
         {
             return new Trace($app);
         });

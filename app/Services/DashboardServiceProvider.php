@@ -20,7 +20,7 @@ class DashboardServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->bindShared('dashboard', function($app)
+        $this->app->singleton('dashboard', function($app)
         {
             return new Dashboard($app);
         });
