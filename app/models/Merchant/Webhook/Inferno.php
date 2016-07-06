@@ -204,7 +204,7 @@ class Inferno
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\Gateway\Utility::checkTimeout($e))
+            if (RZP\Gateway\Utility::checkTimeout($e))
             {
                 $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as 5 seconds. We will only retry 3 times before deactivating webhook.';
             }

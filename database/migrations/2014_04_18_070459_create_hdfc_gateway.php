@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 use Models\Base\UniqueIdEntity;
 
 class CreateHdfcGateway extends Migration

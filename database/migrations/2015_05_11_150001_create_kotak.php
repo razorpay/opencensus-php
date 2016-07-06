@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Gateway\Kotak;
+use RZP\Gateway\Kotak;
 use Models\Base\UniqueIdEntity;
 
 class CreateKotak extends Migration

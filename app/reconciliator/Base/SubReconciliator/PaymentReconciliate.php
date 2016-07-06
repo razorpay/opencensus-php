@@ -9,7 +9,7 @@ use Models\Card\IIN;
 use Models\Transaction;
 use Models\Payment\Verify;
 
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 use Trace\TraceCode;
 use App;
