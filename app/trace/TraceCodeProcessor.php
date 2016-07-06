@@ -1,6 +1,6 @@
 <?php
 
-namespace Trace;
+namespace RZP\Trace;
 
 /**
  * Adds trace code field to the record at the starting position

@@ -1,6 +1,6 @@
 <?php
 
-namespace Trace;
+namespace RZP\Trace;
 
 use Trace\Trace;
 
