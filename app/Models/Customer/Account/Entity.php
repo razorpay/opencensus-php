@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'customer';
 
-    protected $table            = \Constants\Table::CUSTOMER;
+    protected $table            = RZP\Constants\Table::CUSTOMER;
 
     protected $generateIdOnCreate = true;
 

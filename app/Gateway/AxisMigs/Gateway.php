@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;

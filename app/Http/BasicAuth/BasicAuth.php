@@ -3,7 +3,7 @@
 namespace RZP\Http\BasicAuth;
 
 use Config;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Crypt;

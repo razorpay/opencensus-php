@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'emi';
 
-    protected $table            = \Constants\Table::EMI_PLAN;
+    protected $table            = RZP\Constants\Table::EMI_PLAN;
 
     protected $generateIdOnCreate = true;
 

@@ -3,7 +3,7 @@
 namespace Base;
 
 use Closure;
-use Constants\Entity;
+use RZP\Constants\Entity;
 use RZP\Exception;
 
 class RepositoryManager extends \Illuminate\Support\Manager

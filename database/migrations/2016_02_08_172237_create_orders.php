@@ -1,6 +1,6 @@
 <?php
 
-use Constants\Table;
+use RZP\Constants\Table;
 
 use Models\Order\Entity as Order;
 use Models\Payment\Entity as Payment;

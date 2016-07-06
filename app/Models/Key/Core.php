@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Key;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Key;

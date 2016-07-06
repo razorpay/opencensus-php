@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Http\Route;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;

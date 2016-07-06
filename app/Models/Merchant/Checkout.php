@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;

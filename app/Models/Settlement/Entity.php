@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON        = 'failure_reason';
     const RETURN_UTR            = 'return_utr';
 
-    protected $table = \Constants\Table::SETTLEMENT;
+    protected $table = RZP\Constants\Table::SETTLEMENT;
 
     protected static $sign = 'setl';
 

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Card\Network;

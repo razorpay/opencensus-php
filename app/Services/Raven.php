@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use Requests;
 use Trace\Trace;

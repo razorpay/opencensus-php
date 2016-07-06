@@ -4,7 +4,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
 use Trace\TraceCode;

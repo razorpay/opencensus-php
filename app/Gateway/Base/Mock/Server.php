@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use Request;
 use Requests_Response;

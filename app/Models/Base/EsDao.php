@@ -4,7 +4,7 @@ namespace RZP\Models\Base;
 
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
 
 class EsDao
 {

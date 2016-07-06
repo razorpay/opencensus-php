@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;

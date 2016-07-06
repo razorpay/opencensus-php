@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Atom;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 
 class Urls

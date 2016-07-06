@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'token';
 
-    protected $table            = \Constants\Table::TOKEN;
+    protected $table            = RZP\Constants\Table::TOKEN;
 
     protected $generateIdOnCreate = true;
 

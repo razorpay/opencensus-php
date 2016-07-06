@@ -1,6 +1,6 @@
 <?php
 
-namespace Constants;
+namespace RZP\Constants;
 
 class Mode
 {

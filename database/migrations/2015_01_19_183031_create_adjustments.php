@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
+use RZP\Constants\Table;
 use Models\Adjustment\Entity as Adjustment;
 use Models\Merchant;
 use Models\Transaction;

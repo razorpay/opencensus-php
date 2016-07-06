@@ -3,12 +3,12 @@
 namespace RZP\Models\Event;
 
 use RZP\Models\Payment;
-use Constants;
+use RZP\Constants;
 
 class Contains
 {
     protected static $data = array(
-        Type::PAYMENT_AUTHORIZED => [Constants\Entity::PAYMENT],
+        Type::PAYMENT_AUTHORIZED => [RZP\Constants\Entity::PAYMENT],
     );
 
     public static function getEntityNamesForEvent($event)

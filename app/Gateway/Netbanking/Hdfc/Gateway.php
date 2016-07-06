@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action;

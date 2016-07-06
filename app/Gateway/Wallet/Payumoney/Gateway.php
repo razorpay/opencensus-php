@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Wallet\Payumoney;
 
 use View;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error;

@@ -3,7 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use BasicAuth;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Http\Route;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

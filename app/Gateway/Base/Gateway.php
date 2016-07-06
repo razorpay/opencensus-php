@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Base;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Requests;

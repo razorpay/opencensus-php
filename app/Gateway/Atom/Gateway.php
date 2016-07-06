@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Trace\Trace;

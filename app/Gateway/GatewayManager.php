@@ -3,8 +3,8 @@
 namespace RZP\Gateway;
 
 use Config;
-use Constants\Mode;
-use Constants\Entity;
+use RZP\Constants\Mode;
+use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Gateway\Base\Mock;
 

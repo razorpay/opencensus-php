@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use Constants\Table;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Exception;
 use Crypt;

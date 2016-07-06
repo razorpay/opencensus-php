@@ -5,7 +5,7 @@ namespace RZP\Reconciliator\HDFC;
 use RZP\Reconciliator\Base;
 use App;
 use RZP\Reconciliator\FileProcessor;
-use Constants\Entity;
+use RZP\Constants\Entity;
 
 class Reconciliate extends Base\Reconciliate
 {
