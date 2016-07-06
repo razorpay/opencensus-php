@@ -62,6 +62,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        $response = null;
+
         switch (true)
         {
             case $e instanceof BaseException:

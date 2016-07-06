@@ -412,7 +412,7 @@ class MerchantTest extends TestCase
             'content' => [],
         );
 
-        $response = $this->makeRequest($request);
+        $response = $this->sendRequest($request);
 
         $headers = $response->headers->all();
         $this->assertArrayNotHasKey('x-frame-options', $headers);
@@ -491,7 +491,7 @@ class MerchantTest extends TestCase
             'content' => [],
         );
 
-        $response = $this->makeRequest($request);
+        $response = $this->sendRequest($request);
 
         $headers = $response->headers->all();
         $this->assertArrayNotHasKey('x-frame-options', $headers);
