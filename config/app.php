@@ -142,9 +142,15 @@ return array(
         'App\Providers\ConfigServiceProvider',
         'App\Providers\EventServiceProvider',
         'App\Providers\RouteServiceProvider',
+        'App\Trace\TraceServiceProvider',
 
         // This one is our own custom provider
         'App\Providers\UuidServiceProvider',
+
+        // We are extending because 1.4 is the last version
+        // that works with L5.0
+        // and it does not work with PHP7
+        'App\Providers\PasswordStrengthServiceProvider',
 
         // Package providers follow
         'Aws\Laravel\AwsServiceProvider',
@@ -153,9 +159,6 @@ return array(
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
-        'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
-        'Trace\TraceServiceProvider',
-
     ],
 
     /*
@@ -219,9 +222,9 @@ return array(
         'View'            => 'Illuminate\Support\Facades\View',
         'AWS'             => 'Aws\Laravel\AwsFacade',
         'Slack'           => 'Maknz\Slack\Facades\Slack',
-        'Trace'           => 'Trace\Facade',
+        'Trace'           => 'App\Trace\Facade',
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
-        'Uuid'            => 'Razorpay\Facades\Uuid',
+        'Uuid'            => 'App\Facades\Uuid',
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
     ),
 
