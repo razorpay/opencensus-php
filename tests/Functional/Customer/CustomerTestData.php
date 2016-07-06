@@ -195,9 +195,9 @@ return [
             'content' => [
                 'items' => [
                     [
-                        'token'         => '10000banktoken',
-                        'method'        => 'netbanking',
-                        'bank'          => 'HDFC',
+                        'token'         => '100wallettoken',
+                        'method'        => 'wallet',
+                        'wallet'        => 'paytm',
                     ],
                     [
                         'token'         => '10000cardtoken',
@@ -208,9 +208,9 @@ return [
                         ]
                     ],
                     [
-                        'token'         => '100wallettoken',
-                        'method'        => 'wallet',
-                        'wallet'        => 'paytm',
+                        'token'         => '10000banktoken',
+                        'method'        => 'netbanking',
+                        'bank'          => 'HDFC',
                     ],
                 ]
             ],

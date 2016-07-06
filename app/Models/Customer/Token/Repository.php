@@ -23,6 +23,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where(Token\Entity::CUSTOMER_ID, '=', $id)
+                    ->orderBy(Entity::ID, 'desc')
                     ->get();
     }
 
