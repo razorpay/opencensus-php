@@ -3,7 +3,7 @@
 namespace RZP\Trace;
 
 use Trace\TraceCode;
-use Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Entity as Payment;
 
 class TraceFields
 {

@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {

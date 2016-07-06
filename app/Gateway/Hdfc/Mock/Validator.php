@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Hdfc\Mock;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {

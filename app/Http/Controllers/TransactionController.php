@@ -1,6 +1,6 @@
 <?php
 
-namesapce RZP\Http\Controllers;
+namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
 use RZP\Exception\RecoverableException;

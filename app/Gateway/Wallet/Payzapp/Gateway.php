@@ -11,7 +11,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
-use Models\Payment\Core;
+use RZP\Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;

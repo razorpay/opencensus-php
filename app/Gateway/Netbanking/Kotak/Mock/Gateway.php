@@ -15,7 +15,7 @@ class Gateway extends Kotak\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = \Http\Route::getUrlWithPublicAuth(
+        $url = RZP\Http\Route::getUrlWithPublicAuth(
                                 'mock_netbanking_payment',
                                 ['bank' => $this->bank]);
 

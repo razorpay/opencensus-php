@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Models\Base;
 use RZP\Exception;
-use Models\Base;
 
 class ResponseXml extends Base\Entity
 {
@@ -15,6 +15,6 @@ class ResponseXml extends Base\Entity
 
     public function payment()
     {
-        return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
+        return $this->belongsTo('RZP\Models\Payment\Entity', 'payment_id', 'id');
     }
 }
