@@ -106,7 +106,7 @@ class Entity
 
         // Converts first character of the
         // words (delimited by underscores/hyphens/spaces) to uppercase
-        return 'RZP\\Models\\' . studly_case($entity);
+        return '\RZP\Models\\' . studly_case($entity);
     }
 
     public static function getEntityClass($entity)

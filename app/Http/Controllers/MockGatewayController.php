@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Constants\Mode;
 use Database\DefaultConnection;
+use Request;
 
 class MockGatewayController extends Controller
 {

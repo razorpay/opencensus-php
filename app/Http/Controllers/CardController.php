@@ -6,6 +6,7 @@ use RZP\Http\ApiResponse;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use Request;
 
 class CardController extends Controller
 {

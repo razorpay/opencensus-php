@@ -8,6 +8,7 @@ use RZP\Http\Route;
 use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Request;
 
 class GatewayController extends Controller
 {

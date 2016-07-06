@@ -7,7 +7,7 @@ use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
-
+use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -15,7 +15,7 @@ class MerchantController extends Controller
 {
     public function postCreateMerchant()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->create($input);
 
@@ -24,7 +24,7 @@ class MerchantController extends Controller
 
     public function postCreateSubMerchant()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->createSubMerchant($input);
 
@@ -33,7 +33,7 @@ class MerchantController extends Controller
 
     public function putMerchant($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->edit($id, $input);
 
@@ -46,7 +46,7 @@ class MerchantController extends Controller
      */
     public function putMerchantEmail($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->editEmail($id, $input);
 
@@ -55,7 +55,7 @@ class MerchantController extends Controller
 
     public function putMerchantConfig()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->editConfig($input);
 
@@ -97,7 +97,7 @@ class MerchantController extends Controller
 
     public function getMerchants()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->fetchMultiple($input);
 
@@ -127,7 +127,7 @@ class MerchantController extends Controller
 
     public function putKeys($merchantId, $keyId)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $keys = (new Merchant\Service)->updateKey($merchantId, $keyId, $input);
 
@@ -136,7 +136,7 @@ class MerchantController extends Controller
 
     public function postAssignPricingPlan($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->assignPricingPlan($id, $input);
 
@@ -152,7 +152,7 @@ class MerchantController extends Controller
 
     public function postCreateTerminal($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Terminal\Service)->createTerminal($id, $input);
 
@@ -189,7 +189,7 @@ class MerchantController extends Controller
 
     public function putTerminal($mid, $tid)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
 
@@ -198,7 +198,7 @@ class MerchantController extends Controller
 
     public function putTerminal2($tid)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Terminal\Service)->editTerminal($tid, $input);
 
@@ -207,7 +207,7 @@ class MerchantController extends Controller
 
     public function restoreTerminal($tid)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Terminal\Service)->restoreTerminal($tid);
 
@@ -216,7 +216,7 @@ class MerchantController extends Controller
 
     public function postCheckTerminalEncryptedValue($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Terminal\Service)->checkTerminalEncryptedValue($id, $input);
 
@@ -246,7 +246,7 @@ class MerchantController extends Controller
 
     public function postBankAccount($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->addBankAccount($id, $input);
 
@@ -298,7 +298,7 @@ class MerchantController extends Controller
 
     public function setBanks($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->setPaymentBanks($id, $input);
 
@@ -307,7 +307,7 @@ class MerchantController extends Controller
 
     public function putMethods($merchantId)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->setPaymentMethods($merchantId, $input);
 
@@ -316,7 +316,7 @@ class MerchantController extends Controller
 
     public function putBanksForAllMerchants()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->setBanksForAllMerchants($input);
     }
@@ -345,7 +345,7 @@ class MerchantController extends Controller
 
     public function postFreeCredits($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->editFreeCredits($id, $input);
 
@@ -361,7 +361,7 @@ class MerchantController extends Controller
 
     public function getCheckoutPreferences()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->getCheckoutPreferences($input);
 
@@ -384,7 +384,7 @@ class MerchantController extends Controller
 
     public function postWebhook()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->createWebhook($input);
 
@@ -393,7 +393,7 @@ class MerchantController extends Controller
 
     public function putWebhook($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->editWebhook($id, $input);
 
@@ -423,7 +423,7 @@ class MerchantController extends Controller
 
     public function getCheckout()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
@@ -444,7 +444,7 @@ class MerchantController extends Controller
 
     protected function getCheckoutCommon()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $app = \App::getFacadeRoot();
 
@@ -488,14 +488,14 @@ class MerchantController extends Controller
 
     public function getPublicEntityReport($entity)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         return (new RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
     public function getInvoiceReport()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         return (new RZP\Models\Base\Report)->getInvoice($input);
     }
@@ -529,7 +529,7 @@ class MerchantController extends Controller
      */
     public function postMerchantFeatures($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
 
@@ -545,14 +545,14 @@ class MerchantController extends Controller
 
     public function getDummyFeatures()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         return ApiResponse::json($input);
     }
 
     public function postMerchantsNotifyHoliday()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Merchant\Service)->notifyMerchantsHoliday($input);
 
