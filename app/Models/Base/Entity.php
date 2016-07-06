@@ -94,4 +94,14 @@ class Entity extends EloquentEx
 
         return $this->setAttribute('id', $id);
     }
+
+    protected function isDateCastable($key)
+    {
+        return false;
+    }
+
+    public function fromDateTime($value)
+    {
+        return $value;
+    }
 }
