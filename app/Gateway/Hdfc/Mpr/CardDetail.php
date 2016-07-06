@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Hdfc\Mpr;
 
-use EE\Exception;
+use RZP\Exception;
 
 class CardDetail
 {

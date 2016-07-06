@@ -1,6 +1,6 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
 use Exception;
 use Http\ApiResponse;

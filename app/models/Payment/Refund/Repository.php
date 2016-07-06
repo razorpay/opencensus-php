@@ -2,7 +2,7 @@
 
 namespace Models\Payment\Refund;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;

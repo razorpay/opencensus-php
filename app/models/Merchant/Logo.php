@@ -4,8 +4,8 @@ namespace Models\Merchant;
 
 use Models\Base\UniqueIdEntity;
 use Models\Merchant;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Config;
 
 class Logo

@@ -2,7 +2,7 @@
 
 namespace Models\Payment;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Merchant;

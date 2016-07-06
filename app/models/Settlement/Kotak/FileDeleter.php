@@ -2,7 +2,7 @@
 
 namespace Models\Settlement\Kotak;
 
-use EE\Exception;
+use RZP\Exception;
 
 /**
  * This class is used to handle generation of settlement reconciliation

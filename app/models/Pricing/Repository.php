@@ -5,8 +5,8 @@ namespace Models\Pricing;
 use Models\Base;
 use Models\Payment;
 use Models\Pricing;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {

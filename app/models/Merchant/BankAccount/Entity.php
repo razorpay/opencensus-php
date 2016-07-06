@@ -3,7 +3,7 @@
 namespace Models\Merchant\BankAccount;
 
 use App;
-use EE\Exception;
+use RZP\Exception;
 use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Models\Base;
 

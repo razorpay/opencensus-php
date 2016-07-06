@@ -2,7 +2,7 @@
 
 namespace Models\Card\IIN;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Card\IIN;
 use Trace\Trace;

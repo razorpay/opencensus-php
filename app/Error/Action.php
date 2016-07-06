@@ -1,6 +1,6 @@
 <?php
 
-namespace EE\Error;
+namespace RZP\Error;
 
 class Action
 {

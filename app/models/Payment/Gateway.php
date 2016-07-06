@@ -2,7 +2,7 @@
 
 namespace Models\Payment;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Bank\IFSC;
 use Models\Card\Network;
 use Models\Settlement;

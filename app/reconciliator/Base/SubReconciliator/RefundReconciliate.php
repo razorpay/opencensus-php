@@ -10,7 +10,7 @@ use Models\Payment\Refund;
 
 use App;
 use Trace\TraceCode;
-use EE\Exception\ReconciliationException;
+use RZP\Exception\ReconciliationException;
 
 use RZP\Gateway\AxisMigs;
 use Reconciliator\Orchestrator;

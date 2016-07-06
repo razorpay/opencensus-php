@@ -2,7 +2,7 @@
 
 namespace Models\Settlement\Kotak;
 
-use EE\Exception;
+use RZP\Exception;
 use Excel;
 use Models\Base;
 use Models\Merchant;

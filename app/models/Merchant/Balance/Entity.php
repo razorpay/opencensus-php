@@ -2,7 +2,7 @@
 
 namespace Models\Merchant\Balance;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 
 class Entity extends Base\PublicEntity

@@ -2,8 +2,8 @@
 
 namespace Models\Payment;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Merchant;
 use Models\Terminal;
 use Models\Payment;

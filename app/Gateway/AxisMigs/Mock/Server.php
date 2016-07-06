@@ -4,7 +4,7 @@ namespace RZP\Gateway\AxisMigs\Mock;
 
 use Carbon\Carbon;
 use Constants\Mode;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use Models\Card;

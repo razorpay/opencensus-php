@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use EE\Error\ErrorCode;
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class AuthorizeTest extends TestCase

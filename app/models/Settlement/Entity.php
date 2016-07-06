@@ -5,7 +5,7 @@ namespace Models\Settlement;
 use Models\Base;
 use Models\Merchant\BankAccount;
 use Models\Transaction;
-use EE\Exception;
+use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {

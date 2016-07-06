@@ -4,8 +4,8 @@ namespace Models\Key;
 
 use Constants\Mode;
 use Crypt;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Base;
 use Models\Key;
 use Models\Merchant;

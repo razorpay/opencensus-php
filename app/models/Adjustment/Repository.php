@@ -2,7 +2,7 @@
 
 namespace Models\Adjustment;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 
 class Repository extends Base\Repository

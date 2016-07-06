@@ -10,7 +10,7 @@ use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;
 use Trace\TraceCode;
-use EE\Exception;
+use RZP\Exception;
 use Models\Transaction;
 
 class Service extends Base\Service

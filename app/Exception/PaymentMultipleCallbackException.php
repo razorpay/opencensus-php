@@ -1,16 +1,13 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
-use EE\Error\Error;
-use EE\Error\ErrorCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 
-class GatewayErrorException extends RecoverableException
+class PaymentMultipleCallabckException extends RecoverableException
 {
     public function __construct(
-        $code,
-        $gatewayErrorCode = null,
-        $gatewayErrorDesc = null,
         \Exception $previous = null)
     {
         Error::checkErrorCode($code);

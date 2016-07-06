@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testPayment' => [
@@ -127,7 +127,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED
         ],
     ],
@@ -142,7 +142,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT
         ],
     ],
@@ -158,7 +158,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
         ],
     ],
