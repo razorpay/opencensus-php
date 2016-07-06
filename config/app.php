@@ -161,19 +161,20 @@ return array(
         // RZP\Providers\AppServiceProvider::class,
         // RZP\Providers\AuthServiceProvider::class,
         // RZP\Providers\EventServiceProvider::class,
-        // RZP\Providers\RouteServiceProvider::class,
+        RZP\Providers\RouteServiceProvider::class,
+
+        RZP\Http\BasicAuth\ServiceProvider::class,
 
         /*
-         * Custom Service Providers...
+         * Packages Service Providers...
          */
         // 'Maatwebsite\Excel\ExcelServiceProvider',
         Aws\Laravel\AwsServiceProvider::class,
-        // 'Http\BasicAuth\ServiceProvider',
-        // 'Trace\TraceServiceProvider',
-        // 'Dashboard\DashboardServiceProvider',
-        // 'Services\ApiServiceProvider',
+        Trace\TraceServiceProvider::class,
+        Dashboard\DashboardServiceProvider::class,
+        Services\ApiServiceProvider::class,
         Maknz\Slack\SlackServiceProvider::class,
-        // 'Propaganistas\LaravelPhone\LaravelPhoneServiceProvider'
+        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class
     ),
 
     /*
@@ -234,11 +235,13 @@ return array(
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View'      => Illuminate\Support\Facades\View::class,
 
+        // Application Facades
+        'BasicAuth' => RZP\Http\BasicAuth::class,
+        'Trace'     => Trace\Facade::class,
+
         // Custom Facade
-        // 'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
-        // 'BasicAuth'       => 'Http\BasicAuth\Facade',
-        // 'Trace'           => 'Trace\Facade',
-        // 'Slack'           => 'Maknz\Slack\Facades\Slack'
+        // 'Excel'      => 'Maatwebsite\Excel\Facades\Excel',
+        // 'Slack'      => 'Maknz\Slack\Facades\Slack'
     ),
 
     'checkout' => 'https://checkout.razorpay.com',

@@ -1,10 +1,12 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Adjustment;
+namespace RZP\Http\Controllers;
 
-class AdjustmentController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Adjustment;
+
+class AdjustmentController extends Controller
 {
     public function getAdjustment($id)
     {

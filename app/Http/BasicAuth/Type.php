@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\BasicAuth;
+namespace RZP\Http\BasicAuth;
 
 class Type
 {

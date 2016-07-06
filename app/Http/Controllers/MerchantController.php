@@ -1,15 +1,17 @@
 <?php
 
+namespace RZP\Http\Controllers;
+
 use Constants\Mode;
-use Http\ApiResponse;
-use Models\Merchant;
-use Models\Terminal;
-use Models\Key;
+use RZP\Http\ApiResponse;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
+use RZP\Models\Key;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 
-class MerchantController extends BaseController
+class MerchantController extends Controller
 {
     public function postCreateMerchant()
     {
