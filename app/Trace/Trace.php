@@ -2,9 +2,6 @@
 
 namespace App\Trace;
 
-use Trace\TraceCode;
-use Trace\TraceFields;
-
 class Trace extends TraceWriter
 {
     public function __construct()

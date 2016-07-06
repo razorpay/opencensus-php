@@ -150,11 +150,11 @@ return array(
         'Aws\Laravel\AwsServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
         Bogardo\Mailgun\MailgunServiceProvider::class,
-        'Maatwebsite\Excel\ExcelServiceProvider',
+        // 'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
-        'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
-        'Trace\TraceServiceProvider',
+        // 'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
+        'App\Trace\TraceServiceProvider',
 
     ],
 
@@ -219,9 +219,9 @@ return array(
         'View'            => 'Illuminate\Support\Facades\View',
         'AWS'             => 'Aws\Laravel\AwsFacade',
         'Slack'           => 'Maknz\Slack\Facades\Slack',
-        'Trace'           => 'Trace\Facade',
+        'Trace'           => 'App\Trace\Facade',
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
-        'Uuid'            => 'Razorpay\Facades\Uuid',
+        'Uuid'            => 'App\Facades\Uuid',
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
     ),
 
