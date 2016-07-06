@@ -2,7 +2,7 @@
 
 namespace Models\Merchant;
 
-use EE\Exception;
+use RZP\Exception;
 
 class Features
 {

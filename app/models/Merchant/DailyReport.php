@@ -4,7 +4,7 @@ namespace Models\Merchant;
 
 use Config;
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Mail;
 use Models\Payment;
 use Models\Settlement;

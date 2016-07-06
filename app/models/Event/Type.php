@@ -2,7 +2,7 @@
 
 namespace Models\Event;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 
 /**

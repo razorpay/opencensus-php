@@ -5,7 +5,7 @@ namespace Reconciliator;
 use Excel;
 use Config;
 
-use EE\Exception;
+use RZP\Exception;
 
 class Converter
 {

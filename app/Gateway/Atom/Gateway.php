@@ -4,10 +4,10 @@ namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Atom;
 

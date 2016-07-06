@@ -2,8 +2,8 @@
 
 namespace Models\Merchant\Webhook;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Base;
 use Models\Merchant;
 use RZP\Trace\TraceCode;

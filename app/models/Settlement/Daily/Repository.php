@@ -3,7 +3,7 @@
 namespace Models\Settlement\Daily;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Settlement\Daily;
 

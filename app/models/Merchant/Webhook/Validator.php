@@ -2,11 +2,11 @@
 
 namespace Models\Merchant\Webhook;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Merchant;
 
-class Validator extends Base\Validator 
+class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::URL     => 'required|string|url|max:255',
@@ -25,9 +25,9 @@ class Validator extends Base\Validator
 
     protected static $editValidators = array('events', 'url');
 
-    protected function validateUrl($input) 
+    protected function validateUrl($input)
     {
-        if (isset($input[Entity::URL]) === false) 
+        if (isset($input[Entity::URL]) === false)
         {
             return;
         }

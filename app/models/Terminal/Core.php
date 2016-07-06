@@ -3,8 +3,8 @@
 namespace Models\Terminal;
 
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Base;
 use Models\Terminal;
 use RZP\Trace\TraceCode;

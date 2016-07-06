@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Console\Commands;
+
 use Illuminate\Database\Console\Migrations\RefreshCommand;
 use Symfony\Component\Console\Input\InputOption;
 

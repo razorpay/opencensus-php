@@ -3,7 +3,7 @@
 namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Merchant;
 use Models\Transaction;

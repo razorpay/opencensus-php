@@ -3,8 +3,8 @@
 namespace Models\Payment\Processor;
 
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Bank\IFSC;
 use Models\Card;
 use Models\Card\Network;

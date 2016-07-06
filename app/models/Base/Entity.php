@@ -2,8 +2,8 @@
 
 namespace Models\Base;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 
 class Entity extends EloquentEx
 {

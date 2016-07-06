@@ -1,14 +1,15 @@
 <?php
 
-namespace RZP\Exceptions;
+namespace RZP\Exception;
 
 use App;
 use RZP\Trace;
 use Response;
 use Exception;
-use App\Constants\TraceCode;
-use App\Exceptions\Errors\Error;
-use App\Exceptions\Errors\ErrorCode;
+use RZP\Http\ApiResponse;
+use RZP\Trace\TraceCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -55,20 +56,14 @@ class Handler extends ExceptionHandler
     {
         switch (true)
         {
-            case $e instanceof UnauthorizedException:
-                $error = $e->getError();
-                return Response::json(
-                    $error->toPublicArray(),
-                    $error->getHttpStatusCode());
-
             case $e instanceof BaseException:
                 return $this->baseExceptionHandler($e);
 
             case $e instanceof ProcessTimedOutException:
-                return Response::json(['error' => 'Process timed out']);
+                return ApiResponse::json(['error' => 'Process timed out']);
 
             case $e instanceof MethodNotAllowedHttpException:
-                return $this->methodNotFoundResponse();
+                return ApiResponse::methodNotFoundResponse();
         }
 
         return $this->genericExceptionHandler($e);
@@ -196,14 +191,6 @@ class Handler extends ExceptionHandler
         $httpStatusCode = $error->getHttpStatusCode();
 
         return array($publicError, $httpStatusCode);
-    }
-
-    protected function methodNotFoundResponse()
-    {
-        list($publicError, $httpStatusCode) =
-                    $this->getErrorResponseFields(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
-
-        return Response::json($publicError, $httpStatusCode);
     }
 
     protected function generateServerErrorResponse($debug, $exception)

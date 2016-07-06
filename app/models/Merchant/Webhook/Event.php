@@ -2,7 +2,7 @@
 
 namespace Models\Merchant\Webhook;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 
 /**

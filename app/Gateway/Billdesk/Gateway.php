@@ -4,8 +4,8 @@ namespace RZP\Gateway\Billdesk;
 
 use Carbon\Carbon;
 use Constants\Mode;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;

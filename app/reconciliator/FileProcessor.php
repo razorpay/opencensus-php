@@ -2,8 +2,8 @@
 
 namespace Reconciliator;
 
-use EE\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
 use Models\Base\UniqueIdEntity;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;

@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Hdfc\Payment;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;

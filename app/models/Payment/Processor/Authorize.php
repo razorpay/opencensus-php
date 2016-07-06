@@ -3,9 +3,9 @@
 namespace Models\Payment\Processor;
 
 use Constants\Mode;
-use EE\Exception;
-use EE\Error;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error;
+use RZP\Error\ErrorCode;
 use Http\Route;
 use Models\Merchant;
 use Models\Merchant\Methods;

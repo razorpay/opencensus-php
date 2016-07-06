@@ -3,7 +3,7 @@
 namespace RZP\Trace;
 
 use Config;
-use EE\Exception;
+use RZP\Exception;
 use Monolog\Logger;
 use Monolog\Processor;
 use Monolog\Handler;

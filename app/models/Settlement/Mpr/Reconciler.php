@@ -4,8 +4,8 @@ namespace Models\Settlement\Mpr;
 
 use App;
 use Carbon\Carbon;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Gateway;

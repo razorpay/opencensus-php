@@ -1,8 +1,8 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
-use EE\Error\Error;
+use RZP\Error\Error;
 
 class ServerErrorException extends BaseException
 {

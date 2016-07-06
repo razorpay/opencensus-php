@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Http\ApiResponse;
 use RZP\Http\Route;
 use RZP\Models\Payment;

@@ -7,7 +7,7 @@ use Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
 use RZP\Trace\TraceCode;
-use EE\Exception\DbQueryException;
+use RZP\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
 {

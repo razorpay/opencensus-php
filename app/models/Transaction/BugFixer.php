@@ -2,8 +2,8 @@
 
 namespace Models\Transaction;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Models\Base;
 use Models\Gateway;
 use Models\Adjustment;

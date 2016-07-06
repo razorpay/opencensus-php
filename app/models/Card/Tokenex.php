@@ -2,9 +2,9 @@
 
 namespace Models\Card;
 
-use EE\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
 
 class Tokenex
 {

@@ -2,7 +2,7 @@
 
 namespace RZP\Dashboard;
 
-use EE\Exception;
+use RZP\Exception;
 use Config;
 use Models\Base\PublicEntity;
 use Models\Base\PublicCollection;

@@ -2,9 +2,9 @@
 
 namespace Models\Base;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use App;
 
 class EsRepository extends \Razorpay\Spine\Repository

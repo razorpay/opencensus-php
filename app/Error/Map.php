@@ -1,8 +1,8 @@
 <?php
 
-namespace EE\Error;
+namespace RZP\Error;
 
-use EE\Exception;
+use RZP\Exception;
 
 class Map
 {

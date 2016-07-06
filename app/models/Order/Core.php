@@ -2,8 +2,8 @@
 
 namespace Models\Order;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Base;
 
 class Core extends Base\Core

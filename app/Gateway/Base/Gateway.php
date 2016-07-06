@@ -3,8 +3,8 @@
 namespace RZP\Gateway\Base;
 
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Trace\Trace;

@@ -3,8 +3,8 @@
 namespace Models\Merchant\BankAccount;
 
 use Carbon\Carbon;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Models\Merchant\BankAccount;
 use Models\Settlement\Kotak\FileHandlerTrait;
 

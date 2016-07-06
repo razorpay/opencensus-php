@@ -6,8 +6,8 @@ use Models\Bank;
 use Models\Base;
 use Models\Card;
 use Models\Card\Network;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {

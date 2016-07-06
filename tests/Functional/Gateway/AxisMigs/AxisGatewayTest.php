@@ -5,8 +5,8 @@ namespace RZP\Tests\Functional\Gateway\AxisMigs;
 use Mockery;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use EE\Error;
-use EE\Error\PublicErrorCode;
+use RZP\Error;
+use RZP\Error\PublicErrorCode;
 
 class AxisGatewayTest extends TestCase
 {

@@ -1,10 +1,16 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
-class FieldErrorException extends RecoverableException
+class CardErrorException extends RecoverableException
 {
     use MessageFormats;
+
+    /**
+     * Card field for which the public error will be shown
+     * @var string
+     */
+    protected $cardField = null;
 
     public function __construct(
         $message = null,
@@ -16,8 +22,6 @@ class FieldErrorException extends RecoverableException
             return;
 
         $message = $this->constructStringMessage($message);
-
-        parent::__construct($message, $code, $previous);
 
         $this->constructError($message, $code);
     }

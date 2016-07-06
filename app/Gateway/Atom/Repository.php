@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Atom;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Base;
 

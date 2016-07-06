@@ -2,7 +2,7 @@
 
 namespace Models\Customer\App;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Customer\App;
 

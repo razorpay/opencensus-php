@@ -14,8 +14,8 @@ use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
 use Models\Merchant\Webhook;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 use Trace\TraceCode;
 

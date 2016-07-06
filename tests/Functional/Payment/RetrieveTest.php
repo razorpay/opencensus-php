@@ -4,9 +4,9 @@ namespace RZP\Tests\Functional\Payment;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Mockery;
 use Models\Payment;
 
@@ -171,7 +171,7 @@ class PaymentRetrieveTest extends TestCase
                 'status_code' => 400,
             ],
             'exception' => [
-                'class' => 'EE\Exception\ExtraFieldsException',
+                'class' => 'RZP\Exception\ExtraFieldsException',
                 'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
             ],
         );
@@ -220,7 +220,7 @@ class PaymentRetrieveTest extends TestCase
                 'status_code' => 400,
             ],
             'exception' => [
-                'class' => 'EE\Exception\ExtraFieldsException',
+                'class' => 'RZP\Exception\ExtraFieldsException',
                 'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
             ],
         );
@@ -246,7 +246,7 @@ class PaymentRetrieveTest extends TestCase
             ;
         }
 
-        $this->assertEquals('EE\Exception\BadRequestValidationFailureException', get_class($e));
+        $this->assertEquals('RZP\Exception\BadRequestValidationFailureException', get_class($e));
     }
 
     public function testSearchEsForNotes()

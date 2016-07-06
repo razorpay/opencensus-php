@@ -2,7 +2,7 @@
 
 namespace Models\Base;
 
-use EE\Exception;
+use RZP\Exception;
 
 trait RepositoryFetch
 {

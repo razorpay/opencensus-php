@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Unit\EE\Exception;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Mockery;
 use Models\Card;
 use RZP\Tests\TestCase;

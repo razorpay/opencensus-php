@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
@@ -21,7 +21,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\ExtraFieldsException',
+            'class' => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
         ],
     ],
@@ -53,11 +53,11 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class' => 'EE\Exception\ServerErrorException',
+            'class' => 'RZP\Exception\ServerErrorException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND
         ],
     ],
-    
+
     'testSearchEsWithoutQueryParams' => [
         'request' => [
             'url' => '/payments',
@@ -68,7 +68,7 @@ return [
             'content' => ['count' => 1]
         ],
     ],
-    
+
     'testSearchEsForNotesOnAdminAuth' => [
         'request' => [
             'url' => '/admin/payment',
@@ -79,7 +79,7 @@ return [
             'content' => ['count' => 4]
         ]
     ],
-    
+
     'testSearchEsForNotesWithMerchantIdInQueryParamsOnProxyAuth' => [
         'request' => [
             'url' => '/payments',
@@ -95,11 +95,11 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\ExtraFieldsException',
+            'class' => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
         ],
     ],
-    
+
     'testSearchEsForNotes' => [
         'request' => [
             'url' => '/payments',

@@ -3,7 +3,7 @@
 namesapce RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use EE\Exception\RecoverableException;
+use RZP\Exception\RecoverableException;
 use RZP\Models\Transaction;
 
 class TransactionController extends Controller

@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use EE\Error\Error;
-use EE\Exception;
+use RZP\Error\Error;
+use RZP\Exception;
 use RZP\Gateway\Hdfc;
 
 class ErrorHandler

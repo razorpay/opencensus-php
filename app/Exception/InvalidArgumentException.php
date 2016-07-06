@@ -1,21 +1,23 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
-use EE\Error\ErrorCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 
-class RuntimeException extends ServerErrorException
+class InvalidArgumentException extends ServerErrorException
 {
+
     public function __construct(
         $message = null,
         $data = null,
         \Exception $previous = null)
     {
-        $code = ErrorCode::SERVER_ERROR_RUNTIME_ERROR;
+        $code = ErrorCode::SERVER_ERROR_INVALID_ARGUMENT;
 
         if ($message === null)
         {
-            $message = 'Runtime error occurred';
+            $message = 'Invalid argument provided';
         }
 
         parent::__construct($message, $code, $data, $previous);
