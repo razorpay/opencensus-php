@@ -43,7 +43,7 @@ class TestCase extends ParentTestCase
         $this->ba = new Authorization($this);
 
         // Enable filters
-        $this->app['router']->enableFilters();
+        // $this->app['router']->enableFilters();
     }
 
     public function initialSetup()

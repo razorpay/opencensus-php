@@ -9,7 +9,7 @@ class EntityTest extends TestCase
     {
         parent::setUp();
 
-        $this->payment = new \Models\Payment\Entity;
+        $this->payment = new \RZP\Models\Payment\Entity;
 
         $this->payment->setNotesAttribute([
             'order_link'    =>  'https://github.com',

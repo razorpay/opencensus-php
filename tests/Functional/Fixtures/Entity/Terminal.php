@@ -35,7 +35,7 @@ class Terminal extends Base
 
     public function createDisableDefaultHdfcTerminal()
     {
-        $term = \Models\Terminal\Entity::findOrFail('1n25f6uN5S1Z5a');
+        $term = \RZP\Models\Terminal\Entity::findOrFail('1n25f6uN5S1Z5a');
         $term->forceDelete();
 
         return $term;
@@ -56,7 +56,7 @@ class Terminal extends Base
 
     public function createAxisGeniusTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
             'id'                        => $termId,
@@ -75,7 +75,7 @@ class Terminal extends Base
 
     public function createSharedAtomTerminal()
     {
-        $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                    => $termId,
@@ -92,7 +92,7 @@ class Terminal extends Base
 
     public function createSharedAxisTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
             'id'                        => $termId,
@@ -111,7 +111,7 @@ class Terminal extends Base
 
     public function createSharedPayzappTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::PAYZAPP_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::PAYZAPP_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -133,7 +133,7 @@ class Terminal extends Base
 
     public function createSharedPayumoneyTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -155,7 +155,7 @@ class Terminal extends Base
 
     public function createSharedBilldeskTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                    => $termId,
@@ -172,7 +172,7 @@ class Terminal extends Base
 
     public function createSharedBilldeskTpvTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                    => $termId,
@@ -190,7 +190,7 @@ class Terminal extends Base
 
     public function createSharedAxisGeniusTerminal()
     {
-        $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -209,7 +209,7 @@ class Terminal extends Base
 
     public function createSharedKotakTerminal()
     {
-        $termId = \Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -226,7 +226,7 @@ class Terminal extends Base
 
     public function createSharedPaytmTerminal()
     {
-        $termId = \Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -273,7 +273,7 @@ class Terminal extends Base
 
     public function createSharedSharpTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -289,7 +289,7 @@ class Terminal extends Base
 
     public function createSharedMobikwikTerminal()
     {
-        $termId = \Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -306,7 +306,7 @@ class Terminal extends Base
 
     public function createSharedSbiepayTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                    => $termId,
@@ -320,7 +320,7 @@ class Terminal extends Base
 
     public function createSharedHdfcTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::HDFC_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::HDFC_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
             'id'                        => $termId,
@@ -364,7 +364,7 @@ class Terminal extends Base
 
     public function createSharedAmexTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::AMEX_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::AMEX_RAZORPAY_TERMINAL;
 
         $defaultValues = array(
             'id'                        => $termId,
