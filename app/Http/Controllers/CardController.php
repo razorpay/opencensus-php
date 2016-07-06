@@ -1,11 +1,13 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Payment;
-use Models\Card;
+namespace RZP\Http\Controllers;
 
-class CardController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Payment;
+use RZP\Models\Card;
+
+class CardController extends Controller
 {
     public function getCard($id)
     {

@@ -1,10 +1,12 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Transaction;
+namesapce RZP\Http\Controllers;
 
-class TransactionController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Transaction;
+
+class TransactionController extends Controller
 {
     public function getTransactions()
     {

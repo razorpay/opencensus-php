@@ -1,11 +1,13 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Payment;
-use Models\Card;
+namespace RZP\Http\Controllers;
 
-class PaymentController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Payment;
+use RZP\Models\Card;
+
+class PaymentController extends Controller
 {
     protected $payment;
     protected $refund;

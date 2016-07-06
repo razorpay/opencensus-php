@@ -1,10 +1,12 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Admin;
+namespace RZP\Http\Controllers;
 
-class AdminController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Admin;
+
+class AdminController extends Controller
 {
     public function getEntityMultiple($type)
     {
