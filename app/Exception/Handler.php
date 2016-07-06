@@ -65,13 +65,21 @@ class Handler extends ExceptionHandler
         switch (true)
         {
             case $e instanceof BaseException:
-                return $this->baseExceptionHandler($e);
+                $response = $this->baseExceptionHandler($e);
+                break;
 
             case $e instanceof ProcessTimedOutException:
-                return ApiResponse::json(['error' => 'Process timed out']);
+                $response = ApiResponse::json(['error' => 'Process timed out']);
+                break;
 
             case $e instanceof MethodNotAllowedHttpException:
-                return ApiResponse::methodNotFoundResponse();
+                $response = ApiResponse::methodNotFoundResponse();
+                break;
+        }
+
+        if ($response !== null)
+        {
+            return $response;
         }
 
         return $this->genericExceptionHandler($e);
