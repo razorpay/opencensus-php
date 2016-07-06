@@ -1,8 +1,10 @@
 <?php
 
+namespace RZP\Tests;
+
 use Mailgun\Mailgun;
 
-class RoutesTest extends RZP\Tests\TestCase
+class RoutesTest extends TestCase
 {
     public function setUp()
     {
@@ -11,12 +13,12 @@ class RoutesTest extends RZP\Tests\TestCase
         //
         // Setting up db
         //
-        Artisan::call('migrate');
+        \Artisan::call('migrate');
 
         //
         // Enable filters
         //
-        Route::enableFilters();
+        // Route::enableFilters();
     }
 
     public function testJSONPRoute()
