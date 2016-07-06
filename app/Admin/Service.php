@@ -92,7 +92,7 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findOrFail($merchant_id);
 
-        $user = Auth::user()->loginUsingId($merchant->primaryOwner()->id);
+        $user = Auth::guard('user')->loginUsingId($merchant->primaryOwner()->id);
 
         if(!$user)
         {

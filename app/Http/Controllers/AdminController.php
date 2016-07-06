@@ -92,7 +92,7 @@ class AdminController extends Controller
         if(empty($error) === false)
             return AppResponse::jsonResponse($error);
 
-        return Redirect::to('/');
+        return redirect('/');
     }
 
     public function getMerchant($id)
