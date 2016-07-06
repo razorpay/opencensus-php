@@ -327,7 +327,7 @@ class Newsletter
 $msg
 </div>
 EOT;
-        $viewDirectory = app_path().'/views/';
+        $viewDirectory = app_path().'/../resources/views/';
         $ink_css =      file_get_contents($viewDirectory.'css/ink.css');
         $cssContent =   file_get_contents($viewDirectory.'css/email.css')
             . PHP_EOL

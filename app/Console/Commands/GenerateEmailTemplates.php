@@ -62,7 +62,7 @@ class GenerateEmailTemplates extends Command {
             'emails/refund/common',
         ];
 
-        $view_directory = app_path()."/views/";
+        $view_directory = app_path().'/../resources/views/';
         $ink_css =      file_get_contents($view_directory.'css/ink.css');
         $common_css =   file_get_contents($view_directory.'css/email.css');
 
