@@ -21,47 +21,47 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->bindShared('mailgun', function($app)
+        $this->app->singleton('mailgun', function($app)
         {
             return new Mailgun($app);
         });
 
-        $this->app->bindShared('instance', function($app)
+        $this->app->singleton('instance', function($app)
         {
             return new AwsInstance($app);
         });
 
-        $this->app->bindShared('exception.handler', function($app)
+        $this->app->singleton('exception.handler', function($app)
         {
             return new \EE\Exception\Handler($app);
         });
 
-        $this->app->bindShared('gateway', function($app)
+        $this->app->singleton('gateway', function($app)
         {
             return new GatewayManager($app);
         });
 
-        $this->app->bindShared('webhook.inferno', function($app)
+        $this->app->singleton('webhook.inferno', function($app)
         {
             return new \Models\Merchant\Webhook\Inferno;
         });
 
-        $this->app->bindShared('card.tokenex', function($app)
+        $this->app->singleton('card.tokenex', function($app)
         {
             return new TokenEx($app);
         });
 
-        $this->app->bindShared('raven', function($app)
+        $this->app->singleton('raven', function($app)
         {
             return new Raven($app);
         });
 
-        $this->app->bindShared('es', function($app)
+        $this->app->singleton('es', function($app)
         {
             return new EsClient($app);
         });
 
-        $this->app->bindShared('repo', function($app)
+        $this->app->singleton('repo', function($app)
         {
             return new \Base\RepositoryManager($app);
         });
