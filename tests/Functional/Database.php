@@ -217,14 +217,12 @@ class Database
 
     protected function shouldRunFixturesOnce()
     {
-        return ((isset($_ENV['RUN_FIXTURES_ONCE'])) and
-                ($_ENV['RUN_FIXTURES_ONCE'] === true));
+        return (env('RUN_FIXTURES_ONCE') === true);
     }
 
     protected function shouldRunFixtures()
     {
-        return ! ((isset($_ENV['RUN_FIXTURES'])) and
-                  ($_ENV['RUN_FIXTURES'] === false));
+        return (env('RUN_FIXTURES') === true);
     }
 }
 
