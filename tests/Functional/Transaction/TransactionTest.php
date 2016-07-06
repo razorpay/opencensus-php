@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Transaction;
+namespace RZP\Tests\Functional\Transaction;
 
 use Carbon\Carbon;
-use Tests\Functional\TestCase;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransactionTest extends TestCase
 {

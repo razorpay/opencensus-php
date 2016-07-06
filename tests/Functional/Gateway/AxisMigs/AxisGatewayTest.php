@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Gateway\AxisMigs;
+namespace RZP\Tests\Functional\Gateway\AxisMigs;
 
 use Mockery;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
 

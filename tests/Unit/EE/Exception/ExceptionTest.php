@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Unit\RZP\Exception;
+namespace RZP\Tests\Unit\EE\Exception;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use Mockery;
 use Models\Card;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 
 class ExceptionTest extends TestCase
 {

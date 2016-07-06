@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Functional\Helpers;
+namespace RZP\Tests\Functional\Helpers;
 
 use RZP\Exception\BaseException;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 trait EntityFetchTrait
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Assertion;
+namespace RZP\Tests\Functional\Assertion;
 
 class Assertion
 {

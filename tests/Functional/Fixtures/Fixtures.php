@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Functional\Fixtures;
+namespace RZP\Tests\Functional\Fixtures;
 
 use Models\Merchant;
 use Config;
 use Eloquent;
-use Tests\TestDummy\Factory;
+use RZP\Tests\TestDummy\Factory;
 use Models;
 
 class Fixtures

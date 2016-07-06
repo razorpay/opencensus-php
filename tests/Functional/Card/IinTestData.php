@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
-use Tests\Functional\Fixtures\Entity\Iin;
+use RZP\Tests\Functional\Fixtures\Entity\Iin;
 return [
     'testAddIin' => [
         'request' => [

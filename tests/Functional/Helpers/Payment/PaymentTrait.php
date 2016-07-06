@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Helpers\Payment;
+namespace RZP\Tests\Functional\Helpers\Payment;
 
 use RZP\Exception\BaseException;
 use RZP\Exception;
@@ -8,7 +8,7 @@ use RZP\Error\ErrorCode;
 use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {

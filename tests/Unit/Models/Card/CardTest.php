@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit\Models\Card;
+namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
 use Models\Card;
-use Tests\TestCase;
+use RZP\Tests\TestCase;
 
 class ValidationTest extends TestCase
 {

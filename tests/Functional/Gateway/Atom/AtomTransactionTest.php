@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Gateway\Atom;
+namespace RZP\Tests\Functional\Gateway\Atom;
 
 use Carbon\Carbon;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class AtomTransactionTest extends TestCase
 {

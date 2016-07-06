@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional;
+namespace RZP\Tests\Functional;
 
 use Validator;
 
@@ -42,7 +42,7 @@ trait CustomAssertions
     public function validateEntity($attributes)
     {
         $entity = $attributes['entity'];
-        $class = 'Tests\Functional\Assertion\Validator\\'.ucfirst($entity);
+        $class = 'RZP\Tests\Functional\Assertion\Validator\\'.ucfirst($entity);
 
         if (class_exists($class) === false)
         {

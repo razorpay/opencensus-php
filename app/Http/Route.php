@@ -1,6 +1,6 @@
 <?php
 
-namespace Http;
+namespace RZP\Http;
 
 final class Route
 {
