@@ -1,10 +1,12 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Order;
+namespace RZP\Http\Controllers;
 
-class OrderController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Order;
+
+class OrderController extends Controller
 {
     protected $order;
 

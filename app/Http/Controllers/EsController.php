@@ -1,9 +1,11 @@
 <?php
 
-use Models\Base\EsDao;
+namespace RZP\Http\Controllers;
+
+use RZP\Models\Base\EsDao;
 use Trace\TraceCode;
 
-class EsController extends BaseController
+class EsController extends Controller
 {
     protected $esDao;
 

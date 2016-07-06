@@ -1,9 +1,11 @@
 <?php
 
-use Http\ApiResponse;
-use Models\Pricing;
+namespace RZP\Http\Controllers;
 
-class PricingController extends BaseController
+use RZP\Http\ApiResponse;
+use RZP\Models\Pricing;
+
+class PricingController extends Controller
 {
     public function postCreatePricingPlan()
     {
