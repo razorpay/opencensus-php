@@ -2,7 +2,7 @@
 
 namespace Razorpay\Mailers;
 
-use Models\Merchant\Entity as MerchantEntity;
+use App\Merchant\Entity as MerchantEntity;
 use Razorpay\Exceptions\InvalidContactInformationException;
 
 class MerchantMailer extends Mailer
@@ -12,7 +12,7 @@ class MerchantMailer extends Mailer
     /**
      * Create a new abstract mailer instance.
      *
-     * @param \Models\Merchant\Entity $merchant
+     * @param \App\Merchant\Entity $merchant
      */
     public function __construct(MerchantEntity $merchant)
     {

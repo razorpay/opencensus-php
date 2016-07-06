@@ -3,7 +3,7 @@
 namespace App\Admin;
 
 use Auth;
-use Models\Merchant\Entity as MerchantEntity;
+use App\Merchant\Entity as MerchantEntity;
 
 trait Logger
 {

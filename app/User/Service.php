@@ -12,8 +12,8 @@ use Input;
 
 use App\Base;
 use App\Invitation;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Merchant;
+use App\MerchantDetails;
 use Models\User;
 
 use Queue;

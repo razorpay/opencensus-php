@@ -4,7 +4,7 @@ namespace App\Admin;
 
 use Carbon\Carbon;
 use App\Api;
-use Models\MerchantDetails;
+use App\MerchantDetails;
 
 class Slack
 {

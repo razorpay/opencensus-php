@@ -2,7 +2,7 @@
 
 namespace Razorpay\Mailers;
 
-use Models\Merchant\Entity as MerchantEntity;
+use App\Merchant\Entity as MerchantEntity;
 
 class ContactFormMailer extends Mailer
 {

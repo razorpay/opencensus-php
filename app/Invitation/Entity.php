@@ -2,7 +2,7 @@
 
 namespace App\Invitation;
 
-use Models\Merchant;
+use App\Merchant;
 use App\Base;
 
 class Entity extends Base\Entity

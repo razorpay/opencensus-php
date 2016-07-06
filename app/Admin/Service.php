@@ -13,8 +13,8 @@ use Session;
 
 use App\Base;
 use App\Admin;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Merchant;
+use App\MerchantDetails;
 use Models\Transaction;
 
 use Razorpay\Api\Request as ApiRequest;

@@ -2,8 +2,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\AppResponse;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Merchant;
+use App\MerchantDetails;
 use Razorpay\Mailers\ContactFormMailer;
 
 class MerchantController extends BaseController

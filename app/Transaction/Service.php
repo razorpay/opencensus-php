@@ -4,8 +4,8 @@ namespace Models\Transaction;
 
 use App\Base;
 use Models\Transaction;
-use Models\Merchant;
-use Models\MerchantDetails;
+use App\Merchant;
+use App\MerchantDetails;
 
 
 class Service extends Base\Service

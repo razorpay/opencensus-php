@@ -5,7 +5,7 @@ namespace App\Invitation;
 use Auth;
 use Mail;
 use App\Base;
-use Models\Merchant;
+use App\Merchant;
 use Models\User;
 use App\Invitation;
 

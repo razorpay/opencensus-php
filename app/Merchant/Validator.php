@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant;
+namespace App\Merchant;
 
 use App\Base;
 

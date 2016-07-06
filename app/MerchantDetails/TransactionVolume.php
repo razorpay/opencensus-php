@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\MerchantDetails;
+namespace App\MerchantDetails;
 
 class TransactionVolume
 {

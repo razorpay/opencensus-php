@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant;
+namespace App\Merchant;
 
 use Mail;
 use Uuid;
@@ -80,7 +80,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * Generate the user instance from the merchant instance
      *
      * @param Models\User\Entity $user
-     * @return Models\Merchant\Entity $merchant
+     * @return App\Merchant\Entity $merchant
      */
     public static function createFromUser(User\Entity $user, $data)
     {
@@ -101,9 +101,9 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     /**
      * Create sub-merchant accounts
-     * @param  Models\Merchant\Entity $aggregator Aggregator Merchant Entity
+     * @param  App\Merchant\Entity $aggregator Aggregator Merchant Entity
      * @param  string          $businessName   Merchant Business Name
-     * @return Models\Merchant\Entity Sub Merchant Entity
+     * @return App\Merchant\Entity Sub Merchant Entity
      */
     public static function createFromMerchant(Entity $aggregator, $businessName, $email)
     {
@@ -228,7 +228,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * Invite a user to the merchants by e-mail address.
      *
      * @param  string  $email
-     * @return Models\Merchant\Entity
+     * @return App\Merchant\Entity
      */
     public function inviteUserByEmailWithRole($email, $role)
     {
@@ -305,7 +305,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     public function merchantDetails()
     {
-        return $this->hasOne('Models\MerchantDetails\Entity');
+        return $this->hasOne('App\MerchantDetails\Entity');
     }
 
     public function hasInvitiationForEmail($email)

@@ -3,7 +3,7 @@
 namespace App\Admin\Hdfc;
 
 use Excel;
-use Models\MerchantDetails;
+use App\MerchantDetails;
 use PHPExcel_IOFactory;
 
 class HdfcTidExcel

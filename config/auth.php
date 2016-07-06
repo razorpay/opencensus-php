@@ -5,7 +5,7 @@ return array(
     'multi' => array(
         'merchant' => array(
             'driver' => 'eloquent',
-            'model' => 'Models\Merchant\Entity',
+            'model' => 'App\Merchant\Entity',
             'table' => 'merchants',
             'email' => 'emails.auth.reminder'
         ),

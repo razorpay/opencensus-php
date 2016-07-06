@@ -11,8 +11,8 @@ use TestCase as ParentTestCase;
 class TestCase extends ParentTestCase
 {
     protected static $fixtures = array(
-        'merchant' => 'Models\Merchant\Entity',
-        'merchant_details' => 'Models\MerchantDetails\Entity',
+        'merchant' => 'App\Merchant\Entity',
+        'merchant_details' => 'App\MerchantDetails\Entity',
         'admin' => 'App\Models\Entity');
 
     public function setUp()

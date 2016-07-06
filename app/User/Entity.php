@@ -5,7 +5,7 @@ namespace Models\User;
 use Uuid;
 use Session;
 use App\Base;
-use Models\Merchant;
+use App\Merchant;
 use App\Invitation;
 use RandomLib\Factory as RandomLibFactory;
 use Illuminate\Auth\UserInterface;
@@ -163,7 +163,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Switch the current merchant for the user.
      *
-     * @param  \Models\Merchant\Entity  $merchant
+     * @param  \App\Merchant\Entity  $merchant
      * @return void
      */
     public function switchToMerchant($merchant)
@@ -174,7 +174,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Refresh the current merchant for the user.
      *
-     * @return  \Models\Merchant\Entity
+     * @return  \App\Merchant\Entity
      */
     public function refreshCurrentMerchant()
     {
@@ -186,7 +186,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Determine if the given merchant is owned by the user.
      *
-     * @param  \Models\Merchant\Entity  $merchant
+     * @param  \App\Merchant\Entity  $merchant
      * @return bool
      */
     public function ownsMerchant($merchant)
@@ -206,7 +206,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Get the user's role on a given merchant.
      *
-     * @param  \Models\Merchant\Entity  $merchant
+     * @param  \App\Merchant\Entity  $merchant
      * @return string
      */
     public function getMerchantRole($merchant)

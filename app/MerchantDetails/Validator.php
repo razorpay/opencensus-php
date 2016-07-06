@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\MerchantDetails;
+namespace App\MerchantDetails;
 
 use App\Base;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;

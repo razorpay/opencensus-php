@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\MerchantDetails;
+namespace App\MerchantDetails;
 
 use Auth;
 use AWS;
@@ -242,7 +242,7 @@ class Service extends Base\Service
         $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
 
         $zapierData = $this->activationZapierData($customer);
-        Queue::push('Models\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
+        Queue::push('App\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
     }
 
     protected function activationZapierData(array $customer)

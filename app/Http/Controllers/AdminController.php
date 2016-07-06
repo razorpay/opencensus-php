@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\AppResponse;
 use Http\SlackResponse;
 use App\Admin;
-use Models\Merchant;
+use App\Merchant;
 
 class AdminController extends BaseController
 {

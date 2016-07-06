@@ -10,8 +10,8 @@ use PHPUnit_Runner_BaseTestRunner;
 class TestCase extends ZizacoIntegrationTestCase
 {
     protected static $fixtures = array(
-        'merchant' => 'Models\Merchant\Entity',
-        'merchant_details' => 'Models\MerchantDetails\Entity',
+        'merchant' => 'App\Merchant\Entity',
+        'merchant_details' => 'App\MerchantDetails\Entity',
         'admin' => 'App\Models\Entity',
         'user' => 'Models\User\Entity');
 
