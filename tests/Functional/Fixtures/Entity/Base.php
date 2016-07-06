@@ -75,7 +75,7 @@ class Base
 
     public function edit($id, array $attributes = array())
     {
-        $entity = snake_case(explode('\\', get_class($this))[4]);
+        $entity = snake_case(explode('\\', get_class($this))[5]);
 
         return $this->editEntity($entity, $id, $attributes);
     }
