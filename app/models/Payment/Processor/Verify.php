@@ -6,8 +6,8 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Payment;
 use Models\Payment\VerifyResult;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Services\SlackPoster;
 
 trait Verify

@@ -8,7 +8,7 @@ use EE\Exception;
 use Mail;
 use Models\Payment;
 use Models\Settlement;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class DailyReport
 {

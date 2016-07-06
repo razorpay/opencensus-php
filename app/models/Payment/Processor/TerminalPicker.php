@@ -16,8 +16,8 @@ use Models\Payment\Gateway;
 use Models\Terminal;
 use Models\Terminal\Shared;
 use App;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class TerminalPicker
 {

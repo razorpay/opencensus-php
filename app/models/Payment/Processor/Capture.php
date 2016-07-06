@@ -8,7 +8,7 @@ use Models\Merchant;
 use Models\Payment;
 use Models\Order;
 use Models\Transaction;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 trait Capture
 {

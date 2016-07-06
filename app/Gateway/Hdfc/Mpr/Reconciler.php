@@ -10,8 +10,8 @@ use Models\Card;
 use Models\Transaction;
 use Models\Terminal;
 use Models\Payment;
-use Trace;
-use Trace\TraceCode;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Reconciler
 {

@@ -6,8 +6,8 @@ use Carbon\Carbon;
 use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Atom;
 

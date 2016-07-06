@@ -6,8 +6,8 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 trait Authorize
 {

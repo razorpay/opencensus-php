@@ -12,7 +12,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\VerifyResult;
 use Models\Card;
 use Models\Payment;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

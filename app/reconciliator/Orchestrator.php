@@ -6,7 +6,7 @@ use DirectoryIterator;
 
 use App;
 use EE\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Orchestrator

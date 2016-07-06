@@ -11,8 +11,8 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Amex;
 use RZP\Gateway\AxisMigs;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway extends AxisMigs\Gateway
 {

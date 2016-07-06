@@ -4,7 +4,7 @@ namespace Models\Base;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use App;
 
 class EsRepository extends \Razorpay\Spine\Repository

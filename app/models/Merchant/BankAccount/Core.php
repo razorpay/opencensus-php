@@ -6,7 +6,7 @@ use Constants\Mode;
 use Models\Base;
 use Models\Merchant\BankAccount;
 use Mail;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

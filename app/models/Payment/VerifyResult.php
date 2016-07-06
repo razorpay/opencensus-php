@@ -7,7 +7,7 @@ use EE\Error\ErrorCode;
 use Models\Merchant;
 use Models\Terminal;
 use Models\Payment;
-use Trace\Trace;
+use RZP\Trace\Trace;
 
 class VerifyResult
 {

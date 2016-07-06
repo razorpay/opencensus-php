@@ -14,7 +14,7 @@ use Models\Settlement;
 use Models\Transaction;
 use Dashboard\Dashboard;
 
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 
 class Settler

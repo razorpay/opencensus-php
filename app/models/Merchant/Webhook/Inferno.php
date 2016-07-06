@@ -3,7 +3,7 @@
 namespace Models\Merchant\Webhook;
 
 use Requests;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use Mail;
 use Models\Merchant;
 

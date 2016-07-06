@@ -12,7 +12,7 @@ use Models\Payment\Refund;
 use Models\Base\Traits\NotesTrait;
 use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {

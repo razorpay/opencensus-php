@@ -5,8 +5,8 @@ namespace Models\Card\IIN;
 use EE\Exception;
 use Models\Base;
 use Models\Card\IIN;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {

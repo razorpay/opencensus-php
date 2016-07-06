@@ -6,8 +6,8 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Gateway;
 use Models;
-use Trace;
-use Trace\TraceCode;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Entity
 {

@@ -9,8 +9,8 @@ use Models\Merchant;
 use Mail;
 use Mailgun\Mailgun;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 /**
  * Class used for mass mailing

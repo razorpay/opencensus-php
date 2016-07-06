@@ -6,7 +6,7 @@ use EE\Exception;
 use Models\Payment;
 use Models\Customer;
 use Models\Merchant;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use EE\Error\ErrorCode;
 
 trait Topup

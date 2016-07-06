@@ -6,7 +6,7 @@ use Constants;
 use Models\Event;
 use Models\Payment;
 use Webhook\Fire;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class ApiEventSubscriber
 {

@@ -9,7 +9,7 @@ use RZP\Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use EE\Exception;
 use Models\Transaction;
 

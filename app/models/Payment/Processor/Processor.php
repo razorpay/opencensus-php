@@ -17,8 +17,8 @@ use Models\Payment;
 use Models\Order;
 use Models\Pricing;
 use Request;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Models\Customer;
 
 class Processor

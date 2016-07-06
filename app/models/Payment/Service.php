@@ -14,8 +14,8 @@ use Models\Payment;
 use Models\Card;
 use Models\Transaction;
 
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {

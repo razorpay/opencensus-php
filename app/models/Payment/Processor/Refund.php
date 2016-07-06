@@ -13,8 +13,8 @@ use Models\Merchant;
 use Models\Payment;
 use Models\Transaction;
 use Request;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Hdfc;
 
 trait Refund

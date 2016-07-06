@@ -3,7 +3,7 @@
 namespace RZP\Exceptions;
 
 use App;
-use Trace;
+use RZP\Trace;
 use Response;
 use Exception;
 use App\Constants\TraceCode;

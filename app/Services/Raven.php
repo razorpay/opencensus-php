@@ -5,8 +5,8 @@ namespace RZP\Services;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Raven
 {

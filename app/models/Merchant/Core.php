@@ -7,7 +7,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\Pricing;
 use Models\Terminal;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use EE\Exception;
 use Services\SlackPoster;
 

@@ -3,7 +3,7 @@
 namespace Reconciliator;
 
 use EE\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use Models\Base\UniqueIdEntity;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -43,7 +43,7 @@ class FileProcessor
         self::EXCEL => ['xls', 'xlsx'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
-    
+
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
@@ -130,7 +130,7 @@ class FileProcessor
             self::DESTINATION_FOLDER => $sourceFolderPath,
             self::FILE_PATH          => $filePath,
         ];
-        
+
         return $fileDetails;
     }
 

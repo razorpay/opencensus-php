@@ -10,8 +10,8 @@ use Models\Transaction;
 use Models\Settlement;
 use Models\Settlement\Kotak;
 use Models\Settlement\SlackNotification;
-use Trace;
-use Trace\TraceCode;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Reconciler
 {

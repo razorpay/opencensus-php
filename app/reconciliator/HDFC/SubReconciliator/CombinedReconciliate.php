@@ -3,7 +3,7 @@
 namespace Reconciliator\HDFC;
 
 use Reconciliator\Base;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate  extends Base\CombinedReconciliate

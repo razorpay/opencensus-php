@@ -3,8 +3,8 @@
 namespace Models\Card;
 
 use EE\Exception;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Tokenex
 {

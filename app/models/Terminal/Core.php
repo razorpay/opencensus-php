@@ -7,7 +7,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Terminal;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

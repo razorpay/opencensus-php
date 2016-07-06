@@ -5,7 +5,7 @@ namespace Models\Base;
 use Constants\Entity as E;
 use Carbon\Carbon;
 use EE\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use Models\Transaction;
 
 class Report extends Service

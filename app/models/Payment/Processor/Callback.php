@@ -19,8 +19,8 @@ use Models\Payment\Method;
 use Models\Payment\Status;
 use Models\Transaction;
 use Models\Order;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Mail;
 
 trait Callback

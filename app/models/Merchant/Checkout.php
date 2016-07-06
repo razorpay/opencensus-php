@@ -10,8 +10,8 @@ use Models\Payment;
 use Models\Order;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Session;
 
 class Checkout

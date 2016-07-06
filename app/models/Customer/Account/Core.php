@@ -9,7 +9,7 @@ use Models\Customer;
 use Models\Merchant;
 use Models\Merchant\Account;
 use Models\Payment;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

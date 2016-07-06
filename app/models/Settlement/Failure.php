@@ -6,8 +6,8 @@ use Carbon\Carbon;
 use Models\Adjustment;
 use Models\Settlement;
 use Models\Transaction;
-use Trace;
-use Trace\TraceCode;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Failure
 {

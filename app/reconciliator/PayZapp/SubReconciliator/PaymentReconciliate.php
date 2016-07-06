@@ -5,7 +5,7 @@ namespace Reconciliator\PayZapp;
 use Reconciliator\Base;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Reconciliator\Messenger;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -25,7 +25,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->messenger = new Messenger();
     }
 

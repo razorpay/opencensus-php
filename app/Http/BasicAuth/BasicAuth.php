@@ -11,7 +11,7 @@ use Http\ApiResponse;
 use Http\Route;
 use Models\Key;
 use Models\Merchant;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class BasicAuth
 {

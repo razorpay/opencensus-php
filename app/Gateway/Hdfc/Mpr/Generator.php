@@ -8,7 +8,7 @@ use Excel;
 use RZP\Gateway\Hdfc;
 use Models\Base;
 use Models\Payment;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Generator
 {

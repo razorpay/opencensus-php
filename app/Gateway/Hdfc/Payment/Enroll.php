@@ -6,8 +6,8 @@ use EE\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use Models\Card;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 trait Enroll
 {

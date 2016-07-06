@@ -8,8 +8,8 @@ use Excel;
 use Models\Merchant;
 use Models\Transaction;
 use Models\Settlement\Kotak;
-use Trace;
-use Trace\TraceCode;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 /**
  * This class is used to handle generation of settlement reconciliation
  * files for running tests and in test mode

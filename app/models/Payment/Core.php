@@ -8,8 +8,8 @@ use Models\Base;
 use Models\Card;
 use Models\Transaction;
 use Models\Payment;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

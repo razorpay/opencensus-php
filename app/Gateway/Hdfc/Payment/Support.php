@@ -8,8 +8,8 @@ use RZP\Gateway\Hdfc;
 use Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
 use Models\Card;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 trait Support
 {
