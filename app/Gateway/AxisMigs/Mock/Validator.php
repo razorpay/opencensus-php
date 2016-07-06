@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs\Mock;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {

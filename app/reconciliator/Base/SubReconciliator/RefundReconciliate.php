@@ -2,11 +2,11 @@
 
 namespace Reconciliator\Base;
 
-use Models\Payment;
-use Models\Card;
-use Models\Card\IIN;
-use Models\Transaction;
-use Models\Payment\Refund;
+use RZP\Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Card\IIN;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
 
 use App;
 use Trace\TraceCode;

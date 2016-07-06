@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Paytm;
 
-use Models\Bank\IFSC;
+use RZP\Models\Bank\IFSC;
 
 class BankNames
 {

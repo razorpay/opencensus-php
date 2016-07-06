@@ -2,7 +2,7 @@
 
 namespace RZP\Dashboard;
 
-use Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Payment extends Dashboard
 {
