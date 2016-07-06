@@ -10,7 +10,7 @@
         "razorpay/spine": "dev-master",
         "maatwebsite/excel": "1.*",
         "mailgun/mailgun-php": "~1.8",
-        "aws/aws-sdk-php-laravel": "1.*",
+        "aws/aws-sdk-php-laravel": "~3.0",
         "symfony/event-dispatcher": "~2.2",
         "maknz/slack": "dev-queue",
         "cebe/markdown": "~1.0.1",
