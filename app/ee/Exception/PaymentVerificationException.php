@@ -9,7 +9,7 @@ class PaymentVerificationException extends RecoverableException
 {
     /**
      * The verify object containing all data
-     * @var Gateway\Base\Verify
+     * @var RZP\Gateway\Base\Verify
      */
     protected $verify = null;
 

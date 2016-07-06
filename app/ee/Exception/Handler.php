@@ -1,51 +1,84 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exceptions;
 
 use App;
-use Config;
-use Http\ApiResponse;
 use Trace;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Response;
+use Exception;
+use App\Constants\TraceCode;
+use App\Exceptions\Errors\Error;
+use App\Exceptions\Errors\ErrorCode;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
-class Handler
+class Handler extends ExceptionHandler
 {
-    protected $app;
+    /**
+     * A list of the exception types that should not be reported.
+     *
+     * @var array
+     */
+    protected $dontReport = [
+        AuthorizationException::class,
+        HttpException::class,
+        ModelNotFoundException::class,
+        ValidationException::class,
+    ];
 
-    public function __construct($app)
+    /**
+     * Report or log an exception.
+     *
+     * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
+     *
+     * @param  \Exception  $e
+     * @return void
+     */
+    public function report(Exception $e)
     {
-        $this->app = $app;
+        // Trace Exceptions here
     }
 
-    public function registerExceptionHandlers()
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Exception  $e
+     * @return \Illuminate\Http\Response
+     */
+    public function render($request, Exception $e)
     {
-        $this->app->error(function(\Exception $e, $code)
+        switch (true)
         {
-            return $this->genericExceptionHandler($e, $code);
-        });
+            case $e instanceof UnauthorizedException:
+                $error = $e->getError();
+                return Response::json(
+                    $error->toPublicArray(),
+                    $error->getHttpStatusCode());
 
-        $this->app->error(function(BaseException $e, $code)
-        {
-            return $this->baseExceptionHandler($e, $code);
-        });
+            case $e instanceof BaseException:
+                return $this->baseExceptionHandler($e);
 
-        $this->app->error(function(MethodNotAllowedHttpException $e)
-        {
-            return ApiResponse::httpMethodNotAllowed();
-        });
+            case $e instanceof ProcessTimedOutException:
+                return Response::json(['error' => 'Process timed out']);
 
-        $this->app->error(function(ProcessTimedOutException $e)
-        {
-            return ApiResponse::json(['erorr' => 'Process timed out']);
-        });
+            case $e instanceof MethodNotAllowedHttpException:
+                return $this->methodNotFoundResponse();
+        }
+
+        return $this->genericExceptionHandler($e);
     }
 
-    public function genericExceptionHandler(\Exception $exception)
+    protected function genericExceptionHandler(Exception $exception)
     {
         if ($this->isToStringException($exception))
         {
-            return ApiResponse::toStringExceptionError($exception, $this->isDebug());
+            return $this->toStringExceptionResponse($this->isDebug(), $exception);
         }
 
         $this->traceException($exception);
@@ -54,16 +87,16 @@ class Handler
         // When running in console, throw the exception, irrespective
         // of debug config
         //
-        if (($this->app->runningInConsole()) and
-            ($this->app->environment('testing') === false))
+        if ((App::runningInConsole()) and
+            (App::environment('testing') === false))
         {
             return;
         }
 
-        return ApiResponse::serverError($this->isDebug(), $exception);
+        return $this->generateServerErrorResponse($this->isDebug(), $exception);
     }
 
-    public function baseExceptionHandler(BaseException $exception, $code)
+    protected function baseExceptionHandler(BaseException $exception)
     {
         // ServerError is fatal error and shoudn't be encountered
         // Let the higher-ups handle it. This function handles
@@ -71,23 +104,23 @@ class Handler
         if ($exception instanceof ServerErrorException)
             return;
 
-        $this->app['trace']->info(
-            Trace\TraceCode::RECOVERABLE_EXCEPTION,
+        Trace::info(
+            TraceCode::RECOVERABLE_EXCEPTION,
             $this->getExceptionDetails($exception));
 
-        return ApiResponse::recoverableError($this->isDebug(), $exception);
+        return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
-    public function traceException(\Exception $exception)
+    public function traceException(Exception $exception)
     {
         $traceData = $this->getExceptionDetails($exception);
 
-        $this->app['trace']->critical(
-           Trace\TraceCode::ERROR_EXCEPTION,
+        Trace::critical(
+           TraceCode::ERROR_EXCEPTION,
            $traceData);
     }
 
-    protected function getExceptionDetails(\Exception $exception, $level = 0)
+    protected function getExceptionDetails(Exception $exception, $level = 0)
     {
         $previousException = $exception->getPrevious();
 
@@ -147,15 +180,102 @@ class Handler
             return false;
         }
 
-        $this->app['trace']->warn(
-            Trace\TraceCode::MISC_TOSTRING_ERROR,
+        Trace::warn(
+            TraceCode::MISC_TOSTRING_ERROR,
             $this->getExceptionDetails($exception));
 
         return true;
     }
 
+    public function getErrorResponseFields($code)
+    {
+        $error = new Error($code);
+
+        $publicError = $error->toPublicArray();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        return array($publicError, $httpStatusCode);
+    }
+
+    protected function methodNotFoundResponse()
+    {
+        list($publicError, $httpStatusCode) =
+                    $this->getErrorResponseFields(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+
+        return Response::json($publicError, $httpStatusCode);
+    }
+
+    protected function generateServerErrorResponse($debug, $exception)
+    {
+        list($publicError, $httpStatusCode) =
+                $this->getErrorResponseFields(ErrorCode::SERVER_ERROR);
+
+        if (($debug) and
+            ($exception !== null))
+        {
+            $publicError['exception'] = $this->getExceptionData($exception);
+
+            if (method_exists($exception, 'getData'))
+            {
+                $publicError['data'] = $exception->getData();
+            }
+        }
+
+        return Response::json($publicError, $httpStatusCode);
+    }
+
+    public function toStringExceptionResponse($debug, $exception)
+    {
+        list($publicError, $httpStatusCode) =
+            $this->getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
+
+        if ($debug)
+        {
+            $publicError['error']['internal_error_code'] =
+                ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION;
+        }
+
+        return Response::json($publicError, $httpStatusCode);
+    }
+
+    public function recoverableErrorResponse($debug, $exception = null)
+    {
+        $error = $exception->getError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        $data = $debug ? $error->toDebugArray() : $error->toPublicArray();
+
+        return Response::json($data, $httpStatusCode);
+    }
+
+    protected function getExceptionData($exception)
+    {
+        $previous = $exception->getPrevious();
+        $previousData = null;
+
+        if ($previous !== null)
+            $previousData = self::getExceptionData($previous);
+
+        $data = array(
+            'type' => get_class($exception),
+            'message' => $exception->getMessage(),
+            'code' => $exception->getCode(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
+            'previous' => $previousData,
+        );
+
+        $data['trace'] = str_replace('/', "\\", $data['trace']);
+        $data['file'] = str_replace('/', "\\", $data['file']);
+
+        return $data;
+    }
+
     protected function isDebug()
     {
-        return $this->app['config']->get('app.debug');
+        return config('app.debug');
     }
 }

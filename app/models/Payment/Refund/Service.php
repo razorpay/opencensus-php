@@ -5,7 +5,7 @@ namespace Models\Payment\Refund;
 use Carbon\Carbon;
 use Models\Bank\IFSC;
 use Models\Base;
-use Gateway\Netbanking;
+use RZP\Gateway\Netbanking;
 use Models\Payment;
 use Models\Merchant;
 use Models\Payment\Refund;

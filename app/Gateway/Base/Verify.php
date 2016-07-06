@@ -1,0 +1,80 @@
+<?php
+
+namespace RZP\Gateway\Base;
+
+class Verify
+{
+    public $input;
+
+    public $payment;
+
+    /**
+     * Used If the transaction happens via a wallet.
+     * */
+    public $wallet;
+
+    public $verifyRequest;
+
+    public $verifyResponse;
+
+    public $verifyResponseBody;
+
+    public $verifyResponseContent;
+
+    public $gateway;
+
+    public $status = null;
+
+    public $apiSuccess = null;
+
+    public $gatewaySuccess = null;
+
+    public $throwExceptionOnMismatch = true;
+
+    public function __construct($gateway, array $input)
+    {
+        $this->input = $input;
+
+        $this->gateway = $gateway;
+    }
+
+    public function setVerifyRequest($request)
+    {
+        $this->verifyRequest = $request;
+    }
+
+    public function setVerifyResponseContent($content)
+    {
+        $this->verifyResponseContent = $content;
+    }
+
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    public function setApiAndGatewaySuccess($apiSuccess, $gatewaySuccess)
+    {
+        ;
+    }
+
+    public function getDataToTrace()
+    {
+        $payment = [];
+
+        if ($this->payment !== null)
+        {
+            $payment = $this->payment->toArray();
+        }
+
+        return array(
+            'status'                    => $this->status,
+            'gateway'                   => $this->gateway,
+            'verifyResponseContent'     => $this->verifyResponseContent,
+            'apiSuccess'                => $this->apiSuccess,
+            'verifyRequest'             => $this->verifyRequest,
+            'gatewaySuccess'            => $this->gatewaySuccess,
+            'gatewayPayment'            => $payment,
+        );
+    }
+}

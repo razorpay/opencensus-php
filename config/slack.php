@@ -2,11 +2,11 @@
 
 return array(
 
-    'token' => $_ENV['SLACK_TOKEN'],
+    'token' => env('SLACK_TOKEN'),
 
     'team' => 'razorpay',
 
-    'mock' => $_ENV['SLACK_MOCK'],
+    'mock' => env('SLACK_MOCK'),
 
     'channels'  =>  [
         'low'            => '#transactions',
