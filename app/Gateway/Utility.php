@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway;
+namespace RZP\Gateway;
 
 class Utility
 {

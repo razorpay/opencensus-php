@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney;
+namespace RZP\Gateway\Wallet\Payumoney;
 
 use View;
 use Constants\Mode;
@@ -9,18 +9,18 @@ use Models\Merchant;
 use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base\Verify;
-use Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Wallet\Base;
 use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use Models\Customer\Token;
-use Gateway\Base\VerifyResult;
-use Gateway\Base\AuthorizeFailed;
-use Gateway\Wallet\Payumoney\Action;
-use Gateway\Wallet\Payumoney\ResponseCodeMap;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Wallet\Payumoney\Action;
+use RZP\Gateway\Wallet\Payumoney\ResponseCodeMap;
 
 class Gateway extends Base\Gateway
 {

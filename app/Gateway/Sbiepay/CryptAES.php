@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Gateway\Sbiepay;
+namespace RZP\Gateway\Sbiepay;
 
 class CryptAES
 {

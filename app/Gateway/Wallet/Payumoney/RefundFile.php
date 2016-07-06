@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney;
+namespace RZP\Gateway\Wallet\Payumoney;
 
 use Carbon\Carbon;
-use Gateway\Wallet\Base;
+use RZP\Gateway\Wallet\Base;
 
 class RefundFile extends Base\RefundFile
 {

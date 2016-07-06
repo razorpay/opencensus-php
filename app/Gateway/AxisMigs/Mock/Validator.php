@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\AxisMigs\Mock;
+namespace RZP\Gateway\AxisMigs\Mock;
 
 use Models\Base;
 

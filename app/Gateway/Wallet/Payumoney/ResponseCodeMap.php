@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney;
+namespace RZP\Gateway\Wallet\Payumoney;
 
 use EE\Error;
 use EE\Error\ErrorCode;

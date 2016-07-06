@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Netbanking\Kotak\Mock;
+namespace RZP\Gateway\Netbanking\Kotak\Mock;
 
 use Carbon\Carbon;
-use Gateway\Paytm;
-use Gateway\Base;
-use Gateway\Netbanking;
+use RZP\Gateway\Paytm;
+use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Models\Payment\Processor\Processor;

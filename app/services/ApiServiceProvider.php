@@ -3,7 +3,7 @@
 namespace Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Gateway\GatewayManager;
+use RZP\Gateway\GatewayManager;
 
 class ApiServiceProvider extends BaseServiceProvider
 {

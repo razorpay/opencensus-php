@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Sbiepay;
+namespace RZP\Gateway\Sbiepay;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\AxisGenius\Mock;
+namespace RZP\Gateway\AxisGenius\Mock;
 
-use Gateway\AxisMigs;
-use Gateway\AxisGenius;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\AxisGenius;
 
 class Server extends AxisMigs\Mock\Server
 {

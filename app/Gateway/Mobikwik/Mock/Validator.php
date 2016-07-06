@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Mobikwik\Mock;
+namespace RZP\Gateway\Mobikwik\Mock;
 
 use Models\Base;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Kotak\Mock;
+namespace RZP\Gateway\Netbanking\Kotak\Mock;
 
 use Models\Base;
 

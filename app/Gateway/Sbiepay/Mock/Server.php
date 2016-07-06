@@ -1,14 +1,14 @@
 <?php
 
-namespace Gateway\Sbiepay\Mock;
+namespace RZP\Gateway\Sbiepay\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Sbiepay;
-use Gateway\Sbiepay\Security;
-use Gateway\Base;
-use Gateway\Base\Action;
+use RZP\Gateway\Sbiepay;
+use RZP\Gateway\Sbiepay\Security;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
 use Illuminate\Support\Facades\Response;
 use Models\Card;
 

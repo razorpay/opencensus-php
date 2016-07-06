@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\AxisGenius;
+namespace RZP\Gateway\AxisGenius;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\AxisMigs;
-use Gateway\Base;
-use Gateway\AxisGenius;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\Base;
+use RZP\Gateway\AxisGenius;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

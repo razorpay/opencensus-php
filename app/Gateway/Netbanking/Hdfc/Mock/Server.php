@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc\Mock;
+namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
 use Carbon\Carbon;
-use Gateway\Paytm;
-use Gateway\Base;
-use Gateway\Netbanking;
+use RZP\Gateway\Paytm;
+use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking;
 
 class Server extends Base\Mock\Server
 {

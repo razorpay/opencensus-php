@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc;
+namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
-use Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Base;
 
 class RefundFile extends Base\RefundFile
 {

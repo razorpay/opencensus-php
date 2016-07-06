@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Hdfc\Payment;
+namespace RZP\Gateway\Hdfc\Payment;
 
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 
 final class Result
 {

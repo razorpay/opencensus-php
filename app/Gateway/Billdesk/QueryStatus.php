@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Billdesk;
+namespace RZP\Gateway\Billdesk;
 
 class QueryStatus
 {

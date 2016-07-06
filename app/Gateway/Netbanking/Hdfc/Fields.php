@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc;
+namespace RZP\Gateway\Netbanking\Hdfc;
 
 class Fields
 {

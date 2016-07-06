@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Atom;
+namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
 use Constants\Mode;
@@ -8,8 +8,8 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
-use Gateway\Base;
-use Gateway\Atom;
+use RZP\Gateway\Base;
+use RZP\Gateway\Atom;
 
 class Gateway extends Base\Gateway
 {
@@ -495,7 +495,7 @@ class Gateway extends Base\Gateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\Gateway\Utility::checkTimeout($e))
+            if (\RZP\Gateway\Utility::checkTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }

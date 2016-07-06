@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Netbanking\Kotak;
+namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Base;
 
 class ClaimsFile extends Base\RefundFile
 {

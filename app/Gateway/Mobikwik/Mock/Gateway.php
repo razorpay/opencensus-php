@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Mobikwik\Mock;
+namespace RZP\Gateway\Mobikwik\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Base;
-use Gateway\Mobikwik;
+use RZP\Gateway\Base;
+use RZP\Gateway\Mobikwik;
 
 class Gateway extends Mobikwik\Gateway
 {

@@ -1,17 +1,17 @@
 <?php
 
-namespace Gateway\Netbanking\Kotak;
+namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base\Entity;
-use Gateway\Base\Action;
-use Gateway\Base\Verify;
-use Gateway\Base\VerifyResult;
-use Gateway\Base\AuthorizeFailed;
-use Gateway\Netbanking\Base;
+use RZP\Gateway\Base\Entity;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Base;
 use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;

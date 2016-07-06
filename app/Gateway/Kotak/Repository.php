@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Kotak;
+namespace RZP\Gateway\Kotak;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

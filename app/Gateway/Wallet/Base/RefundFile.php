@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Base;
+namespace RZP\Gateway\Wallet\Base;
 
 use Carbon\Carbon;
 use Models\Settlement\Kotak\FileHandlerTrait;

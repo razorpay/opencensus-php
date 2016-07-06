@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace RZP\Gateway\Paytm;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

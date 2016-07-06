@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Payzapp;
+namespace RZP\Gateway\Wallet\Payzapp;
 
 use EE\ErrorCode;
 

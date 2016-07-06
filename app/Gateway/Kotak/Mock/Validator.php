@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Kotak\Mock;
+namespace RZP\Gateway\Kotak\Mock;
 
 use Models\Base;
 

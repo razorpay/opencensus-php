@@ -146,7 +146,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Amex\Mock\Server;
+        $server = new RZP\Gateway\Amex\Mock\Server;
 
         $url = $server->authorize($input);
 
@@ -216,7 +216,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\Sbiepay\Mock\Server;
+        $server = new RZP\Gateway\Sbiepay\Mock\Server;
 
         return $server->authorize($input);
     }

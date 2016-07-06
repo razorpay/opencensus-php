@@ -15,7 +15,7 @@ use Models\Transaction;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 
 trait Refund
 {

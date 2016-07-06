@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Billdesk\Mock;
+namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Billdesk;
-use Gateway\Base;
-use Gateway\Base\Action;
+use RZP\Gateway\Billdesk;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
 use Models\Card;
 use Requests;
 use Models\Payment\Core;

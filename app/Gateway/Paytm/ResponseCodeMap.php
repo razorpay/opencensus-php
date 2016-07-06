@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace RZP\Gateway\Paytm;
 
 use EE\Error;
 use EE\Error\ErrorCode;

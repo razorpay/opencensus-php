@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Billdesk;
+namespace RZP\Gateway\Billdesk;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Base\Action;
-use Gateway\Billdesk;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Billdesk;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

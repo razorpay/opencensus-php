@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc;
+namespace RZP\Gateway\Netbanking\Hdfc;
 
 use EE\Error;
 

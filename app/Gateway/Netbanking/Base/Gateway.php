@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Netbanking\Base;
+namespace RZP\Gateway\Netbanking\Base;
 
-use Gateway\Netbanking;
-use Gateway\Base\Action;
+use RZP\Gateway\Netbanking;
+use RZP\Gateway\Base\Action;
 
-class Gateway extends \Gateway\Base\Gateway
+class Gateway extends RZP\Gateway\Base\Gateway
 {
     protected function createGatewayPaymentEntity($attributes)
     {

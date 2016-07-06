@@ -1,15 +1,15 @@
 <?php
 
-namespace Gateway\Amex;
+namespace RZP\Gateway\Amex;
 
 use Constants\Mode;
 use EE\Error;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Base\Action;
-use Gateway\Base\VerifyResult;
-use Gateway\Amex;
-use Gateway\AxisMigs;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Amex;
+use RZP\Gateway\AxisMigs;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

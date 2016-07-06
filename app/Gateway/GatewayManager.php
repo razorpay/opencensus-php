@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway;
+namespace RZP\Gateway;
 
 use Config;
 use Constants\Mode;
 use Constants\Entity;
 use EE\Exception;
-use Gateway\Base\Mock;
+use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
@@ -141,7 +141,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         if ($driver === 'sharp')
         {
-            $server = 'Gateway\Sharp\Server';
+            $server = 'RZP\Gateway\Sharp\Server';
         }
 
         return $server;

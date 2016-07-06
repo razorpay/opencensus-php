@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
 use EE\Exception;
 use Models\Base;

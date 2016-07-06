@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Hdfc\Mpr;
+namespace RZP\Gateway\Hdfc\Mpr;
 
 use Carbon\Carbon;
 use EE\Exception;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Mpr;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Mpr;
 use Models\Card;
 use Models\Transaction;
 use Models\Terminal;

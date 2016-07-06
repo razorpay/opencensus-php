@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {

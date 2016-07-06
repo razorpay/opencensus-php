@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Sbiepay;
+namespace RZP\Gateway\Sbiepay;
 
 use Models\Bank\IFSC;
 use Models\Payment\Processor\Netbanking;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Base;
+namespace RZP\Gateway\Base;
 
 use EE\Exception;
 use Trace\TraceCode;

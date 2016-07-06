@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Base\Mock;
+namespace RZP\Gateway\Base\Mock;
 
 use App;
 use Constants\Mode;

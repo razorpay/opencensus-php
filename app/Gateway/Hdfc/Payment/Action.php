@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc\Payment;
+namespace RZP\Gateway\Hdfc\Payment;
 
 class Action
 {

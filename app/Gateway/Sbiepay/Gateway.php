@@ -1,15 +1,15 @@
 <?php
 
-namespace Gateway\Sbiepay;
+namespace RZP\Gateway\Sbiepay;
 
 use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Base\Action;
-use Gateway\Base\AuthorizeFailed;
-use Gateway\Base\VerifyResult;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\VerifyResult;
 use Models\Card;
 use Models\Payment;
 use Trace\TraceCode;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Amex;
+namespace RZP\Gateway\Amex;
 
 class Url
 {

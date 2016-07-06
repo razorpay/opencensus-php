@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Mobikwik;
+namespace RZP\Gateway\Mobikwik;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

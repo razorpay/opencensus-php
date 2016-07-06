@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Billdesk\Mock;
+namespace RZP\Gateway\Billdesk\Mock;
 
 use Models\Base;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Payzapp\Mock;
+namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
 use Models\Base;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\AxisGenius;
+namespace RZP\Gateway\AxisGenius;
 
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class Repository extends AxisMigs\Repository
 {

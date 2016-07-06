@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Amex;
+namespace RZP\Gateway\Amex;
 
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class Repository extends AxisMigs\Repository
 {

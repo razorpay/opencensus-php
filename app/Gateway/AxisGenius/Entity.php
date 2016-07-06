@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\AxisGenius;
+namespace RZP\Gateway\AxisGenius;
 
 use Models\Base;
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class Entity extends AxisMigs\Entity
 {

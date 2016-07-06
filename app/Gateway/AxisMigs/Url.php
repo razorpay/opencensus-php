@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\AxisMigs;
+namespace RZP\Gateway\AxisMigs;
 
 class Url
 {

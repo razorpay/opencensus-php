@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Netbanking\Kotak\Mock;
+namespace RZP\Gateway\Netbanking\Kotak\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Base;
-use Gateway\Netbanking\Kotak;
+use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking\Kotak;
 
 class Gateway extends Kotak\Gateway
 {

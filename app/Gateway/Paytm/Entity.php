@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace RZP\Gateway\Paytm;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {

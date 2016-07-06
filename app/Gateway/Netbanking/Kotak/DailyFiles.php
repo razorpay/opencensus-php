@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Kotak;
+namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
 use Models\Payment;

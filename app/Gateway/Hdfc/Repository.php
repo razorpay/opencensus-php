@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
 use EE\Exception;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Payment;
-use Gateway\Hdfc\Payment\Action;
-use Gateway\Base;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment;
+use RZP\Gateway\Hdfc\Payment\Action;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

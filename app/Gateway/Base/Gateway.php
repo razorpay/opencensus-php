@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Base;
+namespace RZP\RZP\Gateway\Base;
 
 use Constants\Mode;
 use EE\Exception;
@@ -308,7 +308,7 @@ class Gateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\Gateway\Utility::checkTimeout($e))
+            if (RZP\Gateway\Utility::checkTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }

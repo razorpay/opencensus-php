@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Atom\Mock;
+namespace RZP\Gateway\Atom\Mock;
 
 use Models\Card;
 use Carbon\Carbon;
 use EE\Exception;
-use Gateway\Atom;
-use Gateway\Atom\Mock;
-use Gateway\Base;
+use RZP\Gateway\Atom;
+use RZP\Gateway\Atom\Mock;
+use RZP\Gateway\Base;
 use Http\Route;
 use Models\Payment;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\AxisGenius\Mock;
+namespace RZP\Gateway\AxisGenius\Mock;
 
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class Validator extends AxisMigs\Mock\Validator
 {

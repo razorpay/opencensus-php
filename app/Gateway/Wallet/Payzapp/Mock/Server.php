@@ -1,14 +1,14 @@
 <?php
 
-namespace Gateway\Wallet\Payzapp\Mock;
+namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Payzapp;
-use Gateway\Base;
-use Gateway\Base\Action;
-use \Gateway\Wallet\Payzapp\TransactionType;
+use RZP\Gateway\Payzapp;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Wallet\Payzapp\TransactionType;
 use Models\Card;
 
 class Server extends Base\Mock\Server

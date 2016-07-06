@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Amex;
+namespace RZP\Gateway\Amex;
 
 use Models\Base;
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class Entity extends AxisMigs\Entity
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney\Mock;
+namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
 use Models\Base;
 

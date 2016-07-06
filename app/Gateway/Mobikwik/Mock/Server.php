@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Mobikwik\Mock;
+namespace RZP\Gateway\Mobikwik\Mock;
 
 use Carbon\Carbon;
-use Gateway\Mobikwik;
-use Gateway\Base;
-use Gateway\Base\Action;
+use RZP\Gateway\Mobikwik;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
 use Models\Payment;
-use Gateway\Wallet\Base\Otp;
+use RZP\Gateway\Wallet\Base\Otp;
 
 class Server extends Base\Mock\Server
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\AxisMigs;
+namespace RZP\Gateway\AxisMigs;
 
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class ThreeDSecureStatus
 {

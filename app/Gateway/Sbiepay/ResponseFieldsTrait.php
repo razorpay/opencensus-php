@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Sbiepay;
+namespace RZP\Gateway\Sbiepay;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Base\Action;
-use Gateway\Sbiepay;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Sbiepay;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

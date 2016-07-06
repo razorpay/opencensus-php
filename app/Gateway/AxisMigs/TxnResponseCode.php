@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\AxisMigs;
+namespace RZP\Gateway\AxisMigs;
 
 use EE\Error;
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 
 class TxnResponseCode
 {

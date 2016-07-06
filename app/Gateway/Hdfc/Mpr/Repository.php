@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc\Mpr;
+namespace RZP\Gateway\Hdfc\Mpr;
 
 use Base;
 

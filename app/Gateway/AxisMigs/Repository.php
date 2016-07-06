@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\AxisMigs;
+namespace RZP\Gateway\AxisMigs;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

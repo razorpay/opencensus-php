@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc\Mock;
+namespace RZP\Gateway\Hdfc\Mock;
 
 class Urls
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc\Mock;
+namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Base;
-use Gateway\Netbanking\Hdfc;
+use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking\Hdfc;
 
 class Gateway extends Hdfc\Gateway
 {

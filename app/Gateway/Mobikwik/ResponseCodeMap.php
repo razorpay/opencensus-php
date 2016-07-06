@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Mobikwik;
+namespace RZP\Gateway\Mobikwik;
 
 use EE\Error;
 use EE\Error\ErrorCode;

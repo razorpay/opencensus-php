@@ -1,17 +1,17 @@
 <?php
 
-namespace Gateway\Mobikwik;
+namespace RZP\Gateway\Mobikwik;
 
 use Constants\Mode;
 use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base;
-// use Gateway\Base\Action;
-use Gateway\Base\VerifyResult;
+use RZP\Gateway\Base;
+// use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
-use Gateway\Mobikwik\Type;
+use RZP\Gateway\Mobikwik\Type;
 use Lib\PhoneBook;
 
 class Gateway extends Base\Gateway

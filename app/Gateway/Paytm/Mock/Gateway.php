@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Paytm\Mock;
+namespace RZP\Gateway\Paytm\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Base;
-use Gateway\Paytm;
+use RZP\Gateway\Base;
+use RZP\Gateway\Paytm;
 
 class Gateway extends Paytm\Gateway
 {

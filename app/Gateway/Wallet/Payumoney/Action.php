@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney;
+namespace RZP\Gateway\Wallet\Payumoney;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Action extends Base\Action
 {

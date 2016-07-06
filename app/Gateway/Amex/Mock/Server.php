@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Amex\Mock;
+namespace RZP\Gateway\Amex\Mock;
 
-use Gateway\AxisMigs;
-use Gateway\Amex;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\Amex;
 
 class Server extends AxisMigs\Mock\Server
 {

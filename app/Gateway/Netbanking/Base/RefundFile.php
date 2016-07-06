@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Base;
+namespace RZP\Gateway\Netbanking\Base;
 
 use Carbon\Carbon;
 use Models\Settlement\Kotak\FileHandlerTrait;

@@ -1,16 +1,16 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc;
+namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base\Action;
-use Gateway\Base\AuthorizeFailed;
-use Gateway\Base\Verify;
-use Gateway\Base\VerifyResult;
-use Gateway\Netbanking\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Netbanking\Base;
 use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;

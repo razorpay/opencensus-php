@@ -1,10 +1,10 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
 use EE\Error\Error;
 use EE\Exception;
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 
 class ErrorHandler
 {

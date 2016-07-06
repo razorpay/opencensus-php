@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
 use EE\Error;
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 
 class ErrorCode
 {

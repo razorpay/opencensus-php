@@ -1,16 +1,16 @@
 <?php
 
-namespace Gateway\Wallet\Payzapp;
+namespace RZP\Gateway\Wallet\Payzapp;
 
 use Constants\Mode;
 use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base\Action;
-use Gateway\Base\AuthorizeFailed;
-use Gateway\Base\Verify;
-use Gateway\Base\VerifyResult;
-use Gateway\Wallet\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
 use Models\Payment\Core;
 use Trace\Trace;
 use Trace\TraceCode;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Gateway\Sharp;
+namespace RZP\Gateway\Sharp;
 
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

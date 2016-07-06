@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Hdfc\Mock;
+namespace RZP\Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Action;
+use RZP\Gateway\Base;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Action;
 use ReflectionClass;
 
 class Gateway extends Hdfc\Gateway

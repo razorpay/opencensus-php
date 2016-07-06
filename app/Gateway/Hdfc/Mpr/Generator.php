@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Hdfc\Mpr;
+namespace RZP\Gateway\Hdfc\Mpr;
 
 use Carbon\Carbon;
 use EE\Exception;
 use Excel;
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 use Models\Base;
 use Models\Payment;
 use Trace\TraceCode;

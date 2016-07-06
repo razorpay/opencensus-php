@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Billdesk\Mock;
+namespace RZP\Gateway\Billdesk\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Base;
-use Gateway\Billdesk;
+use RZP\Gateway\Base;
+use RZP\Gateway\Billdesk;
 use Requests_Response;
 
 class Gateway extends Billdesk\Gateway

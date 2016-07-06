@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Atom\Mock;
+namespace RZP\Gateway\Atom\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Atom;
-use Gateway\Base;
+use RZP\Gateway\Atom;
+use RZP\Gateway\Base;
 use Models\Card;
 
 class Gateway extends Atom\Gateway

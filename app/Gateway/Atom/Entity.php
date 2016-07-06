@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Atom;
+namespace RZP\Gateway\Atom;
 
 use Models\Base;
 

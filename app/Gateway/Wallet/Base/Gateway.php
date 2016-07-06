@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Wallet\Base;
+namespace RZP\Gateway\Wallet\Base;
 
-use Gateway\Base;
-use Gateway\Wallet;
+use RZP\Gateway\Base;
+use RZP\Gateway\Wallet;
 
 class Gateway extends Base\Gateway
 {

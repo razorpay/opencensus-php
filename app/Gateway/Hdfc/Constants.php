@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
 final class Constants
 {

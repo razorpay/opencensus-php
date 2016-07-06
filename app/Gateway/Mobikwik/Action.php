@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Mobikwik;
+namespace RZP\Gateway\Mobikwik;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Action extends Base\Action
 {

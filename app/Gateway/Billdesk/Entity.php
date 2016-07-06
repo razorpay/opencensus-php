@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Billdesk;
+namespace RZP\Gateway\Billdesk;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Netbanking\Base;
+namespace RZP\Gateway\Netbanking\Base;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

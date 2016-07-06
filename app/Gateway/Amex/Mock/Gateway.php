@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Amex\Mock;
+namespace RZP\Gateway\Amex\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Amex;
-use Gateway\Base;
+use RZP\Gateway\Amex;
+use RZP\Gateway\Base;
 
 class Gateway extends Amex\Gateway
 {

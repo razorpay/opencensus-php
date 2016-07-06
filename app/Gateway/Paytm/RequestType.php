@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace RZP\Gateway\Paytm;
 
 class RequestType
 {

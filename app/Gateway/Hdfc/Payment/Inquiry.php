@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Hdfc\Payment;
+namespace RZP\Gateway\Hdfc\Payment;
 
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Base\VerifyResult;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Payment;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
 

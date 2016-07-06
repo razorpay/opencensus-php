@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\AxisGenius;
+namespace RZP\Gateway\AxisGenius;
 
 class Url
 {

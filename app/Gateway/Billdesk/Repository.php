@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Billdesk;
+namespace RZP\Gateway\Billdesk;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
@@ -18,7 +18,7 @@ class Repository extends Base\Repository
         'RefundId'                      => 'sometimes|string',
         'BankReferenceNo'               => 'sometimes|string',
     );
-    
+
     public function findByGatewayRefundId($gatewayRefundId)
     {
         $repo = $this->repo;

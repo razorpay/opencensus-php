@@ -22,14 +22,14 @@
  *
  */
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
 use Constants\Mode;
 use EE\Error;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Payment;
+use RZP\Gateway\Base;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment;
 use Models\Card;
 use Requests;
 use Trace\Trace;

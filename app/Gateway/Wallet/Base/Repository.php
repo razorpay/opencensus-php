@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Wallet\Base;
+namespace RZP\Gateway\Wallet\Base;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

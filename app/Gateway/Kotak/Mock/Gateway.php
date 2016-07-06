@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Kotak\Mock;
+namespace RZP\Gateway\Kotak\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Kotak;
-use Gateway\Base;
+use RZP\Gateway\Kotak;
+use RZP\Gateway\Base;
 use Models\Card;
 
 class Gateway extends Kotak\Gateway

@@ -117,13 +117,13 @@ class GatewayController extends BaseController
     {
         $app = \App::getFacadeRoot();
 
-        $repo = new \Gateway\Netbanking\Base\Repository;
+        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
 
         $mode = 'test';
 
         $app['config']->set('database.default', $mode);
 
-        $nb = $repo->findByTraceIdAndAction($traceId, \Gateway\Base\Action::AUTHORIZE);
+        $nb = $repo->findByTraceIdAndAction($traceId, RZP\Gateway\Base\Action::AUTHORIZE);
 
         if ($nb === null)
         {
@@ -131,7 +131,7 @@ class GatewayController extends BaseController
 
             $app['config']->set('database.default', $mode);
 
-            $nb = $repo->findByTraceIdAndAction($traceId, \Gateway\Base\Action::AUTHORIZE);
+            $nb = $repo->findByTraceIdAndAction($traceId, RZP\Gateway\Base\Action::AUTHORIZE);
         }
 
         return ['nb' => $nb, 'mode' => $mode];

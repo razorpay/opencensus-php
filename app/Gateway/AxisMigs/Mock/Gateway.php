@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\AxisMigs\Mock;
+namespace RZP\Gateway\AxisMigs\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\AxisMigs;
-use Gateway\Base;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\Base;
 
 class Gateway extends AxisMigs\Gateway
 {

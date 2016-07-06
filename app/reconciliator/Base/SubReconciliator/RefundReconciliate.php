@@ -12,7 +12,7 @@ use App;
 use Trace\TraceCode;
 use EE\Exception\ReconciliationException;
 
-use Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs;
 use Reconciliator\Orchestrator;
 use Reconciliator\Messenger;
 use Reconciliator\Base\Reconciliate as BaseReconciliate;

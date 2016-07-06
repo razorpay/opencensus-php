@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Sharp;
+namespace RZP\Gateway\Sharp;
 
 use Models\Base;
 

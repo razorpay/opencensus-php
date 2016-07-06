@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Sbiepay\Mock;
+namespace RZP\Gateway\Sbiepay\Mock;
 
 use Models\Base;
 

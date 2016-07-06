@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\AxisMigs\Mock;
+namespace RZP\Gateway\AxisMigs\Mock;
 
 use Carbon\Carbon;
 use Constants\Mode;
 use EE\Exception;
-use Gateway\AxisMigs;
-use Gateway\Base;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\Base;
 use Models\Card;
 use Models\Payment;
 

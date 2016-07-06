@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Sbiepay;
+namespace RZP\Gateway\Sbiepay;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {

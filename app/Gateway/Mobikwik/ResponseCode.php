@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Mobikwik;
+namespace RZP\Gateway\Mobikwik;
 
 class ResponseCode
 {

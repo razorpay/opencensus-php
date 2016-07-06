@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Hdfc\Mock;
+namespace RZP\Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Hdfc;
-use Gateway\Hdfc\Payment\Action;
-use Gateway\Hdfc\Mock;
+use RZP\Gateway\Base;
+use RZP\Gateway\Hdfc;
+use RZP\Gateway\Hdfc\Payment\Action;
+use RZP\Gateway\Hdfc\Mock;
 use Http\Route;
 use Models\Card;
 use Models\Card\Network;

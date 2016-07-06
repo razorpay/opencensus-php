@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Paytm\Mock;
+namespace RZP\Gateway\Paytm\Mock;
 
 use Carbon\Carbon;
-use Gateway\Paytm;
-use Gateway\Base;
-use Gateway\Base\Action;
+use RZP\Gateway\Paytm;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
 
 class Server extends Base\Mock\Server
 {

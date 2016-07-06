@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Sharp;
+namespace RZP\Gateway\Sharp;
 
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

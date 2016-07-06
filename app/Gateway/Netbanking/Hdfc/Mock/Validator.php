@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc\Mock;
+namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
 use Models\Base;
 

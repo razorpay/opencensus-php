@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Paytm\Mock;
+namespace RZP\Gateway\Paytm\Mock;
 
 use Models\Base;
 

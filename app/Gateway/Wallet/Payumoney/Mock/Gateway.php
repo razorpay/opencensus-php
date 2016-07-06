@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Wallet\Payumoney\Mock;
+namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
 use Http\Route;
 use EE\Exception;
-use Gateway\Base;
+use RZP\Gateway\Base;
 use EE\Error\ErrorCode;
-use Gateway\Wallet\Payumoney;
+use RZP\Gateway\Wallet\Payumoney;
 
 class Gateway extends Payumoney\Gateway
 {

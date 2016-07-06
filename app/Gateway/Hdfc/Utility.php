@@ -1,10 +1,10 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace RZP\Gateway\Hdfc;
 
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 
-class Utility extends \Gateway\Utility
+class Utility extends RZP\Gateway\Utility
 {
     public static function createXml($array)
     {

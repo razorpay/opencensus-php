@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Kotak;
+namespace RZP\Gateway\Kotak;
 
 class ResponseCode
 {

@@ -1,14 +1,14 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace RZP\Gateway\Paytm;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Base;
-use Gateway\Base\Action;
-use Gateway\Base\VerifyResult;
-use Gateway\Paytm;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Paytm;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -340,7 +340,7 @@ class Gateway extends Base\Gateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\Gateway\Utility::checkTimeout($e))
+            if (\RZP\Gateway\Utility::checkTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
