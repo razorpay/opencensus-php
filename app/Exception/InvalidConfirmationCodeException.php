@@ -1,4 +1,6 @@
-<?php namespace Razorpay\Exceptions;
+<?php
+
+namespace App\Exception;
 
 use Exception;
 

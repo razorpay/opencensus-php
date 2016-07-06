@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\AppResponse;
 use App\Merchant;
 use App\MerchantDetails;
-use Razorpay\Mailers\ContactFormMailer;
+use App\Mailers\ContactFormMailer;
 
 class MerchantController extends Controller
 {

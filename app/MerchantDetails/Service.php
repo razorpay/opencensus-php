@@ -9,7 +9,7 @@ use Config;
 use Mail;
 use App\Base;
 use Queue;
-use Razorpay\Mailers\MerchantMailer;
+use App\Mailers\MerchantMailer;
 use Requests;
 
 class Service extends Base\Service

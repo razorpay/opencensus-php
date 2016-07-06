@@ -19,7 +19,7 @@ use App\User;
 use Queue;
 
 use Requests;
-use Razorpay\Mailers\UserMailer;
+use App\Mailers\UserMailer;
 
 class Service extends Base\Service
 {

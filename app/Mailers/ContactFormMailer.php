@@ -1,6 +1,6 @@
 <?php
 
-namespace Razorpay\Mailers;
+namespace App\Mailers;
 
 use App\Merchant\Entity as MerchantEntity;
 

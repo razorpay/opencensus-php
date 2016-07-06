@@ -1,4 +1,6 @@
-<?php namespace Razorpay\Services\Uuid;
+<?php
+
+namespace App\Services\Uuid;
 
 class Generator
 {

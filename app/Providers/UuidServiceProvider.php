@@ -1,7 +1,9 @@
-<?php namespace Razorpay\Providers;
+<?php
+
+namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Razorpay\Services\Uuid\Generator;
+use App\Services\Uuid\Generator;
 
 class UuidServiceProvider extends ServiceProvider
 {

@@ -1,4 +1,6 @@
-<?php namespace Razorpay\Facades;
+<?php
+
+namespace App\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

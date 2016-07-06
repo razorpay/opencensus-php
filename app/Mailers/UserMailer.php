@@ -1,9 +1,9 @@
 <?php
 
-namespace Razorpay\Mailers;
+namespace App\Mailers;
 
-use Models\User\Entity as UserEntity;
-use Razorpay\Exceptions\InvalidContactInformationException;
+use App\User\Entity as UserEntity;
+use App\Exceptions\InvalidContactInformationException;
 
 class UserMailer extends Mailer
 {

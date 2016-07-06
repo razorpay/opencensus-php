@@ -1,9 +1,9 @@
 <?php
 
-namespace Razorpay\Mailers;
+namespace App\Mailers;
 
 use App\Merchant\Entity as MerchantEntity;
-use Razorpay\Exceptions\InvalidContactInformationException;
+use App\Exceptions\InvalidContactInformationException;
 
 class MerchantMailer extends Mailer
 {
