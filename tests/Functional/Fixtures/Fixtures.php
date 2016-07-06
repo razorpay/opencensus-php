@@ -76,7 +76,7 @@ class Fixtures
 
     public function generateUniqueId()
     {
-        return \Models\Base\UniqueIdEntity::generateUniqueId();
+        return \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
     }
 
     public function connection($mode = 'test')

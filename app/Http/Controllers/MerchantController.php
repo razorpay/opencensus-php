@@ -490,14 +490,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new RZP\Models\Base\Report)->getReport($input, $entity);
+        return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
     public function getInvoiceReport()
     {
         $input = Request::all();
 
-        return (new RZP\Models\Base\Report)->getInvoice($input);
+        return (new \RZP\Models\Base\Report)->getInvoice($input);
     }
 
     /**
@@ -506,7 +506,7 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $counts = (new RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants();
+        $counts = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
     }
 

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Terminal;
 
-use Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;

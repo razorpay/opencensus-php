@@ -17,7 +17,7 @@ use RZP\Models\Merchant\Webhook;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Activate
 {
