@@ -1,6 +1,6 @@
 <?php
 
-namespace Trace;
+namespace App\Trace;
 
 /**
  * Adds trace code field to the record at the starting position

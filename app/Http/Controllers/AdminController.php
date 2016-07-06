@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\AppResponse;
-use Http\SlackResponse;
+use App\Http\SlackResponse;
 use App\Admin;
 use App\Merchant;
 

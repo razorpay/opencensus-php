@@ -1,8 +1,8 @@
 <?php
 
-namespace Trace;
+namespace App\Trace;
 
-use Trace\TraceCode;
+use App\Trace\TraceCode;
 
 class AwsInstance
 {

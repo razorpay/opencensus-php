@@ -15,7 +15,7 @@ use App\Base;
 use App\Admin;
 use App\Merchant;
 use App\MerchantDetails;
-use Models\Transaction;
+use App\Transaction;
 
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;

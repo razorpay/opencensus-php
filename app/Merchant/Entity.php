@@ -6,7 +6,7 @@ use Mail;
 use Uuid;
 
 use App\Base;
-use Models\User;
+use App\User;
 use App\Invitation;
 
 use Illuminate\Auth\UserInterface;

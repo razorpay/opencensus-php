@@ -8,7 +8,7 @@ use Requests;
 
 use App\Base;
 use App\Merchant;
-use Models\User;
+use App\User;
 use App\Invitation;
 use App\MerchantDetails;
 

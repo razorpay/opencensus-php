@@ -5,7 +5,7 @@ use App\Api;
 use App\Merchant;
 
 use App\Http\AppResponse;
-use Models\Transaction;
+use App\Transaction;
 
 class TransactionController extends BaseController
 {

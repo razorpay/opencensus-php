@@ -1,9 +1,9 @@
 <?php
 
-namespace Models\Transaction;
+namespace App\Transaction;
 
 use App\Base;
-use Models\Transaction;
+use App\Transaction;
 use App\Merchant;
 use App\MerchantDetails;
 

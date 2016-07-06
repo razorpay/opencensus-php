@@ -4,7 +4,7 @@ namespace App\Base;
 
 use Razorpay\Api\Request as ApiRequest;
 use Config;
-use RZP\Api;
+use App\RZP\Api;
 use Slack;
 
 class Service

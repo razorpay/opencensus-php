@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use App\Http\AppResponse;
 use Auth;
 use App\Base;
-use Trace;
+use App\Trace;
 
 class Service extends Base\Service
 {

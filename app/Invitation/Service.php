@@ -6,7 +6,7 @@ use Auth;
 use Mail;
 use App\Base;
 use App\Merchant;
-use Models\User;
+use App\User;
 use App\Invitation;
 
 class Service extends Base\Service

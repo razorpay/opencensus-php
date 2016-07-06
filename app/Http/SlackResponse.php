@@ -3,7 +3,7 @@
 namespace App\Http;
 
 use Response;
-use Trace;
+use App\Trace;
 
 class SlackResponse
 {

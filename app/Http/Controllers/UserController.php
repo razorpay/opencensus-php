@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\AppResponse;
-use Models\User;
+use App\User;
 use App\MerchantDetails;
 use App\Merchant;
 

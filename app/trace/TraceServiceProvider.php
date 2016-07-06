@@ -1,6 +1,6 @@
 <?php
 
-namespace Trace;
+namespace App\Trace;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 

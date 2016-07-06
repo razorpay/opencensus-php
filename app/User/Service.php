@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\User;
+namespace App\User;
 
 use Carbon\Carbon;
 use Config;
@@ -14,7 +14,7 @@ use App\Base;
 use App\Invitation;
 use App\Merchant;
 use App\MerchantDetails;
-use Models\User;
+use App\User;
 
 use Queue;
 
