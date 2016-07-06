@@ -8,7 +8,7 @@ use Models\Card;
 use Models\Payment;
 use Models\Pricing;
 use Models\Merchant;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
 

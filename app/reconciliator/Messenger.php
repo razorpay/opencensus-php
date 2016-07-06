@@ -4,7 +4,7 @@ namespace Reconciliator;
 
 use App;
 use Trace\TraceCode;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 
 class Messenger
 {
@@ -57,7 +57,7 @@ class Messenger
 
         $this->slackPost($headline, $data, $settings);
     }
-    
+
     public function getSlackSettings()
     {
         $settings['channel'] = $this->app['config']->get('slack.channels.reconciliation');

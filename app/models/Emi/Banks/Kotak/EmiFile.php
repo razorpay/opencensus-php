@@ -4,7 +4,7 @@ namespace Models\Emi\Banks\Kotak;
 
 use Gateway;
 use Models\Emi;
-use Services\TokenEx;
+use RZP\Services\TokenEx;
 use Models\Emi\Banks\Base;
 
 use Carbon\Carbon;

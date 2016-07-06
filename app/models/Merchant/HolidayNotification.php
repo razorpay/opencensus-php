@@ -4,7 +4,7 @@ namespace Models\Merchant;
 
 use Carbon\Carbon;
 use Constants\Mode;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 use Models\Admin\Newsletter;
 use Models\Settlement\Holidays;
 

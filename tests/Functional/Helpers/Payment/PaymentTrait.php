@@ -1316,7 +1316,7 @@ trait PaymentTrait
 
     protected function mockTokenex()
     {
-        $tokenex = Mockery::mock('Services\TokenEx')->makePartial();
+        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
 
         $this->app->instance('card.tokenex', $tokenex);
 

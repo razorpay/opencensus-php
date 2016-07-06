@@ -8,7 +8,7 @@ use Models\Payment;
 use Models\Payment\VerifyResult;
 use Trace\Trace;
 use Trace\TraceCode;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 
 trait Verify
 {

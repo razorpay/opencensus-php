@@ -4,7 +4,7 @@ namespace Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
 
-use Services\TokenEx;
+use RZP\Services\TokenEx;
 use Models\Card;
 use Models\Emi\Service;
 use Models\Emi\Banks\Base;
