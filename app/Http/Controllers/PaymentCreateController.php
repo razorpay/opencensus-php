@@ -74,7 +74,7 @@ class PaymentCreateController extends Controller
         if (empty($input['callback_url']) === false)
         {
             $app = App::getFacadeRoot();
-            $app['rzp.merchant_callback_url'] = $input['callback_url'];
+            // $app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
         else
         {

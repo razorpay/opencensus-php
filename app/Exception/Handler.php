@@ -262,7 +262,7 @@ class Handler extends ExceptionHandler
 
         $data = $debug ? $error->toDebugArray() : $error->toPublicArray();
 
-        return Response::json($data, $httpStatusCode);
+        return ApiResponse::generateResponse($data, $httpStatusCode);
     }
 
     protected function getExceptionData($exception)
