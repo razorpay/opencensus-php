@@ -1,8 +1,7 @@
 /bootstrap/compiled.php
 /vendor
-.env.*.php
 .env
-!.env.wercker.php
+!.env.wercker
 .DS_Store
 Thumbs.db
 grunt.json
@@ -11,6 +10,7 @@ tmp*.blade.php
 generated/
 bootstrap/environment.php
 storage/selenium.png
+## Need to fix this
 config/dev/*
 config/**/dev/*
 !config/dev/session.php
