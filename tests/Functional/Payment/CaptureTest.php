@@ -326,12 +326,12 @@ class CaptureTest extends TestCase
             return;
         }
 
-        $dashboard = Mockery::mock('Dashboard\DashboardServiceProvider');
+        $dashboard = Mockery::mock('RZP\Dashboard\DashboardServiceProvider');
 
         $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
-              ->with('payment', Mockery::type('Models\\Base\\PublicEntity'));
+              ->with('payment', Mockery::type('RZP\Models\\Base\\PublicEntity'));
     }
 }
