@@ -10,6 +10,7 @@ use RZP\Http\ApiResponse;
 use RZP\Trace\TraceCode;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use Psr\Log\LoggerInterface;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -31,6 +32,13 @@ class Handler extends ExceptionHandler
         ModelNotFoundException::class,
         ValidationException::class,
     ];
+
+    public function __construct(LoggerInterface $log)
+    {
+        parent::__construct($log);
+
+        $this->app = \App::getFacadeRoot();
+    }
 
     /**
      * Report or log an exception.
