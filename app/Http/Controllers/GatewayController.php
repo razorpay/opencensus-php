@@ -67,7 +67,7 @@ class GatewayController extends Controller
 
     public function callbackKotak()
     {
-        $inputMsg = Input::get('msg');
+        $inputMsg = Request::get('msg');
         $input = explode('|', $inputMsg);
 
         $app = \App::getFacadeRoot();
@@ -85,7 +85,7 @@ class GatewayController extends Controller
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
             [
                 'input_all' => Request::all(),
-                'input_msg' => Input::get('msg'),
+                'input_msg' => Request::input('msg'),
                 'input_arr' => $input
             ]);
 
@@ -120,13 +120,13 @@ class GatewayController extends Controller
     {
         $app = \App::getFacadeRoot();
 
-        $repo = new RZP\Gateway\Netbanking\Base\Repository;
+        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
 
         $mode = 'test';
 
         $app['config']->set('database.default', $mode);
 
-        $nb = $repo->findByTraceIdAndAction($traceId, RZP\Gateway\Base\Action::AUTHORIZE);
+        $nb = $repo->findByTraceIdAndAction($traceId, \RZP\Gateway\Base\Action::AUTHORIZE);
 
         if ($nb === null)
         {
@@ -134,7 +134,7 @@ class GatewayController extends Controller
 
             $app['config']->set('database.default', $mode);
 
-            $nb = $repo->findByTraceIdAndAction($traceId, RZP\Gateway\Base\Action::AUTHORIZE);
+            $nb = $repo->findByTraceIdAndAction($traceId, \RZP\Gateway\Base\Action::AUTHORIZE);
         }
 
         return ['nb' => $nb, 'mode' => $mode];
