@@ -10,7 +10,6 @@ use RZP\Models\Key;
 use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Request;
 
 class MerchantController extends Controller
 {
