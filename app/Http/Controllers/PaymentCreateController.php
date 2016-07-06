@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use Redirect;
+use Response;
 use Request;
 use App;
 use View;
