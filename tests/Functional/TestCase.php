@@ -13,7 +13,7 @@ class TestCase extends ParentTestCase
     protected static $fixtures = array(
         'merchant' => 'Models\Merchant\Entity',
         'merchant_details' => 'Models\MerchantDetails\Entity',
-        'admin' => 'Models\Admin\Entity');
+        'admin' => 'App\Models\Entity');
 
     public function setUp()
     {

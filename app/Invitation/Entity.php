@@ -3,7 +3,7 @@
 namespace Models\Invitation;
 
 use Models\Merchant;
-use Models\Base;
+use App\Base;
 
 class Entity extends Base\Entity
 {

@@ -2,7 +2,7 @@
 
 namespace Models\Transaction;
 
-use Models\Base;
+use App\Base;
 
 class Entity extends Base\Entity
 {

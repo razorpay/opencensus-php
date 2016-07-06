@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin\Hdfc;
 
 use Excel;
 use Models\MerchantDetails;

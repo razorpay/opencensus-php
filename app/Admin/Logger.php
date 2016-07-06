@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin;
 
 use Auth;
 use Models\Merchant\Entity as MerchantEntity;

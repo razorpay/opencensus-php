@@ -2,7 +2,7 @@
 
 namespace Models\Transaction;
 
-use Models\Base;
+use App\Base;
 use Models\Transaction;
 use Models\Merchant;
 use Models\MerchantDetails;

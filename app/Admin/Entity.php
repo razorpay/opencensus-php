@@ -1,9 +1,9 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin;
 
 use Illuminate\Auth\UserInterface;
-use Models\Base;
+use App\Base;
 
 class Entity extends Base\Entity implements UserInterface
 {

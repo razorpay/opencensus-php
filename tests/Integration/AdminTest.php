@@ -34,7 +34,7 @@ class AdminTest extends TestCase
         /** Creates a new admin & merchant if none exist in db, else uses first admin. This is necesssary to persist sessions between tests **/
         try
         {
-            $this->admin = Models\Admin\Entity::firstorfail();
+            $this->admin = App\Models\Entity::firstorfail();
             $this->merchant_details = Models\MerchantDetails\Entity::firstorfail();
             $this->merchant = $this->merchant_details->merchant;
         }

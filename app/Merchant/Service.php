@@ -6,7 +6,7 @@ use Auth;
 use Hash;
 use Requests;
 
-use Models\Base;
+use App\Base;
 use Models\Merchant;
 use Models\User;
 use Models\Invitation;

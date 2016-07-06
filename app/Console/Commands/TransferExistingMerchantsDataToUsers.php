@@ -1,4 +1,5 @@
 <?php
+namespace App\Console\Commands;
 
 use Models\Merchant\Entity as Merchant;
 use Models\User\Entity as UserEntity;

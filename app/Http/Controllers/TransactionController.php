@@ -1,6 +1,6 @@
 <?php
 
-use Models\Api;
+use App\Api;
 use Models\Merchant;
 
 use Http\AppResponse;

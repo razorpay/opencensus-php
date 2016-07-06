@@ -10,7 +10,7 @@ use Auth;
 use Hash;
 use Input;
 
-use Models\Base;
+use App\Base;
 use Models\Invitation;
 use Models\Merchant;
 use Models\MerchantDetails;

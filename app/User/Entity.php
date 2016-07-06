@@ -4,7 +4,7 @@ namespace Models\User;
 
 use Uuid;
 use Session;
-use Models\Base;
+use App\Base;
 use Models\Merchant;
 use Models\Invitation;
 use RandomLib\Factory as RandomLibFactory;

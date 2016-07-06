@@ -12,7 +12,7 @@ class TestCase extends ZizacoIntegrationTestCase
     protected static $fixtures = array(
         'merchant' => 'Models\Merchant\Entity',
         'merchant_details' => 'Models\MerchantDetails\Entity',
-        'admin' => 'Models\Admin\Entity',
+        'admin' => 'App\Models\Entity',
         'user' => 'Models\User\Entity');
 
     // Overriding this

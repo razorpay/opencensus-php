@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Base;
+namespace App\Base;
 use Illuminate\Database\Eloquent;
 
 class Entity extends \Razorpay\Spine\Entity

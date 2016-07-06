@@ -7,7 +7,7 @@ use AWS;
 use Carbon\Carbon;
 use Config;
 use Mail;
-use Models\Base;
+use App\Base;
 use Queue;
 use Razorpay\Mailers\MerchantMailer;
 use Requests;
@@ -231,7 +231,7 @@ class Service extends Base\Service
         // Take screenshots as well
         $urls = $merchantDetails->getUrls();
 
-        Queue::push('Models\Admin\Creevey', [
+        Queue::push('App\Models\Creevey', [
             $customer['id'],
             $urls,
             $customer['business_name']

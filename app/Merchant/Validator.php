@@ -2,7 +2,7 @@
 
 namespace Models\Merchant;
 
-use Models\Base;
+use App\Base;
 
 class Validator extends Base\Validator
 {

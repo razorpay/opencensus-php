@@ -16,7 +16,7 @@ $factory('Models\User\Entity', [
     'password'  =>  $password
 ]);
 
-$factory('Models\Admin\Entity', [
+$factory('App\Admin\Entity', [
     'name'  => $faker->word,
     'username'  => $faker->word,
     'password'  => $password,

@@ -2,7 +2,7 @@
 
 namespace Models\MerchantDetails;
 
-use Models\Base;
+use App\Base;
 
 class Entity extends Base\Entity
 {

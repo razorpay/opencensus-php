@@ -17,7 +17,7 @@ return array(
         ),
         'admin' => array(
             'driver' => 'eloquent',
-            'model' => 'Models\Admin\Entity',
+            'model' => 'App\Admin\Entity',
             'table' => 'admins',
             'email' => 'emails.auth.reminder'
         )

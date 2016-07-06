@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Base;
+namespace App\Base;
 
 use Razorpay\Api\Request as ApiRequest;
 use Config;

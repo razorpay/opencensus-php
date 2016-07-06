@@ -2,7 +2,7 @@
 
 use Http\AppResponse;
 use Http\SlackResponse;
-use Models\Admin;
+use App\Admin;
 use Models\Merchant;
 
 class AdminController extends BaseController

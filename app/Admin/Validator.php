@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Admin;
+namespace App\Admin;
 
-use Models\Base;
+use App\Base;
 
 class Validator extends Base\Validator
 {

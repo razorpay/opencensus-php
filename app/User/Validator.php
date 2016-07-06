@@ -2,7 +2,7 @@
 
 namespace Models\User;
 
-use Models\Base;
+use App\Base;
 
 class Validator extends Base\Validator
 {

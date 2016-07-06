@@ -5,7 +5,7 @@ namespace Models\Merchant;
 use Mail;
 use Uuid;
 
-use Models\Base;
+use App\Base;
 use Models\User;
 use Models\Invitation;
 
