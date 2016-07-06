@@ -28,6 +28,7 @@ return array(
 		"string"  => "The :attribute must be between :min and :max characters.",
 		"array"   => "The :attribute must have between :min and :max items.",
 	),
+    "boolean"              => "The :attribute field must be true or false.",
 	"confirmed"            => "The :attribute confirmation does not match.",
 	"date"                 => "The :attribute is not a valid date.",
 	"date_format"          => "The :attribute does not match the format :format.",
@@ -36,6 +37,7 @@ return array(
 	"digits_between"       => "The :attribute must be between :min and :max digits.",
 	"email"                => "The :attribute must be a valid email address.",
 	"exists"               => "The selected :attribute is invalid.",
+    "filled"               => "The :attribute field is required.",
 	"image"                => "The :attribute must be an image.",
 	"in"                   => "The selected :attribute is invalid.",
 	"integer"              => "The :attribute must be an integer.",
@@ -69,6 +71,7 @@ return array(
 		"string"  => "The :attribute must be :size characters.",
 		"array"   => "The :attribute must contain :size items.",
 	),
+    "timezone"             => "The :attribute must be a valid zone.",
 	"unique"               => "The :attribute has already been taken.",
 	"url"                  => "The :attribute format is invalid.",
 
@@ -83,11 +86,11 @@ return array(
 	|
 	*/
 
-	'custom' => array(
-		'attribute-name' => array(
-			'rule-name' => 'custom-message',
-		),
-	),
+	'custom' => [
+        'attribute-name' => [
+            'rule-name' => 'custom-message',
+        ],
+    ],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -100,6 +103,6 @@ return array(
 	|
 	*/
 
-	'attributes' => array(),
+	'attributes' => [],
 
 );
