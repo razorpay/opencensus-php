@@ -1,6 +1,6 @@
 <?php
 
-namespace Services;
+namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 

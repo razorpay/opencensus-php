@@ -1,6 +1,6 @@
 <?php
 
-namespace Services;
+namespace RZP\Services;
 
 use App;
 use Config;

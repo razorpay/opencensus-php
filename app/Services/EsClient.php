@@ -1,6 +1,6 @@
 <?php
 
-namespace Services;
+namespace RZP\Services;
 
 use Elasticsearch\ClientBuilder;
 
@@ -51,7 +51,7 @@ class EsClient
         {
             return null;
         }
-        
+
         $searchResponse = $this->client->search($params);
 
         if ($searchResponse['hits']['total'] === 0)
