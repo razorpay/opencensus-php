@@ -31,5 +31,5 @@ return [
     'settlement_bucket' => env('AWS_S3_SETTLEMENT_BUCKET'),
     'logo_bucket' => env('AWS_S3_LOGO_BUCKET'),
 
-    'mock' => true
+    'mock' => env('AWS_S3_MOCK')
 ];
