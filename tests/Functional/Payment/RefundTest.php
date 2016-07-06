@@ -145,8 +145,7 @@ class RefundTest extends TestCase
 
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
-
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10);
+        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:purchased',
