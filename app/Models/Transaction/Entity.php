@@ -261,6 +261,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SETTLED];
     }
 
+    public function getSettledAtAttribute()
+    {
+        return (int) $this->attributes[self::SETTLED_AT];
+    }
+
     public function getGratisAttribute()
     {
         return (bool) $this->attributes[self::GRATIS];
