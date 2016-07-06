@@ -245,8 +245,7 @@ return array(
         'Excel'     => 'Maatwebsite\Excel\Facades\Excel',
         'AWS'       => 'Aws\Laravel\AwsFacade::class',
         // 'BasicAuth'       => 'Http\BasicAuth\Facade',
-        // 'Trace'           => 'Trace\Facade',
-        // 'Slack'           => 'Maknz\Slack\Facades\Slack'
+        'Slack'           => 'Maknz\Slack\Laravel\Facade::class'
     ),
 
     'checkout' => 'https://checkout.razorpay.com',
