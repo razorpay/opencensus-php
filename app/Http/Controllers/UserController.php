@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function getIndex()
     {
-        return View::make('merchant.tmpgetIndex');
+        return view('merchant.tmpgetIndex');
     }
 
     /**

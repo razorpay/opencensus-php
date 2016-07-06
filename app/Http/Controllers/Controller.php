@@ -1,10 +1,12 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Bus\DispatchesCommands;
-use Illuminate\Routing\Controller as Controller;
+use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 
-abstract class Controller extends Controller {
+abstract class Controller extends BaseController {
 
 	use DispatchesCommands, ValidatesRequests;
 
@@ -17,7 +19,7 @@ abstract class Controller extends Controller {
     {
         if (is_null($this->layout) === false)
         {
-            $this->layout = View::make($this->layout);
+            $this->layout = view($this->layout);
         }
     }
 

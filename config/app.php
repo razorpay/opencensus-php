@@ -39,6 +39,8 @@ return array(
     |
     */
 
+   'cipher' => MCRYPT_RIJNDAEL_256,
+
     'timezone' => 'UTC',
 
     /*
@@ -113,7 +115,7 @@ return array(
          */
         'Illuminate\Auth\AuthServiceProvider',
         'Illuminate\Auth\Passwords\PasswordResetServiceProvider',
-        'Illuminate\Bus\BusServiceProvider',
+        'Illuminate\Broadcasting\BroadcastServiceProvider',
         'Illuminate\Cache\CacheServiceProvider',
         'Illuminate\Cookie\CookieServiceProvider',
         'Illuminate\Database\DatabaseServiceProvider',
@@ -138,8 +140,6 @@ return array(
          * Application Service Providers...
          */
         'App\Providers\AppServiceProvider',
-        'App\Providers\BusServiceProvider',
-        'App\Providers\ConfigServiceProvider',
         'App\Providers\EventServiceProvider',
         'App\Providers\RouteServiceProvider',
         'App\Trace\TraceServiceProvider',
