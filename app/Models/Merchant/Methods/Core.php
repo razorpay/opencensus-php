@@ -125,7 +125,7 @@ class Core extends Base\Core
     public function setAllPaymentBanks($methods)
     {
         $input = [
-            'banks' => RZP\Models\Payment\Processor\Netbanking::getAllBanks()
+            'banks' => Netbanking::getAllBanks()
         ];
 
         $this->setPaymentBanks($methods, $input);
@@ -163,7 +163,7 @@ class Core extends Base\Core
             $enabled = $banks->getBanks();
         }
 
-        $disabled = Payment\Processor\Netbanking::getDisabledBanks($enabled);
+        $disabled = Netbanking::getDisabledBanks($enabled);
 
         $data = array(
             'enabled' => $this->getBankNames($enabled),

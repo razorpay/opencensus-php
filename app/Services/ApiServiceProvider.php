@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Gateway\GatewayManager;
+use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -39,6 +40,11 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('webhook.inferno', function($app)
         {
             return new RZP\Models\Merchant\Webhook\Inferno;
+        });
+
+        $this->app->singleton('exception.handler', function($app)
+        {sd('d');
+            return new RZP\Exception\Handler($app);
         });
 
         $this->app->singleton('card.tokenex', function($app)
