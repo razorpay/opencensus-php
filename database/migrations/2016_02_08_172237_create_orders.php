@@ -1,10 +1,10 @@
 <?php
 
-use Constants\Table;
+use RZP\Constants\Table;
 
-use Models\Order\Entity as Order;
-use Models\Payment\Entity as Payment;
-use Models\Merchant\Entity as Merchant;
+use RZP\Models\Order\Entity as Order;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Merchant\Entity as Merchant;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;

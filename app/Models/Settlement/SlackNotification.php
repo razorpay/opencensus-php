@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 use Queue;
 
 class SlackNotification

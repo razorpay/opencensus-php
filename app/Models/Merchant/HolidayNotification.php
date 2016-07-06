@@ -3,8 +3,8 @@
 namespace RZP\Models\Merchant;
 
 use Carbon\Carbon;
-use Constants\Mode;
-use Services\SlackPoster;
+use RZP\Constants\Mode;
+use RZP\Services\SlackPoster;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
 

@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Base;
 
-use Constants\Entity as E;
+use RZP\Constants\Entity as E;
 use Carbon\Carbon;
+use RZP\Trace\TraceCode;
 use RZP\Exception;
-use Trace\TraceCode;
 use RZP\Models\Transaction;
 
 class Report extends Service

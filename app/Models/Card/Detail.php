@@ -3,7 +3,7 @@
 namespace RZP\Models\Card;
 
 use RZP\Models\Base;
-use Constants\Table;
+use RZP\Constants\Table;
 
 class Detail extends Base\Entity
 {

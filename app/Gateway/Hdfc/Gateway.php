@@ -24,7 +24,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -32,8 +32,8 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

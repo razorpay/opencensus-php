@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;

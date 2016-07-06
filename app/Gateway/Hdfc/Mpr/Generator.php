@@ -6,9 +6,9 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Excel;
 use RZP\Gateway\Hdfc;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use Trace\TraceCode;
 
 class Generator
 {

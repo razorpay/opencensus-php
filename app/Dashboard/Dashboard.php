@@ -9,8 +9,8 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use Queue;
 use Requests;
-use Trace;
-use Trace\TraceCode;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Dashboard
 {

@@ -3,7 +3,7 @@
 namespace RZP\Exception;
 
 use App;
-use Trace;
+use RZP\Trace;
 use Response;
 use Exception;
 use RZP\Http\ApiResponse;

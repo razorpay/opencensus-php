@@ -7,8 +7,8 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 trait Inquiry
 {

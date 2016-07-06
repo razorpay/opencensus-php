@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
-use Models\Merchant;
-use Models\Merchant\Balance\Entity as Balance;
+use RZP\Constants\Table;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 
 class CreateBalance extends Migration
 {

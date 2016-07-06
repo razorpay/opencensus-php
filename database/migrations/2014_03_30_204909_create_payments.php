@@ -3,13 +3,13 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
-use Models\Payment\Entity as Payment;
-use Models\Merchant;
-use Models\Card;
-use Models\Terminal;
-use Models\Transaction;
-use Models\Order;
+use RZP\Constants\Table;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Card;
+use RZP\Models\Terminal;
+use RZP\Models\Transaction;
+use RZP\Models\Order;
 
 class CreatePayments  extends Migration
 {

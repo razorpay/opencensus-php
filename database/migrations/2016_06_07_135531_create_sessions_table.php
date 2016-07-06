@@ -1,6 +1,6 @@
 <?php
 
-use Constants\Table;
+use RZP\Constants\Table;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 

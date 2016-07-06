@@ -4,11 +4,11 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
-use Services\SlackPoster;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
+use RZP\Services\SlackPoster;
 
 class Notify
 {

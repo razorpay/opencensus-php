@@ -3,15 +3,15 @@
 namespace RZP\Models\Merchant;
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Trace\Trace;
-use Trace\TraceCode;
 use Session;
 
 class Checkout

@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Models;
+use RZP\Models;
 
 class Pricing extends Base
 {

@@ -6,14 +6,14 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Excel;
 use Mail;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
-use Trace;
-use Trace\TraceCode;
 
 class Reconciler2
 {

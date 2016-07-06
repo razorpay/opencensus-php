@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Gateway\Paytm;
-use Models\Base\UniqueIdEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class CreatePaytm extends Migration
 {

@@ -3,11 +3,11 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use Trace;
-use Trace\TraceCode;
 
 class Failure
 {

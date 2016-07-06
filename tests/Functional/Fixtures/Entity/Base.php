@@ -4,8 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Config;
 use Eloquent;
-use Models;
-use Gateway;
+use RZP\Models;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;

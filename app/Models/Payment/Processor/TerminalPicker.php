@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Card\Network;
@@ -16,8 +16,8 @@ use RZP\Models\Terminal\Shared;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use App;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class TerminalPicker
 {

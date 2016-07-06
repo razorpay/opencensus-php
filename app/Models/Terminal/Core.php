@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Terminal;
 
+use Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Constants\Mode;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
-use Trace\TraceCode;
 
 class Core extends Base\Core
 {

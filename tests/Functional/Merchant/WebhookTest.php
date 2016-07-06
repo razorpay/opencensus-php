@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mockery;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Models\Merchant\Webhook\Inferno;
+use RZP\Models\Merchant\Webhook\Inferno;
 
 class WebhookTest extends TestCase
 {

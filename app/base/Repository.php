@@ -2,11 +2,11 @@
 
 namespace Base;
 
-use Constants\Entity as E;
-use Constants\Table;
+use RZP\Constants\Entity as E;
+use RZP\Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
@@ -210,7 +210,7 @@ class Repository extends \Razorpay\Spine\Repository
         $className = strtoupper(end($parentNamespaceArray));
 
         // The ES type name is the same as the table name for the entity in MySQL.
-        $typeName = constant("Constants\\Table::$className");
+        $typeName = constant("RZP\Constants\\Table::$className");
 
         return $typeName;
     }

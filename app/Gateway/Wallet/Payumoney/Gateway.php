@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Wallet\Payumoney;
 
 use View;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error;
@@ -11,9 +11,9 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Wallet\Base;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Core;
-use Trace\Trace;
-use Trace\TraceCode;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Models\Customer\Token;

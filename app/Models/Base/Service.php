@@ -3,7 +3,7 @@
 namespace RZP\Models\Base;
 
 use App;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 
 class Service
 {

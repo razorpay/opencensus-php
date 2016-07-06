@@ -3,10 +3,10 @@
 namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
-use Trace\TraceCode;
 
 class Repository extends Base\Repository
 {

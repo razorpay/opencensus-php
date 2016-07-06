@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Mobikwik;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use Gateway\Wallet\Base\Otp;
+use RZP\Gateway\Wallet\Base\Otp;
 
 class MobikwikGatewayTest extends TestCase
 {

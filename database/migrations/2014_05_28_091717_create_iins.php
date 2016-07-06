@@ -3,8 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
-use Models\Card\IIN;
+use RZP\Constants\Table;
+use RZP\Models\Card\IIN;
 
 class CreateIins extends Migration {
 

@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Pricing;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
 

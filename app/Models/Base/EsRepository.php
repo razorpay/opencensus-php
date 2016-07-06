@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Base;
 
+use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Trace\TraceCode;
 use App;
 
 class EsRepository extends \Razorpay\Spine\Repository

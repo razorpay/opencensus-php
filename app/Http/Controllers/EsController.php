@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Models\Base\EsDao;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class EsController extends Controller
 {
@@ -26,7 +26,7 @@ class EsController extends Controller
     public function migrateEntity($entityName)
     {
         // Currently, the entity migration is supported for only payments and refunds.
-        assert(defined("Constants\\Table::". strtoupper($entityName)));
+        assert(defined("RZP\Constants\\Table::". strtoupper($entityName)));
         assert(in_array($entityName, ['payment', 'refund']));
 
         $this->entityName = $entityName;
@@ -51,7 +51,7 @@ class EsController extends Controller
     protected function migrateNotes()
     {
         $this->increaseAllowedSystemLimits();
-        
+
         // The migration is done in batches.
         while(true)
         {
@@ -102,7 +102,7 @@ class EsController extends Controller
     protected function storeNotesInEs($entities)
     {
         // The ES entity type is the same as the MySQL table name.
-        $entityType = constant("Constants\\Table::" . strtoupper($this->entityName));
+        $entityType = constant("RZP\Constants\\Table::" . strtoupper($this->entityName));
 
         // Gets all the ids of all the entities which need to be migrated.
         $entityIds = $entities->getIds();

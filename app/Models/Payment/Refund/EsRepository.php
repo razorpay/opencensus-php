@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use Constants\Table;
+use RZP\Constants\Table;
 use RZP\Models\Base;
 
 class EsRepository extends Base\EsRepository

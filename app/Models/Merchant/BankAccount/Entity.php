@@ -34,7 +34,7 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::ID;
 
-    protected $table = \Constants\Table::BANK_ACCOUNT;
+    protected $table = RZP\Constants\Table::BANK_ACCOUNT;
 
     protected $entity = 'bank_account';
 

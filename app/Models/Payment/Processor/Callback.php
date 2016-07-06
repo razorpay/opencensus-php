@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Http\Route;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
@@ -19,8 +19,8 @@ use RZP\Models\Order;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Error\ErrorCode;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Mail;
 
 trait Callback

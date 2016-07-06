@@ -3,10 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
+use RZP\Constants\Table;
 
-use Models\Merchant\Entity as Merchant;
-use Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\FeeBearer;
 
 class CreateMerchants extends Migration
 {

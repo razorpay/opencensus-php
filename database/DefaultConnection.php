@@ -5,7 +5,7 @@ namespace Database;
 use Config;
 use App;
 use RZP\Http\Route;
-use Constants\Mode;
+use RZP\Constants\Mode;
 
 class DefaultConnection
 {

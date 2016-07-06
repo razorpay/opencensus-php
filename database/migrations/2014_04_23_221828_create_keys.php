@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
-use Models\Key\Entity as Key;
-use Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Models\Key\Entity as Key;
+use RZP\Models\Merchant;
 
 class CreateKeys extends Migration {
 

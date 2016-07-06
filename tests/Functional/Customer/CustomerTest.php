@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
-use Models\Merchant\Features;
+use RZP\Models\Merchant\Features;
 
 class CustomerTest extends TestCase
 {
@@ -207,7 +207,7 @@ class CustomerTest extends TestCase
 
     protected function mockRaven()
     {
-        $raven = Mockery::mock('Services\Raven')->makePartial();
+        $raven = Mockery::mock('RZP\Services\Raven')->makePartial();
 
         $this->app->instance('raven', $raven);
 

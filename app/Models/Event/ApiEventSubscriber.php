@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Event;
 
-use Constants;
+use RZP\Constants;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use Webhook\Fire;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class ApiEventSubscriber
 {
@@ -92,7 +92,7 @@ class ApiEventSubscriber
         $event = new Event\Entity($attributes);
 
         $payload = array(
-            Constants\Entity::PAYMENT => [
+            RZP\Constants\Entity::PAYMENT => [
                 'entity' => $payment->toArrayPublic(),
             ],
         );

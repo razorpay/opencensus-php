@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Entity;
@@ -13,8 +13,8 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base;
 use Symfony\Component\DomCrawler\Crawler;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use Carbon\Carbon;
 use Mail;
 

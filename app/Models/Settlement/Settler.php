@@ -7,14 +7,14 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use Dashboard\Dashboard;
 
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 
 class Settler

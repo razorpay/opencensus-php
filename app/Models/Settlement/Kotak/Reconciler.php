@@ -3,14 +3,14 @@
 namespace RZP\Models\Settlement\Kotak;
 
 use RZP\Exception;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
-use Trace;
-use Trace\TraceCode;
 
 class Reconciler
 {

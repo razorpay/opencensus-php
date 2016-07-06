@@ -1,13 +1,13 @@
 <?php
 
-namespace Constants;
+namespace RZP\Constants;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Gateway;
+use RZP\Gateway;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models;
-use Trace;
-use Trace\TraceCode;
 
 class Entity
 {

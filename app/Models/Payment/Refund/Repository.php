@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
-use Constants\Table;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {

@@ -4,11 +4,11 @@ namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\VerifyResult;
-use Trace\Trace;
-use Trace\TraceCode;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 
 trait Verify
 {

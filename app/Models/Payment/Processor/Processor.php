@@ -3,7 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
 use RZP\Http\Route;
@@ -17,8 +17,8 @@ use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Request;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 
 class Processor

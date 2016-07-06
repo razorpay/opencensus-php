@@ -3,7 +3,7 @@
 namespace RZP\Gateway\AxisMigs\Mock;
 
 use Carbon\Carbon;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;

@@ -3,11 +3,11 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
-use Models\Payment\Refund\Entity as Refund;
-use Models\Payment;
-use Models\Merchant;
-use Models\Transaction;
+use RZP\Constants\Table;
+use RZP\Models\Payment\Refund\Entity as Refund;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 
 class CreateRefunds extends Migration
 {
