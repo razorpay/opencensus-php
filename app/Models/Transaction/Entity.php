@@ -263,7 +263,13 @@ class Entity extends Base\PublicEntity
 
     public function getSettledAtAttribute()
     {
-        return (int) $this->attributes[self::SETTLED_AT];
+        $settledAt = $this->attributes[self::SETTLED_AT];
+
+        if ($settledAt === null)
+        {
+            return;
+        }
+        return (int) $settledAt;
     }
 
     public function getGratisAttribute()
