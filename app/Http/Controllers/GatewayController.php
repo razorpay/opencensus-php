@@ -27,7 +27,7 @@ class GatewayController extends Controller
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        Database\DefaultConnection::set($mode);
+        \Database\DefaultConnection::set($mode);
 
         if ($mode === null)
         {
