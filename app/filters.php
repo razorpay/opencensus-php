@@ -1,8 +1,10 @@
 <?php
 
+namespace App;
+
 use Razorpay\Api\Request as ApiRequest;
-use Http\AppResponse;
-use Http\SlackResponse;
+use App\Http\AppResponse;
+use App\Http\SlackResponse;
 
 /*
 |--------------------------------------------------------------------------

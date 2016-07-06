@@ -1,6 +1,7 @@
 <?php
+namespace App\Http\Controllers;
 
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Razorpay\Mailers\ContactFormMailer;

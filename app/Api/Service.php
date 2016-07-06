@@ -3,7 +3,7 @@
 namespace App\Api;
 
 use Carbon\Carbon;
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Auth;
 use App\Base;
 use Trace;

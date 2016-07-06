@@ -1,6 +1,7 @@
 <?php
+namespace App\Http\Controllers;
 
-use Http\AppResponse;
+use App\Http\AppResponse;
 use Http\SlackResponse;
 use App\Admin;
 use Models\Merchant;
