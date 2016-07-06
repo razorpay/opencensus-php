@@ -6,7 +6,7 @@ use App\User;
 use App\MerchantDetails;
 use App\Merchant;
 
-class UserController extends BaseController
+class UserController extends Controller
 {
     /**
      * Returns the base template for angular.

@@ -6,7 +6,7 @@ use App\Http\SlackResponse;
 use App\Admin;
 use App\Merchant;
 
-class AdminController extends BaseController
+class AdminController extends Controller
 {
 
     /*

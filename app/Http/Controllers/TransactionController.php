@@ -7,7 +7,7 @@ use App\Merchant;
 use App\Http\AppResponse;
 use App\Transaction;
 
-class TransactionController extends BaseController
+class TransactionController extends Controller
 {
     public function postIndex($mode, $resource)
     {

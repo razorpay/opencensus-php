@@ -6,7 +6,7 @@ use App\Merchant;
 use App\MerchantDetails;
 use Razorpay\Mailers\ContactFormMailer;
 
-class MerchantController extends BaseController
+class MerchantController extends Controller
 {
     public function postResendConfirmation()
     {

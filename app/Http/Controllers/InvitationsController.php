@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Invitation;
 use App\Http\AppResponse;
 
-class InvitationsController extends BaseController
+class InvitationsController extends Controller
 {
     public function __construct()
     {
