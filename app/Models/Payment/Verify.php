@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Payment;
 
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Exception;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;

@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use EE\Exception;
 use RZP\Models\Base;
+use RZP\Exception;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.

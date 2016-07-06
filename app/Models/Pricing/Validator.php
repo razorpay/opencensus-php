@@ -2,14 +2,14 @@
 
 namespace RZP\Models\Pricing;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Bank\IFSC;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {

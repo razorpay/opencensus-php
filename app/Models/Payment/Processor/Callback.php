@@ -3,9 +3,6 @@
 namespace RZP\Models\Payment\Processor;
 
 use Constants\Mode;
-use EE\Exception;
-use EE\Error;
-use EE\Error\ErrorCode;
 use RZP\Http\Route;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
@@ -19,6 +16,9 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Transaction;
 use RZP\Models\Order;
+use RZP\Exception;
+use RZP\Error;
+use RZP\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;

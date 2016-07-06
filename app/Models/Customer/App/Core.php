@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Customer\App;
 
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer\App;
+use RZP\Exception;
 
 class Core extends Base\Core
 {

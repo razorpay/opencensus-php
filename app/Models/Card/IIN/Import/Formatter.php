@@ -4,7 +4,7 @@ namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN\Entity as IIN;
 use RZP\Models\Base;
-use EE\Exception;
+use RZP\Exception;
 
 /**
  * This class takes the column names, rows and the input and formats

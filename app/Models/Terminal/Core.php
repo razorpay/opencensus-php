@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
 use Trace\TraceCode;

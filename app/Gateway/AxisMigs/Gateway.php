@@ -3,8 +3,8 @@
 namespace RZP\Gateway\AxisMigs;
 
 use Constants\Mode;
-use EE\Error;
-use EE\Exception;
+use RZP\Error;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;

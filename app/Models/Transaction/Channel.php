@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Transaction;
 
-use EE\Exception\LogicException;
+use RZP\Exception\LogicException;
 use RZP\Models\Payment;
 use RZP\Models\Terminal\Shared;
 

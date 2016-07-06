@@ -1,8 +1,8 @@
 <?php
 
-namespace EE\Error;
+namespace RZP\Error;
 
-use EE\Exception;
+use RZP\Exception;
 use Illuminate\Support;
 
 class Error extends Support\Fluent

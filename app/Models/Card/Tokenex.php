@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Card;
 
-use EE\Exception;
+use RZP\Exception;
 use Trace\Trace;
 use Trace\TraceCode;
 

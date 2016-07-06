@@ -3,8 +3,8 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error;
+use RZP\Exception;
+use RZP\Error;
 
 use Mail;
 

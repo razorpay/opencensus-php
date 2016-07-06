@@ -3,7 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Transaction;

@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Sharp;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository

@@ -4,8 +4,8 @@ namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
 use RZP\Models\Payment\Processor\Netbanking;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {

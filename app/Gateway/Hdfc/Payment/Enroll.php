@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Hdfc\Payment;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;

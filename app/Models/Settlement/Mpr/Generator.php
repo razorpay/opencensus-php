@@ -3,7 +3,7 @@
 namespace RZP\Models\Settlement\Mpr;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Models\Gateway;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
@@ -47,7 +47,7 @@ class Generator
         }
 
         $this->env = $this->app->environment();
-        
+
         $this->queue = Queue::getFacadeRoot();
 
         $this->mail = Mail::getFacadeRoot();

@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Pricing;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Bank;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Trace\TraceCode;
 
 class Service extends Base\Service

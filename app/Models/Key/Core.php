@@ -4,11 +4,11 @@ namespace RZP\Models\Key;
 
 use Constants\Mode;
 use Crypt;
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {

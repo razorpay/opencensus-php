@@ -4,8 +4,8 @@ namespace RZP\Http\BasicAuth;
 
 use Config;
 use Constants\Mode;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Crypt;
 use RZP\Http\ApiResponse;
 use RZP\Http\Route;

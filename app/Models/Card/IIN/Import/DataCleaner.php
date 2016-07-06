@@ -4,7 +4,7 @@ namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
-use EE\Exception;
+use RZP\Exception;
 
 /**
  * This takes tha formatted data and cleans the duplicte entries and the

@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Customer\App;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Customer\App;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {

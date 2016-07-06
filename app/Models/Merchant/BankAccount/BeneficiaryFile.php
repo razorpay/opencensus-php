@@ -3,10 +3,10 @@
 namespace RZP\Models\Merchant\BankAccount;
 
 use Carbon\Carbon;
-use EE\Error\ErrorCode;
-use EE\Exception;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 
 class BeneficiaryFile
 {

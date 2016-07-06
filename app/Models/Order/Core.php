@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Order;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {

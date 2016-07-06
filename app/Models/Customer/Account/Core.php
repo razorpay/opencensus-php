@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Customer;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Trace\TraceCode;
 
 class Core extends Base\Core

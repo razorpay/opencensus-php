@@ -3,7 +3,7 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use Excel;
-use EE\Exception;
+use RZP\Exception;
 /**
  * This class extracts the data from the file and return the column names
  * and the rows.

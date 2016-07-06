@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
@@ -72,7 +72,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'EE\Exception\GatewayErrorException',
+            'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ],
     ],
@@ -89,7 +89,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'EE\Exception\GatewayErrorException',
+            'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ],
     ],
@@ -112,7 +112,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'EE\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
         ],
     ],
@@ -147,7 +147,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'EE\Exception\GatewayErrorException',
+            'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
         ],
     ],
@@ -189,7 +189,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'EE\Exception\PaymentVerificationException',
+            'class'               => 'RZP\Exception\PaymentVerificationException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],
@@ -249,7 +249,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'EE\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED
         ],
     ]

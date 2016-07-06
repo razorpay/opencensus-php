@@ -3,8 +3,8 @@
 namespace RZP\Gateway\Kotak\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Kotak;
 use RZP\Gateway\Base;
 use RZP\Models\Card;

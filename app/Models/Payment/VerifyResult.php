@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Payment;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Trace\Trace;
 
 class VerifyResult

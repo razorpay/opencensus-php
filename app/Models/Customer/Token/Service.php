@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Customer\Token;
 
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
+use RZP\Exception;
 
 class Service extends Base\Service
 {

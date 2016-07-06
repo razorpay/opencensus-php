@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Card;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {

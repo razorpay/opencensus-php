@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Adjustment;
 
-use EE\Exception;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {

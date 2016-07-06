@@ -1,9 +1,9 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
 use Illuminate\Support\MessageBag;
-use EE\Error\Error;
+use RZP\Error\Error;
 
 trait MessageFormats
 {

@@ -3,7 +3,7 @@
 namespace RZP\Models\Settlement\Kotak;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Excel;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;

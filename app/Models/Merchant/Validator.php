@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -61,10 +61,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        'csv_email', 
+        'csv_email',
         'features',
     ];
-    
+
     public function validateLogo($imageDetails)
     {
         $fileSize = $imageDetails['size'];
@@ -77,7 +77,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG);
         }
-        
+
         // The image should be square
         if ($width !== $height)
         {
@@ -85,7 +85,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE
             );
         }
-        
+
         // The minimum dimensions should be 256*256
         if ($width < 256)
         {

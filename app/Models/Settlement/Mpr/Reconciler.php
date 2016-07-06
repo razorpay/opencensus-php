@@ -3,9 +3,9 @@
 namespace RZP\Models\Settlement\Mpr;
 
 use App;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Carbon\Carbon;
-use EE\Error\ErrorCode;
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Gateway;
@@ -14,6 +14,14 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use Models\Base;
+use Models\Card;
+use Models\Gateway;
+use Models\Merchant;
+use Models\Payment;
+use Models\Pricing;
+use Models\Settlement;
+use Models\Transaction;
 
 
 class Reconciler

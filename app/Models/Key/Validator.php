@@ -3,9 +3,9 @@
 namespace RZP\Models\Key;
 
 use RZP\Models\Base;
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Key;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {

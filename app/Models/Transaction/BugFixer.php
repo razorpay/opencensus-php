@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use RZP\Models\Base;

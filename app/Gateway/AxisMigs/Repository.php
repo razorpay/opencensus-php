@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository

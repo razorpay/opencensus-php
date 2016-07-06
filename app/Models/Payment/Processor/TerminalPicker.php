@@ -3,8 +3,6 @@
 namespace RZP\Models\Payment\Processor;
 
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Card\Network;
@@ -15,6 +13,8 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Models\Terminal\Shared;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use App;
 use Trace\Trace;
 use Trace\TraceCode;

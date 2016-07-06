@@ -10,7 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use Trace\TraceCode;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Models\Transaction;
 
 class Service extends Base\Service

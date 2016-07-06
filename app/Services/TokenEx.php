@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use EE\Exception;
+use RZP\Exception;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

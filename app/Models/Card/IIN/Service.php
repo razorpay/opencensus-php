@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Card\IIN;
 
-use EE\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card\IIN;
+use RZP\Exception;
 use Trace\Trace;
 use Trace\TraceCode;
 

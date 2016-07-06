@@ -1,10 +1,10 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
 use DB;
-use EE\Error\Error;
-use EE\Error\ErrorCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use Razorpay\Spine\Exception\DbQueryExceptionTrait;
 
 class DbQueryException extends ServerErrorException

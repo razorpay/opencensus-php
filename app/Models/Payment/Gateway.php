@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Payment;
 
-use EE\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Exception;
 
 class Gateway
 {

@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use EE\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Exception;
 use Trace\TraceCode;
-use EE\Error\ErrorCode;
+use RZP\Error\ErrorCode;
 
 trait Topup
 {

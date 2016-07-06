@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Payment;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Payment;

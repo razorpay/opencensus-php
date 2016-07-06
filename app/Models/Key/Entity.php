@@ -3,9 +3,9 @@
 namespace RZP\Models\Key;
 
 use Crypt;
-use EE\Error\ErrorCode;
-use EE\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {

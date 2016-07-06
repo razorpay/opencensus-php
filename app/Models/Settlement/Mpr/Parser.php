@@ -3,7 +3,7 @@
 namespace RZP\Models\Settlement\Mpr;
 
 use Excel;
-use EE\Exception;
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 

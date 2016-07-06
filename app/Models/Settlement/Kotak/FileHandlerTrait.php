@@ -4,7 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use ZipArchive;
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Excel;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

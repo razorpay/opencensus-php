@@ -2,7 +2,7 @@
 
 namespace Reconciliator;
 
-use EE\Exception;
+use RZP\Exception;
 
 class Validator
 {
@@ -100,7 +100,7 @@ class Validator
         {
             return true;
         }
-        
+
         return false;
     }
 

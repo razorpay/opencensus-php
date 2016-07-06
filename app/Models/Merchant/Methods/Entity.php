@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use EE\Exception;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {

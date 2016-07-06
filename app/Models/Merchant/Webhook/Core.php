@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Webhook;
 use Crypt;

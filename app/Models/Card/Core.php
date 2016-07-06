@@ -4,8 +4,8 @@ namespace RZP\Models\Card;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Services\SlackPoster;
 
 class Core extends Base\Core

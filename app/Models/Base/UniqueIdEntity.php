@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Base;
 
-use EE\Exception;
+use RZP\Exception;
 
 class UniqueIdEntity extends Entity
 {

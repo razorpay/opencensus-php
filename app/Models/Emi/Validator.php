@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Emi;
 
-use EE\Exception;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {

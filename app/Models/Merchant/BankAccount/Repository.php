@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\BankAccount;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\BankAccount;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {

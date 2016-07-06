@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Atom;
 
 use Constants\Mode;
-use EE\Exception;
+use RZP\Exception;
 
 class Urls
 {

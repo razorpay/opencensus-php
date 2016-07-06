@@ -1,8 +1,8 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
-use EE\Error\ErrorCode;
+use RZP\Error\ErrorCode;
 
 class BadRequestValidationFailureException extends RecoverableException
 {

@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Payment;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
 

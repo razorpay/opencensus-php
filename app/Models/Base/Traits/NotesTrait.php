@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Base\Traits;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 trait NotesTrait
 {

@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Transaction;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Trace\TraceCode;
 
 trait Capture

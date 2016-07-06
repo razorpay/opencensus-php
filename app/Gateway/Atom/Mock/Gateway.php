@@ -3,8 +3,8 @@
 namespace RZP\Gateway\Atom\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Base;
 use RZP\Models\Card;

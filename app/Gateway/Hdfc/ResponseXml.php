@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use EE\Exception;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class ResponseXml extends Base\Entity
 {

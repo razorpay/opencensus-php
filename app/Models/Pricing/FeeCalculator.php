@@ -3,11 +3,11 @@
 namespace RZP\Models\Pricing;
 
 use Constants\Mode;
-use EE\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
+use RZP\Exception;
 use Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;

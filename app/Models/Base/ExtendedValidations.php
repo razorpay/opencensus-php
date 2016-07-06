@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Base;
 
-use EE\Exception;
+use RZP\Exception;
 use Lib\PhoneBook;
 use Trace\TraceCode;
-use EE\Error\ErrorCode;
+use RZP\Error\ErrorCode;
 use libphonenumber\NumberParseException;
 use Symfony\Component\Translation\TranslatorInterface;
 

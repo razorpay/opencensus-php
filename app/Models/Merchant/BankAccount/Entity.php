@@ -3,9 +3,9 @@
 namespace RZP\Models\Merchant\BankAccount;
 
 use App;
-use EE\Exception;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {

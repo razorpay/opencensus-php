@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\BankAccount;
 
 use Constants\Mode;
-use EE\Exception;
+use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Base;
 use Illuminate\Support\MessageBag;

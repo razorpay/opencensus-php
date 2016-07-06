@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Base;
 
-use EE\Exception;
+use RZP\Exception;
 
 trait RepositoryUpdateTestAndLive
 {

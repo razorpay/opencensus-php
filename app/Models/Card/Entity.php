@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Card;
 
-use EE\Exception;
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
