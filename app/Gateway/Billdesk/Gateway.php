@@ -11,8 +11,8 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway

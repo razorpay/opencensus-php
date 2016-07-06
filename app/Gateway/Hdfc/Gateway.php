@@ -32,8 +32,8 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

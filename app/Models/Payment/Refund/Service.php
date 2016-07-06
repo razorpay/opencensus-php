@@ -6,10 +6,10 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Gateway\Netbanking;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
-use Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Transaction;
 

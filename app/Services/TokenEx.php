@@ -4,8 +4,8 @@ namespace RZP\Services;
 
 use RZP\Exception;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class TokenEx
 {

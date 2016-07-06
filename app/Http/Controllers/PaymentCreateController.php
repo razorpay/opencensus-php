@@ -5,7 +5,7 @@ namespace RZP\Http\Controllers;
 use RZP\Http\ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class PaymentCreateController extends Controller
 {

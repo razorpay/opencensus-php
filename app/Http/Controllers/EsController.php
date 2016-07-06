@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Models\Base\EsDao;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class EsController extends Controller
 {
@@ -51,7 +51,7 @@ class EsController extends Controller
     protected function migrateNotes()
     {
         $this->increaseAllowedSystemLimits();
-        
+
         // The migration is done in batches.
         while(true)
         {

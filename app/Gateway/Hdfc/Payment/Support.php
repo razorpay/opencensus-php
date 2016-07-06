@@ -7,9 +7,9 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Card;
-use Trace\Trace;
-use Trace\TraceCode;
 
 trait Support
 {

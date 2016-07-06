@@ -3,7 +3,7 @@
 namespace RZP\Reconciliator;
 
 use App;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Services\SlackPoster;
 
 class Messenger

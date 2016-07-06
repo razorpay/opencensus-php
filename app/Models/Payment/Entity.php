@@ -7,12 +7,12 @@ use RZP\Models\Order;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Bank\Name as BankNames;
-use Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {

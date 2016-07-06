@@ -9,7 +9,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {

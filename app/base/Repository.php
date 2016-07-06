@@ -6,7 +6,7 @@ use Constants\Entity as E;
 use Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository

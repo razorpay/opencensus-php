@@ -7,8 +7,8 @@ use Carbon\Carbon;
 use Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Services\SlackPoster;
-use Trace\TraceCode;
 
 class Notify
 {

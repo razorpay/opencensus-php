@@ -8,7 +8,7 @@ use RZP\Models\Order;
 use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 trait Capture
 {

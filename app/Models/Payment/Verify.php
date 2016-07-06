@@ -8,9 +8,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Services\SlackPoster;
-use Trace\Trace;
-use Trace\TraceCode;
 use App;
 
 class Verify

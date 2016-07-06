@@ -8,8 +8,8 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
