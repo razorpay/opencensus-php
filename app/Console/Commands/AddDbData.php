@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Console\Commands;
+
 use Illuminate\Console\Command;
 use Models\Base\UniqueIdEntity;
 use Symfony\Component\Console\Input\InputOption;
