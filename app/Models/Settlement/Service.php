@@ -105,7 +105,7 @@ class Service extends Base\Service
     public function deleteSetlFile($setlFileType)
     {
         if ($setlFileType === 'hdfc_mpr')
-            return $this->app['gateway']->call(RZP\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, Mode::TEST);
+            return $this->app['gateway']->call(\RZP\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, Mode::TEST);
 
         return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }

@@ -4,7 +4,7 @@ namespace RZP\Models\Base;
 
 use RZP\Exception;
 use Lib\PhoneBook;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use libphonenumber\NumberParseException;
 use Symfony\Component\Translation\TranslatorInterface;

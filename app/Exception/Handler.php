@@ -77,7 +77,7 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    protected function genericExceptionHandler(Exception $exception)
+    public function genericExceptionHandler(Exception $exception)
     {
         if ($this->isToStringException($exception))
         {

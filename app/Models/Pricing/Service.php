@@ -9,7 +9,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
