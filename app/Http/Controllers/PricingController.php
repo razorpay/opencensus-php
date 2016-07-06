@@ -9,7 +9,7 @@ class PricingController extends Controller
 {
     public function postCreatePricingPlan()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Pricing\Service)->createPricingPlan($input);
 
@@ -46,7 +46,7 @@ class PricingController extends Controller
 
     public function postAddPricingPlanRule($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Pricing\Service)->addPricingPlanRule($id, $input);
 

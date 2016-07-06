@@ -246,5 +246,7 @@ return array(
         'Slack'     => Maknz\Slack\Laravel\Facade::class
     ),
 
+    'context' => env('CONTEXT'),
+
     'checkout' => 'https://checkout.razorpay.com',
 );

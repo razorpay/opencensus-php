@@ -17,7 +17,7 @@ class AdjustmentController extends Controller
 
     public function getAdjustments()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Adjustment\Service)->getAdjustments($input);
 
@@ -26,7 +26,7 @@ class AdjustmentController extends Controller
 
     public function postAdjustment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Adjustment\Service)->addAdjustment($input);
 

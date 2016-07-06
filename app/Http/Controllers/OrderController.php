@@ -17,7 +17,7 @@ class OrderController extends Controller
 
     public function createOrder()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->order->create($input);
 
@@ -26,7 +26,7 @@ class OrderController extends Controller
 
     public function getOrders()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->order->fetchMultiple($input);
 
@@ -35,7 +35,7 @@ class OrderController extends Controller
 
     public function fetchOrderById($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->order->fetch($id);
 
@@ -44,7 +44,7 @@ class OrderController extends Controller
 
     public function updateOrder()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->order->update($input);
 
@@ -53,7 +53,7 @@ class OrderController extends Controller
 
     public function fetchPayments($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payments = $this->order->fetchPaymentsFor($id);
 

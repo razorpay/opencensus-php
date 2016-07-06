@@ -11,7 +11,7 @@ class SettlementController extends Controller
 {
     public function postGatewayMprReconcile()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->gatewayMprReconcile($input);
 
@@ -20,7 +20,7 @@ class SettlementController extends Controller
 
     public function postGatewayMprGenerate()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->gatewayMprGenerate($input);
 
@@ -29,7 +29,7 @@ class SettlementController extends Controller
 
     public function postSettlementInitiate($channel = null)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->initiateSettlements($input, $channel);
 
@@ -38,7 +38,7 @@ class SettlementController extends Controller
 
     public function putEditSettlement($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->editSettlement($id, $input);
 
@@ -54,7 +54,7 @@ class SettlementController extends Controller
 
     public function getSettlements()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->fetchMultiple($input);
 
@@ -63,7 +63,7 @@ class SettlementController extends Controller
 
     public function postSettlementReconcile()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->reconcileSettlements($input);
 
@@ -72,7 +72,7 @@ class SettlementController extends Controller
 
     public function postSettlementReturn()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->returnSettlements($input);
 
@@ -81,7 +81,7 @@ class SettlementController extends Controller
 
     public function postSettlementReconcileGenerate()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->generateSettlementReconciliation($input);
 
@@ -90,7 +90,7 @@ class SettlementController extends Controller
 
     public function postSettlementReturnGenerate()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->generateSettlementReturn($input);
 
@@ -113,7 +113,7 @@ class SettlementController extends Controller
 
     public function getDailySettlements()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Daily\Service)->fetchMultiple($input);
 
@@ -122,7 +122,7 @@ class SettlementController extends Controller
 
     public function getSettlementTransactions($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->fetchSettlementTransactions($id);
 
@@ -166,7 +166,7 @@ class SettlementController extends Controller
 
     public function getSettlementCombinedReport()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Settlement\Service)->getSettlementCombinedReport($input);
 
