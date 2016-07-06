@@ -3,7 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
 use RZP\Http\Route;

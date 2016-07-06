@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Mobikwik;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;

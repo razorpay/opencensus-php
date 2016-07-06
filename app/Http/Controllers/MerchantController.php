@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;

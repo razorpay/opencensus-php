@@ -70,7 +70,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'payment';
 
-    protected $table            = \Constants\Table::PAYMENT;
+    protected $table            = RZP\Constants\Table::PAYMENT;
 
     protected $metadata         = array();
 

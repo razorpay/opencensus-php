@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;

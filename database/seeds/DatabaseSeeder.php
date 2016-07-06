@@ -1,7 +1,7 @@
 <?php
 
-use Constants\Mode;
-use Constants\Table;
+use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;

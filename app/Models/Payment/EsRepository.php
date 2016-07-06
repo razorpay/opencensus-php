@@ -3,7 +3,7 @@
 namespace RZP\Models\Payment;
 
 use RZP\Models\Base;
-use Constants\Table;
+use RZP\Constants\Table;
 
 class EsRepository extends Base\EsRepository
 {

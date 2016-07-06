@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Table;
+use RZP\Constants\Table;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Card;

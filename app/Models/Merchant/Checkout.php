@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use App;
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;

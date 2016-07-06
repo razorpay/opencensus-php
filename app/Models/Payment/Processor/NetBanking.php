@@ -4,7 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\Name;
-use Constants\Mode;
+use RZP\Constants\Mode;
 
 class Netbanking
 {

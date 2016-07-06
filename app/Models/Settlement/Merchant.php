@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Models;
 use RZP\Models\Base;
 use RZP\Models\EE\Exception;

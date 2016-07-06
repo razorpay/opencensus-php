@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin;
 
-use Constants\Entity;
+use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models;
 use RZP\Error\ErrorCode;

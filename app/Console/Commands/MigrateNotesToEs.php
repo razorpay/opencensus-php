@@ -5,7 +5,7 @@ namespace RZP\Console\Commands;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 
 use Elasticsearch\ClientBuilder;
 

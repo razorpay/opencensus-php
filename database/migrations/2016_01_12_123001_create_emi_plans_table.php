@@ -1,6 +1,6 @@
 <?php
 
-use Constants\Table;
+use RZP\Constants\Table;
 use RZP\Models\Emi;
 use RZP\Models\Payment\Entity as Payment;
 use Illuminate\Database\Schema\Blueprint;

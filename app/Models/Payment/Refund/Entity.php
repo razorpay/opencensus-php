@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const NOTES             = 'notes';
 
-    protected $table = \Constants\Table::REFUND;
+    protected $table = RZP\Constants\Table::REFUND;
 
     protected static $sign = 'rfnd';
 

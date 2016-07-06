@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Sharp;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use Crypt;
 use RZP\Error\ErrorCode;
 use RZP\Exception;

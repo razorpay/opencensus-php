@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;

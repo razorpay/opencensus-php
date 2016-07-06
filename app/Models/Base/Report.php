@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Base;
 
-use Constants\Entity as E;
+use RZP\Constants\Entity as E;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Exception;

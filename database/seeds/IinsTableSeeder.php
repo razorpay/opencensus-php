@@ -1,7 +1,7 @@
 <?php
 
+use RZP\Constants\Table;
 use RZP\Models\Card\IIN;
-use Constants\Table;
 
 class IinsTableSeeder extends Seeder
 {

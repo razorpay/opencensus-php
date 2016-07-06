@@ -1,6 +1,6 @@
 <?php
 
-namespace Constants;
+namespace RZP\Constants;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;

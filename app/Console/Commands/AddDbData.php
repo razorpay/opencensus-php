@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use RZP\Models\Base\UniqueIdEntity;
 use Symfony\Component\Console\Input\InputOption;
 
-use Constants\Table;
+use RZP\Constants\Table;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Processor\Netbanking;
 
