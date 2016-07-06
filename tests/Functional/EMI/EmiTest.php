@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\EMI;
+namespace RZP\Tests\Functional\EMI;
 
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class EmiTest extends TestCase
 {

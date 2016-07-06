@@ -40,7 +40,8 @@
     },
     "autoload": {
         "classmap": [
-            "database"
+            "database",
+            "tests"
         ],
         "psr-4": {
             "RZP\\": "app/"

@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Functional\Gateway\Hdfc;
+namespace RZP\Tests\Functional\Gateway\Hdfc;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class HdfcGatewayTest extends TestCase
 {

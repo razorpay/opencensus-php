@@ -162,21 +162,20 @@ return array(
         // RZP\Providers\AuthServiceProvider::class,
         // RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
-
         RZP\Http\BasicAuth\ServiceProvider::class,
+        RZP\Trace\TraceServiceProvider::class,
+        RZP\Services\DashboardServiceProvider::class,
+        RZP\Services\ApiServiceProvider::class,
 
         /*
-         * Packages Service Providers...
+         * Third party providers
          */
         Aws\Laravel\AwsServiceProvider::class,
+        Maknz\Slack\SlackServiceProvider::class,
+        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
         Collective\Bus\BusServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
-        // 'Http\BasicAuth\ServiceProvider',
-        Trace\TraceServiceProvider::class,
-        Dashboard\DashboardServiceProvider::class,
-        Services\ApiServiceProvider::class,
-        Maknz\Slack\SlackServiceProvider::class,
-        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class
+
     ),
 
     /*
@@ -239,12 +238,11 @@ return array(
 
         // Application Facades
         'BasicAuth' => RZP\Http\BasicAuth::class,
-        'Trace'     => Trace\Facade::class,
+        'Trace'     => RZP\Trace\Facade::class,
 
         // Custom Facade
         'Excel'     => 'Maatwebsite\Excel\Facades\Excel',
         'AWS'       => 'Aws\Laravel\AwsFacade::class',
-        // 'BasicAuth'       => 'Http\BasicAuth\Facade',
         'Slack'           => 'Maknz\Slack\Laravel\Facade::class'
     ),
 

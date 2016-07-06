@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Unit\Models\Card;
+namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
 use Models\Card;
 use Models\Pricing;
 use Models\Payment;
-use Tests\Functional\TestCase;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MerchantFeeTest extends TestCase
 {

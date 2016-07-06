@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit;
+namespace RZP\Tests\Unit;
 
 use Config;
 
-class ConfigTest extends \Tests\TestCase
+class ConfigTest extends \RZP\Tests\TestCase
 {
     protected $config;
 

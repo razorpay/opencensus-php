@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Functional\Gateway\Wallet\Payumoney;
+namespace RZP\Tests\Functional\Gateway\Wallet\Payumoney;
 
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 use Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
 use Http\Route;

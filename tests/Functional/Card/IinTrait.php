@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Card;
+namespace RZP\Tests\Functional\Card;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

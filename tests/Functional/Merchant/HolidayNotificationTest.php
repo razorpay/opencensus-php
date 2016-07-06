@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 use Mockery;
-use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
-use Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class HolidayNotificationTest extends TestCase
 {

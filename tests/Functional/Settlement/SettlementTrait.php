@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Settlement;
+namespace RZP\Tests\Functional\Settlement;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Payment;
 
-use Tests\Functional\TestCase;
+use RZP\Tests\Functional\TestCase;
 
 /**
  * Tests that support payments (capture/refund) are working fine.

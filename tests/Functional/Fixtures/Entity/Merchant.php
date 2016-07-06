@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Fixtures\Entity;
+namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Models\Merchant\Account;
 use Models\Merchant\Methods\Entity as MerchantMethodEntity;

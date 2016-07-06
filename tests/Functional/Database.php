@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional;
+namespace RZP\Tests\Functional;
 
 use Artisan;
 

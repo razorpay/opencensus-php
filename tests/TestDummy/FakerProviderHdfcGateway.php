@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\TestDummy;
+namespace RZP\Tests\TestDummy;
 
 use Carbon\Carbon;
 use Faker\Provider\Base;
