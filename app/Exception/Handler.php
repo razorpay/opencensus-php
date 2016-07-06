@@ -104,7 +104,7 @@ class Handler extends ExceptionHandler
         return $this->generateServerErrorResponse($this->isDebug(), $exception);
     }
 
-    protected function baseExceptionHandler(BaseException $exception)
+    public function baseExceptionHandler(BaseException $exception)
     {
         // ServerError is fatal error and shoudn't be encountered
         // Let the higher-ups handle it. This function handles
