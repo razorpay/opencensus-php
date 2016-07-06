@@ -1,6 +1,6 @@
 <?php
 
-$factory(Models\Merchant\Entity::class, [
+$factory(\RZP\Models\Merchant\Entity::class, [
     'id' => $faker->uniqueid,
     'name' => $faker->word,
     'email' => $faker->email,
@@ -14,11 +14,11 @@ $factory(Models\Merchant\Entity::class, [
     'transaction_report_email' => ['test@razorpay.com'],
     'receipt_email_enabled' => true,
     'settlement_schedule' => 3,
-    'fee_bearer' => Models\Merchant\FeeBearer::PLATFORM,
+    'fee_bearer' => \RZP\Models\Merchant\FeeBearer::PLATFORM,
     'risk_rating' => 3,
 ]);
 
-$factory(Models\Terminal\Entity::class, [
+$factory(\RZP\Models\Terminal\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity,',
     'card' => 1,
@@ -32,12 +32,12 @@ $factory(Models\Terminal\Entity::class, [
     'gateway_secure_secret' => null,
 ]);
 
-$factory(Models\Merchant\Balance\Entity::class, [
+$factory(\RZP\Models\Merchant\Balance\Entity::class, [
     'id' => $faker->uniqueid,
     'balance' => 0,
 ]);
 
-$factory(Models\Merchant\BankAccount\Entity::class, [
+$factory(\RZP\Models\Merchant\BankAccount\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => $faker->uniqueid,
     'ifsc_code' => 'RZPB0000000',
@@ -55,7 +55,7 @@ $factory(Models\Merchant\BankAccount\Entity::class, [
     'beneficiary_pin' => 100000,
 ]);
 
-$factory(Models\Card\Entity::class, [
+$factory(\RZP\Models\Card\Entity::class, [
     'id'                => $faker->uniqueid,
     'merchant_id'       => 10000000000000,
     'name'              => $faker->word,
@@ -74,14 +74,14 @@ $factory(Models\Card\Entity::class, [
     'trivia'            => '',
 ]);
 
-$factory(Models\Key\Entity::class, [
+$factory(\RZP\Models\Key\Entity::class, [
     'id' => '1DP5mmOlF5G5ag',
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'secret' => 'eyJpdiI6InFjMFFDMkszYzRLeU5UZ2VnajhoMEE9PSIsInZhbHVlIjoiZzY3c0Zkd0VMQkE0cjU1T3hVQXZSSzBub1h4aHJkaThBRlwvZWJwMm5wdkE9IiwibWFjIjoiZmEyZWM5MzIyODBjMmU3N2RhMmQ2ZjA2ODA3OTk5ZjI0ZTY2ZTQ3ZGNiYzJjOTE4ODc5ZWNkYzY4MGQwYTZhZiJ9',
     'expired_at' => null,
 ]);
 
-$factory(Models\Payment\Entity::class, [
+$factory(\RZP\Models\Payment\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 10000000000000,
     'method' => 'card',
@@ -104,7 +104,7 @@ $factory(Models\Payment\Entity::class, [
     'updated_at' => $faker->timestamp,
 ]);
 
-$factory(Models\Payment\Refund\Entity::class, [
+$factory(\RZP\Models\Payment\Refund\Entity::class, [
     'id' => $faker->uniqueid,
     'payment_id' => 'factory:Models\Payment\Entity',
     'merchant_id' => 'factory:Models\Merchant\Entity',
@@ -114,7 +114,7 @@ $factory(Models\Payment\Refund\Entity::class, [
     'transaction_id' => null,
 ]);
 
-$factory(Models\Pricing\Entity::class, [
+$factory(\RZP\Models\Pricing\Entity::class, [
     'id' => $faker->uniqueid,
     'plan_id' => '1ycviEdCgurrFI',
     'plan_name' => 'testFixturePlan',
@@ -126,7 +126,7 @@ $factory(Models\Pricing\Entity::class, [
     'fixed_rate' => 10000,
 ]);
 
-$factory(Models\Transaction\Entity::class, [
+$factory(\RZP\Models\Transaction\Entity::class, [
     'id' => $faker->uniqueid,
     'entity_id' => $faker->uniqueid,
     'type' => 'payment',
@@ -143,7 +143,7 @@ $factory(Models\Transaction\Entity::class, [
     'channel' => 'kotak'
 ]);
 
-$factory(Models\Settlement\Entity::class, [
+$factory(\RZP\Models\Settlement\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => $faker->randomNumber,
@@ -155,7 +155,7 @@ $factory(Models\Settlement\Entity::class, [
     'return_utr' => null,
 ]);
 
-$factory(Models\Adjustment\Entity::class, [
+$factory(\RZP\Models\Adjustment\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => $faker->randomNumber,
@@ -165,7 +165,7 @@ $factory(Models\Adjustment\Entity::class, [
     'transaction_id' => 'factory:Models\Transaction\Entity',
 ]);
 
-$factory('Gateway\Hdfc\Entity', [
+$factory('\RZP\Gateway\Hdfc\Entity', [
     'id' => $faker->randomNumber(6),
     'payment_id' => null,
     'refund_id' => null,
@@ -182,17 +182,17 @@ $factory('Gateway\Hdfc\Entity', [
     'postdate' => $faker->hdfcPostDate,
 ]);
 
-$factory('Gateway\Atom\Entity', [
+$factory('\RZP\Gateway\Atom\Entity', [
     'id' => $faker->randomNumber(6),
     'gateway_payment_id' => 'factory:Models\Payment\Entity',
     'token' => $faker->token,
     'success' => $faker->boolean,
     'callback_data' => null,
-    'bank_name' => 'RZP',
+    'bank_name' => '\RZP',
     'bank_transaction_id' => $faker->randomNumber(6),
 ]);
 
-$factory(Models\Card\IIN\Entity::class, [
+$factory(\RZP\Models\Card\IIN\Entity::class, [
     'iin' => 411111,
     'category' => null,
     'network' => 'visa',
@@ -202,7 +202,7 @@ $factory(Models\Card\IIN\Entity::class, [
     'trivia' => $faker->sentence,
 ]);
 
-$factory(Models\Merchant\Methods\Entity::class, [
+$factory(\RZP\Models\Merchant\Methods\Entity::class, [
     'merchant_id' => '10000000000000',
     'card'  => '1',
     'banks' => '[]',
@@ -210,7 +210,7 @@ $factory(Models\Merchant\Methods\Entity::class, [
     'netbanking' => '1',
 ]);
 
-$factory(Models\Merchant\Webhook\Entity::class, [
+$factory(\RZP\Models\Merchant\Webhook\Entity::class, [
     'merchant_id' => '10000000000000',
     'url' => $faker->url,
     'events' => [
@@ -219,7 +219,7 @@ $factory(Models\Merchant\Webhook\Entity::class, [
     'active' => true,
 ]);
 
-$factory(Models\Emi\Entity::class, [
+$factory(\RZP\Models\Emi\Entity::class, [
     'id' => 10101010101010,
     'duration' => 9,
     'rate' => 1200,
@@ -228,7 +228,7 @@ $factory(Models\Emi\Entity::class, [
     'min_amount' => 500000,
 ]);
 
-$factory(Models\Order\Entity::class, [
+$factory(\RZP\Models\Order\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'amount' => 1000000,
@@ -241,7 +241,7 @@ $factory(Models\Order\Entity::class, [
     'updated_at' => $faker->timestamp,
 ]);
 
-$factory(Models\Customer\Entity::class, [
+$factory(\RZP\Models\Customer\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'name' => 'name',
@@ -249,7 +249,7 @@ $factory(Models\Customer\Entity::class, [
     'notes' => null,
 ]);
 
-$factory(Models\Customer\Token\Entity::class, [
+$factory(\RZP\Models\Customer\Token\Entity::class, [
     'id' => $faker->uniqueid,
     'merchant_id' => '10000000000000',
     'customer_id' => '100000customer',
@@ -259,7 +259,7 @@ $factory(Models\Customer\Token\Entity::class, [
     'card_id' => null
 ]);
 
-$factory(Models\Customer\App\Entity::class, [
+$factory(\RZP\Models\Customer\App\Entity::class, [
     'id' => $faker->uniqueid,
     'customer_id'  => '10000gcustomer',
     'device_token' => 'test',

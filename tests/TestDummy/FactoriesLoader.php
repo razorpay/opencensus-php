@@ -41,7 +41,7 @@ class FactoriesLoader extends Base\FactoriesLoader
     private function assertThatFactoriesDirectoryExists($basePath)
     {
         if ( ! is_dir($basePath)) {
-            throw new TestDummyException(
+            throw new Base\TestDummyException(
                 "The path provided for the factories directory, {$basePath}, does not exist."
             );
         }
