@@ -9,7 +9,7 @@ use Requests;
 use App\Base;
 use Models\Merchant;
 use Models\User;
-use Models\Invitation;
+use App\Invitation;
 use Models\MerchantDetails;
 
 use Razorpay\Mailers\UserMailer;

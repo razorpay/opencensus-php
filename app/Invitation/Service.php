@@ -1,13 +1,13 @@
 <?php
 
-namespace Models\Invitation;
+namespace App\Invitation;
 
 use Auth;
 use Mail;
 use App\Base;
 use Models\Merchant;
 use Models\User;
-use Models\Invitation;
+use App\Invitation;
 
 class Service extends Base\Service
 {
@@ -231,7 +231,7 @@ class Service extends Base\Service
      * Get the pending invitations for the given user.
      *
      * @param \Models\User\Entity $user
-     * @return \Models\Invitation\Entity[]
+     * @return \App\Invitation\Entity[]
      */
     public function getPendingInvitationsForUser($user)
     {

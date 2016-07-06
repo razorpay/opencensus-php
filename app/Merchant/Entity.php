@@ -7,7 +7,7 @@ use Uuid;
 
 use App\Base;
 use Models\User;
-use Models\Invitation;
+use App\Invitation;
 
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
@@ -248,7 +248,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     /**
      * Attach a user to a given merchant based on their invitation.
      *
-     * @param  Models\Invitation\Entity  $invitation
+     * @param  App\Invitation\Entity  $invitation
      * @param  Models\User\Entity  $user
      * @return void
      */

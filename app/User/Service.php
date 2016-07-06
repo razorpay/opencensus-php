@@ -11,7 +11,7 @@ use Hash;
 use Input;
 
 use App\Base;
-use Models\Invitation;
+use App\Invitation;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Models\User;

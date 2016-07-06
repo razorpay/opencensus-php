@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Invitation;
+namespace App\Invitation;
 
 use Models\Merchant;
 use App\Base;

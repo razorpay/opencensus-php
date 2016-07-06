@@ -6,7 +6,7 @@ use Uuid;
 use Session;
 use App\Base;
 use Models\Merchant;
-use Models\Invitation;
+use App\Invitation;
 use RandomLib\Factory as RandomLibFactory;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
