@@ -48,8 +48,8 @@ return array(
     ],
 
     'mailchimp' => [
-        'list_id'   =>  $_ENV['MAILCHIMP_LIST_ID'],
-        'api_key'   =>  $_ENV['MAILCHIMP_API_TOKEN'],
-        'mock'      =>  getenv('MAILCHIMP_MOCK'),
+        'list_id'   =>  env('MAILCHIMP_LIST_ID', 'random_id'),
+        'api_key'   =>  env('MAILCHIMP_API_TOKEN', 'mailchimp_token'),
+        'mock'      =>  env('MAILCHIMP_MOCK', false),
     ]
 );
