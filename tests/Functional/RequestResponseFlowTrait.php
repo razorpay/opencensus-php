@@ -191,6 +191,7 @@ trait RequestResponseFlowTrait
             'method' => 'POST',
             'content' => array(),
             'server' => array(),
+            'cookies' => array(),
             'files' => array());
 
         $request = array_merge($defaults, $request);
@@ -224,6 +225,7 @@ trait RequestResponseFlowTrait
             $request['method'],
             $request['url'],
             $request['content'],
+            $request['cookies'],
             $request['files'],
             $request['server']);
 
