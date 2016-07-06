@@ -123,7 +123,7 @@ class SettledAtTimestampTest extends TestCase
 
     protected function runSettledAtFunc($map, $addDays, $workingSaturdayWeek)
     {
-        $class = new ReflectionClass('Models\Transaction\Core');
+        $class = new ReflectionClass('\RZP\Models\Transaction\Core');
         $this->method = $class->getMethod('calculateSettledAtTimestamp');
         $this->method->setAccessible(true);
 

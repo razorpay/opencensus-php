@@ -13,6 +13,8 @@ class PublicEntity extends UniqueIdEntity
 
     const ADMIN = 'admin';
 
+    const MERCHANT_ID = 'merchant_id';
+
     protected static $sign = '';
 
     protected static $delimiter = '_';
@@ -286,7 +288,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function getMerchantId()
     {
-        return $this->getAttribute(static::MERCHANT_ID);
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getDateInFormatDMY($attribute)
