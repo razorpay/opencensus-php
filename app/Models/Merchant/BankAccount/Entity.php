@@ -4,12 +4,12 @@ namespace RZP\Models\Merchant\BankAccount;
 
 use App;
 use EE\Exception;
-use Illuminate\Database\Eloquent\SoftDeletingTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletingTrait;
+    use SoftDeletes;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

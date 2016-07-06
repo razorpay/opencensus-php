@@ -3,11 +3,11 @@
 namespace RZP\Models\Customer\App;
 
 use RZP\Models\Base;
-use Illuminate\Database\Eloquent\SoftDeletingTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletingTrait;
+    use SoftDeletes;
 
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';

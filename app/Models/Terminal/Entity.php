@@ -5,11 +5,11 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use Illuminate\Database\Eloquent\SoftDeletingTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletingTrait;
+    use SoftDeletes;
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';

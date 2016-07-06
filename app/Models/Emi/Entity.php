@@ -3,11 +3,11 @@
 namespace RZP\Models\Emi;
 
 use RZP\Models\Base;
-use Illuminate\Database\Eloquent\SoftDeletingTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletingTrait;
+    use SoftDeletes;
     
     const ID                    = 'id';
     const BANK                  = 'bank';
