@@ -243,7 +243,7 @@ return array(
         // Custom Facade
         'Excel'     => 'Maatwebsite\Excel\Facades\Excel',
         'AWS'       => 'Aws\Laravel\AwsFacade::class',
-        'Slack'           => 'Maknz\Slack\Laravel\Facade::class'
+        'Slack'     => 'Maknz\Slack\Laravel\Facade::class'
     ),
 
     'checkout' => 'https://checkout.razorpay.com',
