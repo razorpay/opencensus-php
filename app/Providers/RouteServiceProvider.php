@@ -53,7 +53,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes(Router $router)
     {
         $router->group(
-            ['namespace' => $this->namespace, 'middleware' => 'RZP\http\Middleware\Authenticate'],
+            ['namespace' => $this->namespace, 'middleware' => 'RZP\Http\Middleware\Authenticate'],
             function ($router)
             {
                 Route::setRouter($router);
