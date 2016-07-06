@@ -75,7 +75,7 @@ class Authenticate
             return ApiResponse::routeNotFound();
         }
 
-        $ret = $ba->feature();
+        // $ret = $ba->feature();
 
         if ($ret !== null)
         {
