@@ -237,7 +237,7 @@ return array(
         'View'      => Illuminate\Support\Facades\View::class,
 
         // Application Facades
-        'BasicAuth' => RZP\Http\BasicAuth::class,
+        'BasicAuth' => RZP\Http\BasicAuth\Facade::class,
         'Trace'     => RZP\Trace\Facade::class,
 
         // Custom Facade
