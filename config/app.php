@@ -171,7 +171,7 @@ return array(
         // 'Maatwebsite\Excel\ExcelServiceProvider',
         Aws\Laravel\AwsServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
-        RZP\Dashboard\DashboardServiceProvider::class,
+        RZP\Services\DashboardServiceProvider::class,
         RZP\Services\ApiServiceProvider::class,
         Maknz\Slack\SlackServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class
