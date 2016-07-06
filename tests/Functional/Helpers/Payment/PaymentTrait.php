@@ -316,7 +316,7 @@ trait PaymentTrait
             ),
         );
 
-        return $this->makeRequest($request);
+        return $this->sendRequest($request);
     }
 
     protected function topupPayment($id)
