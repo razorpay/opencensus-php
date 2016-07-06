@@ -5,6 +5,9 @@ namespace RZP\Http\Controllers;
 use RZP\Constants\Mode;
 use Database\DefaultConnection;
 use Request;
+use Redirect;
+use View;
+use RZP\Http\ApiResponse;
 
 class MockGatewayController extends Controller
 {
@@ -149,7 +152,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $server = new RZP\Gateway\Amex\Mock\Server;
+        $server = new \RZP\Gateway\Amex\Mock\Server;
 
         $url = $server->authorize($input);
 

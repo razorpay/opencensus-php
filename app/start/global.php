@@ -44,7 +44,7 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 |
 */
 
-$app['exception.handler']->registerExceptionHandlers();
+// $app['exception.handler']->registerExceptionHandlers();
 
 /*
 |--------------------------------------------------------------------------

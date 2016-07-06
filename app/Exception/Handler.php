@@ -78,15 +78,20 @@ class Handler extends ExceptionHandler
 
         $this->traceException($exception);
 
-        //
-        // When running in console, throw the exception, irrespective
-        // of debug config
-        //
-        if ((App::runningInConsole()) and
-            (App::environment('testing') === false))
+        if (App::runningUnitTests())
         {
-            return;
+            throw $exception;
         }
+
+        // //
+        // // When running in console, throw the exception, irrespective
+        // // of debug config
+        // //
+        // if ((App::runningInConsole()) and
+        //     (App::environment('testing') === false))
+        // {
+        //     return;
+        // }
 
         return $this->generateServerErrorResponse($this->isDebug(), $exception);
     }
@@ -228,6 +233,11 @@ class Handler extends ExceptionHandler
 
     public function recoverableErrorResponse($debug, $exception = null)
     {
+        if (App::runningUnitTests())
+        {
+            throw $exception;
+        }
+
         $error = $exception->getError();
 
         $httpStatusCode = $error->getHttpStatusCode();
