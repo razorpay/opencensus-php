@@ -1,10 +1,10 @@
 <?php
 
-namespace Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC;
 
-use Reconciliator\Base;
+use RZP\Reconciliator\Base;
 use Trace\TraceCode;
-use Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate  extends Base\CombinedReconciliate
 {

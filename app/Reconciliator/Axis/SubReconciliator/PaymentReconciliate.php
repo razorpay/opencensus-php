@@ -1,10 +1,10 @@
 <?php
 
-namespace Reconciliator\Axis;
+namespace RZP\Reconciliator\Axis;
 
-use Reconciliator\Base;
-use Reconciliator\Base\Reconciliate as BaseReconciliate;
-use Reconciliator\Messenger;
+use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Reconciliator\Messenger;
 
 use Models\Payment\Service as PaymentService;
 use Models\Payment\Status as PaymentStatus;

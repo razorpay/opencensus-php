@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator;
+namespace RZP\Reconciliator;
 
 use App;
 use Trace\TraceCode;
@@ -57,7 +57,7 @@ class Messenger
 
         $this->slackPost($headline, $data, $settings);
     }
-    
+
     public function getSlackSettings()
     {
         $settings['channel'] = $this->app['config']->get('slack.channels.reconciliation');

@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator;
+namespace RZP\Reconciliator;
 
 use DirectoryIterator;
 
@@ -498,7 +498,7 @@ class Orchestrator
 
     protected function setGatewayReconciliatorObject($gateway)
     {
-        $gatewayReconciliatorClassName = 'Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        $gatewayReconciliatorClassName = 'RZP\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 

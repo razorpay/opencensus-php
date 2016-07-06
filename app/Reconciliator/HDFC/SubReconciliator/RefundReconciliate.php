@@ -1,8 +1,8 @@
 <?php
 
-namespace Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC;
 
-use Reconciliator\Base;
+use RZP\Reconciliator\Base;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {

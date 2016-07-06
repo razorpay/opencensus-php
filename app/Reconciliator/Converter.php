@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator;
+namespace RZP\Reconciliator;
 
 use Excel;
 use Config;

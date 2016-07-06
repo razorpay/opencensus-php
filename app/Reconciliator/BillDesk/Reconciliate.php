@@ -1,8 +1,8 @@
 <?php
 
-namespace Reconciliator\BillDesk;
+namespace RZP\Reconciliator\BillDesk;
 
-use Reconciliator\Base;
+use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {

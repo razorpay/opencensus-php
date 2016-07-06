@@ -1,8 +1,8 @@
 <?php
 
-namespace Reconciliator\Axis;
+namespace RZP\Reconciliator\Axis;
 
-use Reconciliator\Base;
+use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {

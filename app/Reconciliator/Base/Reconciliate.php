@@ -1,10 +1,10 @@
 <?php
 
-namespace Reconciliator\Base;
+namespace RZP\Reconciliator\Base;
 
-use Reconciliator\FileProcessor;
-use Reconciliator\Orchestrator;
-use Reconciliator\Messenger;
+use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Messenger;
 
 use EE\Exception;
 use Trace\TraceCode;

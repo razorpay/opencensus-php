@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator\Base\Foundation;
+namespace RZP\Reconciliator\Base\Foundation;
 
 use Models\Payment;
 use App;

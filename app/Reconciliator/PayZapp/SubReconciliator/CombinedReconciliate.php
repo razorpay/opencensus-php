@@ -1,9 +1,9 @@
 <?php
 
-namespace Reconciliator\PayZapp;
+namespace RZP\Reconciliator\PayZapp;
 
-use Reconciliator\Base;
-use Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate extends Base\CombinedReconciliate
 {

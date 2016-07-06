@@ -1,8 +1,8 @@
 <?php
 
-namespace Reconciliator\PayZapp;
+namespace RZP\Reconciliator\PayZapp;
 
-use Reconciliator\Base;
+use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {

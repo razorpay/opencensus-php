@@ -1,10 +1,10 @@
 <?php
 
-namespace Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC;
 
-use Reconciliator\Base;
+use RZP\Reconciliator\Base;
 use App;
-use Reconciliator\FileProcessor;
+use RZP\Reconciliator\FileProcessor;
 use Constants\Entity;
 
 class Reconciliate extends Base\Reconciliate

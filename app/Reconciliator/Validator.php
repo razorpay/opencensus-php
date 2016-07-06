@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator;
+namespace RZP\Reconciliator;
 
 use EE\Exception;
 
@@ -100,7 +100,7 @@ class Validator
         {
             return true;
         }
-        
+
         return false;
     }
 

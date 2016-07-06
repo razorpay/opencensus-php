@@ -1,12 +1,12 @@
 <?php
 
-namespace Reconciliator\Base;
+namespace RZP\Reconciliator\Base;
 
 use Trace\TraceCode;
 use EE\Exception\ReconciliationException;
 
-use Reconciliator\Orchestrator;
-use Reconciliator\Messenger;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Messenger;
 
 class CombinedReconciliate extends Foundation\SubReconciliate
 {

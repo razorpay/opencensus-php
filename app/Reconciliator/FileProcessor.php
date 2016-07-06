@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator;
+namespace RZP\Reconciliator;
 
 use EE\Exception;
 use Trace\TraceCode;
@@ -43,7 +43,7 @@ class FileProcessor
         self::EXCEL => ['xls', 'xlsx'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
-    
+
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
@@ -130,7 +130,7 @@ class FileProcessor
             self::DESTINATION_FOLDER => $sourceFolderPath,
             self::FILE_PATH          => $filePath,
         ];
-        
+
         return $fileDetails;
     }
 

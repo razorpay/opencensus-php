@@ -1,9 +1,9 @@
 <?php
 
-namespace Reconciliator\BillDesk;
+namespace RZP\Reconciliator\BillDesk;
 
-use Reconciliator\Base;
-use Reconciliator\Messenger;
+use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Messenger;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -19,7 +19,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->messenger = new Messenger();
     }
 

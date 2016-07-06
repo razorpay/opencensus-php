@@ -1,6 +1,6 @@
 <?php
 
-namespace Reconciliator\Base;
+namespace RZP\Reconciliator\Base;
 
 use EE\Exception\ReconciliationException;
 use Models\Payment;
@@ -14,8 +14,8 @@ use RZP\Gateway\AxisMigs;
 use Trace\TraceCode;
 use App;
 
-use Reconciliator\Orchestrator;
-use Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
