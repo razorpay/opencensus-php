@@ -3,8 +3,8 @@
 namespace RZP\Gateway\Wallet\Payzapp\Mock;
 
 use Carbon\Carbon;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Payzapp;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;

@@ -4,7 +4,7 @@ namespace Models\Base;
 
 use Constants\Entity as E;
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Trace\TraceCode;
 use Models\Transaction;
 

@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Wallet\Payumoney;
 
-use EE\Error;
-use EE\Error\ErrorCode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
 
 class ResponseCodeMap
 {

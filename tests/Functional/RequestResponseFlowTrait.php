@@ -3,7 +3,7 @@
 namespace Tests\Functional;
 
 use Closure;
-use EE\Exception\BaseException;
+use RZP\Exception\BaseException;
 use Requests;
 use Tests\Functional\Helpers\EntityFetchTrait;
 
@@ -97,7 +97,7 @@ trait RequestResponseFlowTrait
 
     public function processAndAssertException($actual, $expected)
     {
-        $class = (isset($expected['class'])) ? $expected['class'] : 'EE\Exceptions\RecoverableException';
+        $class = (isset($expected['class'])) ? $expected['class'] : 'RZP\Exceptions\RecoverableException';
 
         $this->assertExceptionClass($actual, $class);
 

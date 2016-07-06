@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testPaymentFailed' => [
@@ -21,7 +21,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
             'gateway_error_code'  => null
         ],
@@ -38,7 +38,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE,
             'gateway_error_code'  => null
         ],
@@ -55,7 +55,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
             'gateway_error_code'  => null
         ],
@@ -72,7 +72,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_EXPIRED,
             'gateway_error_code'  => null
         ],
@@ -89,7 +89,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
             'gateway_error_code'  => null
         ],

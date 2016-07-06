@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit\EE\Exception;
+namespace Tests\Unit\RZP\Exception;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Mockery;
 use Models\Card;
 use Tests\TestCase;

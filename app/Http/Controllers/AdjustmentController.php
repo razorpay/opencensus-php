@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use EE\Exception\RecoverableException;
+use RZP\Exception\RecoverableException;
 use RZP\Models\Adjustment;
 
 class AdjustmentController extends Controller

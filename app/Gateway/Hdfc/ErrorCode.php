@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use EE\Error;
+use RZP\Error;
 use RZP\Gateway\Hdfc;
 
 class ErrorCode

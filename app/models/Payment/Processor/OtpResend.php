@@ -5,7 +5,7 @@ namespace Models\Payment\Processor;
 use Models\Payment;
 use Models\Merchant;
 use Trace\TraceCode;
-use EE\Exception\LogicException;
+use RZP\Exception\LogicException;
 
 trait OtpResend
 {

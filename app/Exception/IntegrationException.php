@@ -1,9 +1,9 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
-use EE\Error\Error;
-use EE\Error\ErrorCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 
 class IntegrationException extends ServerErrorException
 {

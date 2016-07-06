@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
@@ -38,7 +38,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED,
         ],
     ],
@@ -165,7 +165,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
         ],
     ],
@@ -187,7 +187,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
         ],
     ],
@@ -261,7 +261,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -316,7 +316,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -354,7 +354,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -436,7 +436,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
         ],
     ],
@@ -457,7 +457,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         ]
     ],
@@ -614,7 +614,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -830,7 +830,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

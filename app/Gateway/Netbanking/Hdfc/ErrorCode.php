@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc;
 
-use EE\Error;
+use RZP\Error;
 
 class ErrorCode
 {

@@ -8,7 +8,7 @@ use Models\Merchant;
 use Models\Pricing;
 use Models\Terminal;
 use Trace\TraceCode;
-use EE\Exception;
+use RZP\Exception;
 use Services\SlackPoster;
 
 class Core extends Base\Core

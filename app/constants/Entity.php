@@ -2,8 +2,8 @@
 
 namespace Constants;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Gateway;
 use Models;
 use Trace;

@@ -2,9 +2,9 @@
 
 namespace Tests\Functional\Helpers\Payment;
 
-use EE\Exception\BaseException;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception\BaseException;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;

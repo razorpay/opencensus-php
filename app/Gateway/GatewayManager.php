@@ -5,7 +5,7 @@ namespace RZP\Gateway;
 use Config;
 use Constants\Mode;
 use Constants\Entity;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager

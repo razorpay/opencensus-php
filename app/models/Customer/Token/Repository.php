@@ -2,8 +2,8 @@
 
 namespace Models\Customer\Token;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Base;
 use Models\Customer\Token;
 

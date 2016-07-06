@@ -4,8 +4,8 @@ namespace RZP\Gateway\Sharp;
 
 use Constants\Mode;
 use Crypt;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use Requests;
 use Trace\Trace;

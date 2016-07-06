@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Gateway\Billdesk;
 
-use EE\Exception;
+use RZP\Exception;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 

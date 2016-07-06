@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\AxisGenius\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\AxisGenius;
 use RZP\Gateway\Base;
 

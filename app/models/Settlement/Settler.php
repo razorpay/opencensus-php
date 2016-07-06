@@ -4,8 +4,8 @@ namespace Models\Settlement;
 
 use Carbon\Carbon;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 
 use Constants\Mode;
 use Models\Base;

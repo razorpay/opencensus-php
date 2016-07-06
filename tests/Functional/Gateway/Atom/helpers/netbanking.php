@@ -1,8 +1,8 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testNetbankingPaymentAuthorize' => [
@@ -52,7 +52,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ],
         'success' => false,
@@ -159,7 +159,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class' => 'EE\Exception\LogicException',
+            'class' => 'RZP\Exception\LogicException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
     ],

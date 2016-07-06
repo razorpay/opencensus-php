@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\AxisMigs\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 

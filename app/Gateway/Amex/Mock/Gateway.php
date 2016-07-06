@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Amex\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Amex;
 use RZP\Gateway\Base;
 

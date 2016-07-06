@@ -2,9 +2,9 @@
 
 namespace Models\Pricing;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use Models\Base;
 use Models\Card\Network;
 use Models\Payment;

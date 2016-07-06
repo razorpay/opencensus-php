@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Hdfc\Mpr;
 
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use Excel;
 use RZP\Gateway\Hdfc;
 use Models\Base;

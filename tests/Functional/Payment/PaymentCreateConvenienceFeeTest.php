@@ -2,8 +2,8 @@
 
 namespace Tests\Functional\Payment;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 

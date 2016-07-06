@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Payment;
 
-use EE\Exception\RuntimeException;
+use RZP\Exception\RuntimeException;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 

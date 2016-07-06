@@ -4,7 +4,7 @@ namespace RZP\Gateway\Atom\Mock;
 
 use Models\Card;
 use Carbon\Carbon;
-use EE\Exception;
+use RZP\Exception;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Atom\Mock;
 use RZP\Gateway\Base;

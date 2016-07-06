@@ -2,7 +2,7 @@
 
 namespace Services;
 
-use EE\Exception;
+use RZP\Exception;
 use Requests;
 use Mailgun\Mailgun as MgClient;
 

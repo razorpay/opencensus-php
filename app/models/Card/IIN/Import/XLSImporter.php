@@ -3,7 +3,7 @@
 namespace Models\Card\IIN\Import;
 
 use Models\Card\IIN;
-use EE\Exception;
+use RZP\Exception;
 use App;
 
 /**

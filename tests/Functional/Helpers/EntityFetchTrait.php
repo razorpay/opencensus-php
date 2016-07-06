@@ -2,7 +2,7 @@
 
 namespace Tests\Functional\Helpers;
 
-use EE\Exception\BaseException;
+use RZP\Exception\BaseException;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Tests\Functional\RequestResponseFlowTrait;

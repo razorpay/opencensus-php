@@ -2,14 +2,14 @@
 
 namespace Models\Payment;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Merchant\Methods;
 use Models\Payment;
 use Models\Card;
 use Models\Order;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {

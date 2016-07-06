@@ -4,8 +4,8 @@ namespace Models\Payment\Processor;
 
 use BasicAuth;
 use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Http\Route;
 use Mail;
 use Models\Card;

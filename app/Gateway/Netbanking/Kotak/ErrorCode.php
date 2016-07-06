@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Kotak;
 
-use EE\Error;
+use RZP\Error;
 
 class ErrorCode
 {

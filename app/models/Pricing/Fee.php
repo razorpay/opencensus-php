@@ -3,7 +3,7 @@
 namespace Models\Pricing;
 
 use Constants\Mode;
-use EE\Exception;
+use RZP\Exception;
 use Models\Card;
 use Models\Payment;
 use Models\Pricing;
