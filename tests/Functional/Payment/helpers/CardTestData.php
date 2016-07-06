@@ -3,7 +3,7 @@
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
-use Gateway\HdfcGateway\HdfcGatewayErrorCode;
+use RZP\Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
 return [
     'testUnsupportedCardNetworks' => [

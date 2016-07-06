@@ -3,7 +3,7 @@
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
-use Gateway\Hdfc;
+use RZP\Gateway\Hdfc;
 
 return [
     'testSearchEsForNotesPrivateAuth' => [
@@ -57,7 +57,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND
         ],
     ],
-    
+
     'testSearchEsWithoutQueryParams' => [
         'request' => [
             'url' => '/payments',
@@ -68,7 +68,7 @@ return [
             'content' => ['count' => 1]
         ],
     ],
-    
+
     'testSearchEsForNotesOnAdminAuth' => [
         'request' => [
             'url' => '/admin/payment',
@@ -79,7 +79,7 @@ return [
             'content' => ['count' => 4]
         ]
     ],
-    
+
     'testSearchEsForNotesWithMerchantIdInQueryParamsOnProxyAuth' => [
         'request' => [
             'url' => '/payments',
@@ -99,7 +99,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
         ],
     ],
-    
+
     'testSearchEsForNotes' => [
         'request' => [
             'url' => '/payments',

@@ -4,7 +4,7 @@ namespace Tests\Functional\Gateway\Wallet\Payumoney;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
-use Gateway\Wallet\Base\Otp;
+use RZP\Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
 use Http\Route;
 

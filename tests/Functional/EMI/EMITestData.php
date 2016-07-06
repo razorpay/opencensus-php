@@ -3,7 +3,7 @@
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
-use Gateway\HdfcGateway\HdfcGatewayErrorCode;
+use RZP\Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
 return [
     'testAddEmiPlans' => [
@@ -23,7 +23,7 @@ return [
                 'duration' => 3,
                 'rate' => 1045,
                 'methods' => 'card',
-            ],  
+            ],
         ],
     ],
 
