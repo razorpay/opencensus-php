@@ -1,10 +1,12 @@
 <?php
 
-use Http\ApiResponse;
-use Models\Customer;
-use Models\Customer\Account;
+namespace RZP\Http\Controllers;
 
-class CustomerController extends BaseController
+use RZP\Http\ApiResponse;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Account;
+
+class CustomerController extends Controller
 {
     public function createLocalCustomer()
     {

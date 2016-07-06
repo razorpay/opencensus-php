@@ -1,9 +1,11 @@
 <?php
 
-use Http\ApiResponse;
+namespace RZP\Http\Controllers;
+
+use RZP\Http\ApiResponse;
 use EE\Exception;
 
-class ReconciliatorController extends BaseController
+class ReconciliatorController extends Controller
 {
     protected $orchestrator;
 

@@ -1,11 +1,13 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Settlement;
-use Models\Transaction;
+namespace RZP\Http\Controllers;
 
-class SettlementController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+
+class SettlementController extends Controller
 {
     public function postGatewayMprReconcile()
     {

@@ -1,11 +1,13 @@
 <?php
 
-use Http\ApiResponse;
-use Models\Payment;
-use Models\Card;
+namespace RZP\Http\Controllers;
+
+use RZP\Http\ApiResponse;
+use RZP\Models\Payment;
+use RZP\Models\Card;
 use Trace\TraceCode;
 
-class PaymentCreateController extends BaseController
+class PaymentCreateController extends Controller
 {
     protected $payment;
 

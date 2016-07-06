@@ -1,9 +1,11 @@
 <?php
 
-use Http\ApiResponse;
-use Models\Key;
+namespace RZP\Http\Controllers;
 
-class KeyController extends BaseController
+use RZP\Http\ApiResponse;
+use RZP\Models\Key;
+
+class KeyController extends Controller
 {
     public function getKey($id)
     {
