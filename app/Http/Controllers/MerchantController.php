@@ -64,9 +64,9 @@ class MerchantController extends Controller
 
     public function postMerchantConfigLogo()
     {
-        if (Input::hasFile('logo'))
+        if (Request::hasFile('logo'))
         {
-            $input['logo'] = Input::file("logo");
+            $input['logo'] = Request::file("logo");
 
             $data = (new Merchant\Service)->editConfig($input);
 

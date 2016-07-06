@@ -619,9 +619,9 @@ class MerchantTest extends TestCase
 
     public function testStoreImageAndGetLogoUrl()
     {
-        $originalFile = $this->createUploadedFile('app/tests/Functional/Storage/a.png');
-        copy($originalFile, 'app/tests/Functional/Storage/a2.png');
-        $testFile = $this->createUploadedFile('app/tests/Functional/Storage/a2.png');
+        $originalFile = $this->createUploadedFile('tests/Functional/Storage/a.png');
+        copy($originalFile, 'tests/Functional/Storage/a2.png');
+        $testFile = $this->createUploadedFile('tests/Functional/Storage/a2.png');
 
         $this->createMerchant();
 
