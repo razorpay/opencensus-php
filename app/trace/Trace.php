@@ -2,8 +2,8 @@
 
 namespace App\Trace;
 
-use Trace\TraceCode;
-use Trace\TraceFields;
+use App\Trace\TraceCode;
+use App\Trace\TraceFields;
 
 class Trace extends TraceWriter
 {

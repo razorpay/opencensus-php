@@ -13,7 +13,7 @@
         "maknz/slack": "dev-queue",
         "bogardo/mailgun": "4.0.*",
         "guzzlehttp/guzzle": "~5.0",
-        "maatwebsite/excel": "1.*",
+        "maatwebsite/excel": "~2.0.0",
         "vipsoft/unzip": "^1.1",
         "schuppo/password-strength": "~1.3",
         "league/csv": "7.1.2",

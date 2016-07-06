@@ -142,6 +142,7 @@ return array(
         'App\Providers\ConfigServiceProvider',
         'App\Providers\EventServiceProvider',
         'App\Providers\RouteServiceProvider',
+        'App\Trace\TraceServiceProvider',
 
         // This one is our own custom provider
         'App\Providers\UuidServiceProvider',
@@ -154,8 +155,7 @@ return array(
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
         'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
-        'Trace\TraceServiceProvider',
-
+        
     ],
 
     /*
