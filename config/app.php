@@ -168,12 +168,14 @@ return array(
          */
         // 'Maatwebsite\Excel\ExcelServiceProvider',
         Aws\Laravel\AwsServiceProvider::class,
+        Collective\Bus\BusServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
         // 'Http\BasicAuth\ServiceProvider',
         // 'Trace\TraceServiceProvider',
         // 'Dashboard\DashboardServiceProvider',
         // 'Services\ApiServiceProvider',
         Maknz\Slack\SlackServiceProvider::class,
-        // 'Propaganistas\LaravelPhone\LaravelPhoneServiceProvider'
+        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class
     ),
 
     /*
@@ -235,7 +237,8 @@ return array(
         'View'      => Illuminate\Support\Facades\View::class,
 
         // Custom Facade
-        // 'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
+        'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
+        'AWS'       => Aws\Laravel\AwsFacade::class,
         // 'BasicAuth'       => 'Http\BasicAuth\Facade',
         // 'Trace'           => 'Trace\Facade',
         // 'Slack'           => 'Maknz\Slack\Facades\Slack'
