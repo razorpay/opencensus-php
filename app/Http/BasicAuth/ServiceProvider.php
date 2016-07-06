@@ -22,7 +22,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('basicauth', function($app)
         {
-            return new BasicAuth();
+            return new BasicAuth($app);
         });
     }
 

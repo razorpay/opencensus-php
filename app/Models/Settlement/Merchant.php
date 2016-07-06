@@ -5,7 +5,7 @@ namespace RZP\Models\Settlement;
 use RZP\Constants\Mode;
 use RZP\Models;
 use RZP\Models\Base;
-use RZP\Models\EE\Exception;
+use RZP\Exception;
 use RZP\Models\Adjustment;
 use RZP\Models\Merchant\BankAccount;
 use RZP\Models\Transaction;

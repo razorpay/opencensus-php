@@ -17,6 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected $namespace = 'RZP\Http\Controllers';
 
+
     /**
      * Define your route model bindings, pattern filters, etc.
      *
@@ -52,7 +53,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes(Router $router)
     {
         $router->group(
-            ['namespace' => $this->namespace],
+            ['namespace' => $this->namespace, 'middleware' => 'RZP\http\Middleware\Authenticate'],
             function ($router)
             {
                 Route::setRouter($router);

@@ -7,7 +7,7 @@ use RZP\Http\ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
-
+use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Request;

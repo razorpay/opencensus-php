@@ -3,8 +3,8 @@
 namespace RZP\Http;
 
 use App;
-use EE\Error\Error;
-use EE\Error\ErrorCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use Request;
 use Response;
 use View;
