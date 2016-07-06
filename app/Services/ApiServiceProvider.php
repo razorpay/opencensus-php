@@ -43,7 +43,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('webhook.inferno', function($app)
         {
-            return new \Models\Merchant\Webhook\Inferno;
+            return new RZP\Models\Merchant\Webhook\Inferno;
         });
 
         $this->app->singleton('card.tokenex', function($app)

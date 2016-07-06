@@ -3,9 +3,9 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use Models\Payment;
-use Models\Gateway;
-use Models\Bank\IFSC;
+use RZP\Models\Payment;
+use RZP\Models\Gateway;
+use RZP\Models\Bank\IFSC;
 use App;
 use Mail;
 

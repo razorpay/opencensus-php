@@ -36,7 +36,8 @@
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
-        "tijsverkoyen/css-to-inline-styles": "^1.5"
+        "tijsverkoyen/css-to-inline-styles": "^1.5",
+        "orchestra/testbench": "3.2.*"
     },
     "autoload": {
         "classmap": [

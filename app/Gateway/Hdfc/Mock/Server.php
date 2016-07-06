@@ -8,9 +8,9 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment\Action;
 use RZP\Gateway\Hdfc\Mock;
-use Http\Route;
-use Models\Card;
-use Models\Card\Network;
+use RZP\Http\Route;
+use RZP\Models\Card;
+use RZP\Models\Card\Network;
 
 class Server extends Base\Mock\Server
 {

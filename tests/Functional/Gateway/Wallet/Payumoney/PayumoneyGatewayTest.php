@@ -6,7 +6,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
-use Http\Route;
+use RZP\Http\Route;
 
 class PayumoneyGatewayTest extends TestCase
 {

@@ -7,11 +7,11 @@ use Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Crypt;
-use Http\ApiResponse;
-use Http\Route;
-use Models\Key;
-use Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Http\ApiResponse;
+use RZP\Http\Route;
+use RZP\Models\Key;
+use RZP\Models\Merchant;
 
 class BasicAuth
 {

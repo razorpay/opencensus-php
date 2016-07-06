@@ -2,7 +2,7 @@
 
 namespace RZP\Dashboard;
 
-use Models\Settlement\Entity as SettlementEntity;
+use RZP\Models\Settlement\Entity as SettlementEntity;
 
 class Settlement extends Dashboard
 {

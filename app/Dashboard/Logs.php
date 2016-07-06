@@ -2,7 +2,7 @@
 
 namespace RZP\Dashboard;
 
-class Logs extends \Models\Base\Entity
+class Logs extends RZP\Models\Base\Entity
 {
     protected $table = 'dashboard_logs';
 

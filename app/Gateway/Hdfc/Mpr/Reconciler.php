@@ -6,12 +6,12 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Mpr;
-use Models\Card;
-use Models\Transaction;
-use Models\Terminal;
-use Models\Payment;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card;
+use RZP\Models\Transaction;
+use RZP\Models\Terminal;
+use RZP\Models\Payment;
 
 class Reconciler
 {

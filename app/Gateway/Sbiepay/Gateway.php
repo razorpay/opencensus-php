@@ -10,9 +10,9 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\VerifyResult;
-use Models\Card;
-use Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
 {

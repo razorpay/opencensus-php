@@ -1,5 +1,5 @@
 <?php
 
-Http\Route::setRouter($app['router']);
+RZP\Http\Route::setRouter($app['router']);
 
-Http\Route::defineApiRoutes();
+RZP\Http\Route::defineApiRoutes();

@@ -2,7 +2,7 @@
 
 namespace RZP\Dashboard;
 
-use Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Refund extends Dashboard
 {

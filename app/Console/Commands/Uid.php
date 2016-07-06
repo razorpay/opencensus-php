@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Console\Command;
-use Models\Base\UniqueIdEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use Symfony\Component\Console\Input\InputOption;
 
 class Uid extends Command

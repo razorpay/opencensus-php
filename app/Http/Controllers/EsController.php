@@ -92,7 +92,7 @@ class EsController extends Controller
 
     protected function getEntityRepo()
     {
-        $entityRepoClass = 'Models' . '\\' . ucfirst($this->entityName) . '\\' . 'Repository';
+        $entityRepoClass = 'RZP' . '\\' . 'Models' . '\\' . ucfirst($this->entityName) . '\\' . 'Repository';
         $entityRepo = new $entityRepoClass;
 
         return $entityRepo;

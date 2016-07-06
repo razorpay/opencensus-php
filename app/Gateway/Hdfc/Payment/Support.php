@@ -5,11 +5,11 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use Models\Payment as PaymentModel;
+use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
-use Models\Card;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card;
 
 trait Support
 {

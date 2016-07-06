@@ -8,9 +8,15 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use Requests;
+<<<<<<< HEAD
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Models\Payment;
+=======
+use Trace\Trace;
+use Trace\TraceCode;
+use RZP\Models\Payment;
+>>>>>>> laravel5.2
 
 class Gateway extends Base\Gateway
 {
@@ -152,7 +158,7 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArray($content, $input)
     {
-        $url = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
+        $url = RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
 
         $method = 'post';
 
