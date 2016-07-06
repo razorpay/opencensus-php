@@ -117,7 +117,7 @@ class GatewayController extends BaseController
     {
         $app = \App::getFacadeRoot();
 
-        $repo = new \RZP\Gateway\Netbanking\Base\Repository;
+        $repo = new RZP\Gateway\Netbanking\Base\Repository;
 
         $mode = 'test';
 

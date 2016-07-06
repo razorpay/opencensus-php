@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\RZP\Gateway\Base;
+namespace RZP\Gateway\Base;
 
 use Constants\Mode;
 use EE\Exception;
