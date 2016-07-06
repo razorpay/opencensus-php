@@ -11,6 +11,7 @@ use Input;
 class AdminController extends Controller
 {
 
+    protected $redirectTo = '/admin';
     protected $guard = 'admin';
 
     /*

@@ -121,7 +121,7 @@ Route::group(['middleware'  =>  'slack'], function ()
     Route::post('/slack', 'AdminController@postSlackQuery');
 });
 
-Route::group(['middleware'  =>  'auth:admin'], function()
+Route::group(['middleware'  =>  'admin'], function()
 {
     Route::get('/admin/user', 'AdminController@getAdmin');
     Route::get('/admin/user/logout', 'AdminController@getLogout');

@@ -8,14 +8,14 @@ return [
 
     //Authenticating guards
     'guards' => [
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
         'user' =>[
             'driver' => 'session',
             'provider' => 'users',
         ],
-        'admin' => [
-            'driver' => 'session',
-            'provider' => 'admins',
-        ]
     ],
 
     //User Providers
@@ -33,13 +33,13 @@ return [
     //Resetting Password
     'passwords' => [
         'users' => [
-            'provider' => 'user',
+            'provider' => 'users',
             'email' => 'emails.auth.reminder',
             'table' => 'password_reminders',
             'expire' => 1440,
         ],
         'admins' => [
-            'provider' => 'admin',
+            'provider' => 'admins',
             'expire' => 1440,
         ]
     ],
