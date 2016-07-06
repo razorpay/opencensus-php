@@ -113,6 +113,7 @@ return array(
         /*
          * Laravel Framework Service Providers...
          */
+        'Illuminate\Auth\AuthServiceProvider',
         'Illuminate\Auth\Passwords\PasswordResetServiceProvider',
         'Illuminate\Broadcasting\BroadcastServiceProvider',
         'Illuminate\Cache\CacheServiceProvider',
