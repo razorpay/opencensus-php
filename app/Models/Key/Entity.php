@@ -45,7 +45,7 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(
-            '\RZP\Models\Merchant\Entity');
+            'RZP\Models\Merchant\Entity');
     }
 
     public function getSecret()

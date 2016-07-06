@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
+        return $this->belongsTo(RZP\Models\Merchant\Entity::class);
     }
 
     public function setPayload($payload)

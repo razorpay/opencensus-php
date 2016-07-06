@@ -103,7 +103,7 @@ class Server extends Base\Mock\Server
 
         $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
 
-        $payment = (new \RZP\Models\Payment\Repository)->findOrFail($atom['id']);
+        $payment = (new RZP\Models\Payment\Repository)->findOrFail($atom['id']);
 
         $bankTxnId = random_integer(6);
 
@@ -274,7 +274,7 @@ class Server extends Base\Mock\Server
 
     protected function generateToken()
     {
-        $token = \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
+        $token = RZP\Models\Base\UniqueIdEntity::generateUniqueId();
 
         return $token;
     }

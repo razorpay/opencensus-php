@@ -125,7 +125,7 @@ class Core extends Base\Core
     public function setAllPaymentBanks($methods)
     {
         $input = [
-            'banks' => \RZP\Models\Payment\Processor\Netbanking::getAllBanks()
+            'banks' => RZP\Models\Payment\Processor\Netbanking::getAllBanks()
         ];
 
         $this->setPaymentBanks($methods, $input);
@@ -174,6 +174,6 @@ class Core extends Base\Core
 
     public function getBankNames($banks)
     {
-        return \RZP\Models\Bank\Name::getNames($banks);
+        return RZP\Models\Bank\Name::getNames($banks);
     }
 }
