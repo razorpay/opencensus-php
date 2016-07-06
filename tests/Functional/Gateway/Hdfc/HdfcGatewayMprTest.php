@@ -198,7 +198,7 @@ class HdfcGatewayMprTest extends TestCase
             return;
         }
 
-        $slack = Mockery::mock('Services\Slack');
+        $slack = Mockery::mock('RZP\Services\Slack');
 
         $this->app->instance('slack', $slack);
 

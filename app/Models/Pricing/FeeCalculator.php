@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Exception;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 use Trace\Trace;
 use Trace\TraceCode;
 

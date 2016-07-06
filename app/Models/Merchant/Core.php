@@ -9,7 +9,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use Trace\TraceCode;
 use RZP\Exception;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 
 class Core extends Base\Core
 {

@@ -207,7 +207,7 @@ class CustomerTest extends TestCase
 
     protected function mockRaven()
     {
-        $raven = Mockery::mock('Services\Raven')->makePartial();
+        $raven = Mockery::mock('RZP\Services\Raven')->makePartial();
 
         $this->app->instance('raven', $raven);
 
