@@ -1,13 +1,15 @@
 <?php
 
+namespace RZP\Http\Controllers;
+
 use EE\Exception;
-use Http\ApiResponse;
-use Http\Route;
-use Models\Payment;
+use RZP\Http\ApiResponse;
+use RZP\Http\Route;
+use RZP\Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class GatewayController extends BaseController
+class GatewayController extends Controller
 {
     public function callbackAxis()
     {

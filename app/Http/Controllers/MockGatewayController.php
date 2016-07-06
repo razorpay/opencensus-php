@@ -1,9 +1,11 @@
 <?php
 
+namespace RZP\Http\Controllers;
+
 use Constants\Mode;
 use Database\DefaultConnection;
 
-class MockGatewayController extends BaseController
+class MockGatewayController extends Controller
 {
     public function __construct()
     {

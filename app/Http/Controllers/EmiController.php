@@ -1,10 +1,12 @@
 <?php
 
-use Http\ApiResponse;
-use EE\Exception\RecoverableException;
-use Models\Emi;
+namespace RZP\Http\Controllers;
 
-class EmiController extends BaseController
+use RZP\Http\ApiResponse;
+use EE\Exception\RecoverableException;
+use RZP\Models\Emi;
+
+class EmiController extends Controller
 {
     public function fetchAvailableEmiPlans()
     {
