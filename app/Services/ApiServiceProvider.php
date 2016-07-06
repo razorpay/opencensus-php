@@ -60,6 +60,13 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new \RZP\Base\RepositoryManager($app);
         });
+
+\Validator::resolver(function($translator, $data, $rules, $messages)
+{
+    return new \RZP\Models\Base\ExtendedValidations(
+                    $translator, $data, $rules, $messages);
+});
+
     }
 
     /**

@@ -104,4 +104,9 @@ class Entity extends EloquentEx
     {
         return $value;
     }
+
+    public function getDates()
+    {
+        return [];
+    }
 }

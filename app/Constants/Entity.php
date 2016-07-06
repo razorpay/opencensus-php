@@ -133,10 +133,10 @@ class Entity
 
     public static function getEntityRepository($entity)
     {
-        $class = '\\'.self::getEntityNamespace($entity) . '\Repository';
+        $class = self::getEntityNamespace($entity) . '\Repository';
 
         if (class_exists($class) === false)
-        {s($class);
+        {
             if (isset(self::$repository[$entity]))
             {
                 $class = self::$repository[$entity] . '\Repository';

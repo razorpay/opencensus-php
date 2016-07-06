@@ -90,3 +90,10 @@ Queue::failing(function($connection, $job, $data)
 });
 
 Event::subscribe(RZP\Models\Event\ApiEventSubscriber::class);
+
+$app['validator']->resolver(function($translator, $data, $rules, $messages)
+{
+    return new \RZP\Models\Base\ExtendedValidations(
+                    $translator, $data, $rules, $messages);
+});
+
