@@ -350,11 +350,11 @@ trait Authorize
             }
             else if ($payment->isMethod(Payment\Method::WALLET))
             {
-                $payment->setBank($token->getWallet());
+                $payment->setWallet($token->getWallet());
             }
-            else if ($payment->isMethod(Payment\Method::BANK))
+            else if ($payment->isMethod(Payment\Method::NETBANKING))
             {
-                $payment->setWallet($token->getBank());
+                $payment->setBank($token->getBank());
             }
         }
     }
