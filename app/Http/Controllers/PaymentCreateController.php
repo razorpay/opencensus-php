@@ -64,7 +64,7 @@ class PaymentCreateController extends Controller
 
     protected function createPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         if (empty($input['callback_url']) === false)
         {
@@ -133,7 +133,7 @@ class PaymentCreateController extends Controller
      */
     public function getCreatePaymentJsonp()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         unset($input['callback']);
         // jQuery inserts underscore var with timestamp
@@ -153,7 +153,7 @@ class PaymentCreateController extends Controller
      */
     public function postAJAX()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         unset($input['callback']);
 
@@ -167,7 +167,7 @@ class PaymentCreateController extends Controller
      */
     public function postCreateWalletPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->payment->processWallet($input);
 
@@ -197,7 +197,7 @@ class PaymentCreateController extends Controller
      */
     public function postCreatePaymentFees()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $retJson = false;
 
@@ -225,7 +225,7 @@ class PaymentCreateController extends Controller
      */
     public function postOtpResend($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $payment = $this->payment->otpResend($id, $input);
 
@@ -237,7 +237,7 @@ class PaymentCreateController extends Controller
      */
     public function postTopupAjax($id)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->payment->topup($id, $input);
 
@@ -261,7 +261,7 @@ class PaymentCreateController extends Controller
      */
     public function postCallback($id, $hash)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->payment->callback($id, $hash, $input);
 
@@ -270,7 +270,7 @@ class PaymentCreateController extends Controller
 
     public function postOtpSubmit($id, $hash)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         // Type should be OTP since it's an OTP callback
         $input['type'] = 'otp';

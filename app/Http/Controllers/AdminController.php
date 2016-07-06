@@ -10,7 +10,7 @@ class AdminController extends Controller
 {
     public function getEntityMultiple($type)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Admin\Service)->fetchMultipleEntities($type, $input);
 
@@ -26,7 +26,7 @@ class AdminController extends Controller
 
     public function postSendTestNewsletter()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Admin\Service)->sendTestNewsletter($input);
 
@@ -35,7 +35,7 @@ class AdminController extends Controller
 
     public function postSendNewsletter()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Admin\Service)->sendNewsletter($input);
 
@@ -44,7 +44,7 @@ class AdminController extends Controller
 
     public function getTransparentRedirect()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         if (isset($input['url']))
         {
@@ -60,6 +60,6 @@ class AdminController extends Controller
 
     public function postTransparentRedirect()
     {
-        $input = Input::all();
+        $input = Request::all();
     }
 }

@@ -10,7 +10,7 @@ class TransactionController extends Controller
 {
     public function getTransactions()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Transaction\Service)->getTransactionRecords($input);
 
@@ -26,7 +26,7 @@ class TransactionController extends Controller
 
     public function getMonthlyReport()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Transaction\Service)->getReport($input);
 

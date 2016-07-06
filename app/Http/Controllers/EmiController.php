@@ -17,7 +17,7 @@ class EmiController extends Controller
 
     public function addEmiPlan()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Emi\Service)->addEmiPlan($input);
 
@@ -41,7 +41,7 @@ class EmiController extends Controller
 
     public function generateEmiExcel()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $emiExcel = (new Emi\Service)->getEmiFiles($input);
 
