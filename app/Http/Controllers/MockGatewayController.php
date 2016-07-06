@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Constants\Mode;
 use Database\DefaultConnection;
+use Request;
 
 class MockGatewayController extends Controller
 {
@@ -23,7 +24,7 @@ class MockGatewayController extends Controller
 
     public function post3dSecure()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $this->mockHdfcGatewayServer->threeDSecure($input);
 
@@ -49,7 +50,7 @@ class MockGatewayController extends Controller
     {
         $server = $this->gateway->server('atom');
 
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $server->atomPaymentChooseOrg($input);
 
@@ -61,7 +62,7 @@ class MockGatewayController extends Controller
     {
         $server = $this->gateway->server('atom');
 
-        $input = Input::all();
+        $input = Request::all();
 
         return $server->authorize($input);
     }
@@ -70,7 +71,7 @@ class MockGatewayController extends Controller
     {
         $server = $this->gateway->server('atom');
 
-        $input = Input::all();
+        $input = Request::all();
 
         $data = $server->atomRzpPayment($input);
 
@@ -82,7 +83,7 @@ class MockGatewayController extends Controller
     {
         $server = $this->gateway->server('atom');
 
-        $input = Input::all();
+        $input = Request::all();
 
         list($url, $data) = $server->atomRzpPaymentPageSubmit($input);
 
@@ -93,7 +94,7 @@ class MockGatewayController extends Controller
 
     public function postAxisPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('axis_migs');
 
@@ -104,7 +105,7 @@ class MockGatewayController extends Controller
 
     public function postAxisGeniusPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('axis_genius');
 
@@ -115,7 +116,7 @@ class MockGatewayController extends Controller
 
     public function getKotakPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('kotak');
 
@@ -126,7 +127,7 @@ class MockGatewayController extends Controller
 
     public function postPaytmPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('paytm');
 
@@ -137,7 +138,7 @@ class MockGatewayController extends Controller
 
     public function postBilldeskPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('billdesk');
 
@@ -146,7 +147,7 @@ class MockGatewayController extends Controller
 
     public function postAmexPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = new RZP\Gateway\Amex\Mock\Server;
 
@@ -157,7 +158,7 @@ class MockGatewayController extends Controller
 
     public function getSharpPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('sharp');
 
@@ -177,7 +178,7 @@ class MockGatewayController extends Controller
 
     public function postSharpPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('sharp');
 
@@ -188,7 +189,7 @@ class MockGatewayController extends Controller
 
     public function postNetbankingPayment($bank)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $driver = 'netbanking_'.$bank;
         $server = $this->gateway->server($driver);
@@ -205,7 +206,7 @@ class MockGatewayController extends Controller
 
     public function postMobikwikPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = $this->gateway->server('mobikwik');
 
@@ -216,7 +217,7 @@ class MockGatewayController extends Controller
 
     public function postSbiepayPayment()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $server = new RZP\Gateway\Sbiepay\Mock\Server;
 
@@ -225,7 +226,7 @@ class MockGatewayController extends Controller
 
     public function postWalletPayment($wallet, $paymentId = null)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $driver = 'wallet_' . $wallet;
 

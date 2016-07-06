@@ -8,6 +8,7 @@ use RZP\Http\Route;
 use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Request;
 
 class GatewayController extends Controller
 {
@@ -43,7 +44,7 @@ class GatewayController extends Controller
 
     public function callbackGateway($gateway)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = [];
 
@@ -83,7 +84,7 @@ class GatewayController extends Controller
         $trace->info(
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
             [
-                'input_all' => Input::all(),
+                'input_all' => Request::all(),
                 'input_msg' => Input::get('msg'),
                 'input_arr' => $input
             ]);

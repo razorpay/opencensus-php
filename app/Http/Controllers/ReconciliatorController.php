@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
 use RZP\Exception;
+use Request;
 
 class ReconciliatorController extends Controller
 {
@@ -18,7 +19,7 @@ class ReconciliatorController extends Controller
 
     public function postReconciliation()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $statusCode = $this->orchestrator->initiateReconciliationProcess($input);
 

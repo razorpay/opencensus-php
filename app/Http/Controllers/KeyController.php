@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
 use RZP\Models\Key;
+use Request;
 
 class KeyController extends Controller
 {
@@ -16,7 +17,7 @@ class KeyController extends Controller
 
     public function getKeys()
     {
-        $input = Input::all();
+        $input = Request::all();
 
         $data = (new Key\Service)->fetchMultiple($input);
 
