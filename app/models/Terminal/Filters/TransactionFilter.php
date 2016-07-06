@@ -123,7 +123,11 @@ class TransactionFilter extends Terminal\Filter
         }
         else if ($input['mode'] === Mode::TEST)
         {
-            return in_array($terminal->getGateway(), Gateway::$domesticCardGatewaysInTest);
+            $testTerminals = array_merge(
+                                Gateway::$domesticCardGateways,
+                                Gateway::$domesticCardGatewaysInTest);
+
+            return in_array($terminal->getGateway(), $testTerminals);
         }
         else
         {

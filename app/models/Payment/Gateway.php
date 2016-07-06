@@ -198,14 +198,11 @@ class Gateway
      * @var array
      */
     public static $domesticCardGatewaysInTest = array(
-        Gateway::SHARP,
-        Gateway::HDFC,
-        Gateway::AXIS_MIGS,
-        Gateway::AMEX,
         Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
-        Gateway::AXIS_GENIUS);
+        Gateway::AXIS_GENIUS,
+        Gateway::SHARP);
 
     /**
      * These card gateways can be used live and can have direct
