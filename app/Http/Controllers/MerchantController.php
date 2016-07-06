@@ -5,6 +5,8 @@ use App\Http\AppResponse;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Mailers\ContactFormMailer;
+use Input;
+use Auth;
 
 class MerchantController extends Controller
 {
@@ -27,7 +29,7 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $user, $input);
 
@@ -44,7 +46,7 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = (new Merchant\Service)->removeTeamMemberForOwner($userId, $user, $input);
 
@@ -77,7 +79,7 @@ class MerchantController extends Controller
 
     public function getKeys($mode)
     {
-        $merchant = Auth::user()->user()->currentMerchant;
+        $merchant = Auth::user()->currentMerchant;
 
         $keys = (new Merchant\Service)->fetchKeysFromApi($merchant->id, $mode);
 
@@ -86,7 +88,7 @@ class MerchantController extends Controller
 
     public function postNewKey($mode)
     {
-        $merchant = Auth::user()->user()->currentMerchant;
+        $merchant = Auth::user()->currentMerchant;
 
         list($error, $data) = (new Merchant\Service)->createKey($merchant->id, $mode);
 
@@ -97,7 +99,7 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::user()->user()->getCurrentMerchantId();
+        $input['merchant_id'] = Auth::user()->getCurrentMerchantId();
 
         list($error, $data) = (new Merchant\Service)->rollKeys($input, $mode);
 
@@ -215,7 +217,7 @@ class MerchantController extends Controller
     {
         $this->checkMode($mode);
 
-        $id = Auth::user()->user()->getCurrentMerchantId();
+        $id = Auth::user()->getCurrentMerchantId();
 
         $data = (new Merchant\Service)->fetchMerchantBalance($id);
 
@@ -227,7 +229,7 @@ class MerchantController extends Controller
      */
     public function getReferredMerchants()
     {
-        $id = Auth::user()->user()->getCurrentMerchantId();
+        $id = Auth::user()->getCurrentMerchantId();
         $data = (new Merchant\Service)->fetchReferredMerchants($id);
 
         return AppResponse::jsonResponse([], $data);
@@ -235,7 +237,7 @@ class MerchantController extends Controller
 
     public function getMerchantConfig()
     {
-        $id = Auth::user()->user()->getCurrentMerchantId();
+        $id = Auth::user()->getCurrentMerchantId();
 
         list($error, $data) = (new Merchant\Service)->fetchMerchantConfig($id);
 
@@ -244,7 +246,7 @@ class MerchantController extends Controller
 
     public function putMerchantConfig()
     {
-        $id = Auth::user()->user()->getCurrentMerchantId();
+        $id = Auth::user()->getCurrentMerchantId();
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)
@@ -257,7 +259,7 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        $merchantId = Auth::user()->user()->getCurrentMerchantId();
+        $merchantId = Auth::user()->getCurrentMerchantId();
         $input['merchant_id'] = $merchantId;
 
         list($error, $data) = (new Merchant\Service)->updateMerchantLogoConfig($merchantId, $input);

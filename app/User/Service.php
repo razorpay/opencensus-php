@@ -351,26 +351,19 @@ class Service extends Base\Service
             'password'  => $input['password']
         );
 
-        if (Auth::user()->validate($credentials) === false)
-        {
-            // Checks credentials but doesn't login the user, throws error if invalid
-            $error = ['Email or password is invalid.'];
-        }
-        else if (Auth::user()->attempt($credentials + ['confirm_token' => null]) === false)
+        if (Auth::attempt($credentials + ['confirm_token' => null]) === false)
         {
             // Tries to login user if confirmed, throws error if user is not confirmed
             $error = ['not activated'];
             return array($error, null);
         }
 
-        $user = Auth::user()->user();
-
         return array($error, null);
     }
 
     public function changePassword(array $input)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         if ($user->currentMerchant and $user->currentMerchant->isTestAccount())
         {
@@ -473,7 +466,7 @@ class Service extends Base\Service
 
     public function upgradeUserToMerchant($input)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
 

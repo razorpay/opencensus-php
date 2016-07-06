@@ -3,9 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Api;
 use App\Merchant;
-
 use App\Http\AppResponse;
 use App\Transaction;
+use Input;
 
 class TransactionController extends Controller
 {
@@ -35,7 +35,7 @@ class TransactionController extends Controller
 
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::user()->user()->getCurrentMerchantId();
+        $input['merchant_id'] = Auth::user()->getCurrentMerchantId();
 
         $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
@@ -46,7 +46,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->user()->getCurrentMerchantId();
+        $merchant_id = Auth::user()->getCurrentMerchantId();
 
         $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
 
@@ -57,7 +57,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->user()->getCurrentMerchantId();
+        $merchant_id = Auth::user()->getCurrentMerchantId();
 
         $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
 

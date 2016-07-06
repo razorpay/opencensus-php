@@ -15,7 +15,7 @@ class Service extends Base\Service
 
     public function __construct()
     {
-        $loggedInUser = Auth::user()->user();
+        $loggedInUser = Auth::user();
 
         if ($loggedInUser)
         {

@@ -43,7 +43,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $verify = Auth::admin()->attempt($input);
+            $verify = Auth::guard('admin')->attempt($input);
 
             if ($verify)
             {

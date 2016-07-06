@@ -11,7 +11,7 @@ use App\Invitation;
 
 class Entity extends Base\Entity
 {
-    use \Conner\Tagging\TaggableTrait;
+    use \Conner\Tagging\Taggable;
 
     public $incrementing = false;
 

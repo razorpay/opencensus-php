@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Invitation;
 use App\Http\AppResponse;
+use Auth;
 
 class InvitationsController extends Controller
 {
@@ -33,7 +34,7 @@ class InvitationsController extends Controller
      */
     public function getResendMerchantInvitation($inviteId)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         list($error, $data) = $this->service->resendInvitationForUser($inviteId, $user);
 
@@ -48,7 +49,7 @@ class InvitationsController extends Controller
      */
     public function postAcceptMerchantInvitation($inviteId)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = $this->service->acceptInvitationForUser($inviteId, $user);
 
@@ -63,7 +64,7 @@ class InvitationsController extends Controller
      */
     public function deleteRejectMerchantInvitation($inviteId)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = $this->service->rejectInvitationForUser($inviteId, $user);
 
@@ -78,7 +79,7 @@ class InvitationsController extends Controller
      */
     public function removeMerchantInvitation($inviteId)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = $this->service->removeInvitationForUser($inviteId, $user);
 
@@ -95,7 +96,7 @@ class InvitationsController extends Controller
     {
         $input = Input::all();
 
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = $this->service->updateInvitationForUser($inviteId, $user, $input);
 
@@ -110,7 +111,7 @@ class InvitationsController extends Controller
      */
     public function deleteMerchantInvitationForUser($inviteId)
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = $this->service->removeInvitationForUser($inviteId, $user);
 
@@ -125,7 +126,7 @@ class InvitationsController extends Controller
      */
     public function getPendingInvitationsForUser()
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         list($error, $data) = $this->service->getPendingInvitationsForUser($user);
 

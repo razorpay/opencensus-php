@@ -7,8 +7,12 @@ use App\User;
 use App\MerchantDetails;
 use App\Merchant;
 
+use Input;
+
 class UserController extends Controller
 {
+
+    protected $guard = 'users';
     /**
      * Returns the base template for angular.
      *
@@ -96,7 +100,7 @@ class UserController extends Controller
     {
         $input = Input::all();
 
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $error = (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
 
@@ -110,7 +114,7 @@ class UserController extends Controller
      */
     public function getOwnedMerchantForUser()
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         list($error, $data) = (new User\Service)->getOwnedMerchantForUser($user);
 
@@ -127,7 +131,7 @@ class UserController extends Controller
             // Current merchant
             'current'   =>  null
         ];
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         $merchants = $user->merchants->toArray();
 

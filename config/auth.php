@@ -1,5 +1,11 @@
 <?php
+
 return [
+    'defaults' => [
+        'guard' => 'user',
+        'passwords' => 'users',
+    ],
+
     //Authenticating guards
     'guards' => [
         'user' =>[
@@ -8,27 +14,19 @@ return [
         ],
         'admin' => [
             'driver' => 'session',
-            'provider' => 'admins',
-        ],
-        'merchant' => [
-            'driver' => 'session',
-            'provider' => 'merchants',
-        ],
+            'provider' => 'admin',
+        ]
     ],
 
     //User Providers
     'providers' => [
-        'user' => [
+        'users' => [
             'driver' => 'eloquent',
             'model' => 'App\User\Entity',
         ],
         'admin' => [
             'driver' => 'eloquent',
             'model' => 'App\Admin\Entity',
-        ],
-        'merchant' => [
-            'driver' => 'eloquent',
-            'model' => 'App\Merchant\Entity',
         ]
     ],
 
@@ -42,15 +40,7 @@ return [
         ],
         'admins' => [
             'provider' => 'admin',
-            'email' => 'emails.auth.reminder',
-            'table' => 'password_reminders',
             'expire' => 1440,
-        ],
-        'merchants' => [
-            'provider' => 'merchant',
-            'email' => 'emails.auth.reminder',
-            'table' => 'password_reminders',
-            'expire' => 1440,
-        ],
+        ]
     ],
 ];

@@ -14,7 +14,7 @@ Route::get('/admin', 'AdminController@getIndex');
 // This is for enabling CORS support on contact form submissions
 Route::options('/contact', 'MerchantController@optionsContact');
 Route::post('/contact', 'MerchantController@postContact');
-Route::group(array('before' => 'auth.user'), function()
+Route::group(['middleware'  =>  'auth:user'], function()
 {
     Route::get('/user/keepalive', 'UserController@getKeepAlive');
     Route::get('/user/logout', 'UserController@getLogout');
@@ -71,7 +71,7 @@ Route::group(array('before' => 'auth.user'), function()
     // This is a sensitive route
     Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
 
-    Route::group(array('before' => 'csrf'), function()
+    Route::group(['middleware'  =>  'csrf'], function()
     {
         // Team Administration
         Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember');
@@ -119,12 +119,12 @@ Route::group(array('before' => 'guest.user'), function()
     });
 });
 
-Route::group(['before' => 'slack'], function ()
+Route::group(['middleware'  =>  'slack'], function ()
 {
     Route::post('/slack', 'AdminController@postSlackQuery');
 });
 
-Route::group(array('before' => 'auth.admin'), function()
+Route::group(['middleware'  =>  'auth:admin'], function()
 {
 
     // Warning: Anything added to this list is vulnerable to CSRF
@@ -158,7 +158,7 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/merchant/{id}/tags', 'AdminController@getMerchantTags');
     Route::get('/admin/triggererror', 'AdminController@undefinedMethod');
 
-    Route::group(array('before' => 'csrf'), function()
+    Route::group(['middleware'  =>  'csrf'], function()
     {
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
@@ -233,9 +233,9 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
     });
 
-    Route::group(array('before' => 'auth.superadmin'), function()
+    Route::group(['middleware'  =>  ['auth:admin', 'superadmin']], function()
     {
-        Route::group(array('before' => 'csrf'), function() {
+        Route::group(['middleware'  =>  'csrf'], function() {
             // This is the RAW API route which processes api calls
             Route::post('/api/{path?}', 'AdminController@passThrough')
                 ->where('path', '.*$');
@@ -256,7 +256,7 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
 });
 
-Route::group(array('before' => 'guest.admin'), function()
+Route::group([],function()
 {
     Route::post('/admin/signin', array('before' => 'csrf','uses'=> 'AdminController@postSignin'));
 });

@@ -16,7 +16,7 @@ class Service extends Base\Service
 {
     public function __construct()
     {
-        $user = Auth::user()->user();
+        $user = Auth::user();
 
         if ($user)
         {
@@ -221,7 +221,7 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $user = Auth::user()->user();
+        $user = Auth::user();
         $mailer = new MerchantMailer($user->currentMerchant);
 
         $mailer->confirmActivationSubmission()->queueAndDeliver();

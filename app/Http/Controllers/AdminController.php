@@ -5,9 +5,13 @@ use App\Http\AppResponse;
 use App\Http\SlackResponse;
 use App\Admin;
 use App\Merchant;
+use Auth;
+use Input;
 
 class AdminController extends Controller
 {
+
+    protected $guard = 'admin';
 
     /*
     |--------------------------------------------------------------------------
@@ -18,9 +22,14 @@ class AdminController extends Controller
     |
     */
 
+    public function __construct()
+    {
+        $this->admin = Auth::guard('admin')->user();
+    }
+
     public function getIndex()
     {
-        return View::make('admin.tmpgetIndex');
+        return view('admin.tmpgetIndex');
     }
 
     public function postSignin()
@@ -34,9 +43,7 @@ class AdminController extends Controller
 
     public function getAdmin()
     {
-        $admin = Auth::admin()->get()->toArray();
-
-        return AppResponse::jsonResponse([], $admin);
+        return AppResponse::jsonResponse([], $this->admin->toArray());
     }
 
     public function getLogout()

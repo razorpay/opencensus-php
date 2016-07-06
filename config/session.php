@@ -136,7 +136,7 @@ return array(
     |
     */
 
-    'secure' => true,
+    'secure' => env('SECURE_SESSION', true),
 
     'http_only' => true,
 

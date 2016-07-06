@@ -2,11 +2,18 @@
 
 namespace App\Admin;
 
-use Illuminate\Auth\UserInterface;
 use App\Base;
 
-class Entity extends Base\Entity implements UserInterface
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+
+class Entity extends Base\Entity implements AuthenticatableContract, AuthorizableContract
 {
+    use Authenticatable, Authorizable;
+
     protected $table = 'admins';
 
     protected $fillable = array(
@@ -16,6 +23,8 @@ class Entity extends Base\Entity implements UserInterface
         'email',
         'superadmin'
     );
+
+    protected $hidden = array('password');
 
     protected $guarded = array('id');
 

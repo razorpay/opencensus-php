@@ -31,7 +31,7 @@ class Service extends Base\Service
 
     public function __construct()
     {
-        $this->currentUser = Auth::user()->user();
+        $this->currentUser = Auth::user();
 
         if ($this->currentUser)
         {

@@ -130,7 +130,6 @@ return array(
         'Illuminate\Pipeline\PipelineServiceProvider',
         'Illuminate\Queue\QueueServiceProvider',
         'Illuminate\Redis\RedisServiceProvider',
-        'Illuminate\Routing\ControllerServiceProvider',
         'Illuminate\Session\SessionServiceProvider',
         'Illuminate\Translation\TranslationServiceProvider',
         'Illuminate\Validation\ValidationServiceProvider',
@@ -160,6 +159,7 @@ return array(
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
+        \Conner\Tagging\Providers\TaggingServiceProvider::class
     ],
 
     /*

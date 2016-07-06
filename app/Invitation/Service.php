@@ -20,7 +20,7 @@ class Service extends Base\Service
     {
         if ($user = Auth::user())
         {
-            $this->loggedInUser = $user->user();
+            $this->loggedInUser = $user;
         }
     }
 
