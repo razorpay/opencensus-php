@@ -4,11 +4,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
-use Models\Card;
-use Models\Merchant;
-use Models\Customer;
-use Models\Terminal;
-use Models\Customer\Token\Entity as Token;
+use RZP\Models\Card;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Terminal;
+use RZP\Models\Customer\Token\Entity as Token;
 
 class CreateTokens extends Migration {
 

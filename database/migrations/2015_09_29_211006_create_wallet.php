@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Models\Base\UniqueIdEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class CreateWallet extends Migration {
 

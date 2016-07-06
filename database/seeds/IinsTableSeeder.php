@@ -1,6 +1,6 @@
 <?php
 
-use Models\Card\IIN;
+use RZP\Models\Card\IIN;
 use Constants\Table;
 
 class IinsTableSeeder extends Seeder
@@ -53,7 +53,7 @@ class IinsTableSeeder extends Seeder
         $fileHandle = fopen($path, 'r');
 
         $records = array();
-        
+
         $time = time();
 
         while(($iinRecord = fgetcsv($fileHandle)) !== FALSE)

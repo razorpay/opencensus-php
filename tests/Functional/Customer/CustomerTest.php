@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
-use Models\Merchant\Features;
+use RZP\Models\Merchant\Features;
 
 class CustomerTest extends TestCase
 {

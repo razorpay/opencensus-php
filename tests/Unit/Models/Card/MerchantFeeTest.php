@@ -3,9 +3,9 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
-use Models\Card;
-use Models\Pricing;
-use Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Pricing;
+use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 

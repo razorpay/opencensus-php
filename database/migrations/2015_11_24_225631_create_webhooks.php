@@ -4,8 +4,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
-use Models\Merchant\Webhook\Entity as Webhook;
-use Models\Merchant;
+use RZP\Models\Merchant\Webhook\Entity as Webhook;
+use RZP\Models\Merchant;
 
 class CreateWebhooks extends Migration
 {
@@ -34,7 +34,7 @@ class CreateWebhooks extends Migration
 
             $table->integer(Webhook::FAILURE_COUNT)
                   ->default(0);
-            
+
             $table->integer(Webhook::LAST_SUCCESSFUL_AT)
                   ->nullable();
 

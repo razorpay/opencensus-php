@@ -4,9 +4,9 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 use Mockery;
-use Models\Transaction;
+use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
-use Models\Settlement\Holidays;
+use RZP\Models\Settlement\Holidays;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 

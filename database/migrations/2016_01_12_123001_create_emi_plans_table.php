@@ -1,8 +1,8 @@
 <?php
 
 use Constants\Table;
-use Models\Emi;
-use Models\Payment\Entity as Payment;
+use RZP\Models\Emi;
+use RZP\Models\Payment\Entity as Payment;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
@@ -32,7 +32,7 @@ class CreateEmiPlansTable extends Migration {
             $table->integer(Emi\Entity::RATE);
 
             $table->tinyInteger(Emi\Entity::DURATION);
-            
+
             $table->string(Emi\Entity::METHODS)
             	  ->nullable();
 

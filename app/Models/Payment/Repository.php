@@ -8,11 +8,11 @@ use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Exception;
-use Models\Base;
-use Models\Merchant\Methods;
-use Models\Payment;
-use Models\Card;
-use Models\Order;
+use RZP\Models\Base;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 

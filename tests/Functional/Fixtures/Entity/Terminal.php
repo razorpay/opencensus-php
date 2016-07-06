@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Models\Terminal\Shared;
+use RZP\Models\Terminal\Shared;
 
 class Terminal extends Base
 {

@@ -8,7 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use Mockery;
-use Models\Payment;
+use RZP\Models\Payment;
 
 /**
  * Tests that retreieving of payments is working fine.

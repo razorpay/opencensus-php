@@ -3,11 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
-use Models\Transaction;
+use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
-use Models\Merchant;
+use RZP\Models\Merchant;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class MerchantTest extends TestCase
