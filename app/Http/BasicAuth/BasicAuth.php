@@ -690,7 +690,7 @@ class BasicAuth
     }
 
     public function getMerchantId()
-    {
+    {sdb(10);
         return $this->merchant->getKey();
     }
 
