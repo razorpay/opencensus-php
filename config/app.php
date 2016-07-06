@@ -160,7 +160,7 @@ return array(
          */
         // RZP\Providers\AppServiceProvider::class,
         // RZP\Providers\AuthServiceProvider::class,
-        // RZP\Providers\EventServiceProvider::class,
+        RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,

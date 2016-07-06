@@ -92,7 +92,7 @@ class ApiEventSubscriber
         $event = new Event\Entity($attributes);
 
         $payload = array(
-            RZP\Constants\Entity::PAYMENT => [
+            \RZP\Constants\Entity::PAYMENT => [
                 'entity' => $payment->toArrayPublic(),
             ],
         );
