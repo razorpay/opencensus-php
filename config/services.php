@@ -1,6 +1,6 @@
 <?php
 
-$secret = \Config::get('mailgun::config.api_key');
+$secret = config('mailgun.api_key');
 
 return [
     'mailgun' => [

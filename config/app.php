@@ -149,6 +149,7 @@ return array(
         // Package providers follow
         'Aws\Laravel\AwsServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
+        Bogardo\Mailgun\MailgunServiceProvider::class,
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
@@ -202,6 +203,7 @@ return array(
         'Lang'            => 'Illuminate\Support\Facades\Lang',
         'Log'             => 'Illuminate\Support\Facades\Log',
         'Mail'            => 'Illuminate\Support\Facades\Mail',
+        'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'Password'        => 'Illuminate\Support\Facades\Password',
         'Queue'           => 'Illuminate\Support\Facades\Queue',
         'Redirect'        => 'Illuminate\Support\Facades\Redirect',
