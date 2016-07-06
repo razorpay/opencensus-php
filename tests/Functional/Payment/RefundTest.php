@@ -315,18 +315,17 @@ class RefundTest extends TestCase
             return;
         }
 
-        $dashboard = Mockery::mock('Dashboard\DashboardServiceProvider');
+        $dashboard = Mockery::mock('RZP\Dashboard\DashboardServiceProvider');
 
         $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
-              ->with('refund', Mockery::type('Models\\Base\\PublicEntity'));
+              ->with('refund', Mockery::type('RZP\Models\\Base\\PublicEntity'));
     }
 
     protected function mockRefundEmail($times = 1)
     {
-
         \Mail::shouldReceive('queue')
             ->twice()
             ->with(
