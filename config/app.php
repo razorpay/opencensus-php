@@ -13,7 +13,7 @@ return array(
 	|
 	*/
 
-	'debug' => true,
+	'debug' => env('APP_DEBUG', true),
 
 	/*
 	|--------------------------------------------------------------------------
@@ -78,7 +78,22 @@ return array(
 	|
 	*/
 
-	'key' => 'xOlhfx6IBUR2FDulBrueOHzlUCEbJ8oT',
+	'key' => env('APP_KEY', 'xOlhfx6IBUR2FDulBrueOHzlUCEbJ8oT'),
+
+	/*
+	|--------------------------------------------------------------------------
+	| Logging Configuration
+	|--------------------------------------------------------------------------
+	|
+	| Here you may configure the log settings for your application. Out of
+	| the box, Laravel uses the Monolog PHP logging library. This gives
+	| you a variety of powerful log handlers / formatters to utilize.
+	|
+	| Available Settings: "single", "daily", "syslog", "errorlog"
+	|
+	*/
+
+	'log' => 'daily',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -91,45 +106,44 @@ return array(
 	|
 	*/
 
-	'providers' => array(
+	'providers' => [
 
+		/*
+		 * Laravel Framework Service Providers...
+		 */
 		'Illuminate\Foundation\Providers\ArtisanServiceProvider',
-		'Ollieread\Multiauth\MultiauthServiceProvider',
+		'Illuminate\Auth\AuthServiceProvider',
+		'Illuminate\Bus\BusServiceProvider',
 		'Illuminate\Cache\CacheServiceProvider',
-		'Illuminate\Session\CommandsServiceProvider',
 		'Illuminate\Foundation\Providers\ConsoleSupportServiceProvider',
 		'Illuminate\Routing\ControllerServiceProvider',
 		'Illuminate\Cookie\CookieServiceProvider',
 		'Illuminate\Database\DatabaseServiceProvider',
 		'Illuminate\Encryption\EncryptionServiceProvider',
 		'Illuminate\Filesystem\FilesystemServiceProvider',
+		'Illuminate\Foundation\Providers\FoundationServiceProvider',
 		'Illuminate\Hashing\HashServiceProvider',
-		'Illuminate\Html\HtmlServiceProvider',
-		'Illuminate\Log\LogServiceProvider',
-        'Bogardo\Mailgun\MailgunServiceProvider',
-        'Illuminate\Mail\MailServiceProvider',
-        'Illuminate\Database\MigrationServiceProvider',
-        'Illuminate\Pagination\PaginationServiceProvider',
-        'Illuminate\Queue\QueueServiceProvider',
-        'Illuminate\Redis\RedisServiceProvider',
-        'Illuminate\Remote\RemoteServiceProvider',
-        'Ollieread\Multiauth\Reminders\ReminderServiceProvider',
-        'Illuminate\Database\SeedServiceProvider',
-        'Illuminate\Session\SessionServiceProvider',
-        'Illuminate\Translation\TranslationServiceProvider',
-        'Illuminate\Validation\ValidationServiceProvider',
-        'Illuminate\View\ViewServiceProvider',
-        'Illuminate\Workbench\WorkbenchServiceProvider',
-        'Aws\Laravel\AwsServiceProvider',
-        'Barryvdh\Debugbar\ServiceProvider',
-        'Maknz\Slack\SlackServiceProvider',
-        'Trace\TraceServiceProvider',
-        'Maatwebsite\Excel\ExcelServiceProvider',
-        'Schuppo\PasswordStrength\PasswordStrengthServiceProvider',
-        'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
-        'Razorpay\Providers\UuidServiceProvider',
-        'Nitmedia\Wkhtml2pdf\Wkhtml2pdfServiceProvider'
-	),
+		'Illuminate\Mail\MailServiceProvider',
+		'Illuminate\Pagination\PaginationServiceProvider',
+		'Illuminate\Pipeline\PipelineServiceProvider',
+		'Illuminate\Queue\QueueServiceProvider',
+		'Illuminate\Redis\RedisServiceProvider',
+		'Illuminate\Auth\Passwords\PasswordResetServiceProvider',
+		'Illuminate\Session\SessionServiceProvider',
+		'Illuminate\Translation\TranslationServiceProvider',
+		'Illuminate\Validation\ValidationServiceProvider',
+		'Illuminate\View\ViewServiceProvider',
+
+		/*
+		 * Application Service Providers...
+		 */
+		'App\Providers\AppServiceProvider',
+		'App\Providers\BusServiceProvider',
+		'App\Providers\ConfigServiceProvider',
+		'App\Providers\EventServiceProvider',
+		'App\Providers\RouteServiceProvider',
+
+	],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -161,24 +175,21 @@ return array(
 		'Artisan'         => 'Illuminate\Support\Facades\Artisan',
 		'Auth'            => 'Illuminate\Support\Facades\Auth',
 		'Blade'           => 'Illuminate\Support\Facades\Blade',
+		'Bus'             => 'Illuminate\Support\Facades\Bus',
 		'Cache'           => 'Illuminate\Support\Facades\Cache',
-		'ClassLoader'     => 'Illuminate\Support\ClassLoader',
 		'Config'          => 'Illuminate\Support\Facades\Config',
-		'Controller'      => 'Illuminate\Routing\Controller',
 		'Cookie'          => 'Illuminate\Support\Facades\Cookie',
 		'Crypt'           => 'Illuminate\Support\Facades\Crypt',
 		'DB'              => 'Illuminate\Support\Facades\DB',
 		'Eloquent'        => 'Illuminate\Database\Eloquent\Model',
 		'Event'           => 'Illuminate\Support\Facades\Event',
 		'File'            => 'Illuminate\Support\Facades\File',
-		'Form'            => 'Illuminate\Support\Facades\Form',
 		'Hash'            => 'Illuminate\Support\Facades\Hash',
-		'HTML'            => 'Illuminate\Support\Facades\HTML',
 		'Input'           => 'Illuminate\Support\Facades\Input',
+		'Inspiring'       => 'Illuminate\Foundation\Inspiring',
 		'Lang'            => 'Illuminate\Support\Facades\Lang',
 		'Log'             => 'Illuminate\Support\Facades\Log',
 		'Mail'            => 'Illuminate\Support\Facades\Mail',
-		'Paginator'       => 'Illuminate\Support\Facades\Paginator',
 		'Password'        => 'Illuminate\Support\Facades\Password',
 		'Queue'           => 'Illuminate\Support\Facades\Queue',
 		'Redirect'        => 'Illuminate\Support\Facades\Redirect',
@@ -187,10 +198,8 @@ return array(
 		'Response'        => 'Illuminate\Support\Facades\Response',
 		'Route'           => 'Illuminate\Support\Facades\Route',
 		'Schema'          => 'Illuminate\Support\Facades\Schema',
-		'Seeder'          => 'Illuminate\Database\Seeder',
 		'Session'         => 'Illuminate\Support\Facades\Session',
-		'SSH'             => 'Illuminate\Support\Facades\SSH',
-		'Str'             => 'Illuminate\Support\Str',
+		'Storage'         => 'Illuminate\Support\Facades\Storage',
 		'URL'             => 'Illuminate\Support\Facades\URL',
 		'Validator'       => 'Illuminate\Support\Facades\Validator',
 		'View'            => 'Illuminate\Support\Facades\View',
