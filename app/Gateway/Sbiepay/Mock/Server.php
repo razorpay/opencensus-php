@@ -10,7 +10,7 @@ use RZP\Gateway\Sbiepay\Security;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use Illuminate\Support\Facades\Response;
-use Models\Card;
+use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
 {

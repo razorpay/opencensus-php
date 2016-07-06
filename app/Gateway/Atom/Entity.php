@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Atom;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {

@@ -4,9 +4,9 @@ namespace RZP\Dashboard;
 
 use EE\Exception;
 use Config;
-use Models\Base\PublicEntity;
-use Models\Base\PublicCollection;
-use Models\Payment;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment;
 use Queue;
 use Requests;
 use Trace;
@@ -136,7 +136,7 @@ class Dashboard
 
         $collection = $resource;
 
-        if (is_a($resource, 'Models\\Base\\PublicEntity') === true)
+        if (is_a($resource, 'RZP\\Models\\Base\\PublicEntity') === true)
         {
             $collection = new PublicCollection;
             $collection->push($resource);

@@ -3,11 +3,11 @@
 namespace Reconciliator\Base;
 
 use EE\Exception\ReconciliationException;
-use Models\Payment;
-use Models\Card;
-use Models\Card\IIN;
-use Models\Transaction;
-use Models\Payment\Verify;
+use RZP\Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Card\IIN;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Verify;
 
 use RZP\Gateway\AxisMigs;
 

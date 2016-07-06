@@ -5,9 +5,9 @@ namespace RZP\Gateway\Hdfc\Payment;
 use EE\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use Models\Payment as PaymentModel;
+use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
-use Models\Card;
+use RZP\Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 

@@ -2,14 +2,14 @@
 
 namespace RZP\Gateway\Atom\Mock;
 
-use Models\Card;
+use RZP\Models\Card;
 use Carbon\Carbon;
 use EE\Exception;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Atom\Mock;
 use RZP\Gateway\Base;
 use Http\Route;
-use Models\Payment;
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -103,7 +103,7 @@ class Server extends Base\Mock\Server
 
         $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
 
-        $payment = (new \Models\Payment\Repository)->findOrFail($atom['id']);
+        $payment = (new \RZP\Models\Payment\Repository)->findOrFail($atom['id']);
 
         $bankTxnId = random_integer(6);
 
@@ -274,7 +274,7 @@ class Server extends Base\Mock\Server
 
     protected function generateToken()
     {
-        $token = \Models\Base\UniqueIdEntity::generateUniqueId();
+        $token = \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
 
         return $token;
     }

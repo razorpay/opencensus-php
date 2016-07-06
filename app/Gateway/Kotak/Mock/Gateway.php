@@ -7,7 +7,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use RZP\Gateway\Kotak;
 use RZP\Gateway\Base;
-use Models\Card;
+use RZP\Models\Card;
 
 class Gateway extends Kotak\Gateway
 {

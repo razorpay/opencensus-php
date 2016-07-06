@@ -6,10 +6,10 @@ use Carbon\Carbon;
 use EE\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Mpr;
-use Models\Card;
-use Models\Transaction;
-use Models\Terminal;
-use Models\Payment;
+use RZP\Models\Card;
+use RZP\Models\Transaction;
+use RZP\Models\Terminal;
+use RZP\Models\Payment;
 use Trace;
 use Trace\TraceCode;
 

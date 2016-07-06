@@ -8,7 +8,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
-use Models\Payment\Processor\Processor;
+use RZP\Models\Payment\Processor\Processor;
 
 class Server extends Base\Mock\Server
 {

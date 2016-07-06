@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Console\Command;
-use Models\Base\UniqueIdEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use Symfony\Component\Console\Input\InputOption;
 
 use Constants\Table;
-use Models\Merchant\Account;
-use Models\Payment\Processor\Netbanking;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class AddDbData extends Command
 {

@@ -9,8 +9,8 @@ use EE\Exception;
 use Crypt;
 use Http\ApiResponse;
 use Http\Route;
-use Models\Key;
-use Models\Merchant;
+use RZP\Models\Key;
+use RZP\Models\Merchant;
 use Trace\TraceCode;
 
 class BasicAuth

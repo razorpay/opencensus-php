@@ -7,7 +7,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Base;
-use Models\Card;
+use RZP\Models\Card;
 
 class Gateway extends Atom\Gateway
 {

@@ -6,7 +6,7 @@ use Http\Route;
 use RZP\Gateway\Base;
 use EE\Exception;
 use Carbon\Carbon;
-use Models\Payment;
+use RZP\Models\Payment;
 use EE\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Base\Otp;

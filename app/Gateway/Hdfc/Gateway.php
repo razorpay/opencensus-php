@@ -30,7 +30,7 @@ use EE\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
-use Models\Card;
+use RZP\Models\Card;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
