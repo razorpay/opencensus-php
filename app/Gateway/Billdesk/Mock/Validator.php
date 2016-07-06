@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         'RequestType'               => 'required|in:0122',
         'Merchant ID'               => 'required|alpha_num',
         'Customer ID'               => 'required|alpha_num|size:14',
-        'Current Date/ Timestamp'   => 'required|alpha_num',
+        // 'Current Date/ Timestamp'   => 'required|alpha_num',
         'Checksum'                  => 'required|alpha_num',
     );
 

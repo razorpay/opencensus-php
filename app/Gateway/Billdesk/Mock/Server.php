@@ -86,6 +86,8 @@ class Server extends Base\Mock\Server
 
         $input = $this->getContentFromInput($input);
 
+        // @todo: Fix below for validation.
+        unset($input['Current Date/ Timestamp']);
         $this->validateActionInput($input, 'verify');
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
