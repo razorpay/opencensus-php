@@ -1,6 +1,6 @@
 <?php
 
-namespace Http;
+namespace RZP\Http;
 
 use App;
 use EE\Error\Error;
