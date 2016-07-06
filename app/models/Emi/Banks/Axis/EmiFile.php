@@ -91,9 +91,9 @@ class EmiFile extends Base\EmiFile
     {
         $gateway = ucfirst($payment->gateway);
 
-        $entity = 'Gateway\\'.$gateway.'\\Entity';
+        $entity = 'RZP\Gateway\\'.$gateway.'\\Entity';
 
-        $repo = 'Gateway\\'.$gateway.'\\Repository';
+        $repo = 'RZP\Gateway\\'.$gateway.'\\Repository';
 
         if (defined($repo))
         {
