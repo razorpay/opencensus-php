@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Models\Merchant\Account;
-use Models\Merchant\Methods\Entity as MerchantMethodEntity;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
 {

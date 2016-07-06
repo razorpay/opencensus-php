@@ -4,8 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Config;
 use Eloquent;
-use Models;
-use Gateway;
+use RZP\Models;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
@@ -22,31 +21,31 @@ class Base
     }
 
     protected static $map = array(
-        'key'           => Models\Key\Entity::class,
-        'iin'           => Models\Card\IIN\Entity::class,
-        'atom'          => Gateway\Atom\Entity::class,
-        'card'          => Models\Card\Entity::class,
-        'hdfc'          => Gateway\Hdfc\Entity::class,
-        'token'         => Models\Customer\Token\Entity::class,
-        'order'         => Models\Order\Entity::class,
-        'refund'        => Models\Payment\Refund\Entity::class,
-        'webhook'       => Models\Merchant\Webhook\Entity::class,
-        'methods'       => Models\Merchant\Methods\Entity::class,
-        'balance'       => Models\Merchant\Balance\Entity::class,
-        'methods'       => Models\Merchant\Methods\Entity::class,
-        'payment'       => Models\Payment\Entity::class,
-        'pricing'       => Models\Pricing\Entity::class,
-        'webhook'       => Models\Merchant\Webhook\Entity::class,
-        'customer'      => Models\Customer\Entity::class,
-        'merchant'      => Models\Merchant\Entity::class,
-        'terminal'      => Models\Terminal\Entity::class,
-        'emi_plan'      => Models\Emi\Entity::class,
-        'axis_migs'     => Gateway\AxisMigs\Entity::class,
-        'app_token'     => Models\Customer\App\Entity::class,
-        'adjustment'    => Models\Adjustment\Entity::class,
-        'settlement'    => Models\Settlement\Entity::class,
-        'transaction'   => Models\Transaction\Entity::class,
-        'bank_account'  => Models\Merchant\BankAccount\Entity::class,
+        'key'           => \RZP\Models\Key\Entity::class,
+        'iin'           => \RZP\Models\Card\IIN\Entity::class,
+        'atom'          => \RZP\Gateway\Atom\Entity::class,
+        'card'          => \RZP\Models\Card\Entity::class,
+        'hdfc'          => \RZP\Gateway\Hdfc\Entity::class,
+        'token'         => \RZP\Models\Customer\Token\Entity::class,
+        'order'         => \RZP\Models\Order\Entity::class,
+        'refund'        => \RZP\Models\Payment\Refund\Entity::class,
+        'webhook'       => \RZP\Models\Merchant\Webhook\Entity::class,
+        'methods'       => \RZP\Models\Merchant\Methods\Entity::class,
+        'balance'       => \RZP\Models\Merchant\Balance\Entity::class,
+        'methods'       => \RZP\Models\Merchant\Methods\Entity::class,
+        'payment'       => \RZP\Models\Payment\Entity::class,
+        'pricing'       => \RZP\Models\Pricing\Entity::class,
+        'webhook'       => \RZP\Models\Merchant\Webhook\Entity::class,
+        'customer'      => \RZP\Models\Customer\Entity::class,
+        'merchant'      => \RZP\Models\Merchant\Entity::class,
+        'terminal'      => \RZP\Models\Terminal\Entity::class,
+        'emi_plan'      => \RZP\Models\Emi\Entity::class,
+        'axis_migs'     => \RZP\Gateway\AxisMigs\Entity::class,
+        'app_token'     => \RZP\Models\Customer\App\Entity::class,
+        'adjustment'    => \RZP\Models\Adjustment\Entity::class,
+        'settlement'    => \RZP\Models\Settlement\Entity::class,
+        'transaction'   => \RZP\Models\Transaction\Entity::class,
+        'bank_account'  => \RZP\Models\Merchant\BankAccount\Entity::class,
     );
 
     protected static $liveAndTest = array(
@@ -59,7 +58,7 @@ class Base
 
     public function create(array $attributes = array())
     {
-        $entity = snake_case(explode('\\', get_class($this))[4]);
+        $entity = snake_case(explode('\\', get_class($this))[5]);
 
         return $this->createEntity($entity, $attributes);
     }

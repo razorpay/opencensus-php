@@ -6,7 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use Mockery;
-use Models\Card;
+use RZP\Models\Card;
 use RZP\Tests\TestCase;
 
 class ExceptionTest extends TestCase

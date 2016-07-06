@@ -268,7 +268,7 @@ class CaptureTest extends TestCase
 
         $payment = $this->fixtures->create('payment:netbanking_authorized');
 
-        $mock = Mockery::mock('Services\Mailgun')->makePartial()->shouldAllowMockingProtectedMethods();
+        $mock = Mockery::mock('RZP\Services\Mailgun')->makePartial()->shouldAllowMockingProtectedMethods();
         $mock->shouldReceive('sendMessage')->times(2);
         $mock->shouldReceive('getMode')->andReturn('test');
 

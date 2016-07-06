@@ -2,11 +2,11 @@
 
 use Constants\Mode;
 use Constants\Table;
-use Models\Merchant\Account;
-use Models\Pricing;
-use Models\Payment\Processor\Netbanking;
-use Models\Payment\Gateway;
-use Models\Terminal;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Pricing;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal;
 
 class DatabaseSeeder extends Seeder
 {

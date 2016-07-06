@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
-use Models\Settlement\Daily\Entity as DailySettlement;
+use RZP\Models\Settlement\Daily\Entity as DailySettlement;
 
 class CreateDailySettlements extends Migration
 {

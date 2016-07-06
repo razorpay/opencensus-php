@@ -3,7 +3,7 @@
 namespace RZP\Tests\Unit\Gateway;
 
 use Mockery;
-use Models\Card;
+use RZP\Models\Card;
 use RZP\Tests\TestCase;
 
 class GatewayDriverTest extends TestCase

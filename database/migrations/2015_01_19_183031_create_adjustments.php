@@ -4,9 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
-use Models\Adjustment\Entity as Adjustment;
-use Models\Merchant;
-use Models\Transaction;
+use RZP\Models\Adjustment\Entity as Adjustment;
+use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 
 class CreateAdjustments extends Migration {
 
