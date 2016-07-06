@@ -156,7 +156,7 @@ return array(
         'Aws\Laravel\AwsServiceProvider',
         'Barryvdh\Debugbar\ServiceProvider',
         Bogardo\Mailgun\MailgunServiceProvider::class,
-        // 'Maatwebsite\Excel\ExcelServiceProvider',
+        'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
         'Marlek\LaravelAutomigrate\LaravelAutomigrateServiceProvider',
     ],
