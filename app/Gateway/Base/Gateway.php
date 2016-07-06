@@ -7,8 +7,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway
 {

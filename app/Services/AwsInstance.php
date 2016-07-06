@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use Trace;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class AwsInstance
 {

@@ -19,8 +19,8 @@ use RZP\Models\Order;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Error\ErrorCode;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Mail;
 use Lib\PhoneBook;
 

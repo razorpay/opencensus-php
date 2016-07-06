@@ -4,9 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use Models\Settlement\Entity as Settlement;
-use Models\Transaction;
-use Models\Merchant;
+use RZP\Models\Settlement\Entity as Settlement;
+use RZP\Models\Transaction;
+use RZP\Models\Merchant;
 
 class CreateSettlements extends Migration {
 

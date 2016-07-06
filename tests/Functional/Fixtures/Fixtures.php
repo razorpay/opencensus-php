@@ -2,11 +2,11 @@
 
 namespace RZP\Tests\Functional\Fixtures;
 
-use Models\Merchant;
+use RZP\Models\Merchant;
 use Config;
 use Eloquent;
 use RZP\Tests\TestDummy\Factory;
-use Models;
+use RZP\Models;
 
 class Fixtures
 {

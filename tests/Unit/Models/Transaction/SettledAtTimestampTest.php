@@ -4,7 +4,7 @@ namespace RZP\Tests\Unit\Models\Transaction;
 
 use Carbon\Carbon;
 use Mockery;
-use Models\Transaction;
+use RZP\Models\Transaction;
 use ReflectionClass;
 use RZP\Tests\TestCase;
 

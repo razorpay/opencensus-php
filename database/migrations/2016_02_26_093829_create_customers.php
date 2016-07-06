@@ -4,10 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use Models\Merchant;
-use Models\Customer\Entity as Customer;
-use Models\Order\Entity as Order;
-use Models\Payment\Entity as Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Order\Entity as Order;
+use RZP\Models\Payment\Entity as Payment;
 
 class CreateCustomers extends Migration {
 

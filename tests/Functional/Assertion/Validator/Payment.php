@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Assertion\Validator;
 
-use Models\Payment\Entity;
+use RZP\Models\Payment\Entity;
 
 class Payment extends Validator
 {

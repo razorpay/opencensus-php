@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use Trace\TraceCode;
 use RZP\Exception\LogicException;
 
 trait OtpResend

@@ -3,12 +3,12 @@
 namespace RZP\Models\Settlement;
 
 use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
-use Trace\Trace;
-use Trace\TraceCode;
 
 class Core extends Base\Core
 {

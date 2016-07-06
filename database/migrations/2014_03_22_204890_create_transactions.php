@@ -4,10 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use Models\Settlement;
-use Models\Transaction\Entity as Transaction;
-use Models\Merchant;
-use Models\Payment;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 
 class CreateTransactions extends Migration
 {
@@ -60,7 +60,7 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::GATEWAY_FEE)
                   ->unsigned()
                   ->nullable();
-            
+
             $table->integer(Transaction::GATEWAY_SERVICE_TAX)
                   ->unsigned()
                   ->nullable();

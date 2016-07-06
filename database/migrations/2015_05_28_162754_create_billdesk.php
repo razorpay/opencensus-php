@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Gateway\Billdesk;
-use Models\Base\UniqueIdEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class CreateBilldesk extends Migration {
 

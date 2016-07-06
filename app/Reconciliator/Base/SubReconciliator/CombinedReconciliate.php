@@ -2,7 +2,7 @@
 
 namespace RZP\Reconciliator\Base;
 
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\ReconciliationException;
 
 use RZP\Reconciliator\Orchestrator;

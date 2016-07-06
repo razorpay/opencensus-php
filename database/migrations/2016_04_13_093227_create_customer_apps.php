@@ -4,10 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use Models\Merchant;
-use Models\Customer;
-use Models\Customer\App\Entity as App;
-use Models\Payment\Entity as Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Customer\App\Entity as App;
+use RZP\Models\Payment\Entity as Payment;
 
 class CreateCustomerApps extends Migration {
     /**

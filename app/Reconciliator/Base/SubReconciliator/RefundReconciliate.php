@@ -9,7 +9,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 
 use App;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\ReconciliationException;
 
 use RZP\Gateway\AxisMigs;

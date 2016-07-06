@@ -14,14 +14,14 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use Models\Base;
-use Models\Card;
-use Models\Gateway;
-use Models\Merchant;
-use Models\Payment;
-use Models\Pricing;
-use Models\Settlement;
-use Models\Transaction;
+use RZP\Models\Base;
+use RZP\Models\Card;
+use RZP\Models\Gateway;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Pricing;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
 
 
 class Reconciler

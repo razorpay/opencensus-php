@@ -2,8 +2,8 @@
 
 namespace RZP\Reconciliator;
 
+use RZP\Trace\TraceCode;
 use RZP\Exception;
-use Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;

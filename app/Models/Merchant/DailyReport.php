@@ -6,9 +6,9 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use Mail;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use Trace\TraceCode;
 
 class DailyReport
 {

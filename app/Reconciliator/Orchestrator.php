@@ -5,8 +5,8 @@ namespace RZP\Reconciliator;
 use DirectoryIterator;
 
 use App;
+use RZP\Trace\TraceCode;
 use RZP\Exception;
-use Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Orchestrator

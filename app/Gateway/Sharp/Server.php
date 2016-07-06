@@ -6,8 +6,8 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Crypt;
 
 class Server

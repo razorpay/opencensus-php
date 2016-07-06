@@ -4,8 +4,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use Models\Merchant;
-use Models\Merchant\Methods\Entity as Methods;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods\Entity as Methods;
 
 class CreateMerchantBanks extends Migration {
 

@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Models\Merchant\Account;
+use RZP\Models\Merchant\Account;
 
 class MerchantFluid extends Base
 {

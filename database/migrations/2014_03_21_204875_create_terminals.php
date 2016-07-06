@@ -4,8 +4,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use Models\Merchant;
-use Models\Terminal\Entity as Terminal;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal\Entity as Terminal;
 
 class CreateTerminals extends Migration
 {

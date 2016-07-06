@@ -3,7 +3,7 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
-use Models\Card;
+use RZP\Models\Card;
 use RZP\Tests\TestCase;
 
 class ValidationTest extends TestCase

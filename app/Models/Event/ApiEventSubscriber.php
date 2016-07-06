@@ -6,7 +6,7 @@ use RZP\Constants;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use Webhook\Fire;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 
 class ApiEventSubscriber
 {

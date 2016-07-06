@@ -9,8 +9,8 @@ use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Gateway\AxisGenius;
 use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway extends AxisMigs\Gateway
 {

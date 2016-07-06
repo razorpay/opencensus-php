@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Services\SlackPoster;
+use RZP\Services\SlackPoster;
 
 class Core extends Base\Core
 {

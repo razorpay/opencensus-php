@@ -6,9 +6,9 @@ use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Reconciliator\Messenger;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\Payment\Status as PaymentStatus;
-use Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {

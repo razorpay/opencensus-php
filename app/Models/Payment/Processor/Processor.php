@@ -17,8 +17,8 @@ use RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Request;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 
 class Processor

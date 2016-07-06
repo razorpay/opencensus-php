@@ -2,8 +2,8 @@
 
 namespace RZP\Reconciliator\HDFC;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use Trace\TraceCode;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate  extends Base\CombinedReconciliate

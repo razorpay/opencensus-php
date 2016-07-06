@@ -6,8 +6,8 @@ use RZP\Exception;
 use RZP\Http\ApiResponse;
 use RZP\Http\Route;
 use RZP\Models\Payment;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class GatewayController extends Controller
 {
