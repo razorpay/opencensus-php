@@ -35,6 +35,11 @@ build:
           filename: api_sqlite.db
           overwrite: true
           content:
+      - create-file:
+          name: Create api_sqlite_test.db
+          filename: api_sqlite_test.db
+          overwrite: true
+          content:
       - script:
           name: install dependencies
           code: composer install --no-interaction
