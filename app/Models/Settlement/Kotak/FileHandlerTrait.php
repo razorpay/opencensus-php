@@ -67,7 +67,7 @@ trait FileHandlerTrait
 
     protected function saveToAws($name, $fullpath, $mime = 'text/plain')
     {
-        $config =  \Config::get('aws::config');
+        $config =  \Config::get('aws');
 
         $awsS3Mock = $config['mock'];
 

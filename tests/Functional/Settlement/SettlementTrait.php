@@ -206,7 +206,7 @@ trait SettlementTrait
     {
         $defaultMime = 'text/plain';
 
-        $awsConfig = $this->app['config']->get('aws::config');
+        $awsConfig = $this->app['config']->get('aws');
 
         $s3mock = $awsConfig['mock'];
 

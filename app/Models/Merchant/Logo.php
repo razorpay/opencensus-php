@@ -183,7 +183,7 @@ class Logo
         $mimeType = $imageDetails['mime_type'];
         $baseFilePath = $imageDetails['file_path'];
 
-        $config =  Config::get('aws::config');
+        $config =  Config::get('aws');
 
         $awsS3Mock = $config['mock'];
 

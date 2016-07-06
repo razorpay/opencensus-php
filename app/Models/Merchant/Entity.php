@@ -403,7 +403,7 @@ class Entity extends Base\PublicEntity
 
     public function getAwsLogoUrl($size = self::ORIGINAL_SIZE)
     {
-        $awsConfig = Config::get('aws::config');
+        $awsConfig = Config::get('aws');
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
         $bucketName = $awsConfig['logo_bucket'];
