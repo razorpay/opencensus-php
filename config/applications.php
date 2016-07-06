@@ -3,52 +3,52 @@
 return array(
 
     'dashboard' => array(
-        'url'       =>  $_ENV['APP_DASHBOARD_URL'],
-        'secret'    =>  $_ENV['APP_DASHBOARD_SECRET'],
-        'pretend'   =>  $_ENV['APP_DASHBOARD_PRETEND'],
+        'url'       =>  env('APP_DASHBOARD_URL'),
+        'secret'    =>  env('APP_DASHBOARD_SECRET'),
+        'pretend'   =>  env('APP_DASHBOARD_PRETEND'),
         'cloud'     =>  true,
     ),
 
     'mock_gateways' => array(
-        'secret'    =>  $_ENV['MOCK_GATEWAY_SECRET'],
+        'secret'    =>  env('MOCK_GATEWAY_SECRET'),
     ),
 
     'cron' => array(
-        'secret'    =>  $_ENV['CRON_PASSWORD'],
+        'secret'    =>  env('CRON_PASSWORD'),
     ),
 
     'mailgun' => array(
         'url'       =>  'razorpay.com',
-        'key'       =>  $_ENV['MAILGUN_SECRET'],
-        'mock'      =>  $_ENV['MAILGUN_MOCK'],
+        'key'       =>  env('MAILGUN_SECRET'),
+        'mock'      =>  env('MAILGUN_MOCK'),
         'secret'    =>  '',
         'from_name' =>  'Team Razorpay',
         'from_email' => 'support@razorpay.com'
     ),
 
     'emi' => array(
-        'password'  =>  $_ENV['EMI_FILE_PASSWORD']
+        'password'  =>  env('EMI_FILE_PASSWORD')
     ),
 
     'slack' => array(
         'team'      => 'razorpay',
-        'token'     =>  $_ENV['SLACK_TOKEN'],
-        'mock'      =>  $_ENV['SLACK_MOCK'],
+        'token'     =>  env('SLACK_TOKEN'),
+        'mock'      =>  env('SLACK_MOCK'),
     ),
 
     'hosted' => array(
-        'secret'    => $_ENV['APP_HOSTED_SECRET'],
+        'secret'    => env('APP_HOSTED_SECRET'),
     ),
 
     'card.tokenex' => array(
-        'id'        => $_ENV['TOKENEX_ID'],
-        'key'       => $_ENV['TOKENEX_API_KEY'],
-        'url'       => $_ENV['TOKENEX_API_URL'],
-        'scheme'    => $_ENV['TOKENEX_TOKEN_SCHEME'],
+        'id'        => env('TOKENEX_ID'),
+        'key'       => env('TOKENEX_API_KEY'),
+        'url'       => env('TOKENEX_API_URL'),
+        'scheme'    => env('TOKENEX_TOKEN_SCHEME'),
     ),
 
     'raven' => array(
-        'url'       => $_ENV['RAVEN_URL'],
-        'secret'    => $_ENV['RAVEN_SECRET'],
+        'url'       => env('RAVEN_URL'),
+        'secret'    => env('RAVEN_SECRET'),
     ),
 );

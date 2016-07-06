@@ -4,6 +4,19 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
+    | Application Environment
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the "environment" your application is currently
+    | running in. This may determine how you prefer to configure various
+    | services your application utilizes. Set this in your ".env" file.
+    |
+    */
+
+    'env' => env('APP_ENV', 'production'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
@@ -56,6 +69,19 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
+    | Application Fallback Locale
+    |--------------------------------------------------------------------------
+    |
+    | The fallback locale determines the locale to use when the current one
+    | is not available. You may change the value to correspond to any of
+    | the language folders that are provided through your application.
+    |
+    */
+
+    'fallback_locale' => 'en',
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |
@@ -65,7 +91,24 @@ return array(
     |
     */
 
-    'key' => $_ENV['ENCRYPTION_KEY'],
+    'key' => env('ENCRYPTION_KEY'),
+
+    'cipher' => 'AES-256-CBC',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logging Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the log settings for your application. Out of
+    | the box, Laravel uses the Monolog PHP logging library. This gives
+    | you a variety of powerful log handlers / formatters to utilize.
+    |
+    | Available Settings: "single", "daily", "syslog", "errorlog"
+    |
+    */
+
+    'log' => env('APP_LOG', 'single'),
 
     /*
      |
@@ -73,7 +116,7 @@ return array(
      | running locally
      |
      */
-    'cloud' => $_ENV['CLOUD'],
+    'cloud' => env('CLOUD'),
 
     /*
     |--------------------------------------------------------------------------
@@ -192,8 +235,6 @@ return array(
         'Trace'           => 'Trace\Facade',
         'Slack'           => 'Maknz\Slack\Facades\Slack'
     ),
-
-    'context' => $_ENV['CONTEXT'],
 
     'checkout' => 'https://checkout.razorpay.com',
 );

@@ -45,61 +45,62 @@ return array(
     */
 
     'connections' => [
+        'mysql' => [
+            'live' => [
+                'driver'    => env('DB_LIVE_DRIVER'),
+                'host'      => env('DB_LIVE_HOST'),
+                'port'      => env('DB_LIVE_PORT'),
+                'database'  => env('DB_LIVE_DATABASE'),
+                'username'  => env('DB_LIVE_USERNAME'),
+                'password'  => env('DB_LIVE_PASSWORD'),
+                'charset'   => 'utf8',
+                'collation' => 'utf8_bin',
+                'prefix'    => '',
+                'strict'    => true
+            ],
 
-        'live' => [
-            'driver'    => $_ENV['DB_LIVE_DRIVER'],
-            'host'      => $_ENV['DB_LIVE_HOST'],
-            'port'      => $_ENV['DB_LIVE_PORT'],
-            'database'  => $_ENV['DB_LIVE_DATABASE'],
-            'username'  => $_ENV['DB_LIVE_USERNAME'],
-            'password'  => $_ENV['DB_LIVE_PASSWORD'],
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true
-        ],
+            'test' => [
+                'driver'    => env('DB_TEST_DRIVER'),
+                'host'      => env('DB_TEST_HOST'),
+                'port'      => env('DB_TEST_PORT'),
+                'database'  => env('DB_TEST_DATABASE'),
+                'username'  => env('DB_TEST_USERNAME'),
+                'password'  => env('DB_TEST_PASSWORD'),
+                'charset'   => 'utf8',
+                'collation' => 'utf8_bin',
+                'prefix'    => '',
+                'strict'    => true
+            ],
 
-        'test' => [
-            'driver'    => $_ENV['DB_TEST_DRIVER'],
-            'host'      => $_ENV['DB_TEST_HOST'],
-            'port'      => $_ENV['DB_TEST_PORT'],
-            'database'  => $_ENV['DB_TEST_DATABASE'],
-            'username'  => $_ENV['DB_TEST_USERNAME'],
-            'password'  => $_ENV['DB_TEST_PASSWORD'],
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true
-        ],
+            // TODO: Currently using master data. Add slave credentials later.
 
-        // TODO: Currently using master data. Add slave credentials later.
+            'slave-live' => [
+                // Slave must have the same driver and DB names as the master.
+                'driver'    => env('DB_LIVE_DRIVER'),
+                'host'      => env('DB_LIVE_HOST'),
+                'port'      => env('DB_LIVE_PORT'),
+                'database'  => env('DB_LIVE_DATABASE'),
+                'username'  => env('DB_LIVE_USERNAME'),
+                'password'  => env('DB_LIVE_PASSWORD'),
+                'charset'   => 'utf8',
+                'collation' => 'utf8_bin',
+                'prefix'    => '',
+                'strict'    => true
+            ],
 
-        'slave-live' => [
-            // Slave must have the same driver and DB names as the master.
-            'driver'    => $_ENV['DB_LIVE_DRIVER'],
-            'host'      => $_ENV['DB_LIVE_HOST'],
-            'port'      => $_ENV['DB_LIVE_PORT'],
-            'database'  => $_ENV['DB_LIVE_DATABASE'],
-            'username'  => $_ENV['DB_LIVE_USERNAME'],
-            'password'  => $_ENV['DB_LIVE_PASSWORD'],
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true
-        ],
-
-        'slave-test' => [
-            'driver'    => $_ENV['DB_TEST_DRIVER'],
-            'host'      => $_ENV['DB_TEST_HOST'],
-            'port'      => $_ENV['DB_TEST_PORT'],
-            'database'  => $_ENV['DB_TEST_DATABASE'],
-            'username'  => $_ENV['DB_TEST_USERNAME'],
-            'password'  => $_ENV['DB_TEST_PASSWORD'],
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true
-        ],
+            'slave-test' => [
+                'driver'    => env('DB_TEST_DRIVER'),
+                'host'      => env('DB_TEST_HOST'),
+                'port'      => env('DB_TEST_PORT'),
+                'database'  => env('DB_TEST_DATABASE'),
+                'username'  => env('DB_TEST_USERNAME'),
+                'password'  => env('DB_TEST_PASSWORD'),
+                'charset'   => 'utf8',
+                'collation' => 'utf8_bin',
+                'prefix'    => '',
+                'strict'    => true
+            ],
+        ]
     ],
 
     /*
@@ -145,13 +146,13 @@ return array(
     */
 
     'es_index' => [
-        'live' => $_ENV['ES_LIVE_INDEX'],
-        'test' => $_ENV['ES_TEST_INDEX']
+        'live' => env('ES_LIVE_INDEX'),
+        'test' => env('ES_TEST_INDEX')
     ],
 
-    'es_host'  => $_ENV['ES_HOST'],
+    'es_host'  => env('ES_HOST'),
 
-    'es_mock'  => $_ENV['ES_MOCK'],
+    'es_mock'  => env('ES_MOCK'),
 
 
 );
