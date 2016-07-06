@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Exceptions;
+namespace RZP\Exception;
 
 use App;
 use Trace;
@@ -8,8 +8,8 @@ use Response;
 use Exception;
 use RZP\Http\ApiResponse;
 use RZP\Trace\TraceCode;
-use RZP\Exceptions\Error\Error;
-use RZP\Exceptions\Error\ErrorCode;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
