@@ -2,9 +2,9 @@
 
 namespace Models\Settlement;
 
-use EE\Error\Error;
-use EE\Error\ErrorCode;
-use EE\Exception\ServerErrorException;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception\ServerErrorException;
 
 class SettlementFailureException extends ServerErrorException
 {

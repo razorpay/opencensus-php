@@ -3,7 +3,7 @@
 namespace Models\Merchant\Webhook;
 
 use Constants\Table;
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Crypt;
 
@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT         = 'created_at';
     const SECRET             = 'secret';
     const LAST_SUCCESSFUL_AT = 'last_successful_at';
-    
+
     protected $entity       = 'webhook';
 
     const MAX_FAILURE_COUNT = 3;
@@ -120,7 +120,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::FAILURE_COUNT);
     }
-    
+
     public function getLastSuccessfulAt()
     {
         return $this->getAttribute(self::LAST_SUCCESSFUL_AT);

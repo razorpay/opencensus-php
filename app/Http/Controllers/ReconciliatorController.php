@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use EE\Exception;
+use RZP\Exception;
 
 class ReconciliatorController extends Controller
 {

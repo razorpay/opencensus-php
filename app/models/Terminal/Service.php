@@ -2,7 +2,7 @@
 
 namespace Models\Terminal;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Merchant;
 use Models\Terminal;

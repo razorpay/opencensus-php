@@ -2,7 +2,7 @@
 
 namespace Reconciliator;
 
-use EE\Exception;
+use RZP\Exception;
 use Trace\TraceCode;
 use Models\Base\UniqueIdEntity;
 
@@ -43,7 +43,7 @@ class FileProcessor
         self::EXCEL => ['xls', 'xlsx'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
-    
+
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
@@ -130,7 +130,7 @@ class FileProcessor
             self::DESTINATION_FOLDER => $sourceFolderPath,
             self::FILE_PATH          => $filePath,
         ];
-        
+
         return $fileDetails;
     }
 

@@ -2,7 +2,7 @@
 
 namespace Reconciliator\Base;
 
-use EE\Exception\ReconciliationException;
+use RZP\Exception\ReconciliationException;
 use Models\Payment;
 use Models\Card;
 use Models\Card\IIN;

@@ -1,6 +1,6 @@
 <?php
 
-namespace EE\Exception;
+namespace RZP\Exception;
 
 class RecoverableException extends BaseException
 {

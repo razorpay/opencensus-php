@@ -2,8 +2,8 @@
 
 namespace Models\Merchant\Methods;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Models\Base;
 use Models\Merchant;
 use Models\Merchant\Methods;

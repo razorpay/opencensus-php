@@ -1,9 +1,9 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
 use RZP\Gateway\Hdfc;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCardTimeout' => [
@@ -24,7 +24,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayTimeoutException',
+            'class' => 'RZP\Exception\GatewayTimeoutException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
             'gateway_error_code'  => Hdfc\ErrorCode::RP00003,
         ],
@@ -66,7 +66,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
@@ -90,7 +90,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
@@ -114,7 +114,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00007,
         ],
@@ -138,7 +138,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00008,
         ],
@@ -162,7 +162,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
         ],
@@ -186,7 +186,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
@@ -210,7 +210,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'EE\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
@@ -230,7 +230,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class' => 'EE\Exception\LogicException',
+            'class' => 'RZP\Exception\LogicException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
     ],

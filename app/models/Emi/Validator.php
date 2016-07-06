@@ -2,7 +2,7 @@
 
 namespace Models\Emi;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 
 class Validator extends Base\Validator

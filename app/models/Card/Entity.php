@@ -2,7 +2,7 @@
 
 namespace Models\Card;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Card;
 use Models\Base;
 

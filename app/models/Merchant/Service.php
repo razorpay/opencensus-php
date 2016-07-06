@@ -16,8 +16,8 @@ use Models\Merchant\Webhook;
 use Models\Admin\Newsletter;
 use Models\Settlement\Holidays;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 use Trace\TraceCode;
 

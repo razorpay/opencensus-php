@@ -3,7 +3,7 @@
 namespace RZP\Services;
 
 use Constants\Mode;
-use EE\Exception;
+use RZP\Exception;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;

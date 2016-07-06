@@ -8,8 +8,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Key;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class MerchantController extends Controller
 {

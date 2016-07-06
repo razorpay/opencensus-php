@@ -2,8 +2,8 @@
 
 namespace Models\Payment\Processor;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Models\Payment;
 use Models\Payment\VerifyResult;
 use Trace\Trace;

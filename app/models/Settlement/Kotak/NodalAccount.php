@@ -3,8 +3,8 @@
 namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
-use EE\Error\ErrorCode;
-use EE\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Excel;
 
 use Mail;

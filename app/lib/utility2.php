@@ -1,6 +1,6 @@
 <?php
 
-use EE\Exception;
+use RZP\Exception;
 
 if (! function_exists('validate'))
 {

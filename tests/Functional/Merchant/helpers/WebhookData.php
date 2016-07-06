@@ -1,9 +1,9 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
 use RZP\Gateway\Hdfc;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateWebhook' => [
@@ -52,7 +52,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -77,7 +77,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -124,7 +124,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -173,7 +173,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => EE\Exception\BadRequestValidationFailureException::class,
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

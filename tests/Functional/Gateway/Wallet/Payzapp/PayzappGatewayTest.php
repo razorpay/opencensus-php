@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Payzapp;
 
-use EE\Exception;
+use RZP\Exception;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 

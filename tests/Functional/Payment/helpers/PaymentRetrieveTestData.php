@@ -1,9 +1,9 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
 use RZP\Gateway\Hdfc;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testSearchEsForNotesPrivateAuth' => [
@@ -21,7 +21,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\ExtraFieldsException',
+            'class' => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
         ],
     ],
@@ -53,7 +53,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class' => 'EE\Exception\ServerErrorException',
+            'class' => 'RZP\Exception\ServerErrorException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND
         ],
     ],
@@ -95,7 +95,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\ExtraFieldsException',
+            'class' => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
         ],
     ],

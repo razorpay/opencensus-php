@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Http\ApiResponse;
-use EE\Exception\RecoverableException;
+use RZP\Exception\RecoverableException;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 
@@ -47,7 +47,7 @@ class CardController extends Controller
 
         if (isset($input['file']))
         {
-            $data = (new Card\IIN\Service)->importIin($input); 
+            $data = (new Card\IIN\Service)->importIin($input);
         }
         else
         {

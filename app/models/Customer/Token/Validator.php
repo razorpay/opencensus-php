@@ -4,7 +4,7 @@ namespace Models\Customer\Token;
 
 use Models\Bank;
 use Models\Base;
-use EE\Exception;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {

@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Mobikwik\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Mobikwik;
 

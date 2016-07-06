@@ -2,7 +2,7 @@
 
 namespace Models\Customer\Token;
 
-use EE\Exception;
+use RZP\Exception;
 use Models\Base;
 use Models\Customer;
 use Models\Customer\Token;
