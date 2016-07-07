@@ -3,8 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Gateway\Cybersource\Entity as Cybersource;
-use Constants\Table;
+use RZP\Gateway\Cybersource\Entity as Cybersource;
+use RZP\Constants\Table;
 
 class CreateCybersourceGateway extends Migration
 {

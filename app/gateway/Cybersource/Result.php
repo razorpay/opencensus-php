@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Cybersource;
+namespace RZP\Gateway\Cybersource;
 
-use Gateway\Cybersource;
+use RZP\Gateway\Cybersource;
 
 final class Result
 {

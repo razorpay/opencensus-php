@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Helpers\Payment;
+namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;

@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Cybersource\Mock;
+namespace RZP\Gateway\Cybersource\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use Gateway\Cybersource;
-use Gateway\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Cybersource;
+use RZP\Gateway\Base;
 
 class Gateway extends Cybersource\Gateway
 {

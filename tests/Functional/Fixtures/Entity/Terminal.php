@@ -157,7 +157,7 @@ class Terminal extends Base
 
     public function createSharedCybersourceHdfcTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
@@ -178,7 +178,7 @@ class Terminal extends Base
 
     public function createSharedCybersourceAxisTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,

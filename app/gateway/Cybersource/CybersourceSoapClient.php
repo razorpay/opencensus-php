@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Cybersource;
+namespace RZP\Gateway\Cybersource;
 
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class CybersourceSoapClient extends \SoapClient 
 {

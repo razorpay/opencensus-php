@@ -1,14 +1,14 @@
 <?php
 
-namespace Gateway\Cybersource\Mock;
+namespace RZP\Gateway\Cybersource\Mock;
 
-use EE\Exception;
-use Gateway\Base;
-use Models\Card;
-use Models\Payment;
-use App;
-use Http;
-use Gateway\Cybersource;
+use RZP\Exception;
+use RZP\Gateway\Base;
+use RZP\Models\Card;
+use RZP\Models\Payment;
+use RZP\App;
+use RZP\Http;
+use RZP\Gateway\Cybersource;
 
 class Server extends Base\Mock\Server
 {

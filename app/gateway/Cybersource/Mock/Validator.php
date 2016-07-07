@@ -1,10 +1,10 @@
 <?php
 
-namespace Gateway\Cybersource\Mock;
+namespace RZP\Gateway\Cybersource\Mock;
 
-use Models\Base;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Models\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {

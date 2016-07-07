@@ -1,10 +1,10 @@
 <?php
 
-namespace Gateway\Cybersource;
+namespace RZP\Gateway\Cybersource;
 
-use EE\Exception;
-use Gateway\Cybersource;
-use Gateway\Base;
+use RZP\Exception;
+use RZP\Gateway\Cybersource;
+use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {

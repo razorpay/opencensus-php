@@ -36,7 +36,7 @@ class MockGatewayController extends Controller
 
     public function postAcs($gateway)
     {
-        $input = Input::all();
+        $input = Request::all();
 
         unset($input['key_id']);
 

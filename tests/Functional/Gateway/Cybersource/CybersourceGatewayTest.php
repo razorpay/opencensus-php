@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Functional\Gateway\Cybersource;
+namespace RZP\Tests\Functional\Gateway\Cybersource;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Gateway\Cybersource;
-use Tests\Functional\TestCase;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Gateway\Cybersource;
+use RZP\Tests\Functional\TestCase;
 
 class CybersourceGatewayTest extends TestCase
 {

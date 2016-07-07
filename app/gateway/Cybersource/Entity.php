@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Cybersource;
+namespace RZP\Gateway\Cybersource;
 
-use Gateway\Base;
-use Constants;
+use RZP\Gateway\Base;
+use RZP\Constants;
 
 class Entity extends Base\Entity
 {

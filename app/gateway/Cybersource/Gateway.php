@@ -1,21 +1,21 @@
 <?php
 
-namespace Gateway\Cybersource;
+namespace RZP\Gateway\Cybersource;
 
-use Constants;
-use Constants\Mode;
-use EE\Error;
-use EE\Error\ErrorCode;
-use EE\Exception;
-use Gateway\AxisMigs;
-use Gateway\Base;
-use Gateway\Base\Action;
-use Gateway\Base\VerifyResult;
-use Gateway\Cybersource;
-use Models\Card;
-use Requests;
-use Trace\Trace;
-use Trace\TraceCode;
+use RZP\Constants;
+use RZP\Constants\Mode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Cybersource;
+use RZP\Models\Card;
+use RZP\Requests;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {

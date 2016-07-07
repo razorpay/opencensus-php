@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Cybersource;
+namespace RZP\Gateway\Cybersource;
 
 class Status
 {
