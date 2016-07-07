@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney;
+namespace RZP\Gateway\Wallet\Olamoney;
 
 class Url
 {

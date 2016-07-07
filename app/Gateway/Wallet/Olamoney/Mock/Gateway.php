@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney\Mock;
+namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use Http\Route;
-use EE\Exception;
-use Gateway\Base;
-use EE\Error\ErrorCode;
-use Gateway\Wallet\Olamoney;
+use RZP\Http\Route;
+use RZP\Exception;
+use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Wallet\Olamoney;
 
 class Gateway extends Olamoney\Gateway
 {

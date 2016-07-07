@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Functional\Gateway\Wallet\Olamoney;
+namespace RZP\Tests\Functional\Gateway\Wallet\Olamoney;
 
-use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Tests\Functional\TestCase;
-use Http\Route;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Http\Route;
 
 class OlamoneyGatewayTest extends TestCase
 {

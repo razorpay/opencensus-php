@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney;
+namespace RZP\Gateway\Wallet\Olamoney;
 
-use EE\Error;
-use EE\Error\ErrorCode;
+use RZP\Error;
+use RZP\Error\ErrorCode;
 
 class ResponseCodeMap
 {

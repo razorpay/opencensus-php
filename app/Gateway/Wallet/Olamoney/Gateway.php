@@ -1,14 +1,14 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney;
+namespace RZP\Gateway\Wallet\Olamoney;
 
-use Trace\Trace;
-use EE\Exception;
-use Constants\Mode;
-use Trace\TraceCode;
-use EE\Error\ErrorCode;
-use Gateway\Wallet\Base;
-use Gateway\Base\AuthorizeFailed;
+use RZP\Trace\Trace;
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
@@ -297,7 +297,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (!verify->match)
+        if (!$verify->match)
         {
             $verify->payment = $this->saveVerifyContent($walletPayment,
                                                         $input,

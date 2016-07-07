@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney;
+namespace RZP\Gateway\Wallet\Olamoney;
 
-use Gateway\Base;
+use RZP\Gateway\Base;
 
 class Action extends Base\Action
 {

@@ -23,6 +23,7 @@ return array(
         'netbanking_kotak',
         'sharp',
         'sbiepay',
+        'wallet_olamoney',
         'wallet_payzapp',
         'wallet_payumoney',
     ),

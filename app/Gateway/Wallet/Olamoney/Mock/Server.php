@@ -1,15 +1,15 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney\Mock;
+namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use Http\Route;
-use Gateway\Base;
-use EE\Exception;
+use RZP\Http\Route;
+use RZP\Gateway\Base;
+use RZP\Exception;
 use Carbon\Carbon;
-use Models\Payment;
-use EE\Error\ErrorCode;
-use Gateway\Base\Action;
-use Gateway\Wallet\Olamoney;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Wallet\Olamoney;
 
 class Server extends Base\Mock\Server
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Wallet\Olamoney\Mock;
+namespace RZP\Gateway\Wallet\Olamoney\Mock;
 
-use Models\Base;
+use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {

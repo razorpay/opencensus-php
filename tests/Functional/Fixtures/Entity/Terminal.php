@@ -155,7 +155,7 @@ class Terminal extends Base
 
     public function createSharedOlamoneyTerminal(array $attributes = array())
     {
-        $termId = \Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                        => $termId,
