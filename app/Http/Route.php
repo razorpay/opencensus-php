@@ -170,7 +170,7 @@ final class Route
         'mock_netbanking_payment'                 => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                       ],
         'mock_sbiepay_payment'                    => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                          ],
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@postWalletPayment'                           ],
-        'mock_wallet_payment_get'                     => ['get',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@postWalletPayment'                           ],
+        'mock_wallet_payment_get'                 => ['get',     'gateway/mock/wallet/{wallet}',             'MockGatewayController@postWalletPayment'                           ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}', 'MockGatewayController@postWalletPayment'                           ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                     ],

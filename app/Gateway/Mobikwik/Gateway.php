@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
     protected function callbackNormalFlow(array $input)
     {
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
-        sd($input['gateway']);
+
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
