@@ -243,7 +243,7 @@ return array(
         // Custom Facade
         'Excel'     => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'       => Aws\Laravel\AwsFacade::class,
-        'Slack'     => Maknz\Slack\Laravel\Facade::class
+        'Slack'     => Maknz\Slack\Facades\Slack::class
     ),
 
     'context' => env('CONTEXT'),
