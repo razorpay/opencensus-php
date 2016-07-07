@@ -245,6 +245,147 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $walletPayment = $verify->payment;
+        $input = $verify->input;
+        $verifyResponse = $verify->verifyResponseContent;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if ($verifyResponse['status'] === Status::COMPLETED)
+        {
+            $verify->gatewaySuccess = true;
+
+            if (($input['payment']['status'] !== 'created') and
+                ($input['payment']['status'] !== 'failed'))
+            {
+                $verify->apiSuccess = true;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+            }
+        }
+        else if ($verifyResponse['status'] !== Status::COMPLETED)
+        {
+            $verify->gatewaySuccess = false;
+
+            if (($walletPayment === NULL) and
+                (($input['payment']['status'] === 'failed') or
+                 ($input['payment']['status'] === 'created')))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if ($walletPayment['status'] === Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+            }
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if (!verify->match)
+        {
+            $verify->payment = $this->saveVerifyContent($walletPayment,
+                                                        $input['payment'],
+                                                        $verifyResponse);
+        }
+
+        return $verify->status;
+    }
+
+    protected function saveVerifyContent($walletPayment, array $payment, $verifyResponse)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        if ($verifyResponse['status'] === Status::COMPLETED and $walletPayment === NULL)
+        {
+            $walletPayment = createGatewayPaymentEntity($payment);
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $walletPayment;
+    }
+
+    protected function getWalletAttributesFromVerify($walletPayment, array $payment)
+    {
+        $contentToSave = array(
+            'amount'    => isset($content['amount']) ? $content['amount'] : ,
+            'received'  => true,
+            'email'     => $input['payment']['email'],
+            'contact'   => $input['payment']['contact'],
+            'status' => $input['payment']['status'],
+        );
+
+        parent::createGatewayPaymentEntity($contentToSave);
+
+        return $contentToSave;
+    }
+
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $request = $this->getVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+        $this->response = $response;
+
+        $content = json_decode($response->body, true);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'content' => $content,
+                'gateway' => self::$gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function getVerifyRequestArray($input)
+    {
+        $content = array(
+            'uniqueBillId' => $input['payment']['id'],
+            'accessToken' => $this->getAccessToken($input['terminal']),
+            'timestamp' => time(), // change this to YYYY-MM-DD HH MM SS format
+            );
+        $content['hash'] = $this->getHashForVerifyRequest($content);
+
+        $query = http_build_query($content);
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
+
+    protected function getHashForVerifyRequest($content)
+    {
+        $str = $content['access_token'].'|'.$content['uniqueBillId'].'||'.$content['timestamp'].'|||'.$this->getSecret();
+
+        return $this->getHashOfString($str);
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
