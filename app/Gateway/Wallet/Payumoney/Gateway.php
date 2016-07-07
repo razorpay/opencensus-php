@@ -15,7 +15,6 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Core;
 use Carbon\Carbon;
-use Lib\PhoneBook;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -793,14 +792,6 @@ class Gateway extends Base\Gateway
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         return false;
-    }
-
-    protected function getFormattedContact($contact)
-    {
-        // Constructor does the basic validation
-        $phoneBook = new PhoneBook($contact, true);
-
-        return $phoneBook->format(PhoneBook::DOMESTIC);
     }
 
     protected function getValidWalletToken($input)

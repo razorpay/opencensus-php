@@ -53,31 +53,18 @@ class OlamoneyGatewayTest extends TestCase
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;
-        $this->otpSubmitUrl = $url;
+        $this->callbackUrl  = $url;
 
-        if (true)
+        if ($url)
         {
-            $this->setOtp('111111');
-
-            if (isset($this->step))
+            if ($this->isOtpCallbackUrl($url))
             {
-                switch ($this->step)
-                {
-                    case 'RETRY':
-                        $this->setOtp('121212');
-                        break;
-                }
+                return $this->makeOtpCallback($url);
             }
 
-            $content['type'] = 'otp';
+            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            $request = array(
-                'url'       => $url,
-                'method'    => $method,
-                'content'   => $content
-            );
-
-            return $this->makeRequest($request);
+            return $this->submitPaymentCallbackData($request['url'], $request['method'], $request['content']);
         }
 
         return null;

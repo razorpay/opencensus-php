@@ -7,7 +7,6 @@ use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-// use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -49,7 +48,7 @@ class Gateway extends Base\Gateway
     protected function callbackNormalFlow(array $input)
     {
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
-
+        sd($input['gateway']);
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(

@@ -22,11 +22,13 @@ class Gateway extends Base\Gateway
 
     // find out significance of gateway_payment_id, gateway_payment_id_2
     protected $map = array(
-        'email'     => 'email',
-        'contact'   => 'contact',
-        'status'    => 'status_code',
-        'amount'    => 'amount',
-        'received' => 'received',
+        'email'             => 'email',
+        'contact'           => 'contact',
+        'status'            => 'status_code',
+        'amount'            => 'amount',
+        'received'          => 'received',
+        'merchantBillId'    => 'gateway_merchant_id',
+        'transactionId'     => 'gateway_payment_id',
     );
 
     public function authorize(array $input)
@@ -51,13 +53,18 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
+        //  Changing action to AUTHORIZE to keep the action consistent
+        $this->action = Action::AUTHORIZE;
+
         $this->createGatewayPaymentEntity($input);
+
+        $this->action = Action::CALLBACK;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'request' => $input['gateway'],
-                'gateway' => self::$gateway,
+                'gateway' => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
 
@@ -67,11 +74,13 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($input)
     {
         $contentToSave = array(
-            'amount'    => $input['payment']['amount'],
-            'received'  => true,
-            'email'     => $input['payment']['email'],
-            'contact'   => $input['payment']['contact'],
-            'status' => $input['payment']['status'],
+            'amount'            => $input['payment']['amount'],
+            'received'          => true,
+            'email'             => $input['payment']['email'],
+            'contact'           => $input['payment']['contact'],
+            'status'            => $input['gateway']['status'],
+            'merchantBillId'    => $input['gateway']['merchantBillId'],
+            'transactionId'     => $input['gateway']['transactionId'],
         );
 
         parent::createGatewayPaymentEntity($contentToSave);
@@ -412,6 +421,7 @@ class Gateway extends Base\Gateway
             'email'                 => $input['payment']['email'],
             'contact'               => $input['payment']['contact'],
             'gateway_merchant_id'   => $input['terminal']['gateway_merchant_id2'],
+            'gateway_refund_id'     => isset($content['transactionId']) ? $content['transactionId'] : '',
             'refund_id'             => $input['refund']['id'],
             'response_code'         => isset($content['errorCode']) ? $content['errorCode'] : '',
             'status_code'           => $content['status'],
@@ -535,12 +545,8 @@ class Gateway extends Base\Gateway
 
         $url = constant($ns.'\Url::'.$type);
 
-        return strtr($url, [':contact' => $this->input['payment']['contact']]);
-    }
-
-    public function checkExistingUser($input)
-    {
-        ;
+        $contact = $this->input['payment']['contact'];
+        return strtr($url, [':contact' => $this->getFormattedContact($contact)]);
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post')

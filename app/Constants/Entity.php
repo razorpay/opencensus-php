@@ -56,6 +56,7 @@ class Entity
     const NETBANKING_KOTAK  = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
+    const WALLET_OLAMONEY   = 'wallet_olamoney';
 
     public static $namespace = array(
         self::IIN               => \RZP\Models\Card\IIN::class,
@@ -86,6 +87,7 @@ class Entity
         self::DAILY_SETTLEMENT  => \RZP\Models\Settlement\Daily::class,
         self::NETBANKING_KOTAK  => \RZP\Gateway\Netbanking\Kotak::class,
         self::WALLET_PAYUMONEY  => \RZP\Gateway\Wallet\Payumoney::class,
+        self::WALLET_OLAMONEY   => \RZP\Gateway\Wallet\Olamoney::class,
     );
 
     protected static $repository = array(
@@ -93,6 +95,7 @@ class Entity
         self::WALLET_PAYZAPP    => \RZP\Gateway\Wallet\Base::class,
         self::NETBANKING_HDFC   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK  => \RZP\Gateway\Netbanking\Base::class,
+        self::WALLET_OLAMONEY   => \RZP\Gateway\Wallet\Base::class,
     );
 
     public static function getEntityNamespace($entity)

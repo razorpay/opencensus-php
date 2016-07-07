@@ -40,6 +40,7 @@ return array(
     'mock_netbanking_kotak' => env('NETBANKING_KOTAK_MOCK'),
     'mock_billdesk'         => env('BILLDESK_MOCK'),
     'mock_sbiepay'          => false,
+    'mock_wallet_olamoney'  => env('OLAMONEY_MOCK', true),
     'mock_wallet_payzapp'   => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney' => env('PAYUMONEY_MOCK'),
 
@@ -109,6 +110,11 @@ return array(
         'test_pg_merchant_id'       => env('PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'),
         'test_pg_hash_key'          => env('PAYZAPP_WALLET_TEST_PG_HASH_KEY'),
         'live_pg_instance_id'       => env('PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'),
+    ),
+
+    'wallet_olamoney'  =>array(
+        'test_access_token'     => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
     ),
 
     'wallet_payumoney' => array(

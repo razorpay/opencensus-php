@@ -25,7 +25,7 @@ class Server extends Base\Mock\Server
         $content = array(
             'type'              => 'debit',
             'status'            => 'success',
-            'merchantBillId'    => $input['paymentId'],
+            'merchantBillId'    => $bill['accessToken'],
             'transactionId'     => 'ola_txn_id',
             'amount'            => $bill['amount'],
             'comments'          => $bill['comments'],
@@ -39,7 +39,6 @@ class Server extends Base\Mock\Server
             'content' => $content,
             'method' => 'post',
         );
-
         return $this->makePostResponse($request, 'application/x-www-form-urlencoded');
     }
 
