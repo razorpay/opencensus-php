@@ -2,6 +2,9 @@
 
 namespace RZP\Providers;
 
+use Trace;
+use Queue;
+use RZP\Trace\TraceCode;
 use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -28,6 +31,8 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot($events);
 
-        //
+        Queue::failing(function ($failedJob) {
+            Trace::error(TraceCode::QUEUE_JOB_FAILURE, $failedJob->data);
+        });
     }
 }
