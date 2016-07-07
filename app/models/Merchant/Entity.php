@@ -32,6 +32,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'archived_at'
     );
 
+    protected $appends = ['referrer', 'tags'];
+
     const ID_LENGTH = 14;
 
     protected static $generators = array('id', 'confirm_token');
@@ -538,6 +540,22 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     protected function getTagsAttribute()
     {
         return $this->tagNames();
+    }
+
+    public function getReferrerAttribute()
+    {
+        $tags = $this->getTagsAttribute();
+
+        foreach ($tags as $tag)
+        {
+            $tag = strtolower($tag);
+            if (substr($tag, 0,4) === 'ref-')
+            {
+                return substr($tag, 4);
+            }
+        }
+
+        return null;
     }
 
     public function setCustomId()

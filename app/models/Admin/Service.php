@@ -366,6 +366,8 @@ class Service extends Base\Service
 
         $data['merchant_details'] = $merchant_details->toArray();
 
+        $merchant = $merchant->toArray();
+
         // @todo This is failing tests on wercker, fix
         // $merchant = Merchant\Entity::findorfail($id);
         // Merchant\Validator::checkAPIMatch($merchant, $response);
@@ -377,7 +379,8 @@ class Service extends Base\Service
             'submitted'         => $merchant_details['submitted'],
             'tags'              => $merchant['tags'],
             'submitted_at'      => $merchant_details['submitted_at'],
-            'activated_dashboard' => $merchant['activated']
+            'activated_dashboard' => $merchant['activated'],
+            'referrer'          => $merchant['referrer'],
         ) + $data;
 
         return $response;
@@ -1075,6 +1078,7 @@ class Service extends Base\Service
             'business_name' =>  $merchantDetails['business_name'],
             'business_dba'  =>  $merchantDetails['business_dba'],
             'business_website'  =>  $merchantDetails['business_website'],
+            'ref'   =>  $merchant['referrer'],
         ];
     }
 
