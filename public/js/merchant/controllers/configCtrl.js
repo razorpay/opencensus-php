@@ -25,7 +25,17 @@ app.controller('ConfigCtrl', [
       // This always stays as a string, except when we send it back
       $scope.config.transaction_report_email = config.transaction_report_email.join(',');
 
-      $scope.config.logo_url = config.logo_url;
+      /**
+       * API is currently returning invalid logo urls
+       * so we need to translate it into a valid URL
+       */
+      if (!/^http/.test(config.logo_url)) {
+        $scope.config.logo_url = 'https://cdn.razorpay.com' + config.logo_url.replace(/\.([^\.]+$)/,'_medium.$1');
+      }
+      else {
+        $scope.config.logo_url = config.logo_url;
+      }
+
     };
 
     $scope.fetchConfig = function() {
