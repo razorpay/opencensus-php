@@ -75,7 +75,7 @@ class Handler extends ExceptionHandler
                 break;
 
             case $e instanceof MethodNotAllowedHttpException:
-                $response = ApiResponse::methodNotFoundResponse();
+                $response = ApiResponse::httpMethodNotAllowed();
                 break;
         }
 

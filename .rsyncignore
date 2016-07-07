@@ -1,5 +1,5 @@
-.env.*
-/bootstrap/environment.php
+/environment/.env*
+/environment/env.php
 /app/storage/cache/*
 /app/storage/logs/*
 /app/storage/views/*
