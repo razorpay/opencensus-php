@@ -50,13 +50,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getLiveTerminalsForMerchantAndSharedMerchant($mid)
+    public function getTerminalsForMerchantAndSharedMerchant($mid)
     {
         $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
 
-        $repo = $this->repo;
-
-        return $repo::whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
+        return $this->newQuery()
+                    ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
                     ->get();
     }
 

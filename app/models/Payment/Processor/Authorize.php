@@ -351,48 +351,13 @@ trait Authorize
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+        // Terminal selected is now only used to validate any mistakes across each.
+        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode);
 
+        // Terminal picked is the terminal used for payment processing.
+        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
-
-
-
-
-
-
-        /*
-        * Terminal selection new steps begin here
-        **/
-
-
-        $terminals = (new Terminal\Selector)->select($payment, $this->mode);
-
-        /*
-            Post terminal selection steps
-         */
-            // if ($terminal === null)
-            // {
-            //     throw new Exception\RuntimeException(
-            //         'Terminal should not be null',
-            //         ['payment' => $payment->toArrayAdmin()]);
-            // }
-
-            // $payment->terminal()->associate($terminal);
-
-            // $payment->setGateway($terminal->getGateway());
-
-        // // Sets gateway and terminal for the payment.
-        // (new TerminalPicker)->selectTerminal($payment, $this->mode);
-
-
-
-
-
-
-
-
-
-
-
+        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->repo->saveOrFail($payment);
 
@@ -411,6 +376,35 @@ trait Authorize
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
+    }
+
+    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
+    {
+        $terminalSelectionStatus = 'TERMINAL_SELECTION_MISMATCH';
+
+        $terminalPickedId = $terminalPicked->getId();
+
+        if ($terminalSelected)
+        {
+            $terminalSelectedId = $terminalSelected->getId();
+
+            if ($terminalSelectedId === $terminalPickedId)
+            {
+                $terminalSelectionStatus = 'TERMINAL_SELECTION_MATCH';
+            }
+        }
+        else
+        {
+            $terminalSelectedId = '';
+        }
+
+        $traceData = [
+            'picked'   => $terminalPickedId,
+            'selected' => $terminalSelectedId,
+            'status'   => $terminalSelectionStatus,
+        ];
+
+        $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)

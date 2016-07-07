@@ -42,6 +42,7 @@ class TraceCode
     const PAYMENT_METADATA                          = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                  = 'PAYMENT_CREATE_ON_PUBLIC';
 
+    const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';

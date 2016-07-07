@@ -8,7 +8,6 @@ use EE\Error\ErrorCode;
 
 class Selector
 {
-
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
@@ -39,9 +38,9 @@ class Selector
 
     public function getTerminals()
     {
-        // Fetch Live terminals for both the current merchant and the shared Merchant
+        // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo->
-            getLiveTerminalsForMerchantAndSharedMerchant($this->merchant->getId());
+            getTerminalsForMerchantAndSharedMerchant($this->merchant->getId());
 
         // Fetch Shared Terminals
         $sharedTerminals = $this->repo->getAllSharedTerminals();
@@ -84,16 +83,16 @@ class Selector
             $terminal = $sortedTerminals[0];
         }
 
-        if ($terminal === null)
-        {
-            throw new Exception\RuntimeException(
-                'Terminal should not be null',
-                ['payment' => $payment->toArrayAdmin()]);
-        }
+        // if ($terminal === null)
+        // {
+        //     throw new Exception\RuntimeException(
+        //         'Terminal should not be null',
+        //         ['payment' => $payment->toArrayAdmin()]);
+        // }
 
-        $payment->terminal()->associate($terminal);
+        // $payment->terminal()->associate($terminal);
 
-        $payment->setGateway($terminal->getGateway());
+        // $payment->setGateway($terminal->getGateway());
 
         return $terminal;
     }
