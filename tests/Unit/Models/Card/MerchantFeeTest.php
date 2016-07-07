@@ -1,0 +1,521 @@
+<?php
+
+namespace RZP\Tests\Unit\Models\Card;
+
+use Mockery;
+use RZP\Models\Card;
+use RZP\Models\Pricing;
+use RZP\Models\Payment;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class MerchantFeeTest extends TestCase
+{
+    use PaymentTrait;
+
+    protected $card = [
+        'number' => '4012001036275556',
+        'expiry_month' => '1',
+        'expiry_year' => '2017',
+        'cvv' => '123',
+        'name' => 'Abhay',
+    ];
+
+    protected $input = [
+        'method' => 'card',
+        'card' => [],
+        'currency' => "INR",
+        'amount'   => 0,
+        'email' => "test@razorpay.com",
+        'contact'   => "1234567890",
+        'notes' => [
+            'order_id'  => "3453"
+        ],
+    ];
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->fee = new Pricing\Fee();
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+    }
+
+    public function getMockPricingRepo($withCreditCardRule = false)
+    {
+        $pricingRuleOne = new Pricing\Entity(array(
+                'id' => '1nvp2XPMmaRLxx',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingRuleCredit = new Pricing\Entity(array(
+                'id' => '1nvp2XPMmaRLxy',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingRuleTwo = new Pricing\Entity(array (
+                'id' => '4pmbgtgNVVDd7x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'international' => false,
+                'amount_range_active' => true,
+                'amount_range_min' => 0,
+                'amount_range_max' => 200000,
+                'percent_rate' => 75,
+                'fixed_rate' => 0,
+            ));
+
+        $pricingRuleThree = new Pricing\Entity(array(
+                'id' => '4pmdaEzu3jmDTx',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'international' => false,
+                'amount_range_active' => true,
+                'amount_range_min' => 200000,
+                'amount_range_max' => 1000000000,
+                'percent_rate' => 100,
+                'fixed_rate' => 0,
+            ));
+
+        $pricingPlanAmex = new Pricing\Entity(array(
+                'id' => '1OwH8rTI0ejFxx',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => null,
+                'payment_network' => 'AMEX',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanDicl = new Pricing\Entity(array(
+                'id' => '1fq0OXpgeyafQx',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => null,
+                'payment_network' => 'DICL',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanNetB = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt3x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => 'SIBL',
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 0,
+                'amount_range_max' => 100000,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanNetB1 = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt4x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 100000,
+                'amount_range_max' => 100000000000,
+                'percent_rate' => 0,
+                'fixed_rate' => 50,
+                'international' => 0,
+            ));
+
+        $pricingPlanNetB2 = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt5x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 0,
+                'amount_range_max' => 100000,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanNetB3 = new Pricing\Entity(array(
+                'id' => '1fq0OXpgrfrt6x',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network' => 'SIBL',
+                'payment_issuer' => null,
+                'amount_range_active' => true,
+                'amount_range_min' => 100000,
+                'amount_range_max' => 100000000000,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3df',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'mobikwik',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet1 = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3ff',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'payumoney',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet2 = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3ef',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => 'paytm',
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingPlanWallet3 = new Pricing\Entity(array(
+                'id' => '1fq0O3dewex3gf',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'wallet',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'international' => 0,
+            ));
+
+        $pricingRules = [
+            $pricingRuleOne,
+            $pricingRuleTwo,
+            $pricingRuleThree,
+            $pricingPlanAmex,
+            $pricingPlanDicl,
+            $pricingPlanNetB,
+            $pricingPlanNetB1,
+            $pricingPlanNetB2,
+            $pricingPlanNetB3,
+            $pricingPlanWallet,
+            $pricingPlanWallet1,
+            $pricingPlanWallet2,
+            $pricingPlanWallet3
+         ];
+
+        if ($withCreditCardRule)
+        {
+            $pricingRules[] = $pricingRuleCredit;
+        }
+
+        $pricingPlan = new Pricing\Plan($pricingRules);
+
+        $mock = Mockery::mock(
+            'Models\Pricing\Repository',
+            function($mock) use ($pricingPlan)
+            {
+                $mock->shouldReceive('getPricingPlanById')
+                     ->andReturn($pricingPlan);
+            });
+
+        return $mock;
+    }
+
+    protected function getMockInternationalPricingRepo()
+    {
+        $internationalRule = new Pricing\Entity(array(
+                'id' => '1nvp2XPMmaRLzz',
+                'plan_id' => '1hDYlICobzOCYt',
+                'plan_name' => 'testDefaultPlan',
+                'payment_method' => 'card',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'amount_range_active' => false,
+                'amount_range_min' => 0,
+                'amount_range_max' => 0,
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'international' => true,
+            ));
+
+        $pricingRules = [
+            $internationalRule
+        ];
+
+        $pricingPlan = new Pricing\Plan($pricingRules);
+
+        $mock = Mockery::mock(
+            'Models\Pricing\Repository',
+            function($mock) use ($pricingPlan)
+            {
+                $mock->shouldReceive('getPricingPlanById')
+                     ->andReturn($pricingPlan);
+            });
+
+        return $mock;
+    }
+
+    /**
+     * Credit cards that don't have if have
+     * no definite rule to fall back,
+     * will fall back to debit card rules
+     */
+    public function testCreditCardRuleSelection()
+    {
+        $useCreditCardRule = true;
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
+
+        // Credit Card rule not available in plan,
+        // Card type unknown will be treated as
+        // debit card and their rules will be applied
+
+        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLxy", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200000", "Visa", "1nvp2XPMmaRLxy", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200100", "Visa", "1nvp2XPMmaRLxy", Card\Type::CREDIT);
+
+        $useCreditCardRule = false;
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo($useCreditCardRule));
+
+        // Credit Card rule not available in plan,
+        // Unknown Cards will be treated as debit card
+        // and subsequent rules will be applied.
+
+        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", Card\Type::UNKNOWN);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLxx", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200000", "Visa", "1nvp2XPMmaRLxx", Card\Type::CREDIT);
+
+        $this->runMerchantFeeTest("200100", "Visa", "1nvp2XPMmaRLxx", Card\Type::CREDIT);
+    }
+
+    public function testDebitCardRuleSelection()
+    {
+        // Debit Cards and subsequent amount range rules
+
+        $this->runMerchantFeeTest("100", "Visa", "4pmbgtgNVVDd7x", Card\Type::DEBIT);
+
+        $this->runMerchantFeeTest("200000", "Visa", "4pmbgtgNVVDd7x", Card\Type::DEBIT);
+
+        $this->runMerchantFeeTest("200100", "Visa", "4pmdaEzu3jmDTx", Card\Type::DEBIT);
+    }
+
+
+    public function testAmexCardRuleSelection()
+    {
+        $this->runMerchantFeeTest("100", "American Express", "1OwH8rTI0ejFxx", Card\Type::CREDIT);
+    }
+
+    public function testDiclCardRuleSelection()
+    {
+        $this->runMerchantFeeTest("100", "Diners Club", "1fq0OXpgeyafQx", Card\Type::CREDIT);
+    }
+
+    public function testInternationalCardRuleSelection()
+    {
+        $isCardInternational = true;
+
+        $this->fee->setPricingRepo($this->getMockInternationalPricingRepo());
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLzz", Card\Type::CREDIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLzz", Card\Type::DEBIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Visa", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "American Express", "1nvp2XPMmaRLzz", Card\Type::CREDIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "American Express", "1nvp2XPMmaRLzz", Card\Type::DEBIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "American Express", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::CREDIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::DEBIT, $isCardInternational);
+
+        $this->runMerchantFeeTest("100", "Maestro", "1nvp2XPMmaRLzz", Card\Type::UNKNOWN, $isCardInternational);
+    }
+
+    public function testNetBankingRuleSelection()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        $this->runMerchantFeeTestNetB("100", "SIBL", "1fq0OXpgrfrt3x");
+
+        $this->runMerchantFeeTestNetB("200000", "SIBL", "1fq0OXpgrfrt6x");
+
+        $this->runMerchantFeeTestNetB("200000", "SBMY", "1fq0OXpgrfrt4x");
+
+        $this->runMerchantFeeTestNetB("200", "SBMY", "1fq0OXpgrfrt5x");
+
+    }
+
+    public function testWalletRuleSelection()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        // Credit Card rule not available in plan,
+        // Card type unknown will be treated as
+        // debit card and their rules will be applied
+
+        $this->runMerchantFeeTestWallet("mobikwik", "1fq0O3dewex3df");
+
+        $this->runMerchantFeeTestWallet("paytm", "1fq0O3dewex3ef");
+
+        $this->runMerchantFeeTestWallet("payumoney", "1fq0O3dewex3ff");
+
+        $this->runMerchantFeeTestWallet("payzapp", "1fq0O3dewex3gf");
+    }
+
+    protected function runMerchantFeeTest($amount, $network, $expectedRule, $cardType, $isCardInternational = false)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = $amount;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::CARD;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->card = (new Card\Entity)->build($this->card);
+
+        $payment->card->setNetwork($network);
+
+        $payment->card->setType($cardType);
+
+        $payment->card->setInternational($isCardInternational);
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($expectedRule, $ruleKey);
+    }
+
+    protected function runMerchantFeeTestNetB($amount, $bank, $expectedRule)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = $amount;
+
+        $paymentArray['bank'] = $bank;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($expectedRule, $ruleKey);
+    }
+
+    protected function runMerchantFeeTestWallet($wallet, $expectedRule)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['wallet'] = $wallet;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::WALLET;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        list($fee, $serviceTax, $ruleKey) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($expectedRule, $ruleKey);
+    }
+
+}

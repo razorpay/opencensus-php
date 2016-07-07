@@ -1,6 +1,6 @@
 <?php
 
-use EE\Exception;
+use RZP\Exception;
 
 if (! function_exists('validate'))
 {
@@ -33,7 +33,7 @@ if (! function_exists('validate_keys'))
 
         if (count($invalid_keys) > 0)
         {
-            throw new EE\Exception\ExtraFieldsException($invalid_keys);
+            throw new RZP\Exception\ExtraFieldsException($invalid_keys);
         }
     }
 }
