@@ -31,7 +31,7 @@ class NetbankingSorter extends Terminal\Sorter
 
         $gatewaysForBank = Gateway::getGatewaysForNetbankingBank($bank, $indexed);
 
-        $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
+        $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode'], $merchant);
 
         $testTerminals = [];
 
@@ -39,7 +39,7 @@ class NetbankingSorter extends Terminal\Sorter
         {
             // First use the direct terminal
             if (($gatewayType === 'direct') and
-                isset($gatewaysForBank['direct']))
+                (isset($gatewaysForBank['direct'])))
             {
                 $gateway = $gatewaysForBank['direct'];
             }

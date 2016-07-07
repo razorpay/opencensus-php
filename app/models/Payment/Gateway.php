@@ -242,7 +242,7 @@ class Gateway
      */
     public static $partiallySupportedCardNetworks = array(
         Network::MAES,
-        Network::RUPAY,
+        // Network::RUPAY,
         Network::DICL);
 
     /**
@@ -408,9 +408,12 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewaysPriority($method, $mode = 'live')
+    public static function getGatewaysPriority($method, $mode = 'live', $merchant = [])
     {
-        switch ($method) {
+        $gateways = [];
+
+        switch ($method)
+        {
             case Method::CARD:
                 $gateways = self::$directCardGateways;
 
@@ -432,7 +435,6 @@ class Gateway
                 break;
 
             default:
-
                 break;
         }
 
