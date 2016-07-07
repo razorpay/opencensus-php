@@ -256,16 +256,17 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $walletPayment = $verify->payment;
+        $walletPayment = $verify->payment; // api wallet gateway entity
         $input = $verify->input;
-        $verifyResponse = $verify->verifyResponseContent;
+        $verifyResponse = $verify->verifyResponseContent; // response received from wallet gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($verifyResponse['status'] === Status::COMPLETED)
+        if ($verifyResponse['status'] === Status::COMPLETED) // transaction succeeded at
         {
             $verify->gatewaySuccess = true;
 
+            // $input['payment'] is api payment entity
             if (($input['payment']['status'] !== 'created') and
                 ($input['payment']['status'] !== 'failed'))
             {
@@ -299,40 +300,25 @@ class Gateway extends Base\Gateway
         if (!verify->match)
         {
             $verify->payment = $this->saveVerifyContent($walletPayment,
-                                                        $input['payment'],
+                                                        $input,
                                                         $verifyResponse);
         }
 
         return $verify->status;
     }
 
-    protected function saveVerifyContent($walletPayment, array $payment, $verifyResponse)
+    protected function saveVerifyContent($walletPayment, array $input, $verifyResponse)
     {
         $this->action = Action::AUTHORIZE;
 
         if ($verifyResponse['status'] === Status::COMPLETED and $walletPayment === NULL)
         {
-            $walletPayment = createGatewayPaymentEntity($payment);
+            $walletPayment = createGatewayPaymentEntity($input);
         }
 
         $this->action = Action::VERIFY;
 
         return $walletPayment;
-    }
-
-    protected function getWalletAttributesFromVerify($walletPayment, array $payment)
-    {
-        $contentToSave = array(
-            'amount'    => isset($content['amount']) ? $content['amount'] : ,
-            'received'  => true,
-            'email'     => $input['payment']['email'],
-            'contact'   => $input['payment']['contact'],
-            'status' => $input['payment']['status'],
-        );
-
-        parent::createGatewayPaymentEntity($contentToSave);
-
-        return $contentToSave;
     }
 
     public function sendPaymentVerifyRequest($verify)
