@@ -15,13 +15,13 @@ build:
     steps:
       - script:
           name: copy env file
-          code: cp .env.wercker.php .env.testing.php
+          code: cp ./environment/.env.wercker ./environment/.env.testing
       - script:
           name: copy environment.php
-          code: cp ./bootstrap/sample.environment.php ./bootstrap/environment.php
+          code: cp ./environment/env.sample.php ./environment/env.php
       - script:
           name: set environment.php 'env' -> 'testing'
-          code: sed -i 's/dev/testing/g' ./bootstrap/environment.php
+          code: sed -i 's/dev/testing/g' ./environment/env.php
       - script:
           name: set composer to use github oauth token
           code: composer config -g github-oauth.github.com $github_token
@@ -33,6 +33,11 @@ build:
       - create-file:
           name: Create api_sqlite.db
           filename: api_sqlite.db
+          overwrite: true
+          content:
+      - create-file:
+          name: Create api_sqlite_test.db
+          filename: api_sqlite_test.db
           overwrite: true
           content:
       - script:
