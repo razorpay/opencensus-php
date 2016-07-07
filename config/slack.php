@@ -125,10 +125,10 @@ return array(
     'mock' => env('SLACK_MOCK'),
 
     'channels'  =>  [
-        'low'            => '#general',
-        'high'           => '#general',
-        'risky'          => '#general',
-        'reconciliation' => '#general',
-        'highrisk'       => '#general',
+        'low'            => '#transactions',
+        'high'           => '#transactions_high',
+        'risky'          => '#transactions_risky',
+        'reconciliation' => '#reconciliation',
+        'highrisk'       => '#transactions_highrisk',
     ]
 );
