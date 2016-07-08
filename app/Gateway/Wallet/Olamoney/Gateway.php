@@ -59,7 +59,8 @@ class Gateway extends Base\Gateway
         //  Changing action to AUTHORIZE to keep the action consistent
         $this->action = Action::AUTHORIZE;
 
-        $this->createGatewayPaymentEntity($input);
+        $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input);
+        $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
 
         $this->action = Action::CALLBACK;
 
@@ -74,7 +75,7 @@ class Gateway extends Base\Gateway
         $this->verifyPaymentCallbackResponse($input);
     }
 
-    protected function createGatewayPaymentEntity($input)
+    protected function getCreateWalletAttributes($input)
     {
         $contentToSave = array(
             'amount'                => $input['payment']['amount'],
@@ -86,7 +87,7 @@ class Gateway extends Base\Gateway
             'transactionId'         => $input['gateway']['transactionId'],
         );
 
-        parent::createGatewayPaymentEntity($contentToSave);
+        return $contentToSave;
     }
 
     protected function verifyPaymentCallbackResponse($input)
@@ -312,25 +313,44 @@ class Gateway extends Base\Gateway
         if (!$verify->match)
         {
             $verify->payment = $this->saveVerifyContent($walletPayment,
-                                                        $input,
                                                         $verifyResponse);
         }
 
         return $verify->status;
     }
 
-    protected function saveVerifyContent($walletPayment, array $input, $verifyResponse)
+    protected function saveVerifyContent($walletPayment, $verifyResponse)
     {
         $this->action = Action::AUTHORIZE;
 
         if ($verifyResponse['status'] === Status::COMPLETED and $walletPayment === NULL)
         {
-            $walletPayment = createGatewayPaymentEntity($input);
+            $walletAttributes = $this->getVerifyWalletCreateAttributes($walletPayment, $verifyResponse);
+            $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
         }
 
         $this->action = Action::VERIFY;
 
         return $walletPayment;
+    }
+
+    protected function getVerifyWalletCreateAttributes($walletPayment, $verifyResponse)
+    {
+        $payment = $this->input['payment'];
+
+        $amount = isset($verifyResponse['amount']) ? $verifyResponse['amount'] * 100 : $payment['amount'];
+
+        $contentToSave = array(
+            'amount'                => $amount,
+            'received'              => true,
+            'email'                 => $payment['email'],
+            'contact'               => $payment['contact'],
+            'gateway_merchant_id'   => $this->getMerchantId($this->input['terminal']),
+            'status'                => Status::SUCCESS,
+            'transactionId'         => $verifyResponse['uniqueBillId'],
+        );
+
+        return $contentToSave;
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -571,5 +591,10 @@ class Gateway extends Base\Gateway
         );
 
         return $request;
+    }
+
+    protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
+    {
+        return false;
     }
 }

@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($this->mockRequest['content']);
 
         $response = array(
-            'status'        => 'success',
+            'status'        => 'completed',
             'amount'        => '500.00',
             'type'          => 'debit',
             'uniqueBillId'  => 'bgho5botne16',
