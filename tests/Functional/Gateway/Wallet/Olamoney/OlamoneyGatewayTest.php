@@ -10,6 +10,8 @@ class OlamoneyGatewayTest extends TestCase
 {
     use PaymentTrait;
 
+    const WALLET = 'olamoney';
+
     protected $payment;
 
     public function setUp()
@@ -29,9 +31,24 @@ class OlamoneyGatewayTest extends TestCase
         // $this->setMockGatewayFalse();
     }
 
+    public function testRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
+
+        $this->refundPayment($capturePayment['id']);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund);
+    }
+
     public function testPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray('olamoney');
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $authPayment = $this->doAuthPayment($payment);
 

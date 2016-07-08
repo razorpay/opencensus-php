@@ -44,4 +44,16 @@ return [
         'refund_id'             => null,
         'entity'                => 'wallet',
     ],
+
+     'testRefundPayment'       => [
+        'action'                => 'refund',
+        'wallet'                => 'olamoney',
+        'email'                 => 'a@b.com',
+        'amount'                => 50000,
+        'contact'               => '+919918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'response_code'         => '',
+        'status_code'           => 'success',
+        'entity'                => 'wallet',
+    ],
 ];

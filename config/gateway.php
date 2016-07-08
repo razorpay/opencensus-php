@@ -113,8 +113,9 @@ return array(
     ),
 
     'wallet_olamoney'  =>array(
-        'test_access_token'     => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_merchant_id'     => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
+        'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
     ),
 
     'wallet_payumoney' => array(

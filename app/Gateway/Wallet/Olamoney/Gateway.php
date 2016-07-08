@@ -420,7 +420,7 @@ class Gateway extends Base\Gateway
             'wallet'                => $input['payment']['wallet'],
             'email'                 => $input['payment']['email'],
             'contact'               => $input['payment']['contact'],
-            'gateway_merchant_id'   => $input['terminal']['gateway_merchant_id2'],
+            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
             'gateway_refund_id'     => isset($content['transactionId']) ? $content['transactionId'] : '',
             'refund_id'             => $input['refund']['id'],
             'response_code'         => isset($content['errorCode']) ? $content['errorCode'] : '',
@@ -482,7 +482,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_access_token'];
+            return $this->config['test_access_code'];
         }
 
         return $terminal['gateway_merchant_id'];
@@ -523,6 +523,16 @@ class Gateway extends Base\Gateway
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getMerchantId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_id'];
+        }
+
+        return $terminal['gateway_merchant_id'];
     }
 
     public function getHashOfArray($content)
