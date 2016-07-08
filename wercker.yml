@@ -20,7 +20,7 @@ build:
           name: copy environment.php
           code: cp ./environment/env.sample.php ./environment/env.php
       - script:
-          name: set environment.php 'env' -> 'testing'
+          name: set environment/env.php 'env' -> 'testing'
           code: sed -i 's/dev/testing/g' ./environment/env.php
       - script:
           name: set composer to use github oauth token
