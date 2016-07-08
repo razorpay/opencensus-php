@@ -311,4 +311,9 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         return $this;
     }
+
+    public static function getUserWithEmail($email)
+    {
+        return self::where('email', $email)->first();
+    }
 }

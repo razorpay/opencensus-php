@@ -317,6 +317,14 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
                         ->exists();
     }
 
+    public static function getMerchantWithEmail($email)
+    {
+        $data = \DB::table('merchants')
+                    ->where('email','=',$email)
+                    ->first();
+        return $data;
+    }
+
     public static function getAggregations($data, $mode)
     {
         $data = \DB::table('aggregations')
