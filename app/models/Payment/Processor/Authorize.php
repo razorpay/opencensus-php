@@ -522,7 +522,7 @@ trait Authorize
 
         $amount = $payment->getAmount() / 100;
         $data['amount'] = sprintf($amount == intval($amount) ? "%d" : "%.2f", $amount);
-        $data['image'] = $payment->merchant->getFullLogoUrlWithSize();
+        $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
         return $data;
     }
