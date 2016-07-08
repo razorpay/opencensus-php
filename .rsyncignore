@@ -1,8 +1,8 @@
 /environment/.env*
 /environment/env.php
-/app/storage/cache/*
-/app/storage/logs/*
-/app/storage/views/*
+/storage/framework/cache/*
+/storage/framework/views/*
+/storage/logs/*
 /.git/*
 /report
 /docs
