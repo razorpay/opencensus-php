@@ -25,7 +25,7 @@ class Server extends Base\Mock\Server
         $content = array(
             'type'              => 'debit',
             'status'            => 'success',
-            'merchantBillId'    => $bill['accessToken'],
+            'merchantBillId'    => $bill['uniqueId'],
             'transactionId'     => 'ola_txn_id',
             'amount'            => $bill['amount'],
             'comments'          => $bill['comments'],
@@ -44,8 +44,6 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
-        $input = json_decode($input, true);
-
         parent::refund($input);
 
         $this->validateActionInput($input, 'refund');
@@ -62,6 +60,22 @@ class Server extends Base\Mock\Server
         );
 
         return $this->makeResponse($responseContent);
+    }
+
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $this->validateActionInput($this->mockRequest['content']);
+
+        $response = array(
+            'status'        => 'success',
+            'amount'        => '500.00',
+            'type'          => 'debit',
+            'uniqueBillId'  => 'bgho5botne16',
+        );
+
+        return $this->makeResponse($response);
     }
 
     protected function makeResponse($json, $content_type = 'application/json; charset=UTF-8')

@@ -27,8 +27,17 @@ class OlamoneyGatewayTest extends TestCase
         $this->gateway = 'wallet_olamoney';
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
+    }
 
-        // $this->setMockGatewayFalse();
+    public function testVerifyPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('olamoney');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
     public function testRefundPayment()
@@ -72,7 +81,7 @@ class OlamoneyGatewayTest extends TestCase
         $this->response     = $response;
         $this->callbackUrl  = $url;
 
-        if ($url)
+        if (!empty($url))
         {
             if ($this->isOtpCallbackUrl($url))
             {

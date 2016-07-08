@@ -9,6 +9,9 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Olamoney\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -22,13 +25,13 @@ class Gateway extends Base\Gateway
 
     // find out significance of gateway_payment_id, gateway_payment_id_2
     protected $map = array(
-        'email'             => 'email',
-        'contact'           => 'contact',
-        'status'            => 'status_code',
-        'amount'            => 'amount',
-        'received'          => 'received',
-        'merchantBillId'    => 'gateway_merchant_id',
-        'transactionId'     => 'gateway_payment_id',
+        'email'                 => 'email',
+        'contact'               => 'contact',
+        'status'                => 'status_code',
+        'amount'                => 'amount',
+        'received'              => 'received',
+        'gateway_merchant_id'   => 'gateway_merchant_id',
+        'transactionId'         => 'gateway_payment_id',
     );
 
     public function authorize(array $input)
@@ -74,13 +77,13 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($input)
     {
         $contentToSave = array(
-            'amount'            => $input['payment']['amount'],
-            'received'          => true,
-            'email'             => $input['payment']['email'],
-            'contact'           => $input['payment']['contact'],
-            'status'            => $input['gateway']['status'],
-            'merchantBillId'    => $input['gateway']['merchantBillId'],
-            'transactionId'     => $input['gateway']['transactionId'],
+            'amount'                => $input['payment']['amount'],
+            'received'              => true,
+            'email'                 => $input['payment']['email'],
+            'contact'               => $input['payment']['contact'],
+            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
+            'status'                => $input['gateway']['status'],
+            'transactionId'         => $input['gateway']['transactionId'],
         );
 
         parent::createGatewayPaymentEntity($contentToSave);
@@ -130,7 +133,7 @@ class Gateway extends Base\Gateway
         $request = $this->getOtpGenerateRequestArray($input);
 
         $query = http_build_query(array(
-                    'bill'   => base64_encode($request['content']),
+                    'bill'   => base64_encode(json_encode($request['content'])),
                     'phone'  => $input['payment']['contact'],
                 ));
 
@@ -258,7 +261,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $verify = new Base\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -345,7 +348,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
                 'content' => $content,
-                'gateway' => self::$gateway,
+                'gateway' => 'wallet_olamoney',
                 'payment_id' => $input['payment']['id'],
             ]);
 
@@ -376,7 +379,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashForVerifyRequest($content)
     {
-        $str = $content['access_token'].'|'.$content['uniqueBillId'].'||'.$content['timestamp'].'|||'.$this->getSecret();
+        $str = $content['accessToken'].'|'.$content['uniqueBillId'].'||'.$content['timestamp'].'|||'.$this->getSecret();
 
         return $this->getHashOfString($str);
     }
@@ -564,7 +567,7 @@ class Gateway extends Base\Gateway
         $request = array(
             'url' => $this->getUrl(),
             'method' => $method,
-            'content' => json_encode($content),
+            'content' => $content,
         );
 
         return $request;

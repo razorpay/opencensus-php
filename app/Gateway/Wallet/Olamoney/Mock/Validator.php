@@ -27,4 +27,11 @@ class Validator extends Base\Validator
         'saleId'            => 'required|string',
         'currency'          => 'required|in:INR'
     );
+
+    protected static $verifyRules = array(
+        'uniqueBillId'  => 'required|string',
+        'accessToken'   => 'required|string',
+        'timestamp'     => 'required|integer',
+        'hash'          => 'required|string',
+    );
 }
