@@ -34,5 +34,9 @@ class EventServiceProvider extends ServiceProvider
         Queue::failing(function ($failedJob) {
             Trace::error(TraceCode::QUEUE_JOB_FAILURE, $failedJob->data);
         });
+
+        Queue::looping(function ($failedJob) {
+            Trace::info(TraceCode::QUEUE_JOB_LOOPING);
+        });
     }
 }

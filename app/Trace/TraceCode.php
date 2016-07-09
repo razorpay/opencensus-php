@@ -138,6 +138,7 @@ class TraceCode
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
+    const QUEUE_JOB_LOOPING                         = 'QUEUE_JOB_LOOPING';
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
