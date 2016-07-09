@@ -402,13 +402,16 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function lowerArrayKeys(array $array)
+    protected function lowerArrayKeys($array)
     {
         $ar = array();
 
-        foreach ($array as $key => $value)
+        if (is_array($array) === true)
         {
-            $ar[strtolower($key)] = $value;
+            foreach ($array as $key => $value)
+            {
+                $ar[strtolower($key)] = $value;
+            }
         }
 
         return $ar;
