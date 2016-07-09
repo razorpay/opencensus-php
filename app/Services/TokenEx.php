@@ -36,7 +36,7 @@ class TokenEx
     {
         $this->trace = $app['trace'];
 
-        $this->config = $app['config']->get('applications.card.tokenex');
+        $this->config = $app['config']->get('applications.card_tokenex');
 
         $this->apiKey = $this->config['key'];
 
