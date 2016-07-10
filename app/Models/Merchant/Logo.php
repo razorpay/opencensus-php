@@ -193,7 +193,7 @@ class Logo
             return $mockFileName;
         }
 
-        $s3 = \App::make('aws')->get('s3');
+        $s3 = \App::make('aws')->createClient('s3');
 
         $logoDimensions = $this->getLogoDimensionsArray();
 
