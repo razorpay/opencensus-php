@@ -240,7 +240,7 @@ class Gateway extends Base\Gateway
             'content' => [],
             'method' => 'get');
 
-        $response = $this->runRequestResponseFlow($request);
+        $response = $this->sendGatewayRequest($request);
         $content = json_decode($response->body, true);
 
         $this->response = $response;
@@ -320,35 +320,6 @@ class Gateway extends Base\Gateway
         );
 
         return $content;
-    }
-
-    protected function runRequestResponseFlow(array $request)
-    {
-        $request['options']['timeout'] = 30;
-
-        try
-        {
-            // send the request and get response
-            return $this->sendGatewayRequest($request);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $this->exception = $e;
-
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (RZP\Gateway\Utility::checkTimeout($e))
-            {
-                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
     }
 
     protected function getBankCode($input)

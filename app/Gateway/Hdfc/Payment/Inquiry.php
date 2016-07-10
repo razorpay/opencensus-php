@@ -176,6 +176,10 @@ trait Inquiry
                 return false;
                 break;
 
+            case null:
+                return false;
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Unexpected enroll result code: ' . $enrollResult);
