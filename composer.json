@@ -4,13 +4,14 @@
     "keywords": ["api", "razorpay"],
     "require": {
         "rmccue/requests": ">=1.0",
-        "laravel/framework": "4.2.*",
+        "laravel/framework": "5.2.*",
         "doctrine/dbal": "~2.5",
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
-        "maatwebsite/excel": "1.*",
-        "mailgun/mailgun-php": "~1.8",
-        "aws/aws-sdk-php-laravel": "1.*",
+        "laravelcollective/bus": "^5.2",
+        "maatwebsite/excel": "~2.1.0",
+        "mailgun/mailgun-php": "~2.0",
+        "aws/aws-sdk-php-laravel": "~3.0",
         "symfony/event-dispatcher": "~2.2",
         "maknz/slack": "dev-queue",
         "cebe/markdown": "~1.0.1",
@@ -35,34 +36,32 @@
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
-        "tijsverkoyen/css-to-inline-styles": "^1.5"
+        "tijsverkoyen/css-to-inline-styles": "^1.5",
+        "orchestra/testbench": "3.2.*"
     },
     "autoload": {
         "classmap": [
-            "app/base",
-            "app/commands",
-            "app/constants",
-            "app/controllers",
-            "app/dashboard",
-            "app/database",
-            "app/ee",
-            "app/gateway",
-            "app/http",
-            "app/lib",
-            "app/models",
-            "app/services",
-            "app/tests",
-            "app/trace",
-            "app/reconciliator"
-        ]
+            "database",
+            "tests",
+            "app/Models/Customer"
+        ],
+        "psr-4": {
+            "RZP\\": "app/"
+        }
     },
     "scripts": {
+        "post-root-package-install": [
+            "php -r \"copy('environment/.env.sample', 'environment/.env');\""
+        ],
+        "post-create-project-cmd": [
+            "php artisan key:generate"
+        ],
         "post-install-cmd": [
-            "php artisan clear-compiled",
+            "Illuminate\\Foundation\\ComposerScripts::postInstall",
             "php artisan optimize"
         ],
         "post-update-cmd": [
-            "php artisan clear-compiled",
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
             "php artisan optimize"
         ]
     },

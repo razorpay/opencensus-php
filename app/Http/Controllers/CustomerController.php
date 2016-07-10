@@ -1,0 +1,148 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use RZP\Http\ApiResponse;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Account;
+use Request;
+
+class CustomerController extends Controller
+{
+    public function createLocalCustomer()
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->createLocalCustomer($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateCustomer($id)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->edit($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCustomer($id)
+    {
+        $data = (new Customer\Service)->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteCustomer($id)
+    {
+        $data = (new Customer\Service)->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function addToken($id)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Token\Service)->add($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateToken($id, $token)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Token\Service)->edit($id, $token, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteToken($id, $token)
+    {
+        $data = (new Customer\Token\Service)->deleteTokenForLocalCustomer($id, $token);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchToken($id, $token)
+    {
+        $data = (new Customer\Token\Service)->fetch($id, $token);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchTokens($id)
+    {
+        $data = (new Customer\Token\Service)->fetchMultiple($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchTokensForGlobalCustomer($appToken)
+    {
+        $tokens = (new Customer\Token\Service)->fetchTokensForGlobalCustomer($appToken);
+
+        return ApiResponse::json($tokens);
+    }
+
+    public function fetchGlobalCustomerStatus($contact)
+    {
+        $status = (new Customer\Service)->fetchGlobalCustomerStatus($contact, true);
+
+        return ApiResponse::json($status);
+    }
+
+    public function deleteTokenForGlobalCustomer($appToken, $token)
+    {
+        $data = (new Customer\Token\Service)->deleteTokenForGlobalCustomer($appToken, $token);
+
+        return ApiResponse::json($data);
+    }
+
+    public function logoutCustomer($appToken)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\App\Service)->deleteAppTokensForGlobalCustomer($appToken, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postOtp()
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->sendOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyOtp()
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->verifyOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function validateDeviceToken($deviceToken)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->validateDeviceToken($deviceToken, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateSmsStatus($id)
+    {
+        $input = Request::all();
+
+        $data = (new Customer\Service)->updateSmsStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+}

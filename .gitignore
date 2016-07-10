@@ -1,13 +1,14 @@
 /bootstrap/compiled.php
 /vendor
+.env
 .env.*
-!.env.wercker.php
+!.env.wercker
 .DS_Store
 Thumbs.db
-/bootstrap/environment.php
 /public/test/config.php
 /public/fonts
 docs/
 app/config/dev
 app/config/**/dev/
+/environment/env.php
 _*

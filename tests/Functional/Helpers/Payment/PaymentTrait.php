@@ -1,0 +1,1372 @@
+<?php
+
+namespace RZP\Tests\Functional\Helpers\Payment;
+
+use RZP\Exception\BaseException;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use Mockery;
+use Requests;
+use Symfony\Component\DomCrawler\Crawler;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+
+trait PaymentTrait
+{
+    use PaymentAmexTrait;
+    use PaymentAtomTrait;
+    use PaymentAxisGeniusTrait;
+    use PaymentAxisMigsTrait;
+    use PaymentBilldeskTrait;
+    use PaymentHdfcTrait;
+    use PaymentKotakTrait;
+    use PaymentNetbankingTrait;
+    use PaymentPaytmTrait;
+    use PaymentSharpTrait;
+    use PaymentMobikwikTrait;
+    use PaymentSbiepayTrait;
+
+    use RequestResponseFlowTrait
+    {
+        sendRequest as makeRequestParent;
+    }
+
+    protected $otp = null;
+
+    protected $gateway = null;
+
+    protected $merchantCallbackUrl = null;
+
+    protected $merchantCallbackFlow = false;
+
+    /**
+     * For certain payments, user has the option to fail it
+     * on the bank page. If this property is set to true in
+     * the test, then we simulate submitting failure option
+     * on the bank page
+     *
+     * @var boolean
+     */
+    protected $failPaymentOnBankPage = false;
+
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $paymentAuth = $this->doJsonpAuthPayment($payment);
+
+        if ($amount !== 0)
+        {
+            $payment = $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $amount, $payment['amount']);
+        }
+        else
+        {
+            $payment = $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $payment['amount']);
+        }
+
+        return $payment;
+    }
+
+    protected function doAuthCaptureAndRefundPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        return $refund;
+    }
+
+    protected function doAuthAndGetPayment($payment = null, $paymentResponse = array())
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment = $this->doJsonpAuthPayment($payment);
+
+        $id = $payment['razorpay_payment_id'];
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $func = $trace[1]['function'];
+
+        return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    protected function createAndGetFeesForPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment['view'] = 'json';
+
+        $content = $this->getFeesForPayment($payment);
+
+        return $content;
+    }
+
+    protected function runTestForAuthPayment($payment = null)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        $testData = $this->testData[$func];
+
+        if (isset($testData['request']) === false)
+            $testData['request'] = [];
+
+        if (isset($testData['request']['content']) === false)
+            $testData['request']['content'] = [];
+
+        if ($payment !== null)
+            $testData['request']['content'] = $payment;
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $testData['request']['method'] = 'POST';
+        $testData['request']['url'] = '/payments';
+
+        $this->ba->publicAuth();
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function doAutoCapture()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/payments/autocapture',
+            'method' => 'post');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function sendAutoCaptureEmails()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/payments/autocapture/email',
+            'method' => 'get');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function signPayment(array $payment, $secret = '')
+    {
+        $data = array(
+            'amount'            => $payment['amount'],
+            'currency'          => 'INR',
+            'merchant_order_id' => $payment['notes']['merchant_order_id']);
+
+        if ($secret === '')
+        {
+            $secret = $this->ba->getSecret();
+        }
+
+        $str = implode('|', $data);
+
+        return hash_hmac('sha1', $str, $secret);
+    }
+
+    protected function assertSignatureMatches(array $content, $secret)
+    {
+        $this->assertArrayHasKey('signature', $content);
+
+        $data = array(
+            'amount'                => $content['amount'],
+            'currency'              => $content['currency'],
+            'merchant_order_id'     => $content['merchant_order_id'],
+            'razorpay_payment_id'   => $content['razorpay_payment_id']);
+
+        $str = implode('|', $data);
+
+        $signature = hash_hmac('sha1', $str, $secret);
+
+        $this->assertEquals($signature, $content['signature']);
+    }
+
+    protected function getPaymentJsonFromCallback($content)
+    {
+        $start = 'var data = ';
+        $end = '// Callback data //';
+
+        $data = getTextBetweenStrings($content, $start, $end);
+
+        // Remove ';\n' at the end to get proper json string
+        $l = strlen($data);
+        $data = substr($data, 0, $l-2);
+
+        return $data;
+    }
+
+    protected function defaultAuthPayment(array $payment = array())
+    {
+        $defaultPayment = $this->getDefaultPaymentArray();
+
+        $payment = array_merge($defaultPayment, $payment);
+
+        $content = $this->doAuthPayment($payment);
+        $id = $content['razorpay_payment_id'];
+
+        return array_merge($payment, ['id' => $id]);
+    }
+
+    protected function doJsonpAuthPayment($payment)
+    {
+        $content = [
+            'callback' => 'abcdefghijkl',
+            '_' => '',
+        ];
+
+        $content = array_merge($content, $payment);
+
+        $request = array(
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => $content);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request, $content['callback']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertLessThanOrEqual(2, count($content));
+        if (count($content) === 2)
+        {
+            $this->assertEquals(200, $content['http_status_code']);
+        }
+
+        return $content;
+    }
+
+    protected function doAuthPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments',
+            'content' => $payment);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function doAuthWalletPayment($payment = null, $wallet = 'paytm')
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
+
+        return $this->doAuthPayment($payment);
+    }
+
+    protected function doAuthPaymentViaCheckoutRoute($payment)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'content' => $payment,
+            'url' => '/payments/create/checkout',
+            'method' => 'post');
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function makeOtpCallback($url)
+    {
+        $request = array(
+            'url'       => $url,
+            'method'    => 'POST',
+            'content'   => array(
+                'otp' => $this->getOtp(),
+                'type' => 'otp'
+            ),
+        );
+
+        return $this->sendRequest($request);
+    }
+
+    protected function topupPayment($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/topup/ajax',
+            'content' => array()
+        );
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function getOtp()
+    {
+        return $this->otp ?: '123456';
+    }
+
+    protected function setOtp($otp)
+    {
+        $this->otp = $otp;
+    }
+
+    protected function getFeesForPayment($payment)
+    {
+        $request = array(
+                'method'  => 'POST',
+                'url'     =>  '/payments/create/fees',
+                'content' =>  $payment);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function capturePayment($id, $amount, $verifyAmount = 0)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => "/payments/".$id.'/capture',
+            'content' => array('amount' => $amount));
+
+        $this->ba->privateAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('amount', $content);
+        $this->assertArrayHasKey('status', $content);
+
+        if ($verifyAmount !== 0)
+        {
+            $this->assertEquals($content['amount'], $verifyAmount);
+        }
+        else
+        {
+            $this->assertEquals($content['amount'], $amount);
+        }
+
+
+        $this->assertEquals($content['status'], 'captured');
+
+        return $content;
+    }
+
+    protected function cancelPayment($id)
+    {
+        $request = array(
+            'method' => 'GET',
+            'url' => '/payments/'.$id.'/cancel');
+
+        $this->ba->publicAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('status', $content);
+        $this->assertEquals($content['status'], 'failed');
+    }
+
+    protected function addPaymentMetadata($id, $content)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/metadata',
+            'content' => $content);
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function verifyPayment($id)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/verify',
+            'method' => 'GET');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function verifyMultiplePayments($filter)
+    {
+        $request = array(
+            'url' => '/payments/verify/'.$filter,
+            'method' => 'GET');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function refundPayment($id, $amount = null)
+    {
+        $this->ba->privateAuth();
+
+        $content = array();
+
+        if ($amount !== null)
+        {
+            $content = array('amount' => $amount);
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/refund',
+            'content' => $content);
+
+        $refund = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('refund', $refund['entity']);
+
+        if ($amount !== null)
+        {
+            $this->assertEquals($amount, $refund['amount']);
+        }
+
+        return $refund;
+    }
+
+    protected function verifyRefund($id)
+    {
+        $this->ba->appAuth();
+
+        $content = array();
+
+        $request = array(
+            'method' => 'GET',
+            'url' => '/refunds/'.$id.'/verify',
+            'content' => $content);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function refundAuthorizedPayment($id, array $input = array())
+    {
+        $this->ba->proxyAuth();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/authorize_refund',
+            'content' => $input);
+
+        $refund = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('refund', $refund['entity']);
+
+        return $refund;
+    }
+
+    protected function refundOldAuthorizedPayments()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/refund/authorized',
+            'content' => []);
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        return $data;
+    }
+
+    protected function authorizeFailedPayment($id)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/authorize_failed',
+            'method' => 'post');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function forceAuthorizeFailedPayment($id, $content)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/force_authorize',
+            'method' => 'post',
+            'content' => $content);
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function timeoutOldPayment()
+    {
+        $this->ba->appAuth();
+
+        $request = array('url' => '/payments/timeout');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function deleteTerminal($mid, $tid)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/terminals/'.$tid,
+            'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function deleteTerminal2($tid)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid,
+            'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function restoreTerminal($tid)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid.'/restore',
+            'method' => 'put');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+
+    protected function editTerminal($tid, $input)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid,
+            'method' => 'put',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createWebhook(array $input = array())
+    {
+        $defaultInput = array(
+            'url' => 'http://localhost/v1/dummy/route',
+            'events' => [
+                'payment.authorized' => '1',
+            ]);
+
+        $input = array_merge($defaultInput, $input);
+
+        $request = array(
+            'url' => '/webhooks',
+            'method' => 'post',
+            'content' => $input);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editWebhook($wid, $input)
+    {
+        $request = array(
+            'url' => '/webhooks/'.$wid,
+            'method' => 'put',
+            'content' => $input);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function merchantEditCredits($id, $credits)
+    {
+        $request = array(
+            'url' => '/merchants/'.$id.'/credits',
+            'method' => 'post',
+            'content' => ['credits' => $credits]);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchReport($entity, $content, $id = '10000000000000')
+    {
+        $request = array(
+            'url' => '/reports/'.$entity,
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchInvoice(array $input)
+    {
+        $request = [
+            'url'       => '/reports/invoice',
+            'method'    => 'GET',
+            'content'   => $input
+        ];
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getAndMatchPayment($id, $paymentResponse = array())
+    {
+        $testData['request']['url'] = '/payments/'.$id;
+        $testData['request']['method'] = 'GET';
+
+        $defaults = array(
+            'id'                => $id,
+            'status'            => 'authorized',
+            'refund_status'     => null,
+            'amount_refunded'   => 0,
+            'error_code'        => null,
+            'error_description' => null,
+            'order_id'          => null,
+            'currency'          => 'INR',
+            'entity'            => 'payment');
+
+        $payment = array_merge($defaults, $paymentResponse);
+        $testData['response']['content'] = $payment;
+
+        $this->ba->privateAuth();
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function fetchRefundsForPayment($paymentId)
+    {
+        $request['url'] = '/payments/'.$paymentId.'/refunds';
+        $request['method'] = 'GET';
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getDefaultPaymentEntityArray()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['card']);
+        $payment['merchant_id'] = '10000000000000';
+        $payment['status'] = 'authorized';
+        $payment['refund_status'] = 'none';
+        $payment['amount_authorized'] = $payment['amount'];
+        $payment['amount_refunded'] = '0';
+        $payment['terminal_id'] = '1n25f6uN5S1Z5a';
+
+        return $payment;
+    }
+
+    protected function getPaymentMethods()
+    {
+        $request = [
+            'url' => '/methods',
+            'method' => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function setPaymentMethods($methods, $merchantId = '10000000000000')
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url' => '/merchants/'.$merchantId.'/methods',
+            'method' => 'put',
+            'methods' => json_encode($methods)
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getDefaultPaymentArray()
+    {
+        //
+        // default payment object
+        //
+        $payment = [
+            'amount'          =>  '50000',
+            'currency'        =>  'INR',
+            'card' => array(
+                'number'            => '4012001038443335',
+                'name'              => 'Harshil',
+                'expiry_month'      => '12',
+                'expiry_year'       => '2017',
+                'cvv'               => '566',
+            ),
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'notes'             => array(
+                'merchant_order_id' => 'random order id'),
+            'description'       => 'random description',
+            'bank'              => 'ICIC',
+        ];
+
+        return $payment;
+    }
+
+    protected function getDefaultPaymentArrayEmi($saved)
+    {
+        $card = null;
+
+        if ($saved == true)
+        {
+            $card = array(
+                'cvv'   => 111);
+        }
+        else
+        {
+            $card = array(
+                'number'            => '41476700000006',
+                'name'              => 'Harshil',
+                'expiry_month'      => '12',
+                'expiry_year'       => '2017',
+                'cvv'               => '566');
+        }
+
+        $payment = [
+            'amount'            =>  '300000',
+            'currency'          =>  'INR',
+            'method'            =>  'emi',
+            'emi_duration'      =>  '9',
+            'card'              => $card,
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'notes'             => array(
+                'merchant_order_id' => 'random order id'),
+            'description'       => 'random description',
+            'bank'              => 'ICIC',
+        ];
+
+        return $payment;
+    }
+
+    protected function generateRefundsExcelForHdfcNB()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/netbanking/excel',
+            'method' => 'post',
+            'content' => [
+                'bank'   => 'HDFC'
+            ],
+        );
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getDefaultNetbankingPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'netbanking';
+
+        return $payment;
+    }
+
+    protected function getDefaultWalletPaymentArray($wallet = 'mobikwik')
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = $wallet;
+
+        return $payment;
+    }
+
+    protected function submitPaymentCallbackForm($form)
+    {
+        //
+        // third request
+        // submit callback form
+        //
+
+        $uri = $form->getUri();
+        $ix = strpos($uri, 'v1');
+
+        $uri = substr($uri, $ix+2);
+
+        $request['method'] = 'POST';
+        $request['content'] = $form->getValues();
+
+        $request['url'] = $uri;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRedirect($url)
+    {
+        $request['method'] = 'GET';
+        $request['url'] = $url;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackData($url, $method, $values)
+    {
+        $request['method'] = 'POST';
+        $request['url'] = $url;
+        $request['content'] = $values;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRequest($request)
+    {
+        $this->ba->publicCallbackAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $response->getContent();
+
+        if ($this->isResponseInstanceType('http', $response))
+        {
+            $formData = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+            if ((isset($formData['type'])) and
+                ($formData['type'] === 'return'))
+            {
+                return $this->processMerchantReturnCallbackForm($response);
+            }
+        }
+
+        $this->ba->publicAuth();
+
+        $content = $this->getPaymentJsonFromCallback($content);
+
+        $response->setContent($content);
+
+        return $response;
+    }
+
+    protected function sendRequest($request, &$callback = null)
+    {
+        $this->checkAndSetUrl($request);
+
+        $response = $this->makeRequestParent($request);
+
+        $url = $request['url'];
+
+        if ($this->isPaymentCreationUrl($url))
+        {
+            $response = $this->handlePaymentCreationFlow($response, $request, $callback);
+        }
+
+        return $response;
+    }
+
+    protected function isPaymentCreationUrl($url)
+    {
+        $urls = array(
+            '/payments/create/jsonp',
+            '/payments/create/checkout',
+            '/payments');
+
+        return in_array($url, $urls);
+    }
+
+    protected function isOtpCallbackUrl($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp_submit\/[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
+    protected function handlePaymentCreationFlow($response, $request, &$callback = null)
+    {
+        $content = $response->getContent();
+
+        $gateway = null;
+
+        if ($request['url'] === '/payments/create/checkout')
+        {
+            $this->assertTrue($this->isResponseInstanceType('http', $response));
+            $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
+
+            $marker = '// Callback data //';
+            if (strpos($content, $marker) !== false)
+            {
+                $content = $this->getPaymentJsonFromCallback($content);
+
+                $response->setContent($content);
+
+                return $response;
+            }
+        }
+
+        if ($callback)
+        {
+            // Should be the jsonp payment creation url
+            $this->assertEquals($request['url'], '/payments/create/jsonp');
+
+            $content = $this->getJsonContentFromResponse($response, $callback);
+
+            // For no 2-auth payments, it could be a direct json response.
+            if (isset($content['gateway']) === false)
+            {
+                return $response;
+            }
+
+            $gateway = $content['gateway'];
+
+            if (isset($content['type']) === 'return')
+            {
+                // @note: This case isn't happening right now but it can in future
+                $request = $content['request'];
+
+                return $this->makeRequestParent($request);
+            }
+        }
+        else
+        {
+            // Has to be either redirect or a html form post.o
+            // First check for normal html form post.
+            $ret = ((json_decode($content) === null) and
+                    ($this->isResponseInstanceType('http', $response)) and
+                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+
+            if ($ret === false)
+            {
+                // Now check for redirect
+                $ret = (($this->isResponseInstanceType('redirect', $response)) and
+                        ($response->getStatusCode() === 302));
+
+                if ($ret === true)
+                {
+                    $gateway = $response->headers->get('X-gateway');
+                }
+                else
+                {
+                    return $response;
+                }
+            }
+            else
+            {
+                $gateway = $response->headers->get('X-gateway');
+
+                //
+                // When doing form posts relevant here, we put in a
+                // second form which is not submitted but it contains gateway
+                // field in encrypted form and 'type' field with value as 'first'
+                // or 'return'. Otherwise, don't take an action here.
+                //
+                $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+                if ((isset($content['type'])) and
+                    ($content['type'] === 'first'))
+                {
+                    $gateway = $content['gateway'];
+                }
+                else if ($content['type'] === 'return')
+                {
+                    return $this->processMerchantReturnCallbackForm($response);
+                }
+                else if ($content['type'] === 'otp')
+                {
+                    $gateway = $content['gateway'];
+                }
+            }
+        }
+
+        return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response,  $gateway, &$callback = null)
+    {
+        $gateway = $this->decryptGatewayText($gateway);
+
+        $func = $gateway;
+
+        if (strpos($gateway, 'netbanking') !== false)
+            $func = 'netbanking';
+
+        $func = studly_case($func);
+
+        $func = 'runPaymentCallbackFlow'.$func;
+
+        return $this->$func($response, $callback, $gateway);
+    }
+
+    protected function processMerchantReturnCallbackForm($response)
+    {
+        $content = $response->getContent();
+
+        $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+        if ($content['type'] === 'return')
+        {
+            $this->merchantCallbackFlow = true;
+
+            $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
+
+            $this->assertEquals($request['url'], $this->getLocalMerchantCallbackUrl());
+
+            $response = $this->makeRequestParent($request);
+
+            $this->assertResponse('json', $response);
+
+            return $response;
+        }
+    }
+
+    protected function decryptGatewayText($gateway)
+    {
+        list($gateway, ) = explode('__', \Crypt::decrypt($gateway, 2));
+
+        return $gateway;
+    }
+
+    protected function getIdFromUri($uri)
+    {
+        // The url should be of format http://localhost/v1/payments/{id}/callback
+        // We will simply extract the id from it.
+
+        $id = getTextBetweenStrings($uri, '/payments/', '/callback');
+
+        return $id;
+    }
+
+    protected function checkAndSetUrl(& $request)
+    {
+        if (isset($request['url']) === false)
+        {
+            $request['url'] = '/payments';
+        }
+    }
+
+    protected function replaceDefualtValues(array & $content)
+    {
+        $data = $this->getDefaultPaymentArray();
+
+        $this->replaceValuesRecursively($data, $content);
+
+        $content = $data;
+    }
+
+    protected function makeRequestAndGetFormData($url, $method, $headers = [], $data = [], $options = [])
+    {
+        if (isset($options['timeout']) === false)
+            $options['timeout'] = 30;
+
+        $response = Requests::$method($url, $headers, $data, $options);
+
+        list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
+
+        return [$uri, $method, $values, $response];
+    }
+
+    protected function getFormRequestFromResponse($content, $url)
+    {
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, $url);
+
+        return compact('url', 'method', 'content');
+    }
+
+    protected function getFormDataFromResponse($content, $url)
+    {
+        $crawler = new Crawler($content, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        return $this->getDataFromForm($form);
+    }
+
+    protected function getSecondFormDataFromResponse($content)
+    {
+        $url = 'http://localhost';
+
+        $crawler = new Crawler($content, $url);
+
+        $last = $crawler->filter('form')->last();
+
+        if (count($last) === 0)
+            return false;
+
+        $form = $last->form();
+
+        list(, , $content) = $this->getDataFromForm($form);
+
+        return $content;
+    }
+
+    protected function getDataFromForm($form)
+    {
+        $uri = $form->getUri();
+
+        $method = $form->getMethod();
+        $values = $form->getValues();
+
+        return array($uri, $method, $values);
+    }
+
+    protected function setMockGatewayTrue()
+    {
+        $var = 'gateway.mock_'.$this->gateway;
+
+        $this->config['gateway.mock_netbanking_hdfc'] = true;
+    }
+
+    protected function isGatewayMocked()
+    {
+        $gateway = $this->app['config']->get('gateway');
+
+        if ($this->gateway === null)
+            $this->gateway = 'hdfc';
+
+        $var = 'mock_' . $this->gateway;
+
+        if (isset($gateway[$var]))
+            return $gateway['mock_' . $this->gateway];
+
+        return false;
+    }
+
+    protected function getDataForGatewayRequest($response, &$callback = null)
+    {
+        $url = $values = $method = null;
+
+        if ($callback)
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+
+            $request = $content['request'];
+            $url = $content['request']['url'];
+
+            $values = array();
+            $method = $request['method'];
+
+            if (($method === 'post') and
+                (isset($request['content'])))
+            {
+                $values = $request['content'];
+            }
+        }
+        else
+        {
+            if ($response->getStatusCode() === 302)
+            {
+                $url = $response->getTargetUrl();
+                $method = 'get';
+                $values = [];
+            }
+            else
+            {
+                list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), 'https://localhost');
+            }
+        }
+
+        return array($url, $method, $values);
+    }
+
+    protected function makeFirstGatewayPaymentMockRequest($url, $method = 'get', $content = array())
+    {
+        $request = array(
+           'url' => $url,
+           'method' => strtoupper($method),
+           'content' => $content);
+
+        $response = $this->makeRequestParent($request);
+
+        $statusCode = (int) $response->getStatusCode();
+
+
+        if ($statusCode === 302)
+        {
+            return $response->getTargetUrl();
+        }
+        else if ($statusCode === 200)
+        {
+            // Probably a form here.
+            // Return url, method, content from that.
+
+            return $this->getFormRequestFromResponse($response->getContent(), $url);
+        }
+    }
+
+    public function getLocalMerchantCallbackUrl()
+    {
+        if ($this->merchantCallbackUrl !== null)
+        {
+            return $this->merchantCallbackUrl;
+        }
+
+        $params = ['key_id' => $this->ba->getKey()];
+        $url = \URL::route('dummy_return_callback', $params, false);
+        $url = 'http://localhost'.$url;
+
+        $this->merchantCallbackUrl = $url;
+
+        return $url;
+    }
+
+    /**
+     * Checks the laravel class of $response,
+     * whether it's json, http or redirect.
+     * @param  string  $type
+     * @param  mixed   $response
+     * @return boolean
+     */
+    protected function isResponseInstanceType($type = 'json', $response)
+    {
+        $match = 'Response';
+
+        if ($type !== 'http')
+            $match = ucfirst($type) . $match;
+
+        $match = 'Illuminate\Http\\'.$match;
+
+        $class = get_class($response);
+
+        return ($match === $class);
+    }
+
+    protected function assertResponse($type, $response)
+    {
+        $this->assertTrue($this->isResponseInstanceType($type, $response));
+    }
+
+    protected function mockServerContentFunction($closure)
+    {
+        $server = $this->mockServer()
+                       ->shouldReceive('content')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server);
+
+        return $server;
+    }
+
+    protected function mockServer()
+    {
+        $class = $this->app['gateway']->getServerClass($this->gateway);
+
+        return Mockery::mock($class)->makePartial();
+    }
+
+    protected function setMockServer($server)
+    {
+         return $this->app['gateway']->setServer($this->gateway, $server);
+    }
+
+    protected function resetMockServer()
+    {
+        return $this->app['gateway']->resetServer($this->gateway);
+    }
+
+    protected function resetGatewayDriver()
+    {
+        return $this->app['gateway']->resetDriver($this->gateway);
+    }
+
+    protected function mockTokenex()
+    {
+        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
+
+        $this->app->instance('card.tokenex', $tokenex);
+
+        $tokenex->shouldReceive('sendRequest')
+              ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+              ->andReturnUsing(function ($route, $method, $input)
+                    {
+                        $response = array(
+                            "Error" => "",
+                            "ReferenceNumber" => "15102913382030662954",
+                            "Success" => true,
+                        );
+
+                        $cardToTokenMap = array(
+                                '41476700000006'   => '1a2b3c4b3e',
+                                '4111111111111111' => '1a2b3c4b5e',
+                                '4280951000002433' => '1a2b3c4b4e',
+                                '4111460212312338' => '1a2b3c4b6e',
+                                '4000400000000004' => '1a2b3c4b7e',
+                                '4012001038443335' => '1a2b3c4d8e',
+                            );
+
+                        switch ($route)
+                        {
+                            case 'REST/Tokenize':
+                                if(isset($cardToTokenMap[$input['Data']]))
+                                {
+                                    $response['Token'] = $cardToTokenMap[$input['Data']];
+                                }
+                                else
+                                {
+                                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                                }
+                                break;
+
+                            case 'REST/Detokenize':
+                                $tokenToCardMap = array_flip($cardToTokenMap);
+                                $response['Value'] = $tokenToCardMap[$input['Token']];
+                                break;
+
+                            case 'REST/ValidateToken':
+                                $response['Valid'] = true;
+                                break;
+
+                            case 'REST/DeleteToken':
+                                break;
+                        }
+                        return $response;
+                    });
+
+        $this->app->instance('card.tokenex', $tokenex);
+    }
+}
