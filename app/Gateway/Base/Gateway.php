@@ -299,7 +299,7 @@ class Gateway
                 $method,
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch (\Requests_Exception $e)
         {
             $this->exception = $e;
 
