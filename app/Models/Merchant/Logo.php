@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Config;
+use AWS;
 
 class Logo
 {
@@ -183,7 +184,7 @@ class Logo
         $mimeType = $imageDetails['mime_type'];
         $baseFilePath = $imageDetails['file_path'];
 
-        $config =  Config::get('aws');
+        $config = Config::get('aws');
 
         $awsS3Mock = $config['mock'];
 
@@ -193,7 +194,7 @@ class Logo
             return $mockFileName;
         }
 
-        $s3 = \App::make('aws')->get('s3');
+        $s3 = AWS::createClient('s3');
 
         $logoDimensions = $this->getLogoDimensionsArray();
 

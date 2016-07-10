@@ -6,6 +6,7 @@ use ZipArchive;
 use Carbon\Carbon;
 use RZP\Exception;
 use Excel;
+use AWS;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
@@ -76,7 +77,7 @@ trait FileHandlerTrait
             return $fullpath;
         }
 
-        $s3 = \App::make('aws')->get('s3');
+        $s3 = AWS::createClient('s3');
 
         try
         {
