@@ -191,19 +191,43 @@ class Service extends Base\Service
         {
             if ($merchant->hasUsers())
             {
-                $user = $merchant->users()->where('email',$originalEmail)->first();
-                if ($user)
+                $teamUser = $merchant->users()->where('email', $input['email'])->first();
+
+                $existingUser = User\Entity::getUserWithEmail($input['email']);
+
+                $selfUser = $merchant->users()->where('email',$originalEmail)->first();
+
+                if ($teamUser !== null) //The merchant has a team member with new email
                 {
-                    $user->email = $merchant->email;
-                    $user->saveOrFail();
+                    //swap roles between user with new email and original owner
+                    $oldOwner = $merchant->users()->where('role', 'owner')->first();
+                    $merchant->removeUserById($oldOwner->id);
+                    $oldOwner->joinMerchantByIdWithRole($id, 'manager');
+
+                    $merchant->removeUserById($teamUser->id);
+                    $teamUser->joinMerchantByIdWithRole($id, 'owner');
+                }
+                else if ($existingUser !== null) //There is an existing user with new email but not a team member
+                {
+                    //assign owner to existing user and make existing owner a manager.
+                    $oldOwner = $merchant->users()->where('role', 'owner')->first();
+                    $merchant->removeUserById($oldOwner->id);
+                    $oldOwner->joinMerchantByIdWithRole($id, 'manager');
+
+                    $existingUser->joinMerchantByIdWithRole($id, 'owner');
+                }
+                else if ($selfUser) //change email of existing user attached to the merchant as owner
+                {
+                    $selfUser->email = $merchant->email;
+                    $selfUser->saveOrFail();
                 }
             }
-            $merchant->saveOrFail();
-        }
 
-        $merchantDetails = $merchant->merchantDetails;
-        $merchantDetails->contact_email = $merchant->email;
-        $merchantDetails->save();
+            $merchant->saveOrFail();
+            $merchantDetails = $merchant->merchantDetails;
+            $merchantDetails->contact_email = $merchant->email;
+            $merchantDetails->save();
+        }
 
         return [$error, null];
     }

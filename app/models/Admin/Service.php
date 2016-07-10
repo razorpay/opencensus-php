@@ -503,49 +503,6 @@ class Service extends Base\Service
                 return array($error, $data);
             }
 
-            $merchant = Merchant\Entity::findorfail($id);
-            if ($merchant->hasUsers())
-            {
-                $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
-                $user = $merchant->users()->where('email', $input['email'])->first();
-                if ($user !== null)
-                {
-                    //swap roles between user with new email and original owner
-                    $oldOwner = $merchant->users()->where('role', 'owner')->first();
-                    $merchant->removeUserById($oldOwner->id);
-                    $oldOwner->joinMerchantByIdWithRole($id, 'manager');
-                    $merchant->removeUserById($user->id);
-                    $user->joinMerchantByIdWithRole($id, 'owner');
-
-                    $merchant->changeEmail($input);
-                    $merchant->saveOrFail();
-                    $merchantDetails = $merchant->merchantDetails;
-                    $merchantDetails->contact_email = $merchant->email;
-                    $merchantDetails->save();
-
-                    return array($error, $data);
-                }
-
-                $existingUser = User\Entity::getUserWithEmail($input['email']);
-                if ($existingUser !== null)
-                {
-                    //assign owner to existing user and make existing owner a manager.
-                    $oldOwner = $merchant->users()->where('role', 'owner')->first();
-                    $merchant->removeUserById($oldOwner->id);
-                    $oldOwner->joinMerchantByIdWithRole($id, 'manager');
-
-                    $existingUser->joinMerchantByIdWithRole($id, 'owner');
-
-                    $merchant->changeEmail($input);
-                    $merchant->saveOrFail();
-                    $merchantDetails = $merchant->merchantDetails;
-                    $merchantDetails->contact_email = $merchant->email;
-                    $merchantDetails->save();
-
-                    return array($error, $data);
-                }
-            }
-
             $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
             // Only when it is changed we update on the dashboard side as well
