@@ -299,7 +299,7 @@ class Gateway
                 $method,
                 $request['options']);
         }
-        catch(\Requests_Exception $e)
+        catch (\Requests_Exception $e)
         {
             $this->exception = $e;
 
@@ -308,7 +308,7 @@ class Gateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (RZP\Gateway\Utility::checkTimeout($e))
+            if (\RZP\Gateway\Utility::checkTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }

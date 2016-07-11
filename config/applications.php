@@ -40,7 +40,7 @@ return array(
         'secret'    => env('APP_HOSTED_SECRET'),
     ),
 
-    'card.tokenex' => array(
+    'card_tokenex' => array(
         'id'        => env('TOKENEX_ID'),
         'key'       => env('TOKENEX_API_KEY'),
         'url'       => env('TOKENEX_API_URL'),

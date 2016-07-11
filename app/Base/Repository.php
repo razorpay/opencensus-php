@@ -163,7 +163,7 @@ class Repository extends \Razorpay\Spine\Repository
                     'es_type'           => $esType,
                     // This entity object is converted into an array because Queue::push
                     // decodes and encodes it with assoc array flag set to true.
-                    'entity'            => $entity,
+                    'entity'            => $entity->toArray(),
                     'mode'              => $this->app['rzp.mode'],
                 ];
 

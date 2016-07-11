@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Reconciliator\Orchestrator;
 use RZP\Http\ApiResponse;
 use RZP\Exception;
 use Request;
@@ -14,7 +15,7 @@ class ReconciliatorController extends Controller
     {
         parent::__construct();
 
-        $this->orchestrator = new Reconciliator\Orchestrator();
+        $this->orchestrator = new Orchestrator();
     }
 
     public function postReconciliation()

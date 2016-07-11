@@ -135,10 +135,13 @@ class TraceCode
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
+    const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
+    const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
+    const QUEUE_JOB_LOOPING                         = 'QUEUE_JOB_LOOPING';
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';

@@ -59,6 +59,11 @@ class ApiResponse
         return self::generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
     }
 
+    public static function onlyHttpsAllowed()
+    {
+        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
+    }
+
     public static function stopBrowserCaching($response)
     {
         //

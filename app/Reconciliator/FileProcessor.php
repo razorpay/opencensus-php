@@ -252,7 +252,11 @@ class FileProcessor
         else
         {
             throw new Exception\ReconciliationException(
-                'Failed to unzip file.', ['file_path' => $filePath]
+                'Failed to unzip file.',
+                [
+                    'file_path'      => $filePath,
+                    'status_message' => $zip->getStatusString(),
+                ]
             );
         }
     }

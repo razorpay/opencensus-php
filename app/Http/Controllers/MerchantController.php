@@ -416,7 +416,9 @@ class MerchantController extends Controller
 
     public function postMerchantBeneficiaryFile()
     {
-        $data = (new Merchant\Service)->postMerchantBeneficiaryFile();
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->postMerchantBeneficiaryFile($input);
 
         return ApiResponse::json($data);
     }

@@ -7,7 +7,7 @@ use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
 
 use RZP\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use DB;
 use App;
 

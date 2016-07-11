@@ -91,16 +91,10 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         $mode = $this->getMode();
 
-        if (in_array($driver, $this->getMockDrivers()))
+        if (($mode === Mode::TEST) and
+            (in_array($driver, $this->getMockDrivers())))
         {
-            if ($mode === Mode::TEST)
-            {
-                return true;
-            }
-            else
-            {
-                throw new Exception\LogicException('Mock cannot be true on live mode');
-            }
+            return true;
         }
 
         return false;

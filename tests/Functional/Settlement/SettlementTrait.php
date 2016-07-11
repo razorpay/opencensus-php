@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use AWS;
 
 trait SettlementTrait
 {
@@ -217,7 +218,7 @@ trait SettlementTrait
 
             $bucket = $awsConfig['settlement_bucket'];
 
-            $s3 = $this->app->make('aws')->get('s3');
+            $s3 = AWS::createClient('s3');
 
             $this->assertEquals(true, $s3->doesObjectExist($bucket, $key));
 
