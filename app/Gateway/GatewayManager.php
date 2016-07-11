@@ -87,8 +87,6 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function isMock($driver)
     {
-        $mock = '';
-
         $mode = $this->getMode();
 
         if (($mode === Mode::TEST) and
@@ -112,8 +110,6 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     public function netbankingGateway($bank)
     {
-        $driver = 'netbanking_'.$bank;
-
         return $this->netbankingGateway($bank);
     }
 
@@ -209,12 +205,5 @@ class GatewayManager extends \Illuminate\Support\Manager
         }
 
         return $namespace;
-    }
-
-    protected function loadGatewayConfig($driver)
-    {
-        $configGatewayStr = 'gateway.'.$driver;
-
-        return $this->gatewayConfig[$configGatewayStr];
     }
 }
