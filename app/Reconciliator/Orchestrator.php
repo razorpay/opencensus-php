@@ -498,7 +498,7 @@ class Orchestrator
 
     protected function setGatewayReconciliatorObject($gateway)
     {
-        $gatewayReconciliatorClassName = 'RZP\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
@@ -519,10 +519,29 @@ class Orchestrator
         foreach ($sheets as $sheet)
         {
             $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
+
+            $this->handleOneRowSheet($sheetArray);
+
             $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
 
             $this->setExtraDetails($sheetArray, $fileDetails);
             $this->allFilesContents[] = $sheetArray;
+        }
+    }
+
+    /**
+     * PHPExcel returns back an associative array in case there is
+     * only one row and returns back an array of arrays(rows) if there
+     * are multiple rows.
+     * This functions helps in maintaining consistency across sheets.
+     *
+     * @param $sheetArray
+     */
+    protected function handleOneRowSheet(array & $sheetArray)
+    {
+        if (is_array(reset($sheetArray)) === false)
+        {
+            $sheetArray = array($sheetArray);
         }
     }
 
