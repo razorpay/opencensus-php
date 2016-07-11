@@ -81,7 +81,7 @@ class Gateway extends Base\Gateway
             'amount'                => $input['payment']['amount'],
             'received'              => true,
             'email'                 => $input['payment']['email'],
-            'contact'               => $input['payment']['contact'],
+            'contact'               => $this->getFormattedContact($input['payment']['contact']),
             'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
             'status'                => $input['gateway']['status'],
             'transactionId'         => $input['gateway']['transactionId'],
@@ -127,23 +127,6 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
-    }
-
-    protected function getBillGeneratorRequest($input)
-    {
-        $request = $this->getOtpGenerateRequestArray($input);
-
-        $query = http_build_query(array(
-                    'bill'   => base64_encode(json_encode($request['content'])),
-                    'phone'  => $input['payment']['contact'],
-                ));
-
-        $request = [
-            'method'  => 'get',
-            'url'     => $request['url']."?".$query,
-        ];
-
-        return $request;
     }
 
     public function otpGenerate($input)
@@ -205,7 +188,30 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getOtpGenerateRequestArray($input)
+    protected function getBillGeneratorRequest($input)
+    {
+        $content = $this->getOtpGenerateAttributes($input);
+
+        $queryArray = array(
+                        'bill'   => base64_encode(json_encode($content)),
+                        'phone'  => $input['payment']['contact'],
+                    );
+
+        $query = http_build_query($queryArray);
+
+        $url = $this->getUrl();
+
+        $request = [
+            'method'  => 'get',
+            'url'     => $url."?".$query,
+        ];
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+
+        return $request;
+    }
+
+    protected function getOtpGenerateAttributes($input)
     {
         $amount = ($input['payment']['amount'] / 100);
 
@@ -224,6 +230,13 @@ class Gateway extends Base\Gateway
 
         $content['hash'] = $this->getHashForOtpGenerate($content);
 
+        return $content;
+    }
+
+    protected function getOtpGenerateRequestArray($input)
+    {
+        $content = $this->getOtpGenerateAttributes($input);
+
         $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = ['Content-Type' => 'application/json'];
@@ -235,16 +248,18 @@ class Gateway extends Base\Gateway
 
     protected function getOtpSubmitRequestArray($input)
     {
+        $payment = $input['payment'];
+
         $content = array(
             'command'           => Command::CAPTURE,
             'accessToken'       => $this->getAccessToken($input['terminal']),
-            'uniqueId'          => $input['payment']['id'],
+            'uniqueId'          => $payment['id'],
             'comments'          => 'Razorpay payment',
-            'udf'               => $input['payment']['public_id'],
+            'udf'               => $payment['public_id'],
             'returnUrl'         => $input['callbackUrl'],
             'notificationUrl'   => '',
-            'amount'            => ($input['payment']['amount'] / 100),
-            'currency'          => self::CURRENCY,
+            'amount'            => ($payment['amount'] / 100),
+            'currency'          => $payment['currency'],
             'couponCode'        => 'NA',
             'otp'               => $input['gateway']['otp'],
         );
@@ -295,7 +310,7 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = false;
 
-            if (($walletPayment === NULL) and
+            if (($walletPayment === null) and
                 (($input['payment']['status'] === 'failed') or
                  ($input['payment']['status'] === 'created')))
             {
@@ -338,13 +353,11 @@ class Gateway extends Base\Gateway
     {
         $payment = $this->input['payment'];
 
-        $amount = isset($verifyResponse['amount']) ? $verifyResponse['amount'] * 100 : $payment['amount'];
-
         $contentToSave = array(
-            'amount'                => $amount,
+            'amount'                => $payment['amount'],
             'received'              => true,
             'email'                 => $payment['email'],
-            'contact'               => $payment['contact'],
+            'contact'               => $this->getFormattedContact($payment['contact']),
             'gateway_merchant_id'   => $this->getMerchantId($this->input['terminal']),
             'status'                => Status::SUCCESS,
             'transactionId'         => $verifyResponse['uniqueBillId'],
@@ -386,7 +399,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'uniqueBillId' => $input['payment']['id'],
             'accessToken' => $this->getAccessToken($input['terminal']),
-            'timestamp' => time(), // change this to YYYY-MM-DD HH MM SS format
+            'timestamp' => date('Y/m/d h:m:s'),
             );
         $content['hash'] = $this->getHashForVerifyRequest($content);
 
@@ -444,7 +457,7 @@ class Gateway extends Base\Gateway
             'email'                 => $input['payment']['email'],
             'contact'               => $input['payment']['contact'],
             'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
-            'gateway_refund_id'     => isset($content['transactionId']) ? $content['transactionId'] : '',
+            'gateway_refund_id'     => isset($content['transactionId']) ? $content['transactionId'] : null,
             'refund_id'             => $input['refund']['id'],
             'response_code'         => isset($content['errorCode']) ? $content['errorCode'] : '',
             'status_code'           => $content['status'],

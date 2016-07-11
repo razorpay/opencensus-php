@@ -17,6 +17,7 @@ class Gateway extends Olamoney\Gateway
         $request = parent::authorize($input);
 
         $parts = parse_url($request['url']);
+
         $url = Route::getUrlWithPublicAuth('mock_wallet_payment_get',
                                                 ['wallet' => $input['payment']['wallet'],
                                                  'paymentId' => $input['payment']['id']]);

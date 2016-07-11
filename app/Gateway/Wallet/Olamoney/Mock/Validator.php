@@ -7,9 +7,9 @@ use RZP\Models\Base;
 class Validator extends Base\Validator
 {
     protected static $authorizeRules   = array(
-        'paymentId'             => 'required|string',
-        'bill'                  => 'required|regex:"^[a-zA-Z0-9+/=]"',
-        'phone'                 => 'required|integer'
+        'paymentId' => 'required|string',
+        'bill'      => 'required|regex:"^[a-zA-Z0-9+/=]"',
+        'phone'     => 'required|integer'
     );
 
     protected static $refundRules = array(
@@ -19,8 +19,8 @@ class Validator extends Base\Validator
         'comments'          => 'required|string',
         'udf'               => 'required|string',
         'hash'              => 'required|string',
-        'returnUrl'         => 'sometimes|string',
-        'notificationUrl'   => 'sometimes|string',
+        'returnUrl'         => 'sometimes|url',
+        'notificationUrl'   => 'sometimes|url',
         'amount'            => 'required|integer',
         'balanceType'       => 'required|string',
         'balanceName'       => 'required|string',
@@ -31,7 +31,7 @@ class Validator extends Base\Validator
     protected static $verifyRules = array(
         'uniqueBillId'  => 'required|string',
         'accessToken'   => 'required|string',
-        'timestamp'     => 'required|integer',
+        'timestamp'     => 'required|date_format:Y/m/d h:m:s',
         'hash'          => 'required|string',
     );
 }

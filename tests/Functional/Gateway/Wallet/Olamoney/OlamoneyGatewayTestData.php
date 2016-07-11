@@ -38,7 +38,7 @@ return [
         'wallet'                => 'olamoney',
         'received'              => true,
         'email'                 => 'a@b.com',
-        'contact'               => '+919918899029',
+        'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'status_code'           => 'success',
         'refund_id'             => null,

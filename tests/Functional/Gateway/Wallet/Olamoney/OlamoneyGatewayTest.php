@@ -102,8 +102,6 @@ class OlamoneyGatewayTest extends TestCase
 
     protected function runPaymentCallbackFlowWalletOlamoney($response, &$callback = null)
     {
-        $mock = $this->isGatewayMocked();
-
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         $this->response     = $response;

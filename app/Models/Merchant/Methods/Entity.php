@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::MOBIKWIK,
+        self::OLAMONEY,
         self::EMI,
         self::NETBANKING,
     );
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP,
         self::PAYUMONEY,
         self::MOBIKWIK,
+        self::OLAMONEY,
         self::EMI,
         self::NETBANKING,
     );
@@ -66,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK   => false,
         self::PAYZAPP    => false,
         self::PAYUMONEY  => false,
+        self::OLAMONEY   => false,
         self::BANKS      => [],
         self::EMI        => false,
         self::NETBANKING => true,
@@ -76,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
+        self::OLAMONEY,
     );
 
     public function setMethods(array $input = array())
@@ -205,6 +209,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYUMONEY);
     }
 
+    public function getOlamoney()
+    {
+        return $this->getAttribute(self::OLAMONEY);
+    }
+
     public function getEMi()
     {
         return $this->getAttribute(self::EMI);
@@ -267,6 +276,11 @@ class Entity extends Base\PublicEntity
     public function setPayumoney($value)
     {
         $this->setAttribute(self::PAYUMONEY, $value);
+    }
+
+    public function setOlamoney($value)
+    {
+        $this->setAttribute(self::OLAMONEY, $value);
     }
 
     public function setCard($card)
@@ -362,6 +376,17 @@ class Entity extends Base\PublicEntity
         return $wallets;
     }
 
+    public static function getAllWalletNames()
+    {
+        return array(
+            self::MOBIKWIK,
+            self::PAYTM,
+            self::PAYZAPP,
+            self::PAYUMONEY,
+            self::OLAMONEY,
+        );
+    }
+
     public static function getAllMethodNames()
     {
         return array(
@@ -372,6 +397,7 @@ class Entity extends Base\PublicEntity
             self::MOBIKWIK,
             self::PAYZAPP,
             self::PAYUMONEY,
+            self::OLAMONEY,
             self::EMI
         );
     }

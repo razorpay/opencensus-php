@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         'method'        =>  'in:card,netbanking,wallet,emi',
         'card'          =>  'sometimes',
         'bank'          =>  'required_if:method,netbanking',
-        'wallet'        =>  'required_if:method,wallet|in:paytm,mobikwik,payzapp,payumoney,olamoney',
+        'wallet'        =>  'sometimes',
         'emi_duration'  =>  'required_with:emi|integer|in:3,6,9,12,18,24',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
@@ -50,7 +50,27 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact');
+        'contact',
+        'wallet');
+
+    protected function validateWallet($input)
+    {
+        if ($input['method'] === Payment\Method::WALLET)
+        {
+            if (!isset($input['wallet']))
+            {
+                return false;
+            }
+
+            $method = new \RZP\Models\Merchant\Methods\Entity;
+
+            $wallets = $method->getAllWalletNames();
+
+            return in_array($input['wallet'], $wallets);
+        }
+
+        return true;
+    }
 
     protected function validateCardKey($input)
     {
