@@ -31,8 +31,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
-use Requests;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -294,6 +292,7 @@ class Gateway extends Base\Gateway
      * @param  array  $input
      *
      * @return array
+     * @throws Exception\LogicException
      */
     public function callback(array $input)
     {
@@ -310,14 +309,12 @@ class Gateway extends Base\Gateway
             $authResponse['data'] = $input['gateway'];
             $authResponse['error'] = [];
 
-            $trackid = $authResponse['data']['paymentid'];
+            $trackId = $authResponse['data']['paymentid'];
 
-            $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackid);
+            $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
 
-            $this->verifyAuthResponse($input, $authResponse);
-
-            // $this->verify($input);
-
+            $this->verifyAuthResponse($authResponse);
+            
             return;
         }
 
