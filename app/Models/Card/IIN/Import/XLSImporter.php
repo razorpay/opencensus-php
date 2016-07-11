@@ -104,7 +104,7 @@ class XLSImporter
             array('country_full_name', 'ISO_code_2', 'ISO numeric code')
         );
 
-        $err_array = array();
+        $errArray = array();
 
         foreach (array_chunk($formattedData, 1) as $chunks)
         {
@@ -124,11 +124,11 @@ class XLSImporter
                         'iin' => $failedIin,
                     ]
                 );
-                array_push($err_array, $failedIin);
+                array_push($errArray, $failedIin);
             }
         }
         return array(
-            'Failed Iin' => $err_array
+            'Failed Iin' => $errArray
         );
     }
     /**
