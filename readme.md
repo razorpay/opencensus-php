@@ -32,17 +32,17 @@
 
 ### Common Instruction
 
-* `chmod -R o+wx app/storage/`
+* `chmod -R o+wx storage/`
 * `php composer.phar install` to install project dependencies
 * Create 2 databases (one is for live and another for test accounts). (`api-live`, `api-test` are sample names)
-* Copy over `.env.sample.php` to `.env.dev.php` and provide both database usernames and password
-* Copy over `bootstrap\sample.environment.php` to `bootstrap\environment.php`. This specifies the `dev` environment for local development.
+* Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
+* Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
 * `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
 
 ### Common Test Setup Instructions
 
 * Create two seperate databases for testing (separate from the development ones). (sample names: `api-testing-live`, `api-testing-test`)
-* Copy over `.env.sample.php` to `.env.testing.php` and provide the database information
+* Copy over `environment/.env.sample` to `.env.testing` and provide the database information
 * For above step, if you have sqlite set-up. Google how to do that with laravel.
 * Install php unit `sudo apt-get install phpunit`
 * Disable Xdebug ( Some Tests fail with Xdebug enabled ): `sudo php5dismod xdebug`
