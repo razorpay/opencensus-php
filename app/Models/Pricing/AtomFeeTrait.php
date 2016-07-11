@@ -7,9 +7,6 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Exception;
-use RZP\Services\SlackPoster;
-use Trace\Trace;
-use Trace\TraceCode;
 
 trait AtomFeeTrait
 {

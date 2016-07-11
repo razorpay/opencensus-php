@@ -11,7 +11,7 @@ use RZP\Models\Payment\Verify;
 
 use RZP\Gateway\AxisMigs;
 
-use Trace\TraceCode;
+use Rzp\Trace\TraceCode;
 use App;
 
 use RZP\Reconciliator\Orchestrator;
@@ -466,8 +466,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'     => get_called_class()
             ]);
 
+        $reconCardType = null;
+        $reconCardLocale = null;
+
+        //
+        // Card type should always be set to create an IIN. Otherwise,
+        // the IIN validator will throw an error.
+        //
         $reconCardType = $reconCardDetails[BaseReconciliate::CARD_TYPE];
-        $reconCardLocale = $reconCardDetails[BaseReconciliate::CARD_LOCALE];
+
+        if (empty($reconCardDetails[BaseReconciliate::CARD_LOCALE]) === false)
+        {
+            $reconCardLocale = $reconCardDetails[BaseReconciliate::CARD_LOCALE];
+        }
 
         $card = $this->payment->card;
 
