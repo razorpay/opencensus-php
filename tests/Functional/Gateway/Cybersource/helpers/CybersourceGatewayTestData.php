@@ -53,7 +53,7 @@ return [
 
 
     'testPaymentCybersourceEntity' => [
-        'amount' => 500,
+        'amount' => '500',
         'pares_status' => 'Y',
         'status' => 'captured',
         'entity' => 'cybersource',
