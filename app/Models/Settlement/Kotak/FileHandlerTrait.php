@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Settlement\Kotak;
 
+use AWS;
+use Excel;
 use ZipArchive;
 use Carbon\Carbon;
 use RZP\Exception;
-use Excel;
-use AWS;
+use RZP\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
@@ -88,11 +89,14 @@ trait FileHandlerTrait
                 'SourceFile'    => $fullpath,
             );
 
+            $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
+
             $result = $s3->putObject($s3Obj);
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
-            // trace here.
+            $this->trace()->traceException($e);
+
             throw $e;
         }
 
@@ -398,5 +402,12 @@ trait FileHandlerTrait
     protected function getFullFilePath($filename)
     {
         return $this->getStorageDir() . '/' . $filename;
+    }
+
+    protected function trace()
+    {
+        $trace = \Trace::getFacadeRoot();
+
+        return $trace;
     }
 }
