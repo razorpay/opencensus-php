@@ -123,14 +123,16 @@ class DataCleaner
      */
     protected function removeDuplicate($data, $inputNetwork)
     {
-        $indexed = array();
         // Indexing the data based on IIN number
+        $indexed = array();
 
         $index = 0;
         foreach ($data as $input)
         {
             $iin = $input[IIN\Entity::IIN];
-            if (isset($inputNetwork)){
+
+            if (isset($inputNetwork))
+            {
                 $network = Network::$fullName[Network::detectNetwork($iin)];
                 $input[IIN\Entity::NETWORK] = $network;
             }
@@ -143,6 +145,7 @@ class DataCleaner
             {
                 if ($input !== $indexed[$iin])
                 {
+                    // Add to duplicate list
                     $this->duplicate[$iin][] = $index;
                 }
             }
