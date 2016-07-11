@@ -467,7 +467,7 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewaysPriority($method, $mode = 'live', $merchant = [])
+    public static function getGatewaysPriority($method, $mode = 'live', $context = [])
     {
         $gateways = [];
 
@@ -490,7 +490,17 @@ class Gateway
                     $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
                 }
 
-                array_unshift($gateways, 'direct');
+                // If the bank is kotak and the merchant is not harshil
+                if ((isset($context['bank'])) and
+                    ($context['bank'] === IFSC::KKBK) and
+                    ($context['merchant'] !== '2aTeFCKTYWwfrF'))
+                {
+                    ;
+                }
+                else
+                {
+                    array_unshift($gateways, 'direct');
+                }
                 break;
 
             default:
