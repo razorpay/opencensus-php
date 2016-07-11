@@ -57,7 +57,27 @@ class CardController extends Controller
 
         return ApiResponse::json($data);
     }
+    public function uploadIin()
+    {
+        $input = Request::all();
 
+        if (isset($input['data']))
+        {
+            $app = \App::getFacadeRoot();
+            $file = Request::file('data');
+            $filePath = $file->getRealPath();
+
+            $cardIin = "RZP\\Models\\Card\\IIN\\Service";
+
+            $app->queue->push($cardIin.'@importCsvIin', $filePath);
+            $data = "Iin Data added in queue for Processing";
+        }
+        else
+        {
+            $data = "Please give Iin Csv File";
+        }
+        return ApiResponse::json($data);
+    }
     public function editIin($id)
     {
         $input = Request::all();

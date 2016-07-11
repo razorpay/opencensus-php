@@ -3,6 +3,7 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN\Entity as IIN;
+use RZP\Models\Card\Network;
 use RZP\Models\Base;
 use RZP\Exception;
 
@@ -15,6 +16,11 @@ use RZP\Exception;
  */
 class Formatter
 {
+    public $creditCard          =   0;
+    public $debitCard           =   0;
+    public $otherCardType       =   0;
+    public $unknownNetworkType  =   0;
+
     public static $cardTypeMap = array(
         'FC'    =>  'credit',
         'DC'    =>  'credit',
@@ -75,4 +81,72 @@ class Formatter
 
         return $iins;
     }
+
+    /**
+     * formats the data to iin entity
+     *
+     * @param array $columns    the title of each column
+     * @param array $data       the rows
+     *
+     * @return collection of arrays with keys from iin entity.
+     */
+    public function formatDataNew($columns, $data, $networkMapping, $fieldToDel)
+    {
+        $iins = array();
+
+        foreach ($data as $row)
+        {
+            $input = array_combine($columns, $row);
+
+            foreach ($fieldToDel as $field)
+            {
+                unset($input[$field]);
+            }
+
+            $input[IIN::NETWORK] = $this->formatNetwork(
+                $input[IIN::NETWORK],
+                $networkMapping);
+
+            $input[IIN::TYPE] = $this->formatType($input[IIN::TYPE]);
+            $input = array_filter($input);
+
+            $iins[$input[IIN::IIN]] = $input;
+        }
+
+        return $iins;
+    }
+
+    private function formatNetwork($value, $networkMapping)
+    {
+        if (array_key_exists($value, $networkMapping))
+        {
+            return Network::$fullName[$networkMapping[$value]];
+        }
+
+        $this->unknownNetworkType += 1;
+
+        return Network::$fullName[$networkMapping['unknown']];
+    }
+
+    private function formatType($value)
+    {
+        $value = strtolower($value);
+
+        if ($value === 'credit')
+        {
+            $this->creditCard += 1;
+            return $value;
+        }
+
+        if ($value === 'debit')
+        {
+            $this->debitCard += 1;
+            return $value;
+        }
+
+        $this->otherCardType += 1;
+
+        return null;
+    }
+
 }
