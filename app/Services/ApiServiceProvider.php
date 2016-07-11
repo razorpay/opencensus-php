@@ -67,12 +67,9 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-\Validator::resolver(function($translator, $data, $rules, $messages)
-{
-    return new \RZP\Models\Base\ExtendedValidations(
-                    $translator, $data, $rules, $messages);
-});
+        $this->registerValidatorResolver();
 
+        $this->registerQueueableEntityResolver();
     }
 
     /**
@@ -93,5 +90,27 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'es',
         );
+    }
+
+    /**
+     * Register the queueable entity resolver implementation.
+     *
+     * @return void
+     */
+    protected function registerQueueableEntityResolver()
+    {
+        $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
+        {
+            return new \RZP\Base\QueueEntityResolver;
+        });
+    }
+
+    protected function registerValidatorResolver()
+    {
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
+        {
+            return new \RZP\Models\Base\ExtendedValidations(
+                            $translator, $data, $rules, $messages);
+        });
     }
 }

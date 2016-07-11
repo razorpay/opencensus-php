@@ -120,7 +120,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->ba->publicAuth('rzp_live_TheLiveAuthKey');
 
-        $this->fixtures->merchant->activate();
+        // $this->fixtures->merchant->activate();
 
         $this->fixtures
              ->on('live')

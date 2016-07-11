@@ -31,7 +31,7 @@ class Merchant
 
         $this->channel = $channel;
 
-        $this->merchantRepo = new RZP\Models\Merchant\Repository;
+        $this->merchantRepo = new \RZP\Models\Merchant\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->setlRepo = new Settlement\Repository;
 

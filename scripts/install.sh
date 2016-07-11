@@ -13,7 +13,7 @@ cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncign
 
 # Fix permissions
 echo  "Fix permissions"
-cd /home/ubuntu/api/ && sudo chmod 777 -R app/storage
+cd /home/ubuntu/api/ && sudo chmod 777 -R storage
 
 # DB Migrate
 echo  "DB Migrate"

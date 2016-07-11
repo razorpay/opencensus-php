@@ -25,13 +25,27 @@ class Core extends Base\Core
         return $this->create($input, $this->getSharedAccount());
     }
 
-    public function create($input, $merchant)
+    protected function create($input, $merchant, $failOnDuplicate = true)
     {
         $customer = (new Customer\Entity)->build($input);
 
         $customer->merchant()->associate($merchant);
 
-        $this->verifyUniqueCustomer($customer);
+        $existingCustomer = $this->verifyUniqueCustomer($customer, $failOnDuplicate);
+
+        if ($existingCustomer !== null)
+        {
+            if ($failOnDuplicate === false)
+            {
+                $existingCustomer->merchant->associate($merchant);
+                return $existingCustomer;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Should not reach here');
+            }
+        }
 
         $this->repo->saveOrFail($customer);
 
@@ -208,29 +222,32 @@ class Core extends Base\Core
         $this->app['session']->put('app_token', $appToken->getPublicId());
     }
 
-    protected function verifyUniqueCustomer($customer)
+    protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)
     {
         $customers = null;
 
         if ($customer->merchant->isShared() === true)
         {
-            $customers = $this->repo->customer->findByContactAndMerchant(
+            $customer = $this->repo->customer->findByContactAndMerchant(
                 $customer->getContact(),
                 $customer->merchant);
         }
         else
         {
-            $customers = $this->repo->customer->findByContactEmailAndMerchant(
+            $customer = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),
                 $customer->getEmail(),
                 $customer->merchant);
         }
 
-        if ($customers !== null)
+        if (($customer !== null) and
+            ($failOnDuplicate === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS);
         }
+
+        return $customer;
     }
 
     protected function getSharedAccount()

@@ -37,8 +37,8 @@ try{
     <div style="display:inline-block;vertical-align:middle;width:90%;max-width:600px;height:60%;max-height:440px;position:relative;padding-bottom:60px">
       @if (isset($data['amount']) && isset($data['image']))
         <div id="top">
-          <span style="font-size:44px;float:right;line-height:52px;color:#666">₹ {{$data['amount']}}</span>
-          <img src="{{$data['image']}}" height="52px">
+          <span style="font-size:44px;float:right;line-height:64px;color:#666">₹ {{$data['amount']}}</span>
+          <img src="{{$data['image']}}" height="64px">
         </div>
       @endif
       <div style="margin-top:20%">

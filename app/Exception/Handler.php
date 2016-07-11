@@ -27,9 +27,7 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
-        AuthorizationException::class,
         HttpException::class,
-        ModelNotFoundException::class,
         ValidationException::class,
     ];
 
@@ -75,7 +73,7 @@ class Handler extends ExceptionHandler
                 break;
 
             case $e instanceof MethodNotAllowedHttpException:
-                $response = ApiResponse::methodNotFoundResponse();
+                $response = ApiResponse::httpMethodNotAllowed();
                 break;
         }
 
