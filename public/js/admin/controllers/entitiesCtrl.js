@@ -198,7 +198,6 @@ app.controller('EntitiesCtrl', [
         ]
       },
       key: {},
-      kotak: {},
       merchant: {
         email: ['Email'],
         activated: booleanList,
