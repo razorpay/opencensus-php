@@ -3,10 +3,10 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use RZP\Constants\Mode;
 use RZP\Gateway\Base\Action;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
-use RZP\Models\Payment\Gateway;
 
 class CaptureInferno
 {
@@ -65,6 +65,8 @@ class CaptureInferno
 
     protected function runCaptureFlowForQueue()
     {
+        $payment = $this->app['repo']->payment->findOrFail($this->data['payment']['id']);
+
         $terminal = $payment->terminal;
 
         $gateway = $payment->getGateway();
@@ -75,7 +77,8 @@ class CaptureInferno
         // TODO: Handle Kotak gateway capture timeout
         // $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
 
-        return $this->app['gateway']->call($gateway, Action::CAPTURE, $gatewayData, $mode, $terminal);
+        // We add the capture request to queue only in LIVE mode.
+        return $this->app['gateway']->call($gateway, Action::CAPTURE, $gatewayData, Mode::LIVE, $terminal);
     }
 
     protected function handleCaptureException($traceCode, $ex)
