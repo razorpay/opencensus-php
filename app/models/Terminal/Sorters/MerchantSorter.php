@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Terminal\Sorters;
+namespace RZP\Models\Terminal\Sorters;
 
-use Models\Terminal;
+use RZP\Models\Terminal;
 
 class MerchantSorter extends Terminal\Sorter
 {

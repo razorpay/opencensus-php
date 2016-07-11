@@ -1,17 +1,17 @@
 <?php
 
-namespace Models\Terminal\Filters;
+namespace RZP\Models\Terminal\Filters;
 
-use Constants\Mode;
+use RZP\Constants\Mode;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
-use Models\Terminal;
-use Models\Bank\IFSC;
-use Models\Payment\Method;
-use Models\Payment\Gateway;
-use Models\Payment\Processor\Netbanking;
+use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class MerchantFilter extends Terminal\Filter
 {

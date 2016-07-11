@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Terminal\Sorters;
+namespace RZP\Models\Terminal\Sorters;
 
-use Models\Terminal;
-use Models\Payment\Method;
-use Models\Payment\Gateway;
+use RZP\Models\Terminal;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 
 class CardSorter extends Terminal\Sorter
 {

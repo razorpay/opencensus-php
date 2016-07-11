@@ -198,7 +198,7 @@ trait Authorize
         }
     }
 
-    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
+    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
     {
         $terminalSelectionStatus = 'TERMINAL_SELECTION_MISMATCH';
 

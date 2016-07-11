@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Terminal;
+namespace RZP\Models\Terminal;
 
-use Constants\Mode;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Constants\Mode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Selector
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Terminal;
+namespace RZP\Models\Terminal;
 
 class Filter
 {
