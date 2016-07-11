@@ -222,7 +222,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $server = new RZP\Gateway\Sbiepay\Mock\Server;
+        $server = new \RZP\Gateway\Sbiepay\Mock\Server;
 
         return $server->authorize($input);
     }
