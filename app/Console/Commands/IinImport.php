@@ -45,8 +45,8 @@ class IinImport extends Command
 
         print "Iin Database Update failed for following Keys\n";
         print_r($errMsg);
-
     }
+
     protected function getArguments()
     {
         return [
