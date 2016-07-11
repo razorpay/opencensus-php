@@ -44,6 +44,7 @@ class TraceCode
     const PAYMENT_CARD_NOT_ENROLLED                 = 'PAYMENT_CARD_NOT_ENROLLED';
     const PAYMENT_INVALID_CONTACT_NUMBER            = 'PAYMENT_INVALID_CONTACT_NUMBER';
 
+    const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const CUSTOMER_EDIT                             = 'CUSTOMER_EDIT';

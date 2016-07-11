@@ -50,6 +50,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getTerminalsForMerchantAndSharedMerchant($mid)
+    {
+        $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
+
+        return $this->newQuery()
+                    ->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds)
+                    ->get();
+    }
+
     public function getByGatewayTerminalIdAndGateway($gatewayTerminalId, $gateway)
     {
         $repo = $this->repo;
@@ -113,6 +122,18 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Terminal\Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT)
+                    ->get();
+    }
+
+    public function getAllSharedTerminals()
+    {
+        $repo = $this->repo;
+
+        $map = Terminal\Shared::getSharedTerminalMapping();
+
+        $sharedTerminalIds = array_keys($map);
+
+        return $repo::whereIn(Terminal\Entity::ID, $sharedTerminalIds)
                     ->get();
     }
 
