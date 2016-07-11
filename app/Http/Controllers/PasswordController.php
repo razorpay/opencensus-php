@@ -1,5 +1,9 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use Input;
+use Password;
 
 class PasswordController extends Controller
 {
@@ -9,9 +13,9 @@ class PasswordController extends Controller
      * @return Response
      */
     public function postRemind()
-    {   
-        $response = Password::user()->remind(Input::only('email'), function($message){
-            $message->subject('Razorpay - Password Reset Request'); 
+    {
+        $response = Password::sendResetLink(Input::only('email'), function($message){
+            $message->subject('Razorpay - Password Reset Request');
         });
 
         switch ($response)
