@@ -154,7 +154,8 @@ class Handler extends ExceptionHandler
         {
             $data = $exception->getData();
 
-            if (is_array($data) === false)
+            if ((is_resource($data) === true) or
+                (is_array($data) === false))
             {
                 $data = null;
             }
@@ -227,7 +228,15 @@ class Handler extends ExceptionHandler
 
             if (method_exists($exception, 'getData'))
             {
-                $publicError['data'] = $exception->getData();
+                $data = $exception->getData();
+
+                if ((is_resource($data) === true) or
+                    (is_array($data) === false))
+                {
+                    $data = null;
+                }
+
+                $publicError['data'] = $data;
             }
         }
 
@@ -270,7 +279,9 @@ class Handler extends ExceptionHandler
         $previousData = null;
 
         if ($previous !== null)
+        {
             $previousData = self::getExceptionData($previous);
+        }
 
         $data = array(
             'type' => get_class($exception),
