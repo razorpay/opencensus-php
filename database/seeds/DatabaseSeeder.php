@@ -459,6 +459,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createOlamoneyTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -764,7 +765,7 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                        => '2byKhdVKZ9iDew',
+                'id'                        => '2byKhdVKZ9iDex',
                 'merchant_id'               => Account::TEST_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_OLAMONEY,
                 'card'                      => '0',
