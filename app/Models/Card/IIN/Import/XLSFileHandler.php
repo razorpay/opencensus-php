@@ -33,6 +33,16 @@ class XLSFileHandler
         set_time_limit(3000);
         ini_set('max_execution_time', 6000);
         ini_set('memory_limit', '2048M');
+        $fileHandler = fopen($file,"r");
+        $ret = array();
+        while(! feof($fileHandler))
+        {
+            $line = fgetcsv($fileHandler);
+            if ($line){
+                array_push($ret, $line);
+            }
+        }
+/*
         $excelReader = Excel::load($file)->excel;
         $sheet = $excelReader->getSheet(0);
         $highestRow = $sheet->getHighestRow();
@@ -45,8 +55,8 @@ class XLSFileHandler
             true,
             false
         );
-
-        return ['data' => $data];
+ */
+        return ['data' => $ret];
 
     }
     /**

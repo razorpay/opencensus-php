@@ -3,8 +3,10 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN;
+use RZP\Models\Card\Network;
 use RZP\Exception;
 use App;
+use RZP\Trace\TraceCode;
 
 /**
  * This class is called by the service function with the input data.
@@ -17,6 +19,8 @@ class XLSImporter
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
@@ -61,15 +65,48 @@ class XLSImporter
     public function importWithoutNetwork($file)
     {
         $ret = (new XLSFileHandler)->getCsvData($file);
-        $ret['columns'] = array('iin', 'network', 'issuer_name',
-            'type', 'category', 'country_full_name', 'country', 'ISO_code_2',
+
+
+        // Header of Csv data
+        $ret['columns'] = array(
+            IIN\Entity::IIN,
+            IIN\Entity::NETWORK,
+            IIN\Entity::ISSUER_NAME,
+            IIN\Entity::TYPE,
+            IIN\Entity::CATEGORY,
+            'country_full_name',
+            IIN\Entity::COUNTRY,
+            'ISO_code_2',
             'ISO numeric code');
-        $formattedData = (new Formatter)->formatDataNew($ret['columns'], $ret['data']);
-        $dataCleaner = new DataCleaner();
-        $cleaned = $dataCleaner->parse(NULL, $formattedData, FALSE);
+
+        // Network Mapping
+        $networkMapping = array(
+            'JCB'                       => Network::JCB,
+            'MASTERCARD'                => Network::MC,
+            'MasterCard'                => Network::MC,
+            'RuPay'                     => Network::RUPAY,
+            'RUPAY'                     => Network::RUPAY,
+            'CHINA UNION PAY'           => Network::UNP,
+            'Maestro'                   => Network::MAES,
+            'MAESTRO'                   => Network::MAES,
+            'Visa'                      => Network::VISA,
+            'VISA'                      => Network::VISA,
+            'DISCOVER'                  => Network::DISC,
+            'AMERICAN EXPRESS'          => Network::AMEX,
+            'DINERS CLUB INTERNATIONAL' => Network::DICL,
+            'unknown'                   => Network::UNKNOWN,
+        );
+
+        $formattedData = (new Formatter)->formatDataNew(
+            $ret['columns'],
+            $ret['data'],
+            $networkMapping,
+            array('country_full_name', 'ISO_code_2', 'ISO numeric code')
+        );
 
         $err_array = array();
-        foreach (array_chunk($cleaned, 1) as $chunks)
+
+        foreach (array_chunk($formattedData, 1) as $chunks)
         {
             try
             {
@@ -78,8 +115,15 @@ class XLSImporter
             catch (\Exception $e)
             {
                 $msg = $e->getMessage();
+                // TODO Add trace
                 $msg = explode('Duplicate entry', $msg)[1];
                 $failedIin = explode('for key', $msg)[0];
+                $this->trace->info(
+                    TraceCode::IIN_INSERT_FAILED,
+                    [
+                        'iin' => $failedIin,
+                    ]
+                );
                 array_push($err_array, $failedIin);
             }
         }
