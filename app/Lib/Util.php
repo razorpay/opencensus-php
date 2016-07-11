@@ -1,7 +1,10 @@
 <?php
-if (! function_exists('random_alpha_string'))
+
+namespace Lib;
+
+class Util
 {
-    function random_alpha_string($length = 1)
+    public static function random_alpha_string($length = 1)
     {
         $chars = 'abcdefghijklmnopqrstuvwxyz';
 

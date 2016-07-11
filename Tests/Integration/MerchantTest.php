@@ -1,12 +1,13 @@
 <?php
 namespace Tests\Integration;
 
-use Selenium\Locator as l;
+use Exception;
 use Laracasts\TestDummy\Factory;
 use Models;
+use Selenium\Locator as l;
 use URL;
+use Lib\Util;
 use Uuid;
-use Exception;
 
 class MerchantTest extends TestCase
 {
@@ -35,7 +36,7 @@ class MerchantTest extends TestCase
         }
         catch(Exception $e)
         {
-            $businessName = random_alpha_string(10);
+            $businessName = Util::random_alpha_string(10);
 
             $this->merchant = $this->buildEntity('merchant', array(
                 'id'    => Uuid::generate(),
@@ -54,7 +55,7 @@ class MerchantTest extends TestCase
      */
     public function testRegister()
     {
-        $businessName = random_alpha_string(6). ' Merchant';
+        $businessName = Util::random_alpha_string(6). ' Merchant';
 
         $this->browser
             // Visits the 'register page
