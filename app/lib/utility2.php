@@ -33,7 +33,7 @@ if (! function_exists('validate_keys'))
 
         if (count($invalid_keys) > 0)
         {
-            throw new RZP\Exception\ExtraFieldsException($invalid_keys);
+            throw new \RZP\Exception\ExtraFieldsException($invalid_keys);
         }
     }
 }
