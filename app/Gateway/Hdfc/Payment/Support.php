@@ -22,6 +22,7 @@ trait Support
      * @param  string   $type  should be either 'capture'
      *                         or 'refund'
      * @return array
+     * @throws Exception\LogicException
      */
     protected function supportPayment($input, $type)
     {
@@ -63,7 +64,7 @@ trait Support
         //
         // Fill the fields required for the payment
         //
-        $this->createSupportPaymentRequestFields($input, $type);
+        $this->createSupportPaymentRequestFields($input);
 
         $this->trace(
             TRACE::DEBUG,
@@ -196,8 +197,6 @@ trait Support
         $error = $response['error'];
         $input = $this->input;
 
-        $payment = $this->model;
-
         if (($this->action === Base\Action::CAPTURE) and
             ($error['code'] === Hdfc\ErrorCode::GW00176) and
             ($input['payment']['status'] === 'authorized') and
@@ -232,10 +231,8 @@ trait Support
      * @param  array $input
      * Contains the 'payment' details
      */
-    protected function createSupportPaymentRequestFields($input, $type)
+    protected function createSupportPaymentRequestFields($input)
     {
-        $payment = $input['payment'];
-
         $card = $input['card'];
 
         $this->supportPaymentRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;

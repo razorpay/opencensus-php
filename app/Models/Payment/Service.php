@@ -181,7 +181,8 @@ class Service extends Base\Service
     /**
      * Captures a payment
      *
-     * @param  string   $id
+     * @param string $id
+     * @param array  $input
      *
      * @return Payment\Entity
      */

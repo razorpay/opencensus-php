@@ -448,7 +448,7 @@ trait Enroll
      * The other allowed values are 'ENROLLED'
      * and NOT_ENROLLED
      *
-     * @return  void
+     * @return  string
      */
     protected function getEnrollStatus()
     {

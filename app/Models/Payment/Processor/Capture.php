@@ -15,8 +15,8 @@ trait Capture
     /**
      * Captures a previous auth payment
      *
-     * @param  string  $id      Id of payment to be captured
-     * @param  integer $amount  Amount to capture
+     * @param  string  $id  Id of payment to be captured
+     * @param  array $input
      *
      * @return Payment\Entity   Payment\Entity object
      */
@@ -96,23 +96,32 @@ trait Capture
         return $payment;
     }
 
-    protected function captureOnGateway($data)
+    public function captureOnGateway($data)
     {
         try
         {
-            $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+            try
+            {
+                $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+            }
+            catch (Exception\GatewayTimeoutException $ex)
+            {
+                $this->trace->traceException($ex);
 
+                $this->app['queue']->push('RZP\Models\Payment\Processor\CaptureInferno', ['data' => $data]);
+            }
+            
             $this->verifyOrderUnpaid($this->payment);
 
             $this->recordCapture();
         }
-        catch (BaseException $e)
+        catch (Exception\BaseException $ex)
         {
             $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_CAPTURE_FAILURE);
+                $ex->getError(),
+                TraceCode::PAYMENT_CAPTURE_FAILURE);
 
-            throw $e;
+            throw $ex;
         }
     }
 

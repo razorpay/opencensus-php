@@ -210,7 +210,7 @@ class Repository extends \Razorpay\Spine\Repository
         $className = strtoupper(end($parentNamespaceArray));
 
         // The ES type name is the same as the table name for the entity in MySQL.
-        $typeName = constant("RZP\Constants\\Table::$className");
+        $typeName = constant("RZP\\Constants\\Table::$className");
 
         return $typeName;
     }

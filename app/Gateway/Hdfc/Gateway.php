@@ -258,15 +258,12 @@ class Gateway extends Base\Gateway
      * Does card auth
      *
      * @param  array  $input
-     * @return void
+     * @return mixed
      */
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        //
-        // Enroll card
-        //
         $status = $this->enrollCard($input);
 
         //

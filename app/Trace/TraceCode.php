@@ -26,6 +26,11 @@ class TraceCode
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_CAPTURE_REQUEST_QUEUE             = 'PAYMENT_CAPTURE_REQUEST_QUEUE';
+    const PAYMENT_CAPTURE_SUCCESS_QUEUE             = 'PAYMENT_CAPTURE_SUCCESS_QUEUE';
+    const PAYMENT_CAPTURE_FAILURE_QUEUE             = 'PAYMENT_CAPTURE_FAILURE_QUEUE';
+    const PAYMENT_CAPTURE_FAILURE_EXCEPTION         = 'PAYMENT_CAPTURE_FAILURE_EXCEPTION';
+    const PAYMENT_CAPTURE_DELETE_QUEUE              = 'PAYMENT_CAPTURE_DELETE_QUEUE';
     const PAYMENT_TIMED_OUT                         = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
@@ -193,6 +198,11 @@ class TraceCode
         self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
         self::PAYMENT_FAILED_TO_AUTHORIZED          => 'Payment failed but which succeded on gateway, converting it to authorized',
+        self::PAYMENT_CAPTURE_REQUEST_QUEUE         => 'Payment capture request via queue',
+        self::PAYMENT_CAPTURE_SUCCESS_QUEUE         => 'Payment captured successfully via queue',
+        self::PAYMENT_CAPTURE_FAILURE_QUEUE         => 'Payment failed to capture via queue',
+        self::PAYMENT_CAPTURE_FAILURE_EXCEPTION     => 'Payment failed to capture because of an exception',
+        self::PAYMENT_CAPTURE_DELETE_QUEUE          => 'Deleting the capture request from the queue',
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 
@@ -238,14 +248,13 @@ class TraceCode
     /**
      * Translate event code to message
      *
-     * @param $eventCode event code
-     * @return
+     * @param string $code event code
+     * @return string
      */
     public static function getMessage($code)
     {
         if (isset(self::$messages[$code]) === false)
         {
-            // throw new InvalidArgumentException('Message for $code not defined');
             return null;
         }
 

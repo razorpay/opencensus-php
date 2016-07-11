@@ -318,9 +318,9 @@ class Processor
     /**
      * Responsible for calling the gateway function
      *
-     * @param  string $action refund/capture etc.
-     * @param  array  $input  Relevant input for the corresponding
-     *                        action
+     * @param  string $action      refund/capture etc.
+     * @param  array  $gatewayData Relevant input for the corresponding
+     *                             action
      *
      * @return array or null
      * @throws Exception\LogicException
