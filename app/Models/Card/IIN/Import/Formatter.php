@@ -108,6 +108,7 @@ class Formatter
                 $networkMapping);
 
             $input[IIN::TYPE] = $this->formatType($input[IIN::TYPE]);
+            $input = array_filter($input);
 
             $iins[$input[IIN::IIN]] = $input;
         }
