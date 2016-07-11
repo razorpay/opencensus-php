@@ -6,6 +6,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use Config;
 use Trace;
 use AWS;
