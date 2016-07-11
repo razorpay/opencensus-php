@@ -58,6 +58,33 @@ class XLSImporter
         );
     }
 
+    public function importWithoutNetwork($input)
+    {
+        $ret = (new XLSFileHandler)->getCsvData($input);
+        $ret['columns'] = array('iin', 'network', 'issuer_name',
+            'type', 'category', 'country_full_name', 'country', 'ISO_code_2',
+            'ISO numeric code');
+        $formattedData = (new Formatter)->formatDataNew($ret['columns'], $ret['data']);
+        $dataCleaner = new DataCleaner();
+        $cleaned = $dataCleaner->parse(NULL, $formattedData, FALSE);
+
+        $err_array = array();
+        foreach (array_chunk($cleaned, 1) as $chunks)
+        {
+            try
+            {
+                $this->enterIntoDB($chunks, 1);
+            }
+            catch (\Exception $e)
+            {
+                $msg = $e->getMessage();
+                $msg = explode('Duplicate entry', $msg)[1];
+                $failedIin = explode('for key', $msg)[0];
+                array_push($err_array, $failedIin);
+            }
+        }
+        return $err_array;
+    }
     /**
      * This enter the unique entries into the database.
      *
@@ -65,12 +92,11 @@ class XLSImporter
      *
      * @param array $cleaned        the input entries.
      */
-    protected function enterIntoDB($cleaned)
+    protected function enterIntoDB($cleaned, $chunkSize=5000)
     {
         $time = time();
-
         // Too many entries crashes the sql query
-        foreach (array_chunk($cleaned, 5000) as $chunks)
+        foreach (array_chunk($cleaned, $chunkSize) as $chunks)
         {
             foreach ($chunks as & $chunk)
             {

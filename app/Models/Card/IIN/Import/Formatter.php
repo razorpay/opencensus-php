@@ -75,4 +75,54 @@ class Formatter
 
         return $iins;
     }
+
+    /**
+     * formats the data to iin entity
+     *
+     * @param array $columns    the title of each column
+     * @param array $data       the rows
+     *
+     * @return collection of arrays with keys from iin entity.
+     */
+    public function formatDataNew($columns, $data)
+    {
+        $iins = new Base\PublicCollection;
+
+        foreach ($data as $row)
+        {
+            $input = array();
+            $index = 0;
+            foreach ($columns as $column)
+            {
+                switch (strtolower($column))
+                {
+                    case 'iin':
+                        $input[IIN::IIN] = $row[$index];
+                        break;
+                    case 'network':
+                        $input[IIN::NETWORK] = $row[$index];
+                        break;
+                    case 'issuer_name':
+                        $input[IIN::ISSUER_NAME] = $row[$index];
+                        break;
+                    case 'type':
+                        $input[IIN::TYPE] = $row[$index];
+                        break;
+                    case 'category':
+                        $input[IIN::CATEGORY] = $row[$index];
+                        break;
+                    case 'country':
+                        $input[IIN::COUNTRY] = $row[$index];
+                        break;
+                    default:
+                        //ignore extra columns
+                        break;
+                }
+                $index++;
+            }
+
+            $iins[] = $input;
+        }
+        return $iins;
+    }
 }

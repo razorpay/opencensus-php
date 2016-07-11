@@ -28,6 +28,27 @@ class XLSFileHandler
         return $data;
     }
 
+    public function getCsvData($filePath)
+    {
+        set_time_limit(3000);
+        ini_set('max_execution_time', 6000);
+        ini_set('memory_limit', '2048M');
+        $excelReader = Excel::load($filePath)->excel;
+        $sheet = $excelReader->getSheet(0);
+        $highestRow = $sheet->getHighestRow();
+        $highestColumn = $sheet->getHighestDataColumn();
+        $columnNames = array();
+
+        $data = $sheet->rangeToArray(
+            'A1' . ':' . $highestColumn . $highestRow,
+            null,
+            true,
+            false
+        );
+
+        return ['data' => $data];
+
+    }
     /**
      * return the file from input array
      *
