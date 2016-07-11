@@ -65,6 +65,7 @@ class Handler extends ExceptionHandler
         switch (true)
         {
             case $e instanceof BaseException:
+            case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
                 break;
 
