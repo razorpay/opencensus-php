@@ -75,14 +75,16 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function verifyOtp($input)
+    public function verifyOtp($input, $merchant)
     {
-        //validate and parse contact
+        Customer\Validator::validateGlobalCustomerCreateInput($input);
+
+        // Parse contact
         $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact(
             $input[Entity::CONTACT]);
 
         // Verify the otp with raven service
-        $this->verifyRavenOtp($input);
+        $this->verifyRavenOtp($input, $merchant);
 
         // Get global customer from db or create one.
         $customer = $this->getOrCreateGlobalCustomer($input);
@@ -134,8 +136,12 @@ class Core extends Base\Core
         return $app;
     }
 
-    protected function verifyRavenOtp($input)
+    protected function verifyRavenOtp($input, $merchant)
     {
+        $input['context'] = $merchant->getId();
+
+        $input['source'] = 'api';
+
         try
         {
             (new Customer\Raven)->verifyOtp($input);
