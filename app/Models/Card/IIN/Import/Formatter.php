@@ -16,6 +16,11 @@ use RZP\Exception;
  */
 class Formatter
 {
+    public $creditCard          =   0;
+    public $debitCard           =   0;
+    public $otherCardType       =   0;
+    public $unknownNetworkType  =   0;
+
     public static $cardTypeMap = array(
         'FC'    =>  'credit',
         'DC'    =>  'credit',
@@ -91,9 +96,6 @@ class Formatter
 
         foreach ($data as $row)
         {
-            $input = array();
-            $index = 0;
-
             $input = array_combine($columns, $row);
 
             foreach ($fieldToDel as $field)
@@ -120,6 +122,8 @@ class Formatter
             return Network::$fullName[$networkMapping[$value]];
         }
 
+        $this->unknownNetworkType += 1;
+
         return Network::$fullName[$networkMapping['unknown']];
     }
 
@@ -127,11 +131,18 @@ class Formatter
     {
         $value = strtolower($value);
 
-        if (($value === 'credit') or ($value === 'debit'))
+        if ($value === 'credit')
         {
+            $this->creditCard += 1;
             return $value;
         }
 
+        if ($value === 'debit')
+        {
+            $this->debitCard += 1;
+            return $value;
+        }
+        $this->otherCardType += 1;
         return null;
     }
 

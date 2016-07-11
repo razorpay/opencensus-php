@@ -96,8 +96,8 @@ class XLSImporter
             'DINERS CLUB INTERNATIONAL' => Network::DICL,
             'unknown'                   => Network::UNKNOWN,
         );
-
-        $formattedData = (new Formatter)->formatDataNew(
+        $formatter = (new Formatter);
+        $formattedData = $formatter->formatDataNew(
             $ret['columns'],
             $ret['data'],
             $networkMapping,
@@ -115,7 +115,6 @@ class XLSImporter
             catch (\Exception $e)
             {
                 $msg = $e->getMessage();
-                // TODO Add trace
                 $msg = explode('Duplicate entry', $msg)[1];
                 $failedIin = explode('for key', $msg)[0];
                 $this->trace->info(
@@ -128,7 +127,13 @@ class XLSImporter
             }
         }
         return array(
-            'Failed Iin' => $errArray
+            'Failed Iin'        => $errArray,
+            'Credit Card'       => $formatter->creditCard,
+            'Debit Card'        => $formatter->debitCard,
+            'Other Card'        => $formatter->otherCardType,
+            'Unknown Network'   => $formatter->unknownNetworkType,
+            'Failed Count'      => sizeof($errArray),
+            'Sucessful Entries' => sizeof($formattedData) - sizeof($errArray),
         );
     }
     /**
