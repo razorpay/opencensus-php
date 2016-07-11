@@ -3,7 +3,7 @@
 return [
     'defaults' => [
         'guard' => 'user',
-        'passwords' => 'users',
+        'passwords' => 'user',
     ],
 
     //Authenticating guards
@@ -22,17 +22,17 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => 'App\User\Entity',
+            'model' => App\User\Entity::class,
         ],
         'admins' => [
             'driver' => 'eloquent',
-            'model' => 'App\Admin\Entity',
+            'model' => App\Admin\Entity::class,
         ]
     ],
 
     //Resetting Password
     'passwords' => [
-        'users' => [
+        'user' => [
             'provider' => 'users',
             'email' => 'emails.auth.reminder',
             'table' => 'password_reminders',
