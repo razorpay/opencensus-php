@@ -78,6 +78,8 @@ trait FileHandlerTrait
             return $fullpath;
         }
 
+        return $fullpath;
+
         $s3 = AWS::createClient('s3');
 
         try
