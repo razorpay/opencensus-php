@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 
@@ -25,30 +26,20 @@ class NetbankingSorter extends Terminal\Sorter
             return $terminals;
         }
 
-        $indexed = true;
-
         $bank = $input['payment']->getBank();
 
-        $gatewaysForBank = Gateway::getGatewaysForNetbankingBank($bank, $indexed);
-
-        $context = ['merchant' => $input['merchant']->getId(), 'bank' => $bank];
+        $gatewaysForBank = Gateway::getGatewaysForNetbankingBankIndexed($bank);
 
         $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode'], $context);
+
+        $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $input['merchant']->getId(), $bank);
 
         $testTerminals = [];
 
         foreach ($gatewaysPriority as $gatewayType)
         {
             // First use the direct terminal
-            if (($gatewayType === 'direct') and
-                (isset($gatewaysForBank['direct'])))
-            {
-                $gateway = $gatewaysForBank['direct'];
-            }
-            else
-            {
-                $gateway = $gatewayType;
-            }
+            $gateway = $this->getGatewayToMatch($gatewayType, $gatewaysForBank);
 
             // As the terminals are from the priority list
             // append to the terminal
@@ -63,4 +54,48 @@ class NetbankingSorter extends Terminal\Sorter
 
         return $testTerminals;
     }
+
+    /**
+     * Get gateway name to match with based on gateway type.
+     *
+     * @param string $gatewayType Gateway type, i.e direct or gatewayName
+     * @param string $gatewaysForBank gateways that support bank
+     *
+     * @return string gateway
+     */
+    protected function getGatewayToMatch($gatewayType, $gatewaysForBank)
+    {
+        if (($gatewayType === 'direct') and
+            (isset($gatewaysForBank['direct'])))
+        {
+            $gateway = $gatewaysForBank['direct'];
+        }
+        else
+        {
+            $gateway = $gatewayType;
+        }
+
+        return $gateway;
+    }
+
+    /**
+     * Remove 'direct' for non harshil and kotak
+     * If the bank is kotak and the merchant is not harshil
+     * REMOVE once netbanking kotak is available for everyone
+     *
+     * @param  array &$gatewaysPriority
+     * @param  string $merchant
+     * @param  string $bank
+     * @return void
+     */
+    protected function arrangePriorityByMerchantAndBank(&$gatewaysPriority, $merchant, $bank)
+    {
+        if (($bank === IFSC::KKBK) and
+            ($merchant !== '2aTeFCKTYWwfrF'))
+        {
+            unset($gatewaysPriority[0]);
+        }
+    }
+
+
 }

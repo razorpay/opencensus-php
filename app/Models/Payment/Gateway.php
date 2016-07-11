@@ -431,21 +431,14 @@ class Gateway
                 (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 
-    public static function getGatewaysForNetbankingBank($bank, $indexed = false)
+    public static function getGatewaysForNetbankingBank($bank)
     {
         $gateways = [];
 
         // Check for direct netbanking gateway
         if (self::isNetbankingBankDirectlySupported($bank))
         {
-            if ($indexed)
-            {
-                $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
-            }
-            else
-            {
-                $gateways[] = self::$netbankingToGatewayMap[$bank];
-            }
+            $gateways[] = self::$netbankingToGatewayMap[$bank];
         }
 
         // Add netbanking gateways that support bank
@@ -453,21 +446,36 @@ class Gateway
         {
             if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
             {
-                if ($indexed)
-                {
-                    $gateways['gateway'][] = $netbankingGateway;
-                }
-                else
-                {
-                    $gateways[] = $netbankingGateway;
-                }
+                $gateways[] = $netbankingGateway;
             }
         }
 
         return $gateways;
     }
 
-    public static function getGatewaysPriority($method, $mode = 'live', $context = [])
+    public static function getGatewaysForNetbankingBankIndexed($bank)
+    {
+        $gateways = [];
+
+        // Check for direct netbanking gateway
+        if (self::isNetbankingBankDirectlySupported($bank))
+        {
+            $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
+        }
+
+        // Add netbanking gateways that support bank
+        foreach (self::$netbankingGateways as $netbankingGateway)
+        {
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            {
+                $gateways['gateway'][] = $netbankingGateway;
+            }
+        }
+
+        return $gateways;
+    }
+
+    public static function getGatewaysPriority($method, $mode = 'live')
     {
         $gateways = [];
 
@@ -490,17 +498,7 @@ class Gateway
                     $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
                 }
 
-                // If the bank is kotak and the merchant is not harshil
-                if ((isset($context['bank'])) and
-                    ($context['bank'] === IFSC::KKBK) and
-                    ($context['merchant'] !== '2aTeFCKTYWwfrF'))
-                {
-                    ;
-                }
-                else
-                {
-                    array_unshift($gateways, 'direct');
-                }
+                array_unshift($gateways, 'direct');
                 break;
 
             default:
