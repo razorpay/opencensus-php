@@ -28,12 +28,12 @@ class XLSFileHandler
         return $data;
     }
 
-    public function getCsvData($filePath)
+    public function getCsvData($file)
     {
         set_time_limit(3000);
         ini_set('max_execution_time', 6000);
         ini_set('memory_limit', '2048M');
-        $excelReader = Excel::load($filePath)->excel;
+        $excelReader = Excel::load($file)->excel;
         $sheet = $excelReader->getSheet(0);
         $highestRow = $sheet->getHighestRow();
         $highestColumn = $sheet->getHighestDataColumn();
