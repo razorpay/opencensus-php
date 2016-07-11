@@ -58,9 +58,9 @@ class XLSImporter
         );
     }
 
-    public function importWithoutNetwork($input)
+    public function importWithoutNetwork($file)
     {
-        $ret = (new XLSFileHandler)->getCsvData($input);
+        $ret = (new XLSFileHandler)->getCsvData($file);
         $ret['columns'] = array('iin', 'network', 'issuer_name',
             'type', 'category', 'country_full_name', 'country', 'ISO_code_2',
             'ISO numeric code');
@@ -83,7 +83,9 @@ class XLSImporter
                 array_push($err_array, $failedIin);
             }
         }
-        return $err_array;
+        return array(
+            'Failed Iin' => $err_array
+        );
     }
     /**
      * This enter the unique entries into the database.
