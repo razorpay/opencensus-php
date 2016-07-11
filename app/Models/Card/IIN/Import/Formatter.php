@@ -85,7 +85,7 @@ class Formatter
      *
      * @return collection of arrays with keys from iin entity.
      */
-    public function formatDataNew($columns, $data, $networkMapping, $FieldToDel)
+    public function formatDataNew($columns, $data, $networkMapping, $fieldToDel)
     {
         $iins = array();
 
@@ -95,17 +95,17 @@ class Formatter
             $index = 0;
 
             $input = array_combine($columns, $row);
-            foreach($FieldToDel as $field){
+
+            foreach ($fieldToDel as $field)
+            {
                 unset($input[$field]);
             }
+
             $input[IIN::NETWORK] = $this->formatNetwork(
                 $input[IIN::NETWORK],
-                $networkMapping
-            );
+                $networkMapping);
 
-            $input[IIN::TYPE] = $this->formatType(
-                $input[IIN::TYPE]
-            );
+            $input[IIN::TYPE] = $this->formatType($input[IIN::TYPE]);
 
             $iins[$input[IIN::IIN]] = $input;
         }
@@ -113,7 +113,8 @@ class Formatter
         return $iins;
     }
 
-    private function formatNetwork($value, $networkMapping){
+    private function formatNetwork($value, $networkMapping)
+    {
         if (array_key_exists($value, $networkMapping))
         {
             return Network::$fullName[$networkMapping[$value]];
@@ -122,19 +123,16 @@ class Formatter
         return Network::$fullName[$networkMapping['unknown']];
     }
 
-    private function formatType($value){
+    private function formatType($value)
+    {
+        $value = strtolower($value);
 
-        if ($value == 'CREDIT' or $value == 'DEBIT')
-        {
-            $value = strtolower($value);
-        }
-
-        if ($value == 'credit' or $value == 'debit')
+        if (($value === 'credit') or ($value === 'debit'))
         {
             return $value;
         }
 
-        return '';
+        return null;
     }
 
 }
