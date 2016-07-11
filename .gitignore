@@ -9,6 +9,7 @@ node_modules/
 tmp*.blade.php
 generated/
 bootstrap/environment.php
+app/storage/*
 storage/selenium.png
 ## Need to fix this
 config/dev/*
