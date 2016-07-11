@@ -5,6 +5,7 @@ namespace RZP\Services;
 use RZP\Exception;
 use Requests;
 use Mailgun\Mailgun as MgClient;
+use Http\Adapter\Guzzle6\Client as GuzzleClient;
 
 class Mailgun
 {
@@ -40,7 +41,9 @@ class Mailgun
 
         $key = $this->config['key'];
 
-        $this->mgClient = new MgClient($key);
+        $client = new GuzzleClient;
+
+        $this->mgClient = new MgClient($key, $client);
 
         return $this->mgClient;
     }
