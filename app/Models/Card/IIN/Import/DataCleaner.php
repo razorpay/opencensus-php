@@ -70,11 +70,14 @@ class DataCleaner
      *
      * @return array   cleaned data
      */
-    public function parse($network, $data)
+    public function parse($network, $data, $checkForConflicts=TRUE)
     {
-        $uniqueRecords = $this->removeDuplicate($network, $data);
-        $cleaned = $this->removeDBConflicts($uniqueRecords);
-        return $cleaned;
+        $uniqueRecords = $this->removeDuplicate($data, $network);
+        if ($checkForConflicts)
+        {
+            $cleaned = $this->removeDBConflicts($uniqueRecords);
+        }
+        return $uniqueRecords;
     }
 
     /**
@@ -116,7 +119,7 @@ class DataCleaner
      *
      * @return array  associative array of formatted data with iin as thier key.
      */
-    protected function removeDuplicate($inputNetwork, $data)
+    protected function removeDuplicate($data, $inputNetwork)
     {
         $indexed = array();
         // Indexing the data based on IIN number
@@ -125,12 +128,17 @@ class DataCleaner
         foreach ($data as $input)
         {
             $iin = $input[IIN\Entity::IIN];
-            $network = Network::$fullName[Network::detectNetwork($iin)];
-            $input[IIN\Entity::NETWORK] = $network;
+            if (isset($inputNetwork)){
+                $network = Network::$fullName[Network::detectNetwork($iin)];
+                $input[IIN\Entity::NETWORK] = $network;
+            }
 
-            if (strcmp($inputNetwork, $network) !== 0)
+            if (isset($inputNetwork))
             {
-                $this->networkCheckFails[$iin][] = $index;
+                if (strcmp($inputNetwork, $network) !== 0)
+                {
+                   $this->networkCheckFails[$iin][] = $index;
+                }
             }
             else if (isset($indexed[$iin]))
             {
