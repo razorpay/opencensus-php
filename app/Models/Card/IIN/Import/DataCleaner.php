@@ -73,9 +73,11 @@ class DataCleaner
     public function parse($network, $data, $checkForConflicts=TRUE)
     {
         $uniqueRecords = $this->removeDuplicate($data, $network);
+
         if ($checkForConflicts)
         {
             $cleaned = $this->removeDBConflicts($uniqueRecords);
+            return $cleaned;
         }
         return $uniqueRecords;
     }
@@ -133,12 +135,9 @@ class DataCleaner
                 $input[IIN\Entity::NETWORK] = $network;
             }
 
-            if (isset($inputNetwork))
+            if (isset($inputNetwork) && (strcmp($inputNetwork, $network) !== 0))
             {
-                if (strcmp($inputNetwork, $network) !== 0)
-                {
-                   $this->networkCheckFails[$iin][] = $index;
-                }
+               $this->networkCheckFails[$iin][] = $index;
             }
             else if (isset($indexed[$iin]))
             {
