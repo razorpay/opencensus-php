@@ -143,7 +143,9 @@ class Formatter
             $this->debitCard += 1;
             return $value;
         }
+
         $this->otherCardType += 1;
+
         return null;
     }
 

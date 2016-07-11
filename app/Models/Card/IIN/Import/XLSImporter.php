@@ -96,6 +96,7 @@ class XLSImporter
             'DINERS CLUB INTERNATIONAL' => Network::DICL,
             'unknown'                   => Network::UNKNOWN,
         );
+
         $formatter = (new Formatter);
         $formattedData = $formatter->formatDataNew(
             $ret['columns'],
@@ -116,16 +117,17 @@ class XLSImporter
             {
                 $msg = $e->getMessage();
                 $msg = explode('Duplicate entry', $msg)[1];
+
                 $failedIin = explode('for key', $msg)[0];
+
                 $this->trace->info(
                     TraceCode::IIN_INSERT_FAILED,
-                    [
-                        'iin' => $failedIin,
-                    ]
-                );
+                    ['iin' => $failedIin]);
+
                 array_push($errArray, $failedIin);
             }
         }
+
         return array(
             'Failed Iin'        => $errArray,
             'Credit Card'       => $formatter->creditCard,
@@ -146,6 +148,7 @@ class XLSImporter
     protected function enterIntoDB($cleaned, $chunkSize=5000)
     {
         $time = time();
+
         // Too many entries crashes the sql query
         foreach (array_chunk($cleaned, $chunkSize) as $chunks)
         {
