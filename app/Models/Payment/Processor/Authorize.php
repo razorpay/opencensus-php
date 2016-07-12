@@ -515,8 +515,13 @@ trait Authorize
             return;
         }
 
-        $appToken = $this->app['request']->session()->get('app_token');
-// sd($appToken);
+        if ($this->request->hasSession() === false)
+        {
+            return;
+        }
+
+        $appToken = $this->request->session()->get('app_token');
+
         if ($appToken !== null)
         {
             $input['app_token'] = $appToken;
