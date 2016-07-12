@@ -1,6 +1,6 @@
 <?php
 
-namespace Jobs;
+namespace Rzp\Jobs;
 
 use App;
 use RZP\Trace\TraceCode;
