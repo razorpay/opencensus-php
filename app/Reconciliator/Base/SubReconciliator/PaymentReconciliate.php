@@ -55,6 +55,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Sets card details (debit/credit, international).
      *
      * @param array $fileContents
+     * @return array
      */
     public function startReconciliation($fileContents)
     {
@@ -65,6 +66,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->runReconciliate($row, $extraDetails);
         }
+
+        return $this->getSummary();
     }
 
     public function runReconciliate($row, $extraDetails)
@@ -76,6 +79,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
+        $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
+
         try
         {
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
@@ -85,18 +90,35 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 return;
             }
 
+            // Increment the total count for the summary
+            $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
+
             // Validates that the payment status is not failed.
             $validate = $this->validatePaymentStatus($row);
 
             if ($validate === true)
             {
-                $this->persistReconciliationData($rowDetails);
+                $persistSuccess = $this->persistReconciliationData($rowDetails);
+                
+                if ($persistSuccess === false)
+                {
+                    // Increment the failure count for the summary.
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                }
+            }
+            else
+            {
+                // Increment the failure count for the summary.
+                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
             }
         }
         catch (\Exception $ex)
         {
             // Ideally, there shouldn't be any exceptions thrown. They should be handled
             // in the respective reconciliation steps.
+
+            // Increment the failure count for the summary.
+            $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
 
             $this->messenger->raiseReconAlert(
                 [
@@ -266,6 +288,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         $this->persistCardDetailsIfAbsent($rowDetails);
+        
+        return $recordSuccess;
     }
 
     protected function getRowDetailsStructured($row)

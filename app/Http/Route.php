@@ -621,7 +621,7 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    protected static function addRoutes($type)
+    public static function addRoutes($type)
     {
         foreach (self::$$type as $routeName)
         {

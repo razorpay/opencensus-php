@@ -22,8 +22,8 @@ class ReconciliatorController extends Controller
     {
         $input = Request::all();
 
-        $statusCode = $this->orchestrator->initiateReconciliationProcess($input);
+        $summary = $this->orchestrator->initiateReconciliationProcess($input);
 
-        return ApiResponse::generateResponse([], $statusCode);
+        return ApiResponse::generateResponse($summary);
     }
 }

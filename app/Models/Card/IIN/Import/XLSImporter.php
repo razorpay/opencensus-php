@@ -115,6 +115,7 @@ class XLSImporter
             }
             catch (\Exception $e)
             {
+		\Log::info('exception occurred', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
                 $msg = $e->getMessage();
                 $msg = explode('Duplicate entry', $msg)[1];
 

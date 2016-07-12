@@ -28,6 +28,7 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      * from the gateway's sub reconciliator classes itself.
      *
      * @param array $fileContents
+     * @return array
      * @throws ReconciliationException
      */
     public function startReconciliation(array $fileContents)
@@ -72,6 +73,14 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
             $subReconciliatorObject->runReconciliate($row, $extraDetails);
         }
+
+        //
+        // Ideally, we should be returning the response of getSummary() here. But, with
+        // the way that this has been implemented, that is not possible.
+        //
+        return [
+            'message' => 'All payments and refunds have been reconciled successfully!'
+        ];
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
