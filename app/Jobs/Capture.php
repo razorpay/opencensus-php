@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payment\Processor;
+namespace Jobs;
 
 use App;
 use RZP\Constants\Mode;
@@ -8,7 +8,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 
-class CaptureInferno
+class Capture
 {
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 300;
@@ -35,7 +35,7 @@ class CaptureInferno
         $this->job = $job;
 
         $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_REQUEST_QUEUE,
+            TraceCode::PAYMENT_QUEUE_CAPTURE_REQUEST,
             $data
         );
 
@@ -44,14 +44,14 @@ class CaptureInferno
             $this->runCaptureFlowForQueue();
 
             $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_SUCCESS_QUEUE
+                TraceCode::PAYMENT_QUEUE_CAPTURE_SUCCESS
             );
 
             $job->delete();
         }
         catch (Exception\GatewayTimeoutException $ex)
         {
-            $traceCode = TraceCode::PAYMENT_CAPTURE_FAILURE_QUEUE;
+            $traceCode = TraceCode::PAYMENT_QUEUE_CAPTURE_FAILURE;
 
             $this->handleCaptureException($traceCode, $ex);
         }
@@ -77,8 +77,9 @@ class CaptureInferno
         // TODO: Handle Kotak gateway capture timeout
         // $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
 
-        // We add the capture request to queue only in LIVE mode.
-        return $this->app['gateway']->call($gateway, Action::CAPTURE, $gatewayData, Mode::LIVE, $terminal);
+        $mode = $this->data['mode'];
+
+        return $this->app['gateway']->call($gateway, Action::CAPTURE, $gatewayData, $mode, $terminal);
     }
 
     protected function handleCaptureException($traceCode, $ex)
@@ -100,7 +101,7 @@ class CaptureInferno
         if ($this->job->attempts() > self::MAX_JOB_ATTEMPTS)
         {
             $this->trace->error(
-                TraceCode::PAYMENT_CAPTURE_DELETE_QUEUE,
+                TraceCode::PAYMENT_QUEUE_CAPTURE_DELETE,
                 [
                     'data'         => $this->data,
                     'job_attempts' => $this->job->attempts(),

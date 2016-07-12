@@ -96,6 +96,13 @@ trait Capture
         return $payment;
     }
 
+    /**
+     * If gateway call for capture times out, we catch the exception thrown
+     * and push it into a queue. We continue with the normal flow afterwards.
+     *
+     * @param $data
+     * @throws Exception\BaseException
+     */
     public function captureOnGateway($data)
     {
         try
@@ -107,10 +114,12 @@ trait Capture
             catch (Exception\GatewayTimeoutException $ex)
             {
                 $this->trace->traceException($ex);
+                
+                $data['mode'] = $this->mode;
 
-                $this->app['queue']->push('RZP\Models\Payment\Processor\CaptureInferno', ['data' => $data]);
+                $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
             }
-            
+
             $this->verifyOrderUnpaid($this->payment);
 
             $this->recordCapture();

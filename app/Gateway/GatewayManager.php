@@ -108,11 +108,6 @@ class GatewayManager extends \Illuminate\Support\Manager
         return parent::driver($gateway);
     }
 
-    public function netbankingGateway($bank)
-    {
-        return $this->netbankingGateway($bank);
-    }
-
     public function server($driver)
     {
         $servers = & $this->servers;
