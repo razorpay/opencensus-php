@@ -276,6 +276,8 @@ trait Authorize
 
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
+        $this->checkAndFillSavedAppToken($input);
+// sd($input);
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
@@ -504,6 +506,26 @@ trait Authorize
         );
 
         return $data;
+    }
+
+    protected function checkAndFillSavedAppToken(array & $input)
+    {
+        if (isset($input['customer_id']) === true)
+        {
+            return;
+        }
+
+        if ($this->request->hasSession() === false)
+        {
+            return;
+        }
+
+        $appToken = $this->request->session()->get('app_token');
+
+        if ($appToken !== null)
+        {
+            $input['app_token'] = $appToken;
+        }
     }
 
     protected function getMerchantCallbackUrl($payment)
