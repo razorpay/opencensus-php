@@ -12,7 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use Dashboard\Dashboard;
+use RZP\Dashboard\Dashboard;
 
 use RZP\Trace\TraceCode;
 

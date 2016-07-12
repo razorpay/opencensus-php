@@ -481,29 +481,8 @@ class Gateway extends Base\Gateway
         $this->request = $request;
         $this->response = $response;
 
-        try
-        {
-            // send the request and get response
-            $response['response'] = $this->postRequest($request);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $this->exception = $e;
-
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (RZP\Gateway\Utility::checkTimeout($e))
-            {
-                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
+        // send the request and get response
+        $response['response'] = $this->postRequest($request);
 
         $response['xml'] = $response['response']->body;
 

@@ -58,6 +58,7 @@ final class Route
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
         'iin_fetch_multiple'                      => ['get',      'iins',                                     'CardController@getIins'                                            ],
         'iin_add'                                 => ['post',     'iins',                                     'CardController@postIin'                                            ],
+        'iin_upload'                              => ['post',     'iins/upload',                              'CardController@uploadIin'                                          ],
         'iin_edit'                                => ['put',      'iins/{id}',                                'CardController@editIin'                                            ],
         'iin_generate_post'                       => ['post',     'iins/import/generate',                     'CardController@postIinGenerate'                                    ],
         'merchant_public_get_banks'               => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
@@ -385,6 +386,7 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'iin_upload',
         'iin_edit',
         'iin_generate_post',
         'send_test_newsletter',
@@ -654,20 +656,19 @@ final class Route
             // then it will go into internal app auth and will not expose the route.
             // This must not happen though.
             //
-            self::addFilterOnRouteGroups($router, array('auth.app'), 'internal');
-            self::addFilterOnRouteGroups($router, array('auth.private', 'route.feature'), 'private');
-            self::addFilterOnRouteGroups($router, array('auth.public', 'route.feature'), 'public');
-            self::addFilterOnRouteGroups($router, array('auth.public_callback'), 'publicCallback');
-            self::addFilterOnRouteGroups($router, array('auth.proxy', 'route.feature'), 'proxy');
-            self::addFilterOnRouteGroups($router, array('auth.direct'), 'direct');
+            self::addRoutes('internal');
+            self::addRoutes('private');
+            self::addRoutes('public');
+            self::addRoutes('publicCallback');
+            self::addRoutes('proxy');
+            self::addRoutes('direct');
         });
 
-        $router->get('/', function ()
-        {
-            $response['message'] = "Welcome to Razorpay API.";
+    }
 
-            return ApiResponse::json($response);
-        });
+    public static function defineAllExtraRoutes()
+    {
+        $router = self::$router;
 
         $router->any('{all}', function ($uri)
         {
@@ -675,11 +676,15 @@ final class Route
         })->where('all', '.*');
     }
 
-    protected static function addFilterOnRouteGroups($router, $filter, $routeGroup)
+    public static function defineRootApiRoute()
     {
-        $router->group(array('before' => $filter), function () use ($routeGroup)
+        $router = self::$router;
+
+        $router->get('/', function ()
         {
-            self::addRoutes($routeGroup);
+            $response['message'] = "Welcome to Razorpay API.";
+
+            return ApiResponse::json($response);
         });
     }
 

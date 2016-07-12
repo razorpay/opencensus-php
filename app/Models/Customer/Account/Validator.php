@@ -22,6 +22,13 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'sometimes|email',
     );
 
+    protected static $globalCreateRules = array(
+        Entity::CONTACT         => 'sometimes|contact_syntax',
+        Entity::EMAIL           => 'sometimes|email',
+        'otp'                   => 'sometimes|string|regex:"^\d{4,8}$"',
+        'device_token'          => 'sometimes|',
+    );
+
     protected static $contactRules = array(
         Entity::CONTACT => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
     );
@@ -40,5 +47,10 @@ class Validator extends Base\Validator
         $contact = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
 
         return $contact;
+    }
+
+    public static function validateGlobalCustomerCreateInput($input)
+    {
+        (new static)->validateInput('global_create', $input);
     }
 }

@@ -93,7 +93,7 @@ return array(
 
     'key' => env('ENCRYPTION_KEY'),
 
-    'cipher' => 'AES-256-CBC',
+    'cipher' => MCRYPT_RIJNDAEL_128,
 
     /*
     |--------------------------------------------------------------------------
@@ -243,7 +243,7 @@ return array(
         // Custom Facade
         'Excel'     => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'       => Aws\Laravel\AwsFacade::class,
-        'Slack'     => Maknz\Slack\Laravel\Facade::class
+        'Slack'     => Maknz\Slack\Facades\Slack::class
     ),
 
     'context' => env('CONTEXT'),

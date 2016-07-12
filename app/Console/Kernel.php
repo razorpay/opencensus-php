@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         Commands\GenerateEmailTemplates::class,
         Commands\MigrateNotesToEs::class,
         Commands\RzpDbRefresh::class,
+        Commands\IinImport::class,
     ];
 
     /**

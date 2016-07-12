@@ -51,6 +51,13 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function importCsvIin($job, $input)
+    {
+        $result = (new Import\XLSImporter)->importWithoutNetwork($input);
+
+        return $result;
+    }
+
     public function generateIinFile($input)
     {
         $result = (new Import\IinGenerator)->generate($input);

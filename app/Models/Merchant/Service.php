@@ -563,7 +563,7 @@ class Service extends Base\Service
     *   if (monday)  - 3 days
     *   else         - 1 day
     */
-    public function postMerchantBeneficiaryFile()
+    public function postMerchantBeneficiaryFile($input)
     {
         $filterDays = 1;
         $today = Carbon::today('Asia/Kolkata');
@@ -581,14 +581,18 @@ class Service extends Base\Service
                                                         $filterDate->timestamp,
                                                         $today->timestamp);
 
-        if ($merchantsActivatedSinceLastReport > 0)
+        if ((isset($input['hostToHostFormat'])) and ($input['hostToHostFormat'] === '1'))
+        {
+            (new BankAccount\BeneficiaryFile3)->generate();
+        }
+        else if ($merchantsActivatedSinceLastReport > 0)
         {
             (new BankAccount\BeneficiaryFile2)->generate();
 
             $message = "Merchant Beneficiary file generated. Merchants activated since last".
                     " report is ".$merchantsActivatedSinceLastReport;
 
-            $this->slackPost($message,[],['channel' => '#tech_logs']);
+            $this->slackPost($message,[],['channel' => '#settlements']);
         }
 
         //Log response in trace

@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.18.25",
+            "version": "3.18.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "37a8ce927a69de3d821c21b64674a2b3b9d1d247"
+                "reference": "8cc3d3231d9fb9da528205f3b905097a37ac3df3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/37a8ce927a69de3d821c21b64674a2b3b9d1d247",
-                "reference": "37a8ce927a69de3d821c21b64674a2b3b9d1d247",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8cc3d3231d9fb9da528205f3b905097a37ac3df3",
+                "reference": "8cc3d3231d9fb9da528205f3b905097a37ac3df3",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-07-05 19:25:06"
+            "time": "2016-07-07 23:09:15"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1702,12 +1702,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "733cfda4cac3323612428f549d967404e57317d8"
+                "reference": "e61ec08a1fbca6aca5d05e72392986b6cf9b856b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/733cfda4cac3323612428f549d967404e57317d8",
-                "reference": "733cfda4cac3323612428f549d967404e57317d8",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/e61ec08a1fbca6aca5d05e72392986b6cf9b856b",
+                "reference": "e61ec08a1fbca6aca5d05e72392986b6cf9b856b",
                 "shasum": ""
             },
             "require": {
@@ -1744,9 +1744,10 @@
                 "slack"
             ],
             "support": {
-                "source": "https://github.com/razorpay/slack/tree/queue"
+                "source": "https://github.com/razorpay/slack/tree/queue",
+                "issues": "https://github.com/razorpay/slack/issues"
             },
-            "time": "2015-10-15 00:00:30"
+            "time": "2016-07-07 23:02:18"
         },
         {
             "name": "monolog/monolog",
@@ -2743,23 +2744,23 @@
         },
         {
             "name": "swiftmailer/swiftmailer",
-            "version": "v5.4.2",
+            "version": "v5.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swiftmailer/swiftmailer.git",
-                "reference": "d8db871a54619458a805229a057ea2af33c753e8"
+                "reference": "4cc92842069c2bbc1f28daaaf1d2576ec4dfe153"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/d8db871a54619458a805229a057ea2af33c753e8",
-                "reference": "d8db871a54619458a805229a057ea2af33c753e8",
+                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/4cc92842069c2bbc1f28daaaf1d2576ec4dfe153",
+                "reference": "4cc92842069c2bbc1f28daaaf1d2576ec4dfe153",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "mockery/mockery": "~0.9.1,<0.9.4"
+                "mockery/mockery": "~0.9.1"
             },
             "type": "library",
             "extra": {
@@ -2792,30 +2793,30 @@
                 "mail",
                 "mailer"
             ],
-            "time": "2016-05-01 08:45:47"
+            "time": "2016-07-08 11:51:25"
         },
         {
             "name": "symfony/console",
-            "version": "v2.8.8",
+            "version": "v3.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "c392a6ec72f2122748032c2ad6870420561ffcfa"
+                "reference": "a7abb7153f6d1da47f87ec50274844e246b09d9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/c392a6ec72f2122748032c2ad6870420561ffcfa",
-                "reference": "c392a6ec72f2122748032c2ad6870420561ffcfa",
+                "url": "https://api.github.com/repos/symfony/console/zipball/a7abb7153f6d1da47f87ec50274844e246b09d9f",
+                "reference": "a7abb7153f6d1da47f87ec50274844e246b09d9f",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.9",
+                "php": ">=5.5.9",
                 "symfony/polyfill-mbstring": "~1.0"
             },
             "require-dev": {
                 "psr/log": "~1.0",
-                "symfony/event-dispatcher": "~2.1|~3.0.0",
-                "symfony/process": "~2.1|~3.0.0"
+                "symfony/event-dispatcher": "~2.8|~3.0",
+                "symfony/process": "~2.8|~3.0"
             },
             "suggest": {
                 "psr/log": "For using the console logger",
@@ -2825,7 +2826,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.8-dev"
+                    "dev-master": "3.0-dev"
                 }
             },
             "autoload": {
@@ -2852,7 +2853,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2016-06-29 07:02:14"
+            "time": "2016-06-29 07:02:21"
         },
         {
             "name": "symfony/css-selector",
@@ -3731,18 +3732,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/codacy/php-codacy-coverage.git",
-                "reference": "9ad3839bfad05cae66c9851c122ed845521f5eff"
+                "reference": "92194b1ece3379e56bb1f95d6f540fc6244d9946"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/9ad3839bfad05cae66c9851c122ed845521f5eff",
-                "reference": "9ad3839bfad05cae66c9851c122ed845521f5eff",
+                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/92194b1ece3379e56bb1f95d6f540fc6244d9946",
+                "reference": "92194b1ece3379e56bb1f95d6f540fc6244d9946",
                 "shasum": ""
             },
             "require": {
                 "gitonomy/gitlib": "~0.1",
                 "php": ">=5.3.3",
-                "symfony/console": "~2.5"
+                "symfony/console": "~2.5|~3.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "~4.5"
@@ -3768,7 +3769,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2016-06-22 09:57:34"
+            "time": "2016-07-07 15:33:12"
         },
         {
             "name": "doctrine/instantiator",

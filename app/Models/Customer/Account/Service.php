@@ -16,7 +16,17 @@ class Service extends Base\Service
      */
     public function createLocalCustomer($input)
     {
-        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant);
+        $failOnDuplicate = true;
+
+        if ((isset($input['flag'])) and
+            ($input['flag'] === '1'))
+        {
+            $failOnDuplicate = false;
+        }
+
+        unset($input['flag']);
+
+        $customer = (new Customer\Core)->createLocalCustomer($input, $this->merchant, $failOnDuplicate);
 
         return $customer->toArrayPublic();
     }
@@ -111,11 +121,7 @@ class Service extends Base\Service
      */
     public function verifyOtp($input)
     {
-        $input['context'] = $this->merchant->getId();
-
-        $input['source'] = 'api';
-
-        $data = (new Customer\Core)->verifyOtp($input);
+        $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
 
         return $data;
     }
