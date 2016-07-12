@@ -103,7 +103,7 @@ trait Capture
      * @param $data
      * @throws Exception\BaseException
      */
-    public function captureOnGateway($data)
+    protected function captureOnGateway($data)
     {
         try
         {
@@ -114,7 +114,7 @@ trait Capture
             catch (Exception\GatewayTimeoutException $ex)
             {
                 $this->trace->traceException($ex);
-                
+
                 $data['mode'] = $this->mode;
 
                 $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);

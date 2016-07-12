@@ -3,10 +3,10 @@
 namespace Jobs;
 
 use App;
-use RZP\Constants\Mode;
-use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
+use RZP\Models\Payment;
 
 class Capture
 {
@@ -65,21 +65,19 @@ class Capture
 
     protected function runCaptureFlowForQueue()
     {
-        $payment = $this->app['repo']->payment->findOrFail($this->data['payment']['id']);
-
-        $terminal = $payment->terminal;
-
-        $gateway = $payment->getGateway();
-
-        $gatewayData['terminal'] = $terminal;
-        $gatewayData['merchant'] = $payment->merchant;
-
-        // TODO: Handle Kotak gateway capture timeout
-        // $gatewayData['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
-
         $mode = $this->data['mode'];
 
-        return $this->app['gateway']->call($gateway, Action::CAPTURE, $gatewayData, $mode, $terminal);
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $payment = $this->app['repo']->payment->findOrFail($this->data['payment']['id']);
+
+        $merchant = $payment->merchant;
+
+        $paymentProcessor = new Processor($merchant);
+
+        $paymentProcessor->callGatewayFunctionViaQueue(Payment\Action::CAPTURE, $this->data);
     }
 
     protected function handleCaptureException($traceCode, $ex)
