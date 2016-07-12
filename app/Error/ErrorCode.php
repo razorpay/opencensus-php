@@ -178,8 +178,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                    = 'BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID';
     const BAD_REQUEST_PAYMENT_ABORTED                                               = 'BAD_REQUEST_PAYMENT_ABORTED';
     const BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED                          = 'BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED';
-    const BAD_REQUEST_PAYMENT_MISSING_DATA                                        = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
-    const BAD_REQUEST_INVALID_PARAMETERS                                          = 'BAD_REQUEST_INVALID_PARAMETERS';
+    const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
+    const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
 
     const BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED                                     = 'BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED';
     const BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT                            = 'BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT';

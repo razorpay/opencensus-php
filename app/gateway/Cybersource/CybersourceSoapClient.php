@@ -55,7 +55,7 @@ class CybersourceSoapClient extends \SoapClient
         {
             $this->trace->traceException($e);
 
-            throw new \EE\Exception\RuntimeException(null, null, $e);
+            throw new \RZP\Exception\RuntimeException(null, null, $e);
         }
 
         return parent::__doRequest($request, $location, $action, $version);

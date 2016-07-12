@@ -67,11 +67,11 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
+        self::GATEWAY_ACQUIRER,
         self::USED_COUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-        self::GATEWAY_ACQUIRER,
     );
 
     protected $table = 'terminals';
