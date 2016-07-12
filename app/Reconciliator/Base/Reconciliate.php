@@ -97,6 +97,11 @@ class Reconciliate
             $allSummaries[] = $summary;
         }
         
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_SUMMARY,
+            $allSummaries
+        );
+        
         return $allSummaries;
     }
 

@@ -23,6 +23,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Mail;
 use Lib\PhoneBook;
+use Crypt;
 
 trait Authorize
 {
@@ -1039,7 +1040,7 @@ trait Authorize
 
     protected function getEncryptedGatewayText($gateway)
     {
-        return \Crypt::encrypt($gateway . '__' . time());
+        return Crypt::encrypt($gateway . '__' . time());
     }
 
 
