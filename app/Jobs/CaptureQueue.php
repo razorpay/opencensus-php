@@ -3,12 +3,11 @@
 namespace Jobs;
 
 use App;
-use RZP\Models\Payment\Processor\Processor;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Payment;
 
-class Capture
+class CaptureQueue
 {
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 300;
@@ -28,7 +27,7 @@ class Capture
         $this->trace = $this->app['trace'];
     }
 
-    function fire($job, $data)
+    public function fire($job, $data)
     {
         $this->data = $data['data'];
 
@@ -75,7 +74,7 @@ class Capture
 
         $merchant = $payment->merchant;
 
-        $paymentProcessor = new Processor($merchant);
+        $paymentProcessor = new Payment\Processor\Processor($merchant);
 
         $paymentProcessor->callGatewayFunctionViaQueue(Payment\Action::CAPTURE, $this->data);
     }
