@@ -90,7 +90,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapApiRoutes(Router $router)
     {
         $router->group(
-            ['middleware' => 'web'],
+            ['middleware' => 'api'],
             function ($router)
             {
                 Route::addRoutes('internal');
