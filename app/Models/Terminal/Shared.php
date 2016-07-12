@@ -51,7 +51,6 @@ class Shared
         self::AXIS_MIGS_RAZORPAY_TERMINAL   => Gateway::AXIS_MIGS,
         self::BILLDESK_RAZORPAY_TERMINAL    => Gateway::BILLDESK,
         self::CYBERSOURCE_HDFC_TERMINAL     => Gateway::CYBERSOURCE,
-        self::CYBERSOURCE_AXIS_TERMINAL     => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL        => Gateway::HDFC,
         self::KOTAK_RAZORPAY_TERMINAL       => Gateway::KOTAK,
         self::MOBIKWIK_RAZORPAY_TERMINAL    => Gateway::MOBIKWIK,
