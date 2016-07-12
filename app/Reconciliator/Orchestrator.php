@@ -122,9 +122,7 @@ class Orchestrator
             $this->allFilesDetails
         );
 
-        $this->orchestrate();
-
-        return 200;
+        return $this->orchestrate();
     }
 
     /**
@@ -244,7 +242,7 @@ class Orchestrator
             );
         }
 
-        $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
+        return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
     protected function checkFileSkip($fileDetails)
