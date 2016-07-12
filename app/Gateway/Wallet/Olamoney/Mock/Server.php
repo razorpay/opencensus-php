@@ -16,9 +16,9 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        $bill = json_decode(base64_decode(urldecode($input['bill'])), true);
-
         parent::authorize($input);
+
+        $bill = json_decode(base64_decode(urldecode($input['bill'])), true);
 
         $this->validateActionInput($input);
 
@@ -30,7 +30,7 @@ class Server extends Base\Mock\Server
             'amount'            => $bill['amount'],
             'comments'          => $bill['comments'],
             'udf'               => $bill['udf'],
-            'timestamp'         => '1467613732',
+            'timestamp'         => time(),
         );
         $content['hash'] = $this->generateHash($content);
 
@@ -83,6 +83,7 @@ class Server extends Base\Mock\Server
         $response = \Response::make($json);
 
         $response->headers->set('Content-Type', $content_type);
+
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

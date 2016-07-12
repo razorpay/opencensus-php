@@ -60,6 +60,7 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
 
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input);
+
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs);
 
         $this->action = Action::CALLBACK;
@@ -285,8 +286,12 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         $walletPayment = $verify->payment; // api wallet gateway entity
+
         $input = $verify->input;
-        $verifyResponse = $verify->verifyResponseContent; // response received from wallet gateway
+
+        // Response received from wallet gateway
+        // Possbile $verifyResponse status values - completed, failed, initialized, error
+        $verifyResponse = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -306,7 +311,7 @@ class Gateway extends Base\Gateway
                 $verify->apiSuccess = false;
             }
         }
-        else if ($verifyResponse['status'] !== Status::COMPLETED)
+        else if (in_array($verifyResponse['status'], array(Status::INITIATED, Status::FAILED)))
         {
             $verify->gatewaySuccess = false;
 
@@ -322,6 +327,8 @@ class Gateway extends Base\Gateway
                 $verify->apiSuccess = true;
             }
         }
+        // What do we do in the case when the verify request to gateway returns a 400?
+        // Do we continue with the following code anyway?
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
@@ -338,6 +345,9 @@ class Gateway extends Base\Gateway
     {
         $this->action = Action::AUTHORIZE;
 
+        // Is this if condition $walletPayment === NULL correct? Can there never
+        // be a case when we have a $walletPayment entity with status = failed,
+        // and now needs to be updated to success?
         if ($verifyResponse['status'] === Status::COMPLETED and $walletPayment === NULL)
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($walletPayment, $verifyResponse);
@@ -373,6 +383,7 @@ class Gateway extends Base\Gateway
         $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
+
         $this->response = $response;
 
         $content = json_decode($response->body, true);
@@ -401,6 +412,7 @@ class Gateway extends Base\Gateway
             'accessToken' => $this->getAccessToken($input['terminal']),
             'timestamp' => date('Y/m/d h:m:s'),
             );
+
         $content['hash'] = $this->getHashForVerifyRequest($content);
 
         $query = http_build_query($content);
@@ -422,10 +434,13 @@ class Gateway extends Base\Gateway
         parent::refund($input);
 
         $request = $this->getRefundRequest($input);
+
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
+
         $content = json_decode($response->body, true);
+
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $this->createWalletRefundEntity($content, $input);

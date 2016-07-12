@@ -30,8 +30,7 @@ class Server extends Base\Mock\Server
 
         $content['checksum'] = $this->generateHash($content);
 
-        $url = $input['redirecturl'];
-        $url .= '?' . http_build_query($content);
+        $url = $input['redirecturl'] . '?' . http_build_query($content);
 
         return $url;
     }

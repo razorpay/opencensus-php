@@ -8,9 +8,20 @@ use RZP\Error\ErrorCode;
 class Status
 {
     const SUCCESS               = 'success';
-    const FAILED                = 'error';
+
+    // Transaction failed
+    const FAILED                = 'failed';
+
+    // Bad request
+    const ERROR                 = 'error';
+
+    // Transaction was initiated but the user didn't complete the payment
+    const INITIATED             = 'initiated';
+
+    // Transaction has been successfully completed
     const COMPLETED             = 'completed';
-    // need to reconsider the following
+
+    // Not being used right now
     const NLOGGEDIN             = 101;
     const NOBALANCE             = 102;
     const INSUFFICIENTBALANCE   = 103;
