@@ -118,12 +118,9 @@ class OlamoneyGatewayTest extends TestCase
 
             $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-            // return $this->submitPaymentCallbackData($request['url'], $request['method'], $request['content']);
+            return $this->submitPaymentCallbackData($request['url'], $request['method'], $request['content']);
         }
 
-        return $this->submitPaymentCallbackData($request['url'],
-            $request['method'], $request['content']);
-
-        // return null;
+        return null;
     }
 }
