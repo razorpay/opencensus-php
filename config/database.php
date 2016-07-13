@@ -134,7 +134,7 @@ return array(
         'session' => array(
             'host'     => env('REDIS_SESSION_HOST'),
             'port'     => env('REDIS_SESSION_PORT'),
-            'database' => env('REDIS_SESSIONS_DATABASE'),
+            'database' => env('REDIS_SESSION_DATABASE'),
         ),
 
     ),
