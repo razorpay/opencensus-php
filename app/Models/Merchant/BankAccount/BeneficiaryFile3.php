@@ -37,6 +37,11 @@ class BeneficiaryFile3
         'Bene_A/c No',
     );
 
+    // Supports only text format right now
+    public static $format = array(
+       'Bene_A/c No' => 'text',
+    );
+
     public function __construct()
     {
         $this->mail = \Mail::getFacadeRoot();
@@ -68,7 +73,7 @@ class BeneficiaryFile3
                 'Bene_Tel'              => '',
                 'Bene_Fax'              => '',
                 'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
-                'Bene_A/c No.'          => "'".$ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
+                'Bene_A/c No'           => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
             );
 
             array_push($data, $array);
