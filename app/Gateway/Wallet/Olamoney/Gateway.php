@@ -386,7 +386,7 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $content = json_decode($response->body, true);
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -415,9 +415,7 @@ class Gateway extends Base\Gateway
 
         $content['hash'] = $this->getHashForVerifyRequest($content);
 
-        $query = http_build_query($content);
-
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'GET');
 
         return $request;
     }
@@ -611,17 +609,6 @@ class Gateway extends Base\Gateway
 
         $contact = $this->input['payment']['contact'];
         return strtr($url, [':contact' => $this->getFormattedContact($contact)]);
-    }
-
-    protected function getStandardRequestArray($content = [], $method = 'post')
-    {
-        $request = array(
-            'url' => $this->getUrl(),
-            'method' => $method,
-            'content' => $content,
-        );
-
-        return $request;
     }
 
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
