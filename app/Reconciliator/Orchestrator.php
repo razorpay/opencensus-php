@@ -410,8 +410,11 @@ class Orchestrator
             {
                 try
                 {
+                    // Gets the actual zip file's details first.
+                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
+
                     // Gets all files details present in the zip file.
-                    $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
+                    $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
 
                     // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
                     if (empty($extractedFileDetails) === true)
@@ -422,6 +425,14 @@ class Orchestrator
                             'No files present in the zip file attachment.',
                             ['file_name' => $file->getClientOriginalName()]
                         );
+                    }
+
+                    // Checks whether all the extracted files are zips too.
+                    $multiLevelZip = $this->isTwoLevelZip($extractedFileDetails);
+
+                    if ($multiLevelZip === true)
+                    {
+                        $extractedFileDetails = $this->getFileDetailsFromAllZipFiles($extractedFileDetails);
                     }
 
                     // Using array merge since $extractedFileDetails contains an
@@ -452,6 +463,40 @@ class Orchestrator
         }
 
         return $allFilesDetails;
+    }
+
+    protected function getFileDetailsFromAllZipFiles($zipFilesDetails)
+    {
+        $allExtractedFileDetails = [];
+
+        foreach ($zipFilesDetails as $zipFileDetails)
+        {
+            $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            $allExtractedFileDetails = array_merge($allExtractedFileDetails, $extractedFileDetails);
+        }
+
+        return $allExtractedFileDetails;
+    }
+
+    /**
+     * Returns true only if all the files are zip files.
+     * Returns false otherwise.
+     *
+     * @param $extractedFileDetails
+     * @return true if all the files are zip files
+     *         false, otherwise.
+     */
+    protected function isTwoLevelZip($extractedFileDetails)
+    {
+        foreach ($extractedFileDetails as $efd)
+        {
+            if ($efd[FileProcessor::EXTENSION] !== FileProcessor::ZIP_EXTENSION)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -562,21 +607,18 @@ class Orchestrator
      * Unzips the zip file. Iterates through each extracted file and collects
      * the file details.
      *
-     * @param UploadedFile $file Zip file that needs to be extracted.
+     * @param array $zipFileDetails Zip file that needs to be extracted.
      * @return array File details of all the files present in the zip file.
      * @throws Exception\ReconciliationException
      */
-    protected function getFileDetailsFromZipAttachment($file)
+    protected function getFileDetailsFromZipFile($zipFileDetails)
     {
         $allExtractedFilesDetails = [];
 
-        // Gets the actual zip file's details first.
-        $zippedFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
-
-        $zipPassword = $this->gatewayReconciliator->getReconPassword($zippedFileDetails);
+        $zipPassword = $this->gatewayReconciliator->getReconPassword($zipFileDetails);
 
         // unzipFile unzips the file and stores it in a location.
-        $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $zipPassword);
+        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword);
 
         $unzippedFiles = new DirectoryIterator($unzippedFolderPath);
 
@@ -586,7 +628,7 @@ class Orchestrator
             if ($unzippedFile->isFile() === true)
             {
                 $allExtractedFilesDetails[] = $this->fileProcessor
-                                                   ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
             }
         }
 

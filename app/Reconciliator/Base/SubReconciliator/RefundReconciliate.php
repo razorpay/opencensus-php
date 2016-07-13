@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\Base;
 
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
@@ -185,6 +186,20 @@ class RefundReconciliate extends Foundation\SubReconciliate
         // If refund id is not present, return. No point of evaluating the row.
         if (empty($refundId) === true)
         {
+            return null;
+        }
+
+        if (UniqueIdEntity::verifyUniqueId($refundId) === false)
+        {
+            $this->app['trace']->info(
+                [
+                    'trace_code' => TraceCode::RECON_INFO_ALERT,
+                    'message'    => 'Refund ID being sent in the file is not as expected.',
+                    'row'        => $row,
+                    'refund_id'  => $refundId,
+                    'gateway'    => get_called_class()
+                ]);
+
             return null;
         }
 
