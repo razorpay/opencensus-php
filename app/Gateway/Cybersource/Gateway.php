@@ -2,19 +2,15 @@
 
 namespace RZP\Gateway\Cybersource;
 
-use RZP\Constants;
-use RZP\Constants\Mode;
+use Requests;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\AxisMigs;
-use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Cybersource;
+use RZP\Constants;
 use RZP\Models\Card;
-use RZP\Requests;
 use RZP\Trace\Trace;
+use RZP\Gateway\Base;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -75,7 +71,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $gateway->fill([Entity::RECEIVED => 1]);
 
@@ -206,11 +202,11 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterValidate($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_VALIDATE_RESPONSE, $response);
 
-        if ($response[self::REASON_CODE] !== Cybersource\Result::SUCCESS)
+        if ($response[self::REASON_CODE] !== Result::SUCCESS)
         {
             $attributes = array(
                 Entity::ERROR_CODE => $response[self::REASON_CODE]
@@ -264,14 +260,14 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterNotEnrolledAuthorize($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
-        if ($response[self::REASON_CODE] !== Cybersource\Result::SUCCESS)
+        if ($response[self::REASON_CODE] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::STATUS     => Cybersource\Status::AUTHORIZE_FAILED,
+                Entity::STATUS     => Status::AUTHORIZE_FAILED,
                 Entity::ERROR_CODE => $response[self::REASON_CODE]
             );
 
@@ -286,7 +282,7 @@ class Gateway extends Base\Gateway
         {
             $attributes = array(
                 Entity::REF    => $response[self::REQUEST_ID],
-                Entity::STATUS => Cybersource\Status::AUTHORIZED
+                Entity::STATUS => Status::AUTHORIZED
             );
 
             $gateway->fill($attributes);
@@ -297,14 +293,14 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterAuthorize($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
 
-        if ($response[self::REASON_CODE] !== Cybersource\Result::SUCCESS)
+        if ($response[self::REASON_CODE] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::STATUS     => Cybersource\Status::AUTHORIZE_FAILED,
+                Entity::STATUS     => Status::AUTHORIZE_FAILED,
                 Entity::ERROR_CODE => $response[self::REASON_CODE]
             );
 
@@ -319,7 +315,7 @@ class Gateway extends Base\Gateway
         {
             $attributes = array(
                 Entity::REF    => $response[self::REQUEST_ID],
-                Entity::STATUS => Cybersource\Status::AUTHORIZED
+                Entity::STATUS => Status::AUTHORIZED
             );
 
             $gateway->fill($attributes);
@@ -332,14 +328,14 @@ class Gateway extends Base\Gateway
     {
         $this->trace->info(TraceCode::GATEWAY_ENROLL_RESPONSE, $response);
 
-        if (($response[self::REASON_CODE] !== Cybersource\Result::ENROLLED) and
-            ($response[self::REASON_CODE] !== Cybersource\Result::SUCCESS))
+        if (($response[self::REASON_CODE] !== Result::ENROLLED) and
+            ($response[self::REASON_CODE] !== Result::SUCCESS))
         {
             $attributes = array(
                 Entity::PAYMENT_ID    => $input['payment']['id'],
                 Entity::AMOUNT        => $request[self::ITEM][0][self::UNIT_PRICE],
                 Entity::ERROR_CODE    => $response[self::REASON_CODE],
-                Entity::STATUS        => Cybersource\Status::CREATED,
+                Entity::STATUS        => Status::CREATED,
                 Entity::REF           => $response[self::REQUEST_ID]
             );
 
@@ -353,7 +349,7 @@ class Gateway extends Base\Gateway
             $attributes = array(
                 Entity::PAYMENT_ID    => $input['payment']['id'],
                 Entity::AMOUNT        => $request[self::ITEM][0][self::UNIT_PRICE],
-                Entity::STATUS        => Cybersource\Status::CREATED,
+                Entity::STATUS        => Status::CREATED,
                 Entity::REF           => $response[self::REQUEST_ID]
             );
 
@@ -363,14 +359,14 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterCapture($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, $response);
 
-        if ($response[self::REASON_CODE] !== Cybersource\Result::SUCCESS)
+        if ($response[self::REASON_CODE] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::STATUS     => Cybersource\Status::CAPTURE_FAILED,
+                Entity::STATUS     => Status::CAPTURE_FAILED,
                 Entity::ERROR_CODE => $response[self::REASON_CODE],
                 Entity::ACTION     => Base\Action::CAPTURE
             );
@@ -386,7 +382,7 @@ class Gateway extends Base\Gateway
         {
             $attributes = array(
                 Entity::CAPTURE_REF => $response[self::REQUEST_ID],
-                Entity::STATUS      => Cybersource\Status::CAPTURED,
+                Entity::STATUS      => Status::CAPTURED,
                 Entity::ACTION      => Base\Action::CAPTURE
             );
 
@@ -398,11 +394,11 @@ class Gateway extends Base\Gateway
 
     protected function persistAfterRefund($input, $response, $request)
     {
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $response);
 
-        if ($response[self::REASON_CODE] !== Cybersource\Result::SUCCESS)
+        if ($response[self::REASON_CODE] !== Result::SUCCESS)
         {
             $attributes = array(
                 Entity::ERROR_CODE => $response[self::REASON_CODE],
@@ -421,7 +417,7 @@ class Gateway extends Base\Gateway
         {
             $attributes = array(
                 Entity::REFUND_ID => $input['refund']['id'],
-                Entity::STATUS    => Cybersource\Status::REFUNDED,
+                Entity::STATUS    => Status::REFUNDED,
                 Entity::ACTION    => Base\Action::REFUND
             );
 
@@ -462,7 +458,7 @@ class Gateway extends Base\Gateway
 
         $this->setDebugDetail($request);
 
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $request[self::CC_AUTH_SERVICE][self::RUN] = 'true';
         $request[self::CC_AUTH_SERVICE][self::PARES_STATUS] = $gateway->getParesStatus();
@@ -567,7 +563,7 @@ class Gateway extends Base\Gateway
 
         $this->setDebugDetail($request);
 
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $request[self::CC_CAPTURE_SERVICE][self::RUN] = 'true';
 
@@ -592,7 +588,7 @@ class Gateway extends Base\Gateway
 
         $this->setDebugDetail($request);
 
-        $gateway = $this->getRepo()->retrieveByPaymentId($input['payment']['id']);
+        $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
         $request[self::CC_CREDIT_SERVICE][self::RUN] = 'true';
 
@@ -653,11 +649,11 @@ class Gateway extends Base\Gateway
 
     protected function getWsdlFile()
     {
-        $file = dirname(__FILE__) .'/'.self::LIVE_WSDL_FILE;
-        
+        $file = storage_path('gateway/cybersource/cybslive.wsdl.xml');
+
         if ($this->mode === Mode::TEST)
         {
-            $file = dirname(__FILE__) .'/'.self::TEST_WSDL_FILE;
+            $file = storage_path('gateway/cybersource/cybstest.wsdl.xml');
         }
         return $file;
     }
@@ -736,10 +732,10 @@ class Gateway extends Base\Gateway
     {
         switch ($enrollResponse[self::REASON_CODE])
         {
-            case Cybersource\Result::ENROLLED:
+            case Result::ENROLLED:
                 return $this->getFieldsForFormSubmitToBankACS($enrollResponse, $input);
 
-            case Cybersource\Result::NOT_ENROLLED:
+            case Result::NOT_ENROLLED:
                 $this->validateEnrollResponseNotEnrolled($enrollResponse, $input);
 
                 return $this->postNotEnrolledAuthorize($input, $enrollResponse);

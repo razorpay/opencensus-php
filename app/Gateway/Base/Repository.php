@@ -65,11 +65,11 @@ class Repository extends Base\Repository
         $query->where(Entity::PAYMENT_ID, '=', $paymentId);
     }
 
-    public function retrieveByPaymentId($id)
+    public function retrieveByPaymentIdOrFail($paymentId)
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::PAYMENT_ID, '=', $id)
+        return $repo::where(Entity::PAYMENT_ID, '=', $paymentId)
                   ->firstOrFail();
     }
 }

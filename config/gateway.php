@@ -53,7 +53,6 @@ return array(
     'cybersource' => array(
         'test_merchant_id'  => env('CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'),
         'test_access_code'  => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
-        'mock_server'       => false,
     ),
 
     'amex' => array(

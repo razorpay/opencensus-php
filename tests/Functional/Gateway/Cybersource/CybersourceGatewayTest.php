@@ -19,13 +19,11 @@ class CybersourceGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->sharedHdfcTerminal = $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'cybersource';
-
-        $this->setMockGatewayTrue();
 
         $this->mockTokenex();
     }
