@@ -108,7 +108,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $this->response     = $response;
         $this->callbackUrl  = $url;
-        s($mock);
+
         if ($mock)
         {
             if ($this->isOtpCallbackUrl($url))
