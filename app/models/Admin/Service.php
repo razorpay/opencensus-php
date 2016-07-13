@@ -495,7 +495,7 @@ class Service extends Base\Service
 
         try
         {
-            $existingMerchant = Merchant\Entity::getMerchantWithEmail($input['email']);
+            $existingMerchant = Merchant\Entity::getMerchantWithEmail($input[Merchant\Entity::EMAIL]);
 
             if ($existingMerchant !== null)
             {
@@ -516,7 +516,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return array($error, $data);
+        return [$error, $data];
     }
 
     protected function dropFields(array &$array, array $fields)

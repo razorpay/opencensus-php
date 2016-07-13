@@ -35,6 +35,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     protected $appends = ['referrer', 'tags'];
 
     const ID_LENGTH = 14;
+    const EMAIL     = 'email';
 
     protected static $generators = array('id', 'confirm_token');
 
