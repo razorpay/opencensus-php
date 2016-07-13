@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     protected static $globalCreateRules = array(
         Entity::CONTACT         => 'sometimes|contact_syntax',
         Entity::EMAIL           => 'sometimes|email',
-        'otp'                   => 'sometimes|integer',
+        'otp'                   => 'sometimes|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|',
     );
 

@@ -48,6 +48,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Sets the reconciled_at.
      *
      * @param array $fileContents
+     * @return array
      */
     public function startReconciliation($fileContents)
     {
@@ -58,6 +59,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $this->runReconciliate($row, $extraDetails);
         }
+
+        return $this->getSummary();
     }
 
     public function runReconciliate($row, $extraDetails)
@@ -69,6 +72,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return;
         }
 
+        $refundId = $rowDetails[BaseReconciliate::REFUND_ID];
+
         try
         {
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
@@ -78,18 +83,35 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 return;
             }
 
+            // Increment the total count for the summary
+            $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
+
             // Validates that the payment status is not failed.
             $validate = $this->validatePaymentStatus();
 
             if ($validate === true)
             {
-                $this->persistReconciliationData();
+                $persistSuccess = $this->persistReconciliationData();
+
+                if ($persistSuccess === false)
+                {
+                    // Increment the failure count for the summary.
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
+                }
+            }
+            else
+            {
+                // Increment the failure count for the summary.
+                $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
             }
         }
         catch (\Exception $ex)
         {
             // Ideally, there shouldn't be any exceptions thrown. They should be handled
             // in the respective reconciliation steps.
+
+            // Increment the failure count for the summary.
+            $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
 
             $this->messenger->raiseReconAlert(
                 [
@@ -142,11 +164,13 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'gateway'    => get_called_class()
                 ]);
 
-            return;
+            return false;
         }
 
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
+
+        return true;
     }
 
     protected function getRowDetailsStructured($row)

@@ -28,6 +28,37 @@ class XLSFileHandler
         return $data;
     }
 
+    public function getCsvData($file)
+    {
+        set_time_limit(3000);
+        ini_set('max_execution_time', 6000);
+        ini_set('memory_limit', '2048M');
+        $fileHandler = fopen($file,"r");
+        $ret = array();
+        while(! feof($fileHandler))
+        {
+            $line = fgetcsv($fileHandler);
+            if ($line){
+                array_push($ret, $line);
+            }
+        }
+/*
+        $excelReader = Excel::load($file)->excel;
+        $sheet = $excelReader->getSheet(0);
+        $highestRow = $sheet->getHighestRow();
+        $highestColumn = $sheet->getHighestDataColumn();
+        $columnNames = array();
+
+        $data = $sheet->rangeToArray(
+            'A1' . ':' . $highestColumn . $highestRow,
+            null,
+            true,
+            false
+        );
+ */
+        return ['data' => $ret];
+
+    }
     /**
      * return the file from input array
      *

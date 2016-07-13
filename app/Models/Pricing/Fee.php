@@ -8,14 +8,16 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\SlackPoster;
-use Trace\Trace;
-use Trace\TraceCode;
 
 class Fee
 {
     use SlackPoster;
     use AtomFeeTrait;
 
+    protected $trace;
+    
+    protected $repo;
+    
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
     public function __construct()

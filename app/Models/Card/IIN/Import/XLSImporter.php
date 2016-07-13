@@ -3,8 +3,10 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN;
+use RZP\Models\Card\Network;
 use RZP\Exception;
 use App;
+use RZP\Trace\TraceCode;
 
 /**
  * This class is called by the service function with the input data.
@@ -17,6 +19,8 @@ class XLSImporter
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     /**
@@ -58,6 +62,83 @@ class XLSImporter
         );
     }
 
+    public function importWithoutNetwork($file)
+    {
+        $ret = (new XLSFileHandler)->getCsvData($file);
+
+
+        // Header of Csv data
+        $ret['columns'] = array(
+            IIN\Entity::IIN,
+            IIN\Entity::NETWORK,
+            IIN\Entity::ISSUER_NAME,
+            IIN\Entity::TYPE,
+            IIN\Entity::CATEGORY,
+            'country_full_name',
+            IIN\Entity::COUNTRY,
+            'ISO_code_2',
+            'ISO numeric code');
+
+        // Network Mapping
+        $networkMapping = array(
+            'JCB'                       => Network::JCB,
+            'MASTERCARD'                => Network::MC,
+            'MasterCard'                => Network::MC,
+            'RuPay'                     => Network::RUPAY,
+            'RUPAY'                     => Network::RUPAY,
+            'CHINA UNION PAY'           => Network::UNP,
+            'Maestro'                   => Network::MAES,
+            'MAESTRO'                   => Network::MAES,
+            'Visa'                      => Network::VISA,
+            'VISA'                      => Network::VISA,
+            'DISCOVER'                  => Network::DISC,
+            'AMERICAN EXPRESS'          => Network::AMEX,
+            'DINERS CLUB INTERNATIONAL' => Network::DICL,
+            'unknown'                   => Network::UNKNOWN,
+        );
+
+        $formatter = (new Formatter);
+        $formattedData = $formatter->formatDataNew(
+            $ret['columns'],
+            $ret['data'],
+            $networkMapping,
+            array('country_full_name', 'ISO_code_2', 'ISO numeric code')
+        );
+
+        $errArray = array();
+
+        foreach (array_chunk($formattedData, 1) as $chunks)
+        {
+            try
+            {
+                $this->enterIntoDB($chunks, 1);
+            }
+            catch (\Exception $e)
+            {
+		\Log::info('exception occurred', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
+                $msg = $e->getMessage();
+                $msg = explode('Duplicate entry', $msg)[1];
+
+                $failedIin = explode('for key', $msg)[0];
+
+                $this->trace->info(
+                    TraceCode::IIN_INSERT_FAILED,
+                    ['iin' => $failedIin]);
+
+                array_push($errArray, $failedIin);
+            }
+        }
+
+        return array(
+            'Failed Iin'        => $errArray,
+            'Credit Card'       => $formatter->creditCard,
+            'Debit Card'        => $formatter->debitCard,
+            'Other Card'        => $formatter->otherCardType,
+            'Unknown Network'   => $formatter->unknownNetworkType,
+            'Failed Count'      => sizeof($errArray),
+            'Sucessful Entries' => sizeof($formattedData) - sizeof($errArray),
+        );
+    }
     /**
      * This enter the unique entries into the database.
      *
@@ -65,12 +146,12 @@ class XLSImporter
      *
      * @param array $cleaned        the input entries.
      */
-    protected function enterIntoDB($cleaned)
+    protected function enterIntoDB($cleaned, $chunkSize=5000)
     {
         $time = time();
 
         // Too many entries crashes the sql query
-        foreach (array_chunk($cleaned, 5000) as $chunks)
+        foreach (array_chunk($cleaned, $chunkSize) as $chunks)
         {
             foreach ($chunks as & $chunk)
             {

@@ -58,6 +58,7 @@ final class Route
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
         'iin_fetch_multiple'                      => ['get',      'iins',                                     'CardController@getIins'                                            ],
         'iin_add'                                 => ['post',     'iins',                                     'CardController@postIin'                                            ],
+        'iin_upload'                              => ['post',     'iins/upload',                              'CardController@uploadIin'                                          ],
         'iin_edit'                                => ['put',      'iins/{id}',                                'CardController@editIin'                                            ],
         'iin_generate_post'                       => ['post',     'iins/import/generate',                     'CardController@postIinGenerate'                                    ],
         'merchant_public_get_banks'               => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
@@ -383,6 +384,7 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'iin_upload',
         'iin_edit',
         'iin_generate_post',
         'send_test_newsletter',
@@ -619,7 +621,7 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    protected static function addRoutes($type)
+    public static function addRoutes($type)
     {
         foreach (self::$$type as $routeName)
         {

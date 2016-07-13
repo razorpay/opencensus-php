@@ -26,7 +26,6 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(Router $router)
     {
-        //
         parent::boot($router);
     }
 
@@ -38,8 +37,33 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map(Router $router)
     {
-        $this->mapWebRoutes($router);
-        //
+        Route::setRouter($router);
+
+        Route::defineRootApiRoute();
+
+        /**
+         * Following params are as explained:
+         * - prefix: v1 - All the routes defined have prefix v1
+         * - namepsace - All the routes defined have a controller and action.
+         *     We only define the class name of the controller, the namespace
+         *     is derived from this parameter.
+         * - middleware:auth - All routes have Authenticate middleware applied
+         *     to them
+         */
+        $routeGroupGlobalParams = array(
+            'prefix'        => 'v1',
+            'namespace'     => $this->namespace,
+            'middleware'    => 'auth');
+
+        $router->group(
+            $routeGroupGlobalParams,
+            function ($router)
+            {
+                $this->mapWebRoutes($router);
+                $this->mapApiRoutes($router);
+            });
+
+        Route::defineAllExtraRoutes();
     }
 
     /**
@@ -52,17 +76,27 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes(Router $router)
     {
-        Route::setRouter($router);
-
-        Route::defineRootApiRoute();
-
         $router->group(
-            ['namespace' => $this->namespace, 'middleware' => 'RZP\Http\Middleware\Authenticate'],
+            ['middleware' => 'web'],
             function ($router)
             {
-                Route::defineApiRoutes();
-            });
+                Route::addRoutes('public');
+                Route::addRoutes('publicCallback');
+                Route::addRoutes('direct');
+            }
+        );
+    }
 
-        Route::defineAllExtraRoutes();
+    protected function mapApiRoutes(Router $router)
+    {
+        $router->group(
+            ['middleware' => 'api'],
+            function ($router)
+            {
+                Route::addRoutes('internal');
+                Route::addRoutes('private');
+                Route::addRoutes('proxy');
+            }
+        );
     }
 }

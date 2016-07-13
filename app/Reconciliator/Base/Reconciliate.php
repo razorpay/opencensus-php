@@ -7,7 +7,7 @@ use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
 
 use RZP\Exception;
-use Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use DB;
 use App;
 
@@ -68,9 +68,12 @@ class Reconciliate
      * and calls the startReconciliation of the respective reconciliation type.
      *
      * @param array $allFilesContents
+     * @return array $allSummaries Returns the summary of each file that has been reconciled.
      */
     public function startReconciliation(array $allFilesContents)
     {
+        $allSummaries = [];
+        
         foreach ($allFilesContents as $fileContents)
         {
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
@@ -84,11 +87,22 @@ class Reconciliate
 
             $this->setSubReconciliator($reconciliationType);
 
-            $this->repo->transactionOnLiveAndTest(function() use ($fileContents)
+            $summary = [];
+
+            $this->repo->transactionOnLiveAndTest(function() use ($fileContents, & $summary)
             {
-                $this->subReconciliator->startReconciliation($fileContents);
+                $summary = $this->subReconciliator->startReconciliation($fileContents);
             });
+
+            $allSummaries[] = $summary;
         }
+        
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_SUMMARY,
+            $allSummaries
+        );
+        
+        return $allSummaries;
     }
 
     /**

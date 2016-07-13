@@ -17,11 +17,29 @@ class Kernel extends HttpKernel
     ];
 
     /**
+     * The application's route middleware groups.
+     *
+     * @var array
+     */
+    protected $middlewareGroups = [
+        'web' => [
+            \RZP\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            // \RZP\Http\Middleware\VerifyCsrfToken::class,
+        ],
+        'api' => [
+            // 'throttle:60,1',
+        ],
+    ];
+
+    /**
      * The application's route middleware.
      *
      * @var array
      */
     protected $routeMiddleware = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
+        'auth' => \RZP\Http\Middleware\Authenticate::class,
     ];
 }

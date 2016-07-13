@@ -15,19 +15,21 @@ class QueueEntityResolver implements EntityResolverContract
      * @param  mixed  $id
      * @return mixed
      *
-     * @throws \Illuminate\Contracts\Queue\EntityNotFoundException
+     * @throws Exception\DbQueryException
      */
     public function resolve($type, $id)
     {
-        $instance = (new $type)->find($id);
+        $instance = (new $type)->setConnection('live')->find($id);
 
-        if ($instance) {
+        if ($instance)
+        {
             return $instance;
         }
 
         $instance = (new $type)->setConnection('test')->find($id);
 
-        if ($instance) {
+        if ($instance)
+        {
             return $instance;
         }
 
