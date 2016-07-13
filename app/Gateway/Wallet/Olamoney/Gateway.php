@@ -12,6 +12,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Olamoney\Action;
+use RZP\Models\Payment\Status as PaymentStatus;
 
 class Gateway extends Base\Gateway
 {
@@ -289,46 +290,19 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         // Response received from wallet gateway
-        // Possbile $verifyResponse status values - completed, failed, initialized, error
         $verifyResponse = $verify->verifyResponseContent;
+        // Possbile $verifyResponse status values - completed, failed, initialized, error
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        // transaction succeeded at gateway
         if ($verifyResponse['status'] === Status::COMPLETED)
         {
-            $verify->gatewaySuccess = true;
-
-            // $input['payment'] is api payment entity
-            if (($input['payment']['status'] !== 'created') and
-                ($input['payment']['status'] !== 'failed'))
-            {
-                $verify->apiSuccess = true;
-            }
-            else
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = false;
-            }
+            $this->checkVerifyStatusOnGatewaySuccess($input, $verify);
         }
-        else if (in_array($verifyResponse['status'], array(Status::INITIATED, Status::FAILED)))
+        else
         {
-            $verify->gatewaySuccess = false;
-
-            if (($walletPayment === null) and
-                (($input['payment']['status'] === 'failed') or
-                 ($input['payment']['status'] === 'created')))
-            {
-                $verify->apiSuccess = false;
-            }
-            else if ($walletPayment['status'] === Status::SUCCESS)
-            {
-                $verify->status = VerifyResult::STATUS_MISMATCH;
-                $verify->apiSuccess = true;
-            }
+            $this->checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify);
         }
-        // What do we do in the case when the verify request to gateway returns a 400?
-        // Do we continue with the following code anyway?
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
@@ -341,17 +315,70 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    protected function checkVerifyStatusOnGatewayFail($walletPayment, $input, $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        if (in_array($verifyResponse['status'], array(Status::INITIATED, Status::FAILED)))
+        {
+            if (($walletPayment === null) and
+                (($input['payment']['status'] === PaymentStatus::FAILED) or
+                 ($input['payment']['status'] === PaymentStatus::CREATED)))
+            {
+                $verify->apiSuccess = false;
+            }
+            else if ($walletPayment !== null)
+            {
+                if (($walletPayment['received'] === false) and
+                ($walletPayment['status_code'] === null or
+                    $walletPayment['status_code'] !== Status::SUCCESS))
+                {
+                    $verify->apiSuccess = false;
+                }
+                else if ($walletPayment['status'] === Status::SUCCESS)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
+                }
+            }
+        }
+    }
+
+    protected function checkVerifyStatusOnGatewaySuccess($input, $verify)
+    {
+        $verify->gatewaySuccess = true;
+
+        // $input['payment'] is api payment entity
+        if (($input['payment']['status'] !== PaymentStatus::CREATED) and
+            ($input['payment']['status'] !== PaymentStatus::FAILED))
+        {
+            $verify->apiSuccess = true;
+        }
+        else
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+            $verify->apiSuccess = false;
+        }
+    }
+
     protected function saveVerifyContent($walletPayment, $verifyResponse)
     {
         $this->action = Action::AUTHORIZE;
 
-        // Is this if condition $walletPayment === null correct? Can there never
-        // be a case when we have a $walletPayment entity with status = failed,
-        // and now needs to be updated to success?
-        if (($verifyResponse['status'] === Status::COMPLETED) and ($walletPayment === null))
+        if (isset($verifyResponse['status']) and $verifyResponse['status'] === Status::COMPLETED)
         {
-            $walletAttributes = $this->getVerifyWalletCreateAttributes($walletPayment, $verifyResponse);
-            $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
+            $walletAttributes = $this->getVerifyWalletCreateAttributes($walletPayment,
+                $verifyResponse);
+
+            if ($walletPayment === null)
+            {
+                $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
+            }
+            else if ($walletPayment['received'] === false or $walletPayment['status'] !== Status::SUCCESS)
+            {
+                $walletPayment->fill($walletAttributes);
+                $walletPayment->saveOrFail();
+            }
         }
 
         $this->action = Action::VERIFY;
