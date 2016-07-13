@@ -34,6 +34,7 @@ class CybersourceGatewayTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
         $amount = $payment['amount'];
+
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->capturePayment($payment['razorpay_payment_id'], $amount);

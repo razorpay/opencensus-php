@@ -76,7 +76,7 @@ class Entity extends Base\Entity
 
     public function payment()
     {
-        return $this->belongsTo('Models\Payment\Entity', self::PAYMENT_ID, self::ID);
+        return $this->belongsTo('RZP\Models\Payment\Entity', self::PAYMENT_ID, self::ID);
     }
 
     public function getId()
@@ -96,7 +96,7 @@ class Entity extends Base\Entity
 
     public function getAmount()
     {
-        return $this->getAttribute(self::AMOUNT);
+        return (int) $this->getAttribute(self::AMOUNT);
     }
 
     public function getStatus()
