@@ -82,7 +82,6 @@ class Server extends Base\Mock\Server
         $response = \Response::make($json);
 
         $response->headers->set('Content-Type', $content_type);
-
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
