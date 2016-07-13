@@ -14,7 +14,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID  = 'merchant_trackid';
     const COLUMN_CARD_TYPE   = 'debitcredit_type';
-    const COLUMN_SERVICE_TAX = 'serv_tax';
+    const COLUMN_SERVICE_TAX = ['serv_tax', 'service_tax'];
     const COLUMN_SB_CESS     = 'sb_cess';
     const COLUMN_KK_CESS     = 'kk_cess';
     const COLUMN_FEE         = 'msf';
@@ -38,8 +38,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
+        $columnServiceTax = null;
+
+        foreach(self::COLUMN_SERVICE_TAX as $cst)
+        {
+            if (isset($row[$cst]) === true)
+            {
+                $columnServiceTax = $cst;
+                break;
+            }
+        }
+
         // Convert service tax into paise
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $serviceTax = floatval($row[$columnServiceTax]) * 100;
 
         if (empty($row[self::COLUMN_SB_CESS]) === false)
         {
