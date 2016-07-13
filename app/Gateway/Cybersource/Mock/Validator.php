@@ -11,9 +11,9 @@ class Validator extends Base\Validator
     protected static $authRules = array(
         'merchantID'              => 'required|string',
         'merchantReferenceCode'   => 'required|alpha_num',
-        'clientLibrary'           => 'required|string',
-        'clientLibraryVersion'    => 'required|string',
-        'clientEnvironment'       => 'required|string',
+        'clientLibrary'           => 'sometimes|string',
+        'clientLibraryVersion'    => 'sometimes|string',
+        'clientEnvironment'       => 'sometimes|string',
         'ccAuthService'           => 'required',
         'billTo'                  => 'required',
         'card'                    => 'required',
@@ -29,9 +29,9 @@ class Validator extends Base\Validator
         'item'                      => 'required',
         'merchantID'                => 'required|string',
         'merchantReferenceCode'     => 'required|alpha_num',
-        'clientLibrary'             => 'required|string',
-        'clientLibraryVersion'      => 'required|string',
-        'clientEnvironment'         => 'required|string'
+        'clientLibrary'             => 'sometimes|string',
+        'clientLibraryVersion'      => 'sometimes|string',
+        'clientEnvironment'         => 'sometimes|string'
     );
 
     protected static $authenticateRules = array(

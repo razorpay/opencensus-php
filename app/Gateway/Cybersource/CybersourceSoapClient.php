@@ -2,15 +2,17 @@
 
 namespace RZP\Gateway\Cybersource;
 
+use App;
+use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
-class CybersourceSoapClient extends \SoapClient 
+class CybersourceSoapClient extends \SoapClient
 {
     protected $user;
     protected $password;
 
-    public function __construct($wsdl, $auth, $options = array()) 
+    public function __construct($wsdl, $auth, $options = array())
     {
         parent::__construct($wsdl, $options);
 
@@ -18,11 +20,11 @@ class CybersourceSoapClient extends \SoapClient
 
         $this->password = $auth['password'];
 
-        $this->app = \App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
     }
- 
-// This section inserts the UsernameToken information in the outgoing SOAP message.
+
+    // This section inserts the UsernameToken information in the outgoing SOAP message.
     public function __doRequest($request, $location, $action, $version, $oneWay = 0)
     {
         $user = $this->user;
@@ -41,7 +43,7 @@ class CybersourceSoapClient extends \SoapClient
         $requestDOM = new \DOMDocument('1.0');
         $soapHeaderDOM = new \DOMDocument('1.0');
 
-        try 
+        try
         {
             $requestDOM->loadXML($request);
             $soapHeaderDOM->loadXML($soapHeader);
@@ -51,11 +53,11 @@ class CybersourceSoapClient extends \SoapClient
 
             $request = $requestDOM->saveXML();
         }
-        catch (\DOMException $e) 
+        catch (\DOMException $e)
         {
             $this->trace->traceException($e);
 
-            throw new \RZP\Exception\RuntimeException(null, null, $e);
+            throw new Exception\RuntimeException('Server error', null, $e);
         }
 
         return parent::__doRequest($request, $location, $action, $version);
