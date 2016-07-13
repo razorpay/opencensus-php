@@ -198,7 +198,9 @@ class Entity extends Base\PublicEntity
 
         $first7 = $strParts[0];
 
-        $last3 = str_split($strParts[1], 4);
+        $last7Parts = str_split($strParts[1], 4);
+
+        $last3 = $last7Parts[1];
 
         $beneficiaryCode = $first7."".$last3;
 
