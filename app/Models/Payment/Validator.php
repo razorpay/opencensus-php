@@ -60,14 +60,21 @@ class Validator extends Base\Validator
         {
             if (!isset($input['wallet']))
             {
-                return false;
+                throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
             }
 
             $method = new \RZP\Models\Merchant\Methods\Entity;
 
             $wallets = $method->getAllWalletNames();
 
-            return in_array($input['wallet'], $wallets);
+            if (!in_array($input['wallet'], $wallets))
+            {
+                throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_VALID);
+            }
+
+            return true;
         }
 
         return true;

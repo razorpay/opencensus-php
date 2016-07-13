@@ -52,7 +52,7 @@ return [
         'amount'                => 50000,
         'contact'               => '+919918899029',
         'gateway_merchant_id'   => 'random_id',
-        'response_code'         => '',
+        'response_code'         => null,
         'status_code'           => 'success',
         'entity'                => 'wallet',
     ],

@@ -17,8 +17,6 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const CURRENCY = 'INR';
-
     protected $gateway = 'wallet_olamoney';
 
     protected $canRunOtpFlow = false;
@@ -79,7 +77,7 @@ class Gateway extends Base\Gateway
     protected function getCreateWalletAttributes($input)
     {
         $contentToSave = array(
-            'amount'                => $input['payment']['amount'],
+            'amount'                => (string) ($input['payment']['amount']),
             'received'              => true,
             'email'                 => $input['payment']['email'],
             'contact'               => $this->getFormattedContact($input['payment']['contact']),
@@ -204,7 +202,7 @@ class Gateway extends Base\Gateway
 
         $request = [
             'method'  => 'get',
-            'url'     => $url."?".$query,
+            'url'     => $url. '?' . $query,
         ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
@@ -214,7 +212,7 @@ class Gateway extends Base\Gateway
 
     protected function getOtpGenerateAttributes($input)
     {
-        $amount = ($input['payment']['amount'] / 100);
+        $amount = (string) ($input['payment']['amount'] / 100);
 
         $content = array(
             'command'           => Command::DEBIT,
@@ -224,8 +222,8 @@ class Gateway extends Base\Gateway
             'udf'               => $input['payment']['public_id'],
             'returnUrl'         => $input['callbackUrl'],
             'notificationUrl'   => '',
-            'amount'            => number_format($amount, 2, '.', ''),
-            'currency'          => self::CURRENCY,
+            'amount'            => $amount,
+            'currency'          => $input['payment']['currency'],
             'couponCode'        => 'NA',
         );
 
@@ -259,7 +257,7 @@ class Gateway extends Base\Gateway
             'udf'               => $payment['public_id'],
             'returnUrl'         => $input['callbackUrl'],
             'notificationUrl'   => '',
-            'amount'            => ($payment['amount'] / 100),
+            'amount'            => (string) ($payment['amount'] / 100),
             'currency'          => $payment['currency'],
             'couponCode'        => 'NA',
             'otp'               => $input['gateway']['otp'],
@@ -285,7 +283,8 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $walletPayment = $verify->payment; // api wallet gateway entity
+        // api wallet gateway entity
+        $walletPayment = $verify->payment;
 
         $input = $verify->input;
 
@@ -295,7 +294,8 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($verifyResponse['status'] === Status::COMPLETED) // transaction succeeded at
+        // transaction succeeded at gateway
+        if ($verifyResponse['status'] === Status::COMPLETED)
         {
             $verify->gatewaySuccess = true;
 
@@ -345,10 +345,10 @@ class Gateway extends Base\Gateway
     {
         $this->action = Action::AUTHORIZE;
 
-        // Is this if condition $walletPayment === NULL correct? Can there never
+        // Is this if condition $walletPayment === null correct? Can there never
         // be a case when we have a $walletPayment entity with status = failed,
         // and now needs to be updated to success?
-        if ($verifyResponse['status'] === Status::COMPLETED and $walletPayment === NULL)
+        if (($verifyResponse['status'] === Status::COMPLETED) and ($walletPayment === null))
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($walletPayment, $verifyResponse);
             $walletPayment = $this->createGatewayPaymentEntity($walletAttributes);
@@ -364,7 +364,7 @@ class Gateway extends Base\Gateway
         $payment = $this->input['payment'];
 
         $contentToSave = array(
-            'amount'                => $payment['amount'],
+            'amount'                => (string) ($payment['amount']),
             'received'              => true,
             'email'                 => $payment['email'],
             'contact'               => $this->getFormattedContact($payment['contact']),
@@ -424,7 +424,10 @@ class Gateway extends Base\Gateway
 
     protected function getHashForVerifyRequest($content)
     {
-        $str = $content['accessToken'].'|'.$content['uniqueBillId'].'||'.$content['timestamp'].'|||'.$this->getSecret();
+        $str = $content['accessToken'] . '|';
+        $str .= $content['uniqueBillId'] . '||';
+        $str .= $content['timestamp'] . '|||';
+        $str .= $this->getSecret();
 
         return $this->getHashOfString($str);
     }
@@ -474,9 +477,9 @@ class Gateway extends Base\Gateway
             'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
             'gateway_refund_id'     => isset($content['transactionId']) ? $content['transactionId'] : null,
             'refund_id'             => $input['refund']['id'],
-            'response_code'         => isset($content['errorCode']) ? $content['errorCode'] : '',
+            'response_code'         => isset($content['errorCode']) ? $content['errorCode'] : null,
             'status_code'           => $content['status'],
-            'error_message'         => isset($content['message']) ? $content['message'] : '',
+            'error_message'         => isset($content['message']) ? $content['message'] : null,
         );
 
         return $refundAttributes;
@@ -487,16 +490,16 @@ class Gateway extends Base\Gateway
         $content = array(
             'command'           => Command::REFUND,
             'accessToken'       => $this->getAccessToken($input['terminal']),
-            'uniqueId'          => $input['refund']['id'], // what to put here?
+            'uniqueId'          => $input['refund']['id'],
             'comments'          => 'Razorpay_refund',
             'udf'               => $input['payment']['public_id'],
             'returnUrl'         => '',
             'notificationUrl'   => '',
-            'amount'            => $input['refund']['amount'] / 100,
+            'amount'            => (string) ($input['refund']['amount'] / 100),
             'balanceType'       => 'cash',
             'balanceName'       => 'cash',
-            'saleId'            => $input['payment']['id'], //what to put here?
-            'currency'          => self::CURRENCY,
+            'saleId'            => $input['payment']['id'],
+            'currency'          => $input['payment']['currency'],
         );
 
         $content['hash'] = $this->getHashForRefundRequest($content);

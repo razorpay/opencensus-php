@@ -13,7 +13,6 @@ use RZP\Gateway\Wallet\Olamoney;
 
 class Server extends Base\Mock\Server
 {
-
     public function authorize($input)
     {
         parent::authorize($input);
@@ -88,5 +87,4 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
-
 }

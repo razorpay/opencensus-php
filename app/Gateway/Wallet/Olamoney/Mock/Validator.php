@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         'hash'              => 'required|string',
         'returnUrl'         => 'sometimes|url',
         'notificationUrl'   => 'sometimes|url',
-        'amount'            => 'required|integer',
+        'amount'            => 'required|numeric',
         'balanceType'       => 'required|string',
         'balanceName'       => 'required|string',
         'saleId'            => 'required|string',
