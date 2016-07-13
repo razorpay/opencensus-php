@@ -131,10 +131,10 @@ return array(
 
         'cluster' => false,
 
-        'session' => array(
-            'host'     => env('REDIS_SESSION_HOST'),
-            'port'     => env('REDIS_SESSION_PORT'),
-            'database' => env('REDIS_SESSION_DATABASE'),
+        'default' => array(
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_DATABASE'),
         ),
 
     ),
