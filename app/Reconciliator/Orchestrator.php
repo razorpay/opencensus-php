@@ -31,6 +31,7 @@ class Orchestrator
     const KOTAK = 'Kotak';
     const BILLDESK = 'BillDesk';
     const PAYZAPP = 'PayZapp';
+    const MOBIKWIK = 'Mobikwik';
     const ADMIN = 'admin';
 
     /**
@@ -41,6 +42,7 @@ class Orchestrator
         self::AXIS => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
         self::PAYZAPP  => ['prashanth@razorpay.com'],
+        self::MOBIKWIK => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN => ['prashanth.yv@razorpay.com'],
