@@ -1,13 +1,13 @@
 <?php
 
-namespace Rzp\Jobs;
+namespace RZP\Jobs;
 
 use App;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Payment;
 
-class CaptureQueue
+class Capture
 {
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 300;
