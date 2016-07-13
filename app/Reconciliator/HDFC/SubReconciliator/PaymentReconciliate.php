@@ -14,7 +14,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID  = 'merchant_trackid';
     const COLUMN_CARD_TYPE   = 'debitcredit_type';
-    const COLUMN_SERVICE_TAX = ['serv_tax', 'service_tax', 'st-sbces'];
+    const COLUMN_SERVICE_TAX = ['serv_tax', 'service_tax', 'st_sbces'];
     const COLUMN_SB_CESS     = 'sb_cess';
     const COLUMN_KK_CESS     = 'kk_cess';
     const COLUMN_FEE         = 'msf';
