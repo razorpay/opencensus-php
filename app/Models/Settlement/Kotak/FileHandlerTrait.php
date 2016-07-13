@@ -73,13 +73,16 @@ trait FileHandlerTrait
     {
         $columnFormat = [];
 
-        foreach (self::$format as $heading => $type)
+        if (isset(self::$format))
         {
-            $columnIndex = $this->getColumnIndexForHeading($heading);
+            foreach (self::$format as $heading => $type)
+            {
+                $columnIndex = $this->getColumnIndexForHeading($heading);
 
-            $columnType = $this->getColumnType($type);
+                $columnType = $this->getColumnType($type);
 
-            $columnFormat[$columnIndex] = $columnType;
+                $columnFormat[$columnIndex] = $columnType;
+            }
         }
 
         return $columnFormat;
