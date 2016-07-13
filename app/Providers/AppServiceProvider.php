@@ -29,28 +29,11 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    public function provides()
-    {
-        return [
-            'validator'
-        ];
-    }
-
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-
-    }
 
     protected function registerValidatorResolver()
     {
         $this->app->validator->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
-
             return new Razorpay\Spine\Validation\LaravelValidatorEx(
                 $translator, $data, $rules, $messages, $customAttributes
             );
