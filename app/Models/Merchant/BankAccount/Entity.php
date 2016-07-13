@@ -196,9 +196,9 @@ class Entity extends Base\PublicEntity
 
         $strParts = str_split($id, 7);
 
-        $first7 = $strParts[0];
-
         $last7Parts = str_split($strParts[1], 4);
+
+        $first7 = $strParts[0];
 
         $last3 = $last7Parts[1];
 
