@@ -30,8 +30,8 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
         else if (in_array($entityType, self::UNKNOWN_COLUMN_ENTITY_TYPES))
         {
             $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'info_code'     => 'UNKNOWN_HDFC_ENTITY_TYPE',
                     'message'       => 'This payment has to be authorized and reconciled manually.',
                     'row_details'   => $row,
