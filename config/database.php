@@ -129,7 +129,7 @@ return array(
 
     'redis' => array(
 
-        'cluster' => false,
+        'cluster' => true,
 
         'default' => array(
             'host'     => env('REDIS_HOST'),
