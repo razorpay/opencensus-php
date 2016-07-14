@@ -143,11 +143,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardType($cardType, $row)
     {
-        if ($cardType === 'c')
+        if (($cardType === 'c') or ($cardType === 'credit'))
         {
             $cardType = BaseReconciliate::CREDIT;
         }
-        else if ($cardType === 'd')
+        else if (($cardType === 'd') or ($cardType === 'debit'))
         {
             $cardType = BaseReconciliate::DEBIT;
         }
