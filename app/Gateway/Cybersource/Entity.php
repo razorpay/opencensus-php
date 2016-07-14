@@ -96,7 +96,7 @@ class Entity extends Base\Entity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getStatus()
@@ -147,5 +147,13 @@ class Entity extends Base\Entity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    /**
+     * Accessors
+     */
+    protected function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
     }
 }
