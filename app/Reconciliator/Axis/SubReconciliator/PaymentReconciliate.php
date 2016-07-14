@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\Axis;
 
+use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Reconciliator\Messenger;
@@ -17,7 +18,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID  = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE   = 'card_type';
-    const COLUMN_SERVICE_TAX = 'service_taxat145';
+    const COLUMN_SERVICE_TAX = ['service_taxat145', 'service_taxat1450', 'service_taxat135', 'service_taxat1350'];
     const COLUMN_FEE         = 'commission';
     const COLUMN_CARD_TRIVIA = ['card', 'card_category'];
     const RRN                = 'rrn_no';
@@ -58,8 +59,32 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
+        $columnServiceTax = null;
+
+        foreach(self::COLUMN_SERVICE_TAX as $cst)
+        {
+            if (isset($row[$cst]) === true)
+            {
+                $columnServiceTax = $cst;
+                break;
+            }
+        }
+
+        if ($columnServiceTax === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_FAILURE,
+                    'message'         => 'Unable to get the service tax!',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            throw new ReconciliationException('Unable to get the service tax for Axis from the recon file.');
+        }
+
         // Convert service tax into basic unit of currency. (ex: paise)
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $serviceTax = floatval($row[$columnServiceTax]) * 100;
 
         return round($serviceTax);
     }
