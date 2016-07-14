@@ -134,7 +134,7 @@ return array(
         'default' => array(
             'host'     => env('REDIS_HOST'),
             'port'     => env('REDIS_PORT'),
-            'database' => env('REDIS_DATABASE'),
+            'database' => env('REDIS_DB'),
         ),
 
     ),

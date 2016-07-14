@@ -225,16 +225,16 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);
 
-        $amount = $payment->getAmount();
-
-        $subventionType = $payment->merchant->getSubventionType();
-
         if (count($rules) === 0)
         {
             throw new Exception\LogicException(
                 'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
                 ['intl' => $international, 'cardType' => $cardType, 'network' => $network]);
         }
+
+        $amount = $payment->getAmount();
+
+        $subventionType = $payment->merchant->getSubventionType();
 
         $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
 

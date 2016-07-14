@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\HDFC;
 
+use RZP\Exception\ReconciliationException;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -47,6 +48,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 $columnServiceTax = $cst;
                 break;
             }
+        }
+        
+        if ($columnServiceTax === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_FAILURE,
+                    'message'         => 'Unable to get the service tax!',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            throw new ReconciliationException('Unable to get the service tax for HDFC from the recon file.');
         }
 
         // Convert service tax into paise

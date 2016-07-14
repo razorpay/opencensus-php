@@ -73,7 +73,7 @@ class Reconciliate
     public function startReconciliation(array $allFilesContents)
     {
         $allSummaries = [];
-        
+
         foreach ($allFilesContents as $fileContents)
         {
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
@@ -96,12 +96,12 @@ class Reconciliate
 
             $allSummaries[] = $summary;
         }
-        
+
         $this->app['trace']->info(
             TraceCode::RECON_INFO_SUMMARY,
             $allSummaries
         );
-        
+
         return $allSummaries;
     }
 
@@ -157,7 +157,7 @@ class Reconciliate
         }
 
         $fileName = strtolower($fileName);
-
+        
         // The method is present in child class since different gateways have
         // different sheet names/file names for reconciliation types.
         $reconciliationType = $this->getTypeName($fileName);

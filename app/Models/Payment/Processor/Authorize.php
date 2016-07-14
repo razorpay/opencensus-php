@@ -173,6 +173,8 @@ trait Authorize
         // Sets gateway and terminal for the payment.
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
+        $this->runPaymentGatewayRelatedPreProcessing($payment, $input);
+
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -389,7 +391,7 @@ trait Authorize
     protected function savePaymentMethod($customer, $payment, $input, array & $gatewayInput)
     {
         $saveMethodInput = array(
-            'method'      => $payment->getMethod(),
+            'method' => $payment->getMethod(),
         );
 
         if ($payment->isMethodCardOrEmi())
@@ -488,6 +490,20 @@ trait Authorize
                         $iinEntity->getIssuer(), $emiDuration);
 
         $payment->setEmiPlanId($emiPlan->getId());
+    }
+
+    protected function runPaymentGatewayRelatedPreProcessing($payment, $input)
+    {
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and
+            ($payment->card->getVaultToken() === null))
+        {
+            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($input['card']['number']));
+
+            $payment->card->setVault(Card\Vault::TOKENEX);
+
+            (new Card\Repository)->saveOrFail($payment->card);
+        }
     }
 
     protected function getReturnRequestDataForMerchant($payment)
@@ -605,10 +621,10 @@ trait Authorize
     protected function getReturnDataForSignedPayment($payment)
     {
         $data = array(
-            'razorpay_payment_id'   => $payment->getPublicId(),
-            'amount'                => $payment->getAmount(),
-            'currency'              => $payment->getCurrency(),
-            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+            'razorpay_payment_id' => $payment->getPublicId(),
+            'amount'              => $payment->getAmount(),
+            'currency'            => $payment->getCurrency(),
+            'merchant_order_id'   => $payment->getNotes()['merchant_order_id'],
         );
 
         $sortedData = $data;
@@ -690,11 +706,13 @@ trait Authorize
 
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
-            ['payment_id' => $payment->getPublicId(),
-             'public_error_code' => $publicErrorCode,
-             'internal_error_code' => $internalErrorCode,
-             'error_description' => $errorDesc,
-             'message' => 'Failed to convert error code to the appropriate exception']);
+            [
+                'payment_id' => $payment->getPublicId(),
+                'public_error_code' => $publicErrorCode,
+                'internal_error_code' => $internalErrorCode,
+                'error_description' => $errorDesc,
+                'message' => 'Failed to convert error code to the appropriate exception'
+            ]);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.
@@ -999,6 +1017,9 @@ trait Authorize
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
 
+            //
+            // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
+            //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
