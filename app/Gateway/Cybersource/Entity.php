@@ -19,7 +19,7 @@ class Entity extends Base\Entity
     const CAPTURE_REF          = 'capture_ref';
     const XID                  = 'xid';
     const PARES_STATUS         = 'pares_status';
-    const ERROR_CODE           = 'error_code';
+    const REASON_CODE          = 'reason_code';
     const CREATED_AT           = 'created_at';
     const UPDATED_AT           = 'updated_at';
 
@@ -39,7 +39,7 @@ class Entity extends Base\Entity
         self::COMMERCE_INDICATOR,
         self::XID,
         self::PARES_STATUS,
-        self::ERROR_CODE,
+        self::REASON_CODE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::COLLECTION_INDICATOR,
@@ -60,7 +60,7 @@ class Entity extends Base\Entity
         self::COMMERCE_INDICATOR,
         self::XID,
         self::PARES_STATUS,
-        self::ERROR_CODE,
+        self::REASON_CODE,
         self::COLLECTION_INDICATOR,
     );
 
@@ -139,9 +139,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PARES_STATUS);
     }
 
-    public function getErrorCode()
+    public function getReasonCode()
     {
-        return $this->getAttribute(self::ERROR_CODE);
+        return $this->getAttribute(self::REASON_CODE);
     }
 
     public function setStatus($status)

@@ -3,11 +3,12 @@
 namespace RZP\Gateway\Cybersource;
 
 use App;
+use SoapClient;
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
-class CybersourceSoapClient extends \SoapClient
+class CybersourceSoapClient extends SoapClient
 {
     protected $user;
     protected $password;

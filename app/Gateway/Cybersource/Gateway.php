@@ -73,7 +73,7 @@ class Gateway extends Base\Gateway
 
         $gateway = $this->getRepo()->retrieveByPaymentIdOrFail($input['payment']['id']);
 
-        $gateway->fill([Entity::RECEIVED => 1]);
+        $gateway->fill([Entity::RECEIVED => true]);
 
         $gateway->saveOrFail();
 
@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::ERROR_CODE => $response['reasonCode']
+                Entity::REASON_CODE => $response['reasonCode']
             );
 
             $gateway->fill($attributes);
@@ -219,43 +219,42 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                             ResponseCodeMap::$map[$response['reasonCode']]);
         }
-        else
+
+        $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
+
+        $attributes = array(
+            Entity::COMMERCE_INDICATOR => $payAuthRep[self::COMMERCE_INDICATOR],
+            Entity::XID                => $payAuthRep[self::XID],
+            Entity::PARES_STATUS       => $payAuthRep[self::PARES_STATUS]
+        );
+
+        $networkCode = $input['card']['network_code'];
+
+        switch ($networkCode)
         {
-            $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
+            case Card\Network::VISA:
+                if (array_key_exists(Entity::ECI, $payAuthRep) === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                }
 
-            $attributes = array(
-                Entity::COMMERCE_INDICATOR => $payAuthRep[self::COMMERCE_INDICATOR],
-                Entity::XID                => $payAuthRep[self::XID],
-                Entity::PARES_STATUS       => $payAuthRep[self::PARES_STATUS]
-            );
+                $attributes[Entity::ECI] = $payAuthRep[Entity::ECI];
+                $attributes[Entity::CAVV] = $payAuthRep[self::CAVV];
+                break;
 
-            $network = $input['card']['network'];
+            case Card\Network::MC:
+                $attributes[Entity::AUTH_DATA] = $payAuthRep[self::UCAF_AUTHENTICATION_DATA];
+                $attributes[Entity::COLLECTION_INDICATOR] = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
+                break;
 
-            switch ($network)
-            {
-                case Card\Network::getFullName(Card\Network::VISA):
-                    if (array_key_exists(Entity::ECI, $payAuthRep) === false)
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                    }
-                    $attributes[Entity::ECI] = $payAuthRep[Entity::ECI];
-                    $attributes[Entity::CAVV] = $payAuthRep[self::CAVV];
-                    break;
-
-                case Card\Network::getFullName(Card\Network::MC):
-                    $attributes[Entity::AUTH_DATA] = $payAuthRep[self::UCAF_AUTHENTICATION_DATA];
-                    $attributes[Entity::COLLECTION_INDICATOR] = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
-                    break;
-
-                default:
-                    throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
-                    break;
-            }
-
-            $gateway->fill($attributes);
-            $gateway->saveOrFail();
+            default:
+                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
+                break;
         }
+
+        $gateway->fill($attributes);
+        $gateway->saveOrFail();
     }
 
     protected function persistAfterNotEnrolledAuthorize($input, $response, $request)
@@ -268,7 +267,7 @@ class Gateway extends Base\Gateway
         {
             $attributes = array(
                 Entity::STATUS     => Status::AUTHORIZE_FAILED,
-                Entity::ERROR_CODE => $response['reasonCode']
+                Entity::REASON_CODE => $response['reasonCode']
             );
 
             $gatewayPayment->fill($attributes);
@@ -298,8 +297,8 @@ class Gateway extends Base\Gateway
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::STATUS     => Status::AUTHORIZE_FAILED,
-                Entity::ERROR_CODE => $response['reasonCode']
+                Entity::STATUS      => Status::AUTHORIZE_FAILED,
+                Entity::REASON_CODE => $response['reasonCode']
             );
 
             $gateway->fill($attributes);
@@ -309,17 +308,15 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                             ResponseCodeMap::$map[$response['reasonCode']]);
         }
-        else
-        {
-            $attributes = array(
-                Entity::REF    => $response[self::REQUEST_ID],
-                Entity::STATUS => Status::AUTHORIZED
-            );
 
-            $gateway->fill($attributes);
+        $attributes = array(
+            Entity::REF    => $response[self::REQUEST_ID],
+            Entity::STATUS => Status::AUTHORIZED
+        );
 
-            $gateway->saveOrFail();
-        }
+        $gateway->fill($attributes);
+
+        $gateway->saveOrFail();
     }
 
     protected function persistAfterEnroll($input, $response, $request)
@@ -337,7 +334,7 @@ class Gateway extends Base\Gateway
         $attributes = array(
             Entity::PAYMENT_ID    => $input['payment']['id'],
             Entity::AMOUNT        => $request[self::ITEM][0][self::UNIT_PRICE],
-            Entity::ERROR_CODE    => $reasonCode,
+            Entity::REASON_CODE    => $reasonCode,
             Entity::STATUS        => Status::CREATED,
             Entity::REF           => $response[self::REQUEST_ID]
         );
@@ -361,9 +358,9 @@ class Gateway extends Base\Gateway
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::STATUS     => Status::CAPTURE_FAILED,
-                Entity::ERROR_CODE => $response['reasonCode'],
-                Entity::ACTION     => Base\Action::CAPTURE
+                Entity::STATUS      => Status::CAPTURE_FAILED,
+                Entity::REASON_CODE => $response['reasonCode'],
+                Entity::ACTION      => Base\Action::CAPTURE
             );
 
             $gateway->fill($attributes);
@@ -373,18 +370,16 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                             ResponseCodeMap::$map[$response['reasonCode']]);
         }
-        else
-        {
-            $attributes = array(
-                Entity::CAPTURE_REF => $response[self::REQUEST_ID],
-                Entity::STATUS      => Status::CAPTURED,
-                Entity::ACTION      => Base\Action::CAPTURE
-            );
 
-            $gateway->fill($attributes);
+        $attributes = array(
+            Entity::CAPTURE_REF => $response[self::REQUEST_ID],
+            Entity::STATUS      => Status::CAPTURED,
+            Entity::ACTION      => Base\Action::CAPTURE
+        );
 
-            $gateway->saveOrFail();
-        }
+        $gateway->fill($attributes);
+
+        $gateway->saveOrFail();
     }
 
     protected function persistAfterRefund($input, $response, $request)
@@ -396,7 +391,7 @@ class Gateway extends Base\Gateway
         if ($response['reasonCode'] !== Result::SUCCESS)
         {
             $attributes = array(
-                Entity::ERROR_CODE => $response['reasonCode'],
+                Entity::REASON_CODE => $response['reasonCode'],
                 Entity::ACTION     => Base\Action::REFUND
             );
 
@@ -408,18 +403,16 @@ class Gateway extends Base\Gateway
                             ResponseCodeMap::$map[$response['reasonCode']]);
 
         }
-        else
-        {
-            $attributes = array(
-                Entity::REFUND_ID => $input['refund']['id'],
-                Entity::STATUS    => Status::REFUNDED,
-                Entity::ACTION    => Base\Action::REFUND
-            );
 
-            $gateway->fill($attributes);
+        $attributes = array(
+            Entity::REFUND_ID => $input['refund']['id'],
+            Entity::STATUS    => Status::REFUNDED,
+            Entity::ACTION    => Base\Action::REFUND
+        );
 
-            $gateway->saveOrFail();
-        }
+        $gateway->fill($attributes);
+
+        $gateway->saveOrFail();
     }
 
     protected function createAuthEnrolledRequestFields($input)
@@ -462,14 +455,15 @@ class Gateway extends Base\Gateway
         $request['ccAuthService'][Entity::ECI] = $gateway->getEci();
         $request['ccAuthService'][self::RECONCILIATION_ID] = $input['payment']['id'];
 
-        $network = $input['card']['network'];
-        switch ($network)
+        $networkCode = $input['card']['network_code'];
+
+        switch ($networkCode)
         {
-            case Card\Network::getFullName(Card\Network::VISA):
+            case Card\Network::VISA:
                 $request['ccAuthService'][Entity::CAVV] = $gateway->getCavv();
                 break;
 
-            case Card\Network::getFullName(Card\Network::MC):
+            case Card\Network::MC:
                 $request[self::UCAF][self::AUTHENTICATION_DATA] = $gateway->getAuthData();
                 $request[self::UCAF][self::COLLECTION_INDICATOR] = $gateway->getCollectionIndicator();
                 break;
@@ -498,7 +492,7 @@ class Gateway extends Base\Gateway
 
         $networkCode = $input['card']['network_code'];
 
-        switch ($network)
+        switch ($networkCode)
         {
             case Card\Network::VISA:
 
@@ -652,6 +646,7 @@ class Gateway extends Base\Gateway
         {
             $file = storage_path('gateway/cybersource/cybstest.wsdl.xml');
         }
+
         return $file;
     }
 

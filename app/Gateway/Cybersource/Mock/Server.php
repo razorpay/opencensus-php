@@ -125,34 +125,36 @@ class Server extends Base\Mock\Server
         $response['merchantReferenceCode'] = 'razorpay';
         $response['requestID'] = 'f32n23ke';
 
-        if ($request['card']['accountNumber'] === '4012001038443335')
+        switch ($request['card']['accountNumber'])
         {
-            $response['decision'] = 'REJECT';
-            $response['reasonCode'] = Cybersource\Result::ENROLLED;
+            case '4012001038443335':
+                $response['decision'] = 'REJECT';
+                $response['reasonCode'] = Cybersource\Result::ENROLLED;
 
-            $params = array('gateway' => 'cybersource');
-            $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
-            $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
-            $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
-            $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
-        }
-        else if ($request['card']['accountNumber'] === '555555555555558')
-        {
-            $response['decision'] = 'ACCEPT';
-            $response['reasonCode'] = Cybersource\Result::SUCCESS;
+                $params = array('gateway' => 'cybersource');
+                $response['payerAuthEnrollReply']['acsURL'] = Http\Route::getUrl('mockcybersource_acs', $params);
+                $response['payerAuthEnrollReply']['paReq'] = 'eNpVUttygjAQfc9XMP0AkiAw';
+                $response['payerAuthEnrollReply']['xid'] = 'cGdKQXF5STA1TFl3OUtueHJnWDA';
+                $response['payerAuthEnrollReply']['veresEnrolled'] = 'Y';
+                break;
 
-            $response['payerAuthEnrollReply']['veresEnrolled'] = 'U';
-            $response['payerAuthEnrollReply']['commerceIndicator'] = 'spa';
-            $response['payerAuthEnrollReply']['ucafCollectionIndicator'] = '1';
-        }
-        else
-        {
-            $response['decision'] = 'ACCEPT';
-            $response['reasonCode'] = Cybersource\Result::SUCCESS;
+            case '555555555555558':
+                $response['decision'] = 'ACCEPT';
+                $response['reasonCode'] = Cybersource\Result::SUCCESS;
 
-            $response['payerAuthEnrollReply']['commerceIndicator'] = 'internet';
-            $response['payerAuthEnrollReply']['veresEnrolled ']= 'U';
-            $response['payerAuthEnrollReply']['eci'] = '05';
+                $response['payerAuthEnrollReply']['veresEnrolled'] = 'U';
+                $response['payerAuthEnrollReply']['commerceIndicator'] = 'spa';
+                $response['payerAuthEnrollReply']['ucafCollectionIndicator'] = '1';
+                break;
+
+            default:
+                $response['decision'] = 'ACCEPT';
+                $response['reasonCode'] = Cybersource\Result::SUCCESS;
+
+                $response['payerAuthEnrollReply']['commerceIndicator'] = 'internet';
+                $response['payerAuthEnrollReply']['veresEnrolled ']= 'U';
+                $response['payerAuthEnrollReply']['eci'] = '05';
+                break;
         }
 
         return $response;

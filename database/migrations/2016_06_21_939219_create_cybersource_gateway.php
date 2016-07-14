@@ -45,17 +45,17 @@ class CreateCybersourceGateway extends Migration
             $table->char(Cybersource::ECI, 20)->nullable();
 
             $table->char(Cybersource::CAVV, 40)->nullable();
-            
+
             $table->char(Cybersource::REF, 120)->nullable();
-            
+
             $table->char(Cybersource::CAPTURE_REF, 30)->nullable();
-            
-            $table->integer(Cybersource::ERROR_CODE)->nullable();
-            
+
+            $table->integer(Cybersource::REASON_CODE)->nullable();
+
             $table->integer(Cybersource::CREATED_AT);
-            
+
             $table->integer(Cybersource::UPDATED_AT);
-            
+
             $table->char(Cybersource::COLLECTION_INDICATOR, 20)->nullable();
 
             $table->foreign(Cybersource::PAYMENT_ID)
@@ -64,7 +64,7 @@ class CreateCybersourceGateway extends Migration
                   ->on_delete('restrict');
 
             $table->index(Cybersource::STATUS);
-        
+
             $table->index(Cybersource::RECEIVED);
 
             $table->index(Cybersource::CREATED_AT);
