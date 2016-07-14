@@ -1,0 +1,91 @@
+<?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+use RZP\Gateway\Cybersource\Entity as Cybersource;
+use RZP\Constants\Table;
+
+class CreateCybersourceGateway extends Migration
+{
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::CYBERSOURCE, function(Blueprint $table)
+        {
+            $table->engine = 'InnoDB';
+
+            $table->increments(Cybersource::ID);
+
+            $table->char(Cybersource::PAYMENT_ID, Cybersource::ID_LENGTH);
+
+            $table->char(Cybersource::ACTION, 10)->nullable();
+
+            $table->integer(Cybersource::RECEIVED)->default(0);
+
+            $table->char(Cybersource::REFUND_ID, Cybersource::ID_LENGTH)->nullable();
+
+            $table->char(Cybersource::AUTH_DATA, 40)->nullable();
+
+            $table->char(Cybersource::COMMERCE_INDICATOR, 20)->nullable();
+
+            $table->integer(Cybersource::AMOUNT);
+
+            $table->char(Cybersource::PARES_STATUS, 20)->nullable();
+
+            $table->char(Cybersource::STATUS, 20);
+
+            $table->char(Cybersource::XID, 40)->nullable();
+
+            $table->char(Cybersource::ECI, 20)->nullable();
+
+            $table->char(Cybersource::CAVV, 40)->nullable();
+
+            $table->char(Cybersource::REF, 120)->nullable();
+
+            $table->char(Cybersource::CAPTURE_REF, 30)->nullable();
+
+            $table->integer(Cybersource::REASON_CODE)->nullable();
+
+            $table->integer(Cybersource::CREATED_AT);
+
+            $table->integer(Cybersource::UPDATED_AT);
+
+            $table->char(Cybersource::COLLECTION_INDICATOR, 20)->nullable();
+
+            $table->foreign(Cybersource::PAYMENT_ID)
+                  ->references(Cybersource::ID)
+                  ->on(Table::PAYMENT)
+                  ->on_delete('restrict');
+
+            $table->index(Cybersource::STATUS);
+
+            $table->index(Cybersource::RECEIVED);
+
+            $table->index(Cybersource::CREATED_AT);
+
+            $table->index(Cybersource::REFUND_ID);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table(Table::CYBERSOURCE, function($table)
+        {
+            $table->dropForeign(Table::CYBERSOURCE.'_'.Cybersource::PAYMENT_ID.'_foreign');
+        });
+
+        Schema::drop(Table::CYBERSOURCE);
+    }
+
+}
