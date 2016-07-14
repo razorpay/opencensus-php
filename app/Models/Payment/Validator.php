@@ -8,6 +8,7 @@ use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
@@ -64,11 +65,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED);
             }
 
-            $method = new \RZP\Models\Merchant\Methods\Entity;
-
-            $wallets = $method->getAllWalletNames();
-
-            if (!in_array($input['wallet'], $wallets))
+            if (Wallet::exists($input['wallet']) === false)
             {
                 throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_VALID);

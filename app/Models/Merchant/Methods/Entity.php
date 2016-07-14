@@ -376,17 +376,6 @@ class Entity extends Base\PublicEntity
         return $wallets;
     }
 
-    public static function getAllWalletNames()
-    {
-        return array(
-            self::MOBIKWIK,
-            self::PAYTM,
-            self::PAYZAPP,
-            self::PAYUMONEY,
-            self::OLAMONEY,
-        );
-    }
-
     public static function getAllMethodNames()
     {
         return array(
