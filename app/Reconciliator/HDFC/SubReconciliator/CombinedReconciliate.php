@@ -13,6 +13,8 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
      *******************/
     const COLUMN_ENTITY_TYPE  = 'rec_fmt';
 
+    const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC'];
+
     protected function getReconciliationTypeForRow($row)
     {
         $entityType = trim($row[self::COLUMN_ENTITY_TYPE]);
@@ -25,11 +27,12 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
         {
             return BaseReconciliate::PAYMENT;
         }
-        else if (($entityType === 'CDP') or ($entityType === 'CBR'))
+        else if (in_array($entityType, self::UNKNOWN_COLUMN_ENTITY_TYPES))
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'    => TraceCode::RECON_MISMATCH,
+                    'info_code'     => 'UNKNOWN_HDFC_ENTITY_TYPE',
                     'message'       => 'This payment has to be authorized and reconciled manually.',
                     'row_details'   => $row,
                     'gateway'       => get_called_class()

@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Settlement\Kotak;
 
+use AWS;
+use Excel;
 use ZipArchive;
 use Carbon\Carbon;
 use RZP\Exception;
-use Excel;
-use AWS;
+use RZP\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
@@ -31,7 +32,9 @@ trait FileHandlerTrait
     {
         \Config::set('excel::export.calculate', true);
 
-        $excel = $this->createExcelObject($data, $name);
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
 
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullpath = $fileMetadata['full'];
@@ -42,12 +45,19 @@ trait FileHandlerTrait
         return $url;
     }
 
-    protected function createExcelObject($data, $name)
+    protected function createExcelObject($data, $name, $columnFormat = [])
     {
-        $excel = Excel::create($name, function($excel) use ($data)
+        $excel = Excel::create($name, function($excel) use ($data, $columnFormat)
         {
-            $excel->sheet('Sheet 1', function($sheet) use ($data)
+            $excel->sheet('Sheet 1', function($sheet) use ($data, $columnFormat)
                 {
+                    // If a columnFormat variable is specified.
+                    // Use it.
+                    if (empty($columnFormat) === false)
+                    {
+                        $sheet->setColumnFormat($columnFormat);
+                    }
+
                     $sheet->fromArray($data, null, 'A1', true, true);
                 });
         });
@@ -57,6 +67,101 @@ trait FileHandlerTrait
         $this->excel = $excel;
 
         return $excel;
+    }
+
+    protected function getColumnFormatForExcel()
+    {
+        $columnFormat = [];
+
+        if (isset(self::$format))
+        {
+            foreach (self::$format as $heading => $type)
+            {
+                $columnIndex = $this->getColumnIndexForHeading($heading);
+
+                $columnType = $this->getColumnType($type);
+
+                $columnFormat[$columnIndex] = $columnType;
+            }
+        }
+
+        return $columnFormat;
+    }
+
+    protected function getColumnType($type)
+    {
+        switch ($type) {
+            case 'text':
+                return '@';
+                break;
+
+            default:
+                break;
+        }
+
+        return null;
+    }
+
+    /**
+     * Function to get Column Index For a given heading in an Excel.
+     *
+     * @param string $heading Heading in Excel
+     * @return string Column Index
+     */
+    protected function getColumnIndexForHeading($heading)
+    {
+        $columnIndex = null;
+
+        $headings = self::$headings;
+
+        $headingsToColumnIdMap = array_flip($headings);
+
+        if (isset($headingsToColumnIdMap[$heading]))
+        {
+            // logic to get A-Z from number
+            $columnIndex = $this->getColumnIndexFromNumber($headingsToColumnIdMap[$heading]);
+        }
+
+        return $columnIndex;
+    }
+
+
+    /**
+     * Function to convert get an Excel Column Index from a column number.
+     *
+     * Ref: http://stackoverflow.com/questions/7664121/php-converting-number-to-alphabet-and-vice-versa
+     * @param int $data Column number in excel
+     * @return string ColumnIndex
+     */
+    protected function getColumnIndexFromNumber($data)
+    {
+        $alphabet = range('A','Z');
+
+        $alpha_flip = array_flip($alphabet);
+
+        if($data <= 25)
+        {
+          return $alphabet[$data];
+        }
+        elseif($data > 25)
+        {
+          $dividend = ($data + 1);
+
+          $alpha = '';
+
+          $modulo;
+
+          while ($dividend > 0)
+          {
+            $modulo = ($dividend - 1) % 26;
+
+            $alpha = $alphabet[$modulo] . $alpha;
+
+            $dividend = floor((($dividend - $modulo) / 26));
+          }
+
+          return $alpha;
+        }
     }
 
     protected function saveUploadedFileToAws($fullpath)
@@ -88,11 +193,14 @@ trait FileHandlerTrait
                 'SourceFile'    => $fullpath,
             );
 
+            $this->trace()->info(TraceCode::AWS_FILE_UPLOAD, $s3Obj);
+
             $result = $s3->putObject($s3Obj);
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
-            // trace here.
+            $this->trace()->traceException($e);
+
             throw $e;
         }
 
@@ -398,5 +506,12 @@ trait FileHandlerTrait
     protected function getFullFilePath($filename)
     {
         return $this->getStorageDir() . '/' . $filename;
+    }
+
+    protected function trace()
+    {
+        $trace = \Trace::getFacadeRoot();
+
+        return $trace;
     }
 }

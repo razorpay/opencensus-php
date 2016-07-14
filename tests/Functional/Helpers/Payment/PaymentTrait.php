@@ -24,6 +24,7 @@ trait PaymentTrait
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
     use PaymentSbiepayTrait;
+    use PaymentCybersourceTrait;
 
     use RequestResponseFlowTrait
     {
@@ -1337,6 +1338,7 @@ trait PaymentTrait
                                 '4111460212312338' => '1a2b3c4b6e',
                                 '4000400000000004' => '1a2b3c4b7e',
                                 '4012001038443335' => '1a2b3c4d8e',
+                                '555555555555558'  => '1a2b3c4d9e',
                             );
 
                         switch ($route)

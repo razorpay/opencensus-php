@@ -34,6 +34,19 @@ class MockGatewayController extends Controller
         return View::make('gateway.3dsecure')->with('data', $data);
     }
 
+    public function postAcs($gateway)
+    {
+        $input = Request::all();
+
+        unset($input['key_id']);
+
+        $server = $this->gateway->server($gateway);
+
+        $data = $server->acs($input);
+
+        return View::make('gateway.3dsecure')->with('data', $data);
+    }
+
     public function enroll()
     {
         return $this->mockHdfcGatewayServer->enroll();
@@ -222,7 +235,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $server = new RZP\Gateway\Sbiepay\Mock\Server;
+        $server = new \RZP\Gateway\Sbiepay\Mock\Server;
 
         return $server->authorize($input);
     }

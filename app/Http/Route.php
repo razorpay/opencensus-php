@@ -58,6 +58,7 @@ final class Route
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                'CardController@getIin'                                             ],
         'iin_fetch_multiple'                      => ['get',      'iins',                                     'CardController@getIins'                                            ],
         'iin_add'                                 => ['post',     'iins',                                     'CardController@postIin'                                            ],
+        'iin_upload'                              => ['post',     'iins/upload',                              'CardController@uploadIin'                                          ],
         'iin_edit'                                => ['put',      'iins/{id}',                                'CardController@editIin'                                            ],
         'iin_generate_post'                       => ['post',     'iins/import/generate',                     'CardController@postIinGenerate'                                    ],
         'merchant_public_get_banks'               => ['get',      'banks',                                    'MerchantController@getBanksPublic'                                 ],
@@ -153,6 +154,7 @@ final class Route
         'mockhdfc_payment'                        => ['post',     'gateway/mockhdfc/payment',                 'MockGatewayController@payment'                                     ],
         'mockhdfc_auth_enrolled'                  => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockGatewayController@authEnrolled'                                ],
         'mockhdfc_3dsecure'                       => ['post',     'gateway/3dsecure',                         'MockGatewayController@post3dSecure'                                ],
+        'mockcybersource_acs'                     => ['post',     'gateway/acs/{gateway}',                    'MockGatewayController@postAcs'                                     ],
         'mockatom_init_payment'                   => ['post',     'gateway/mockanb',                          'MockGatewayController@postAtomInitPayment'                         ],
         'mockatom_choose_org'                     => ['get',      'gateway/mockanb',                          'MockGatewayController@getAtomChooseOrg'                            ],
         'mockatom_rzp_payment'                    => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'                          ],
@@ -383,6 +385,7 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'iin_upload',
         'iin_edit',
         'iin_generate_post',
         'send_test_newsletter',
@@ -438,6 +441,7 @@ final class Route
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',
+        'mockcybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
@@ -619,7 +623,7 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    protected static function addRoutes($type)
+    public static function addRoutes($type)
     {
         foreach (self::$$type as $routeName)
         {

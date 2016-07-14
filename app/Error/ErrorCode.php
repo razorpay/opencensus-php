@@ -41,13 +41,13 @@ class ErrorCode
     const GATEWAY_ERROR_CHECKSUM_MATCH_FAILED                                       = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
     const GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR                                  = 'GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR';
+    const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
     const GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST                                   = 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST';
     const GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT';
-    const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
     const GATEWAY_ERROR_PAYMENT_INVALID_ACTION                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_ACTION';
     const GATEWAY_ERROR_PAYMENT_INVALID_ID                                          = 'GATEWAY_ERROR_PAYMENT_INVALID_ID';
     const GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN                                 = 'GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN';
@@ -57,7 +57,6 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_SUPPORT_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_SUPPORT_FAILED';
     const GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND                              = 'GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND';
     const GATEWAY_ERROR_PAYMENT_PARES_NOT_SUCCESFUL                                 = 'GATEWAY_ERROR_PAYMENT_PARES_NOT_SUCCESFUL';
-    const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';
@@ -68,6 +67,9 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_ZIP                                            = 'GATEWAY_ERROR_CARD_INVALID_ZIP';
     const GATEWAY_ERROR_CARD_INVALID_CVV                                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
+    const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
+    const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
+    const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
 
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
@@ -176,6 +178,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                    = 'BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID';
     const BAD_REQUEST_PAYMENT_ABORTED                                               = 'BAD_REQUEST_PAYMENT_ABORTED';
     const BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED                          = 'BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED';
+    const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';
+    const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
 
     const BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED                                     = 'BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED';
     const BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT                            = 'BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT';

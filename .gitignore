@@ -12,3 +12,4 @@ app/config/dev
 app/config/**/dev/
 /environment/env.php
 _*
+storage/

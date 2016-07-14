@@ -15,11 +15,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = 'merchant_trans_ref';
+    const COLUMN_PAYMENT_ID  = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE   = 'card_type';
-    const COLUMN_SERVICE_TAX = 'service_tax145';
+    const COLUMN_SERVICE_TAX = 'service_taxat145';
     const COLUMN_FEE         = 'commission';
-    const COLUMN_CARD_TRIVIA = 'card';
+    const COLUMN_CARD_TRIVIA = ['card', 'card_category'];
     const RRN                = 'rrn_no';
 
     protected $messenger;
@@ -36,7 +36,23 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        $columnPaymentId = null;
+
+        foreach(self::COLUMN_PAYMENT_ID as $cpi)
+        {
+            if (isset($row[$cpi]) === true)
+            {
+                $columnPaymentId = $cpi;
+                break;
+            }
+        }
+
+        if ($columnPaymentId === null)
+        {
+            return null;
+        }
+
+        $paymentId = $row[$columnPaymentId];
         return $paymentId;
     }
 
@@ -72,7 +88,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
-        $columnCardTrivia = strtolower($row[self::COLUMN_CARD_TRIVIA]);
+        $columnCardTrivia = $this->getColumnCardTrivia($row);
 
         $cardType = $this->getCardType($columnCardType, $row);
         $cardTrivia = $this->getCardTrivia($columnCardTrivia, $row);
@@ -81,6 +97,27 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BaseReconciliate::CARD_TYPE => $cardType,
             BaseReconciliate::CARD_TRIVIA => $cardTrivia,
         ];
+    }
+
+    protected function getColumnCardTrivia($row)
+    {
+        $columnCardTrivia = null;
+
+        foreach (self::COLUMN_CARD_TRIVIA as $cct)
+        {
+            if (isset($row[$cct]) === true)
+            {
+                $columnCardTrivia = $cct;
+                break;
+            }
+        }
+
+        if ($columnCardTrivia === null)
+        {
+            return null;
+        }
+
+        return $row[$columnCardTrivia];
     }
 
     protected function getCardTrivia($cardTrivia, $row)
@@ -106,11 +143,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardType($cardType, $row)
     {
-        if ($cardType === 'c')
+        if (($cardType === 'c') or ($cardType === 'credit'))
         {
             $cardType = BaseReconciliate::CREDIT;
         }
-        else if ($cardType === 'd')
+        else if (($cardType === 'd') or ($cardType === 'debit'))
         {
             $cardType = BaseReconciliate::DEBIT;
         }

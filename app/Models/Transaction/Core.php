@@ -21,11 +21,19 @@ class Core extends Base\Core
 
     protected $nodalBalance = null;
 
+    protected $merchant;
+
+    protected $merchantRepo;
+
+    protected $balanceRepo;
+
     public function __construct()
     {
+        parent::__construct();
+
         $this->merchant = \BasicAuth::getMerchant();
-        $this->merchantRepo = new Merchant\Repository;
-        $this->balanceRepo = new Merchant\Balance\Repository;
+        $this->merchantRepo = $this->repo->merchant;
+        $this->balanceRepo = $this->repo->balance;
     }
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
@@ -96,8 +104,6 @@ class Core extends Base\Core
 
     protected function fillTxnFeesAndAmount($txn, $payment)
     {
-        $credit = $fee = $serviceTax = 0;
-
         $pricingRuleId = null;
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);

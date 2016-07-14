@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {
@@ -22,6 +23,7 @@ class Repository extends Base\Repository
         Entity::CATEGORY            => 'sometimes|integer|digits:4',
         'deleted'                   => 'sometimes|boolean',
         Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
+        Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
     );
 
@@ -50,13 +52,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getByGatewayTerminalIdAndGateway($gatewayTerminalId, $gateway)
+    public function getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($gatewayTerminalId, $gateway)
     {
         $repo = $this->repo;
 
         return $repo::withTrashed()
                     ->where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->whereNotNull(Terminal\Entity::GATEWAY_RECON_PASSWORD)
                     ->first();
     }
 

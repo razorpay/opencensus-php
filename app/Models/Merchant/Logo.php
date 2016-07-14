@@ -6,7 +6,9 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use Config;
+use Trace;
 use AWS;
 
 class Logo
@@ -203,6 +205,8 @@ class Logo
         // Since all the file names have sizes appended to them.
         $url = '/' . $awsFileName;
 
+        Trace::info(TraceCode::AWS_S3_LOGO_UPLOAD);
+
         foreach ($logoDimensions as $size => $_)
         {
             // Gets the location of the file w.r.t. the size.
@@ -220,7 +224,6 @@ class Logo
                     'ContentType'   => $mimeType,
                     'SourceFile'    => $filePath,
                 ];
-
                 // The method which will upload to s3.
                 $result = $s3->putObject($s3Obj);
             }
@@ -230,9 +233,17 @@ class Logo
                     'Failed to upload file: ' . $awsFileName,
                     ErrorCode::SERVER_ERROR_AWS_FAILURE, null, $e);
             }
+            catch (\Aws\S3\Exception\S3Exception $e)
+            {
+                throw new Exception\ServerErrorException(
+                    'Failed to upload file: ' . $awsFileName,
+                    ErrorCode::SERVER_ERROR_AWS_FAILURE, null, $e);
+            }
 
+            Trace::info(TraceCode::AWS_S3_LOGO_UPLOAD, ['File Uploaded']);
             //$s3Url = $result['ObjectURL'];
         }
+
         return $url;
     }
 }

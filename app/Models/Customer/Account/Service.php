@@ -121,11 +121,7 @@ class Service extends Base\Service
      */
     public function verifyOtp($input)
     {
-        $input['context'] = $this->merchant->getId();
-
-        $input['source'] = 'api';
-
-        $data = (new Customer\Core)->verifyOtp($input);
+        $data = (new Customer\Core)->verifyOtp($input, $this->merchant);
 
         return $data;
     }
