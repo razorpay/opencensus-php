@@ -23,6 +23,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use Mail;
 use Lib\PhoneBook;
+use Crypt;
 
 trait Authorize
 {
@@ -278,6 +279,8 @@ trait Authorize
 
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
+        $this->checkAndFillSavedAppToken($input);
+// sd($input);
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
@@ -522,6 +525,26 @@ trait Authorize
         return $data;
     }
 
+    protected function checkAndFillSavedAppToken(array & $input)
+    {
+        if (isset($input['customer_id']) === true)
+        {
+            return;
+        }
+
+        if ($this->request->hasSession() === false)
+        {
+            return;
+        }
+
+        $appToken = $this->request->session()->get('app_token');
+
+        if ($appToken !== null)
+        {
+            $input['app_token'] = $appToken;
+        }
+    }
+
     protected function getMerchantCallbackUrl($payment)
     {
         return $this->payment->getCallbackUrl();
@@ -683,11 +706,13 @@ trait Authorize
 
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
-            ['payment_id' => $payment->getPublicId(),
-             'public_error_code' => $publicErrorCode,
-             'internal_error_code' => $internalErrorCode,
-             'error_description' => $errorDesc,
-             'message' => 'Failed to convert error code to the appropriate exception']);
+            [
+                'payment_id' => $payment->getPublicId(),
+                'public_error_code' => $publicErrorCode,
+                'internal_error_code' => $internalErrorCode,
+                'error_description' => $errorDesc,
+                'message' => 'Failed to convert error code to the appropriate exception'
+            ]);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.
@@ -992,6 +1017,9 @@ trait Authorize
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
 
+            //
+            // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
+            //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
@@ -1033,7 +1061,7 @@ trait Authorize
 
     protected function getEncryptedGatewayText($gateway)
     {
-        return \Crypt::encrypt($gateway . '__' . time());
+        return Crypt::encrypt($gateway . '__' . time());
     }
 
 

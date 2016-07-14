@@ -186,6 +186,8 @@ class TraceCode
     const RECON_REQUEST                             = 'RECON_REQUEST';
     const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
+    const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
+    const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
     /**
      * Trace code for critical info
@@ -246,8 +248,10 @@ class TraceCode
         self::RECON_REQUEST                         => 'Request made for reconciliation',
         self::RECON_FILE_ROW                        => 'Row in the reconciliation file that is being reconciled',
         self::RECON_FILE_DETAILS                    => 'Details of all the files collected in the request',
+        self::IIN_INSERT_FAILED                     => 'Inserting into Iin failed for given Iin',
         self::RECON_INFO                            => 'General recon info',
         self::REFUND_TRANSACTION_FAILED             => 'Transaction failed to create for refund',
+        self::RECON_INFO_SUMMARY                    => 'Summary of the reconciliation of the files',
     );
 
     /**

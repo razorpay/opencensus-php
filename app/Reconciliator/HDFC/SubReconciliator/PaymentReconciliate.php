@@ -14,7 +14,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID  = 'merchant_trackid';
     const COLUMN_CARD_TYPE   = 'debitcredit_type';
-    const COLUMN_SERVICE_TAX = 'serv_tax';
+    const COLUMN_SERVICE_TAX = ['serv_tax', 'service_tax', 'st_sbces'];
     const COLUMN_SB_CESS     = 'sb_cess';
     const COLUMN_KK_CESS     = 'kk_cess';
     const COLUMN_FEE         = 'msf';
@@ -38,9 +38,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        // Convert service tax into paise
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $columnServiceTax = null;
 
+        foreach(self::COLUMN_SERVICE_TAX as $cst)
+        {
+            if (isset($row[$cst]) === true)
+            {
+                $columnServiceTax = $cst;
+                break;
+            }
+        }
+
+        // Convert service tax into paise
+        $serviceTax = floatval($row[$columnServiceTax]) * 100;
+
+        // Some hdfc reconciliation files have sb cess added to the service tax itself.
+        // If sb cess is present separately, it means it's not added to the service tax.
         if (empty($row[self::COLUMN_SB_CESS]) === false)
         {
             // Convert sb cess into basic unit of currency. (ex: paise)

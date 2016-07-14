@@ -40,6 +40,7 @@ class Processor
     protected $orderRepo;
     protected $paymentRepo;
     protected $app;
+    protected $request;
     protected $methods;
 
     protected $verifyRefundStatus;
@@ -60,6 +61,8 @@ class Processor
         $this->paymentRepo = $this->repo->payment;
 
         $this->orderRepo = $this->repo->order;
+
+        $this->request = $this->app['request'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;

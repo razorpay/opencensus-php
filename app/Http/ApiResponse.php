@@ -145,7 +145,7 @@ class ApiResponse
         return self::generateResponse($publicError, $httpStatusCode);
     }
 
-    public static function toStringExceptionError($exception, $debug)
+    public static function toStringExceptionError($debug)
     {
         list($publicError, $httpStatusCode) =
             self::getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
@@ -201,7 +201,7 @@ class ApiResponse
 
     public static function generateResponse($data = array(), $status = 200)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $key = 'rzp.merchant_callback_url';
 

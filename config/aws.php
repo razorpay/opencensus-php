@@ -23,11 +23,6 @@ return [
         'L5MOD/' . AwsServiceProvider::VERSION,
     ],
 
-    'credentials' => [
-        'key' => env('AWS_KEY_ID'),
-        'secret' => env('AWS_KEY_SECRET')
-    ],
-
     'settlement_bucket' => env('AWS_S3_SETTLEMENT_BUCKET'),
     'logo_bucket' => env('AWS_S3_LOGO_BUCKET'),
 

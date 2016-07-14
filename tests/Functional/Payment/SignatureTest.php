@@ -45,6 +45,24 @@ class SignatureTest extends TestCase
         return $content;
     }
 
+    public function testInvalidMerchantOrderId()
+    {
+        $payment = $this->payment;
+        $payment['card']['number'] = '4012001037141112';
+
+        $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $payment['notes'] = [];
+
+        $this->replaceValuesRecursively($payment, $testData['request']['content']);
+
+        $testData['request']['content'] = $payment;
+
+        $content = $this->startTest();
+    }
+
     public function testPaymentStatusAfterSignedRequestWith3dSecure()
     {
         $content = $this->testValidSignature();

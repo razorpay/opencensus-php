@@ -31,6 +31,7 @@ class Orchestrator
     const KOTAK = 'Kotak';
     const BILLDESK = 'BillDesk';
     const PAYZAPP = 'PayZapp';
+    const MOBIKWIK = 'Mobikwik';
     const ADMIN = 'admin';
 
     /**
@@ -41,6 +42,7 @@ class Orchestrator
         self::AXIS => ['prashanth@razorpay.com'],
         self::BILLDESK => ['prashanth@razorpay.com'],
         self::PAYZAPP  => ['prashanth@razorpay.com'],
+        self::MOBIKWIK => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN => ['prashanth.yv@razorpay.com'],
@@ -122,9 +124,7 @@ class Orchestrator
             $this->allFilesDetails
         );
 
-        $this->orchestrate();
-
-        return 200;
+        return $this->orchestrate();
     }
 
     /**
@@ -244,7 +244,7 @@ class Orchestrator
             );
         }
 
-        $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
+        return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
     protected function checkFileSkip($fileDetails)
@@ -412,8 +412,11 @@ class Orchestrator
             {
                 try
                 {
+                    // Gets the actual zip file's details first.
+                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
+
                     // Gets all files details present in the zip file.
-                    $extractedFileDetails = $this->getFileDetailsFromZipAttachment($file);
+                    $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
 
                     // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
                     if (empty($extractedFileDetails) === true)
@@ -424,6 +427,14 @@ class Orchestrator
                             'No files present in the zip file attachment.',
                             ['file_name' => $file->getClientOriginalName()]
                         );
+                    }
+
+                    // Checks whether all the extracted files are zips too.
+                    $multiLevelZip = $this->isTwoLevelZip($extractedFileDetails);
+
+                    if ($multiLevelZip === true)
+                    {
+                        $extractedFileDetails = $this->getFileDetailsFromAllZipFiles($extractedFileDetails);
                     }
 
                     // Using array merge since $extractedFileDetails contains an
@@ -454,6 +465,40 @@ class Orchestrator
         }
 
         return $allFilesDetails;
+    }
+
+    protected function getFileDetailsFromAllZipFiles($zipFilesDetails)
+    {
+        $allExtractedFileDetails = [];
+
+        foreach ($zipFilesDetails as $zipFileDetails)
+        {
+            $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            $allExtractedFileDetails = array_merge($allExtractedFileDetails, $extractedFileDetails);
+        }
+
+        return $allExtractedFileDetails;
+    }
+
+    /**
+     * Returns true only if all the files are zip files.
+     * Returns false otherwise.
+     *
+     * @param $extractedFileDetails
+     * @return true if all the files are zip files
+     *         false, otherwise.
+     */
+    protected function isTwoLevelZip($extractedFileDetails)
+    {
+        foreach ($extractedFileDetails as $efd)
+        {
+            if ($efd[FileProcessor::EXTENSION] !== FileProcessor::ZIP_EXTENSION)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -498,7 +543,7 @@ class Orchestrator
 
     protected function setGatewayReconciliatorObject($gateway)
     {
-        $gatewayReconciliatorClassName = 'RZP\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
@@ -519,10 +564,29 @@ class Orchestrator
         foreach ($sheets as $sheet)
         {
             $sheetArray = $this->converter->convertExcelSheetToArray($sheet);
+
+            $this->handleOneRowSheet($sheetArray);
+
             $fileDetails[FileProcessor::SHEET_NAME] = $sheet->getTitle();
 
             $this->setExtraDetails($sheetArray, $fileDetails);
             $this->allFilesContents[] = $sheetArray;
+        }
+    }
+
+    /**
+     * PHPExcel returns back an associative array in case there is
+     * only one row and returns back an array of arrays(rows) if there
+     * are multiple rows.
+     * This functions helps in maintaining consistency across sheets.
+     *
+     * @param $sheetArray
+     */
+    protected function handleOneRowSheet(array & $sheetArray)
+    {
+        if (is_array(reset($sheetArray)) === false)
+        {
+            $sheetArray = array($sheetArray);
         }
     }
 
@@ -545,21 +609,18 @@ class Orchestrator
      * Unzips the zip file. Iterates through each extracted file and collects
      * the file details.
      *
-     * @param UploadedFile $file Zip file that needs to be extracted.
+     * @param array $zipFileDetails Zip file that needs to be extracted.
      * @return array File details of all the files present in the zip file.
      * @throws Exception\ReconciliationException
      */
-    protected function getFileDetailsFromZipAttachment($file)
+    protected function getFileDetailsFromZipFile($zipFileDetails)
     {
         $allExtractedFilesDetails = [];
 
-        // Gets the actual zip file's details first.
-        $zippedFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
-
-        $zipPassword = $this->gatewayReconciliator->getReconPassword($zippedFileDetails);
+        $zipPassword = $this->gatewayReconciliator->getReconPassword($zipFileDetails);
 
         // unzipFile unzips the file and stores it in a location.
-        $unzippedFolderPath = $this->fileProcessor->unzipFile($zippedFileDetails, $zipPassword);
+        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword);
 
         $unzippedFiles = new DirectoryIterator($unzippedFolderPath);
 
@@ -569,7 +630,7 @@ class Orchestrator
             if ($unzippedFile->isFile() === true)
             {
                 $allExtractedFilesDetails[] = $this->fileProcessor
-                                                   ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
             }
         }
 

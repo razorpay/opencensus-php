@@ -15,9 +15,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = 'merchant_trans_ref';
+    const COLUMN_PAYMENT_ID  = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE   = 'card_type';
-    const COLUMN_SERVICE_TAX = 'service_tax145';
+    const COLUMN_SERVICE_TAX = 'service_taxat145';
     const COLUMN_FEE         = 'commission';
     const COLUMN_CARD_TRIVIA = 'card';
     const RRN                = 'rrn_no';
@@ -36,7 +36,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        $columnPaymentId = null;
+
+        foreach(self::COLUMN_PAYMENT_ID as $cpi)
+        {
+            if (isset($row[$cpi]) === true)
+            {
+                $columnPaymentId = $cpi;
+                break;
+            }
+        }
+
+        $paymentId = $row[$columnPaymentId];
         return $paymentId;
     }
 

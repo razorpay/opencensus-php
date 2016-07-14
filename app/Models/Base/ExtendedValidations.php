@@ -72,6 +72,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             }
         }
 
+        $formattedContact = (string) $number;
+
         /**
          * The minimum contact number length including international
          * prefix (country code) is theoritically 8 digits.
@@ -81,7 +83,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
          * libphonenumber only matches NSN (National significant number)
          * we are checking for the length of mobile and fixed_line
          */
-        if (strlen($number->getNormalizedNumber()) < 8)
+        if (strlen($formattedContact) < 8)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
@@ -94,7 +96,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
          * libphonenumber takes 17 as limit, because german number can be longer. However, we are
          * are sticking to the ITU standard for now.
          */
-        if (strlen($contact) > 15)
+        if (strlen($formattedContact) > 15)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_LONG,
@@ -180,53 +182,5 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
 
         return $code;
-    }
-
-    /**
-     * Validate merchant_order_id should be present if signature is present in root
-     *
-     * @param string $attribute
-     * @param array $value
-     * @param array $parameters
-     */
-    protected function validateContainsMerchantorderidIfSignature($attribute, $value, $parameters)
-    {
-        $requiredWith = ['signature'];
-
-        if ( ! $this->allFailingRequired($requiredWith))
-        {
-            if (empty($value['merchant_order_id']))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'merchant_order_id should be defined when signature is present');
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Create requiredNested validation (Laravel 4.2 doesn't support nested array validations)
-     * Nested array value should be present
-     *
-     * @param string $attribute
-     * @param string $value
-     * @param array $keys
-     */
-    protected function validateRequiredNested($attribute, $value, $keys)
-    {
-        $data = $value;
-
-        foreach ($keys as $key)
-        {
-            if (empty($data[$key]))
-            {
-                throw new Exception\BadRequestValidationFailureException('Nested required data is not there.');
-            }
-
-            $data = $data[$key];
-        }
-
-        return true;
     }
 }

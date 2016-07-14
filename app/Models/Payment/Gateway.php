@@ -108,7 +108,7 @@ class Gateway
      */
     public static $authAndCapture = array(
         self::HDFC => [
-            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
         self::AMEX => [],
         self::CYBERSOURCE => [],

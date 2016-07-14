@@ -212,16 +212,18 @@ class Database
         {
             return 'DELETE FROM ' . $table;
         }
+
+        return null;
     }
 
     protected function shouldRunFixturesOnce()
     {
-        return (env('RUN_FIXTURES_ONCE') === true);
+        return (env('RUN_FIXTURES_ONCE', false));
     }
 
     protected function shouldRunFixtures()
     {
-        return (env('RUN_FIXTURES') === true);
+        return (env('RUN_FIXTURES', true));
     }
 }
 
