@@ -21,6 +21,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SERVICE_TAX = ['service_taxat145', 'service_taxat1450', 'service_taxat135', 'service_taxat1350'];
     const COLUMN_FEE         = 'commission';
     const COLUMN_CARD_TRIVIA = ['card', 'card_category'];
+    const COLUMN_ORDER_ID    = 'order_id';
     const RRN                = 'rrn_no';
 
     protected $messenger;
@@ -200,11 +201,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $paymentId = $this->payment->getPublicId();
 
-        $vpcTransactionNo = $this->axisMigsRepo
-                                 ->findByRrn($row[self::RRN])
-                                 ->getTransactionId();
+        // $vpcTransactionNo = $this->axisMigsRepo
+        //                          ->findByRrn($row[self::RRN])
+        //                          ->getTransactionId();
 
-        $input['vpc_TransactionNo'] = $vpcTransactionNo;
+        $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
 
         $this->messenger->raiseReconAlert(
             [
