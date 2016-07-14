@@ -582,6 +582,11 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
+    
+    public function hasBeenAuthorized()
+    {
+        return ($this->getAttribute(self::AUTHORIZED_AT) !== null);
+    }
 
     public function isCaptured()
     {

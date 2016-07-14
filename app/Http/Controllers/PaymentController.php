@@ -77,9 +77,7 @@ class PaymentController extends Controller
 
     public function postRefundOldAUthorizedPayments()
     {
-        $input = Request::all();
-
-        $data = $this->payment->refundOldAuthorizedPayments($input);
+        $data = $this->payment->refundOldAuthorizedPayments();
 
         return ApiResponse::json($data);
     }

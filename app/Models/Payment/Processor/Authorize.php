@@ -690,11 +690,13 @@ trait Authorize
 
         $this->trace->error(
             TraceCode::PAYMENT_CALLBACK_FAILURE,
-            ['payment_id' => $payment->getPublicId(),
-             'public_error_code' => $publicErrorCode,
-             'internal_error_code' => $internalErrorCode,
-             'error_description' => $errorDesc,
-             'message' => 'Failed to convert error code to the appropriate exception']);
+            [
+                'payment_id' => $payment->getPublicId(),
+                'public_error_code' => $publicErrorCode,
+                'internal_error_code' => $internalErrorCode,
+                'error_description' => $errorDesc,
+                'message' => 'Failed to convert error code to the appropriate exception'
+            ]);
 
         // If no appropriate exception mapping was found then show
         // the usual message that payment already processed.
@@ -999,6 +1001,9 @@ trait Authorize
             $this->repo->saveOrFail($payment);
             $this->repo->saveOrFail($payment->terminal);
 
+            //
+            // If gateway is authorizing the payment (basically, no authAndCapture support), create transaction.
+            //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
                 // Also sets the transaction association with the payment.
