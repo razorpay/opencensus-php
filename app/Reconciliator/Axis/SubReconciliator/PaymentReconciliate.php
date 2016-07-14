@@ -47,6 +47,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             }
         }
 
+        if ($columnPaymentId === null)
+        {
+            return null;
+        }
+
         $paymentId = $row[$columnPaymentId];
         return $paymentId;
     }
