@@ -640,11 +640,11 @@ class Gateway extends Base\Gateway
 
     protected function getWsdlFile()
     {
-        $file = storage_path('gateway/cybersource/cybslive.wsdl.xml');
+        $file = __DIR__ . '/Wsdl/cybslive.wsdl.xml';
 
         if ($this->mode === Mode::TEST)
         {
-            $file = storage_path('gateway/cybersource/cybstest.wsdl.xml');
+            $file = __DIR__ . '/Wsdl/cybstest.wsdl.xml';
         }
 
         return $file;

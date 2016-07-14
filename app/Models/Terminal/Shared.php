@@ -44,6 +44,8 @@ class Shared
         self::CYBERSOURCE_AXIS_TERMINAL,
     );
 
+    // NOTE: No two shared terminal should be present for same gateway
+    // See getSharedTerminalForGateway() for the reason
     protected static $map = array(
         self::AMEX_RAZORPAY_TERMINAL        => Gateway::AMEX,
         self::ATOM_RAZORPAY_TERMINAL        => Gateway::ATOM,
