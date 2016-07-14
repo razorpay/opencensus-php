@@ -129,13 +129,7 @@
             </td>
             <td>
               <select class="form-control" name="payment_network" ng-model="new_rule.payment_network">
-                  <option value="">All</option>
-                  <option value="VISA">VISA</option>
-                  <option value="MC">MasterCard</option>
-                  <option value="AMEX">Amex</option>
-                  <option value="MAES">Maestro</option>
-                  <option value="DICL">Diner's Club</option>
-                  <option value="RP">Rupay</option>
+                  <option ng-repeat="(networkId,networkName) in itemList" value="{{networkId}}">{{networkName}}</option>
               </select>
             </td>
             <td>
@@ -225,13 +219,7 @@
             </td>
             <td>
               <select class="form-control" name="payment_network" ng-model="new_plan.payment_network">
-                  <option value="">All</option>
-                  <option value="VISA">VISA</option>
-                  <option value="MC">MasterCard</option>
-                  <option value="MAES">Maestro</option>
-                  <option value="DICL">Diner's Club</option>
-                  <option value="RP">Rupay</option>
-                  <option value="AMEX">Amex</option>
+                  <option ng-repeat="(networkId,networkName) in itemList" value="{{networkId}}">{{networkName}}</option>
               </select>
             </td>
             <td>

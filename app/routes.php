@@ -139,6 +139,7 @@ Route::group(array('before' => 'auth.admin'), function()
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
     // This is the list of banks in netbanking
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
+    Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
 
     // This is the merchant's bank account
     Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
@@ -212,6 +213,8 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
+        Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
+
         // Admin Main Actions, mostly initiated from the Actions screen
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
         Route::post('/admin/trigger/error', 'AdminController@triggerError');
@@ -238,10 +241,8 @@ Route::group(array('before' => 'auth.admin'), function()
                 ->where('path', '.*$');
             Route::post('/admin/users', 'AdminController@postAddAdmin');
             Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
-            Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
             Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
             Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-            Route::put('/admin/merchant/{id}/name', 'AdminController@putEditMerchantName');
             Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
         });
 

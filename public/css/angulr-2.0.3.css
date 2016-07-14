@@ -1250,20 +1250,20 @@ html.bg {
   .app-aside-folded .nav-sub-header a {
     padding: 15px 20px !important;
   }
-  .app-aside-folded .navi > ul > li > a {
+  .app-aside-folded .navi ul.nav > li > a {
     position: relative;
     height: 50px;
     padding: 0;
     text-align: center;
     border: none;
   }
-  .app-aside-folded .navi > ul > li > a span {
+  .app-aside-folded .navi ul.nav > li > a span {
     display: none;
   }
-  .app-aside-folded .navi > ul > li > a span.pull-right {
+  .app-aside-folded .navi ul.nav > li > a span.pull-right {
     display: none !important;
   }
-  .app-aside-folded .navi > ul > li > a i {
+  .app-aside-folded .navi ul.nav > li > a i {
     display: block;
     float: none;
     width: auto;
@@ -1272,17 +1272,17 @@ html.bg {
     line-height: 50px;
     border: none !important;
   }
-  .app-aside-folded .navi > ul > li > a i b {
+  .app-aside-folded .navi ul.nav > li > a i b {
     left: 0 !important;
   }
-  .app-aside-folded .navi > ul > li > a .badge,
-  .app-aside-folded .navi > ul > li > a .label {
+  .app-aside-folded .navi ul.nav > li > a .badge,
+  .app-aside-folded .navi ul.nav > li > a .label {
     position: absolute;
     top: 8px;
     right: 12px;
     z-index: 3;
   }
-  .app-aside-folded .navi > ul > li > ul {
+  .app-aside-folded .navi ul.nav > li > ul {
     position: absolute;
     top: 0 !important;
     left: 100%;

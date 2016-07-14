@@ -14,7 +14,7 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account. Only for Superadmins" ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Use with caution">
+        <a tooltip="Confirm merchant Account." ng-show="unconfirmed===true" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
           Confirm Merchant
         </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
@@ -101,9 +101,6 @@
         </a>
         <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantEmail()">
           Edit Merchant Email <i class="pull-right fa fa-envelope"></i>
-        </a>
-        <a tooltip="Only superadmins have access to this" href class="list-group-item" ng-click="openEditMerchantName()">
-          Edit Merchant Name <i class="pull-right fa fa-user"></i>
         </a>
          <a tooltip="Only superadmins have access to this" href class="list-group-item"
           ng-click="openChangeBankAccountDetails()"
@@ -339,7 +336,7 @@
             <div class="list-group-item">
               Plan Rules
               <div class="m-t list-group-item">
-                <table class="table table-striped b-light">
+                <table class="table table-striped b-light horz-scroll">
                   <thead>
                         <th>Payment Method</th>
                         <th>Payment Method Type</th>
@@ -383,7 +380,7 @@
           <div collapse="isTerminalCollapsed" class="panel-body">
             <div class="list-group-item">
               <div class="m-t list-group-item">
-                <table class="table table-striped b-light">
+                <table class="table table-striped b-light horz-scroll">
                   <thead>
                     <th>Terminal Id</th>
                     <th>Mode</th>
@@ -557,6 +554,12 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="gateway_recon_password" class="col-lg-3 control-label">Gateway Recon Password:</label>
+        <div class="col-lg-9" >
+          <input type="text" class="form-control m-b" name="gateway_recon_password" ng-model="terminal.gateway_recon_password" />
+        </div>
+      </div>
+      <div class="form-group">
         <label for="card" class="col-lg-3 control-label">Card Allowed (Always Yes for HDFC):</label>
         <div class="col-lg-9" >
           <select class="form-control m-b" ng-model="terminal.card">
@@ -678,7 +681,7 @@
     <h3 class="modal-title">Edit Merchant</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer}">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name}">
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
         <div class="col-lg-10" >
@@ -686,6 +689,12 @@
              <option value="1">Yes</option>
              <option value="0" selected>No</option>
           </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="Name" class="col-lg-2 control-label">Name:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="name" ng-model="merchant.name">
         </div>
       </div>
       <div class="form-group">
@@ -767,31 +776,6 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(email)">OK</button>
-  </div>
-</script>
-
-<script type="text/ng-template" id="editMerchantNameModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Edit Merchant Name</h3>
-  </div>
-  <div class="modal-body merchant-modal">
-    <div class="text-danger">
-      <strong>
-        Warning: You need to be a superadmin in order to edit merchant name
-      </strong>
-    </div>
-    <form class="form-horizontal" ng-init="name=current.name">
-      <div class="form-group">
-        <label for="Name" class="col-lg-2 control-label">Name:</label>
-        <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" name="name" ng-model="name">
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(name)">OK</button>
   </div>
 </script>
 

@@ -21,9 +21,19 @@ return array(
     ),
 
     'sorting_hat'   =>  [
+        // This is the token we pass to sorting-hat
+        // to verify authenticity of signups
         'token' =>  '4cace071107c854f0e320c309da81ff62c950da324e2c21d312362f174ca5b5e',
-        'url'   =>  'https://sorting-hat-slack.herokuapp.com/',
-        'zapier_url'=>  'https://zapier.com/hooks/catch/1088429/2e1xtg/'
+        // sorting-hat url
+        'url'   =>  'https://sorting-hat-slack.herokuapp.com/'
+    ],
+
+    'zapier'    =>  [
+        'signups'       =>  'https://zapier.com/hooks/catch/1088429/2e1xtg/',
+        'submissions'   =>  'https://hooks.zapier.com/hooks/catch/1088429/46x8fa/',
+        'activations'   =>  'https://hooks.zapier.com/hooks/catch/1088429/4twqyo/',
+        // Define this and set to true in order to enable mocking
+        'mock'          =>  getenv('ZAPIER_MOCK'),
     ],
 
     'slack' =>  [

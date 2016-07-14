@@ -1,3 +1,4 @@
+"use strict";
 //Add Funds Controller
 app.controller('AddfundsCtrl', [
   '$scope',
@@ -48,7 +49,7 @@ app.controller('AddfundsCtrl', [
           $scope.alerts.addAlert('success', 'Funds added successfully', true);
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -78,7 +79,7 @@ app.controller('AddfundsCtrl', [
       var api = document.createElement('a');
       api.href = apiURL;
 
-      var checkoutURL = 'https://checkout.razorpay.com/v1/checkout.js';
+      var checkoutURL = 'https://checkout.razorpay.com/';
 
       // We call this to ensure that Checkout is calling the correct API
       // Skipped in production
@@ -86,13 +87,15 @@ app.controller('AddfundsCtrl', [
         // This needs to be global
         window.Razorpay = {
           config: {
-            protocol: api.protocol.slice(0,-1),
-            hostname: api.hostname,
-            // Remove the starting slash, but keep the trailing one
-            version: api.pathname.slice(1)
+            api: api.protocol + '//' + api.hostname + '/',
+
+            // path for checkout
+            js: checkoutURL
           }
         };
       }
+
+      checkoutURL += 'v1/checkout.js';
 
       uiLoad.loadScript(checkoutURL).then(function() {
         $scope.disableAddFunds = false;

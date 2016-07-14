@@ -184,9 +184,9 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
 
-        $amount = Input::get('amount');
+        $input = Input::all();
 
-        $error = (new Api\Service)->refundPayment($id, $amount, $mode);
+        $error = (new Api\Service)->refundPayment($id, $input, $mode);
 
         return AppResponse::jsonResponse($error);
     }

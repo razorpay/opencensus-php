@@ -20,7 +20,7 @@ angular.module('app.services', [])
       },
       authenticate: function (identity) {
         _identity = identity;
-        _authenticated = identity != null;
+        _authenticated = identity !== null;
       },
       identity: function (force) {
         var deferred = $q.defer();
@@ -59,7 +59,7 @@ angular.module('app.services', [])
   '$state',
   'user',
   '$location',
-  function ($rootScope, $state, user, $location) {
+  function ($rootScope, $state, user) {
     return {
       authorize: function () {
         return user.identity().then(function () {
@@ -314,36 +314,43 @@ angular.module('app.services', [])
 // rather than the key
 .factory('getState', [function() {
   return function (type, force) {
+    var state = '.';
     switch (type) {
       case 'merchant_id':
       case 'merchant':
-        return 'app.merchants.detail({id: value})';
+        state = 'app.merchants.detail({id: value})';
+        break;
 
       case 'pricing_plan_id':
       case 'plan_id':
-        return 'app.pricingdetail({id: value})';
+        state = 'app.pricingdetail({id: value})';
+        break;
 
       case 'pricing_rule_id':
-        return 'app.entitiesdetail({id:value, mode:mode, type: "pricing"})';
+        state = 'app.entitiesdetail({id:value, mode:mode, type: "pricing"})';
+        break;
 
       case 'payment_id':
       case 'payment':
-        return 'app.payments({id:value, mode:mode})';
+        state = 'app.payments({id:value, mode:mode})';
+        break;
 
       case 'iin':
-        return 'app.entitiesdetail({id:value, mode:mode, type: "iin"})';
+        state = 'app.entitiesdetail({id:value, mode:mode, type: "iin"})';
+        break;
 
       default:
         if (force === true) {
-          return 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
+          state = 'app.entitiesdetail({id:value, mode:mode, type: row.entity})';
         }
 
         if (type.substr(-3) === '_id') {
-          return 'app.entitiesdetail({id:value, mode:mode, type: key})';
+          var key = type.slice(0,-3);
+          state = 'app.entitiesdetail({id:value, mode:mode, type: "'+key+'"})';
         }
 
-        return '.';
       }
+      return state;
     };
   }
 ]).factory('riskMap', [function() {

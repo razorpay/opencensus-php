@@ -1,3 +1,4 @@
+"use strict";
 //Registration Controller
 app.controller('RegisterCtrl', [
   '$scope',
@@ -36,7 +37,11 @@ app.controller('RegisterCtrl', [
 
     // Referrer is set only if present
     if ($location.search().ref) {
-      $scope.data['ref'] = $location.search().ref;
+      $scope.data.ref = $location.search().ref;
+    }
+
+    if (typeof $state.current.data.ref !== 'undefined') {
+      $scope.data.ref = $state.current.data.ref;
     }
 
     $scope.submit = function ($valid) {
@@ -75,7 +80,7 @@ app.controller('RegisterCtrl', [
           }
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (error, key) {
+          angular.forEach(data.errors, function (error) {
             $scope.alerts.addAlert('danger', error);
           });
         }

@@ -4,6 +4,8 @@ namespace RZP;
 
 class Pricing extends Entity
 {
+    const NETWORKS_URL = 'pricing/networks';
+
     public function create($params = null)
     {
         return parent::create($params);
@@ -61,5 +63,10 @@ class Pricing extends Entity
         $className = substr($fullClassName, $pos + 1);
         $className = lcfirst($className);
         return $className.'/';
+    }
+
+    public function fetchPaymentNetworks()
+    {
+        return $this->request('GET', self::NETWORKS_URL);
     }
 }

@@ -166,8 +166,8 @@
             Terminal Id
           </a>
           <a href class="list-group-item">
-            <span class="pull-right" tooltip="{{entity.signed == 1 ? 'signed' : 'Not signed'}}">
-              <i class="fa" ng-class="{'fa-check text-success': entity.signed == 1, ' fa-times text-danger':entity.signed !== 1}"></i>
+            <span class="pull-right" tooltip="{{entity.signed ? 'signed' : 'Not signed'}}">
+              <i class="fa" ng-class="{'fa-check text-success': entity.signed === true, ' fa-times text-danger':entity.signed === false}"></i>
             </span>
             Signed
           </a>

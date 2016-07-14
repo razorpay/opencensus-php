@@ -233,15 +233,19 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getSupportedNetworks()
+    {
+        $data = (new Admin\Service)->fetchPaymentNetworks();
+
+        return AppResponse::jsonResponse([], $data->toArray());
+    }
+
     public function postEditMerchant($id)
     {
         $input = Input::all();
 
-        // This is to make sure that this route is not used to edit
-        // names, since that is superadmin only
-        assert(isset($input['name']) === false);
-
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
+
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -251,22 +255,6 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function putEditMerchantName($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
-
-        // Edited safely on API side
-        // Edit on Dashboard as well
-        if (empty($error))
-        {
-            list($e,) = (new Merchant\Service)->changeName($id, $input);
-        }
 
         return AppResponse::jsonResponse($error, $data);
     }

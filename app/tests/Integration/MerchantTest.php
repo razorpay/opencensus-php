@@ -321,6 +321,7 @@ class MerchantTest extends TestCase
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-next'))
             ->waitForVisible('form[name="step4"]')
             ->type(l::IdOrName('bank_account_number'), 'RZP123443')   // Fill slug, alphanumeric
+            ->type(l::IdOrName('bank_account_number_confirmation'), 'RZP123443')   // Fill slug, alphanumeric
             ->type(l::IdOrName('bank_account_name'), 'Tester')   // Fill slug
             ->type(l::IdOrName('bank_account_type'), 'savings')   // Fill slug
             // Fill invalid IFSC Code first

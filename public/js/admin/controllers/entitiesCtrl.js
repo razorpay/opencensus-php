@@ -124,7 +124,14 @@ app.controller('EntitiesCtrl', [
         vpc_TransactionNo: ['Transaction No'],
         vpc_ShopTransactionNo: ['Shop Transaction No'],
         vpc_TxnResponseCode: ['Txn Response Code'],
-        vpc_ReceiptNo: ['Receipt No']
+        vpc_ReceiptNo: ['Receipt No'],
+        vpc_3DSstatus: [
+            'all',
+            'Y',
+            'N',
+            'U',
+            'A'
+        ],
       },
       bank_account: {
         merchant_id: ['Merchant Id'],
@@ -191,7 +198,6 @@ app.controller('EntitiesCtrl', [
         ]
       },
       key: {},
-      kotak: {},
       merchant: {
         email: ['Email'],
         activated: booleanList,
@@ -261,7 +267,7 @@ app.controller('EntitiesCtrl', [
         iin: ['Card IIN'],
         last4: ['Card Last 4'],
         notes: ['Notes'],
-        international: ['International']
+        international: booleanList
       },
       paytm: {
         payment_id: ['Payment Id'],
@@ -293,6 +299,7 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         settled: booleanList,
         settlement_id: ['Settlement Id'],
+        reconciled: booleanList,
         type: [
           'all',
           'payment',

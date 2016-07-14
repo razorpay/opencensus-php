@@ -19,9 +19,9 @@
     /**
      * API Details. Make sure it includes a trailing slash
      */
-    'API_URL'           => 'http://api.razorpay.com/v1/',
+    'API_URL'           => 'http://api.razorpay.dev/v1/',
     'API_AUTH_PASS'     => 'secret',
-    'API_MOCK'          => true,
+    'API_MOCK'          => false,
 
     /**
      *  QUEUE System Configuration
@@ -50,6 +50,7 @@
     'AWS_KEY_ID'        => '', // Your AWS Access Key ID
     'AWS_KEY_SECRET'    => '', // Your AWS Secret Access Key
     'AWS_REGION'        => 'us-east-1',
+    'S3_MOCK'           => true,
 
     /**
      * Should mail be faked, set true in testing/development See mail.php for details
@@ -77,6 +78,7 @@
     'MAILCHIMP_LIST_ID' => 'list_id',
     'MAILCHIMP_API_TOKEN'=> 'xxxx-yyyy-zzzz',
     'MAILCHIMP_MOCK'    => true,
+    'ZAPIER_MOCK'       => true,
 
     'CRON_PASS'         => 'RANDOM_CRON_PASS'
     );

@@ -32,6 +32,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'archived_at'
     );
 
+    protected $appends = ['referrer', 'tags'];
+
     const ID_LENGTH = 14;
 
     protected static $generators = array('id', 'confirm_token');
@@ -154,9 +156,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      * Take care while calling this method
      * @param array $input array with new name
      */
-    public function changeName($input)
+    public function changeName($name)
     {
-        return $this->edit($input, 'changeName');
+        return $this->edit([
+            'name' => $name
+        ], 'changeName');
     }
 
     /**
@@ -538,6 +542,22 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $this->tagNames();
     }
 
+    public function getReferrerAttribute()
+    {
+        $tags = $this->getTagsAttribute();
+
+        foreach ($tags as $tag)
+        {
+            $tag = strtolower($tag);
+            if (substr($tag, 0,4) === 'ref-')
+            {
+                return substr($tag, 4);
+            }
+        }
+
+        return null;
+    }
+
     public function setCustomId()
     {
         switch ($this->email)
@@ -546,5 +566,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
                 $this->setAttribute('id', '100000Razorpay');
                 break;
         }
+    }
+
+    public function archive()
+    {
+        $this->archived_at = time();
+        $this->save();
     }
 }

@@ -187,8 +187,7 @@ app.controller('EntityDetailCtrl', [
         modalInstance.result.then(function (input) {
           delete input.merchant_id;
           $scope.terminal.edit(input.id, input);
-        }, function () {
-        });
+        }, $.noop);
       },
       iinEdit: function (iin) {
         var modalInstance = $modal.open({
@@ -237,7 +236,6 @@ app.controller('EntityDetailCtrl', [
           'emi_plan',
           'hdfc',
           'iin',
-          'kotak',
           'merchant',
           'methods',
           'mobikwik',
