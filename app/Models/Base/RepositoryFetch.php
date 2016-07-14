@@ -349,9 +349,9 @@ trait RepositoryFetch
 
     protected function addQueryParamMerchantId($query, $params)
     {
-        $merchantIdColumn = static::getAttributeWithTableName(Entity::MERCHANT_ID);
+        $merchantIdColumn = static::getAttributeWithTableName(Common::MERCHANT_ID);
 
-        $query->where($merchantIdColumn, '=', $params[Entity::MERCHANT_ID]);
+        $query->where($merchantIdColumn, '=', $params[Common::MERCHANT_ID]);
     }
 
     protected function addDefaultParamCount(array & $params)
