@@ -559,7 +559,7 @@ class Orchestrator
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
         $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
-
+        
         // Every sheet is equivalent to a different file.
         foreach ($sheets as $sheet)
         {
