@@ -59,9 +59,6 @@ build:
 deploy:
     steps:
       - script:
-          name: Change to production mode
-          code: sed -i "/'debug'/c\ 'debug' => false," config/app.php
-      - script:
           name: Run composer
           code: composer config -g github-oauth.github.com $github_token
       - script:
