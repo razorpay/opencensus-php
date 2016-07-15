@@ -154,6 +154,7 @@ final class Route
         'mockhdfc_payment'                        => ['post',     'gateway/mockhdfc/payment',                 'MockGatewayController@payment'                                     ],
         'mockhdfc_auth_enrolled'                  => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockGatewayController@authEnrolled'                                ],
         'mockhdfc_3dsecure'                       => ['post',     'gateway/3dsecure',                         'MockGatewayController@post3dSecure'                                ],
+        'mockcybersource_acs'                     => ['post',     'gateway/acs/{gateway}',                    'MockGatewayController@postAcs'                                     ],
         'mockatom_init_payment'                   => ['post',     'gateway/mockanb',                          'MockGatewayController@postAtomInitPayment'                         ],
         'mockatom_choose_org'                     => ['get',      'gateway/mockanb',                          'MockGatewayController@getAtomChooseOrg'                            ],
         'mockatom_rzp_payment'                    => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'                          ],
@@ -440,6 +441,7 @@ final class Route
         'dummy_route',
         'checkout_public',
         'mockhdfc_3dsecure',
+        'mockcybersource_acs',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_kotak',
@@ -621,7 +623,7 @@ final class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    protected static function addRoutes($type)
+    public static function addRoutes($type)
     {
         foreach (self::$$type as $routeName)
         {

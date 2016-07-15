@@ -57,6 +57,9 @@ class CreateTerminals extends Migration
             $table->text(Terminal::GATEWAY_RECON_PASSWORD)
                   ->nullable();
 
+            $table->string(Terminal::GATEWAY_ACQUIRER)
+                  ->nullable();
+
             $table->boolean(Terminal::CARD)
                   ->default(0);
 

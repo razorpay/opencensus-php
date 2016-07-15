@@ -267,6 +267,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI, $flag);
     }
 
+    public function setVaultToken($vaultToken)
+    {
+        $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
+    }
+
+    public function setVault($vault)
+    {
+        $this->setAttribute(self::VAULT, $vault);
+    }
+
     public function setTrivia($trivia)
     {
         $this->setAttribute(self::TRIVIA, $trivia);

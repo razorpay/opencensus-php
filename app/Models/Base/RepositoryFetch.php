@@ -347,6 +347,13 @@ trait RepositoryFetch
         }
     }
 
+    protected function addQueryParamMerchantId($query, $params)
+    {
+        $merchantIdColumn = static::getAttributeWithTableName(Common::MERCHANT_ID);
+
+        $query->where($merchantIdColumn, '=', $params[Common::MERCHANT_ID]);
+    }
+
     protected function addDefaultParamCount(array & $params)
     {
         if ($this->auth->isPrivilegeAuth() === false)

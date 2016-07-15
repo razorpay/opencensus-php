@@ -54,6 +54,8 @@ class TraceCode
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
+    const RUNTIME_ERROR                             = 'RUNTIME_ERROR';
+
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
 
     /*
@@ -63,12 +65,21 @@ class TraceCode
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
     const GATEWAY_ENROLL_ERROR                      = 'GATEWAY_ENROLL_ERROR';
+    const GATEWAY_CAPTURE_REQUEST                   = 'GATEWAY_CAPTURE_REQUEST';
+    const GATEWAY_CAPTURE_RESPONSE                  = 'GATEWAY_CAPTURE_RESPONSE';
+    const GATEWAY_CAPTURE_ERROR                     = 'GATEWAY_CAPTURE_ERROR';
     const GATEWAY_NOT_ENROLLED_REQUEST              = 'GATEWAY_NOT_ENROLLED_REQUEST';
     const GATEWAY_NOT_ENROLLED_RESPONSE             = 'GATEWAY_NOT_ENROLLED_RESPONSE';
     const GATEWAY_NOT_ENROLLED_ERROR                = 'GATEWAY_NOT_ENROLLED_ERROR';
     const GATEWAY_ENROLLED_AUTH_REQUEST             = 'GATEWAY_ENROLLED_AUTH_REQUEST';
     const GATEWAY_ENROLLED_AUTH_RESPONSE            = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
     const GATEWAY_ENROLLED_AUTH_ERROR               = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_VALIDATE_RESPONSE                 = 'GATEWAY_VALIDATE_RESPONSE';
+    const GATEWAY_VALIDATE_REQUEST                  = 'GATEWAY_VALIDATE_REQUEST';
+    const GATEWAY_VALIDATE_ERROR                    = 'GATEWAY_VALIDATE_ERROR';
+    const GATEWAY_AUTHORIZE_RESPONSE                = 'GATEWAY_AUTHORIZE_RESPONSE';
+    const GATEWAY_AUTHORIZE_REQUEST                 = 'GATEWAY_AUTHORIZE_REQUEST';
+    const GATEWAY_AUTHORIZE_ERROR                   = 'GATEWAY_AUTHORIZE_ERROR';
     const GATEWAY_AUTH_REQUEST                      = 'GATEWAY_AUTH_REQUEST';
     const GATEWAY_SUPPORT_REQUEST                   = 'GATEWAY_SUPPORT_REQUEST';
     const GATEWAY_SUPPORT_RESPONSE                  = 'GATEWAY_SUPPORT_RESPONSE';
@@ -87,10 +98,13 @@ class TraceCode
     const GATEWAY_PAYMENT_RESPONSE                  = 'GATEWAY_PAYMENT_RESPONSE';
     const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
+    const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
+    const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY                   = 'GATEWAY_CHECKSUM_VERIFY';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
+    const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -173,6 +187,7 @@ class TraceCode
     const RECON_REQUEST                             = 'RECON_REQUEST';
     const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
+    const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
     /**
@@ -197,6 +212,8 @@ class TraceCode
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 
+        self::RUNTIME_ERROR                         => 'The request failed at runtime',
+
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
         self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',
         self::GATEWAY_ENROLL_ERROR                  => 'Error in enrollment',
@@ -210,6 +227,7 @@ class TraceCode
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
         self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
+        self::GATEWAY_UNSUPPORTED_CARD_NETWORK      => 'Card network not supported',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                 => 'Recoverable exception occurred',
@@ -234,6 +252,7 @@ class TraceCode
         self::IIN_INSERT_FAILED                     => 'Inserting into Iin failed for given Iin',
         self::RECON_INFO                            => 'General recon info',
         self::REFUND_TRANSACTION_FAILED             => 'Transaction failed to create for refund',
+        self::RECON_INFO_SUMMARY                    => 'Summary of the reconciliation of the files',
     );
 
     /**

@@ -161,22 +161,6 @@ class UniqueIdEntity extends Entity
         }
     }
 
-    public static function verify($id)
-    {
-        if (is_array($id))
-        {
-            self::verifyArrayUid($id);
-        }
-        else if (is_string($id))
-        {
-            self::verifyStringUid($id);
-        }
-        else
-        {
-            throw new Exception\InvalidArgumentException('invalid uid: ' . $id);
-        }
-    }
-
     public static function verifyArrayUid($id, $key = self::ID)
     {
         Assert(is_array($id) === true);

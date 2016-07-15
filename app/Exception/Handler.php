@@ -148,17 +148,7 @@ class Handler extends ExceptionHandler
             $previous = $this->getExceptionDetails($previousException, $level + 1);
         }
 
-        $data = null;
-
-        if (method_exists($exception, 'getData'))
-        {
-            $data = $exception->getData();
-
-            if (is_array($data) === false)
-            {
-                $data = null;
-            }
-        }
+        $data = $this->getDataArrayPropertyFromException($exception);
 
         $stack = explode("\n", $exception->getTraceAsString());
 
@@ -225,10 +215,7 @@ class Handler extends ExceptionHandler
         {
             $publicError['exception'] = $this->getExceptionData($exception);
 
-            if (method_exists($exception, 'getData'))
-            {
-                $publicError['data'] = $exception->getData();
-            }
+            $publicError['data'] = $this->getDataArrayPropertyFromException($exception);
         }
 
         return Response::json($publicError, $httpStatusCode);
@@ -270,7 +257,9 @@ class Handler extends ExceptionHandler
         $previousData = null;
 
         if ($previous !== null)
+        {
             $previousData = self::getExceptionData($previous);
+        }
 
         $data = array(
             'type' => get_class($exception),
@@ -284,6 +273,29 @@ class Handler extends ExceptionHandler
 
         $data['trace'] = str_replace('/', "\\", $data['trace']);
         $data['file'] = str_replace('/', "\\", $data['file']);
+
+        return $data;
+    }
+
+    protected function getDataArrayPropertyFromException($e)
+    {
+        $data = null;
+
+        if (method_exists($e, 'getData'))
+        {
+            $data = $e->getData();
+
+            if (method_exists($data, 'toArray'))
+            {
+                $data = $data->toArray();
+            }
+
+            if ((is_resource($data) === true) or
+                (is_array($data) === false))
+            {
+                $data = null;
+            }
+        }
 
         return $data;
     }

@@ -39,7 +39,7 @@ class Converter
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        Config::set('excel::import.force_sheets_collection', true);
+        Config::set('excel.import.force_sheets_collection', true);
 
         if (empty($sheetNames) === true)
         {
