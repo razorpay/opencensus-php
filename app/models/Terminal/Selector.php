@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -21,11 +22,13 @@ class Selector
 
     public function setup($payment, $mode)
     {
+        $app = \App::getFacadeRoot();
+
         $this->mode = $mode;
 
         $this->payment = $payment;
 
-        $this->repo = (new Repository);
+        $this->repo = $app['repo']->terminal;
 
         $this->merchant = $payment->merchant;
 
@@ -83,17 +86,24 @@ class Selector
             $terminal = $sortedTerminals[0];
         }
 
-        // if ($terminal === null)
-        // {
-        //     throw new Exception\RuntimeException(
-        //         'Terminal should not be null',
-        //         ['payment' => $payment->toArrayAdmin()]);
-        // }
-
-        // $payment->terminal()->associate($terminal);
-
-        // $payment->setGateway($terminal->getGateway());
+        // When the terminal selector has to activated.
+        // uncomment the following code
+        // $this->setTerminalForPayment($payment, $terminal);
 
         return $terminal;
+    }
+
+    protected function setTerminalForPayment($payment, $terminal = null)
+    {
+        if ($terminal === null)
+        {
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $payment->toArrayAdmin()]);
+        }
+
+        $payment->terminal()->associate($terminal);
+
+        $payment->setGateway($terminal->getGateway());
     }
 }

@@ -223,10 +223,18 @@ trait Authorize
         }
 
         $traceData = [
-            'picked'   => $terminalPickedId,
-            'selected' => $terminalSelectedId,
-            'status'   => $terminalSelectionStatus,
+            'picked'     => $terminalPickedId,
+            'selected'   => $terminalSelectedId,
+            'status'     => $terminalSelectionStatus,
+            'payment_id' => $payment->getId(),
         ];
+
+        if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
+        {
+            $traceData['payment_id'] = $payment->getDashboardEntityLinkForSlack();
+
+            $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
+        }
 
         $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
     }

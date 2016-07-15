@@ -11,7 +11,7 @@ class Filter
         // For every property as part of a filter
         foreach ($this->properties as $filterProperty)
         {
-            $filterName = camel_case($filterProperty).'Filter';
+            $filterName = $this->getFilterNameForProperty($filterProperty);
 
             $testTerminals = [];
             // From all possible current terminals
@@ -29,5 +29,10 @@ class Filter
         }
 
         return $currentTerminals;
+    }
+
+    protected function getFilterNameForProperty($filterProperty)
+    {
+        return camel_case($filterProperty).'Filter';
     }
 }
