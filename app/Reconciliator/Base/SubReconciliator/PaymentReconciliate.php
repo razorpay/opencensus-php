@@ -635,7 +635,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function attemptToCreateMissingPaymentTransaction()
     {
-        $cardNetwork = $this->payment->card->getNetworkCode();
+        $cardNetwork = null;
+
+        $card = $this->payment->card;
+
+        if ($card !== null)
+        {
+            $cardNetwork = $card->getNetworkCode();
+        }
 
         $isHDFCDICL = ($cardNetwork === Card\Network::DICL) and
                       ($this->payment->isGateway(Payment\Gateway::HDFC) === true);
