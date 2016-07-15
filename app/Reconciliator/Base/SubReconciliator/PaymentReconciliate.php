@@ -635,7 +635,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function attemptToCreateMissingPaymentTransaction()
     {
-        $cardNetwork = $this->payment->card->getNetworkCode();
+        $cardNetwork = null;
+
+        $card = $this->payment->card;
+
+        if ($card !== null)
+        {
+            $cardNetwork = $card->getNetworkCode();
+        }
 
         $isHDFCDICL = ($cardNetwork === Card\Network::DICL) and
                       ($this->payment->isGateway(Payment\Gateway::HDFC) === true);
@@ -678,8 +685,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         assert($this->payment->transaction === null);
 
         $this->app['trace']->info(
+            TraceCode::RECON_INFO_ALERT,
             [
-                'trace_code'                        => TraceCode::RECON_INFO_ALERT,
                 'info_code'                         => 'PAYMENT_TRANSACTION_CREATE',
                 'message'                           => 'Attempting to create payment transaction in recon',
                 'payment_id'                        => $this->payment->getId(),
