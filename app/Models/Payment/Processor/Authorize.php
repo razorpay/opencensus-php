@@ -2,27 +2,30 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Constants\Mode;
-use RZP\Http\Route;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
-use RZP\Models\Emi;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
-use RZP\Models\Transaction;
-use RZP\Models\Order;
-use RZP\Exception;
-use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use Mail;
 use Lib\PhoneBook;
+use RZP\Models\Emi;
+use RZP\Http\Route;
+use RZP\Models\Card;
+use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Models\Card\IIN;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Terminal;
+use RZP\Models\Transaction;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Status;
+use RZP\Models\Merchant\Methods;
+
+use RZP\Error;
+use RZP\Exception;
+use RZP\Trace\Trace;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+
 use Crypt;
 
 trait Authorize
@@ -170,8 +173,22 @@ trait Authorize
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        // Sets gateway and terminal for the payment.
-        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+        $terminalSelected = null;
+
+        try
+        {
+            // Terminal selected is now only used to validate any mistakes across each.
+            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
+
+        // Terminal picked is the terminal used for payment processing.
+        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
+        $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
         $this->runPaymentGatewayRelatedPreProcessing($payment, $input);
 
@@ -191,6 +208,47 @@ trait Authorize
         if ($payment->order)
         {
             $gatewayInput['order'] = $payment->order->toArray();
+        }
+    }
+
+    protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
+    {
+        $terminalSelectionStatus = 'TERMINAL_SELECTION_MISMATCH';
+
+        $terminalPickedId = $terminalPicked->getId();
+
+        if ($terminalSelected)
+        {
+            $terminalSelectedId = $terminalSelected->getId();
+
+            if ($terminalSelectedId === $terminalPickedId)
+            {
+                $terminalSelectionStatus = 'TERMINAL_SELECTION_MATCH';
+            }
+        }
+        else
+        {
+            $terminalSelectedId = '';
+        }
+
+        $traceData = [
+            'picked'     => $terminalPickedId,
+            'selected'   => $terminalSelectedId,
+            'status'     => $terminalSelectionStatus,
+            'payment_id' => $payment->getId(),
+        ];
+
+        if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
+        {
+            $traceData['payment_id'] = $payment->getDashboardEntityLinkForSlack();
+
+            $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
+
+            $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
     }
 

@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Payment;
 
+use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Settlement;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Exception;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
@@ -145,6 +148,14 @@ class Gateway
         self::PAYTM => array(
             Network::MC,
             Network::VISA),
+        self::SHARP => array(
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+            Network::AMEX,
+            Network::DICL,
+            Network::RUPAY,
+            Network::UNKNOWN),
         self::CYBERSOURCE => array(
             Network::MC,
             Network::VISA),
@@ -217,6 +228,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
+        Gateway::SHARP,
         Gateway::CYBERSOURCE,
     );
 
@@ -250,6 +262,8 @@ class Gateway
         Gateway::SBIEPAY,
         Gateway::KOTAK,
         Gateway::PAYTM,
+        Gateway::ATOM,
+        Gateway::SHARP,
         Gateway::CYBERSOURCE,
     );
 
@@ -433,5 +447,82 @@ class Gateway
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
                 (in_array($network, self::$cardNetworkMap[$gateway])));
+    }
+
+    public static function getGatewaysForNetbankingBank($bank)
+    {
+        $gateways = [];
+
+        // Check for direct netbanking gateway
+        if (self::isNetbankingBankDirectlySupported($bank))
+        {
+            $gateways[] = self::$netbankingToGatewayMap[$bank];
+        }
+
+        // Add netbanking gateways that support bank
+        foreach (self::$netbankingGateways as $netbankingGateway)
+        {
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            {
+                $gateways[] = $netbankingGateway;
+            }
+        }
+
+        return $gateways;
+    }
+
+    public static function getGatewaysForNetbankingBankIndexed($bank)
+    {
+        $gateways = [];
+
+        // Check for direct netbanking gateway
+        if (self::isNetbankingBankDirectlySupported($bank))
+        {
+            $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
+        }
+
+        // Add netbanking gateways that support bank
+        foreach (self::$netbankingGateways as $netbankingGateway)
+        {
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            {
+                $gateways['gateway'][] = $netbankingGateway;
+            }
+        }
+
+        return $gateways;
+    }
+
+    public static function getGatewaysPriority($method, $mode = 'live')
+    {
+        $gateways = [];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $gateways = self::$directCardGateways;
+
+                if ($mode === Mode::TEST)
+                {
+                    $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
+                }
+                break;
+
+            case Method::NETBANKING:
+                $gateways = self::$directNetbankingGateways;
+
+                if ($mode === Mode::TEST)
+                {
+                    $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
+                }
+
+                array_unshift($gateways, 'direct');
+                break;
+
+            default:
+                break;
+        }
+
+        return $gateways;
     }
 }
