@@ -36,6 +36,8 @@ class Handler extends ExceptionHandler
         parent::__construct($log);
 
         $this->app = \App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
     }
 
     /**
@@ -48,7 +50,7 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
-        // Trace Exceptions here
+        $this->trace->info(TraceCode::ERROR_EXCEPTION_2);
     }
 
     /**
@@ -86,7 +88,16 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    public function genericExceptionHandler(Exception $exception)
+    public function traceException(Exception $exception)
+    {
+        $traceData = $this->getExceptionDetails($exception);
+
+        $this->trace->critical(
+           TraceCode::ERROR_EXCEPTION,
+           $traceData);
+    }
+
+    protected function genericExceptionHandler(Exception $exception)
     {
         if ($this->isToStringException($exception))
         {
@@ -95,46 +106,26 @@ class Handler extends ExceptionHandler
 
         $this->traceException($exception);
 
-        if (App::runningUnitTests())
-        {
-            throw $exception;
-        }
-
-        // //
-        // // When running in console, throw the exception, irrespective
-        // // of debug config
-        // //
-        // if ((App::runningInConsole()) and
-        //     (App::environment('testing') === false))
-        // {
-        //     return;
-        // }
+        $this->ifTestingThenRethrowException($exception);
 
         return $this->generateServerErrorResponse($this->isDebug(), $exception);
     }
 
-    public function baseExceptionHandler(BaseException $exception)
+    protected function baseExceptionHandler(BaseException $exception)
     {
         // ServerError is fatal error and shoudn't be encountered
         // Let the higher-ups handle it. This function handles
         // known/expected exceptions
         if ($exception instanceof ServerErrorException)
+        {
             return;
+        }
 
-        Trace::info(
+        $this->trace->info(
             TraceCode::RECOVERABLE_EXCEPTION,
             $this->getExceptionDetails($exception));
 
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
-    }
-
-    public function traceException(Exception $exception)
-    {
-        $traceData = $this->getExceptionDetails($exception);
-
-        Trace::critical(
-           TraceCode::ERROR_EXCEPTION,
-           $traceData);
     }
 
     protected function getExceptionDetails(Exception $exception, $level = 0)
@@ -152,8 +143,15 @@ class Handler extends ExceptionHandler
 
         $stack = explode("\n", $exception->getTraceAsString());
 
+        if ($level === 0)
+        {
+            // Only trace 30 stack function calls if it's a zero level exception
+            $stack = array_slice($stack, 0, 30);
+        }
+
         if ($level > 0)
         {
+            // Only trace 5 stack function calls if it's a 'previous' exception.
             $stack = array_slice($stack, 0, 5);
         }
 
@@ -187,7 +185,7 @@ class Handler extends ExceptionHandler
             return false;
         }
 
-        Trace::warn(
+        $this->trace->warn(
             TraceCode::MISC_TOSTRING_ERROR,
             $this->getExceptionDetails($exception));
 
@@ -218,10 +216,10 @@ class Handler extends ExceptionHandler
             $publicError['data'] = $this->getDataArrayPropertyFromException($exception);
         }
 
-        return Response::json($publicError, $httpStatusCode);
+        return ApiResponse::generateResponse($publicError, $httpStatusCode);
     }
 
-    public function toStringExceptionResponse($debug, $exception)
+    protected function toStringExceptionResponse($debug, $exception)
     {
         list($publicError, $httpStatusCode) =
             $this->getErrorResponseFields(ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
@@ -232,15 +230,12 @@ class Handler extends ExceptionHandler
                 ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION;
         }
 
-        return Response::json($publicError, $httpStatusCode);
+        return ApiResponse::generateResponse($publicError, $httpStatusCode);
     }
 
-    public function recoverableErrorResponse($debug, $exception = null)
+    protected function recoverableErrorResponse($debug, $exception = null)
     {
-        if (App::runningUnitTests())
-        {
-            throw $exception;
-        }
+        $this->ifTestingThenRethrowException($exception);
 
         $error = $exception->getError();
 
@@ -298,6 +293,19 @@ class Handler extends ExceptionHandler
         }
 
         return $data;
+    }
+
+    protected function ifTestingThenRethrowException($e)
+    {
+        if ($this->isTesting())
+        {
+            throw $e;
+        }
+    }
+
+    public function isTesting()
+    {
+        return ($this->app->runningUnitTests());
     }
 
     protected function isDebug()

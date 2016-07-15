@@ -286,12 +286,22 @@ class PublicEntity extends UniqueIdEntity
     {
         $value = $this->getAttribute($attribute);
 
+        if (empty($value))
+        {
+            return null;
+        }
+
         return date('d/m/y', $value);
     }
 
     public function getDateInFormatDMYHMS($attribute)
     {
         $value = $this->getAttribute($attribute);
+
+        if (empty($value))
+        {
+            return null;
+        }
 
         return date('d/m/y h:i:s', $value);
     }

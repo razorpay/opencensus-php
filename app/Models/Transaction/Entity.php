@@ -269,6 +269,7 @@ class Entity extends Base\PublicEntity
         {
             return;
         }
+
         return (int) $settledAt;
     }
 
@@ -438,13 +439,9 @@ class Entity extends Base\PublicEntity
 
     public function toArrayReport()
     {
-        // $reportAttributes
-
         $reportTxn = parent::toArrayReport();
 
         unset($reportTxn[self::ID]);
-
-        $txn = $this;
 
         $reportTxn['description'] = null;
         $reportTxn['notes'] = null;
@@ -464,7 +461,7 @@ class Entity extends Base\PublicEntity
             if ($payment->hasBeenCaptured() === false)
             {
                 // Skip if the payment was not captured.
-                return;
+                return null;
             }
         }
         else if ($this->isTypeRefund())
@@ -475,7 +472,7 @@ class Entity extends Base\PublicEntity
             // Skip if the payment was not captured.
             if ($payment->hasBeenCaptured() === false)
             {
-                return;
+                return null;
             }
 
             $reportTxn['payment_id'] = $payment->getPublicId();

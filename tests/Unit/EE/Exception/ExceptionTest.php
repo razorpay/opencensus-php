@@ -20,12 +20,11 @@ class ExceptionTest extends TestCase
 
     public function testLogicalException()
     {
-        $this->markTestSkipped();
+        $this->mockExceptionHandlerReturnTestingFalse();
+
         $exception = new Exception\LogicException('logical flaw occurred');
 
-        $handler = $this->app['exception.handler'];
-
-        $response = $handler->genericExceptionHandler($exception);
+        $response = $this->app['exception.handler']->render(null, $exception);
 
         $content = $response->getContent();
 
@@ -41,7 +40,7 @@ class ExceptionTest extends TestCase
 
     public function testRecoverableException()
     {
-        $this->markTestSkipped();
+        $this->mockExceptionHandlerReturnTestingFalse();
 
         $exception = new Exception\BadRequestValidationFailureException('Dummy exception');
 
@@ -66,7 +65,7 @@ class ExceptionTest extends TestCase
 
         $handler = $this->app['exception.handler'];
 
-        $response = $handler->genericExceptionHandler($exception, $exception->getCode());
+        $response = $handler->render(null, $exception);
 
         $content = $response->getContent();
 
@@ -83,5 +82,21 @@ class ExceptionTest extends TestCase
         $this->assertJson($content);
 
         return json_encode($content, true);
+    }
+
+    protected function mockExceptionHandlerReturnTestingFalse()
+    {
+        $class = Exception\Handler::class;
+
+        $handler = Mockery::mock($class, [$this->app['trace']])->makePartial();
+
+        $handler->shouldReceive('isTesting')
+                ->once()
+                ->andReturnUsing(function ()
+                {
+                    return false;
+                })->mock();
+
+        $this->app->instance('exception.handler', $handler);
     }
 }
