@@ -240,7 +240,7 @@ trait Authorize
 
         if ($terminalSelectionStatus === 'TERMINAL_SELECTION_MISMATCH')
         {
-            $traceData['payment_id'] = $payment->getDashboardEntityLinkForSlack();
+            $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
 
             $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
 
