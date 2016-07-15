@@ -25,7 +25,7 @@ class Checkout
 
     public function getPreferences($merchant, $mode, $input)
     {
-        $this->checkAndFillAppTokenInputFromSession($input);
+        $this->checkAndFillAppTokenInputFromSession($merchant, $input);
 
         $data = $this->getMerchantPreferencesData($merchant, $input);
 
@@ -86,8 +86,13 @@ class Checkout
         return $custData;
     }
 
-    protected function checkAndFillAppTokenInputFromSession(array & $input)
+    protected function checkAndFillAppTokenInputFromSession($merchant, array & $input)
     {
+        if ($merchant->isFeatureEnabled('cardsaving') === false)
+        {
+            return;
+        }
+
         // Check if app token is present in session
         $appToken = Session::get(Payment\Entity::APP_TOKEN);
 
