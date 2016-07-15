@@ -47,7 +47,8 @@ class Validator extends Base\Validator
         'emi'                                       => '',
         'emi_duration'                              => '',
         'shared'                                    => '',
-        'category'                                  => ''
+        'category'                                  => '',
+        'gateway_acquirer'                          => 'sometimes|string',
     );
 
     protected static $banksRules = array(

@@ -59,6 +59,7 @@ app.controller('EntitiesCtrl', [
       'axis_genius',
       'axis_migs',
       'billdesk',
+      'cybersource',
       'ezeclick',
       'hdfc',
       'kotak',
