@@ -90,10 +90,14 @@ class NetbankingSorter extends Terminal\Sorter
      */
     protected function arrangePriorityByMerchantAndBank(&$gatewaysPriority, $merchant, $bank)
     {
-        if (($bank === IFSC::KKBK) and
-            ($merchant !== '2aTeFCKTYWwfrF'))
+        if ($bank === IFSC::KKBK)
         {
-            unset($gatewaysPriority[0]);
+            $merchantsWithNetbankingKotakEnabled = ['2aTeFCKTYWwfrF', '10000000000000'];
+
+            if (in_array($merchant, $merchantsWithNetbankingKotakEnabled) === false)
+            {
+                unset($gatewaysPriority[0]);
+            }
         }
     }
 
