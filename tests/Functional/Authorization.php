@@ -226,4 +226,29 @@ class Authorization
     {
         return ($this->secret === null);
     }
+
+    public function getMode()
+    {
+        $key = $this->getKey();
+
+        $mode = explode('_', $key)[1];
+
+        return $mode;
+    }
+
+    public function getAppAuthKeyForMode()
+    {
+        $mode = $this->getMode();
+
+        assert(($mode === 'live') or ($mode === 'test'));
+
+        return 'rzp_'.$mode;
+    }
+
+    public function appAuthMode()
+    {
+        $key = $this->getAppAuthKeyForMode();
+
+        $this->appAuth($key);
+    }
 }
