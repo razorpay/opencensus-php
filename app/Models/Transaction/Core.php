@@ -162,9 +162,9 @@ class Core extends Base\Core
 
     protected function checkIfOldTransaction($payment)
     {
-        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
+        if (($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
-            ($payment->isAuthorize() === true))
+            ($payment->isAuthorized() === true))
         {
             return true;
         }
