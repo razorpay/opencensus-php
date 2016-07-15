@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Event;
+namespace RZP\Listeners;
 
 use RZP\Models\Payment;
 use RZP\Constants;
