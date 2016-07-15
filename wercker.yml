@@ -49,9 +49,6 @@ build:
       - script:
           name: List directory
           code: ls -lah
-      - script:
-          name: Copy entire data to wercker-output-directory
-          code: ls -lah && cp -vr . $WERCKER_OUTPUT_DIR/
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
