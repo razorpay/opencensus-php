@@ -25,21 +25,20 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        var_dump($row);
-
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
+
         return $paymentId;
     }
 
     protected function getGatewayServiceTax($row)
     {
-        // Paytm recon files does not contain service tax
+        // Paytm recon files do not contain service tax
         return 0;
     }
 
     protected function getGatewayFee($row)
     {
-        $fee = $row['TXN_AMOUNT'] - $row['SETTLED AMOUNT'];
+        $fee = $row[self::COLUMN_TRANSACTION_AMOUNT] - $row[self::COLUMN_SETTLED_AMOUNT];
 
         // Convert fee into basic unit of currency (ex: paise)
         $fee = floatval($fee) * 100;
