@@ -32,6 +32,7 @@ class Orchestrator
     const BILLDESK = 'BillDesk';
     const PAYZAPP = 'PayZapp';
     const MOBIKWIK = 'Mobikwik';
+    const PAYTM = 'Paytm';
     const ADMIN = 'admin';
 
     /**
@@ -43,6 +44,7 @@ class Orchestrator
         self::BILLDESK => ['prashanth@razorpay.com'],
         self::PAYZAPP  => ['prashanth@razorpay.com'],
         self::MOBIKWIK => ['prashanth@razorpay.com'],
+        self::PAYTM    => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN => ['prashanth.yv@razorpay.com'],
@@ -559,7 +561,7 @@ class Orchestrator
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
         $sheets = $this->converter->getAllExcelSheets($fileDetails, $sheetNames);
-        
+
         // Every sheet is equivalent to a different file.
         foreach ($sheets as $sheet)
         {
