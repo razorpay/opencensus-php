@@ -38,8 +38,6 @@ class Fee
 
     public function getZeroPricingPlanRule($payment)
     {
-        $planId = Pricing\Entity::ZERO_PRICING;
-
         $method = $payment->getMethod();
 
         return $this->repo->getZeroPricingPlanRuleForMethod($method)->getId();

@@ -115,6 +115,22 @@ return [
         'channel' => 'kotak',
     ],
 
+    'testTransactionCreateForOldPayment' => [
+        'entity' => 'transaction',
+        'type' => 'payment',
+        'amount' => 1000000,
+        'currency' => 'INR',
+        'debit' => 0,
+        'credit' => 1000000,
+        'fee' => 0,
+        'service_tax' => 0,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'merchant_id' => '10000000000000',
+        'pricing_rule_id' => '1ZeroPricingR1',
+        'channel' => 'kotak',
+    ],
+
     'txnDataAfterRefundingPayment' => [
         'entity' => 'transaction',
         'type' => 'refund',

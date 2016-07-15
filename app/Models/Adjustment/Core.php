@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Adjustment;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
@@ -28,7 +29,7 @@ class Core extends Base\Core
             else if ($input['update_escrow'] === '0')
                 $updateEscrow = false;
             else
-                throw new Exception\BadRequestValidationFailureException(
+                throw new BadRequestValidationFailureException(
                     'update_escrow field shoudl be boolean', 'update_escrow');
 
             unset($input['update_escrow']);
