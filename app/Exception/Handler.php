@@ -50,7 +50,7 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
-        $this->trace->info(TraceCode::ERROR_EXCEPTION_2);
+        // Nothing to do here.
     }
 
     /**

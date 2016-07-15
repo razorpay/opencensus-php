@@ -158,7 +158,6 @@ class TraceCode
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
-    const ERROR_EXCEPTION_2                         = 'ERROR_EXCEPTION_2';
     const ERROR_INVALID_ARGUMENT                    = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
