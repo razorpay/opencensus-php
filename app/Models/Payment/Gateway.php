@@ -274,7 +274,7 @@ class Gateway
      */
     public static $partiallySupportedCardNetworks = array(
         Network::MAES,
-        // Network::RUPAY,
+        Network::RUPAY,
         Network::DICL);
 
     /**

@@ -173,8 +173,17 @@ trait Authorize
         // also sets the card details in $gatewayInput (passed by reference), if applicable.
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        // Terminal selected is now only used to validate any mistakes across each.
-        $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode);
+        $terminalSelected = null;
+
+        try
+        {
+            // Terminal selected is now only used to validate any mistakes across each.
+            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
 
         // Terminal picked is the terminal used for payment processing.
         $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
@@ -234,9 +243,13 @@ trait Authorize
             $traceData['payment_id'] = $payment->getDashboardEntityLinkForSlack();
 
             $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
-        }
 
-        $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
+            $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
+        }
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
