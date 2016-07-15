@@ -29,7 +29,7 @@ class TransactionFilter extends Terminal\Filter
         switch ($method)
         {
             case Method::CARD:
-                return $terminal->card;
+                return (($terminal->card) and ($terminal->emi === 0)) ;
                 break;
 
             case Method::NETBANKING:
