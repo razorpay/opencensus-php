@@ -634,12 +634,6 @@ class Notify
      */
     protected function isMailEnabled($event, $isMerchant = false)
     {
-        // Hack for beta for now
-        if (env('CONTEXT') === 'beta')
-        {
-            return true;
-        }
-
         // If the merchant has disabled customer emails
         // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
