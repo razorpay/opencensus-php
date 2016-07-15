@@ -17,6 +17,9 @@ use RZP\Models\Settlement\Holidays;
 
 class Core extends Base\Core
 {
+    // July 1st, 2016 00:00:00 IST
+    const JULY_FIRST_EPOCH = '1467311400';
+
     protected $merchantBalance = null;
 
     protected $nodalBalance = null;
@@ -112,7 +115,16 @@ class Core extends Base\Core
 
         $amount = $payment->getAmount();
 
-        if ($freeCredits > 0)
+        $oldTransaction = $this->checkIfOldTransaction($payment);
+
+        if ($oldTransaction === true)
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if ($freeCredits > 0)
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
@@ -146,6 +158,18 @@ class Core extends Base\Core
         $txn->setServiceTax($serviceTax);
 
         return $txn;
+    }
+
+    protected function checkIfOldTransaction($payment)
+    {
+        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
+            ($payment->transaction === null) and
+            ($payment->isAuthorize() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function fillServiceTax($txn, $payment)
