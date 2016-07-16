@@ -102,10 +102,16 @@ class EmiPaymentTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(count($content), 2);
-        $this->assertEquals(File::exists($content['KKBK']), true);
-        $this->assertEquals(File::exists($content['UTIB']), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
+        $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
 
         $this->fixtures->merchant->disableEmi();
+    }
+
+    private function zipFileName($filePath)
+    {
+        $pathinfo = pathinfo($filePath);
+        return $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.zip';
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)

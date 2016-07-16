@@ -39,6 +39,8 @@ class EmiFile extends Base\EmiFile
 
     protected function sendAxisEmiFile()
     {
+        $this->fetchAndSendPassword();
+
         $zipFile = $this->getZippedFile();
 
         $data['file'] = $zipFile;
@@ -103,5 +105,24 @@ class EmiFile extends Base\EmiFile
         }
 
         return '000000';
+    }
+
+    protected function sendEmiPassword()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $data['body'] = 'Axis Emi File Password for ' . $today . " is " . $this->emiFilePassword;
+
+        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
+        {
+            $emails = ['vaidehi.malik@axisbank.com', 'apurva.parab@axisbank.mail.onmicrosoft.com', 'creditcard.financial@axisbank.com'];
+            $cc_emails = ['cards.portfolio@axisbank.com', 'trupti.waingankar@axisbank.com', 'prashant.malvankar@axisbank.com', 'NEW_PASSWORD_HOLDERS_GROUP@razorpay.com'];
+
+            $message->from('emifiles@razorpay.com', 'Axis Emi File Password');
+
+            $message->subject('Axis Emi File Password for ' . $today);
+
+            $message->to($emails);
+            $message->cc($cc_emails);
+        });
     }
 }
