@@ -175,18 +175,26 @@ trait Authorize
 
         $terminalSelected = null;
 
+        // Terminal picked is the terminal used for payment processing.
+        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
         try
         {
+            $verbose = false;
+
+            // Add extra logs conditionally
+            if ($this->isMoreLoggingRequired($terminalPicked))
+            {
+                $verbose = true;
+            }
+
             // Terminal selected is now only used to validate any mistakes across each.
-            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode);
+            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
         }
         catch (\Exception $e)
         {
             $this->trace->traceException($e);
         }
-
-        // Terminal picked is the terminal used for payment processing.
-        $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
@@ -209,6 +217,13 @@ trait Authorize
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
+    }
+
+    protected function isMoreLoggingRequired($terminal)
+    {
+        $verboseLoggingTerminalIds = ['1000HdfcShared'];
+
+        return in_array($terminal->getId(), $verboseLoggingTerminalIds);
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
