@@ -95,8 +95,11 @@ trait Support
                 return;
             }
 
+            // This is being done to enable testing of capture timeout queue.
+            // Removes stale data.
             $error = $this->supportPaymentResponse['error'];
             $this->supportPaymentResponse['error'] = [];
+            $this->error = false;
 
             $this->throwException($error);
         }
@@ -317,6 +320,8 @@ trait Support
             $refundId = $input['refund']['id'];
         }
 
+        // We throw an error after persisting the error data.
+        // This is done in the calling function.
         if ($this->error)
         {
             $this->trace(

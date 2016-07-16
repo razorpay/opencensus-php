@@ -101,19 +101,6 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCaptureTimeout()
     {
-        $payment = $this->defaultAuthPayment();
-        $this->captureErrorReturnGatewayTimeout();
-        $payment = $this->getLastEntity('payment', true);
-
-        $data = $this->testData['testCardTimeout'];
-
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
-
-        $hdfc = $this->getLastEntity('hdfc', true);
-    }
-
-    public function testCaptureTimeout2()
-    {
         // Make a payment.
         // Mock capture response to return gateway error.
         // Check that the payment is in captured state. Check that the transaction has
@@ -123,20 +110,21 @@ class HdfcGatewayAuthTest extends TestCase
         // and not a gateway timeout.
         // Check for all the things that were checked before and also check that hdfc entity payment is captured.
 
-        $payment = $this->defaultAuthPayment();
+        $this->defaultAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
         $this->captureErrorReturnGatewayTimeout();
-        $payment = $this->getLastEntity('payment', true);
 
-        $data = $this->testData['testCaptureTimeout2'];
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
-        });
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $payment = $this->getLastEntity('payment', true);
-        sd($payment);
+        $this->assertEquals($payment['status'], 'captured');
 
         $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['status'], 'captured');
     }
 
     public function testMockOnLiveMode()
