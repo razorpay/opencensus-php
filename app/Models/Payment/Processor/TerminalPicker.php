@@ -62,7 +62,7 @@ class TerminalPicker
 
         $terminals = $this->getTerminalsKeyedByGateway($merchantTerminals);
 
-        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS, [$terminals]);
+        // $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS, [$terminals]);
 
         $terminal = $this->pickTerminal($terminals, $payment);
 
@@ -441,8 +441,8 @@ class TerminalPicker
 
         $gateway = Gateway::$netbankingToGatewayMap[$bank];
 
-        $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS,
-        ['bank_mapped_gateway' => $gateway, 'terminals' => $terminals, 'bank'=> $bank]);
+        // $this->app['trace']->info(TraceCode::MERCHANT_TERMINALS,
+        // ['bank_mapped_gateway' => $gateway, 'terminals' => $terminals, 'bank'=> $bank]);
 
         if (isset($terminals[$gateway]))
         {
