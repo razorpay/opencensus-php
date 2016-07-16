@@ -4,9 +4,9 @@ namespace RZP\Reconciliator\Base;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception\ReconciliationException;
-
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
+use App;
 
 class CombinedReconciliate extends Foundation\SubReconciliate
 {
@@ -14,9 +14,12 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
     protected $messenger;
 
+    protected $app;
+
     public function __construct()
     {
         $this->messenger = new Messenger();
+        $this->app = App::getFacadeRoot();
     }
 
     /**

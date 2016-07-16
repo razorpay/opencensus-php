@@ -312,8 +312,6 @@ class MerchantTest extends TestCase
 
     public function testChangeBankAccountWithSettlement()
     {
-        $this->markTestSkipped();
-
         $this->testAddBankAccount();
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;

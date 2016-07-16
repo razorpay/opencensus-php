@@ -339,7 +339,8 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                $this->app['exception.handler']->traceException($e);
+                // @todo: Remove this in future.
+                // $this->app['exception.handler']->traceException($e);
 
                 // Just continue
                 $error++;

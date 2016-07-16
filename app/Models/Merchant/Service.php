@@ -672,9 +672,11 @@ class Service extends Base\Service
 
     protected function sendEmail($template, $subject, $data)
     {
-        Mail::queue($template, $data, function($message) use ($data, $subject){
+        Mail::queue($template, $data, function($message) use ($data, $subject)
+        {
             $message = $message->to($data['email'], $data['name'])
-                        ->subject($subject);
+                               ->subject($subject);
+
             if (isset($data['cc_email']))
             {
                 $message->cc($data['cc_email'], $data['name']);
@@ -687,12 +689,11 @@ class Service extends Base\Service
         ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
+        $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
+
         $response = (new Merchant\HolidayNotification)->send($input);
 
-        $this->trace->info(
-            TraceCode::MERCHANT_NOTIFY_HOLIDAY,
-            $response
-        );
+        $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY, $response);
 
         return $response;
     }

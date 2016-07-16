@@ -91,8 +91,6 @@ class SettlementTest extends TestCase
 
     public function testHoldFundsDuringSettlement()
     {
-        $this->markTestSkipped();
-
         $this->fixtures->merchant->holdFunds('10000000000000');
 
         // Create payments and refunds with timestamps two days back
@@ -119,25 +117,111 @@ class SettlementTest extends TestCase
         return $payments;
     }
 
-    // Test case where payment was made on 5 Apr, with 8 Apr being a holiday
-    // Settlement file was now generated on 9 Apr
-    public function testSettlementOnHolidayFollowedBySaturday()
+    // Random settlement holiday - Test for live mode
+    public function testSettlementOnHolidayInLiveMode()
     {
-        $createdAt = Carbon::parse('5 apr 2016 2:13:08 am', 'Asia/Kolkata')->timestamp;
-        $capturedAt = Carbon::parse('5 apr 2016 2:13:08 am', 'Asia/Kolkata')->timestamp + 10;
+
+        $this->ba->publicLiveAuth();
+
+        $days = $this->getDaysForSettlementHolidayTests();
+
+        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
 
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);
 
-        $setDate = Carbon::parse('9 apr 2016 2:13:08 am','Asia/Kolkata');
+
+        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
         $content = $this->initiateSettlements();
 
         $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
+
+        // Reset test params
+        Carbon::setTestNow();
+        $this->ba->publicAuth();
+    }
+
+    // Random settlement non holiday - Test for live mode
+    public function testSettlementOnNonHolidayInLiveMode()
+    {
+        $this->ba->publicLiveAuth();
+
+        $days = $this->getDaysForSettlementNonHolidayTests();
+
+        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+
+        $payments = $this->fixtures->times(5)->create('payment:captured',
+                ['captured_at' => $capturedAt,
+                 'created_at' => $createdAt,
+                 'updated_at' => $createdAt + 10]);
+
+        $txn = $this->getEntities('transaction',[],true);
+
+        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        Carbon::setTestNow($setDate);
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        $this->assertEquals(5, $content['kotak']['transaction_count']);
+
+        // Reset test params
+        Carbon::setTestNow();
+        $this->ba->publicAuth();
+    }
+
+    // Random settlement holiday - Test for test mode
+    public function testSettlementOnHolidayInTestMode()
+    {
+        $days = $this->getDaysForSettlementHolidayTests();
+
+        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+
+        $payments = $this->fixtures->times(5)->create('payment:captured',
+                ['captured_at' => $capturedAt,
+                 'created_at' => $createdAt,
+                 'updated_at' => $createdAt + 10]);
+
+        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        Carbon::setTestNow($setDate);
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        $this->assertEquals(5, $content['kotak']['transaction_count']);
+
+        Carbon::setTestNow();
+    }
+
+    // Random settlement non holiday - Test for test mode
+    public function testSettlementOnNonHolidayInTestMode()
+    {
+        $days = $this->getDaysForSettlementNonHolidayTests();
+
+        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+
+        $payments = $this->fixtures->times(5)->create('payment:captured',
+                ['captured_at' => $capturedAt,
+                 'created_at' => $createdAt,
+                 'updated_at' => $createdAt + 10]);
+
+        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        Carbon::setTestNow($setDate);
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        $this->assertEquals(5, $content['kotak']['transaction_count']);
 
         Carbon::setTestNow();
     }

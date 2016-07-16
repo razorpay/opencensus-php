@@ -589,7 +589,7 @@ class Entity extends Base\PublicEntity
     {
         // 9999 - Test MCC requiring TPV
         // 6211 - Live MCC requiring TPV
-        $tpvCategories = array(9999 => 9999, 6211 => 6211);
+        $tpvCategories = $this->getTPVCategories();
 
         $category = $this->getCategory();
 
@@ -599,6 +599,11 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getTPVCategories()
+    {
+        return array(9999 => 9999, 6211 => 6211);
     }
 
     public function isShared()

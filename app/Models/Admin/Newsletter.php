@@ -266,7 +266,7 @@ class Newsletter
 
     protected function getMailgunInstance()
     {
-        return new Mailgun($this->config['key']);
+        return $this->app['mailgun']->getMailgunInstance();
     }
 
     public function send()

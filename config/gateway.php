@@ -15,6 +15,7 @@ return array(
         'axis_genius',
         'axis_migs',
         'billdesk',
+        'cybersource',
         'hdfc',
         'kotak',
         'mobikwik',
@@ -29,6 +30,7 @@ return array(
 
     'mock_amex'             => env('AMEX_MOCK'),
     'mock_hdfc'             => env('HDFC_MOCK'),
+    'mock_cybersource'      => env('CYBERSOURCE_MOCK'),
     'mock_atom'             => env('ATOM_MOCK'),
     'mock_axis_migs'        => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'      => env('AXIS_GENIUS_MOCK'),
@@ -46,6 +48,11 @@ return array(
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
         'test_terminal_pwd' => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
         'mock_server'       => false,
+    ),
+
+    'cybersource' => array(
+        'test_merchant_id'  => env('CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'),
+        'test_access_code'  => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
     ),
 
     'amex' => array(

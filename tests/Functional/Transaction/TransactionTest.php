@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use Carbon\Carbon;
+use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -51,6 +52,24 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterCapturingPayment'];
         $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
+    public function testTransactionCreateForOldPayment()
+    {
+        $this->fixtures->create('pricing:zero_pricing_plan');
+
+        $payment = $this->fixtures->times(5)->create('payment:authorized',
+            ['created_at' => 1467301400]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['testTransactionCreateForOldPayment'];
+        $testData['fee'] = $txn['fee'];
+        $testData['service_tax'] = $txn['service_tax'];
 
         $this->assertArraySelectiveEquals($testData, $txn);
 

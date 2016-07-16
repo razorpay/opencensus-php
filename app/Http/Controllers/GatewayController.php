@@ -49,9 +49,24 @@ class GatewayController extends Controller
 
         $data = [];
 
-        if ($gateway === 'billdesk')
+        switch ($gateway)
         {
-            $data = $this->callbackBilldesk($input);
+            case 'billdesk':
+                $data = $this->callbackBilldesk($input);
+                break;
+
+            case 'upi':
+                $trace = $this->app['trace'];
+
+                // check mode before search
+                $trace->info(
+                    TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                    [
+                        'input'     => $input,
+                        'gateway'   => 'upi_icici',
+                    ]);
+
+                break;
         }
 
         // $input['gateway'] = $gateway;

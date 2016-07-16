@@ -30,7 +30,7 @@ class HolidayNotification
 
     public function send($input)
     {
-        $response = [];
+        $response = ['success' => true];
 
         if (isset($input['action']))
         {

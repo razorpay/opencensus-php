@@ -17,24 +17,35 @@ use RZP\Models\Settlement\Holidays;
 
 class Core extends Base\Core
 {
+    // July 1st, 2016 00:00:00 IST
+    const JULY_FIRST_EPOCH = '1467311400';
+
     protected $merchantBalance = null;
 
     protected $nodalBalance = null;
 
+    protected $merchant;
+
+    protected $merchantRepo;
+
+    protected $balanceRepo;
+
     public function __construct()
     {
+        parent::__construct();
+
         $this->merchant = \BasicAuth::getMerchant();
-        $this->merchantRepo = new Merchant\Repository;
-        $this->balanceRepo = new Merchant\Balance\Repository;
+        $this->merchantRepo = $this->repo->merchant;
+        $this->balanceRepo = $this->repo->balance;
     }
 
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
         $txn = $this->txnCreationFromPaymentOperation($payment);
 
-        $this->updateFreeCredits($txn);
+        $this->updateFreeCredits($txn, $payment);
 
-        $this->updateEscrowBalance($txn);
+        $this->updateNodalBalance($txn);
 
         $this->balanceRepo->updateBalance($this->merchantBalance);
 
@@ -62,7 +73,7 @@ class Core extends Base\Core
 
         $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->updateFreeCredits($txn);
+        $this->updateFreeCredits($txn, $payment);
 
         $this->updateBalances($txn);
 
@@ -96,8 +107,6 @@ class Core extends Base\Core
 
     protected function fillTxnFeesAndAmount($txn, $payment)
     {
-        $credit = $fee = $serviceTax = 0;
-
         $pricingRuleId = null;
 
         $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
@@ -106,7 +115,16 @@ class Core extends Base\Core
 
         $amount = $payment->getAmount();
 
-        if ($freeCredits > 0)
+        $oldTransaction = $this->checkIfOldTransaction($payment);
+
+        if ($oldTransaction === true)
+        {
+            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+            $fee = 0;
+            $serviceTax = 0;
+            $credit = $amount;
+        }
+        else if ($freeCredits > 0)
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
 
@@ -130,8 +148,6 @@ class Core extends Base\Core
             $credit = $amount - $fee;
         }
 
-
-
         $txn->setPricingRule($pricingRuleId);
         $txn->setAmount($amount);
         $txn->setCredit($credit);
@@ -140,6 +156,18 @@ class Core extends Base\Core
         $txn->setServiceTax($serviceTax);
 
         return $txn;
+    }
+
+    protected function checkIfOldTransaction($payment)
+    {
+        if (($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH) and
+            ($payment->transaction === null) and
+            ($payment->isAuthorized() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function fillServiceTax($txn, $payment)
@@ -216,7 +244,7 @@ class Core extends Base\Core
         if ($payment->isAuthorized())
         {
             // When refunding authorized payments, we do not charge merchants
-            $this->updateEscrowBalance($txn);
+            $this->updateNodalBalance($txn);
         }
         else if ($payment->isCaptured())
         {
@@ -290,17 +318,17 @@ class Core extends Base\Core
         return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    public function updateBalances(Transaction\Entity $txn, $updateEscrowBalance = true)
+    public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
     {
         $txn = $this->updateMerchantBalance($txn);
 
-        if ($updateEscrowBalance === true)
+        if ($updateNodalBalance === true)
         {
-            $txn = $this->updateEscrowBalance($txn);
+            $txn = $this->updateNodalBalance($txn);
         }
         else
         {
-            $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
+            $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
             $txn->setEscrowBalance($nodalBalance->getBalance());
         }
@@ -320,11 +348,11 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateEscrowBalance(Transaction\Entity $txn)
+    public function updateNodalBalance(Transaction\Entity $txn)
     {
         $channel = $txn->getChannel();
 
-        $nodalBalance = $this->getEscrowBalanceLockForUpdate($channel);
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
         $nodalBalance->updateBalance($txn);
         $this->balanceRepo->updateBalance($nodalBalance);
@@ -334,17 +362,20 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateFreeCredits($txn)
+    public function updateFreeCredits($txn, $payment)
     {
         assert ($txn->isTypePayment() === true);
 
+        // For transactions being created before july 1st, 2016, we assign the zero pricing plan.
+        // These transactions are not using the free credits.
         if (($txn->getFee() !== 0) or
-            ($txn->getCredit() !== $txn->getAmount()))
+            ($txn->getCredit() !== $txn->getAmount()) or
+            ($payment->getCreatedTimestamp() < self::JULY_FIRST_EPOCH))
         {
             return;
         }
 
-        $credits = $txn->getAmount();
+        $amount = $txn->getAmount();
 
         $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
 
@@ -352,26 +383,26 @@ class Core extends Base\Core
 
         assert($freeCredits > 0);
 
-        if ($freeCredits < $credits)
+        if ($freeCredits < $amount)
         {
-            $credits = $freeCredits;
+            $amount = $freeCredits;
         }
 
-        $nodalBalance = $this->getEscrowBalanceLockForUpdate($txn->getChannel());
+        $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
 
-        $nodalBalance->subtractCredits($credits);
+        $nodalBalance->subtractCredits($amount);
 
-        $merchantBalance->subtractCredits($credits);
+        $merchantBalance->subtractCredits($amount);
     }
 
-    protected function getEscrowBalanceLockForUpdate($channel)
+    protected function getNodalBalanceLockForUpdate($channel)
     {
         if ($this->nodalBalance !== null)
         {
             return $this->nodalBalance;
         }
 
-        $nodalBalance = $this->balanceRepo->getEscrowBalanceLockForUpdate($channel);
+        $nodalBalance = $this->balanceRepo->getNodalBalanceLockForUpdate($channel);
 
         $this->nodalBalance = $nodalBalance;
 

@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Payment;
 
+use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Settlement;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Exception;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
@@ -25,6 +28,7 @@ class Gateway
     const NETBANKING_KOTAK  = 'netbanking_kotak';
     const WALLET_PAYZAPP    = 'wallet_payzapp';
     const WALLET_PAYUMONEY  = 'wallet_payumoney';
+    const CYBERSOURCE       = 'cybersource';
 
     const NOT_SUPPORTED     = 'not_supported';
     const SUPPORTED         = 'supported';
@@ -56,6 +60,7 @@ class Gateway
         self::NETBANKING_KOTAK  => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP    => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY  => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE       => Settlement\Channel::KOTAK,
     );
 
     /**
@@ -73,6 +78,7 @@ class Gateway
             self::KOTAK,
             self::PAYTM,
             self::AMEX,
+            self::CYBERSOURCE,
         ),
 
         Method::NETBANKING => array(
@@ -80,7 +86,7 @@ class Gateway
             self::BILLDESK,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
-            self::SBIEPAY
+            self::SBIEPAY,
         ),
 
         Method::WALLET => array(
@@ -108,6 +114,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
         self::AMEX => [],
+        self::CYBERSOURCE => [],
     );
 
     /**
@@ -141,6 +148,17 @@ class Gateway
         self::PAYTM => array(
             Network::MC,
             Network::VISA),
+        self::SHARP => array(
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+            Network::AMEX,
+            Network::DICL,
+            Network::RUPAY,
+            Network::UNKNOWN),
+        self::CYBERSOURCE => array(
+            Network::MC,
+            Network::VISA),
     );
 
     public static $walletToGatewayMap = array(
@@ -164,7 +182,8 @@ class Gateway
         self::HDFC,
         self::AMEX,
         self::NETBANKING_HDFC,
-        self::WALLET_PAYZAPP);
+        self::WALLET_PAYZAPP,
+    );
 
     /**
      * List of gateways which give s2s callback where we do not validate
@@ -183,7 +202,9 @@ class Gateway
     public static $internationalCardGateways = array(
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
-        Gateway::AMEX);
+        Gateway::AMEX,
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * Card gateways which support domestic payments in live mode.
@@ -193,7 +214,9 @@ class Gateway
     public static $domesticCardGateways = array(
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
-        Gateway::AMEX);
+        Gateway::AMEX,
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * Card gateways which support domestic payments in test mode.
@@ -204,7 +227,10 @@ class Gateway
         Gateway::KOTAK,
         Gateway::ATOM,
         Gateway::PAYTM,
-        Gateway::AXIS_GENIUS);
+        Gateway::AXIS_GENIUS,
+        Gateway::SHARP,
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * These card gateways can be used live and can have direct
@@ -218,7 +244,9 @@ class Gateway
     public static $directCardGateways = array(
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
-        Gateway::AMEX);
+        Gateway::AMEX,
+        Gateway::CYBERSOURCE,
+        );
 
     /**
      * These gateways are only used in test and may or may not graduate to live
@@ -233,7 +261,11 @@ class Gateway
         Gateway::AXIS_GENIUS,
         Gateway::SBIEPAY,
         Gateway::KOTAK,
-        Gateway::PAYTM);
+        Gateway::PAYTM,
+        Gateway::ATOM,
+        Gateway::SHARP,
+        Gateway::CYBERSOURCE,
+    );
 
     /**
      * Some card networks are only supported partially for one or two gateway.
@@ -415,5 +447,82 @@ class Gateway
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
                 (in_array($network, self::$cardNetworkMap[$gateway])));
+    }
+
+    public static function getGatewaysForNetbankingBank($bank)
+    {
+        $gateways = [];
+
+        // Check for direct netbanking gateway
+        if (self::isNetbankingBankDirectlySupported($bank))
+        {
+            $gateways[] = self::$netbankingToGatewayMap[$bank];
+        }
+
+        // Add netbanking gateways that support bank
+        foreach (self::$netbankingGateways as $netbankingGateway)
+        {
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            {
+                $gateways[] = $netbankingGateway;
+            }
+        }
+
+        return $gateways;
+    }
+
+    public static function getGatewaysForNetbankingBankIndexed($bank)
+    {
+        $gateways = [];
+
+        // Check for direct netbanking gateway
+        if (self::isNetbankingBankDirectlySupported($bank))
+        {
+            $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
+        }
+
+        // Add netbanking gateways that support bank
+        foreach (self::$netbankingGateways as $netbankingGateway)
+        {
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway))
+            {
+                $gateways['gateway'][] = $netbankingGateway;
+            }
+        }
+
+        return $gateways;
+    }
+
+    public static function getGatewaysPriority($method, $mode = 'live')
+    {
+        $gateways = [];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $gateways = self::$directCardGateways;
+
+                if ($mode === Mode::TEST)
+                {
+                    $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
+                }
+                break;
+
+            case Method::NETBANKING:
+                $gateways = self::$directNetbankingGateways;
+
+                if ($mode === Mode::TEST)
+                {
+                    $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
+                }
+
+                array_unshift($gateways, 'direct');
+                break;
+
+            default:
+                break;
+        }
+
+        return $gateways;
     }
 }

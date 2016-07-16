@@ -31,7 +31,7 @@ class Server extends Base\Mock\Server
         '4012001037461114',
         '4012001037484447',
         '4012001037490006',
-        );
+    );
 
     protected $debitCardNumbers = array(
         '4012001037141112',
@@ -40,7 +40,8 @@ class Server extends Base\Mock\Server
         '4012001037490014',
         '4012001037141112',
         '6073849700004947',
-        );
+        '4111111111111111',
+    );
 
     protected $onlyPurchaseCardNetworks = array(
         Network::RUPAY,
