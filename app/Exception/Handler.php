@@ -92,9 +92,16 @@ class Handler extends ExceptionHandler
     {
         $traceData = $this->getExceptionDetails($exception);
 
-        $this->trace->critical(
-           TraceCode::ERROR_EXCEPTION,
-           $traceData);
+        if ($exception instanceof RecoverableException)
+        {
+            $this->trace->info(TraceCode::RECOVERABLE_EXCEPTION, $traceData);
+        }
+        else
+        {
+            $this->trace->critical(
+               TraceCode::ERROR_EXCEPTION,
+               $traceData);
+        }
     }
 
     protected function genericExceptionHandler(Exception $exception)
