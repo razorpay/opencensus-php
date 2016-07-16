@@ -22,6 +22,7 @@ trait Support
      * @param  string   $type  should be either 'capture'
      *                         or 'refund'
      * @return array
+     * @throws Exception\LogicException
      */
     protected function supportPayment($input, $type)
     {
@@ -63,16 +64,16 @@ trait Support
         //
         // Fill the fields required for the payment
         //
-        $this->createSupportPaymentRequestFields($input, $type);
+        $this->createSupportPaymentRequestFields($input);
 
-        $this->trace(
-            TRACE::DEBUG,
+        $this->trace->debug(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             $this->supportPaymentRequest);
 
         $this->runRequestResponseFlow(
             $this->supportPaymentRequest,
             $this->supportPaymentResponse);
+
 
         if ((isset($this->supportPaymentResponse['data']['result'])) and
             ($this->supportPaymentResponse['data']['result'] === 'SUCCESS'))
@@ -94,7 +95,13 @@ trait Support
                 return;
             }
 
-            $this->throwException($this->supportPaymentResponse['error']);
+            // This is being done to enable testing of capture timeout queue.
+            // Removes stale data.
+            $error = $this->supportPaymentResponse['error'];
+            $this->supportPaymentResponse['error'] = [];
+            $this->error = false;
+
+            $this->throwException($error);
         }
     }
 
@@ -196,8 +203,6 @@ trait Support
         $error = $response['error'];
         $input = $this->input;
 
-        $payment = $this->model;
-
         if (($this->action === Base\Action::CAPTURE) and
             ($error['code'] === Hdfc\ErrorCode::GW00176) and
             ($input['payment']['status'] === 'authorized') and
@@ -232,10 +237,8 @@ trait Support
      * @param  array $input
      * Contains the 'payment' details
      */
-    protected function createSupportPaymentRequestFields($input, $type)
+    protected function createSupportPaymentRequestFields($input)
     {
-        $payment = $input['payment'];
-
         $card = $input['card'];
 
         $this->supportPaymentRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
@@ -317,6 +320,8 @@ trait Support
             $refundId = $input['refund']['id'];
         }
 
+        // We throw an error after persisting the error data.
+        // This is done in the calling function.
         if ($this->error)
         {
             $this->trace(

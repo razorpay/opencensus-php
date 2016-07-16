@@ -258,6 +258,13 @@ class Processor
         });
     }
 
+    public function callGatewayFunctionCaptureViaQueue($data, $payment)
+    {
+        $this->payment = $payment;
+
+        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+    }
+
     protected function cancelPayment($payment)
     {
         $errorCode = null;
@@ -321,9 +328,9 @@ class Processor
     /**
      * Responsible for calling the gateway function
      *
-     * @param  string $action refund/capture etc.
-     * @param  array  $input  Relevant input for the corresponding
-     *                        action
+     * @param  string $action      refund/capture etc.
+     * @param  array  $gatewayData Relevant input for the corresponding
+     *                             action
      *
      * @return array or null
      * @throws Exception\LogicException

@@ -180,7 +180,6 @@ class Repository extends Base\Repository
         $paymentId,
         $refundId = null)
     {
-        $status = '';
         $action = $requestData['action'];
 
         switch($action)
@@ -194,7 +193,7 @@ class Repository extends Base\Repository
                 break;
 
             default:
-                throw new Exception\LogicException('Should not rech here. action: ' . $action);
+                throw new Exception\LogicException('Should not reach here. Action: ' . $action);
         }
 
         $attributes = array(
