@@ -109,6 +109,8 @@ class Capture
         }
         else
         {
+            // When queue_driver is sync, there's no release and
+            // hence it's as good as deleting the job.
             $this->job->release(self::JOB_RELEASE_WAIT);
         }
     }
