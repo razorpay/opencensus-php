@@ -122,9 +122,11 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->assertEquals($payment['status'], 'captured');
 
-        $hdfc = $this->getLastEntity('hdfc', true);
+        $hdfc = $this->getEntities('hdfc', [], true);
 
-        $this->assertEquals($hdfc['status'], 'captured');
+        $this->assertEquals($hdfc['items'][0]['status'], 'captured');
+
+        $this->assertEquals($hdfc['items'][1]['status'], 'capture_failed');
     }
 
     public function testMockOnLiveMode()
