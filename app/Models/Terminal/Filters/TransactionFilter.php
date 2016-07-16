@@ -20,6 +20,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
+        'emi',
     ];
 
     public function methodFilter($terminal, $input)
@@ -158,6 +159,52 @@ class TransactionFilter extends Terminal\Filter
                 $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
                 return in_array($terminalGateway, $gateways);
+                break;
+
+            default:
+                break;
+        }
+
+        return true;
+    }
+
+    public function emiFilter($terminal, $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        switch ($method)
+        {
+            case Method::EMI:
+                // For EMI PAYMENTS In a particular case we need to use
+                // the payment duration and the payment bank corresponding gateway
+                $bank = $input['payment']->getBank();
+
+                $emiBankGateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
+
+                // Extra DB Query getting added here - needs to be moved to cache
+                $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
+
+                $emiDuration = $emiPlan->getDuration();
+
+                $terminalGateway = $terminal->getGateway();
+
+                $cardTerminalBanks = array(
+                    IFSC::KKBK,
+                    IFSC::UTIB,
+                );
+
+                if (in_array($bank, $cardTerminalBanks))
+                {
+                    ; // No other filtration required
+                }
+                else
+                {
+                    // The HDFC case currently where the payment has
+                    // to be routed through the corresponding duration
+                    // terminal and the corresponding
+                    return (($terminalGateway === $emiBankGateway) and
+                            ($emiDuration === $terminal->getEmiDuration());
+                }
                 break;
 
             default:
