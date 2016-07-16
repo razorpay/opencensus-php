@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
+use RZP\Models\Emi\Repository;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -179,10 +180,10 @@ class TransactionFilter extends Terminal\Filter
                 // the payment duration and the payment bank corresponding gateway
                 $bank = $input['payment']->getBank();
 
-                $emiBankGateway = Payment\Gateway::$emiBankToGatewayMap[$bank];
+                $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
 
                 // Extra DB Query getting added here - needs to be moved to cache
-                $emiPlan = (new Emi\Repository)->findOrFail($emiPlanId);
+                $emiPlan = (new Repository)->findOrFail($emiPlanId);
 
                 $emiDuration = $emiPlan->getDuration();
 
@@ -203,7 +204,7 @@ class TransactionFilter extends Terminal\Filter
                     // to be routed through the corresponding duration
                     // terminal and the corresponding
                     return (($terminalGateway === $emiBankGateway) and
-                            ($emiDuration === $terminal->getEmiDuration());
+                            ($emiDuration === $terminal->getEmiDuration()));
                 }
                 break;
 
