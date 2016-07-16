@@ -76,7 +76,7 @@ class Capture
 
         $paymentProcessor = new Payment\Processor\Processor($merchant);
 
-        $paymentProcessor->callGatewayFunctionViaQueue(Payment\Action::CAPTURE, $this->data);
+        $paymentProcessor->callGatewayFunctionCaptureViaQueue($this->data);
     }
 
     protected function handleCaptureException($traceCode, $ex)

@@ -117,7 +117,7 @@ trait Capture
 
                 $data['mode'] = $this->mode;
 
-                $this->app['queue']->push('RZP\Jobs\CaptureQueue', ['data' => $data]);
+                $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
             }
 
             $this->verifyOrderUnpaid($this->payment);

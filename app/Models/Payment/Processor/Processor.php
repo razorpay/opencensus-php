@@ -258,11 +258,11 @@ class Processor
         });
     }
 
-    public function callGatewayFunctionViaQueue($action, $data)
+    public function callGatewayFunctionCaptureViaQueue($data)
     {
         $this->payment = $this->app['repo']->payment->findOrFail($data['payment']['id']);
 
-        $this->callGatewayFunction($action, $data);
+        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
     }
 
     protected function cancelPayment($payment)
