@@ -106,10 +106,8 @@ class HdfcGatewayAuthTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $data = $this->testData['testCardTimeout'];
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
-        });
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $hdfc = $this->getLastEntity('hdfc', true);
     }

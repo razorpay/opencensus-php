@@ -95,7 +95,10 @@ trait Support
                 return;
             }
 
-            $this->throwException($this->supportPaymentResponse['error']);
+            $error = $this->supportPaymentResponse['error'];
+            $this->supportPaymentResponse['error'] = [];
+
+            $this->throwException($error);
         }
     }
 
