@@ -496,22 +496,6 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    protected function getHostTimeoutErrorAuthResponse()
-    {
-        $res = array(
-            'auth' => '999999',
-            'avr' => 'N',
-            'paymentid' => '2515498181561350',
-            'postdate' => '0514',
-            'ref' => '613515344880',
-            'result' => 'HOST TIMEOUT',
-            'trackid' => $gatewayTransaction['payment_id'],
-            'tranid' => $txnId,
-        );
-
-        return $rest;
-    }
-
     protected function isSpecialCardNumber($cardNumber)
     {
         return (in_array($cardNumber, $this->specialCardNumbers));

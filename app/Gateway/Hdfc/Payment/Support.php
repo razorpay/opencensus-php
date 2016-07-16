@@ -66,14 +66,14 @@ trait Support
         //
         $this->createSupportPaymentRequestFields($input);
 
-        $this->trace(
-            TRACE::DEBUG,
+        $this->trace->debug(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             $this->supportPaymentRequest);
 
         $this->runRequestResponseFlow(
             $this->supportPaymentRequest,
             $this->supportPaymentResponse);
+
 
         if ((isset($this->supportPaymentResponse['data']['result'])) and
             ($this->supportPaymentResponse['data']['result'] === 'SUCCESS'))

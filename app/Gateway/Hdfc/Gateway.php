@@ -314,7 +314,7 @@ class Gateway extends Base\Gateway
             $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
 
             $this->verifyAuthResponse($authResponse);
-            
+
             return;
         }
 

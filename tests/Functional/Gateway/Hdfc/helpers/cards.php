@@ -30,6 +30,22 @@ return [
         ],
     ],
 
+    'testCaptureTimeout2' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036275556',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testCreditCardSuccess' => [
         'request' => [
             'content' => [

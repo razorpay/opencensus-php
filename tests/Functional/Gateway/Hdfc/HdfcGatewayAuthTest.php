@@ -114,6 +114,33 @@ class HdfcGatewayAuthTest extends TestCase
         $hdfc = $this->getLastEntity('hdfc', true);
     }
 
+    public function testCaptureTimeout2()
+    {
+        // Make a payment.
+        // Mock capture response to return gateway error.
+        // Check that the payment is in captured state. Check that the transaction has
+        // all the fee details. Check that captured_at is set.
+        // Check that the hdfc entity payment is not captured.
+        // Make sure that the second time the capture is called (via queue), it returns a successful response
+        // and not a gateway timeout.
+        // Check for all the things that were checked before and also check that hdfc entity payment is captured.
+
+        $payment = $this->defaultAuthPayment();
+        $this->captureErrorReturnGatewayTimeout();
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testCaptureTimeout2'];
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        sd($payment);
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+    }
+
     public function testMockOnLiveMode()
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
