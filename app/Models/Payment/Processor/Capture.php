@@ -127,8 +127,8 @@ trait Capture
         catch (Exception\BaseException $ex)
         {
             $this->updatePaymentFailed(
-                $ex->getError(),
-                TraceCode::PAYMENT_CAPTURE_FAILURE);
+                    $ex->getError(),
+                    TraceCode::PAYMENT_CAPTURE_FAILURE);
 
             throw $ex;
         }
