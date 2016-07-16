@@ -4,7 +4,6 @@ namespace RZP\Models\Settlement\Kotak;
 
 use AWS;
 use Excel;
-use ZipArchive;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -357,21 +356,24 @@ trait FileHandlerTrait
     {
         $zipPath = $this->getZipFullFilePath();
 
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
-
         foreach ($fileArray as $file)
         {
-            $zip->addFile($file);
+            $this->addFileToZip($file, $zipPath, $password);
         }
+
+        return $zipPath;
+    }
+
+    private function addFileToZip($filePath, $zipPath, $password)
+    {
+        $zipCommand = "zip -j -m";
 
         if (isset($password))
         {
-            $zip->setPassword($password);
+            $zipCommand .= " -P " . $password;
         }
 
-        $zip->close();
-        return $zipPath;
+        system($zipCommand . " " . $zipPath . " " . $filePath);
     }
 
     protected function getFileToWriteNameWithoutExt()
