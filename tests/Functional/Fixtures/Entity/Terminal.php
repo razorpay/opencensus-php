@@ -31,7 +31,7 @@ class Terminal extends Base
 
     public function createMultipleCategoryTerminals()
     {
-        $sharedMerchantAccount = \Models\Merchant\Account::SHARED_ACCOUNT;
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
         $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl123',
                                          'merchant_id' => $sharedMerchantAccount,
@@ -124,7 +124,7 @@ class Terminal extends Base
 
     public function createSharedAtomNetbankingTerminal()
     {
-        $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
+        $termId = \RZP\Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
         $attributes = array(
             'id'                    => $termId,
@@ -378,6 +378,25 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
             'emi'                       => 1);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedHDFCEmiTerminal()
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $attributes = array(
+            'id'                        => 'ShrdHdfcEmiTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                      => 1,
+            'emi'                       => 1,
+            'emi_duration'              => 9,
+            'shared'                    => 1);
 
         return parent::create($attributes);
     }
