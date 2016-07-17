@@ -39,7 +39,7 @@ return array(
     |
     */
 
-    'url' => env('APP_URL', 'http://api.razorpay.com'),
+    'url' => env('APP_URL', 'https://api.razorpay.com'),
 
     /*
     |--------------------------------------------------------------------------
