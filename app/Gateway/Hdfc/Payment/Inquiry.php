@@ -37,7 +37,6 @@ trait Inquiry
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        // TODO: Figure out what or why this is being done.
         if ($this->wasEnrollSuccessful($gatewayPayment) === false)
         {
             $verify->match = true;
