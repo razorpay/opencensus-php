@@ -2,8 +2,6 @@
 
 namespace RZP\Jobs;
 
-use RZP\Jobs\Job;
-
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,12 +11,13 @@ class WebHook extends Job implements SelfHandling, ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
 
+    protected $data;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    protected $data;
     public function __construct($data)
     {
         $this->data = $data;
@@ -33,8 +32,6 @@ class WebHook extends Job implements SelfHandling, ShouldQueue
     {
         $app = \App::getFacadeRoot();
 
-        $data = json_decode($this->data, true);
-
-        $app['webhook.inferno']->fire($this, $data);
+        $app['webhook.inferno']->fire($this, $this->data);
     }
 }

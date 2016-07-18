@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mockery;
-
 use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;

@@ -2,13 +2,11 @@
 
 namespace RZP\Listeners;
 
-use Webhook\Fire;
-
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Constants;
-use RZP\Listeners;
 use RZP\Jobs\WebHook;
+use RZP\Models\Event\Entity;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
@@ -113,8 +111,6 @@ class ApiEventSubscriber
             'mode'          => $this->getMode(),
             'event'         => json_encode($event->toArrayPublic()),
             'webhook_id'    => $webhook->getId());
-
-        $data = json_encode($data);
 
         $this->dispatch(new Webhook($data));
     }
