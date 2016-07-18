@@ -24,10 +24,10 @@ trait Capture
     {
         $payment = $this->retrieve($id);
 
-        /*
-            If the fee bearer is customer then please to adjust input amount
-            with the available fee for the payment.
-         */
+        //
+        // If the fee bearer is customer then please to adjust input amount
+        // with the available fee for the payment.
+        //
         if ($this->merchant->isFeeBearerCustomer())
         {
             $input['amount'] = $input['amount'] + $payment->getFee();
@@ -138,7 +138,13 @@ trait Capture
     {
         $this->repo->transaction(function()
         {
-            $this->paymentRepo->lockForUpdate($this->payment->getKey());
+            $this->lockForUpdateAndReload($this->payment);
+
+            if ($this->payment->hasBeenCaptured() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+            }
 
             $this->updatePaymentCaptured();
 
@@ -194,7 +200,11 @@ trait Capture
 
     protected function verifyOrderUnpaid($payment)
     {
-        $order = $payment->order;
+        // TODO: verify if this is okay to do.
+        // Doing this because we do eager loading and
+        // this payment may not actually have the updated order
+        // associated with it.
+        $order = $payment->reload()->order;
 
         if (isset($order) and ($order->getStatus() === Order\Status::PAID))
         {
