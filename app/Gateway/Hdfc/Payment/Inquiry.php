@@ -26,19 +26,19 @@ trait Inquiry
     protected function verifyPayment($verify)
     {
         // gateway entity in db
-        $payment = $verify->payment;
+        // NOTE: This is an entity and not an array.
+        $gatewayPayment = $verify->payment;
 
         // Gateway response from verify_payment
         $content = $verify->verifyResponseContent;
-
-        $error = $verify->verifyResponse['error'];
 
         // payment entity in db
         $input = $verify->input;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($this->wasEnrollSuccessful($payment) === false)
+        // TODO: Figure out what or why this is being done.
+        if ($this->wasEnrollSuccessful($gatewayPayment) === false)
         {
             $verify->match = true;
 
@@ -75,15 +75,28 @@ trait Inquiry
             //   cases as we discover them.
             //
 
-            if ((in_array($payment['status'], $successStatusArray)) and
+            if ((in_array($gatewayPayment['status'], $successStatusArray) === true) and
                 ($input['payment']['status'] !== 'failed') and
                 ($input['payment']['status'] !== 'created'))
             {
                 $verify->apiSuccess = true;
             }
-            else if ((in_array($payment['status'], $successStatusArray) === false) and
-                     ($input['payment']['status'] === 'authorized'))
+            // api's payment entity could be in either authorized or captured state
+            // and gateway's payment entity status is in failed state. This is an issue
+            // and should ideally never happen.
+            else if ((in_array($gatewayPayment['status'], $successStatusArray) === false) and
+                     ($input['payment']['status'] !== 'failed') and
+                     ($input['payment']['status'] !== 'created'))
             {
+                $this->trace->critical(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'api_payment_status'      => $input['payment']['status'],
+                        'gateway_verify_response' => $content['result'],
+                        'payment_id'              => $input['payment']['id'],
+                        'gateway_payment_status'  => $gatewayPayment['status'],
+                    ]);
+
                 $verify->apiSuccess = true;
                 $this->fillPaymentStatusAndContent($verify);
             }
@@ -97,7 +110,10 @@ trait Inquiry
         {
             $verify->gatewaySuccess = false;
 
-            if (in_array($payment['status'], $successStatusArray))
+            // If payment is marked as success in api but gateway's verify response
+            // returned false. This is an issue and should ideally never happen.
+            if (($input['payment']['status'] !== 'failed') and
+                ($input['payment']['status'] !== 'created'))
             {
                 $verify->apiSuccess = true;
                 $verify->status = VerifyResult::STATUS_MISMATCH;
@@ -110,20 +126,20 @@ trait Inquiry
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $received = $payment->getReceived();
+        $received = $gatewayPayment->getReceived();
 
         // If result is set then it means we had received back a response.
-        if ($payment->getResult() === null)
+        if ($gatewayPayment->getResult() === null)
         {
             if ($received === null)
             {
-                $payment->setReceived(false);
+                $gatewayPayment->setReceived(false);
             }
 
             $this->fillPaymentStatusAndContent($verify);
         }
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 

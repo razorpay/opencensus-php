@@ -190,8 +190,19 @@ class Verify
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            // Attempt to authorize payments whose verification failed
-            $this->processor($merchant)->authorizeFailedPayment($payment);
+            $verify = $e->getVerifyObject();
+
+            if (($verify->apiSuccess === true) and ($verify->gatewaySuccess === false))
+            {
+                throw new Exception\LogicException(
+                    "Should not have reached here. apiSuccess cannot be true when gatewaySuccess is false.",
+                    $verify->getDataToTrace());
+            }
+            else
+            {
+                // Attempt to authorize payments whose verification failed
+                $this->processor($merchant)->authorizeFailedPayment($payment);
+            }
 
             // Now Just continue
             return self::AUTHORIZED;
