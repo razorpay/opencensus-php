@@ -17,14 +17,14 @@ class MerchantFilter extends Terminal\Filter
 {
     protected $properties = [
         'tpv',
-        'category',
     ];
 
     /**
      * Filter applies for securities merchants
      * Only for the netbanking method.
      * Allow Only Third Party Validation (TPV) terminals for
-     * TPV required merchants.
+     * TPV required merchants, and non TPV terminals for non
+     * TPV merchants.
      *
      * @return bool
      */
@@ -39,40 +39,9 @@ class MerchantFilter extends Terminal\Filter
 
         if ($input['merchant']->isTPVRequired())
         {
-            $terminalCategory = $terminal->getCategory();
-
-            $tpvCategories = $input['merchant']->getTPVCategories();
-
-            return in_array($terminalCategory, $tpvCategories);
+            return ($terminal->isTPVTerminal() === true);
         }
 
-        return true;
+        return ($terminal->isTPVTerminal() === false);
     }
-
-    public function categoryFilter($terminal, $input)
-    {
-        $method = $input['payment']->getMethod();
-
-        if ($method !== Method::NETBANKING)
-        {
-            return true;
-        }
-
-        // Add restriction for 6211, 9999 only as of now.
-        // Will be covered as part of true category selection.
-        $terminalCategory = $terminal->getCategory();
-
-        $restrictedTerminalCategory = [6211, 9999];
-
-        if (in_array($terminalCategory, $restrictedTerminalCategory))
-        {
-            // Check For TPV only
-            return $input['merchant']->isTPVRequired();
-        }
-        else
-        {
-            return true;
-        }
-    }
-
 }
