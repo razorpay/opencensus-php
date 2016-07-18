@@ -169,6 +169,17 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
+    public function getCardForPayment($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getKey());
+
+        $card = $payment->card;
+
+        return $card->toArrayPublic();
+    }
+
     public function retrieveRefundsForPayment($paymentId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);
