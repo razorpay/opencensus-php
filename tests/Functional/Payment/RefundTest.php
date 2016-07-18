@@ -264,6 +264,7 @@ class RefundTest extends TestCase
 
     public function testFetchRefunds()
     {
+        $this->ba->privateAuth();
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
