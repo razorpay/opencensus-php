@@ -74,7 +74,8 @@ class Selector
 
         foreach (self::$filters as $filter)
         {
-            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input);
+            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
+            $this->traceTerminals($filteredTerminals, 'Terminals after '.$filter, $verbose);
         }
 
         // Trace available terminals after filtration
@@ -85,7 +86,8 @@ class Selector
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
+            $this->traceTerminals($sortedTerminals, 'Terminals after '.$sorter, $verbose);
         }
 
         // Trace available terminals after filtration
