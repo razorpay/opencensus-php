@@ -112,6 +112,8 @@ trait Authorize
 
         $this->persistAfterAuthEnrolled($auth);
 
+        $this->isAuthSuccess($auth);
+
         if ($this->error)
         {
             $this->throwException($auth['error']);
