@@ -4,7 +4,7 @@ namespace RZP\Tests;
 
 use Mockery;
 use ReflectionObject;
-
+use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
 /**
  * Base test case class provided bdy laravel all, test cases inherit it
  * ALl test cases follow, GIVEN, WHEN, THEN structure
@@ -12,8 +12,11 @@ use ReflectionObject;
 
 use Laracasts\TestDummy\Factory;
 
-class TestCase extends \TestCase
+class TestCase extends IlluminateTestCase
 {
+    // Not present in the illuminate test case
+    protected $baseUrl = '';
+
     protected $testDataFilePath;
 
     protected $testData = array();
