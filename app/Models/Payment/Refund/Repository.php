@@ -43,11 +43,11 @@ class Repository extends Base\Repository
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPayment($paymentId)
+    public function findForPayment($payment, $merchant)
     {
-        $repo = $this->repo;
-
-        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
+                    ->merchantId($merchant->getId())
                     ->get();
     }
 
