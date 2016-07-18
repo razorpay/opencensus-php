@@ -183,10 +183,10 @@ trait Authorize
             $verbose = false;
 
             // Add extra logs conditionally
-            if ($this->isMoreLoggingRequired($terminalPicked))
-            {
-                $verbose = true;
-            }
+            // if ($this->isMoreLoggingRequired($terminalPicked))
+            // {
+            //     $verbose = true;
+            // }
 
             // Terminal selected is now only used to validate any mistakes across each.
             $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
