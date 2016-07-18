@@ -180,7 +180,7 @@ class Service extends Base\Service
         return $card->toArrayPublic();
     }
 
-    public function retrieveRefundsForPayment($paymentId)
+    public function retrieveRefundsForPayment($id)
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
