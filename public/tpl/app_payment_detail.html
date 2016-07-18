@@ -43,6 +43,19 @@
             <span class="pull-right">{{entity.wallet}}</span>
             Wallet
           </a>
+          <a href class="list-group-item" ng-init="isCollapsed = false">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.card.length != 0">Show/Hide</button>
+              <span ng-hide="entity.card.length != 0">No Card detail</span>
+            </span>
+            Card
+          </a>
+          <div collapse="isCollapsed" class="panel-body">
+            <a href class="list-group-item" ng-repeat="(label,key) in entity.card">
+              <span class="pull-right">{{key}}</span>
+              {{label}}
+            </a>
+          </div>
           <a href class="list-group-item">
             <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
             <span class="pull-right" ng-hide="entity.refund_status">None</span>
