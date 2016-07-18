@@ -31,6 +31,7 @@ Route::group(array('before' => 'auth.user'), function()
     Route::get('/{mode}/orders/{id}/payments', 'TransactionController@getOrderPayments');
 
     Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
+    Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData');
     Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds');
 
     Route::get('/{mode}/refunds', 'TransactionController@getRefunds');
