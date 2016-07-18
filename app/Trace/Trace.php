@@ -81,8 +81,8 @@ class Trace extends TraceWriter
         return $context;
     }
 
-    public function traceException(\Exception $exception)
+    public function traceException(\Exception $exception, $level = null, $code = null)
     {
-        $this->app['exception.handler']->traceException($exception);
+        $this->app['exception.handler']->traceException($exception, $level, $code);
     }
 }
