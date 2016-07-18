@@ -32,7 +32,7 @@ class Mailgun
         $this->sendMessage($mailData);
     }
 
-    protected function getMailgunInstance()
+    public function getMailgunInstance()
     {
         if ($this->mgClient !== null)
         {
