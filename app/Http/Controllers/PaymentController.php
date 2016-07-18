@@ -127,6 +127,13 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getCardForPayment($id)
+    {
+        $card = $this->payment->getCardForPayment($id);
+
+        return ApiResponse::json($card);
+    }
+
     public function getRefundsForPayment($paymentId)
     {
         $refunds = $this->payment->retrieveRefundsForPayment($paymentId);

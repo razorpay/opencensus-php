@@ -6,6 +6,24 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testFetchCardDetails' => [
+       'request' => [
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'         => 'Harshil',
+                'expiry_month' => 12,
+                'expiry_year'  => 2017,
+                'network'      => 'Visa',
+                'last4'        => '3335',
+                'emi'          => true,
+            ],
+        ],
+    ],
+
     'testUnsupportedCardNetworks' => [
         'request' => [
             'content' => [

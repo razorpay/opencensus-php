@@ -98,6 +98,8 @@ class Verify
 
         $payments = $this->paymentRepo->getUnverifiedPayments($ts);
 
+        $payments->shuffle();
+
         return $this->verifyMultiplePayments($payments, 'all');
     }
 

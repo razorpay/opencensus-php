@@ -198,7 +198,7 @@ trait Authorize
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
-        $this->runPaymentGatewayRelatedPreProcessing($payment, $input);
+        $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
 
@@ -565,13 +565,13 @@ trait Authorize
         $payment->setEmiPlanId($emiPlan->getId());
     }
 
-    protected function runPaymentGatewayRelatedPreProcessing($payment, $input)
+    protected function runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput)
     {
         if (($payment->isMethodCardOrEmi() === true) and
             ($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and
             ($payment->card->getVaultToken() === null))
         {
-            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($input['card']['number']));
+            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($gatewayInput['card']['number']));
 
             $payment->card->setVault(Card\Vault::TOKENEX);
 
