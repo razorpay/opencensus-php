@@ -109,11 +109,27 @@ trait Inquiry
         {
             $verify->gatewaySuccess = false;
 
-            // If payment is marked as success in api but gateway's verify response
+            // If payment is marked as success in api or in gateway entity, but gateway's verify response
             // returned false. This is an issue and should ideally never happen.
-            if (($input['payment']['status'] !== 'failed') and
-                ($input['payment']['status'] !== 'created'))
+            if ((($input['payment']['status'] !== 'failed') and
+                 ($input['payment']['status'] !== 'created')) or
+                (in_array($gatewayPayment['status'], $successStatusArray) === true))
             {
+                // Ideally both api payment entity status and gateway payment entity status should be true,
+                // to reach this block. In case even if one of them is not true, we log it.
+                if ((in_array($gatewayPayment['status'], $successStatusArray) === false) or
+                    (($input['payment']['status'] === 'failed') or ($input['payment']['status'] === 'created')))
+                {
+                    $this->trace->info(
+                        TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                        [
+                            'api_payment_status'      => $input['payment']['status'],
+                            'gateway_verify_response' => $content['result'],
+                            'payment_id'              => $input['payment']['id'],
+                            'gateway_payment_status'  => $gatewayPayment['status'],
+                        ]);
+                }
+
                 $verify->apiSuccess = true;
                 $verify->status = VerifyResult::STATUS_MISMATCH;
             }
