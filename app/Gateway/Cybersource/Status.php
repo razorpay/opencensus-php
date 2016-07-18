@@ -1,0 +1,21 @@
+<?php
+
+namespace RZP\Gateway\Cybersource;
+
+class Status
+{
+    /*
+     * The status here occurs as following:
+     *
+     * After sending card enroll request, we get either failure
+     * (with different 'result' var), ENROLLED or NOT_ENROLLED.
+     * So, store either ENROLLED or NOT_ENROLLED or ENROLL_FAILED
+     */
+
+    const AUTHORIZED                = 'authorized';
+    const AUTHORIZE_FAILED          = 'authorize_failed';
+    const CAPTURED                  = 'captured';
+    const CAPTURE_FAILED            = 'capture_failed';
+    const CREATED                   = 'created';
+    const REFUNDED                  = 'refunded';
+}

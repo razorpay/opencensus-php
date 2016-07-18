@@ -3,7 +3,15 @@ os: linux
 
 hooks:
   BeforeInstall:
-    - location: scripts/validate_env.php
+    # - location: scripts/validate_env.php
     - location: scripts/install.sh
+      timeout: 300
+      runas: ubuntu
+  ApplicationStop:
+    - location: scripts/deregister_from_elb.sh
+      timeout: 300
+      runas: ubuntu
+  ApplicationStart:
+    - location: scripts/register_with_elb.sh
       timeout: 300
       runas: ubuntu
