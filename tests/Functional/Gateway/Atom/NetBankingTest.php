@@ -82,7 +82,7 @@ class NetbankingTest extends TestCase
         //
         // Just after a payment, on verification atom sends false response
         // irrespective of the result.
-        // Their doc states that we can only verify after 15 mins, whic is kinda weird.
+        // Their doc states that we can only verify after 15 mins, which is kinda weird.
         // So, for testing purposes, we need to keep the mock as true.
         //
         $this->setMockGatewayTrue();
