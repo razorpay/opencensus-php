@@ -18,6 +18,19 @@ class CardTest extends TestCase
         $this->ba->publicAuth();
     }
 
+    public function testFetchCardDetails()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'. $payment['id']. '/card';
+
+        $this->ba->proxyAuth();
+
+        $card = $this->startTest();
+    }
+
     public function testUnsupportedCardNetworks()
     {
         $numbers = array(

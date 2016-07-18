@@ -39,6 +39,7 @@ final class Route
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                   'PaymentController@postPaymentMetadata'                             ],
         'payment_fetch_by_id'                     => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                  => ['get',      'payments',                                 'PaymentController@getPayments'                                     ],
+        'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                       'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'                   ],
         'payment_auth_notify'                     => ['get',      'payments/auth/notify',                     'PaymentController@getAuthNotify',                                  ],
@@ -409,6 +410,7 @@ final class Route
     );
 
     public static $proxy = array(
+        'payment_fetch_card_details',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
