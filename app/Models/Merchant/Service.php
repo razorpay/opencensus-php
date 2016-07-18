@@ -592,7 +592,7 @@ class Service extends Base\Service
             $message = "Merchant Beneficiary file generated. Merchants activated since last".
                     " report is ".$merchantsActivatedSinceLastReport;
 
-            $this->slackPost($message,[],['channel' => '#settlements']);
+            $this->slack->queue($message,[],['channel' => '#settlements']);
         }
 
         //Log response in trace

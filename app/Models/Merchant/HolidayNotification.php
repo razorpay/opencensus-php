@@ -4,14 +4,11 @@ namespace RZP\Models\Merchant;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Services\SlackPoster;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
 
 class HolidayNotification
 {
-    use SlackPoster;
-
     // Action to send test email to one email id
     const TEST_EMAIL  = 'test_email';
 
@@ -24,6 +21,8 @@ class HolidayNotification
     public function __construct()
     {
         $app = \App::getFacadeRoot();
+
+        $this->app = $app;
 
         $this->mode = $app['rzp.mode'];
     }
@@ -129,7 +128,7 @@ class HolidayNotification
 
         $slackSettings = ['channel' => '#settlements'];
 
-        $this->slackPost($slackMsg, $slackData, $slackSettings);
+        $this->app['slack']->queue($slackMsg, $slackData, $slackSettings);
     }
 
     protected function getHolidayNotificationMsg($input)

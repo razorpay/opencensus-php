@@ -2,13 +2,10 @@
 
 namespace RZP\Models\Settlement;
 
-use RZP\Services\SlackPoster;
 use Queue;
 
 class SlackNotification
 {
-    use SlackPoster;
-
     protected $operations = array(
         'mpr_generation',
         'mpr_reconciliation',
@@ -48,10 +45,11 @@ class SlackNotification
     {
         $message = $data['message'];
         $color   = $data['status'];
+        $app = \App::getFacadeRoot();
 
         unset($data['message'], $data['status']);
 
-        $this->slackPost(
+        $app['slack']->queue(
             $message,
             $data,
             [

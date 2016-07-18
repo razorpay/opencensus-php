@@ -3,12 +3,9 @@
 namespace RZP\Models\Base;
 
 use App;
-use RZP\Services\SlackPoster;
 
 class Service
 {
-    use SlackPoster;
-
     /**
      * The application instance.
      *
@@ -43,6 +40,12 @@ class Service
      */
     protected $trace;
 
+    /**
+     * Slack Client instance
+     * @var Maknz\Slack\Facades\Slack
+     */
+    protected $slack;
+
 	public function __construct()
 	{
 		$this->app = App::getFacadeRoot();
@@ -54,6 +57,8 @@ class Service
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->slack = $this->app['slack'];
 	}
 
     public static function getNewInstance()

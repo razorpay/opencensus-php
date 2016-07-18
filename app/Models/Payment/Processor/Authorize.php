@@ -257,7 +257,7 @@ trait Authorize
         {
             $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
 
-            // $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
+            // $this->app['slack']->queue($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
 
             $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
         }
@@ -755,7 +755,7 @@ trait Authorize
 
         $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
 
-        $this->slackPost($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
+        $this->app['slack']->queue($message, $slackData, ['color' => 'good', 'channel' => '#tech_logs']);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,

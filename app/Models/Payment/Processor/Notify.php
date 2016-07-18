@@ -8,12 +8,9 @@ use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Services\SlackPoster;
 
 class Notify
 {
-    use SlackPoster;
-
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
@@ -249,7 +246,7 @@ class Notify
                 'color'     => $this->getSlackPostColor(),
             ];
 
-            $this->slackPost($slackMessages[$event], $slackData, $settings);
+            $this->app['slack']->queue($slackMessages[$event], $slackData, $settings);
         }
     }
 
