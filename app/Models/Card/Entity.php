@@ -100,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::LAST4,
         self::NETWORK,
         self::INTERNATIONAL,
+        self::EMI,
     );
 
     protected $appends = array(
@@ -372,7 +373,6 @@ class Entity extends Base\PublicEntity
         $attributes = array(
             self::EXPIRY_MONTH      => $this->getAttribute(self::EXPIRY_MONTH),
             self::EXPIRY_YEAR       => $this->getAttribute(self::EXPIRY_YEAR),
-            self::EMI               => $emi,
         );
 
         if ($emi === true)

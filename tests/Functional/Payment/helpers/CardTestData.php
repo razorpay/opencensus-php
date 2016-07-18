@@ -18,6 +18,7 @@ return [
                 'network'       => 'Visa',
                 'last4'         => '3335',
                 'international' => false,
+                'emi'           => true,
             ],
         ],
     ],
