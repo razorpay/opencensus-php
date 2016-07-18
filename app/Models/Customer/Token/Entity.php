@@ -153,7 +153,7 @@ class Entity extends Base\PublicEntity
     {
         if ($this->card !== null)
         {
-            $array[self::CARD] = $this->card->toArrayPublic();
+            $array[self::CARD] = $this->card->toArrayToken();
         }
     }
 
