@@ -114,15 +114,13 @@ class EmiFile extends Base\EmiFile
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
         {
-            $emails = ['vaidehi.malik@axisbank.com', 'apurva.parab@axisbank.mail.onmicrosoft.com', 'creditcard.financial@axisbank.com'];
-            $cc_emails = ['cards.portfolio@axisbank.com', 'trupti.waingankar@axisbank.com', 'prashant.malvankar@axisbank.com', 'settlementsinfo@razorpay.com'];
+            $emails = ['axiscards.emi@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Axis Emi File Password');
 
             $message->subject('Axis Emi File Password for ' . $today);
 
             $message->to($emails);
-            $message->cc($cc_emails);
         });
     }
 }

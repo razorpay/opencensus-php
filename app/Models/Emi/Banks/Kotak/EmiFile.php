@@ -138,15 +138,13 @@ class EmiFile extends Base\EmiFile
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
         {
-            $emails = ['cc.loans@kotak.com'];
-            $cc_emails = ['libu.john@kotak.com', 'settlementsinfo@razorpay.com'];
+            $emails = ['kotakcards.emi@razorpay.com'];
 
             $message->from('emifiles@razorpay.com', 'Kotak Emi File Password');
 
             $message->subject('Kotak Emi File Password for ' . $today);
 
             $message->to($emails);
-            $message->cc($cc_emails);
         });
     }
 }

@@ -15,6 +15,8 @@ trait FileHandlerTrait
 
     protected $excel = null;
 
+    private $_zipCommand = "zip --junk-paths --move";
+
     public function writeToTextFile($txt)
     {
         $name = $this->getFileToWriteName();
@@ -366,14 +368,14 @@ trait FileHandlerTrait
 
     private function addFileToZip($filePath, $zipPath, $password)
     {
-        $zipCommand = "zip -j -m";
+        $zipCommand = $this->_zipCommand;
 
         if (isset($password))
         {
-            $zipCommand .= " -P " . $password;
+            $zipCommand .= " --password " . $password;
         }
 
-        system($zipCommand . " " . $zipPath . " " . $filePath);
+        exec($zipCommand . " " . escapeshellarg($zipPath) . " " . escapeshellarg($filePath));
     }
 
     protected function getFileToWriteNameWithoutExt()
