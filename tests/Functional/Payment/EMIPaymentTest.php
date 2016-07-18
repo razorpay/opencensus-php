@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use File;
 use Carbon\Carbon;
+use ZipArchive;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -105,6 +106,9 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
         $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
 
+        $this->testPasswordProtectedZip($this->zipFileName($content['KKBK']));
+        $this->testPasswordProtectedZip($this->zipFileName($content['UTIB']));
+
         $this->fixtures->merchant->disableEmi();
     }
 
@@ -112,6 +116,23 @@ class EmiPaymentTest extends TestCase
     {
         $pathinfo = pathinfo($filePath);
         return $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.zip';
+    }
+
+    private function testPasswordProtectedZip($filePath)
+    {
+        $zip = new ZipArchive();
+        $zip->open($filePath);
+
+        $pathinfo = pathinfo($filePath);
+
+        // Extraction fails, unset password
+        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        unlink($pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx');
+
+        $zip->setPassword('incorrect_password');
+        // Extraction fails, incorrect password
+        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        unlink($pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx');
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)
