@@ -6,6 +6,7 @@ use RZP\Http\ApiResponse;
 use RZP\Exception\RecoverableException;
 use RZP\Models\Admin;
 use Request;
+use Redirect;
 
 class AdminController extends Controller
 {

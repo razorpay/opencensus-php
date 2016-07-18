@@ -6,6 +6,7 @@ use Requests;
 use RZP\Trace\TraceCode;
 use Mail;
 use RZP\Models\Merchant;
+use App;
 
 class Inferno
 {
@@ -18,6 +19,8 @@ class Inferno
     protected $mode;
 
     protected $errorMessage;
+    
+    protected $event;
 
     const HASH_ALGO = 'sha256';
 
@@ -41,7 +44,7 @@ class Inferno
 
     public function __construct()
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $this->trace = $app['trace'];
 
@@ -59,9 +62,7 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
-
-        $repo = $this->repo;
-
+        
         $webhook = $this->getWebhook($data);
 
         if ($webhook->isActive() === false)

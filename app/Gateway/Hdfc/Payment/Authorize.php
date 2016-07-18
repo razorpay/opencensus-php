@@ -19,7 +19,9 @@ trait Authorize
      * 3.   In case of card not enrolled, this funciton next calls
      *      for submission of request for auth.
      *
-     * @return void
+     * @param $enrollStatus
+     * @return mixed
+     * @throws Exception\LogicException
      */
     protected function decideAuthStepAfterEnroll($enrollStatus)
     {
@@ -53,13 +55,6 @@ trait Authorize
      */
     protected function getFieldsForFormSubmitToBankACS()
     {
-        $enrollResponse = $this->enrollResponse;
-
-        $fields = array(
-            'paymentid',
-            'PAReq',
-            'url');
-
         $content['TermUrl'] = $this->callbackUrl;
         $content['MD'] = $this->enrollResponse['data']['paymentid'];
         $content['PaReq'] = $this->enrollResponse['data']['PAReq'];
@@ -73,13 +68,7 @@ trait Authorize
 
     protected function getFieldsForFormSubmitForRupay()
     {
-        $enrollResponse = $this->enrollResponse;
-
-        $fields = array(
-            'PaymentID');
-
         $content['PaymentID'] = $this->enrollResponse['data']['paymentid'];
-//        $content['TermUrl'] = $this->callbackUrl;
 
         $request['content'] = $content;
         $request['url'] = $this->enrollResponse['data']['url'];
@@ -110,25 +99,20 @@ trait Authorize
             TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST,
             $this->authEnrolledRequest);
 
-        $data = &$this->authEnrolledRequest['data'];
-
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
 
-        return $this->verifyAuthResponse($input, $this->authEnrolledResponse);
+        $this->verifyAuthResponse($this->authEnrolledResponse);
     }
 
-    protected function verifyAuthResponse($input, $auth)
+    protected function verifyAuthResponse($auth)
     {
-        if ($this->isAuthSuccess($auth) === true)
-        {
-            ; //$this->validateAuthEnrolledResponse($this->authEnrolledResponse);
-        }
-
         $this->traceAuthEnrolledResponse($auth);
 
         $this->persistAfterAuthEnrolled($auth);
+
+        $this->isAuthSuccess($auth);
 
         if ($this->error)
         {

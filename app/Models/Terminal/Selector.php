@@ -4,8 +4,11 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
+
+use RZP\Trace;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class Selector
 {
@@ -30,6 +33,8 @@ class Selector
 
         $this->repo = $app['repo']->terminal;
 
+        $this->trace = $app['trace'];
+
         $this->merchant = $payment->merchant;
 
         $this->input = [
@@ -53,11 +58,14 @@ class Selector
         return $merchantTerminals;
     }
 
-    public function select($payment, $mode)
+    public function select($payment, $mode, $verbose = false)
     {
         $this->setup($payment, $mode);
 
         $terminals = $this->getTerminals();
+
+        // Trace available terminals before selection
+        $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
 
         // Terminals first filtered
         // Terminals that result in failure due to gateway are recorded and
@@ -66,16 +74,24 @@ class Selector
 
         foreach (self::$filters as $filter)
         {
-            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input);
+            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
+            $this->traceTerminals($filteredTerminals, 'Terminals after '.$filter, $verbose);
         }
+
+        // Trace available terminals after filtration
+        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
 
         // Terminals next sorted
         $sortedTerminals = $filteredTerminals;
 
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
+            $this->traceTerminals($sortedTerminals, 'Terminals after '.$sorter, $verbose);
         }
+
+        // Trace available terminals after filtration
+        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
         if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
         {
@@ -105,5 +121,23 @@ class Selector
         $payment->terminal()->associate($terminal);
 
         $payment->setGateway($terminal->getGateway());
+    }
+
+    protected function traceTerminals($terminals, $msg, $verbose = false)
+    {
+        if (($verbose) and
+            ($terminals))
+        {
+            $terminalIds = [];
+
+            foreach ($terminals as $terminal)
+            {
+                $terminalIds[] = $terminal->getId();
+            }
+
+            $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
+
+            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
+        }
     }
 }

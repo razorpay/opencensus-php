@@ -15,8 +15,8 @@ trait Capture
     /**
      * Captures a previous auth payment
      *
-     * @param  string  $id      Id of payment to be captured
-     * @param  integer $amount  Amount to capture
+     * @param  string  $id  Id of payment to be captured
+     * @param  array $input
      *
      * @return Payment\Entity   Payment\Entity object
      */
@@ -96,23 +96,41 @@ trait Capture
         return $payment;
     }
 
+    /**
+     * If gateway call for capture times out, we catch the exception thrown
+     * and push it into a queue. We continue with the normal flow afterwards.
+     *
+     * @param $data
+     * @throws Exception\BaseException
+     */
     protected function captureOnGateway($data)
     {
         try
         {
-            $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+            try
+            {
+                $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+            }
+            catch (Exception\GatewayTimeoutException $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $data['mode'] = $this->mode;
+
+                $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
+            }
 
             $this->verifyOrderUnpaid($this->payment);
 
             $this->recordCapture();
         }
-        catch (BaseException $e)
+        catch (Exception\BaseException $ex)
         {
             $this->updatePaymentFailed(
-                    $e->getError(),
+                    $ex->getError(),
                     TraceCode::PAYMENT_CAPTURE_FAILURE);
 
-            throw $e;
+            throw $ex;
         }
     }
 

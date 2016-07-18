@@ -31,11 +31,11 @@ class TransactionFilter extends Terminal\Filter
         switch ($method)
         {
             case Method::CARD:
-                return (($terminal->card) and ($terminal->emi === 0)) ;
+                return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false)) ;
                 break;
 
             case Method::NETBANKING:
-                return $terminal->netbanking;
+                return $terminal->isNetbankingEnabled();
                 break;
 
             // Check - Needs more work with respect to emi terminals of other banks
@@ -50,11 +50,11 @@ class TransactionFilter extends Terminal\Filter
                 if (in_array($bank, $cardTerminalBanks))
                 {
                     // for Kotak, process as normal card transaction and mail for emi
-                    return $terminal->card;
+                    return $terminal->isCardEnabled();
                 }
                 else
                 {
-                    return ($terminal->emi === 1);
+                    return $terminal->isEmiEnabled();
                 }
                 break;
 

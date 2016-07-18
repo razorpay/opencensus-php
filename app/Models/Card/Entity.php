@@ -96,6 +96,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::NAME,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
         self::LAST4,

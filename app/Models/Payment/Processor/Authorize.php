@@ -175,22 +175,30 @@ trait Authorize
 
         $terminalSelected = null;
 
-        try
-        {
-            // Terminal selected is now only used to validate any mistakes across each.
-            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e);
-        }
-
         // Terminal picked is the terminal used for payment processing.
         $terminalPicked = (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
+        try
+        {
+            $verbose = false;
+
+            // Add extra logs conditionally
+            if ($this->isMoreLoggingRequired($terminalPicked))
+            {
+                $verbose = true;
+            }
+
+            // Terminal selected is now only used to validate any mistakes across each.
+            $terminalSelected = (new Terminal\Selector)->select($payment, $this->mode, $verbose);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
+        }
+
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
 
-        $this->runPaymentGatewayRelatedPreProcessing($payment, $input);
+        $this->runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
 
@@ -209,6 +217,13 @@ trait Authorize
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
+    }
+
+    protected function isMoreLoggingRequired($terminal)
+    {
+        $verboseLoggingTerminalIds = ['1000HdfcShared'];
+
+        return in_array($terminal->getId(), $verboseLoggingTerminalIds);
     }
 
     protected function logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment)
@@ -242,7 +257,7 @@ trait Authorize
         {
             $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
 
-            $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
+            // $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
 
             $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
         }
@@ -550,13 +565,13 @@ trait Authorize
         $payment->setEmiPlanId($emiPlan->getId());
     }
 
-    protected function runPaymentGatewayRelatedPreProcessing($payment, $input)
+    protected function runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput)
     {
         if (($payment->isMethodCardOrEmi() === true) and
             ($payment->isGateway(Payment\Gateway::CYBERSOURCE) === true) and
             ($payment->card->getVaultToken() === null))
         {
-            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($input['card']['number']));
+            $payment->card->setVaultToken(Card\Tokenex::getVaultToken($gatewayInput['card']['number']));
 
             $payment->card->setVault(Card\Vault::TOKENEX);
 
