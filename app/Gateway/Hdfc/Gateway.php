@@ -397,7 +397,7 @@ class Gateway extends Base\Gateway
 
     public function deleteMprFileIfExists()
     {
-        return (new Hdfc\Mpr\Generator)->deleteMprFileIfExists();
+        (new Hdfc\Mpr\Generator)->deleteMprFileIfExists();
     }
 
 // ----------------------Gateway operations end --------------------------------

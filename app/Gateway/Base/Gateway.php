@@ -311,6 +311,8 @@ class Gateway
 
     protected function runPaymentVerifyFlow($verify)
     {
+        // This payment is the gateway entity payment.
+        // Also sets this gateway payment in the verify object's payment.
         $payment = $this->getPaymentToVerify($verify->input, $verify);
 
         if (($payment === null) and

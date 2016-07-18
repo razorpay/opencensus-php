@@ -4,18 +4,25 @@ namespace RZP\Exception;
 
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Verify;
 
 class PaymentVerificationException extends RecoverableException
 {
     /**
      * The verify object containing all data
-     * @var RZP\Gateway\Base\Verify
+     * @var Verify
      */
     protected $verify = null;
 
+    /**
+     * PaymentVerificationException constructor.
+     * @param string $data This is the verify response received from verify object's getDataToTrace()
+     * @param Verify $verify
+     * @param \Exception|null $previous
+     */
     public function __construct(
-        $data = [],
-        $verify = null,
+        $data,
+        $verify,
         \Exception $previous = null)
     {
         $code = ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED;
