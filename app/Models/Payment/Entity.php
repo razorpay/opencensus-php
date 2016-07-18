@@ -191,7 +191,8 @@ class Entity extends Base\PublicEntity
         self::FEE               => null,
         self::SERVICE_TAX       => null,
         self::OTP_ATTEMPTS      => null,
-        self::OTP_COUNT         => null
+        self::OTP_COUNT         => null,
+        self::EMI_PLAN_ID       => null,
     );
 
     protected $amounts = array(
@@ -582,7 +583,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
-    
+
     public function hasBeenAuthorized()
     {
         return ($this->getAttribute(self::AUTHORIZED_AT) !== null);
@@ -1018,6 +1019,11 @@ class Entity extends Base\PublicEntity
     public function app()
     {
         return $this->belongsTo('RZP\Models\Customer\App\Entity', self::APP_TOKEN);
+    }
+
+    public function emiPlan()
+    {
+        return $this->belongsTo('RZP\Models\Emi\Entity');
     }
 
 // --------------- Relation to other entity section ends -----------------------

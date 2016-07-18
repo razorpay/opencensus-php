@@ -182,10 +182,7 @@ class TransactionFilter extends Terminal\Filter
 
                 $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
 
-                // Extra DB Query getting added here - needs to be moved to cache
-                $emiPlan = (new Repository)->findOrFail($emiPlanId);
-
-                $emiDuration = $emiPlan->getDuration();
+                $emiDuration = $input['payment']->emiPlan->getDuration();
 
                 $terminalGateway = $terminal->getGateway();
 
