@@ -108,11 +108,11 @@ trait Authorize
 
     protected function verifyAuthResponse($auth)
     {
+        $this->isAuthSuccess($auth);
+
         $this->traceAuthEnrolledResponse($auth);
 
         $this->persistAfterAuthEnrolled($auth);
-
-        $this->isAuthSuccess($auth);
 
         if ($this->error)
         {

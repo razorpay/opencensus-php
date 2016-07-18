@@ -124,7 +124,7 @@ trait Inquiry
                         TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
                         [
                             'api_payment_status'      => $input['payment']['status'],
-                            'gateway_verify_response' => $content['result'],
+                            'gateway_verify_response' => $content,
                             'payment_id'              => $input['payment']['id'],
                             'gateway_payment_status'  => $gatewayPayment['status'],
                         ]);
