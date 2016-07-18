@@ -109,6 +109,9 @@ trait PaymentHdfcTrait
                             throw new \Requests_Exception(
                                 'cURL error 28: Operation timed out after ' .
                                 '10001 milliseconds with 0 bytes received', 'curlerror');
+                        }, function (& $content)
+                        {
+                            return $content;
                         })->mock();
 
         $this->setMockServer($server);

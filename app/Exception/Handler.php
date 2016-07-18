@@ -3,10 +3,10 @@
 namespace RZP\Exception;
 
 use App;
-use Trace;
 use Response;
 use Exception;
 use RZP\Http\ApiResponse;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
@@ -88,20 +88,26 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    public function traceException(Exception $exception)
+    public function traceException(Exception $exception, $level = null, $code = null)
     {
         $traceData = $this->getExceptionDetails($exception);
 
-        if ($exception instanceof RecoverableException)
+        if (($level === null) and
+            ($code === null))
         {
-            $this->trace->info(TraceCode::RECOVERABLE_EXCEPTION, $traceData);
+            if ($exception instanceof RecoverableException)
+            {
+                $level = Trace::INFO;
+                $code = TraceCode::RECOVERABLE_EXCEPTION;
+            }
+            else
+            {
+                $level = Trace::ERROR;
+                $code = TraceCode::ERROR_EXCEPTION;
+            }
         }
-        else
-        {
-            $this->trace->critical(
-               TraceCode::ERROR_EXCEPTION,
-               $traceData);
-        }
+
+        $this->trace->addRecord($level, $code, $traceData);
     }
 
     protected function genericExceptionHandler(Exception $exception)

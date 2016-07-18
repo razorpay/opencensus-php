@@ -56,7 +56,7 @@ class MigrateNotesToEs extends Command
         assert(!empty($this->entityType));
 
         // TODO: Change to setSlaveDb later
-        Database\DefaultConnection::set($this->databaseMode);
+        \Database\DefaultConnection::set($this->databaseMode);
         $this->setUpEs();
 
         $this->migrateNotes();

@@ -193,7 +193,7 @@ trait Authorize
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::INFO, TraceCode::TERMINAL_SELECTION_MISMATCH);
         }
 
         $this->logTerminalPickedAndSelected($terminalSelected, $terminalPicked, $payment);
@@ -257,7 +257,7 @@ trait Authorize
         {
             $traceData['payment_id_link'] = $payment->getDashboardEntityLinkForSlack();
 
-            $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
+            // $this->slackPost($terminalSelectionStatus, $traceData, ['channel' => '#dev-test']);
 
             $this->trace->warn(TraceCode::TERMINAL_SELECTION_MISMATCH, $traceData);
         }
