@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 
 use RZP\Trace;
 use RZP\Exception;
@@ -93,11 +94,13 @@ class Selector
         // Trace available terminals after filtration
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
+        $terminal = null;
+
         if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
         {
             $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
         }
-        else
+        else if (isset($sortedTerminals[0]))
         {
             $terminal = $sortedTerminals[0];
         }
@@ -154,11 +157,11 @@ class Selector
     {
         if (($terminal === null) and
             ($this->input['mode'] === Mode::LIVE) and
-            ($this->input['method'] === Method::CARD))
+            ($this->input['payment']->getMethod() === Payment\Method::CARD))
         {
             $network = $this->input['payment']->card->getNetworkCode();
             // Check for partially supported networks on live
-            $networks = Gateway::$partiallySupportedCardNetworks;
+            $networks = Payment\Gateway::$partiallySupportedCardNetworks;
 
             if (in_array($network, $networks))
             {

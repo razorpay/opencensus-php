@@ -170,12 +170,6 @@ class TransactionFilter extends Terminal\Filter
                 // the payment duration and the payment bank corresponding gateway
                 $bank = $input['payment']->getBank();
 
-                $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
-
-                $emiDuration = $input['payment']->emiPlan->getDuration();
-
-                $terminalGateway = $terminal->getGateway();
-
                 $cardTerminalBanks = array(
                     IFSC::KKBK,
                     IFSC::UTIB,
@@ -187,6 +181,12 @@ class TransactionFilter extends Terminal\Filter
                 }
                 else
                 {
+                    $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
+
+                    $emiDuration = $input['payment']->emiPlan->getDuration();
+
+                    $terminalGateway = $terminal->getGateway();
+
                     // The HDFC case currently where the payment has
                     // to be routed through the corresponding duration
                     // terminal and the corresponding
