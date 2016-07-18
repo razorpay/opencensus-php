@@ -562,7 +562,7 @@ trait Authorize
         $emiPlan = (new Emi\Repository)->fetchByBankAndDuration(
                         $iinEntity->getIssuer(), $emiDuration);
 
-        $payment->setEmiPlanId($emiPlan->getId());
+        $payment->emiPlan()->associate($emiPlan);
     }
 
     protected function runPaymentGatewayRelatedPreProcessing($payment, $gatewayInput)

@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 
 use RZP\Trace;
 use RZP\Exception;
@@ -93,14 +94,18 @@ class Selector
         // Trace available terminals after filtration
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
 
+        $terminal = null;
+
         if ((empty($sortedTerminals)) and ($this->mode === Mode::TEST))
         {
             $terminal = $this->repo->find(Shared::SHARP_RAZORPAY_TERMINAL);
         }
-        else
+        else if (isset($sortedTerminals[0]))
         {
             $terminal = $sortedTerminals[0];
         }
+
+        $this->checkForCustomExceptions($terminal);
 
         // When the terminal selector has to activated.
         // uncomment the following code
@@ -139,5 +144,31 @@ class Selector
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+    /**
+     * Custom exceptions that are to be only thrown if no terminal is available,
+     * in live mode on cards.
+     *
+     * @param terminal $terminal Chosen terminal
+     * @return void throw custom exception
+     */
+    protected function checkForCustomExceptions($terminal)
+    {
+        if (($terminal === null) and
+            ($this->input['mode'] === Mode::LIVE) and
+            ($this->input['payment']->getMethod() === Payment\Method::CARD))
+        {
+            $network = $this->input['payment']->card->getNetworkCode();
+            // Check for partially supported networks on live
+            $networks = Payment\Gateway::$partiallySupportedCardNetworks;
+
+            if (in_array($network, $networks))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+        }
+
     }
 }

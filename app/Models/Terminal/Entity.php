@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -366,5 +367,17 @@ class Entity extends Base\PublicEntity
         $actualValue = $this->getAttribute($attribute);
 
         return ($value === $actualValue);
+    }
+
+    public function isTPVTerminal()
+    {
+        if (is_null($this->getCategory()) === false)
+        {
+            $tpvCategories = (new Merchant\Entity)->getTPVCategories();
+
+            return in_array($this->getCategory(), $tpvCategories);
+        }
+
+        return false;
     }
 }

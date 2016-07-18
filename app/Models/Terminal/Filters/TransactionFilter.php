@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
+use RZP\Models\Emi\Repository;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -20,6 +21,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
+        'emi',
     ];
 
     public function methodFilter($terminal, $input)
@@ -84,16 +86,6 @@ class TransactionFilter extends Terminal\Filter
                 }
                 else
                 {
-                    // Check for partially supported networks on live
-                    $networks = Gateway::$partiallySupportedCardNetworks;
-
-                    if ((in_array($network, $networks)) and
-                        ($input['mode'] === Mode::LIVE))
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-                    }
-
                     return false;
                 }
 
@@ -158,6 +150,49 @@ class TransactionFilter extends Terminal\Filter
                 $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
                 return in_array($terminalGateway, $gateways);
+                break;
+
+            default:
+                break;
+        }
+
+        return true;
+    }
+
+    public function emiFilter($terminal, $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        switch ($method)
+        {
+            case Method::EMI:
+                // For EMI PAYMENTS In a particular case we need to use
+                // the payment duration and the payment bank corresponding gateway
+                $bank = $input['payment']->getBank();
+
+                $cardTerminalBanks = array(
+                    IFSC::KKBK,
+                    IFSC::UTIB,
+                );
+
+                if (in_array($bank, $cardTerminalBanks))
+                {
+                    ; // No other filtration required
+                }
+                else
+                {
+                    $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
+
+                    $emiDuration = $input['payment']->emiPlan->getDuration();
+
+                    $terminalGateway = $terminal->getGateway();
+
+                    // The HDFC case currently where the payment has
+                    // to be routed through the corresponding duration
+                    // terminal and the corresponding
+                    return (($terminalGateway === $emiBankGateway) and
+                            ($emiDuration === $terminal->getEmiDuration()));
+                }
                 break;
 
             default:
