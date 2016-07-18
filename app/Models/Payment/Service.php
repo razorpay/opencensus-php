@@ -171,9 +171,9 @@ class Service extends Base\Service
 
     public function retrieveRefundsForPayment($paymentId)
     {
-        Payment\Entity::verifyIdAndStripSign($paymentId);
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
 
-        $refunds = (new Refund\Repository)->findForPayment($paymentId);
+        $refunds = (new Refund\Repository)->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
