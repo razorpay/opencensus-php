@@ -58,13 +58,13 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
-        // Add restriction for 6211 only as of now.
+        // Add restriction for 6211, 9999 only as of now.
         // Will be covered as part of true category selection.
         $terminalCategory = $terminal->getCategory();
 
-        $restrictedTerminalCategory = 6211;
+        $restrictedTerminalCategory = [6211, 9999];
 
-        if ($terminalCategory === $restrictedTerminalCategory)
+        if (in_array($terminalCategory, $restrictedTerminalCategory))
         {
             // Check For TPV only
             return $input['merchant']->isTPVRequired();
