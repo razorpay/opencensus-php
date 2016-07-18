@@ -88,7 +88,7 @@ trait Inquiry
                      ($input['payment']['status'] !== 'failed') and
                      ($input['payment']['status'] !== 'created'))
             {
-                $this->trace->critical(
+                $this->trace->info(
                     TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
                     [
                         'api_payment_status'      => $input['payment']['status'],
