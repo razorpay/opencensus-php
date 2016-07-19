@@ -233,7 +233,9 @@ class Core extends Base\Core
     {
         // setup session params
         // as device token is public, only app_token is sufficient
-        $this->app['request']->session()->put('app_token', $appToken->getPublicId());
+        $key = $this->mode . '_app_token';
+
+        $this->app['request']->session()->put($key, $appToken->getPublicId());
         // sd($appToken->getPublicId(), $this->app['session']->get('app_token'));
     }
 
