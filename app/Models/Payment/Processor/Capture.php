@@ -24,10 +24,10 @@ trait Capture
     {
         $payment = $this->retrieve($id);
 
-        /*
-            If the fee bearer is customer then please to adjust input amount
-            with the available fee for the payment.
-         */
+        //
+        // If the fee bearer is customer then please to adjust input amount
+        // with the available fee for the payment.
+        //
         if ($this->merchant->isFeeBearerCustomer())
         {
             $input['amount'] = $input['amount'] + $payment->getFee();
@@ -105,6 +105,8 @@ trait Capture
      */
     protected function captureOnGateway($data)
     {
+        $this->verifyOrderUnpaid($this->payment);
+
         try
         {
             try
@@ -119,8 +121,6 @@ trait Capture
 
                 $this->app['queue']->push('RZP\Jobs\Capture', ['data' => $data]);
             }
-
-            $this->verifyOrderUnpaid($this->payment);
 
             $this->recordCapture();
         }
@@ -138,7 +138,13 @@ trait Capture
     {
         $this->repo->transaction(function()
         {
-            $this->paymentRepo->lockForUpdate($this->payment->getKey());
+            $this->lockForUpdateAndReload($this->payment);
+
+            if ($this->payment->hasBeenCaptured() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+            }
 
             $this->updatePaymentCaptured();
 
@@ -194,12 +200,13 @@ trait Capture
 
     protected function verifyOrderUnpaid($payment)
     {
-        $order = $payment->order;
+        $order = $this->repo->order->getOrderForPayment($payment);
 
-        if (isset($order) and ($order->getStatus() === Order\Status::PAID))
+        if ((empty($order) === false) and
+            ($order->getStatus() === Order\Status::PAID))
         {
             throw new Exception\BadRequestValidationFailureException(
-            'Corresponding order already has a captured payment.');
+                'Corresponding order already has a captured payment.');
         }
     }
 
