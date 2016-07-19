@@ -64,6 +64,11 @@ class TraceCode
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
 
+    // Card Saving related
+    const PAYMENT_FILL_SAVED_APP_TOKEN              = 'PAYMENT_FILL_SAVED_APP_TOKEN';
+    const PAYMENT_PROCESS_FROM_SAVED                = 'PAYMENT_PROCESS_FROM_SAVED';
+    const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
+
     /*
      * Gateway component error messages
      */
