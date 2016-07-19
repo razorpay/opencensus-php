@@ -49,6 +49,7 @@ class Entity
     const SHARP             = 'sharp';
     const WALLET            = 'wallet';
     const BILLDESK          = 'billdesk';
+    const EBS               = 'ebs';
     const MOBIKWIK          = 'mobikwik';
     const AXIS_MIGS         = 'axis_migs';
     const AXIS_GENIUS       = 'axis_genius';
@@ -75,6 +76,7 @@ class Entity
         self::PRICING           => \RZP\Models\Pricing::class,
         self::WEBHOOK           => \RZP\Models\Merchant\Webhook::class,
         self::BILLDESK          => \RZP\Gateway\Billdesk::class,
+        self::EBS               => \RZP\Gateway\Ebs::class,
         self::CUSTOMER          => \RZP\Models\Customer::class,
         self::EMI_PLAN          => \RZP\Models\Emi::class,
         self::MOBIKWIK          => \RZP\Gateway\Mobikwik::class,

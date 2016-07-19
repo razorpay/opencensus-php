@@ -16,6 +16,7 @@ return array(
         'axis_migs',
         'billdesk',
         'cybersource',
+        'ebs',
         'hdfc',
         'kotak',
         'mobikwik',
