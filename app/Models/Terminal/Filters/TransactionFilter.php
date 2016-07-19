@@ -21,7 +21,6 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'international',
         'bank',
-        'emi',
     ];
 
     public function methodFilter($terminal, $input)
@@ -38,24 +37,12 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isNetbankingEnabled();
                 break;
 
-            // Check - Needs more work with respect to emi terminals of other banks
             case Method::EMI:
                 $bank = $input['payment']->getBank();
 
-                $cardTerminalBanks = array(
-                    IFSC::KKBK,
-                    IFSC::UTIB,
-                );
+                $emiDuration = $input['payment']->emiPlan->getDuration();
 
-                if (in_array($bank, $cardTerminalBanks))
-                {
-                    // for Kotak, process as normal card transaction and mail for emi
-                    return $terminal->isCardEnabled();
-                }
-                else
-                {
-                    return $terminal->isEmiEnabled();
-                }
+                return $terminal->isValidForEmiDurationAndBank($bank, $emiDuration);
                 break;
 
             // Pick the right terminal only
@@ -150,49 +137,6 @@ class TransactionFilter extends Terminal\Filter
                 $gateways = Gateway::getGatewaysForNetbankingBank($bank);
 
                 return in_array($terminalGateway, $gateways);
-                break;
-
-            default:
-                break;
-        }
-
-        return true;
-    }
-
-    public function emiFilter($terminal, $input)
-    {
-        $method = $input['payment']->getMethod();
-
-        switch ($method)
-        {
-            case Method::EMI:
-                // For EMI PAYMENTS In a particular case we need to use
-                // the payment duration and the payment bank corresponding gateway
-                $bank = $input['payment']->getBank();
-
-                $cardTerminalBanks = array(
-                    IFSC::KKBK,
-                    IFSC::UTIB,
-                );
-
-                if (in_array($bank, $cardTerminalBanks))
-                {
-                    ; // No other filtration required
-                }
-                else
-                {
-                    $emiBankGateway = Gateway::$emiBankToGatewayMap[$bank];
-
-                    $emiDuration = $input['payment']->emiPlan->getDuration();
-
-                    $terminalGateway = $terminal->getGateway();
-
-                    // The HDFC case currently where the payment has
-                    // to be routed through the corresponding duration
-                    // terminal and the corresponding
-                    return (($terminalGateway === $emiBankGateway) and
-                            ($emiDuration === $terminal->getEmiDuration()));
-                }
                 break;
 
             default:
