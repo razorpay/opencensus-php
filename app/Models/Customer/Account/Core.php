@@ -189,6 +189,7 @@ class Core extends Base\Core
         $merchantId = null;
         $customer = null;
         $customerApp = null;
+        $appToken = null;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) === false)
         {
@@ -217,6 +218,13 @@ class Core extends Base\Core
         {
             $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
         }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_GET_CUSTOMER,
+            [
+                'customer_id' => $customerId,
+                'app_token'   => $appToken,
+            ]);
 
         return array($customer, $customerApp);
     }

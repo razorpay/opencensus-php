@@ -353,7 +353,7 @@ trait Authorize
     protected function runPaymentMethodRelatedPreProcessing($payment, & $input, array & $gatewayInput)
     {
         $this->checkAndFillSavedAppToken($input);
-// sd($input);
+
         // First fetch the relevant customer
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp($input, $this->merchant);
 
@@ -393,6 +393,13 @@ trait Authorize
     protected function preProcessPaymentFromSavedCard($customer, $payment, & $input, & $gatewayInput)
     {
         $tokenInput = $input[Payment\Entity::TOKEN];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PROCESS_FROM_SAVED,
+            [
+                'token' => $tokenInput
+            ]);
+
 
         // Customer should definitely exist in this case.
         if ($customer === null)
@@ -609,6 +616,13 @@ trait Authorize
         {
             return;
         }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FILL_SAVED_APP_TOKEN,
+            [
+                'session' => $this->request->session()->all()
+            ]);
+
 
         $appToken = $this->request->session()->get('app_token');
 
