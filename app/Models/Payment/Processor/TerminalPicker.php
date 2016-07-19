@@ -218,10 +218,7 @@ class TerminalPicker
     {
         $bank = $this->payment->getBank();
 
-        $cardTerminalBanks = array(
-            IFSC::KKBK,
-            IFSC::UTIB,
-        );
+        $cardTerminalBanks = Gateway::$emiBanksUsingCardTerminals;
 
         if (in_array($bank, $cardTerminalBanks))
         {
