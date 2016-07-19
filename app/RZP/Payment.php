@@ -42,4 +42,16 @@ class Payment extends \Razorpay\Api\Payment
     {
         return 'App\RZP\Payment';
     }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function card()
+    {
+        $relativeUrl = $this->getEntityUrl() . $this->id . '/card';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }

@@ -72,7 +72,8 @@ class MockData
                 'created_at'            => time(),
                 'updated_at'            => time(),
                 'card'                  => 1,
-                'category'              => '4567'
+                'category'              => '4567',
+                'acquirer'              => 'hdfc'
             ),
             'payment'       => array(
                 'id'                  => 'pay-1sm42A7OxlvJCv',
