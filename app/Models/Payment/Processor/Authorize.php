@@ -623,8 +623,9 @@ trait Authorize
                 'session' => $this->request->session()->all()
             ]);
 
+        $key = $this->mode . '_app_token';
 
-        $appToken = $this->request->session()->get('app_token');
+        $appToken = $this->request->session()->get($key);
 
         if ($appToken !== null)
         {

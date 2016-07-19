@@ -68,6 +68,8 @@ class TraceCode
     const PAYMENT_FILL_SAVED_APP_TOKEN              = 'PAYMENT_FILL_SAVED_APP_TOKEN';
     const PAYMENT_PROCESS_FROM_SAVED                = 'PAYMENT_PROCESS_FROM_SAVED';
     const PAYMENT_GET_CUSTOMER                      = 'PAYMENT_GET_CUSTOMER';
+    const CUSTOMER_SESSION                          = 'CUSTOMER_SESSION';
+    const CUSTOMER_CREATE_APP_TOKEN                 = 'CUSTOMER_CREATE_APP_TOKEN';
 
     /*
      * Gateway component error messages
