@@ -234,13 +234,6 @@ class TerminalPicker
 
     protected function getSharedTerminalForCard($payment)
     {
-        //hard code for cube, return axis_migs
-        if ($payment->merchant->getId() === '5VBSKsXpprFAxM')
-        {
-            return $this->terminalExists(Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
-        }
-
-
         $terminal = $this->getSharedCategoryTerminalForCard($payment);
 
         if ($terminal !== null)
