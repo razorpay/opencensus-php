@@ -235,7 +235,21 @@ class Core extends Base\Core
         // as device token is public, only app_token is sufficient
         $key = $this->mode . '_app_token';
 
+        $this->trace->info(
+            TraceCode::CUSTOMER_CREATE_APP_TOKEN,
+            [
+                'app_token' => $appToken->getPublicId()
+            ]);
+
         $this->app['request']->session()->put($key, $appToken->getPublicId());
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_SESSION,
+            [
+                'session' => $this->app['request']->session()->all()
+            ]);
+
+
         // sd($appToken->getPublicId(), $this->app['session']->get('app_token'));
     }
 
