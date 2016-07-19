@@ -114,6 +114,11 @@ app.controller('EntitiesCtrl', [
         received: booleanList,
         vpc_ReceiptNo: ['Receipt Number']
       },
+      app_token: {
+        customer_id: ['Customer Id'],
+        merchant_id: ['Merchant Id'],
+        device_token: ['Device Token']
+      },
       axis_genius: {
         payment_id: ['Payment Id'],
         received: booleanList,
@@ -176,7 +181,8 @@ app.controller('EntitiesCtrl', [
       customer: {
         merchant_id: ['Merchant Id'],
         email: ['Email'],
-        active: booleanList
+        active: booleanList,
+        contact: ['Contact']
       },
       daily_settlement: {},
       emi_plan: {},
@@ -198,7 +204,9 @@ app.controller('EntitiesCtrl', [
           'unknown'
         ]
       },
-      key: {},
+      key: {
+        merchant_id: ['Merchant Id']
+      },
       merchant: {
         email: ['Email'],
         activated: booleanList,
@@ -313,7 +321,11 @@ app.controller('EntitiesCtrl', [
         token: ['Token'],
         customer_id: ['Customer Id'],
         merchant_id: ['Merchant Id'],
-        card_id: ['Card Id']
+        card_id: ['Card Id'],
+        method: methodList,
+        terminal: ['Terminal Id'],
+        bank: ['Bank Code'],
+        wallet: walletList
       },
       wallet: {
         payment_id: ['Payment Id'],
