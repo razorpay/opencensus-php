@@ -628,7 +628,7 @@ class Service extends Base\Service
         $response = ['sent' => [], 'skipped' => 0];
 
         // Summary of merchants mailed
-        $mailedMerchantsSummary = ['sent' => [], 'skipped' => 0];
+        $mailedMerchantsSummary = ['sent' => [], 'sentCount' => 0, 'skippedCount' => 0];
 
         foreach ($merchants as $merchant)
         {
@@ -639,11 +639,12 @@ class Service extends Base\Service
             if (empty($sent))
             {
                 $response['skipped']++;
-                $mailedMerchantsSummary['skipped']++;
+                $mailedMerchantsSummary['skippedCount']++;
             }
             else
             {
                 $response['sent'][] = $sent;
+                $mailedMerchantsSummary['sentCount']++;
                 $mailedMerchantsSummary['sent'][] = $sent['merchant']['id'];
             }
         }
