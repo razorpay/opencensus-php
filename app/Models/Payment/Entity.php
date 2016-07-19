@@ -2,17 +2,18 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Models\Base;
-use RZP\Models\Order;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use Lib\PhoneBook;
-use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
-use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Bank\Name as BankNames;
+use RZP\Models\Base;
+use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Card;
+use RZP\Models\Order;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Refund;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -152,6 +153,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
+        self::CARD_ID,
         self::BANK,
         self::WALLET,
         self::EMAIL,
@@ -164,7 +166,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT);
 
     protected $publicSetters = array(
-        self::ID, self::ENTITY, self::ORDER_ID);
+        self::ID, self::ENTITY, self::ORDER_ID, self::CARD_ID);
 
     protected $guarded = array(self::ID);
 
@@ -911,6 +913,15 @@ class Entity extends Base\PublicEntity
         {
             $array[self::ORDER_ID] =
                 Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+        }
+    }
+
+    public function setPublicCardIdAttribute(Array & $array)
+    {
+        if (isset($array[self::CARD_ID]))
+        {
+            $array[self::CARD_ID] =
+                Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
         }
     }
 
