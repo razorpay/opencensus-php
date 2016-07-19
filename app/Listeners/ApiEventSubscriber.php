@@ -6,7 +6,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Constants;
 use RZP\Jobs\WebHook;
-use RZP\Models\Event\Entity;
+use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
@@ -37,8 +37,6 @@ class ApiEventSubscriber
         $this->event = $this->app['events'];
         $this->trace = $this->app['trace'];
         $this->queue = $this->app['queue'];
-
-
     }
 
     public function getMode()
@@ -90,12 +88,12 @@ class ApiEventSubscriber
         }
 
         $attributes = array(
-            Entity::EVENT       => $eventFired,
-            Entity::CONTAINS    => Contains::getEntityNamesForEvent($eventFired),
-            Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
+            Event\Entity::EVENT       => $eventFired,
+            Event\Entity::CONTAINS    => Event\Contains::getEntityNamesForEvent($eventFired),
+            Event\Entity::CREATED_AT  => $payment->getAuthorizeTimestamp(),
         );
 
-        $event = new Entity($attributes);
+        $event = new Event\Entity($attributes);
 
         $payload = array(
             \RZP\Constants\Entity::PAYMENT => [
