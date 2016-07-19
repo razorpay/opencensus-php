@@ -18,6 +18,7 @@ class Gateway
     const AXIS_GENIUS       = 'axis_genius';
     const AXIS_MIGS         = 'axis_migs';
     const BILLDESK          = 'billdesk';
+    const EBS               = 'ebs';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
     const MOBIKWIK          = 'mobikwik';
@@ -50,6 +51,7 @@ class Gateway
         self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
         self::AXIS_MIGS         => Settlement\Channel::KOTAK,
         self::BILLDESK          => Settlement\Channel::KOTAK,
+        self::EBS               => Settlement\Channel::KOTAK,
         self::HDFC              => Settlement\Channel::KOTAK,
         self::KOTAK             => Settlement\Channel::KOTAK,
         self::MOBIKWIK          => Settlement\Channel::KOTAK,
@@ -84,6 +86,7 @@ class Gateway
         Method::NETBANKING => array(
             self::PAYTM,
             self::BILLDESK,
+            self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
             self::SBIEPAY,
@@ -304,6 +307,7 @@ class Gateway
      */
     public static $netbankingGateways = array(
         Gateway::BILLDESK,
+        Gateway::EBS,
         Gateway::SBIEPAY,
         Gateway::PAYTM,
         Gateway::ATOM);

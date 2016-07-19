@@ -7,7 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Billdesk;
+use RZP\Gateway\Ebs;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;

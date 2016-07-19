@@ -19,6 +19,7 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class Gateway extends Base\Gateway
 {
+    use ResponseFieldsTrait;
     protected $gateway = 'ebs';
     protected $map = array(
         'TransactionID' => 'TxnReferenceNo',
@@ -167,6 +168,7 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($attributes)
     {
         $payment = $this->getNewGatewayPaymentEntity();
+        $attributes['TxnAmount'] = $attributes['amount'];
         $payment->setPaymentId($attributes['reference_no']);
 
         $payment->fill($attributes);
