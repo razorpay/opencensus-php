@@ -22,7 +22,6 @@ class Gateway extends Base\Gateway
 
     protected $canRunOtpFlow = false;
 
-    // find out significance of gateway_payment_id, gateway_payment_id_2
     protected $map = array(
         'email'                 => 'email',
         'contact'               => 'contact',
